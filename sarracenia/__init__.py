@@ -53,16 +53,14 @@ class Sarracenia:
         python built-in, but also we have a few major entry points some factoryies:
     
 
-        Building a message from a file
-        ------------------------------
+        **Building a message from a file**
 
         m = sarracenia.Message.fromFileData( path, options, lstat )
      
         builds a message from a given existing file, consulting *options*, a parsed
         in memory version of the configuration settings that are applicable
 
-        Options
-        -------
+        **Options**
 
         see the sarracenia.config.Config class for functions to parse configuration files
         and create corresponding python option dictionaries. One can supply small 
@@ -76,8 +74,7 @@ class Sarracenia:
         example called moth_api_consumer.py. often 
         
 
-        If you don't have a file
-        ------------------------
+        **If you don't have a file**
 
         If you don't have a local file, then build your message with:
     

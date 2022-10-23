@@ -9,6 +9,7 @@ nécessaire pour étendre la fonctionnalité de polling.
 
 Protocoles de polling pris en charge en mode natif
 --------------------------------------------------
+
 Prêt à l’emploi, Sarracenia prend en charge l’interrogation des sources HTTP / HTTPS et SFTP / FTP où le nom de fichier
 est ajouté à la fin de l’URL de base. Par exemple, si vous essayez d’accéder les données de niveau de l’eau
 du réservoir du lac Ghost près de Cochrane en Alberta, auxquelles on peut accéder en naviguant jusqu’à
@@ -25,8 +26,9 @@ pour localiser le fichier et le télécharger.
 
 Extension des protocoles de poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Si la source de données ne respecte pas cette convention (voir `NOAA CO-OPS API`_ et `USGS Instantaneous Values
-Web Service`_ pour des exemples de deux sources de données qui ne le font pas), un module **registered_as**
+
+Si la source de données ne respecte pas cette convention (voir `API NOAA CO-OPS`_ et `Service Web de valeurs instantanées USGS`_
+pour des exemples de deux sources de données qui ne le font pas), un module **registered_as**
 peut être inclus en bas d’un fichier plugin pour définir la liste des protocoles en cours
 d’extension ou d’implémentation ::
 
@@ -37,8 +39,10 @@ Ca surchargerait alors la méthode de transfert et utiliserait celle décrite da
 
 Exemples d’intégration d’API dans des plugins
 ---------------------------------------------
+
 API NOAA CO-OPS
 ~~~~~~~~~~~~~~~
+
 Le département des marées et des courants de National Oceanic and Atmospheric Administration publie son
 programme coopératif données d’observations et de prédictions de stations via un service Web GET RESTful,
 disponible à l’adresse `the NOAA Tides et le site Web de Currents <https://tidesandcurrents.noaa.gov/api/>`_.

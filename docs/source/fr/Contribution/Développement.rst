@@ -310,9 +310,10 @@ Debian/Ubuntu
 
 Pour une installation locale sur un ordinateur, en utilisant un paquet debian.
 Ce processus construit un .deb local dans le répertoire parent en utilisant les mécanismes Debian standard.
-- Vérifiez la ligne **build-depends** dans *debian/control* pour les dépendances qui pourraient être nécessaires
+
+* Vérifiez la ligne **build-depends** dans *debian/control* pour les dépendances qui pourraient être nécessaires
   pour construire à partir de source.
-- Les étapes suivantes feront un build de sarracenia mais ne signeront pas les modifications ou le paquet source ::
+* Les étapes suivantes feront un build de sarracenia mais ne signeront pas les modifications ou le paquet source ::
 
     cd metpx/sarracenia
     sudo apt-get install devscripts
@@ -341,7 +342,7 @@ Liste de contrôle:
   que le code.
 
 Habituellement, il y aura beaucoup de cycles de ce type sur une branche de développement avant que l’un d’eux
-ne soit prêt à émettre une pull request. Finalement, nous arrivons à `Commits to the Main Branch`_.
+ne soit prêt à émettre une pull request. Finalement, nous arrivons à `Commits vers la branche principale`_
 
 Description des Tests sr_insects
 --------------------------------
@@ -479,7 +480,7 @@ du test montre les fonctionnalités couvertes.
 +-------------------+--------------------------------------+-------------------------------------+
 | subscribe t       | Télécharge en tant que client à      | lire amqp du courtier local         |
 |                   | partir de localhost au repertoire    | en tant qu'utilisatuer/client       |
-|                   | downloaded_by_sub_t.                 | ordinaire.                                    |
+|                   | downloaded_by_sub_t.                 | ordinaire.                          |
 |                   |                                      | file d'attente partagé et plusieurs |
 |                   |                                      | processus                           |
 |                   |                                      | 5 instances téléchargent de chaque q|
@@ -1190,7 +1191,7 @@ FIXME: étapes manquantes, plus de clarté requise.
 
 La plupart des composants utiliseront MQTT au lieu d’amqp et peuvent être exécutés normalement.
 
-Commits vers la branche Principale
+Commits vers la branche principale
 ----------------------------------
 
 A part les fautes de frappe, les corrections de langue dans la documentation et l’incrémentation
@@ -1315,8 +1316,8 @@ Où:
   X.ypostN #ack! Version corrigé.
 
 Actuellement, 3.00 est toujours stabilisé, de sorte que la convention année/mois n’est pas appliquée.
-Les versions sont actuellement 3.00.iibj
-où:
+Les versions sont actuellement 3.00.iibj où:
+
   * ii -- nombre incrémentiel de versions préliminaires de 3.00
   * j -- incrément bêta.
 
@@ -1403,7 +1404,7 @@ Une fois que la balise est là dans la branche v03_wip, on peut la promouvoir su
 Une fois en main, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
 les différentes méthodes de distribution: `PyPI`_, et `Launchpad`_
 
-Une fois la génération du package terminée, il faut `Setter la Version`_
+Une fois la génération du package terminée, il faut `Création d´une version`_
 dans v03_wip à l’incrément logique suivant pour s’assurer qu’aucun autre développement
 identifié comme la version publiée ne se produit.
 

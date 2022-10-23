@@ -207,7 +207,7 @@ xs\_<user> exchange, et après validation envoyée à l'échange xreport par
 des configurations shovel créées par sr_audit.
 
 Les messages dans xreports destinés à d’autres clusters sont routés vers des destinations par
-pelles configurées manuellement. Voir la section Reports_ pour plus de détails.
+pelles configurées manuellement. Voir la section Rapports_ pour plus de détails.
 
 
 Que se passe-t-il ?
@@ -314,7 +314,7 @@ Il faut crypter le trafic des courtiers. L'obtention de certificats
 n'entre pas dans le champ d'application de ces instructions, de
 sorte qu'il n'est pas discuté en détail. Aux fins de l'exemple,
 une méthode consiste à obtenir des certificats à partir
-de `http://www.letsencrypt.org>`_ ::
+de `<http://www.letsencrypt.org>`_ ::
 
     root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
     Cloning into 'letsencrypt'...
@@ -356,8 +356,8 @@ probablement que la façon la plus simple de le faire est de les copier ailleurs
     root@boule:~# chown -R rabbitmq.rabbitmq boule*
 
 Maintenant que nous avons la bonne chaîne de certificats, configurez
-rabbitmq pour utilisez que le `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.rst>`https://www.rabbitmq.com/ssl.rst>`_ (voir
-également `RabbitMQ Management <https://www.rabbitmq.com/management.rst>`_)::
+rabbitmq pour utilisez que le `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (voir
+également `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_)::
 
     root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
 
@@ -650,7 +650,7 @@ La création est automatisée car les modèles de lecture/écriture/configuratio
 
 
 Premier abonnement
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Lors de la configuration d'une pompe, le but est normalement de la connecter à une autre pompe. Pour régler
 le paramétrage d'un abonnement nous aide à paramétrer les paramètres pour sarra plus tard. Donc d'abord
@@ -818,7 +818,7 @@ aide au routage en créant les configurations suivantes:
 - Pour chaque abonné, une configuration de pelle nommée rr_<user>2xreport.conf est créée.
 - Pour chaque source, une configuration de pelle nommée rr_xreport2<user>user>user.conf est créée.
 
-Les pelles *2xreport* s'abonne aux messages postés dans l'échange xs_ de
+Les pelles *2xreport* s'abonne aux messages postés dans l'échange xs\_ de
 chaque utilisateur et les poste à l'échange xreport commun. Exemple de fichier
 de configuration::
 

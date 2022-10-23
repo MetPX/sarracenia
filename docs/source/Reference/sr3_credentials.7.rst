@@ -13,7 +13,7 @@ SR3 Credential File Format
 :Manual group: MetPX-Sarracenia
 
 CONFIGURATION
-============
+=============
 
 One normally does not specify passwords in configuration files.  Rather they are placed
 in the credentials file::

@@ -10,7 +10,9 @@ Tutorials
    3_api_flow_demo
    4_api_moth_sub_demo
    5_api_moth_post_demo
-   Install
-   Setup_a_local_subscriber
-   Setup_a_remote_subscriber
+   Installer
+   Mettre_en_place_un_subscriber_distant
+   Mettre_en_place_un_subscriber_local
+   hello_world_server
    Windows
+

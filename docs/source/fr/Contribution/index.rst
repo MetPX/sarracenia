@@ -10,11 +10,10 @@ Contribuer à Sarracenia
    Documentation
    modèle_de_page_man.rst
    v03
-   Original (2015) Idée de base  <Basic Idea>
+   Original (2015) Idée de base  <IdéeDeBase>
    Design original (2015) <Design>
    Évolution
    AMQPprimer
-   problèmes mqtt
+   problèmes_mqtt
    Deltas
    assemblage_on_parts
-

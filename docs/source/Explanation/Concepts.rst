@@ -56,8 +56,9 @@ In more detail:
  |          |                                                             |
  |          | run after_work                                              |
  +----------+-------------------------------------------------------------+
- | *post*   | Post notification message of file downloads/sent to post_broker     |
- |          | or otherwise dispose of task (to file, or retry... or)      |
+ | *post*   | Post notification message of file downloads/sent to         |
+ |          | post_broker or otherwise dispose of task                    |
+ |          | (to file, or retry... or)                                   |
  +----------+-------------------------------------------------------------+
 
 The main components of the python implementation of Sarracenia all implement the same algorithm described above. The algorithm has various points where custom processing can be inserted (using flowCallbacks), or deriving classes from flow, integrity, or transfer classes.

@@ -1,3 +1,4 @@
+========
 Glossary
 ========
 
@@ -142,7 +143,7 @@ Someone who wants to ship data to someone else. They do that by advertising a
 trees of files that are copied from the starting point to one or more pumps
 in the network. The notification message sources produced tell others exactly where 
 and how to download the files, and Sources have to say where they want the 
-  data to go to.
+data to go to.
 
 Sources use the `post <../Reference/sr3.1.html#post>`_,
 `sr_watch.1 <../Reference/sr3.1.html#watch>`_, and 
@@ -164,7 +165,7 @@ It is a pure TCP/IP WMO 386 oriented data pump. The configuration files look sim
 but the routing algorithms and concepts are quite different. MetPX is a push-only 
 file distribution method, that implemented WMO 386 sockets, AM Sockets, and 
 other obsolete technologies. It does not do pub/sub. 
-More history `here <History/Evolution.html>`_
+`More History <History/Evolution.html>`_
 
 WMO
 ---
@@ -175,7 +176,7 @@ been a real-time exchange of weather data between countries, often even in times
 that cover these exchanges are:
 
 - Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this 
-  domain. (a likely stale copy is  `here <WMO-386.pdf>`_.) Try https://www.wmo.int for the latest version.
+  domain. (a likely stale copy is  `WMO 386 <WMO-386.pdf>`_.) Try https://www.wmo.int for the latest version.
 
 Usually these links are referred to collectively as *the GTS*.  The standards are very old, and a modernization
 process has been ongoing for the last decade or two. Some current work on replacing the GTS is here:

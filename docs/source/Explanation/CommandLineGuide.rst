@@ -14,10 +14,10 @@ the state of all components. It then makes the change requested.
   **sr3** *options* *action* [ *component/configuration* ... ]
 
 sr3 components are used to publish to and download files from websites or file servers 
-that provide `sr3_post(7) <../Reference/sr3_post.7.rst>`_ protocol notifications. Such sites 
+that provide `sr_post(7) <../Reference/sr_post.7.rst>`_ protocol notifications. Such sites 
 publish notification messages for each file as soon as it is available. Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
-The *sr3_post* notifications provide true push notices for web-accessible folders (WAF),
+The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
 and are far more efficient than either periodic polling of directories, or ATOM/RSS style 
 notifications. Sr_subscribe can be configured to post notification messages after they are downloaded,
 to make them available to consumers for further processing or transfers.
@@ -383,7 +383,7 @@ View all configuration settings (the result of all parsing... what the flow comp
 
 
 convert
-~~~~~
+~~~~~~~
 
 Converting a config: both formats are accepted, as well as include files::
 
@@ -506,7 +506,7 @@ CONSUMER
 ========
 
 Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the notification messages are `sr3_post(7) <../Reference/sr3_post.7.html>`_ notification messages, 
+AMQP messages. Usually, the notification messages are `sr_post(7) <../Reference/sr_post.7.html>`_ notification messages, 
 announcing the availability of a file by publishing its URL ( or a part 
 of a file ), but there are also report messages which can be processed using the 
 same tools. AMQP messages are published to an exchange 
@@ -864,7 +864,7 @@ By default, sr_poll sends its post notification message to the broker with defau
 It can be given incomplete if it is well defined in the credentials.conf file.
 
 Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
-Refer to `sr3_post(7) <../Reference/sr3_post.7.rst>`_ - to understand the complete notification format.
+Refer to `sr_post(7) <../Reference/sr_post.7.rst>`_ - to understand the complete notification format.
 
 
 These options set what files the user wants to be notified for and where
@@ -1022,7 +1022,7 @@ check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product. 
 
-The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.rst>`_
+The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.rst>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
@@ -1047,7 +1047,7 @@ The destination option specify what is needed to connect to the remote server
 
 The *destination* should be set with the minimum required information...
 **sr_poll**  uses *destination* setting not only when polling, but also
-in the sr3_post notification messages produced.
+in the sr_post notification messages produced.
 
 For example, the user can set :
 
@@ -1180,7 +1180,7 @@ SARRA
 
 **sarra** is a program that Subscribes to file notifications,
 Acquires the files and ReAnnounces them at their new locations.
-The notification protocol is defined here `sr3_post(7) <../Reference/sr3_post.7.html>`_
+The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.html>`_
 
 **sarra** connects to a *broker* (often the same as the remote file server
 itself) and subscribes to the notifications of interest. It uses the notification
@@ -1364,7 +1364,7 @@ by (*exchange*, *subtopic*, and optionally, *accept*/*reject*.)
 
 The *topicPrefix* option must to be set to:
 
- - to shovel `sr3_post(7) <../Reference/sr3_post.7.html>`_ notification messages
+ - to shovel `sr_post(7) <../Reference/sr_post.7.html>`_ notification messages
 
 shovel is a flow with the following presets::
    
@@ -1479,7 +1479,7 @@ WINNOW
 
 the **winnow** component subscribes to file notification messages and reposts them, suppressing redundant 
 ones. How to decide which ones are redundant varies by use case. In the most straight-forward case,
-the messages have **Integrity** header stores a file's fingerprint as described in the `sr3_post(7) <../Reference/sr3_post.7.html>`_ man page,
+the messages have **Integrity** header stores a file's fingerprint as described in the `sr_post(7) <../Reference/sr_post.7.html>`_ man page,
 and header is used exclusively. There are many other use cases, though. discussed in the following section
 on `Duplicate Suppression <DuplicateSuppresion.html>`_
 

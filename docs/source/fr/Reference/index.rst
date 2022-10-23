@@ -11,3 +11,4 @@ Reference
    sr3_credentials.7
    sr3_options.7
    format de message d´annonce sr_post <sr_post.7>
+   glossary

@@ -385,7 +385,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
 
 
 convert
-~~~~~
+~~~~~~~
 
 Conversion d’une configuration : les deux formats sont acceptés, ainsi que les fichiers d’inclusion (.inc) ::
 
@@ -1346,6 +1346,7 @@ Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location
 
 SHOVEL
 ------
+
 shovel copie les messages sur un courtier (donné par l’option *broker*) à
 un autre (donné par l’option *post_broker*) soumis au filtrage
 par (*exchange*, *subtopic*, et éventuellement, *accept*/*reject*.)
@@ -2086,7 +2087,7 @@ L'option *outlet*  permet la sortie finale d'être autre chose qu'un post.
 Voir `sr3_cpump(1) <sr3_cpump.1.rst>`_ pour plus de détails.
 
 [-pbd|--post_baseDir <path>] (facultatif)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option *post_baseDir* fournit le chemin du répertoire qui, lorsqu'il est
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local
@@ -2116,7 +2117,7 @@ définir de déclencher un script. L'option **on_post** serait utilisée pour fa
 une telle configuration.
 
 post_exchangeSplit   <number>   (défaut: 0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les
@@ -2175,7 +2176,7 @@ Les utilisateurs peuvent placer leurs propres scripts dans le sous-répertoire d
 ( sur Linux, le ~/.config/sarra/plugins).
 
 flowCallback et flowCallbackPrepend <class>
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 La directive flowCallback prend une classe à charger et peut analyser les points d’entrée comme argument ::
 
@@ -2391,7 +2392,8 @@ Pour la compatibilité avec Sundew, il existe des options de livraison suppléme
 
 
 destfn_script <script> (défaut:None)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Cette option définit un script à exécuter lorsque tout est prêt
 pour la livraison du produit. Le script reçoit une instance de la classe sender.
 Le script prends le parent comme argument, et par exemple, une
@@ -2485,6 +2487,7 @@ Un message sélectionné par le quatrième *accept* sera remis inaltérée à un
 
 Field Replacements
 ~~~~~~~~~~~~~~~~~~
+
 Dans MetPX Sundew, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
