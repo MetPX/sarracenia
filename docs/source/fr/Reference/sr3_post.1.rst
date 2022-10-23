@@ -323,7 +323,7 @@ header <name>=<value>
   Ajoutez une en-tête <name> avec la valeur donnée aux annonces. Utilisé pour transmettre des chaînes en tant que métadonnées.
 
 UTILISATION DE LA LIBRAIRIE SHIM
-==================
+================================
 
 Plutôt qu'invoquer un sr_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
 publiez les fichiers qu'ils écrivent en leur faisant utiliser une bibliothèque de shim interceptant certains appels d'i/o de fichiers vers la libc
@@ -353,7 +353,7 @@ SSH ne transmettra que les variables d'environnement qui commencent par LC\_ (lo
 les variables passées avec un minimum d'effort, nous utilisons ce préfixe.
 
 Trucs d'utilisation de shim
----------------
+----------------------------
 
 Cette méthode de notification nécessite une certaine configuration de l'environnement utilisateur.
 L'environnement utilisateur a besoin du jeu de variables d'environnement LD_PRELOAD
@@ -393,7 +393,7 @@ testées depuis deux ans depuis la première mise en œuvre de la bibliothèque 
 * *export SR_SHIMDEBUG=1* obtiendra plus de sortie que vous ne le souhaitez. utiliser avec précaution.
 
 Traitement de renommage
------------------
+-----------------------
 
 Il est à noter que renommer le fichier n'est pas aussi simple dans le cas de la mise en miroir que dans le système opérateur  
 sous-jacent. Alors que l'opération est une opération atomique unique dans un système d'exploitation, lorsque
@@ -426,7 +426,7 @@ dans l'arbre, et est donc beaucoup plus cher.
 
 
 VARIABLES ENVIRONNEMENTALES
-=====================
+===========================
 
 Dans l'implémentation C (sr_cpost), si la variable SR_CONFIG_EXAMPLES est définie, alors la directive *add* peut être utilisée
 pour copier des exemples dans le répertoire de l'utilisateur à des fins d'utilisation et/ou de personnalisation.
@@ -441,7 +441,7 @@ l'implémentation python.
 
 
 Voir aussi
-========
+==========
 
 `sr3(1) <sr3.1.html>`_ - Interface de ligne de commande principale de Sarracenia.
 

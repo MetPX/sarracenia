@@ -15,5 +15,5 @@ Contribuer à Sarracenia
    Évolution
    AMQPprimer
    problèmes_mqtt
-   Deltas
-   assemblage_on_parts
+   deltas
+   assemblage_on_part

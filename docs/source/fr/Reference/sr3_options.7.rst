@@ -163,7 +163,7 @@ Notez que les paramètres de *flatten* peuvent être modifiés entre les options
 Substitutions Compatible Sundew
 -------------------------------
 
-Dans `MetPX Sundew <../Explanation/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
+Dans `MetPX Sundew <../Explication/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
 dénomination des fichiers de WMO actuellement approuvée, et est utilisé strictement comme format interne. Les fichiers sont
@@ -267,7 +267,7 @@ accelXxxCommand
 On peut spécifier d’autres fichiers binaires pour les téléchargeurs pour des cas particuliers,
 
 +-----------------------------------+--------------------------------+
-|  Option                           |  Valeur par Défaut                  |
+|  Option                           |  Valeur par Défaut             |
 +-----------------------------------+--------------------------------+
 |  accelWgetCommand                 |  /usr/bin/wget %s -O %d        |
 +-----------------------------------+--------------------------------+
@@ -600,7 +600,7 @@ Se définit a False par défaut dans les composants de shovel ou de winnow.
 
 
 dry_run <flag> (défaut: False)
--------------------------------
+------------------------------
 
 Exécuter en mode simulation par rapport aux transferts de fichiers. Se connecte toujours à un courtier et télécharge et traite
 les messages d´annonce, mais les transferts de fichiers corréspondants sont désactivés, à utiliser lors du test d'un expéditeur 
@@ -626,7 +626,7 @@ de modification ou de suppression.
 Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
 comment les traiter. S’il n’est pas défini, aucun événement de lien symbolique sera publié.
 
-.. remarque::
+.. note::
    déplacer ou renommer des événements entraîne un modèle spécial de double publication, avec une publication en
    utilisant l'ancien nom et définissant le champ *newname*, et un deuxième message d'annonce avec le nouveau nom, et un champ *oldname*.
    Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déclencher un téléchargement lorsque cela est possible.
@@ -635,7 +635,7 @@ FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de
 
 
 exchange <nom> (défaut: xpublic) et exchangeSuffix
----------------------------------------------------
+--------------------------------------------------
 
 La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
 flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
@@ -745,7 +745,7 @@ surveillé par « watch ». Si *follow_symlinks* est false, alors aucune action 
 lien symbolique est prise.
 
 force_polling <flag> (défaut: False)
--------------------------------------
+------------------------------------
 
 Par défaut, « watch » sélectionne une méthode optimale (dépendante du système d’exploitation) pour regarder un
 répertoire.
@@ -758,7 +758,7 @@ de « polling » plus fiable et portable.  Le mot-clé *force_polling* oblige «
 la méthode de « polling » malgré le fait qu'il y ait une meilleur option de disponible.
 
 Pour une discussion détaillée, voir:
- `Detecting File Changes <../Explanation/DetectFileHasChanged.html>`_
+ `Detecting File Changes <../Explication/DetectFileHasChanged.html>`_
 
 REMARQUE::
 
@@ -782,7 +782,7 @@ avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être ut
 taille des messages d'annonce a des impacts importants sur la performance.
 
 housekeeping <intervalle> (défaut: 300 secondes)
-----------------------------------------------
+------------------------------------------------
 
 L’option **housekeeping** définit la fréquence d’exécution du traitement périodique tel que déterminé par
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
@@ -794,12 +794,12 @@ inclure une autre configuration dans cette configuration.
 
 
 inflight <string> (défaut: .tmp ou NONE si post_broker est définit)
-------------------------------------------------------------
+-------------------------------------------------------------------
 
 L’option **inflight** définit comment ignorer les fichiers lorsqu’ils sont transférés
 ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
 transferts peu fiables, et des précautions doivent être prises.  Voir
-`Delivery Completion <../Explanation/FileCompletion.html>`_ pour plus de détails.
+`Delivery Completion <../Explication/FileCompletion.html>`_ pour plus de détails.
 
 La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer un nom temporaire pendant
 le transfert.  Si **inflight** est défini a **.**, alors il s’agit d’un préfixe pour se conformer à
@@ -851,7 +851,7 @@ inlineOnly
 ignorer les messages d´annonce si les données ne sont pas inline.
 
 inplace <flag> (défaut: On)
-----------------------------
+---------------------------
 
 Les fichiers volumineux peuvent être envoyés en plusieurs parties, plutôt que de tout en même temps.
 Lors du téléchargement, si **inplace** est True, ces parties seront rajoutées au fichier
@@ -878,11 +878,11 @@ le répertoire ~/.cache/sarra/sender/nomDeConfig ::
   A .sender_nomDeConfig.state         est créé, contenant le nombre d’instances.
   A .sender_nomDeConfig_$instance.pid est créé, contenant le PID du processus $instance .
 
-Dans le répertoire ~/.cache/sarra/log::
+Dans le répertoire ~/.cache/sarra/log:
 
   Un .sender_nomDeConfig_$instance.log  est créé en tant que journal du processus $instance.
 
-.. Remarque::
+.. NOTE::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente
   prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une fil d’attente qu'on
@@ -919,7 +919,7 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 
 
 logEvents ( défaut: after_accept,after_work,on_housekeeping )
---------------------------------------------------------------
+-------------------------------------------------------------
 
 émettre des messages de journal standard au moment approprié du traitement des messages.
 autres valeurs : on_start, on_stop, post, gather, ... etc...
@@ -991,7 +991,7 @@ L’option **message_ttl** définit un temps pour lequel un message d´annonce p
 Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.
 
 mirror <flag> (défaut: off)
-----------------------------
+---------------------------
 
 L’option **miroir** peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
 Si l'option est défini a **True** le répertoire donné par l’option **directory** sera le nom de base
@@ -1070,7 +1070,7 @@ ou:
  callback_prepend nodupe.data
 
 
-Pour plus d´information: `Supprimer les doublons<../Explanation/SupprimerLesDoublons.html>`_
+Pour plus d´information: `Supprimer les doublons <../Explication/SupprimerLesDoublons.html>`_
 
 nodupe_fileAgeMax
 -----------------
@@ -1165,7 +1165,7 @@ Les options **permDefault** spécifient un masque, c’est-à-dire que les autor
 au moins ce qui est spécifié.
 
 post_baseDir <chemin>
--------------------
+---------------------
 
 L’option *post_baseDir* fournit le chemin d’accès au répertoire qui, lorsqu’il est combiné (ou trouvé)
 dans le *path* donné, donne le chemin absolu local au fichier de données à publier.
@@ -1188,7 +1188,7 @@ post_broker <url>
 l’URL du courtier pour publier des messages d'annonce. Voir `broker <#broker>`_ pour plus de détails.
 
 post_exchange <name> (défaut: xpublic)
----------------------------------------
+--------------------------------------
 
 FIXME: L’option **post_exchange** est définie sous quelle échange la nouvelle notification
 sera affiché. Lors de la publication sur une pompe en tant qu’administrateur, un
@@ -1200,7 +1200,7 @@ pour modifier les messages d'annonce générés à propos des fichiers avant leu
 
 
 post_exchangeSplit <count> (défaut: 0)
----------------------------------------
+--------------------------------------
 
 L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
 de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
@@ -1221,7 +1221,7 @@ Lors du démarrage de watch, on peut soit demander au programme de publier tous 
 surveillés, ou pas.
 
 post_topicPrefix (défaut: topicPrefix)
----------------------------------------
+--------------------------------------
 
 Rajouter au subtopic pour former une hiérarchie complète des sujets.
 Cette option s’applique à la publication.  Elle indique la version des messages d'annonce publiés
@@ -1229,7 +1229,7 @@ dans les subtopics. (v03 fait référence à `<sr3_post.7.html>`_) Cette valeur 
 a été reçue.
 
 prefetch <N> (défaut: 1)
--------------------------
+------------------------
 
 L’option **prefetch** définit le nombre de messages d'annonce à récupérer en même temps.
 Lorsque plusieurs instances sont en cours d’exécution et que prefetch est égale à 4, chaque instance obtient jusqu’à quatre
@@ -1499,7 +1499,8 @@ Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subto
 parcourir le site Web **http://dd.weather.gc.ca** et noter tous les répertoires
 d’intérêt.  Pour chaque arborescence de répertoires d’intérêt, il faut écrire une option de **subtopic**
 comme cela:
- **subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#**
+
+**subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#**
 
 ::
 

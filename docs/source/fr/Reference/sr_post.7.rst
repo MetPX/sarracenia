@@ -25,7 +25,7 @@ Certains champs changent parce que le protocole est exposé a une revision plus 
 
 Le changement de protocole de charge utile vise à simplifier les implémentations futures
 et à activer l’utilisation par des protocoles de messagerie autres que l’AMQP antérieur à la version 1.0.
-Voir `v03 Modifications <.. /Explanations/History/messages_v03.html>`_ pour plus de détails.
+Voir `v03 Modifications <.../Explications/History/messages_v03.html>`_ pour plus de détails.
 
 Pour générer des messages en format v03, utilisez le paramètre suivant ::
 
@@ -132,7 +132,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
 
           des paires supplémentaires nom:valeur définies par l’utilisateur sont autorisées.
 
-REMARQUE:
+.. NOTE::
      L’en-tête **parts** n’a pas encore été revu par d’autres. Nous avons commencé la discussion sur *size*,
      mais il n’y a pas eu de conclusion.
 
@@ -223,7 +223,7 @@ alors le thème complet du message d´annonce sera : *v03.a.b.c.d*
 Les champs AMQP sont limités à 255 caractères et les caractères du champ sont
 encodé en utf8, de sorte que la limite de longueur réelle peut être inférieure à cela.
 
-REMARQUE::
+.. NOTE::
 
   Sarracenia s’appuie sur des courtiers pour interpréter l’en-tête du thème. Les courtiers interprètent
   des en-têtes spécifiques au protocole *AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
@@ -281,22 +281,23 @@ Champs supplémentaires :
 **from_cluster=<nom_du_cluster>**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   L’en-tête from_cluster définit le nom du cluster source où
-   les données ont été introduites dans le réseau. Cela est utilisé pour renvoyer les journaux
-   au cluster chaque fois que ses produits sont utilisés.
+L’en-tête from_cluster définit le nom du cluster source où
+les données ont été introduites dans le réseau. Cela est utilisé pour renvoyer les journaux
+au cluster chaque fois que ses produits sont utilisés.
 
 **link=<valeur du lien symbolique>**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'link' est créé pour
-   contenir sa valeur.
+Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'link' est créé pour
+contenir sa valeur.
 
 **size and blocks**
 ~~~~~~~~~~~~~~~~~~~
 
 .. _parts:
 
-::
+   ::
+
      "size":<sz> ,
 
      "blocks" :
@@ -308,71 +309,71 @@ Champs supplémentaires :
             "number": <bno>
      }
 
- Un en-tête indiquant la méthode et les paramètres de partitionnement appliqués au fichier.
- Le partitionnement est utilisé pour envoyer un seul fichier en tant que collection de segments, plutôt qu'en une
- seule entité.  Le partitionnement est utilisé pour accélérer les transferts de grands ensembles de données en utilisant
- plusieurs flux et/ou pour réduire l’utilisation du stockage pour les fichiers extrêmement volumineux.
+Un en-tête indiquant la méthode et les paramètres de partitionnement appliqués au fichier.
+Le partitionnement est utilisé pour envoyer un seul fichier en tant que collection de segments, plutôt qu'en une
+seule entité.  Le partitionnement est utilisé pour accélérer les transferts de grands ensembles de données en utilisant
+plusieurs flux et/ou pour réduire l’utilisation du stockage pour les fichiers extrêmement volumineux.
 
- Lors du transfert de fichiers partitionnés, chaque partition est annoncée et potentiellement transportée
- indépendamment sur un réseau de pompage de données.
+Lors du transfert de fichiers partitionnés, chaque partition est annoncée et potentiellement transportée
+indépendamment sur un réseau de pompage de données.
 
  *<méthode>*
 
- Indique quelle méthode de partitionnement, si il y en a une, a été utilisée dans la transmission.
+Indique quelle méthode de partitionnement, si il y en a une, a été utilisée dans la transmission.
 
- +-----------------+---------------------------------------------------------------------+
- |   Méthode       | Déscription                                                         |
- +-----------------+---------------------------------------------------------------------+
- | p - partitioned | Le fichier est partitionné, des fichiers en pièce individuels       |
- |                 | sont créés.                                                         |
- +-----------------+---------------------------------------------------------------------+
- | i - inplace     | Le fichier est partitionné, mais les blocs sont lus à partir d’un   |
- |                 | seul fichier, plutôt que des parties.                               |
- +-----------------+---------------------------------------------------------------------+
- | 1 - <sizeonly>  | Le fichier est dans une seule partie (pas de partitionnement).      |
- |                 | dans v03, seul l’en-tête *size* sera présent. *blocs* est omis.     |
- +-----------------+---------------------------------------------------------------------+
++-----------------+---------------------------------------------------------------------+
+|   Méthode       | Déscription                                                         |
++-----------------+---------------------------------------------------------------------+
+| p - partitioned | Le fichier est partitionné, des fichiers en pièce individuels       |
+|                 | sont créés.                                                         |
++-----------------+---------------------------------------------------------------------+
+| i - inplace     | Le fichier est partitionné, mais les blocs sont lus à partir d’un   |
+|                 | seul fichier, plutôt que des parties.                               |
++-----------------+---------------------------------------------------------------------+
+| 1 - <sizeonly>  | Le fichier est dans une seule partie (pas de partitionnement).      |
+|                 | dans v03, seul l’en-tête *size* sera présent. *blocs* est omis.     |
++-----------------+---------------------------------------------------------------------+
 
  - analogue aux options rsync : --inplace, --partial,
 
  *<blocksize in bytes>: bsz*
 
- Nombre d’octets dans un bloc.  Lorsque vous utilisez la méthode 1, la taille du bloc est la taille du fichier.
- Les restants des champs sont seulement utiles pour les fichiers partitionnés.
+Nombre d’octets dans un bloc.  Lorsque vous utilisez la méthode 1, la taille du bloc est la taille du fichier.
+Les restants des champs sont seulement utiles pour les fichiers partitionnés.
 
- *<blocks in total>: blktot*
- le nombre total (en entier) de blocs dans le fichier (le dernier bloc peut être partiel)
+*<blocks in total>: blktot*
+le nombre total (en entier) de blocs dans le fichier (le dernier bloc peut être partiel)
 
- *<remainder>: brem*
- normalement 0, pour le dernier bloc, octets restants dans le fichier
- à transférer.
+*<remainder>: brem*
+normalement 0, pour le dernier bloc, octets restants dans le fichier
+à transférer.
 
         -- if (fzb=1 and brem=0)
                then bsz=fsz in bytes in bytes.
                -- fichiers entièrement remplacé.
                -- c’est la même chose que le mode --whole-fil de rsync.
 
- *<block#>: bno*
- 0 origine, le numéro de bloc couvert par cette publication.
+*<block#>: bno*
+0 origine, le numéro de bloc couvert par cette publication.
 
 
 **rename=<relpath>**
 ~~~~~~~~~~~~~~~~~~~~
 
- Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.
+Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.
 
 **oldname=<chemin>** / **newname=<chemin>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- lorsqu’un fichier est renommé à la source, pour l’envoyer aux abonnés, il va y avoir deux posts: un message
- est annoncé avec le nouveau nom comme base_url, et l’en-tête *oldname* va prendre la valeur de l'ancien nom du fichier.
- Un autre message d´annonce est envoyé avec l’ancien nom comme chemin src et le *newname*
- comme en-tête.  Cela garantit que les clauses *accept/reject* sont correctement
- interprété, parce qu'un *rename* peut entraîner un téléchargement si l’ancien nom
- correspond à une clause *reject* ou à une suppression de fichier si le nouveau nom
- correspond à une clause *reject*.
+lorsqu’un fichier est renommé à la source, pour l’envoyer aux abonnés, il va y avoir deux posts: un message
+est annoncé avec le nouveau nom comme base_url, et l’en-tête *oldname* va prendre la valeur de l'ancien nom du fichier.
+Un autre message d´annonce est envoyé avec l’ancien nom comme chemin src et le *newname*
+comme en-tête.  Cela garantit que les clauses *accept/reject* sont correctement
+interprété, parce qu'un *rename* peut entraîner un téléchargement si l’ancien nom
+correspond à une clause *reject* ou à une suppression de fichier si le nouveau nom
+correspond à une clause *reject*.
 
- Les hard links sont également traités comme un post ordinaire du fichier avec un ensemble d'en-tête *oldname*.
+Les hard links sont également traités comme un post ordinaire du fichier avec un ensemble d'en-tête *oldname*.
 
 **integrity**
 ~~~~~~~~~~~~~
@@ -385,41 +386,43 @@ d’un fichier::
 Le champ d’intégrité est une signature calculée pour permettre aux récepteurs de déterminer
 s’ils ont déjà téléchargé le produit ailleurs.
 
-   *<method>* - champ de chaîne de caractère (string field) indiquant la méthode de somme de contrôle utilisée.
+*<method>* - champ de chaîne de caractère (string field) indiquant la méthode de somme de contrôle utilisée.
 
- +------------+---------------------------------------------------------------------+
- |  Méthode   | Déscription                                                         |
- +------------+---------------------------------------------------------------------+
- |  random    | Pas de sommes de contrôle (copie inconditionnelle). Ignore la       |
- |            | lecture du fichier (plus rapide)                                    |
- +------------+---------------------------------------------------------------------+
- |  arbitrary | valeur arbitraire définie par l’application qui ne peut pas être    |
- |            | calculée                                                            |
- +------------+---------------------------------------------------------------------+
- |  md5       | Somme de contrôle de l’ensemble des données                         |
- |            | (MD-5 selon IETF RFC 1321)                                          |
- +------------+---------------------------------------------------------------------+
- |  link      | Lié : SHA512 somme de la valeur du lien                             |
- +------------+---------------------------------------------------------------------+
- |  md5name   | Somme de contrôle du nom du fichier (MD-5 selon IETF RFC 1321)      |
- +------------+---------------------------------------------------------------------+
- |  remove    | Supprimé : SHA512 du nom du fichier.                                |
- +------------+---------------------------------------------------------------------+
- |  sha512    | Somme de contrôle de l’ensemble des données                         |
- |            | (SHA512 selon IETF RFC 6234)                                        |
- +------------+---------------------------------------------------------------------+
- |  cod       | Somme de contrôle du téléchargement, avec algorithme comme argument |
- |            | Exemple : cod,sha512 signifie télécharger, appliquer la somme de    |
- |            | contrôle SHA512 et annoncer avec cette somme de contrôle calculée   |
- |            | lors de la propagation ultérieure.                                  |
- +------------+---------------------------------------------------------------------+
- | *<name>*   | Somme de contrôle avec un autre algorithme, nommé *<name>*          |
- |            | *<name>* doit être *registered* dans le réseau de pompage de données|
- |            | Enregistré signifie que tous les abonnés en aval peuvent obtenir    |
- |            | l’algorithme pour valider la somme de contrôle.                     |
- +------------+---------------------------------------------------------------------+
++------------+---------------------------------------------------------------------+
+|  Méthode   | Déscription                                                         |
++------------+---------------------------------------------------------------------+
+|  random    | Pas de sommes de contrôle (copie inconditionnelle). Ignore la       |
+|            | lecture du fichier (plus rapide)                                    |
++------------+---------------------------------------------------------------------+
+|  arbitrary | valeur arbitraire définie par l’application qui ne peut pas être    |
+|            | calculée                                                            |
++------------+---------------------------------------------------------------------+
+|  md5       | Somme de contrôle de l’ensemble des données                         |
+|            | (MD-5 selon IETF RFC 1321)                                          |
++------------+---------------------------------------------------------------------+
+|  link      | Lié : SHA512 somme de la valeur du lien                             |
++------------+---------------------------------------------------------------------+
+|  md5name   | Somme de contrôle du nom du fichier (MD-5 selon IETF RFC 1321)      |
++------------+---------------------------------------------------------------------+
+|  remove    | Supprimé : SHA512 du nom du fichier.                                |
++------------+---------------------------------------------------------------------+
+|  sha512    | Somme de contrôle de l’ensemble des données                         |
+|            | (SHA512 selon IETF RFC 6234)                                        |
++------------+---------------------------------------------------------------------+
+|  cod       | Somme de contrôle du téléchargement, avec algorithme comme argument |
+|            | Exemple : cod,sha512 signifie télécharger, appliquer la somme de    |
+|            | contrôle SHA512 et annoncer avec cette somme de contrôle calculée   |
+|            | lors de la propagation ultérieure.                                  |
++------------+---------------------------------------------------------------------+
+| *<name>*   | Somme de contrôle avec un autre algorithme, nommé *<name>*          |
+|            | *<name>* doit être *registered* dans le réseau de pompage de données|
+|            | Enregistré signifie que tous les abonnés en aval peuvent obtenir    |
+|            | l’algorithme pour valider la somme de contrôle.                     |
++------------+---------------------------------------------------------------------+
 
-*<value>* La valeur est calculée en appliquant la méthode donnée à la partition transférée.
+::
+
+  *<value>* La valeur est calculée en appliquant la méthode donnée à la partition transférée.
   pour un algorithme ou aucune valeur n’a de sens, un entier aléatoire est généré pour prendre en charge
   l'équilibrage de charge basé sur la somme de contrôle.
 
@@ -456,7 +459,7 @@ encodé sous forme de texte.  Conformément à la RFC, tout code renvoyé doit �
 	* 4xx indique qu’une erreur permanente sur le client a empêché une opération réussie.
 	* 5xx indique qu’un problème sur le serveur a empêché une opération réussie.
 
-.. REMARQUE::
+.. NOTE::
    FIXME: besoin de valider si notre utilisation des codes d’erreur coïncide avec l’intention générale
    exprimé ci-dessus... Un 3xx signifie-t-il que nous nous attendons à ce que le client fasse quelque chose? 5xx signifie-t-il
    que la défaillance était du côté du courtier/serveur ?
@@ -496,7 +499,8 @@ Pour l’implémentation sarracenia, les codes suivants sont définis :
 +----------+--------------------------------------------------------------------------------------------+
 |   xxx    | Les codes d’état de validation des messages d´annonce et des fichiers dépendent du script  |
 +----------+--------------------------------------------------------------------------------------------+
- FIXME: will 3 error codes that are the same cause confusion? ^
+
+FIXME: will 3 error codes that are the same cause confusion? ^
 
 Autres champs de rapport
 ~~~~~~~~~~~~~~~~~~~~~~~~

@@ -494,7 +494,7 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     |                                                    |
 |                     | Pour indiquer l’échec du traitement, déplacez :    |
 |                     | worklist.incoming -> worklist.failed               |
-|                     |ira dans la fil d’attente pour réessayer plus tard |
+|                     |ira dans la fil d’attente pour réessayer plus tard  |
 |                     |                                                    |
 |                     | Exaeples: msg_* dans le répertoire exemples        |
 |                     |                                                    |
