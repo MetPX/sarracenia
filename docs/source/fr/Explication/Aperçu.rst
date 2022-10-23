@@ -32,47 +32,47 @@ serveur Web Sarracenia activé (appelé pompe de données) et sélectionner les 
 en utilisant Linux, Mac ou Windows. Plus que cela:
 
 * Cela évite aux gens d’avoir à interroger le serveur Web pour savoir si leurs données sont
-là (peut être 100x moins de travail pour le client et le serveur).
+  là (peut être 100x moins de travail pour le client et le serveur).
 
 * c'est plus facile de télécharger en utilisant true pub / sub. Il reçoit des notifications
-exactement quand le fichier est prêt.
+  exactement quand le fichier est prêt.
 
 * C’est naturellement parallèle: quand un processus ne suffit pas, il suffit d’en ajouter d’autres. Ils
-partagera les mêmes sélections de manière transparente.
+  partagera les mêmes sélections de manière transparente.
 
 * On peut enchaîner plusieurs pompes de données ensemble, afin que les gens puissent maintenir des
-arborescences copiées indépendantes en temps réel pour la redondance des services et également pour le réseau pour des
-raisons de topologie (pour desservir des réseaux privés, par exemple).
+  arborescences copiées indépendantes en temps réel pour la redondance des services et également pour le réseau pour des
+  raisons de topologie (pour desservir des réseaux privés, par exemple).
 
 * Plusieurs copies signifient une disponibilité découplée. Un serveur en panne n'affecte pas
-l’ensemble du réseau d’APIS imbriquées. Les pompes de données forment des mailles, là où les données sont
-transféré afin que chacun puisse en avoir une copie s’il le souhaite. C’est un moyen très simple
-d'y parvenir.
+  l’ensemble du réseau d’APIS imbriquées. Les pompes de données forment des mailles, là où les données sont
+  transféré afin que chacun puisse en avoir une copie s’il le souhaite. C’est un moyen très simple
+  d'y parvenir.
 
 * Il peut également pousser des arbres (en utilisant un expéditeur au lieu d’un abonné), ce qui est bien
-pour les transferts entre les démarcations réseau (firewall).
+  pour les transferts entre les démarcations réseau (firewall).
 
 * En utilisant uniquement la configuration, les fichiers peuvent être renommés sur place et la structure
-du répertoire peut être complètement modifiée.
+  du répertoire peut être complètement modifiée.
 
 * Avec l’API de plugin, on peut transformer l’arbre ou les fichiers dans l’arbre.
-L’arbre de sortie ne peut avoir aucune ressemblance avec l’arbre d’entrée.
+  L’arbre de sortie ne peut avoir aucune ressemblance avec l’arbre d’entrée.
 
 * L’API du plugin peut être utilisée pour mettre en œuvre des flux de travail efficaces pilotés par les données,
-réduire ou éliminer l’interrogation des répertoires et des tâches planifiées qui imposent des
-charges lourdes et augmentatent la latence de transfert.
+  réduire ou éliminer l’interrogation des répertoires et des tâches planifiées qui imposent des
+  charges lourdes et augmentatent la latence de transfert.
 
 
 * Les flux de travail en plusieurs étapes sont naturellement mis en œuvre en plus de
-mettre en relation les producteurs et les consommateurs. La transformation est un consommateur au sein de la
-pompe de données, tandis que les consommateurs externes accèdent aux produits finaux. Les files d’attente entre les composants
-assure la coordination de flux.
+  mettre en relation les producteurs et les consommateurs. La transformation est un consommateur au sein de la
+  pompe de données, tandis que les consommateurs externes accèdent aux produits finaux. Les files d’attente entre les composants
+  assure la coordination de flux.
 
 * Vous pouvez configurer un *poll* pour que n’importe quel site Web agisse comme une pompe de données Sarracenia.
-Ainsi, le flux peut fonctionner même sans pompe Sarracenia pour commencer.
+  Ainsi, le flux peut fonctionner même sans pompe Sarracenia pour commencer.
 
 * Sarracenia est robuste. Ca fonctionne 24h/24 et 7j/7 et prend des dispositions étendues pour être un
-participant civilisé dans les flux de données de mission critiques :
+  participant civilisé dans les flux de données de mission critiques :
 
    * Lorsqu’un serveur est en panne, il utilise un backoff exponentiel pour éviter ses conséquences.
    * Lorsqu’un transfert échoue, il est placé dans une file d’attente de nouvelles tentatives. Les autres transferts se
