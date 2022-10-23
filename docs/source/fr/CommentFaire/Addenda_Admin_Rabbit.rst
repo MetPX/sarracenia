@@ -147,7 +147,7 @@ Nous avons ainsi développé un pxSender de type amqp qui est le producteur de m
 ainsi qu’un pxReceiver de type amqp qui sert de consommateur de messages de notification.
 En tant que courtier, nous utilisons rabbitmq-server qui est un paquet Debian standard d’un courtier AMQP.
 
-Un pxSender de type amqp, lit le contenu d’un fichier dans sa file d’attente,
+Un pxSender de type amqp, lit le contenu d’un fichier dans sa fil d’attente,
 crée un message auquel il joint un "topic" et l’envoie au broker.
 Un pxReceiver de type amqp annoncera au broker le "topic" pour lequel il est
 intéressé à recevoir des messages de notification, et le broker lui enverra
@@ -197,7 +197,7 @@ demander à notre expéditeur d’en faire plus...
 
 Le fichier contenant l’URL est placé sous le txq d’un expéditeur AMQP
 /apps/px/txq/dd-notify-wxo-b1 pour que la notification AMQP soit effectuée.
-Pour envoyer les fichiers dans cette file d’attente, un expéditeur doit avoir
+Pour envoyer les fichiers dans cette fil d’attente, un expéditeur doit avoir
 écrit dd-notify-wxo-b1.conf qui est configuré comme suit ::
 
     type amqp
@@ -236,15 +236,15 @@ Utilitaires installés sur les serveurs DD
 -----------------------------------------
 
 Lorsqu’un client se connecte au broker (rabbitmq-server), il doit créer une file
-d’attente et l’attacher à un échange. Nous pouvons donner à cette file d’attente
+d’attente et l’attacher à un échange. Nous pouvons donner à cette fil d’attente
 l’option qu’elle s’autodétruit lorsqu’elle n’est plus utilisée ou qu’elle est
 conservée et continue d’empiler les produits si le client est hors ligne.
-En général, nous aimerions que la file d’attente soit préservée et donc que la
+En général, nous aimerions que la fil d’attente soit préservée et donc que la
 reprise de la connexion redémarre la collection de produits sans perte.
 
 
 queue_manager.py
-    Le rabbitmq-server ne détruira jamais une file d’attente créée par un client
+    Le rabbitmq-server ne détruira jamais une fil d’attente créée par un client
     si elle n’est pas en mode de suppression automatique (et encore moins si elle est créée avec durabilité).
     Cela peut causer un problème. Par exemple, un client qui développe un processus, peut changer d’IDE plusieurs
     fois et entasser sur le serveur une multitude de files d’attente qui ne seront jamais utilisées.
@@ -354,7 +354,7 @@ Pour chaque message du formulaire ::
     a985c32cbdee8af2ab5d7b8f6022e781 498081 http://urp-1.cmc.ec.gc.ca/ db/20150120/RADAR/URP/IWA/201501201810~~PA,60,10,PA_PRECIPET,MM_HR,MM:URP:IWA:RADAR:META::20150120180902
 
 l’url est rebuted à partir des 2 derniers champs du message et un wget du produit est fait
-et placé dans la file d’attente du récepteur qui est ensuite ignoré / acheminé de manière ordinaire.
+et placé dans la fil d’attente du récepteur qui est ensuite ignoré / acheminé de manière ordinaire.
 
 Vérification / Dépannage
 ------------------------

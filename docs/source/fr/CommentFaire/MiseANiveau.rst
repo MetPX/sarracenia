@@ -374,7 +374,7 @@ V2 to Sr3
 **CHANGEMENT**: sr_retry est devenu `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_.
           Tous les plugins accédant aux structures internes de sr_retry.py doivent être réécrits.
           Cet accès n’est plus nécessaire, car l’API définit comment mettre des messages sur
-          la file d’attente de nouvelle tentative (déplacer les messages vers worklist.failed. )
+          la fil d’attente de nouvelle tentative (déplacer les messages vers worklist.failed. )
 
 *CHANGE* : le watch sr3, avec l’option *force_polling*, est beaucoup moins efficace
           sur sr3 que v2 pour les grandes arborescences de répertoires (voir numéro #403 )

@@ -393,7 +393,7 @@ acceptSizeWrong: <booléen> (défaut: False)
 
 Lorsqu’un fichier est téléchargé et que sa taille ne correspond pas à celle annoncée, il est
 normalement rejeté, comme un échec. Cette option accepte le fichier même avec la mauvaise
-taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en file d’attente, donc
+taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
 le fichier est modifié au moment de sa récupération.
 
 attempts <count> (défaut: 3)
@@ -404,9 +404,9 @@ Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’
 le fichier est immédiatement supprimé.
 
 Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
-des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de file d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la file d’attente AMQP,
-les requêtes se feront avec la file d’attente de "retry".
+des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de fil d’attente
+pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+les requêtes se feront avec la fil d’attente de "retry".
 
 baseDir <chemin> (défaut: /)
 ----------------------------
@@ -483,7 +483,7 @@ L’option broker indique à chaque composant quel courtier contacter.
 ::
       (défaut: None et il est obligatoire de le définir )
 
-Une fois connecté à un courtier AMQP, l’utilisateur doit lier une file d’attente
+Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
 
@@ -610,9 +610,9 @@ si l'expéditeur est configuré pour envoyer les mêmes fichiers que l'ancien (i
 durable <flag> (défaut: True)
 -----------------------------
 
-L’option AMQP **durable**, sur les déclarations de file d’attente. Si la valeur est True,
-le courtier conservera la file d’attente lors des redémarrages du courtier.
-Cela signifie que la file d’attente est sur le disque si le courtier est redémarré.
+L’option AMQP **durable**, sur les déclarations de fil d’attente. Si la valeur est True,
+le courtier conservera la fil d’attente lors des redémarrages du courtier.
+Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.
 
 
 fileEvents <évènement, évènement,...>
@@ -650,17 +650,17 @@ exchangeDeclare <flag>
 
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles
 sont à jour. Si l’échange existe déjà, cet indicateur peut être défini a False,
-donc aucune tentative d’échange de la file d’attente n’est faite, ou il s’agit de liaisons.
+donc aucune tentative d’échange de la fil d’attente n’est faite, ou il s’agit de liaisons.
 Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs de déclarer leurs échanges.
 
 
 expire <duration> (défaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)
 ------------------------------------------------------------------------
-L'option *expire* est exprimée sous forme d'une duration... ça fixe combien de temps une file d’attente devrait
+L'option *expire* est exprimée sous forme d'une duration... ça fixe combien de temps une fil d’attente devrait
 vivre sans connexions.
 
 Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,w est utilisés, l’intervalle est en minutes,
-heures, jours ou semaines respectivement. Après l’expiration de la file d’attente, le contenu est supprimé et
+heures, jours ou semaines respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
 des différences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
 1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
 l’abonné est sensé s’arrêter et ne pas subir de perte de données.
@@ -885,10 +885,10 @@ Dans le répertoire ~/.cache/sarra/log::
 .. Remarque::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente
-  prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une file d’attente qu'on
-  n’accède pas et a trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une fil d’attente qu'on
+  n’accède pas et a trop de fichiers (définis par l’implémentation) en fil d’attente seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
-  perte de notifications. Une file d’attente qu'on n’accède pas pendant une longue période
+  perte de notifications. Une fil d’attente qu'on n’accède pas pendant une longue période
   (dépendant de l’implémentation) sera détruite.
 
 integrity <string>
@@ -987,8 +987,8 @@ un message d´annonce sera produit :
 message_ttl <duration>  (défaut: None)
 --------------------------------------
 
-L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la file d’attente.
-Après ce temps, le message d´annonce est retiré de la file d’attente par le courtier.
+L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
+Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.
 
 mirror <flag> (défaut: off)
 ----------------------------
@@ -1041,7 +1041,7 @@ Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition
 mesure qu’un fichier grandit.
 
 **Notez que le stockage de suppression de doublons est local à chaque instance**. Lorsqu’un nombre N d'instances partagent
-une file d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
+une fil d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
 et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
 **Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
 Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
@@ -1105,7 +1105,7 @@ l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
 **json:**
 
   écrire chaque message d´annonce en sortie standard, un par ligne dans le même format json que celui utilisé pour
-  l'enregistrement et la restauration de la file d’attente par l’implémentation python.
+  l'enregistrement et la restauration de la fil d’attente par l’implémentation python.
 
 **url:**
 
@@ -1242,7 +1242,7 @@ queueName|queue|queue_name|qn
 
 * queueName <nom>
 
-Par défaut, les composants créent un nom de file d’attente qui doit être unique. Par défaut, le
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
 queue_name crée par les composants suit la convention suivante :
 
    **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<aléatoire>.<aléatoire>**
@@ -1251,7 +1251,7 @@ Ou:
 
 * *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *nomDuProgramme* est le composant qui utilise la file d’attente (par exemple *subscribe* ),
+* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
 
 * *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
 
@@ -1260,22 +1260,22 @@ Ou:
 
 Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
 
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour faire plusieurs
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
 taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queue_name est écrit à :
 
  ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds.
 
 queueBind
 ---------
 
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
-Si la file d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
-ne soit effectuée pour file d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
+Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
+ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
 queueDeclare <flag> (défaut: True)
@@ -1338,15 +1338,15 @@ informations statistiques. Définissez cette option a **False**, pour empêcher 
 reset <flag> (défaut: False)
 ----------------------------
 
-Lorsque **reset** est défini et qu’un composant est (re)démarré, sa file d’attente est
-supprimé (si elle existe déjà) et recréé en fonction des options de file d’attente.
+Lorsque **reset** est défini et qu’un composant est (re)démarré, sa fil d’attente est
+supprimé (si elle existe déjà) et recréé en fonction des options de fil d’attente.
 C’est à ce moment-là qu’une option de courtier est modifiée, car le courtier refusera
-l’accès à une file d’attente déclarée avec des options différentes de celles qui étaient
-défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une file d’attente
+l’accès à une fil d’attente déclarée avec des options différentes de celles qui étaient
+défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une fil d’attente
 lorsqu’un récepteur a été fermé pendant une longue période de temps. Si la suppression des doublons est active, alors
 la cache de réception est également supprimé.
 
-Le protocole AMQP définit d’autres options de file d’attente qui ne sont pas exposées
+Le protocole AMQP définit d’autres options de fil d’attente qui ne sont pas exposées
 via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.
 
 retryEmptyBeforeExit: <booléen> (défaut: False)
@@ -1363,7 +1363,7 @@ retry_ttl <duration> (défaut: identique à expire)
 -------------------------------------------------
 
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
-un fichier avant qu’il ne soit  rejeté de la file d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
+un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
 sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
@@ -1529,7 +1529,7 @@ On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
 Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
 clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
-On peut désactiver la liaison de file d’attente comme cela::
+On peut désactiver la liaison de fil d’attente comme cela::
 
   subtopic None
 

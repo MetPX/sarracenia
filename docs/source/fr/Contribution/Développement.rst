@@ -447,7 +447,7 @@ du test montre les fonctionnalités couvertes.
 | subscribe t_ddx   | copy from data mart to local broker  | lit le data mart public amqps (v02) |
 |                   | posting notification messages to     | comme utilisateur ordinaire.        |
 |                   | local xwinno00 and xwinnow01         |                                     |
-|                   | exchanges.                           | file d'attente partagé et plusieurs |
+|                   | exchanges.                           | fil d'attente partagé et plusieurs |
 |                   |                                      | processus                           |
 |                   |                                      | 3 instances téléchargent de chaque q|
 |                   |                                      | poster amqp à un échange local (v02)|
@@ -467,7 +467,7 @@ du test montre les fonctionnalités couvertes.
 | f20               | partir du répertoire local data mart |                                     |
 |                   | (TESTDOCROOT= ~/sarra_devdocroot)    | Télécharger à l’aide de Python      |
 |                   |                                      | intégré                             |
-|                   | Ajouter un en-tête au niveau de la   | file d'attente partagé et plusieurs |
+|                   | Ajouter un en-tête au niveau de la   | fil d'attente partagé et plusieurs |
 |                   | couche d'application plus de 255     | processus                           |
 |                   | caractères.                          | 5 instances téléchargent de chaque q|
 |                   |                                      | télécharge avec accel_wget plugin   |
@@ -481,7 +481,7 @@ du test montre les fonctionnalités couvertes.
 | subscribe t       | Télécharge en tant que client à      | lire amqp du courtier local         |
 |                   | partir de localhost au repertoire    | en tant qu'utilisatuer/client       |
 |                   | downloaded_by_sub_t.                 | ordinaire.                          |
-|                   |                                      | file d'attente partagé et plusieurs |
+|                   |                                      | fil d'attente partagé et plusieurs |
 |                   |                                      | processus                           |
 |                   |                                      | 5 instances téléchargent de chaque q|
 +-------------------+--------------------------------------+-------------------------------------+
@@ -1353,7 +1353,7 @@ pendant le développement.
       Si vous modifiez les paramètres par défaut pour les échanges / files d’attente comme
       dans le cadre d’une nouvelle version, gardez à l’esprit que tous les composants doivent utiliser
       les mêmes paramètres ou la liaison échoueront et ils ne pourront pas
-      se connecter.  Si une nouvelle version déclare des paramètres de file d’attente ou d’échange différents,
+      se connecter.  Si une nouvelle version déclare des paramètres de fil d’attente ou d’échange différents,
       le moyen le plus simple de mettre à niveau (préserver les données) consiste à vider les files d’attente
       avant la mise à niveau, par exemple en définissant que l’accès à la ressource ne sera pas accordé par le serveur.
       (??? peut-être y a-t-il un moyen d’accéder à une ressource telle quelle... pas de déclaration)

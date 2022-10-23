@@ -301,7 +301,7 @@ Journaux de routage
 
 Les messages de journal sont définis dans la page de manuel sr_log(7).  Ils sont émis par les *consommateurs* à la fin,
 ainsi que des *feeders* lorsque les messages traversent les pompes.  Les messages de journal sont publiés sur
-l’échange xl_<user> et après validation du journal mis en file d’attente pour l’échange XLOG.
+l’échange xl_<user> et après validation du journal mis en fil d’attente pour l’échange XLOG.
 
 Les messages en xlog destinés à d’autres clusters sont acheminés vers des destinations par
 le composant Log2Cluster en utilisant le fichier de configuration log2cluster.conf.  log2cluster.conf
@@ -373,14 +373,14 @@ De toute façon:
  - Si l’indicateur privé n’est pas défini, alors acceptez par copie à xPublic
 
 Résultats:
- - Accepter signifie : mettre en file d’attente le message vers un autre échange (xinput) pour téléchargement.
- - Rejeter signifie : ne pas copier le message (toujours accepter & ack pour qu’il quitte la file d’attente)
+ - Accepter signifie : mettre en fil d’attente le message vers un autre échange (xinput) pour téléchargement.
+ - Rejeter signifie : ne pas copier le message (toujours accepter & ack pour qu’il quitte la fil d’attente)
    message du journal du produit.
  - Hold signifie : ne pas consommer... mais dormez un moment.
 
 Le hold est pour des raisons de type défaillance temporaire, telles que la bande passante de l’espace disque.
 Étant donné que ces raisons sont indépendantes du message particulier, le hold s’applique à
-l’ensemble de la file d’attente, pas seulement le message.
+l’ensemble de la fil d’attente, pas seulement le message.
 
 Après le prétraitement, un composant tel que sr_sarra suppose que le message de notification est bon,
 et le traite simplement. Cela signifie qu’il récupérera les données de la source de publication.
@@ -553,7 +553,7 @@ et n’en partage aucun avec d’autres nœuds.  Cela signifie que le courtier e
 Apache sont sur un nœud.
 
 Une utilisation appropriée serait une petite installation d’acquisition de données non-24x7,
-pour prendre la responsabilité de la file d’attente des données et s'éloigner de l’instrument.
+pour prendre la responsabilité de la fil d’attente des données et s'éloigner de l’instrument.
 
 
 DDSR : Configuration de commutation/routage

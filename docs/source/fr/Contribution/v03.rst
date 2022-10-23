@@ -465,7 +465,7 @@ cache (maintenant appelé noDupe) fonctionnant.
 réécrit le fonctionnement des rappels sr3 pour utiliser des listes de travail, puis refondre la
 cache et le réessayez des plug-ins v2 en tant que rappels sr3 eux-mêmes.
 
-classe abstraite de file d’attente de messages renommée de tmpc à moth
+classe abstraite de fil d’attente de messages renommée de tmpc à moth
 (que mange une Sarracenia?)
 
 Avec le shovel et le winnow remplacés par de nouvelles implémentations, il passe
@@ -656,7 +656,7 @@ voici donc les choses restantes après la refactorisation:
 * une fois le mode asynchrone complet disponible, autorisez plusieurs collectes(gathers) et publications.
   (encore une fois dans les plans futurs ci-dessus.) #392
 
-* #33 ajouter le nom d’hôte à la file d’attente par défaut.
+* #33 ajouter le nom d’hôte à la fil d’attente par défaut.
 
 * #348 ajouter statehost à l’arborescence de répertoires .cache.
 
@@ -814,8 +814,8 @@ gros changements:
   c’est plus logique de cette façon.
 
 * les plugins qui accèdent aux internes de sr_retry doivent être réécrits, car la classe est maintenant plugin/retry.py.
-  la façon de mettre en file d’attente quelque chose pour une nouvelle tentative dans les plugins actuels consiste
-  à les ajouter à la file d’attente ayant échoué.
+  la façon de mettre en fil d’attente quelque chose pour une nouvelle tentative dans les plugins actuels consiste
+  à les ajouter à la fil d’attente ayant échoué.
   Ce n’est qu’un problème dans les tests de débit de sr_insects.
 
 * do_download et do_send étaient 1er passage aux plugins *schemed*, je pense qu’ils devraient être déconseillés / remplacés

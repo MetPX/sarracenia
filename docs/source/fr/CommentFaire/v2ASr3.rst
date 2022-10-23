@@ -295,7 +295,7 @@ En général, les plugins v3:
   juste a regarder `do_poll -> poll`_
 
 * les plugins v3 **impliquent rarement la sous-classification des classes de Moth ou de Transfer.**
-  La classe sarracenia.moth implémente un support pour les protocoles de mise en file d’attente
+  La classe sarracenia.moth implémente un support pour les protocoles de mise en fil d’attente
   des messages de notification qui prennent en charge les abonnements basés sur la hiérarchie des topics.
   Il y a actuellement deux sous-classes de Moth: amqp (pour rabbitmq) et mqtt.  Ce serait
   idéal pour quelqu’un d’ajouter un amq1 (pour le support qpid amqp 1.0.)
@@ -735,7 +735,7 @@ créer une classe flowCallback avec un point d’entrée *download*.
 * renvoie la valeur True si le téléchargement réussit.
 
 * s’il renvoie False, la logique de nouvelle tentative s’applique (le téléchargement sera appelé à nouveau
-  puis placé dans la file d’attente de nouvelles tentatives, retry queue.)
+  puis placé dans la fil d’attente de nouvelles tentatives, retry queue.)
 
 * utiliser msg['new_dir'], msg['new_file'], msg['new_inflight_path']
   pour respecter les paramètres tels que *inflight* et placer le fichier correctement.
@@ -887,7 +887,7 @@ flowcb/retry
 ~~~~~~~~~~~~
 
   * dispose d’une fonction after_accept pour ajouter des messages de notification à la
-    file d’attente entrante, afin de déclencher une autre tentative de traitement.
+    fil d’attente entrante, afin de déclencher une autre tentative de traitement.
   * a une routine after_work faisant quelque chose d’inconnu ... FIXME.
   * a une fonction de publication pour prendre les téléchargements échoués et les mettre
     sur la liste des nouvelles tentatives pour un examen ultérieur.

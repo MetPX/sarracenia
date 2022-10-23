@@ -260,14 +260,14 @@ que le reste de sr3.
 set sarracenia.moth.amqp.AMQP.logLevel debug
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Imprimez les messages de débogage spécifiques à la file d’attente de messages AMQP (classe sarracenia.moth.amqp.AMQP).
+Imprimez les messages de débogage spécifiques à la fil d’attente de messages AMQP (classe sarracenia.moth.amqp.AMQP).
 utilisé uniquement lors du débogage avec le MQP lui-même, pour traiter les problèmes de connectivité du courtier par exemple.
 diagnostic et test d’interopérabilité.
 
 set sarracenia.moth.mqtt.MQTT.logLevel debug
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Imprimez les messages de débogage spécifiques à la file d’attente de messages MQTT (classe sarracenia.moth.mqtt.MQTT).
+Imprimez les messages de débogage spécifiques à la fil d’attente de messages MQTT (classe sarracenia.moth.mqtt.MQTT).
 utilisé uniquement lors du débogage avec le MQP lui-même, pour traiter les problèmes de connectivité du courtier par exemple.
 diagnostic et test d’interopérabilité.
 
@@ -494,7 +494,7 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     |                                                    |
 |                     | Pour indiquer l’échec du traitement, déplacez :    |
 |                     | worklist.incoming -> worklist.failed               |
-|                     |ira dans la file d’attente pour réessayer plus tard |
+|                     |ira dans la fil d’attente pour réessayer plus tard |
 |                     |                                                    |
 |                     | Exaeples: msg_* dans le répertoire exemples        |
 |                     |                                                    |
@@ -712,7 +712,7 @@ au fichier suivant.
 Si le code du script on_file est modifié pour effectuer du traitement réel, alors
 plutôt que d’être indépendant, le traitement pourrait fournir une contre-pression au
 mécanisme de livraison des données.  Si le traitement est bloqué, le sr_subscriber
-arrêtera le téléchargement et la file d’attente sera sur le serveur, plutôt que de créer
+arrêtera le téléchargement et la fil d’attente sera sur le serveur, plutôt que de créer
 un énorme répertoire local sur le client.  Différents modèles s’appliquent dans différents
 Situations.
 

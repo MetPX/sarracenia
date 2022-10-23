@@ -350,7 +350,7 @@ Champs supplémentaires :
         -- if (fzb=1 and brem=0)
                then bsz=fsz in bytes in bytes.
                -- fichiers entièrement remplacé.
-               -- c’est la même chose que le mode --whole-file de rsync.
+               -- c’est la même chose que le mode --whole-fil de rsync.
 
  *<block#>: bno*
  0 origine, le numéro de bloc couvert par cette publication.
@@ -616,7 +616,7 @@ Standards
 ---------
 
  * Sarracenia s’appuie sur `AMQP pre 1.0 <https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf>`_
-   vu que la norme 1.0 a éliminé les concepts : courtier, échange, file d’attente et
+   vu que la norme 1.0 a éliminé les concepts : courtier, échange, fil d’attente et
    reliure.  L’ensemble de fonctionnalités 1.0 est inférieur au minimum nécessaire pour prendre en charge
    L’architecte publication-abonnement de Sarracenia
 

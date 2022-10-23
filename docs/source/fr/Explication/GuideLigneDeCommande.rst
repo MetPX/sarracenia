@@ -60,7 +60,7 @@ le courtier ou pour gérer les configurations.
 
  - cleanup:       supprime les ressources du composant sur le serveur
  - declare:       crée les ressources du composant sur le serveur.
- - setup:         comme declare, fait en plus des liaisons de file d'attente.
+ - setup:         comme declare, fait en plus des liaisons de fil d'attente.
  - add:           copie une configuration à la liste des configurations disponibles.
  - list:          Énumérer toutes les configurations disponibles.
  - list plugins:  Énumérer toutes les *plugins* disponibles.
@@ -78,7 +78,7 @@ en se servant de la configuration dd.
 L'action **foreground** est utilisée lors de la construction d'une
 configuration ou pour le débogage. L'instance **foreground** sera exécutée
 indépendamment des autres instances qui sont en cours d'exécution.
-Si des instances sont en cours d'exécution, il partage la même file d'attente
+Si des instances sont en cours d'exécution, il partage la même fil d'attente
 d'avis avec eux. Un utilisateur arrête l'instance **foreground** en
 utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le processus.
 
@@ -259,7 +259,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
 
     
     % sr3 show subscribe/q_f71
-    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_file download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
+    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_fil download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
     2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file tsource2send_f50.conf:26 obsolete v2:"on_message msg_rawlog" converted to sr3:"logEvents after_accept"
     2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file rabbitmqtt_f22.conf:6 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
     
@@ -470,7 +470,7 @@ Les colonnes à droite donnent plus d’informations, détaillant le nombre de p
 L’entrée attendu indique le nombre de processus à exécuter en fonction de la configuration et indique si elle est arrêtée
 ou pas.  Le contenu des colonnes Run et Miss doit toujours correspondre à ce qui se trouve dans la colonne Exp.
 
-La dernière colonne est le nombre de messages stockés dans la file d’attente de nouvelles tentatives locale, indiquant quels
+La dernière colonne est le nombre de messages stockés dans la fil d’attente de nouvelles tentatives locale, indiquant quels
 channels ont des difficultés de traitement. Voici un exemple d’une seule configuration qui est en cours d’exécution, en l’arrêtant, et
 en la nettoyant::
 
@@ -517,9 +517,9 @@ un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange
 délivre des messages aux files d'attente. Pour recevoir de messages,
 on doit fournir les informations d'identification pour se connecter au
 courtier (message AMQP).  Une fois connecté, un consommateur doit créer
-une file d'attente pour retenir les messages en attente. Le consommateur
-doit ensuite lier la file d'attente à une ou plusieurs échanges de manière
-à ce qu'il mette dans sa file d'attente.
+une fil d'attente pour retenir les messages en attente. Le consommateur
+doit ensuite lier la fil d'attente à une ou plusieurs échanges de manière
+à ce qu'il mette dans sa fil d'attente.
 
 Une fois les liaisons (anglais: *bindings*) établies, le programme peut
 recevoir des messages. Lorsqu'un message est reçu, un filtrage
@@ -560,15 +560,15 @@ L'option courtier indique à chaque composante quel courtier contacter.
 ::
       (par défaut : Aucun et il est obligatoire de le définir)
 
-Une fois connecté à un courtier AMQP, l'utilisateur doit lier une file d'attente.
+Une fois connecté à un courtier AMQP, l'utilisateur doit lier une fil d'attente.
 à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
 
-Creating the Queue
-------------------
+Configuration de fil d´attente
+------------------------------
 
-Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'attente.
+Une fois connecté à un courtier AMQP, l'utilisateur doit créer une fil d'attente.
 
-Mise en file d'attente sur broker :
+Mise en fil d'attente sur broker :
 
 - **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
@@ -579,13 +579,13 @@ Mise en file d'attente sur broker :
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour
 les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
-par défaut. La file d'attente est l'endroit où les avis sont conservés
+par défaut. La fil d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
 [ queue|queue_name|qn <name>]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Par défaut, les composants créent un nom de file d’attente qui doit être unique. Le
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Le
 queue_name par défaut créé par les composants et suit la convention suivante :
 
    **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
@@ -594,7 +594,7 @@ Ou:
 
 * *brokerUser* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *programName* est le composant qui utilise la file d’attente (par exemple *sr_subscribe* )
+* *programName* est le composant qui utilise la fil d’attente (par exemple *sr_subscribe* )
 
 * *configName* est le fichier de configuration utilisé pour régler le comportement des composants
 
@@ -603,22 +603,22 @@ Ou:
 
 Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par **q_<brokerUser>**.
 
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour du multi-tasking simple.
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour du multi-tasking simple.
 Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queue_name est écrit à :
 
  ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds.
 
 AMQP QUEUE BINDINGS
 -------------------
 
-Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
+Une fois qu'on a une fil d'attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une
-fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à
+fois qu'une fil d'attente existe sur le courtier, il doit être lié (*bound*) à
 une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
 les avis que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
@@ -693,7 +693,7 @@ On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
 Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
 clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
-On peut désactiver la liaison de file d’attente comme cela::
+On peut désactiver la liaison de fil d’attente comme cela::
 
   subtopic None
 
@@ -707,7 +707,7 @@ Client-side Filtering
 ---------------------
 
 Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
-Le courtier met les messages correspondants dans notre file d'attente (*queue*).
+Le courtier met les messages correspondants dans notre fil d'attente (*queue*).
 Le composant télécharge ces messages.
 
 Les clients Sarracenia implémentent un filtrage plus flexible côté client
@@ -799,16 +799,16 @@ dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du mess
 Convention d´appellation de files d´attente
 -------------------------------------------
 
-Alors que dans la plupart des cas, une bonne valeur de nom de file d´attente (en anglais: queue) est 
+Alors que dans la plupart des cas, une bonne valeur de nom de fil d´attente (en anglais: queue) est 
 générée par l'application, dans certains cas, c´est nécessaire de remplacer ces choix par une 
 spécification utilisateur explicite. Pour ce faire, il faut connaître les règles de nommage des files d'attente :
 
-1. les noms de file d'attente commencent par q\_.
-2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la file d'attente).
+1. les noms de fil d'attente commencent par q\_.
+2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la fil d'attente).
 3. suivi d'un deuxième tiret de soulignement ( _ )
 4. suivi d'une chaîne de caractères au choix de l'utilisateur.
 
-La longueur totale du nom de la file d'attente est limitée à 255 octets de caractères UTF-8.
+La longueur totale du nom de la fil d'attente est limitée à 255 octets de caractères UTF-8.
 
 
 PUBLICATION (POST)
@@ -1925,13 +1925,13 @@ détectée, le problème est noté pour une nouvelle tentative.  Des erreurs peu
 Initialement, les programmes essaient de télécharger (ou d’envoyer) un fichier un nombre de fois fixe (*tentatives*, par défaut: 3).
 Si les trois tentatives de traitement du fichier échouent, le fichier est placé dans "réessayer".
 Le programme poursuit ensuite le traitement des nouveaux éléments. Lorsqu’il n’y a pas de nouveaux éléments,
-le programme recherche un fichier à traiter dans la file d’attente de nouvelles tentatives. Il vérifie ensuite si le fichier
+le programme recherche un fichier à traiter dans la fil d’attente de nouvelles tentatives. Il vérifie ensuite si le fichier
 est vieux, au-delà du *retry_expire* (par défaut : 2 jours). Si le fichier n’a pas expiré, alors
 il déclenche une nouvelle série de tentatives de traitement du fichier. Si les tentatives échouent, il revient en arrière
-dans la file d’attente de nouvelles tentatives.
+dans la fil d’attente de nouvelles tentatives.
 
 Cet algorithme garantit que les programmes ne restent pas bloqués sur un seul mauvais produit qui empêche
-le reste de la file d’attente en cours de traitement, et permet une récupération raisonnable et progressive,
+le reste de la fil d’attente en cours de traitement, et permet une récupération raisonnable et progressive,
 permettant aux nouvelles données de circuler et en envoyant les anciennes données de manière opportuniste
 lorsqu’il y a des lacunes.
 
@@ -1968,15 +1968,15 @@ Divers exemples de fichiers de configuration sont disponibles ici :
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-Lorsqu’il est exécuté, **subscribe** choisit un nom de file d’attente, ou il écrit
+Lorsqu’il est exécuté, **subscribe** choisit un nom de fil d’attente, ou il écrit
 à un fichier nommé d’après le fichier de configuration donné comme argument pour **subscribe**
 avec un suffixe .queue ( ."configfile".queue).
 Si l’abonnement est arrêté, les messages publiés continuent de s’accumuler sur le
-broker dans la file d’attente.  Lorsque le programme est redémarré, il utilise le nom de la file d’attente
-stocké dans ce fichier pour se connecter à la même file d’attente et ne perd aucun message.
+broker dans la fil d’attente.  Lorsque le programme est redémarré, il utilise le nom de la fil d’attente
+stocké dans ce fichier pour se connecter à la même fil d’attente et ne perd aucun message.
 
 Les téléchargements de fichiers peuvent être parallélisés en exécutant plusieurs abonnements à l’aide de
-la même file d’attente.  Les processus partageront la file d’attente et téléchargerons
+la même fil d’attente.  Les processus partageront la fil d’attente et téléchargerons
 une partie de ce qui a été sélectionné.  Il suffit de lancer plusieurs instances
 d'abonnement dans le même utilisateur/répertoire à l’aide du même fichier de configuration.
 
@@ -1987,9 +1987,9 @@ et ce flux de téléchargement peut également être multi-flux.
 .. REMARQUE::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur
-  les courtiers, et sont nettoyés de temps en temps.  Une file d’attente à laquelle on n’accède pas pour
-  une longue période (dépendante de la mise en œuvre) sera détruite.  Une file d’attente qui n’est pas
-  accédé et ayant trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  les courtiers, et sont nettoyés de temps en temps.  Une fil d’attente à laquelle on n’accède pas pour
+  une longue période (dépendante de la mise en œuvre) sera détruite.  Une fil d’attente qui n’est pas
+  accédé et ayant trop de fichiers (définis par l’implémentation) en fil d’attente seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
   perte de notifications.
 
@@ -2038,10 +2038,10 @@ Dans le répertoire ~/.cache/sarra/log::
 
 .. Note::
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur les
-  courtiers, et sont nettoyés de temps en temps.  Une file d’attente qui n’est pas
-  accédé et ayant trop de fichiers en file d’attente (définis par l’implémentation) seront détruits.
+  courtiers, et sont nettoyés de temps en temps.  Une fil d’attente qui n’est pas
+  accédé et ayant trop de fichiers en fil d’attente (définis par l’implémentation) seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
-  perte de notifications.  Une file d’attente à laquelle on n’accède pas pendant une longue période (dépendant de l’implémentation)
+  perte de notifications.  Une fil d’attente à laquelle on n’accède pas pendant une longue période (dépendant de l’implémentation)
   sera détruite.
 
 vip - ACTIVE/PASSIVE OPTIONS

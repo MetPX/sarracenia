@@ -23,7 +23,7 @@ les minutes, peut-être les secondes, comptent. Les technologies standard de web
 sont en fait des technologies d’interrogation qui, lorsqu’elles sont utilisées dans des
 applications à faible latence, consomment beaucoup de bande passante et de surcharge.
 Pour exactement ces raisons, ces normes stipulent un intervalle d’interrogation de minimum cinq minutes.
-La mise en file d’attente avancée des messages (AMQP) apporte de véritables notifications push
+La mise en fil d’attente avancée des messages (AMQP) apporte de véritables notifications push
 et rend l’envoi en temps réel beaucoup plus efficace.
 
 .. image:: ../../Explanation/Concepts/e-ddsr-components.jpg

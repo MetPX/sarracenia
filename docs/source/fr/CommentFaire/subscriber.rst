@@ -152,22 +152,22 @@ une configuration pour une période prolongée, il est préférable de::
 
   sr3 cleanup subscribe/swob.conf
 
-qui désallouera la file d’attente (et ses liaisons) sur le serveur.
+qui désallouera la fil d’attente (et ses liaisons) sur le serveur.
 
-Pourquoi? Chaque fois qu’un abonné est démarré, une file d’attente est créée sur la pompe de données, avec
+Pourquoi? Chaque fois qu’un abonné est démarré, une fil d’attente est créée sur la pompe de données, avec
 les liaisons de rubrique définies par le fichier de configuration. Si l’abonné est arrêté,
-la file d’attente continue de recevoir des messages de notification tels que définis par la sélection de subtopic, et lorsque le
-l’abonné redémarre, les messages de notification en file d’attente sont transférés au client.
+la fil d’attente continue de recevoir des messages de notification tels que définis par la sélection de subtopic, et lorsque le
+l’abonné redémarre, les messages de notification en fil d’attente sont transférés au client.
 Ainsi, lorsque l’option *subtopic* est modifiée, puisqu’elle est déjà définie sur le
 serveur, on finit par ajouter une liaison plutôt que de la remplacer.  Par exemple
 si l’un d’eux a un subtopic qui contient SATELLITE, puis arrête l’abonné,
 modifier le fichier et maintenant le topic ne contient que RADAR, lorsque l’abonné est
-redémarré, non seulement tous les fichiers satellites en file d’attente seront envoyés au consommateur,
+redémarré, non seulement tous les fichiers satellites en fil d’attente seront envoyés au consommateur,
 mais le RADAR est ajouté aux fixations, plutôt que de les remplacer, de sorte que l’abonné
 obtiendra à la fois les données SATELLITE et RADAR même si la configuration
 ne contient plus l'ancien.
 
-De plus, si l’on expérimente et qu’une file d’attente doit être arrêtée pendant très longtemps
+De plus, si l’on expérimente et qu’une fil d’attente doit être arrêtée pendant très longtemps
 elle peut accumuler un grand nombre de messages de notification. Le nombre total de messages de notification
 sur une pompe de données a un effet sur les performances de la pompe pour tous les utilisateurs. C’est donc
 conseillé de demander à la pompe de désaffecter les ressources lorsqu’elles ne seront pas nécessaires
@@ -212,15 +212,15 @@ démarrera certains processus sr3 tels que configurés par CMC.conf et d’autre
 pour correspondre à NWS.conf. Sr3 stop fera également ce que vous attendez. Tout comme le sr3 status.
 Notez qu’il existe 5 processus sr_subscribe commencent par le CMC
 et 3 NWS. Ce sont des *instances* et partagent les mêmes
-file d’attentes de téléchargement.
+fil d’attentes de téléchargement.
 
 Livraison hautement prioritaire
 -------------------------------
 
 Bien que le protocole Sarracenia ne fournisse pas de hiérarchisation explicite, l’utilisation
 de plusieurs files d’attentes offre des avantages similaires. Résultats de chaque configuration
-dans une déclaration de file d’attente côté serveur. Regroupez les produits à la même priorité dans
-une file d’attente en les sélectionnant à l’aide d’une configuration commune. Plus les regroupements sont petits,
+dans une déclaration de fil d’attente côté serveur. Regroupez les produits à la même priorité dans
+une fil d’attente en les sélectionnant à l’aide d’une configuration commune. Plus les regroupements sont petits,
 plus le délai de traitement est faible. Alors que toutes les files d’attente sont traitées avec la même priorité,
 les données passent plus rapidement dans des files d’attente plus courtes. On peut résumer par :
 
@@ -231,14 +231,14 @@ Pour rendre le conseil concret, prenons l’exemple des données d’Environneme
 plusieurs milliers de prévisions urbaines, des observations, des produits RADAR, etc...
 Pour la météo en temps réel, les avertissements et les données RADAR sont la priorité absolue. À certaines
 heures de la journée, ou en cas d’arriérés, plusieurs centaines de milliers de produits
-peut retarder la réception de produits hautement prioritaires si une seule file d’attente est utilisée.
+peut retarder la réception de produits hautement prioritaires si une seule fil d’attente est utilisée.
 
 Pour assurer un traitement rapide des données dans ce cas, définissez une configuration pour vous abonner
 aux avertissements météorologiques (qui sont un très petit nombre de produits), une seconde pour les RADARS
 (un groupe plus grand mais encore relativement petit), et un troisième (groupe le plus important) pour toutes
-les autres données. Chaque configuration utilisera une file d’attente distincte. Les avertissements seront
+les autres données. Chaque configuration utilisera une fil d’attente distincte. Les avertissements seront
 traités le plus rapidement, les RADARS feront la queue les uns contre les autres et auront
-plus de retard, et d’autres produits partageront une seule file d’attente et seront soumis à plus de
+plus de retard, et d’autres produits partageront une seule fil d’attente et seront soumis à plus de
 retard dans les cas d’arriéré.
 
 https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hipri.conf::
@@ -262,7 +262,7 @@ Là où vous voulez le miroir du data mart qui commence à /data/web (vraisembla
 serveur web configuré pour afficher ce répertoire.)  Probablement, la configuration *ddc_normal*
 connaîtra beaucoup de files d’attente, car il y a beaucoup de données à télécharger.  Le *ddc_hipri.conf* est
 uniquement abonné aux avertissements météorologiques au format Common Alerting Protocol, il y aura donc
-peu ou pas de file d’attente pour ces données.
+peu ou pas de fil d’attente pour ces données.
 
 Affiner la sélection
 --------------------
@@ -450,13 +450,13 @@ qui varie en fonction de la latence à négocier, de la vitesse de traitement de
 chaque fichier, la prélecture en cours d’utilisation, etc...  Il faut expérimenter.
 
 En examinant les journaux d’instance, s’ils semblent attendre les messages de notification pendant une longue période,
-ne faisant aucun transfert, alors on aurait pu atteindre la saturation de la file d’attente.
-Cela se produit souvent à environ 40 à 75 instances. Rabbitmq gère une seule file d’attente
-avec un seul processeur, et il y a une limite au nombre de messages de notification qu’une file d’attente peut traiter
+ne faisant aucun transfert, alors on aurait pu atteindre la saturation de la fil d’attente.
+Cela se produit souvent à environ 40 à 75 instances. Rabbitmq gère une seule fil d’attente
+avec un seul processeur, et il y a une limite au nombre de messages de notification qu’une fil d’attente peut traiter
 dans une unité de temps donnée.
 
-Si la file d’attente devient saturée, nous devons partitionner les abonnements
-dans plusieurs configurations. Chaque configuration aura une file d’attente distincte,
+Si la fil d’attente devient saturée, nous devons partitionner les abonnements
+dans plusieurs configurations. Chaque configuration aura une fil d’attente distincte,
 et les files d’attente auront leurs propres processeurs (CPU). Avec un tel partitionnement, nous sommes allés
 à une centaine d’instances et pas vu de saturation. Nous ne savons pas quand nous courons
 hors performance.

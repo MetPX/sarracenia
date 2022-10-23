@@ -145,10 +145,10 @@ d'attente sont les suivantes globale à la pompe.
 
 Note : Sur de tels clusters, tous les nœuds qui exécutent un composant avec
 l'option le même fichier de configuration crée par défaut un ***queue**
-identique. Cibler les même courtier, il force la file d'attente à être
+identique. Cibler les même courtier, il force la fil d'attente à être
 partagée. S'il faut l'éviter, l'utilisateur peut écraser la valeur par
 défaut **queue_name** en y rajoutant **${HOSTNAME}**.  Chaque nœud aura
-sa propre file d'attente, qui ne sera partagée que par les instances du nœud.
+sa propre fil d'attente, qui ne sera partagée que par les instances du nœud.
 ex : nom_de_files d'attente q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME}. )
 
 Souvent, il y a un trafic interne de données acquises avant qu'elles ne
@@ -203,7 +203,7 @@ Chaque utilisateur Alice, sur un courtier auquel elle a accès :
 Alice ne peut pas créer d'échanges ou d'autres files d'attente qui ne figurent pas ci-dessus.
 
 Rabbitmq fournit la granularité de la sécurité pour restreindre les noms de
-mais pas leurs types. Ainsi, étant donné la possibilité de créer une file d'attente nommée q_Alice,
+mais pas leurs types. Ainsi, étant donné la possibilité de créer une fil d'attente nommée q_Alice,
 une Alice malveillante pourrait créer un échange nommé q_Alice_xspecial, et ensuite configurer
 Les files d'attente pour s'y lier, et établir un usage séparé du courtier non lié à la Sarracenia.
 

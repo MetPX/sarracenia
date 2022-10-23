@@ -20,7 +20,7 @@ Abonnements partagés
 --------------------
 
 * une fois que vous avez rejoint un groupe, vous y êtes jusqu’à ce que la session soit morte, même si vous vous déconnectez,
-  Il empilera 1/n messages dans votre file d’attente.
+  Il empilera 1/n messages dans votre fil d’attente.
 
 Contre-pression
 ---------------
@@ -31,7 +31,7 @@ Contre-pression
 
 Si vous avez une application qui prend du retard... par exemple, c'est lent à traiter,
 mais comme la réception est asynchrone, tout ce que cela signifie, c’est que vous obtiendrez une
-file d’attente de messages sur l’hôte local. Idéalement, cela permettrait au courtier de savoir que
+fil d’attente de messages sur l’hôte local. Idéalement, cela permettrait au courtier de savoir que
 les choses vont mal et le courtier y enverra moins de données.
 
 Méthode:

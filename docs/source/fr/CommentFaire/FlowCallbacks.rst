@@ -347,13 +347,13 @@ C’est une bonne idée de regarder le code source de sarracenia lui-même. Par 
   *gather*, en lisant un système de fichiers et en créant une liste de messages de notification à traiter.
 
 * *sarracenia.flowcb.gather.message.Message* est une classe qui implémente la réception des messages
-  de notification à partir des flux de protocole de file d’attente de messages.
+  de notification à partir des flux de protocole de fil d’attente de messages.
 
 * *sarracenia.flowcb.nodupe.NoDupe* Ce module supprime les doublons des flux de messages en fonction
   des sommes de contrôle d’intégrité.
 
 * *sarracenia.flowcb.post.message.Message* est une classe qui implémente la publication de messages
-  de notification dans les flux de protocole de file d’attente de messages
+  de notification dans les flux de protocole de fil d’attente de messages
 
 * *sarracenia.flowcb.retry.Retry* lorsque le transfert d’un fichier échoue, Sarracenia doit conserver
   le message de notification correspondant dans un fichier d’état pour une période ultérieure lorsqu’il

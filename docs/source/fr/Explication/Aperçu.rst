@@ -4,7 +4,7 @@ Aperçu
 
 **MetPX-Sarracenia est une boîte à outils de gestion des publications/abonnements pour la publication de données en temps réel.**
 
-Sarracenia ajoute une couche de protocole de mise en file d’attente de messages d'annonce de disponibilité de fichiers
+Sarracenia ajoute une couche de protocole de mise en fil d’attente de messages d'annonce de disponibilité de fichiers
 aux serveurs de fichiers et Web pour piloter des flux de travail qui transfèrent et transforment les données en continu
 dans un contexte en temps réel et critique.
 
@@ -75,14 +75,14 @@ en utilisant Linux, Mac ou Windows. Plus que cela:
   participant civilisé dans les flux de données de mission critiques :
 
    * Lorsqu’un serveur est en panne, il utilise un backoff exponentiel pour éviter ses conséquences.
-   * Lorsqu’un transfert échoue, il est placé dans une file d’attente de nouvelles tentatives. Les autres transferts se
+   * Lorsqu’un transfert échoue, il est placé dans une fil d’attente de nouvelles tentatives. Les autres transferts se
      poursuivent et le transfert échoué est réessayé ultérieurement lorsque les flux en temps réel le permette.
    * La fiabilité est réglable pour de nombreux cas d’utilisation.
 
 * Puisque Sarracenia s’occupe des pannes transitoires et des files d’attente, votre application
   ne traite que des cas normaux.
 
-* Il utilise des protocoles de file d’attente de messages (actuellement AMQP et / ou MQTT) pour envoyer des avis fichiers
+* Il utilise des protocoles de fil d’attente de messages (actuellement AMQP et / ou MQTT) pour envoyer des avis fichiers
   et les transferts de fichiers peuvent être effectués via SFTP, HTTP ou tout autre site Web
   service.
 

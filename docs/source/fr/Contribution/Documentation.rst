@@ -26,7 +26,7 @@ Traitement
 ----------
 
 Toute la documentation se trouve sous l’arborescence docs/source. Il est traité à l’aide de sphinx,
-invoqué à l’aide du Makefile dans docs/.  On peut installer sphinx localement, et exécuter make pour
+invoqué à l’aide du Makefil dans docs/.  On peut installer sphinx localement, et exécuter make pour
 construire localement et déboguer. Le résultat est produit dans docs/build/html::
 
     pip install -f requirements-dev.txt

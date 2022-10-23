@@ -70,11 +70,11 @@ Configurez les bits qui publient les modifications apportées à l’échange ::
       exchangeSplit=False
       no=1
 
---> Notez la ligne avec **[ERROR]**,  elle n’a pas pu trouver la file d’attente.
-c’est parce que la file d’attente doit d’abord être créée par sr_watch et puis que que nous avons commencé l'abonné et
+--> Notez la ligne avec **[ERROR]**,  elle n’a pas pu trouver la fil d’attente.
+c’est parce que la fil d’attente doit d’abord être créée par sr_watch et puis que que nous avons commencé l'abonné et
 watch en même temps avec '``sr start``' nous sommes tombés dans une petite condition de course.
 Cela a été résolu peu de temps après car le sr_subscribe a un temps de nouvelle tentative de 1 seconde.
-Cela peut être confirmé avec la page 'RabbitMQ Queues' affichant une ``q_bob.sr_subscribe.test_subscribe. ...`` file d’attente dans la liste.::
+Cela peut être confirmé avec la page 'RabbitMQ Queues' affichant une ``q_bob.sr_subscribe.test_subscribe. ...`` fil d’attente dans la liste.::
 
 
   $ touch /tmp/sarra/input/testfile1.txt
@@ -103,4 +103,4 @@ Lorsque tout est terminé, vous pouvez arrêter à la fois l’abonné et le wat
   $ sr_subscribe cleanup test-subscribe
     ...
 
-Maintenant, la file d’attente a été supprimée de RabbitMQ et tous les services ont été arrêtés.
+Maintenant, la fil d’attente a été supprimée de RabbitMQ et tous les services ont été arrêtés.

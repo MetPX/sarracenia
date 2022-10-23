@@ -121,10 +121,10 @@ Pour ne pas télécharger plus de fichiers, arrêtez l’abonné ::
   $ sr_subscribe stop swob
     2015-12-03 17:32:22,219 [INFO] sr_subscribe swob 01 stopped
 
-Cela laisse cependant la file d’attente que ``sr_subscribe start`` a configuré sur le courtier active,
+Cela laisse cependant la fil d’attente que ``sr_subscribe start`` a configuré sur le courtier active,
 pour permettre à un abonné défaillant de tenter de se reconnecter sans perdre de progression.
-C’est jusqu’à ce que le courtier expire la file d’attente et la supprime.
-Pour indiquer au courtier que nous avons terminé la file d’attente, demandez à l’abonné de nettoyer ::
+C’est jusqu’à ce que le courtier expire la fil d’attente et la supprime.
+Pour indiquer au courtier que nous avons terminé la fil d’attente, demandez à l’abonné de nettoyer ::
 
   $ sr_subscribe cleanup swob
   2015-12-03 17:32:22,008 [INFO] sr_subscribe swob cleanup
@@ -132,4 +132,4 @@ Pour indiquer au courtier que nous avons terminé la file d’attente, demandez 
   2015-12-03 17:32:22,008 [INFO] Using amqp module (AMQP 0-9-1)
   2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.sr_subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
 
-La meilleure pratique consiste à effacer la file d’attente lorsque terminé afin de réduire la charge sur le courtier.
+La meilleure pratique consiste à effacer la fil d’attente lorsque terminé afin de réduire la charge sur le courtier.

@@ -72,7 +72,7 @@ En plus de detail:
  +----------+-------------------------------------------------------------+
  | *gather* | Obtenez de l'information sur une liste initiale de fichiers |
  |          |                                                             |
- |          | A partir: d'une file d’attente, un répertoire,              |
+ |          | A partir: d'une fil d’attente, un répertoire,              |
  |          | un script de polling.                                       |
  |          |                                                             |
  |          | Sortie: worklist.incoming rempli de messages d'annonce.     |
@@ -248,7 +248,7 @@ les fonctions de gestion diffèrent d'une implémentation à l'autre.
 
 
 Les *Queues* (files d´attentes) sont généralement prises en charge de manière transparente, mais vous avez besoin de connaître
-   - Un consommateur/abonné crée une file d'attente pour recevoir des messages d'annonce.
+   - Un consommateur/abonné crée une fil d'attente pour recevoir des messages d'annonce.
    - Les files d'attente des consommateurs sont *liées* aux échanges (langage AMQP).
 
 Un *exchange* est un entremeteur entre *publisher* et les files d´attentes du
@@ -279,7 +279,7 @@ AMQP v09 (Rabbitmq) Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MetPX-Sarracenia n’est qu’un léger revêtement autour des protocoles de
-file d’attente des messages. Pour ceux qui sont familiers avec
+fil d’attente des messages. Pour ceux qui sont familiers avec
 les protocoles sous-jacents, voici les mappages:
 
 - Une pompe de données MetPX-Sarracenia est une application python AMQP qui utilise un (rabbitmq).
@@ -297,9 +297,9 @@ les protocoles sous-jacents, voici les mappages:
     - les utilisateurs peuvent explicitement choisir leurs noms *files d'attente*.
     - les utilisateurs définissent *subtopic*,
     - les sujets avec séparateur de points sont transformés au minimum, plutôt qu'encodés.
-    - La file d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
+    - La fil d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
     - nous utilisons des *en-têtes de message* (langage AMQP pour les paires clé-valeur) plutôt que d'encoder en JSON ou dans un autre format de charge utile.
-    - *expire* combien de temps pour conserver une file d’attente inactive ou un échange.
+    - *expire* combien de temps pour conserver une fil d’attente inactive ou un échange.
 
 - réduire la complexité par le biais de conventions.
    - n'utiliser qu'un seul type d'échanges (Topic), prendre soin des fixations.
@@ -320,9 +320,9 @@ ne sont qu’un parmi une variété de choix pour les méthodes de routage dans 
   - Le caractère générique de la rubrique MQTT *#* est le même que dans AMQP (correspond au reste du sujet)
   - Le caractère générique de la rubrique MQTT *+* est le même que l’AMQP *\** (correspond à un thème).
   - Un « Échange » AMQP est mappé à la racine de l’arborescence des thèmes MQTT,
-  - Une « file d’attente » AMQP est représentée dans MQTT par *client-id* et un *abonnement partagé*. Remarque : Les abonnements partagés ne sont présents que dans MQTTv5.
+  - Une « fil d’attente » AMQP est représentée dans MQTT par *client-id* et un *abonnement partagé*. Remarque : Les abonnements partagés ne sont présents que dans MQTTv5.
 
-    * AMQP: Une file d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
+    * AMQP: Une fil d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
     * Abonnement MQTT: thème $shared/*queuename*/xpublic/v03/observations ...
 
   - Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.

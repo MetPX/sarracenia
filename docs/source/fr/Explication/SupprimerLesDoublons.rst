@@ -131,7 +131,7 @@ cas d´usage
 ~~~~~~~~~~~
 
 Dans certains cas, certaines sources de données re-écrivent très souvent les fichiers.
-Si les fichiers sont volumineux (la copie prend beaucoup de temps) ou s'il y a une file d'attente (l'abonné
+Si les fichiers sont volumineux (la copie prend beaucoup de temps) ou s'il y a une fil d'attente (l'abonné
 a un certain temps de retard sur le producteur.), un algorithme pourrait écraser un fichier, ou
 y ajouter trois ou quatre fois avant d'avoir une version "finale" qui durera un certain temps.
 
