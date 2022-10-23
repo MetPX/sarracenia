@@ -45,7 +45,7 @@ Le processus de publication est automatisé par deux actions github CI/CD :
   * exécutez sphinx et validez les résultats dans une branche gh-pages: https://github.com/MetPX/sarracenia/actions/workflows/docs.yml
   * mettre à jour le site web de la branche: https://github.com/MetPX/sarracenia/actions/workflows/pages/pages-build-deployment
 
-C´est une bonne pratique de jeter un cout d´œil aux messages d'erreur sphinx générés par le premier action. Il y a typiquement
+C´est une bonne pratique de jeter un coup d´œil aux messages d'erreur sphinx générés par le premier action. Il y a typiquement
 des centaines de petits problèmes à corriger (liens qui ne sont pas tout à fait corrects, formatage de tableau cassé, etc...)
 
 
