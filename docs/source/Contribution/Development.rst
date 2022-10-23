@@ -46,6 +46,7 @@ The rest of the Guide takes the above for granted.
 
 Documentation
 -------------
+
 `Documentation Standards <Documentation.rst>`_ exist in /docs/Contribution/Documentation.rst
 process for locally building the docs are there, as well as live web-site maintenance
 methods.
