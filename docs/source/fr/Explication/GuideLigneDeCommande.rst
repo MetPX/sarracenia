@@ -796,13 +796,12 @@ les fichiers téléchargés seront définis en fonction de l’en-tête relPath 
 dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du message va
 être précédé des sous-répertoires du champ baseUrl du message.
 
-NAMING QUEUES
--------------
+Convention d´appellation de files d´attente
+-------------------------------------------
 
-
-Alors que dans la plupart des cas, une bonne valeur est générée par l'application, dans certains cas,
-c´est nécessaire de remplacer ces choix par une spécification utilisateur explicite.
-Pour ce faire, il faut connaître les règles de nommage des files d'attente :
+Alors que dans la plupart des cas, une bonne valeur de nom de file d´attente (en anglais: queue) est 
+générée par l'application, dans certains cas, c´est nécessaire de remplacer ces choix par une 
+spécification utilisateur explicite. Pour ce faire, il faut connaître les règles de nommage des files d'attente :
 
 1. les noms de file d'attente commencent par q\_.
 2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la file d'attente).
@@ -811,8 +810,9 @@ Pour ce faire, il faut connaître les règles de nommage des files d'attente :
 
 La longueur totale du nom de la file d'attente est limitée à 255 octets de caractères UTF-8.
 
-POSTING
-=======
+
+PUBLICATION (POST)
+==================
 
 Comme de nombreux composants consomment un flux de messages, de nombreux composants
 (souvent les mêmes) produisent également un flux de sortie de messages.  Pour créer des fichiers
@@ -834,8 +834,8 @@ courtier au saut suivant, l’utilisateur définit ces options :
 FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font...
 
 
-NAMING EXCHANGES
-----------------
+Convention d´appellation des EXCHANGES
+--------------------------------------
 
 1. Les noms d’échange commencent par x
 2. Les échanges qui se terminent par *public* sont accessibles (pour lecture) par tout utilisateur authentifié.
@@ -859,18 +859,19 @@ Habituellement, un sr_sarra exécuté par un administrateur de pompe lira à par
 pour récupérer les données correspondant au message *post* d’Alice, et les rendre disponibles sur la pompe,
 en le ré-annonçant sur l’échange xpublic.
 
-POLLING
-=======
 
-Polling fait le même travail que post, sauf que les fichiers sont sur un serveur distant.
-Dans le cas d’un poll, l’URL de la publication sera générée à partir de la *destination*,
+SONDAGE (POLLING)
+=================
+
+On peut faire le même travail que post, sauf que les fichiers sont sur un serveur distant.
+Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option *destination*,
 avec le chemin d’accès du produit (*directory*/« fichier correspondant »).  Il y en a une publication
-par fichier.  La taille du fichier est prise dans le répertoire « ls »... mais sa somme
-de contrôle ne peut pas être déterminée, de sorte que l’en-tête « sum » dans la publication est défini
-à « 0,0 ».
+par fichier. La taille du fichier est prise dans le répertoire « ls »... mais sa somme
+de contrôle ne peut pas être déterminée, lors la stratégie de calcul de est ¨cod¨ qui signifie
+que ca devrait être calculé lors du transfert.
 
 Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
-(le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *broker* est obligatoire.
+(le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *post_broker* est obligatoire.
 Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.
 
 Référez `sr3_post(1) <../Reference/sr3_post.1.html>`_ - pour comprendre l’ensemble du processus de notification.

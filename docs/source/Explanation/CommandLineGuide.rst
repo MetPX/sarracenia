@@ -856,11 +856,11 @@ Polling is doing the same job as a post, except for files on a remote server.
 In the case of a poll, the post will have its url built from the *destination* 
 option, with the product's path (*directory*/"matched file").  There is one 
 post per file.  The file's size is taken from the directory "ls"... but its 
-checksum cannot be determined, so the "sum" header in the posting is set 
-to "0,0."
+checksum cannot be determined, so the default integrity method is "cod", asking
+clients to calculate the integrity Checksum On Download.
 
 By default, sr_poll sends its post notification message to the broker with default exchange
-(the prefix *xs_* followed by the broker username). The *broker* is mandatory.
+(the prefix *xs_* followed by the broker username). The *post_broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
 
 Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
@@ -970,7 +970,7 @@ are so disparate:
   modified by subclassing as well.
 
 * There are other servers that provide different services, not covered
-  buy the default poll. One can implement additional *sarracenia.transfer*
+  by the default poll. One can implement additional *sarracenia.transfer*
   classes to add understanding of them to poll.
 
 The output of a poll is a list of notification messages built from the file names
