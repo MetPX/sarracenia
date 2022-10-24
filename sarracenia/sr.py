@@ -1628,6 +1628,7 @@ class sr_GlobalState:
 
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
+        fg_instances = set()
         # kill sr_audit first, so it does not restart while others shutting down.
         # https://github.com/MetPX/sarracenia/issues/210
 
@@ -1643,8 +1644,10 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
 
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
@@ -1687,12 +1690,17 @@ class sr_GlobalState:
             for f in self.filtered_configurations:
                 if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
-                # exclude foreground instances when ``sr3 stop`` called without specific configs
-                if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+                # exclude foreground instances unless --dangerWillRobinson specified
+                if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                    fg_instances.add(f"{c}/{cfg}")
+                    continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if running_pids == 0:
                 print('All stopped after try %d' % attempts)
+                if len(fg_instances) > 0:
+                    print(f"Foreground instances {fg_instances} are running and were not stopped.")
+                    print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
                 return 0
             attempts += 1
 
@@ -1706,8 +1714,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
@@ -1736,8 +1746,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
@@ -1745,11 +1757,16 @@ class sr_GlobalState:
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
+            if len(fg_instances) > 0:
+                print(f"Foreground instances {fg_instances} are running and were not stopped.")
+                print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
             return 0
         else:
             print('not responding to SIGKILL:')
             for p in self.procs:
-                print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
+                # exclude foreground instances from printing unless --dangerWillRobinson specified
+                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)):
+                    print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
     def dump(self):
@@ -2022,13 +2039,31 @@ class sr_GlobalState:
 
         return bad
 
-    def _cfg_running_foreground(self, component, config):
-        """Returns True if the specified config is running in the foreground.
+    def _pid_running_foreground(self, pid):
+        """Returns True if the specified pid is running in the foreground.
         Possible cases:
           * anything with ``foreground`` in its cmd_line is always foreground.
           * anything with ``start`` in its cmd_line is always a daemon (not foreground).
           * posts and cposts without ``start`` in the cmd_line are always foreground.
           * other components without ``start`` or ``foreground`` will return False.
+
+        Args:
+            pid: the pid to check.
+
+        Returns: True if foreground, False if not.
+        """
+        if 'foreground' in self.procs[pid]['cmdline']:
+            return True
+        elif 'start' in self.procs[pid]['cmdline']:
+            return False
+        # Default behavior for sr3_(c)post is to run in the foreground
+        elif 'sr3_cpost' in self.procs[pid]['cmdline'] or 'sr3_post' in self.procs[pid]['cmdline']:
+            return True
+        else:
+            return False
+
+    def _cfg_running_foreground(self, component, config):
+        """Returns True if the specified config is running in the foreground.
 
         Args:
             component: the config's component
@@ -2037,14 +2072,7 @@ class sr_GlobalState:
         Returns: True if foreground, False if not.
         """
         for pid_id, pid in self.states[component][config]['instance_pids'].items():
-            if 'foreground' in self.procs[pid]['cmdline']:
-                return True
-            elif 'start' in self.procs[pid]['cmdline']:
-                return False
-            # Default behavior for sr3_(c)post is to run in the foreground
-            elif 'sr3_cpost' in self.procs[pid]['cmdline'] or 'sr3_post' in self.procs[pid]['cmdline']:
-                return True
-        return False
+            return self._pid_running_foreground(pid)
 
     def _post_can_be_daemon(self, component, config):
         """Returns True if a post or cpost config can run as a daemon. Criteria is that a path and sleep value > 0 are
