@@ -15,6 +15,7 @@ HOWTOS
    Release Notes (Advice on Upgrades)<UPGRADING>
    Admin
    Admin_Rabbit_Addendum
+   UPGRADING
    v2ToSr3
 
 
