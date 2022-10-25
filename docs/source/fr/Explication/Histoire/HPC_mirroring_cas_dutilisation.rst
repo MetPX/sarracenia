@@ -58,9 +58,8 @@ maintiennent l’horaire.
 
 Présentation de la solution HPCR
 --------------------------------
-
-.. image:: ../../Explanation/History/HPC_Mirroring_Use_Case/HPC-XC_High_Availability.png
-  :scale: 66 %
+.. image:: ../../../Explanation/History/HPC_Mirroring_Use_Case/HPC-XC_High_Availability.png
+   :scale: 66 %
 
 Dans le diagramme ci-dessus, si les opérations se trouvent dans le hall de données 1 (à gauche du centre)
 et qu’elles échouent, l’objectif est de reprendre les opérations rapidement à partir du Data Hall 2
@@ -211,7 +210,7 @@ qui a la signature appropriée. Par exemple, lors de l’émission d’un appel 
 fichier(2), le système d’exploitation organisera l’appel de la routine correcte dans la
 bibliothèque appropriée.
 
-.. image:: ../../Explanation/History/HPC_Mirroring_Use_Case/shim_explanation_normal_close.svg
+.. image:: ../../../Explanation/History/HPC_Mirroring_Use_Case/shim_explanation_normal_close.svg
 
 Un appel à la routine de fermeture indique qu’un programme a fini d’écrire le fichier en question,
 et indique donc généralement la première fois qu’il est utile d’annoncer un fichier pour le transfert.
@@ -219,7 +218,7 @@ Nous avons créé une bibliothèque Shim, qui a des points d’entrée qui usurp
 appelés par l’application, afin que les notifications de disponibilité des fichiers soient publiées
 par l’application elle-même, sans aucune modification de l’application.
 
-.. image:: ../../Explanation/History/HPC_Mirroring_Use_Case/shim_explanation_shim_close.svg
+.. image:: ../../../Explanation/History/HPC_Mirroring_Use_Case/shim_explanation_shim_close.svg
 
 L’utilisation de la bibliothèque de Shim est détaillée dans `sr_post(1) <../Reference/sr3.1.html#post>`_
 

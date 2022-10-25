@@ -1,6 +1,6 @@
-=============================
-History/Context of Sarracenia
-=============================
+===============================
+Histoire/Contexte de Sarracenia
+===============================
 
 **MetPX-Sarracenia** est un produit du projet d’échange de produits météorologiques,
 provient d’Environnement Canada, mais est maintenant géré par Services partagés Canada sur son
