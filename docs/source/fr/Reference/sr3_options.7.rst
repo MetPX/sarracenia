@@ -495,6 +495,24 @@ byteRateMax <size> (défaut: 0)
 
 **FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d'annonce aussi ?
 
+dangerWillRobinson (default: omis)
+-------------------------------------
+
+Cette option n'est reconnue qu'en tant qu'option de ligne de commande. Il est spécifié quand une opération 
+aura des effets irréversiblement destructeurs ou peut-être inattendus. par exemple::
+
+   sr3 stop
+
+arrêtera d'exécuter les composants, mais pas ceux qui sont exécutés au premier plan. Arrêter ceux
+peut surprendre les analystes qui les examineront, donc ce n'est pas fait par défaut ::
+
+  sr3 --dangerWillRobinson stop
+
+arrête arrête tous les composants, y compris ceux de premier plan. Un autre exemple serait le *nettoyage*
+action. Cette option supprime les files d'attente et les échanges liés à une configuration, qui peuvent être
+destructeur pour les flux. Par défaut, le nettoyage ne fonctionne que sur une seule configuration à la fois.
+On peut spécifier cette option pour faire plus de ravages.
+
 
 declare
 -------
