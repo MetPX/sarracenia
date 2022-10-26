@@ -515,7 +515,7 @@ may be surprising to the analysts that will be looking at them, so that is not d
   sr3 --dangerWillRobinson stop
 
 stops stops all components, including the foreground ones. Another example would be the *cleanup*
-action. This option deletes queues and exchanges related to a configuratio, which can be
+action. This option deletes queues and exchanges related to a configuration, which can be
 destructive to flows. By default, cleanup only operates on a single configuration at a time.
 One can specify this option to wreak greater havoc.
 
