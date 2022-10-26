@@ -501,6 +501,26 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 **FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or notification messages also?
 
 
+dangerWillRobinson (default: omitted)
+-------------------------------------
+
+This option is only recognized as a command line option. It is specified when an operation is expected
+to have irreversibly destructive or perhaps unexpected effects. for example::
+
+   sr3 stop
+
+will stop running components, but not those that are being run in the foreground. Stopping those
+may be surprising to the analysts that will be looking at them, so that is not done by default::
+
+  sr3 --dangerWillRobinson stop
+
+stops stops all components, including the foreground ones. Another example would be the *cleanup*
+action. This option deletes queues and exchanges related to a configuratio, which can be
+destructive to flows. By default, cleanup only operates on a single configuration at a time.
+One can specify this option to wreak greater havoc.
+
+
+
 declare 
 -------
 
