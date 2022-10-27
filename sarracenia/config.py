@@ -560,6 +560,11 @@ class Config:
 
         self.env = copy.deepcopy(os.environ)
 
+        egdir = os.path.dirname(inspect.getfile(sarracenia.config.Config)) + os.sep + 'examples' 
+
+        self.config_search_path = [ "." , get_user_config_dir(), egdir, egdir + os.sep + 'flow'  ]
+
+
         for k in default_options:
             setattr(self, k, default_options[k])
 
@@ -1133,6 +1138,23 @@ class Config:
             cfname = f'{component}/{cfg}'
         else:
             cfname = cfg
+
+        logger.debug( f'looking for {cfg}')
+
+        if cfg[0] == os.sep:
+            cfgfilepath=cfg
+        else:
+            cfgfilepath=None
+            for d in self.config_search_path:
+                 cfgfilepath=d + os.sep + cfg
+                 if os.path.isfile( cfgfilepath ):
+                     break
+
+            if not cfgfilepath:
+                 logger.error( f'failed to find {cfg}' )
+                 return
+            logger.debug( f'found {cfgfilepath}')
+
         lineno=0
         for l in open(cfg, "r").readlines():
             l = l.strip()
