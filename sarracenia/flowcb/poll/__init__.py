@@ -216,6 +216,8 @@ class Poll(FlowCB):
         self.o = options
 
         # check destination
+        # debug
+        return
 
         self.details = None
         if self.o.destination is not None:
@@ -225,7 +227,7 @@ class Poll(FlowCB):
         if self.o.destination is None or self.details == None:
             logger.error("destination option incorrect or missing\n")
             sys.exit(1)
-
+        
         if self.o.post_baseUrl is None:
             self.o.post_baseUrl = self.details.url.geturl()
             if self.o.post_baseUrl[-1] != '/': self.o.post_baseUrl += '/'

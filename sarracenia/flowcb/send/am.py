@@ -14,7 +14,7 @@ the AM (Alpha numeric) protocol. This protocol is being migrated to mexpx-sr3 to
 By: André LeBlanc, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, copy
+import logging, socket, struct, time, sys
 
 from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.poll import am
@@ -28,9 +28,9 @@ sys.setdefaultencoding('iso-8859-1')
 
 class AM(FlowCB):
     
-    def __init__(self, options, port=0, remoteHost=None):
+    def __init__(self, options):
              
-        self.o = super().__init__(options)
+        # self.o = super().__init__(options)
 
         # Set logger options
         if hasattr(options, 'logLevel'):
@@ -41,8 +41,8 @@ class AM(FlowCB):
 
         # Initialise server variables
         self.am = Config()
-        self.am.add_option('port', 'count', port)
-        self.am.add_option('remoteHost', 'str', remoteHost) 
+        self.am.add_option('port', 'count', 0)
+        self.am.add_option('remoteHost', 'str', 'None') 
 
         # Initialise format variables
         self.am.add_option('threadnum', 'count', 127)
@@ -53,10 +53,7 @@ class AM(FlowCB):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # Establish connection and send bytes through socket
-        self.__establishconn__()
-
-    def wrapmsg(self): 
+    def wrapmsg(self, msgdata): #TODO: Change msgdata with data 
         """
         Overview: 
             Wrap message in appropriate bytes format, performing necessary byte swaps and wrap with AM header
@@ -70,10 +67,8 @@ class AM(FlowCB):
             Message with AM header
         """
 
-        # Fetch raw message (returns list type)
-        #Gather = am.AM()
-        #data = Gather.unwrapmsg()
-        #data = copy.deepcopy(data)
+        # Establish connection and send bytes through socket
+        self.__establishconn__()
 
         logger.info("send/am.py: Commencing message wrap.")
 
@@ -195,13 +190,14 @@ class AM(FlowCB):
             raise e("send/am.py: msg wrap error: %s", str(e.args))
 
 # Debug
-am_recv_man = am.AM(default_options)
-am_recv_man.am.poll = 5002 
-am_recv_man.am.remoteHost = '127.0.0.1'
-am_send_man = AM(default_options, am_recv_man.am.port, am_recv_man.am.remoteHost)
-while True:
-    res = am_recv_man.poll()
-    recbytesnum = am_send_man.send()
+if __name__ == '__main__':
+    am_recv_man = am.AM(default_options)
+    am_recv_man.am.poll = 5002 
+    am_recv_man.am.remoteHost = '127.0.0.1'
+    am_send_man = AM(default_options)
+    while True:
+        res = am_recv_man.poll()
+        recbytesnum = am_send_man.send()
     
 
 

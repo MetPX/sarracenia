@@ -15,8 +15,9 @@ By: André LeBlanc, Autumn 2022
 """
 
 import logging, socket, struct, time, sys, os
-from sarracenia.flowcb import FlowCB 
-from sarracenia.config import Config
+import urllib.parse
+import sarracenia
+from sarracenia.flowcb import FlowCB
 
 default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
 logger = logging.getLogger(__name__)
@@ -24,35 +25,36 @@ logger = logging.getLogger(__name__)
 
 class AM(FlowCB):
 
-    def __init__(self, options, port=0, remoteHost='None'):
+    def __init__(self, options):
         
         self.o = options
-        # self.o = super().__init__(options)
 
         # Set logger options
         if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
-        logging.basicConfig(format=self.o['logFormat'])
+        logging.basicConfig(format=self.o.logFormat)
+
+        self.url = urllib.parse.urlparse(self.o.destination)
 
         # Initialise server variables
-        self.am = Config()
-        self.am.add_option('onlySync','flag', False)
-        self.am.add_option('patternAM','str','80sII4sIIII20s')
-        self.am.add_option('sizeAM', 'count', struct.calcsize(self.am.patternAM))
-        self.am.add_option('port', 'count', port) 
-        self.am.add_option('remoteHost', 'str', remoteHost) 
-        self.limit = 32678
         self.inBuffer = None
+        self.limit = 32678
+        self.o.add_option('onlySync','flag', False)
+        self.o.add_option('patternAM','str','80sII4sIIII20s')
+        self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
+        self.o.remoteHost = self.url.netloc.split(':')[0]
+        self.o.port = int(self.url.netloc.split(':')[1])
+        self.o.timeCopy = True
+
 
         # Initialise socket
+        ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # Establish connection and send bytes through socket
-        self.conn = self.__establishconn__()
-
+ 
     def __establishconn__(self):
         """
         Overview: 
@@ -67,75 +69,76 @@ class AM(FlowCB):
             connected instance
         """      
 
-        logger.info("poll/am.py: Socket binding with IP %s, port %d" % (self.am.remoteHost ,self.am.port))
+        if self.o.remoteHost == 'None':
+            raise Exception("No remote host was specified.")
 
-        if self.am.remoteHost == 'None':
-            raise Exception("poll/am.py: No remote host was specified.")
+        pid = 0
 
-        c1, c2 = (0, 0)
-        flag = True
-        
         while True:
 
-            """
             try:
-                if pid != 0:    
+                if pid == 0:    
                     # Bind socket to all interfaces and listen
-                    self.s.bind(('', self.am.port)) 
+                    self.s.bind(('', self.o.port)) 
                     self.s.listen(1)
-                    logger.info("poll/am.py: Socket binded.")
+                    logger.info("Socket binded to host %s and port %d.", self.o.remoteHost, self.o.port)
+                    self.flag = True
 
-
-                # Master process closes the loop. Make child continue, make parent stay.
-                if flag == True:  
+                # Parent process stays in the loop searching for other connections. 
+                # Child will proceed accepting or refusing connection.
+                if self.flag == True:  
                     pid = os.fork()
-                    flag == False
+                    self.flag = False
 
                 try:
                     if pid == 0:
                         pass
                     else:
                         # Accept the connection from socket
-                        logger.info("poll/am.py: Trying to accept connection.")
-                        conn, self.am.remoteHost = self.s.accept()
-                        flag = True
+                        logger.info("Trying to accept connection from child process")
+                        conn, self.o.remoteHost = self.s.accept()
                         break 
                    
                 except TypeError:
-                    logger.info("poll/am.py: Couldn't accept connection. Retrying.")
+                    logger.info("Couldn't accept connection. Retrying.")
                     time.sleep(1)
                 
             except socket.error or OSError:
-                logger.info("poll/am.py: Bind failed. Retrying.")
-                time.sleep(5)
-            """
-
-            
-            try:
+                # logger.info("Parent process bind failed. Retrying.")
+                time.sleep(10)
+        """
+             try:
                 # Bind socket to all interfaces and listen
-                self.s.bind(('', self.am.port)) 
+                self.s.bind(('', self.o.port)) 
                 self.s.listen(1)
-                logger.info("poll/am.py: Socket binded.")
+                logger.info("Socket bound.")
 
                 try:
                     # Accept the connection from socket
-                    logger.info("poll/am.py: Trying to accept connection.")
-                    conn, self.am.remoteHost = self.s.accept()
+                    logger.info("Trying to accept connection.")
+                    conn, self.o.remoteHost = self.s.accept()
                     break    
 
                 except TypeError:
-                    logger.info("poll/am.py: Couldn't accept connection. Retrying.")
+                    logger.info("Couldn't accept connection. Retrying.")
                     time.sleep(1)
                 
             except socket.error or OSError:
-                logger.info("poll/am.py: Bind failed. Retrying.")
-                time.sleep(5)
+                logger.info("Bind failed. Retrying.")
+                time.sleep(5)          
+        """ 
 
-        logger.info("poll/am.py: Socket binded to IP %s and on port %d", self.am.remoteHost, self.am.port)     
+        logger.info("Socket binded to IP %s and on port %d", self.o.remoteHost, self.o.port)     
 
         self.s.close()
 
         return conn               
+
+    def on_start(self):
+        self.conn = self.__establishconn__()
+    
+    def on_stop(self): 
+        self.conn.close()
 
     def AddBuffer(self):
         """
@@ -157,14 +160,13 @@ class AM(FlowCB):
                 tmp = self.conn.recv(self.limit)
 
                 if tmp == '':
-                    if not self.am.onlySync:
-                        logger.exception("poll/am.py: Connection was lost")
-                        raise Exception("poll/am.py: Connection was lost")
+                    if not self.o.onlySync:
+                        logger.exception("Connection was lost")
+                        raise Exception("Connection was lost")
                 
-                logger.info("poll/am.py: Message length - %d Bytes, Data received from socket - %s" % (len(tmp),tmp))
+                logger.info("Message length - %d Bytes, Data received from socket - %s" % (len(tmp),tmp))
                 
                 self.inBuffer = tmp
-                # self.conn.close
                 break   
 
             except socket.error:
@@ -173,9 +175,9 @@ class AM(FlowCB):
                 logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
                 self.conn.close()
 
-                if not self.am.onlySync:
-                    logger.exception("poll/am.py: Connection was lost")
-                    raise Exception("poll/am.py: Connection was lost")
+                if not self.o.onlySync:
+                    logger.exception("Connection was lost")
+                    raise Exception("Connection was lost")
                 
                 break 
 
@@ -195,21 +197,21 @@ class AM(FlowCB):
 
         self.AddBuffer()
 
-        logger.info("poll/am.py: Verifying message integrity.")
+        logger.info("Verifying message integrity.")
         
         # Only unpack data if buffer length satisfactory
-        if len(self.inBuffer) >= self.am.sizeAM:
+        if len(self.inBuffer) >= self.o.sizeAM:
             (header, src_inet, dst_inet, threads, start, length, firsttime, timestamp, future) = \
-                    struct.unpack(self.am.patternAM,self.inBuffer[0:self.am.sizeAM])
+                    struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
         else:
             return 'INCOMPLETE'
 
         length = socket.ntohl(length)
 
-        if len(self.inBuffer) >= self.am.sizeAM + length:
+        if len(self.inBuffer) >= self.o.sizeAM + length:
             return 'OK'
         else:
-            logger.info("poll/am.py: Verification failure. Exiting poll.")
+            logger.info("Verification failure. Exiting poll.")
             return 'INCOMPLETE'
 
     def poll(self):
@@ -220,36 +222,43 @@ class AM(FlowCB):
         Pseudocode:
             Get data and check integrity
             if OK
-                unpack data
-                return (data, packet length)
+                Unpack data
+                Create file and let sarracenia format data
+                return sarramsg
             else
-                return ('', 0)
+                return []
         """
 
         status = self.CheckNextMsgStatus()
-
+        
+        # Unpack data
         if status == 'OK':
             (header,src_inet,dst_inet,threads,start,length,firsttime,timestamp,future) = \
-                     struct.unpack(self.am.patternAM,self.inBuffer[0:self.am.sizeAM])
+                     struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
 
             length = socket.ntohl(length)
 
-            msg = self.inBuffer[self.am.sizeAM:self.am.sizeAM + length]
+            msg = self.inBuffer[self.o.sizeAM:self.o.sizeAM + length]
+            logger.info("Gather successful.")
 
-            logger.info("poll/am.py: Gather successful.")
+            newmsg = []
 
-            return (msg, self.am.sizeAM + length)
+            # Create a file for new messages and let sarracenia format data
+            filepath = self.o.directory + os.sep + header.split(b'\0',1)[0].decode('iso-8859-1').replace(' ', '_') 
+            file = open(filepath, 'wb')
+            file.write(msg)
+            file.close()
+            st = os.stat(filepath)
+
+            sarramsg = sarracenia.Message.fromFileData(filepath,self.o, lstat=st)
+            newmsg.append(sarramsg)
+
+            return newmsg
         else:
-            return '',0                
+            return []                
 
 # Debug
-'''
-am = AM(default_options, 5002, '127.0.0.1')
-while True:
-    res = am.poll()
-'''
-
-if __name__ == '__main__':
-    am = AM(default_options, 5002, '127.0.0.1')
-    while True:
-        am.poll()
+# if __name__ == '__main__':
+    # am = AM(default_options, 5002, '127.0.0.1')
+    # while True:
+        # am.poll()
