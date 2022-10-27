@@ -83,7 +83,7 @@ class sr_GlobalState:
         """
             return the string to be used to run a component in Popen.
         """
-        if c in [
+        if c in [ 'flow',
                 'poll', 'report', 'sarra', 'sender', 'shovel', 'subscribe',
                 'watch', 'winnow'
         ]:
@@ -129,7 +129,7 @@ class sr_GlobalState:
                         logging.debug("Exception details:", exc_info=True)
                         os.sleep(1)
                 
-        if c in [
+        if c in [ 'flow',
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                 'subscribe', 'watch', 'winnow'
         ]:
@@ -980,7 +980,7 @@ class sr_GlobalState:
                   self.appname)
 
         self.components = [
-            'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
+            'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
@@ -1252,7 +1252,7 @@ class sr_GlobalState:
 
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
-                if c in [
+                if c in [ 'flow',
                         'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
                         'subscribe', 'watch', 'winnow'
                 ]:
