@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 class AM(FlowCB):
     
-    def __init__(self, options, port=0, remoteHost=None):
+    def __init__(self, options):
              
-        self.o = super().__init__(options)
+        # self.o = super().__init__(options)
 
         # Set logger options
         if hasattr(options, 'logLevel'):
