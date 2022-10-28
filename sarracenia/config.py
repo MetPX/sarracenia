@@ -1156,7 +1156,7 @@ class Config:
             logger.debug( f'found {cfgfilepath}')
 
         lineno=0
-        for l in open(cfg, "r").readlines():
+        for l in open(cfgfilepath, "r").readlines():
             l = l.strip()
             lineno+=1
             line = l.split()
