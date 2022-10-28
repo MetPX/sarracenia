@@ -34,10 +34,10 @@ Inflight Table
 |             | - requires extra round trips for      |(usually a good choice)               |
 |             |   rename (a little slower)            | - default when no post broker set    |
 +-------------+---------------------------------------+--------------------------------------+
-|             |Files transferred to a subdir.         |sending to some other systems         |
+|             |Files transferred to a subdir or dir   |sending to some other systems         |
 | tmp/        |When complete, renamed to parent dir.  |                                      |
 | (subdir)    |Actual subdir is settable.             |                                      |
-|             |                                       |                                      |
+| /dir        |                                       |                                      |
 |             |same performance as Suffix method.     |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Use Linux convention to *hide* files.  |Sending to systems that               |

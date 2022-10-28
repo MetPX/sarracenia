@@ -107,12 +107,12 @@ class File(FlowCB):
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
-    def path_inflight(self, path, lstat):
+    def path_inflight_mtime(self, path, lstat):
         """
           check the self.o.inflight, compare fail age against it.
           return True if the file is old enough to be posted.
         """
-        #logger.debug("path_inflight %s" % path)
+        #logger.debug("path_inflight_mtime %s" % path)
 
         if not isinstance(self.o.inflight, int):
             #logger.debug("ok inflight unused")
@@ -505,7 +505,7 @@ class File(FlowCB):
 
         lstat = sarracenia.stat(src)
 
-        if self.path_inflight(src, lstat): return []
+        if self.path_inflight_mtime(src, lstat): return []
 
         # post it
 

@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 
 class Run(FlowCB):
     """
-       usage:
+       sample usages:
 
-       flowcb run
+       # run a script on every file downloaded
+       run_work_item ls -al
+       callback run
 
        module to run scripts or binary (non-python) whenever you need to.  
        typically use would be to fetch files for processing by watch.
