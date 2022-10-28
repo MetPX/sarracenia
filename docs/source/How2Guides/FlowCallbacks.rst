@@ -431,3 +431,17 @@ file::
 
 then messages where the retrieval url is set to use the *scr* retrieval scheme will use this 
 custome transfer protocol.
+
+
+Subclassing Flow
+----------------
+
+If none of the built-in components ( poll, post, sarra, shovel, subscribe, watch, winnow ) have the 
+behaviour desired, one can build a custom component to do the right thing by sub-classing flow.
+
+Copy one of the flow sub-classes from the source code, and modify to taste.  In the configuration
+file, add the line::
+
+   flowMain myComponent
+
+to have the flow use the new component.
