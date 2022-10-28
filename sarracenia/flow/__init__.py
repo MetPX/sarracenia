@@ -108,8 +108,14 @@ class Flow:
     """
     @staticmethod
     def factory(cfg):
+
+        if cfg.flowMain:
+              flowMain=cfg.flowMain
+        else:
+              flowMain=cfg.component
+
         for sc in Flow.__subclasses__():
-            if cfg.component == sc.__name__.lower():
+            if flowMain == sc.__name__.lower():
                 return sc(cfg)
 
         if cfg.component == 'flow':
