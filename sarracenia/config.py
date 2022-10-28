@@ -65,6 +65,7 @@ default_options = {
     'documentRoot': None,
     'download': False,
     'filename': 'WHATFN',
+    'flowMain': None,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
@@ -124,7 +125,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
-    'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
+    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'queueName',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
