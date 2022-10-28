@@ -19,7 +19,7 @@ import urllib.parse
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
-default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
+#   default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +46,7 @@ class AM(FlowCB):
         self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
         self.o.remoteHost = self.url.netloc.split(':')[0]
         self.o.port = int(self.url.netloc.split(':')[1])
+        self.childlist = []
         self.o.timeCopy = True
 
 
@@ -72,32 +73,44 @@ class AM(FlowCB):
         if self.o.remoteHost == 'None':
             raise Exception("No remote host was specified.")
 
-        pid = 0
+        pid = 1
 
         while True:
-
+            
             try:
-                if pid == 0:    
+                if pid != 0:    
                     # Bind socket to all interfaces and listen
                     self.s.bind(('', self.o.port)) 
                     self.s.listen(1)
                     logger.info("Socket binded to host %s and port %d.", self.o.remoteHost, self.o.port)
                     self.flag = True
 
-                # Parent process stays in the loop searching for other connections. 
-                # Child will proceed accepting or refusing connection.
-                if self.flag == True:  
-                    pid = os.fork()
-                    self.flag = False
-
                 try:
+                    # Accept the connection from socket
+                    logger.info("Trying to accept connection from child process")
+                    conn, self.o.remoteHost = self.s.accept()
+                    
+                    # Parent process stays in the loop searching for other connections. 
+                    # Child will proceed accepting or refusing connection.
+                    if self.flag == True:
+                        self.childlist.append(pid)
+                        logger.info(f"{pid}")
+                        pid = os.fork()
+                        self.flag = False
+
                     if pid == 0:
-                        pass
+                        # Break from the loop if process is child
+                        # TODO: Log to file with correct instance ID
+                        # TODO: Write the pid file for the instance, so that sr status | stop | sanity
+                        self.s.close()
+                        break                    
+
+                    elif pid == -1:
+                        raise logger.exception("Connection could not fork. Exiting.") 
                     else:
-                        # Accept the connection from socket
-                        logger.info("Trying to accept connection from child process")
-                        conn, self.o.remoteHost = self.s.accept()
-                        break 
+                        # Stay in loop if process is parent
+                        conn.close()
+                        pass
                    
                 except TypeError:
                     logger.info("Couldn't accept connection. Retrying.")
@@ -105,9 +118,11 @@ class AM(FlowCB):
                 
             except socket.error or OSError:
                 # logger.info("Parent process bind failed. Retrying.")
-                time.sleep(10)
-        """
-             try:
+                time.sleep(5)
+            
+            """
+            try:
+            
                 # Bind socket to all interfaces and listen
                 self.s.bind(('', self.o.port)) 
                 self.s.listen(1)
@@ -126,9 +141,9 @@ class AM(FlowCB):
             except socket.error or OSError:
                 logger.info("Bind failed. Retrying.")
                 time.sleep(5)          
-        """ 
+            """            
 
-        logger.info("Socket binded to IP %s and on port %d", self.o.remoteHost, self.o.port)     
+        logger.info("Socket accecpted with IP %s and on port %d", self.o.remoteHost, self.o.port)     
 
         self.s.close()
 
@@ -137,7 +152,11 @@ class AM(FlowCB):
     def on_start(self):
         self.conn = self.__establishconn__()
     
-    def on_stop(self): 
+    def on_stop(self):
+        # Kill all child processes gathered in list
+        for child_pid in self.childlist:
+            os.kill(child_pid, 9)
+        
         self.conn.close()
 
     def AddBuffer(self):
@@ -158,6 +177,7 @@ class AM(FlowCB):
             try:
                 # Receive data from socket
                 tmp = self.conn.recv(self.limit)
+                time.sleep(0.1)
 
                 if tmp == '':
                     if not self.o.onlySync:
@@ -173,8 +193,7 @@ class AM(FlowCB):
                 (type, value, tb) = sys.exc_info()
 
                 logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
-                self.conn.close()
-
+                
                 if not self.o.onlySync:
                     logger.exception("Connection was lost")
                     raise Exception("Connection was lost")
@@ -214,7 +233,7 @@ class AM(FlowCB):
             logger.info("Verification failure. Exiting poll.")
             return 'INCOMPLETE'
 
-    def poll(self):
+    def gather(self):
         """
         Overview: 
             Unwrap data
