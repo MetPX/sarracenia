@@ -99,6 +99,9 @@ informations d’identification du courtier en toute sécurité ::
 
 .. notice::
   Les mots de passe sont toujours stockés dans le fichier credentials.conf.
+  pour éviter cela, il est préférable d'utiliser des clés, que Sarracenia peut trouver en
+  en regardant les fichiers de configuration ssh. Configurez ssh pour qu'il fonctionne, et Sarracenia
+  fonctionnera aussi.
 
 Donc, maintenant, la ligne de commande pour sr_post n’est que l’URL pour que ddsr récupère le
 fichier sur grumpy::

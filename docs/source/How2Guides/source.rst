@@ -100,6 +100,9 @@ credentials safely::
 
 .. Note::
   Passwords are always stored in the credentials.conf file.
+  to avoid doing that, it is better to use keys, which sarracenia can find by
+  looking at ssh configuration files. just configure ssh to work, and sarracenia
+  will as well.
 
 So now the command line for sr_post is just the url for ddsr to retrieve the
 file on grumpy::
