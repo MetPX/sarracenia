@@ -735,6 +735,24 @@ entraînerait la création du chemin d’accès au fichier::
 
  /monrépertoirelocal/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+
+flowMain (défaut: None)
+-----------------------
+
+Par défaut, un flux exécutera la classe sarracenia.flow.Flow, qui implémente l'algorithme Flow de manière générique.
+La version générique ne transfère pas de données, crée et manipule uniquement des messages. Cela convient pour
+pelle, vanner, poster et surveiller les composants, mais les composants qui transfèrent ou transforment les données ont besoin
+pour définir un comportement supplémentaire en sous-classant Flow. Exemples : sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.
+
+L'option **flowMain** permet à une configuration de flux d'exécuter une sous-classe de flux, au lieu du parent par défaut
+classer. Exemple::
+
+   flowMain subscribe
+
+Dans un fichier de configuration de flux générique, le flux sera configuré pour agir en tant que composant d'abonné (subscribe.)
+On peut créer des composants personnalisés en sous-classant Flow et en utilisant la directive **flowMain** pour invoquer
+la nouvelle sous-classe.
+
 follow_symlinks <flag>
 ----------------------
 
