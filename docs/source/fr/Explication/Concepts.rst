@@ -234,7 +234,7 @@ sur l'AMQP lui-même, un ensemble de liens est maintenu à l'adresse suivante
 le site web `Metpx web site <sarra.rst#amqp>`_
 mais un moteur de recherche révèlera aussi une richesse matérielle.
 
-.. image:: ../../Explanation/Concepts/amqp_flow_concept.svg
+.. image:: Concepts/amqp_notion_de_flux.svg
     :scale: 50%
     :align: center
 
@@ -336,7 +336,7 @@ MQTT v3 manque d’abonnements partagés et la logique de récupération est tr�
 Le flux à travers des Pompes
 ----------------------------
 
-.. image:: ../../Explanation/Concepts/sr3_flow_example.svg
+.. image:: Concepts/sr3_exemple_de_flux.svg
     :scale: 100%
     :align: center
 
