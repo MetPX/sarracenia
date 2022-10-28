@@ -738,6 +738,23 @@ would result in the creation of the filepath::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+flowMain (default: None)
+------------------------
+
+By default, a flow will run the sarracenia.flow.Flow class, which implements the Flow algorithm generically.
+The generic version does no data transfer, only creating and manipulating messages. That is appropriate for 
+shovel, winnow, post & watch components, but components that transfer or transform data need
+to define additional behaviour by sub-classing Flow. Examples: sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.  
+
+The **flowMain** option allows a flow configuration to run a subclass of flow, instead of the default parent
+class.  Example::
+
+   flowMain subscribe
+
+In a generic flow configuration file will configure the flow to act as a subscriber component.
+One can create custom components by subclassing Flow and using the **flowMain** directive to have
+it invoked. 
+
 follow_symlinks <flag>
 ----------------------
 

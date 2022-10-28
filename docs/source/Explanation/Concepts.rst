@@ -61,80 +61,101 @@ In more detail:
  |          | (to file, or retry... or)                                   |
  +----------+-------------------------------------------------------------+
 
-The main components of the python implementation of Sarracenia all implement the same algorithm described above. The algorithm has various points where custom processing can be inserted (using flowCallbacks), or deriving classes from flow, integrity, or transfer classes.
+The main components of the python implementation of Sarracenia all implement the same algorithm described above. 
+The algorithm has various points where custom processing can be inserted (using flowCallbacks), 
+or deriving classes from flow, integrity, or transfer classes.
 
 The components just have different default settings:
 
 .. table:: **Table 2: How Each Component Uses the Flow Algorithm**
  :align: center
 
- +------------------------+--------------------------+
- | Component              | Use of the algorithm     |
- +------------------------+--------------------------+
- +------------------------+--------------------------+
- | *subscribe*            | Gather = gather.message  |
- |                        |                          |
- |   Download file from a | Filter                   |
- |   pump.                |                          |
- |                        | Work = Download          |
- |   default mirror=False |                          |
- |   All others it is True| Post = optional          |
- +------------------------+--------------------------+
- | *sarra*                | Gather = gather.message  |
- |                        |                          |
- |   Used on pumps.       |                          |
- |   Download file from a | Filter                   |
- |   pump to another pump |                          |
- |   Post the file from   |                          |
- |   the new pump so that |                          |
- |   subscribers to       | Work = Download          |
- |   this pump can        |                          |
- |   download in turn.    | Post = post              |
- |                        |                          |
- +------------------------+--------------------------+
- | *poll*                 | Gather                   |
- |                        | if has_vip: poll         |
- |                        |                          |
- |   Find files on other  | Filter                   |
- |   servers to post to   |                          |
- |   a pump.              | if has_vip:              |
- |                        |     Work = nil           |
- |   Uses has_vip*        |                          |
- |   (see notes below)    |     Post = yes           |
- +------------------------+--------------------------+
- | *shovel*               | Gather = gather.message  |
- |                        |                          |
- |   Move notification    | Filter (shovel cache=off)|
- |   messages around.     |                          |
- |                        | Work = nil               |
- |                        |                          |
- |                        | Post = yes               |
- +------------------------+--------------------------+
- | *winnow*               | Gather = gather.message  |
- |                        |                          |
- |   Move notification    | Filter (shovel cache=off)|
- |   messages around      |                          |
- |                        | Work = nil               |
- |   suppress duplicates  |                          |
- |                        | Post = yes               |
- +------------------------+--------------------------+
- | *post/watch*           | Gather = gather.file     |
- |                        |                          |
- |   Find file on a       | Filter                   |
- |   local server to      |                          |
- |   post                 | Work = nil               |
- |                        |                          |
- |                        | Post = yes               |
- |                        |   Message?, File?        |
- +------------------------+--------------------------+
- | *sender*               | Gather = gather.message  |
- |                        |                          |
- |   Send files from a    | Filter                   |
- |   pump. If remote is   |                          |
- |   also a pump, post    | Do = sendfile            |
- |   the sent file there. |                          |
- |                        | Outlet = optional        |
- +------------------------+--------------------------+
+ +------------------------+--------------------------+------------------------+
+ | Component              | Use of the algorithm     | Config File Equivalent |
+ +------------------------+--------------------------+------------------------+
+ +------------------------+--------------------------+------------------------+
+ | *subscribe*            | Gather = gather.message  | flowMain subscribe     |
+ |                        |                          |                        |
+ | Download file from a   | Filter                   |                        |
+ | pump.                  |                          |                        |
+ |                        | Work = Download          |                        |
+ | default mirror=False   |                          |                        |
+ | All others it is True  | Post = optional          |                        |
+ +------------------------+--------------------------+------------------------+
+ | *sarra*                | Gather = gather.message  | flowMain sarra         |
+ |                        |                          |                        |
+ | Used on pumps.         |                          |                        |
+ |                        |                          |                        |
+ | Download file from a   | Filter                   |                        |
+ | pump                   |                          |                        |
+ |                        |                          |                        |
+ | publish it.            |                          |                        |
+ |                        |                          |                        |
+ | Subscribers to         | Work = Download          |                        |
+ | this pump can          |                          |                        |
+ | download in turn.      | Post = post              |                        |
+ |                        |                          |                        |
+ +------------------------+--------------------------+------------------------+
+ | *poll*                 | Gather                   | flowMain poll          |
+ |                        | if has_vip: poll         |                        |
+ |                        |                          |                        |
+ | Find files on other    | Filter                   |                        |
+ | servers to post to     |                          |                        |
+ | a pump.                | if has_vip:              |                        |
+ |                        |     Work = nil           |                        |
+ | Uses has_vip*          |                          |                        |
+ | (see notes below)      |     Post = yes           |                        |
+ +------------------------+--------------------------+------------------------+
+ | *shovel*               | Gather = gather.message  | acceptUnmatched True   |
+ |                        |                          |                        |
+ |                        |                          | nodupe_ttl 0           |
+ | Move notification      | Filter (shovel cache=off)|                        |
+ | messages around.       |                          | callback gather.message|
+ |                        |                          |                        |
+ |                        | Work = nil               | callback post.message  |
+ |                        |                          |                        |
+ |                        | Post = yes               |                        |
+ +------------------------+--------------------------+------------------------+
+ | *winnow*               | Gather = gather.message  | acceptUnmatched True   |
+ |                        |                          |                        |
+ |                        |                          | nodupe_ttl 300         |
+ | Move notification      | Filter (shovel cache=off)|                        |
+ | messages around        |                          | callback gather.message|
+ |                        |                          |                        |
+ |                        | Work = nil               | callback post.message  |
+ | suppress duplicates    |                          |                        |
+ |                        | Post = yes               |                        |
+ +------------------------+--------------------------+------------------------+
+ | *post/watch*           | Gather = gather.file     | <a number of default   |
+ |                        |                          | settings.>             |
+ |                        |                          |                        |
+ | Find file on a         | Filter                   | sleep -1 # for post    |
+ |                        |                          |                        |
+ | local server to        |                          | sleep 5 # for watch    |
+ | publish                | Work = nil               |                        |
+ |                        |                          | callback gather.file   |
+ |                        |                          |                        |
+ |                        | Post = yes               | callback post.message  |
+ |                        |   Message?, File?        |                        |
+ +------------------------+--------------------------+------------------------+
+ | *sender*               | Gather = gather.message  | flowMain sender        |
+ |                        |                          |                        |
+ | Send files from a      | Filter                   |                        |
+ | pump.                  |                          |                        |
+ |                        |                          |                        |
+ | publish message after  |                          |                        |
+ |                        | Do = sendfile            |                        |
+ |                        |                          |                        |
+ |                        | Outlet = optional        |                        |
+ +------------------------+--------------------------+------------------------+
+
+In the left hand column, one can see the name and general description of each component.
+in the middle column, we see what the various phases of the Flow algorithm are applied.
+On the right, we see how to express, in a generic flow configuration file, the component.
+Most components can just use the parent flow class, but those that need custom python
+code use flow subclasses. Those cases are configured using the flowMain option.
+
+Users can write their own flow subclasses and make their own components.
 
 Components are easily composed using AMQP brokers, which create elegant networks of communicating sequential processes (in the `Hoare <http://dl.acm.org/citation.cfm?doid=359576.359585>`_ sense).
 
