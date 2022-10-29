@@ -1060,7 +1060,7 @@ class sr_GlobalState:
                 (len(sp) > 1) and
                 (sp[-2] not in sarracenia.config.Config.components +
                  ['plugins'])):
-                component = 'subscribe'
+                component = 'flow'
                 cfg = sp[-1]
             else:
                 component = sp[-2]
@@ -1240,6 +1240,7 @@ class sr_GlobalState:
 
             if component_path == '':
                 continue
+
             if self.configs[c][cfg]['status'] in ['stopped']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
