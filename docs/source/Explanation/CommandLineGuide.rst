@@ -31,6 +31,7 @@ The components of sarracenia are groups of defaults on the main algorithm,
 to reduce the size of individual components.  The components are:
 
  - cpump - copy notification messages from one pump another second one (a C implementation of shovel.)
+ - flow - generic flow with no default behaviours. Good basis for building user defined components.
  - poll  - poll a non-sarracenia web or file server to create notification messages for processing.
  - post & watch - create notification messages for files for processing.
  - sarra _ - download file from a remote server to the local one, and re-post them for others.
@@ -1013,6 +1014,15 @@ and subscribes to the notifications of interest. If _suppress_duplicates_ is act
 on reception of a post, it looks up the notification message's **integity** field in its cache.  If it is 
 found, the file has already come through, so the notification is ignored. If not, then 
 the file is new, and the **sum** is added to the cache and the notification is posted.
+
+FLOW
+----
+
+Flow is the parent class from which all of the other components except cpost and cpump are built.
+Flow has no built-in behaviour. Settings can make it act like any other python component,
+or it can be used to build user defined components. Typically used with the *flowMain* option
+to run a user defined flow subclass.
+
 
 POLL
 ----
