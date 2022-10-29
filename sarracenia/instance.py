@@ -110,10 +110,8 @@ class instance:
             return
 
         if (not os.sep in cfg_preparse.configurations[0]):
-            logger.critical(
-                "configuration should be of the form component%sconfiguration"
-                % os.sep)
-            return
+            component = 'flow'
+            config = cfg_preparse.configurations[0]
         else:
             component, config = cfg_preparse.configurations[0].split(os.sep)
 
