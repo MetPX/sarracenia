@@ -31,6 +31,7 @@ Les composants de sarracenia sont des groupes de valeurs choisi par défaut sur 
 pour réduire la taille des composants individuels.  Les composants sont les suivants :
 
  - cpump - copier des messages d'une pompe a une autre (une implémentation C d'un shovel.)
+ - flow  - flux générique sans comportement par défaut. Bonne base pour créer un composant défini par l'utilisateur
  - poll  - interroger un serveur Web ou de fichiers non sarracenia pour créer des messages à traiter.
  - post & watch - créer des messages pour les fichiers à traiter.
  - sarra  - télécharger le fichier d’un serveur distant vers le serveur local et les republier pour d’autres.
@@ -1019,6 +1020,15 @@ et s'abonne aux notifications d’intérêt. Si _suppress_duplicates_ est actif,
 à la réception d’un message, il recherche le champ **integity** du message dans la cache.  Si le message est
 trouvé, le fichier est déjà passé, de sorte que la notification est ignorée. Si ce n’est pas le cas, alors
 le fichier est nouveau, et la **sum** est ajoutée à la cache et la notification est publiée.
+
+FLOW
+----
+
+Flow est la classe parent à partir de laquelle tous les autres composants, à l'exception de cpost et cpump, sont construits.
+Flow n'a pas de comportement intégré. Les paramètres peuvent le faire agir comme n'importe quel autre composant python,
+ou il peut être utilisé pour créer des composants définis par l'utilisateur. Généralement utilisé avec l'option *flowMain*
+pour exécuter une sous-classe de flux définie par l'utilisateur.
+
 
 POLL
 ----

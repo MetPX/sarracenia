@@ -90,6 +90,7 @@ some of which control optional modules (flowcallbacks) Each component has a
 different set of default option settings to cover a common use case. 
 
 * `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copy notification messages from one pump another second one (a C implementation of shovel.)
+* `flow <../Explanation/CommandLineGuide.html#flow>`_ - flux générique, pas de valeurs par défaut, bonne base pour la construction de flux personalisés.
 * `poll <../Explanation/CommandLineGuide.html#poll>`_ - poll a non-sarracenia web or file server to create notification messages for processing.
 * `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - create notification messages for files for processing.
 * `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - download file from a remote server to the local one, and re-post them for others.
