@@ -790,7 +790,7 @@ class sr_GlobalState:
         self._resolve_brokers()
 
         if not os.path.exists( self.user_cache_dir ):
-            os.mkdir(self.user_cache_dir)
+            os.makedirs(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
@@ -1908,7 +1908,7 @@ class sr_GlobalState:
                 return
 
         if not os.path.isdir(base_v3 + component):
-            os.mkdir(base_v3 + component)
+            os.makedirs(base_v3 + component)
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
