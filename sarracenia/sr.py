@@ -852,7 +852,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
 
-        #logging.debug( 'starting match_patterns with: %s' % patterns )
+        logging.debug( 'starting match_patterns with: %s' % patterns )
         self.filtered_configurations = []
         self.leftovers = []
         leftover_matches = {}
@@ -871,9 +871,18 @@ class sr_GlobalState:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
 
+        logger.debug( f"candidates: {candidates}" )
+        new_patterns=[]
         for p in patterns:
+            if os.sep not in p:
+                p = 'flow/' + p
+                new_patterns.append(p)         
+            else:
+                new_patterns.append(p)         
             leftover_matches[p] = 0
+        patterns=new_patterns
 
+        logger.debug( f"patterns: {patterns}" )
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
@@ -883,13 +892,18 @@ class sr_GlobalState:
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
 
+                    if fcc[-5:] == '.conf' and fcc[0:-5] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    if fcc[-4:] == '.inc' and fcc[0:-4] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    # 22/11/01... pas thinks this is wrong and backwards, but not sure..
                     if p[-5:] == '.conf' and fnmatch.fnmatch(fcc, p[0:-5]):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
-
-                    # if p[-4:] == '.off' and fnmatch.fnmatch(fcc, p[0:-4]):
-                    #     self.filtered_configurations.append(fcc)
-                    #     leftover_matches[p] += 1
 
         for p in patterns:
             if leftover_matches[p] == 0:
@@ -929,8 +943,8 @@ class sr_GlobalState:
                         if fnmatch.fnmatch(fcc, p):
                             self.filtered_configurations.append(fcc)
 
-        #logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
-        #logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
+        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
+        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
 
     # FIXME: this should be in config.py
     @property
@@ -1052,6 +1066,8 @@ class sr_GlobalState:
     def add(self):
 
         if not hasattr(self, 'leftovers') or (len(self.leftovers) == 0):
+            if len(self.filtered_configurations) > 0:
+               logging.info( f"matched existing {self.filtered_configurations}" )
             logging.error("nothing specified to add")
 
         for l in self.leftovers:
@@ -1082,7 +1098,11 @@ class sr_GlobalState:
                     found = True
                     break
             if not found:
-                logger.error("did not find anything to copy for: %s" % l)
+                logger.info("did not find anything to copy for: %s. creating an empty one." % l)
+                if cfg[-5:] not in [ '.inc', '.conf' ]:
+                    cfg = cfg + '.conf'
+                with open( destdir + os.sep + cfg, 'w' ) as f:
+                    f.write('')
 
     def declare(self):
 
