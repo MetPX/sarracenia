@@ -1971,7 +1971,7 @@ a été spécifié.)
 
 Divers exemples de fichiers de configuration sont disponibles ici :
 
- `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
+ `https://github.com/MetPX/sarracenia/tree/main/sarra/examples <https://github.com/MetPX/sarracenia/tree/main/sarra/examples>`_
 
 
 

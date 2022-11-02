@@ -241,7 +241,7 @@ traités le plus rapidement, les RADARS feront la queue les uns contre les autre
 plus de retard, et d’autres produits partageront une seule fil d’attente et seront soumis à plus de
 retard dans les cas d’arriéré.
 
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hipri.conf::
+https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/ddc_hipri.conf::
 
   broker amqps://dd.weather.gc.ca/
   mirror
@@ -249,7 +249,7 @@ https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hip
   subtopic alerts.cap.#
   accept .*
 
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_normal.conf::
+https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/ddc_normal.conf::
 
   broker amqps://dd.weather.gc.ca/
   subtopic #

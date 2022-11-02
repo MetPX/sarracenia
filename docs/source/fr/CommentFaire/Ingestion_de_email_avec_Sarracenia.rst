@@ -71,14 +71,14 @@ de courrier telles que le déplacement entre les dossiers et la génération de 
 à plusieurs clients de se connecter à une boîte aux lettres en même temps, et prend en charge les indicateurs de message de suivi tels que
 si le message est lu/non lu, répondu/pas encore répondu, ou supprimé/toujours dans la boîte de réception. L'exemple
 de plugin de poll,
-`poll_email_ingest.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
+`poll_email_ingest.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py>`_
 récupère uniquement les e-mails non lus dans la boîte de réception et les marque comme non lus après les avoir récupérés, dans les deux cas suivants :
 Versions POP et IMAP. Ce paramètre peut être facilement modifié selon les intentions de l’utilisateur final. S’il y a
 s’il y a de nouveaux messages de la dernière fois qu’un client POP/IMAP s’est connecté, il publiera alors le fichier
 en fonction de l’objet et d’un horodatage, où une instance sr_subscribe peut recevoir le message publié,
 connectez-vous individuellement au serveur et téléchargez le message pour le sortir dans un fichier localement. Un exemple
 de configuration qui a été inclus sous **exemples** en tant que
-`pollingest.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollingest.conf>`_.
+`pollingest.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollingest.conf>`_.
 Une fois que vous avez modifié/fourni les variables d’environnement requises pour le
 config pour travailler, ouvrir un nouveau terminal et exécuter ::
 
@@ -128,16 +128,16 @@ dans un module séparé, comme dans le plugin *do_poll*. Une fois qu’un messag
 publié, il peut ensuite se connecter au serveur de messagerie en utilisant la destination et les informations d’identification spécifiées
 dans ~/.config/sarra/credentials.conf et récupére le message localement. Un exemple de plugin qui fait cela
 peut être trouvé sous **plugins** comme
-`download_email_ingest.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_email_ingest.py>`_.
+`download_email_ingest.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_email_ingest.py>`_.
 
 Décodage du contenu
 ~~~~~~~~~~~~~~~~~~~
 Une fois le message électronique téléchargé, un plug-in *on_file* peut analyser le fichier au format MIME et extraire
 la pièce jointe, généralement indiquée par l’en-tête Content-Disposition ou les champs corps/objet/adresse du message, à enregistrer en tant que
 nouveau fichier pour affiner davantage les données. Un exemple de plugin qui fait cela peut être trouvé sous **plugins** comme
-`file_email_decode.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_email_decode.py>`_.
+`file_email_decode.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_email_decode.py>`_.
 Un exemple de configuration incorporant ce type de traitement de fichiers est inclus sous **exemples** en tant que
-`downloademail.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/downloademail.conf>`_.
+`downloademail.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/downloademail.conf>`_.
 Une fois que les variables d’environnement ont été fournies et que le serveur rabbitmq est correctement configuré, ouvrez un nouveau
 terminal et exécutez::
 

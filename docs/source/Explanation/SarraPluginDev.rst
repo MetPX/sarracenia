@@ -660,11 +660,11 @@ subclass specific entry points usually implemented in sub-classes:
 Examination of the built-in `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
 class is helpful 
 
-.. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
+.. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py>`_
 .. [#] see `Issue 74 <https://github.com/MetPX/sarracenia/issues/74>`_
-.. [#] see `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/part_clanav_scan.py>`_
-.. [#] see `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_total_save.py>`_
-.. [#] see `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
+.. [#] see `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/part_clanav_scan.py>`_
+.. [#] see `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_total_save.py>`_
+.. [#] see `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py>`_
 
 ---------------------
 Better File Reception

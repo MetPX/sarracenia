@@ -211,7 +211,7 @@ was specified.)
 
 A variety of example configuration files are available here:
 
- `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
+ `https://github.com/MetPX/sarracenia/tree/main/sarra/examples <https://github.com/MetPX/sarracenia/tree/main/sarra/examples>`_
 
 
 

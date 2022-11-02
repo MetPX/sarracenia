@@ -241,7 +241,7 @@ processed the fastest, RADARS will queue up against each other and so experience
 more delay, and other products will share a single queue and be subject to more
 delay in cases of backlog.
 
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hipri.conf::
+https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/ddc_hipri.conf::
 
   broker amqps://dd.weather.gc.ca/
   mirror
@@ -251,7 +251,7 @@ https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hip
 
 
 
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_normal.conf::
+https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/ddc_normal.conf::
 
   broker amqps://dd.weather.gc.ca/
   subtopic #

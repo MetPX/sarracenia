@@ -46,15 +46,15 @@ that the data source is maintaining their end of the bargain). To download this 
 an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a *do_download*
 plugin could then take and download. An example polling plugin which grabs all water temperature and water level 
 data from the last hour, from all CO-OPS stations, and publishes them is included under *plugins* as 
-`poll_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_noaa.py>`_. 
+`poll_noaa.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py>`_. 
 A corresponding *do_download* plugin for a sarra instance to download this file is included 
-as `download_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_noaa.py>`_
+as `download_noaa.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py>`_
 . Example configurations for both sr_poll and sr_subscribe are included under 
-*examples*, named `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollnoaa.conf>`_ 
-and `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subnoaa.conf>`_. 
+*examples*, named `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollnoaa.conf>`_ 
+and `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subnoaa.conf>`_. 
 To run, add both plugins and configurations using the :code:`add` action, edit the proper variables in the 
 config (the flowbroker, destination among others. If running off a local RabbitMQ server, some of the 
-documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/master/doc/Dev.rst>`_ 
+documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/v2_stable/doc/Dev.rst>`_ 
 on how to set up the server might be useful). If everything was configured correctly, the output should 
 look something like this::
 
@@ -159,11 +159,11 @@ Each request is returned with a status message confirming if it was a valid func
 then check the status message is ok before posting the message advertising new data to the exchange.
 A *do_download* plugin takes these parameters passed in the message, forms a SOAP query with them, and
 extracts the data/saves it to a file. Examples of plugins that do both of these steps can be found under
-*plugins*, named `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_shc_soap.py>`_ 
-and `download_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_shc_soap.py>`_. 
+*plugins*, named `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_shc_soap.py>`_ 
+and `download_shc_soap.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_shc_soap.py>`_. 
 Example configurations for running both are included under *examples*, named 
-`pollsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollsoapshc.conf>`_ and 
-`subsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subsoapshc.conf>`_. 
+`pollsoapshc.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollsoapshc.conf>`_ and 
+`subsoapshc.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subsoapshc.conf>`_. 
 
 USGS Instantaneous Values Web Service
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,10 +191,10 @@ The IV Web Service supports queries with multiple site IDs specified (comma-sepa
 the number passed (this reduces web requests and speeds up the data collection if collecting in bulk).  
 
 To run this example, the configs and plugins can be found under *plugins* 
-(`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_usgs.py>`_ 
-and `download_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_usgs.py>`_) 
-and *examples* (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollusgs.conf>`_ 
-and `subusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subusgs.conf>`_).
+(`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_usgs.py>`_ 
+and `download_usgs.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_usgs.py>`_) 
+and *examples* (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollusgs.conf>`_ 
+and `subusgs.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subusgs.conf>`_).
 
 Use Case
 --------
