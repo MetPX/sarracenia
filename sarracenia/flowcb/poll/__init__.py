@@ -215,10 +215,6 @@ class Poll(FlowCB):
 
         self.o = options
 
-        # check destination
-        # debug
-        return
-
         self.details = None
         if self.o.destination is not None:
             ok, self.details = sarracenia.config.Config.credentials.get(

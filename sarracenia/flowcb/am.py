@@ -18,6 +18,7 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os, signal
 import urllib.parse
+import pathlib
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
@@ -219,6 +220,7 @@ class AM(FlowCB):
 
         # Only unpack data if buffer length satisfactory
         if len(self.inBuffer) >= self.o.sizeAM:
+            # TODO: Add variables to options with self.o.add_option?
             (header, src_inet, dst_inet, threads, start, length, firsttime, timestamp, future) = \
                     struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
         else:
