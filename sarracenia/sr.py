@@ -874,7 +874,9 @@ class sr_GlobalState:
         logger.debug( f"candidates: {candidates}" )
         new_patterns=[]
         for p in patterns:
-            if os.sep not in p:
+            if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
+                new_patterns.append(p)         
+            elif os.sep not in p:
                 p = 'flow/' + p
                 new_patterns.append(p)         
             else:
@@ -888,6 +890,8 @@ class sr_GlobalState:
                 self.filtered_configurations.append(fcc)
             else:
                 for p in patterns:
+                    if p in [ 'examples','eg','ie','flow_callback','flowcb','fcb','v2plugins','v2p']:
+                        continue
                     if fnmatch.fnmatch(fcc, p):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1

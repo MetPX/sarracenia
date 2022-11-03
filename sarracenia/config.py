@@ -467,7 +467,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'sender', 'watch', 'winnow'
     ]
 
