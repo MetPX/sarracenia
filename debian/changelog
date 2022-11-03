@@ -1,4 +1,22 @@
-metpx-sr3 (3.00.20) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.21) unstable; urgency=medium
+
+  * added "flow" component, vanilla flow class, to increased flexibility. #575
+  * more documentation on porting plugins from v2 to sr3 #589
+  * documenting --dangerWillRobinson #582
+  * sr3 stop no longer stops *foreground* flows without --dangerWillRobinson
+  * worked through the "run" plugin, to run arbitrary code.
+  * more bugfixes related to configuration file parsing.
+  * changed some internal variables to apply camelCase
+  * added expandvars and expanduser to credentials parsing.
+  * better error messages when there are problems with credentials.
+  * Many improvements to French documentation.
+  * many corrected links in documents (mostly obsolete branch references.)
+  * added plugins and configuration to reproduce #131
+  * work-around for #563 to avoid declaring unnamed queues. 
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 03 Nov 2022 12:47:41 -0400
+
+metpx-sr3 (3.00.20) unstable; urgency=medium
 
   * dynamic flow CI/CD, for late propagation, use a retry_queue instead of blithely proceeding ( 6012c79105ee1f7c34f4bc81dc5e03271722a29b )
   * fixing #566, co-ordination among polls sharing a vip, so no missing files, no double posts.
