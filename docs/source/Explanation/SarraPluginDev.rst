@@ -41,9 +41,6 @@ There are other ways to extend Sarracenia v3 by subclassing of:
 
 That will be discussed after callbacks are dealt with.
 
-There are short interactive demonstration to all of these topics in the
-`Jupyter Notebooks <../../jupyter>`_  included with Sarracenia.
-
 
 Introduction
 ------------
@@ -422,7 +419,7 @@ self is the notification message being processed. variables variables most used:
 
 *msg['new_inflight_file']*
   in download and send callbacks this field will be set with the temporary name
-  of a file used while the transfer is in progress.  Once the transfer is complete,
+  of a file used while the transfer is in progress. Once the transfer is complete,
   the file should be renamed to what is in *msg['new_file']*.
 
 *msg['pubTime']*
@@ -435,11 +432,32 @@ self is the notification message being processed. variables variables most used:
   The relative path from the baseURL of the file.
   concatenating the two gives the complete URL.
 
+*msg['fileOp']*
+  for non data download file operations, such as creation of symbolic links, file renames and removals.
+  content described in `sr_post(7) <../Reference/sr_post.7.html>`_
+
 *msg['integrity']*
   The checksum structure, a python dictionary with 'method' and 'value' fields.
 
-*msg['subtopic']*
+*msg['subtopic'], msg['new_subtopic']*
   list of strings (with the topic prefix stripped off)
+  do not use, as it will be generated from msg['new_relPath'] when the message is published.
+
+*msg['_deleteOnPost']*
+  when state needs to be stored in messages, one can declare additional temporary fields
+  for use only within the running process.  To mark them for deletion when forwarding,
+  this set valued field is used::
+
+      msg['my_new_field'] = my_temporary_state
+      msg['_deleteOnPost'] |= set(['my_new_field'])
+
+  For example, all of the *new_* fields are in the *_deleteOnPost* by default.
+
+*msg['onfly_checksum'], msg['data_checksum']*
+   the value of an *Integrity* checksum field calculated as data is downloaded.
+   In the case where data is modified while downloading, the *onfly_checksum*
+   is to verify that the upstream data was correctly received, while the
+   *data_checksum* is calculated for downstream consumers.
 
 These are the notification message fields which are most often of interest, but many other 
 can be viewed by the following in a configuration::
@@ -475,7 +493,7 @@ Some examples:
   Value of 0 indicates caching is disabled.
 
 *self.o.inflight*
-  The current setting of *inflight* (see `Delivery Completion <FileCompletion.rst>`_
+  The current setting of *inflight* (see `Delivery Completion <FileCompletion.html>`_
 
 *self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
