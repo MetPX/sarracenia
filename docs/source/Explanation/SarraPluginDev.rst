@@ -412,7 +412,7 @@ self is the notification message being processed. variables variables most used:
 *msg['new_file']*
   A popular variable in on_file and on_part plugins is: *msg['new_file*,
   giving the file name the downloaded product has been written to.  When the
-  same variable is modified in an on_message plugin, it changes the name of
+  same variable is modified in an after_accept plugin, it changes the name of
   the file to be downloaded. Similarly another often used variable is 
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
@@ -900,12 +900,12 @@ Examples of things that would be fun to do with plugins:
   for many types of events, indicating the area of coverage.  There is a 
   'polygon' field in the warning, that the source could add to messages using
   an on_post plugin.  Subscribers would have access to the 'polygon' header
-  through use of an on_message plugin, enabling them to determine whether the
+  through use of an after_accept plugin, enabling them to determine whether the
   alert affected an area of interest without downloading the entire warning.
 
 - A source that applies compression to products before posting, could add a
   header such as 'uncompressed_size' and 'uncompressed_sum' to allow 
-  subscribers with an on_message plugin to compare a file that has been locally
+  subscribers with an after_accept plugin to compare a file that has been locally
   uncompressed to an upstream file offered in compressed form.
 
 - add Bittorrent, S3, IPFS as transfer protocols (sub-classing Transfer)
