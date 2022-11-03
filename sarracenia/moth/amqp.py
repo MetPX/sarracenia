@@ -222,7 +222,7 @@ class AMQP(Moth):
                     ':' + self.broker.url.password + '@', '@')
 
                 # from Queue declare
-                if self.o['queueDeclare']:
+                if self.o['queueDeclare'] and self.o['queueName']:
 
                     args = {}
                     if self.o['expire']:
@@ -244,13 +244,14 @@ class AMQP(Moth):
                     logger.info('queue declared %s (as: %s) ' %
                                 (self.o['queueName'], broker_str))
 
-                if self.o['queueBind']:
+                if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
                         topic = '.'.join(prefix + subtopic)
                         logger.info('binding %s with %s to %s (as: %s)' % \
                             ( self.o['queueName'], topic, exchange, broker_str ) )
-                        self.channel.queue_bind(self.o['queueName'], exchange,
+                        if exchange:
+                            self.channel.queue_bind(self.o['queueName'], exchange,
                                                 topic)
 
                 # Setup Successfully Complete!
