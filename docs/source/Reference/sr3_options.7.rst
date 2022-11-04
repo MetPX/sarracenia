@@ -258,7 +258,7 @@ files.
 The options available in configuration files:
 
 
-accelTreshold <size> default: 0 (disabled.)
+accelThreshold <size> default: 0 (disabled.)
 ---------------------------------------------------
 
 The accelThreshold indicates the minimum size of file being transferred for
