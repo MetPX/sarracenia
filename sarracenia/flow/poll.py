@@ -17,7 +17,6 @@ default_options = {
     'acceptUnmatched': False,
     'blocksize': 1,
     'bufsize': 1024 * 1024,
-    'poll_builtinGather': True,
     'chmod': 0o400,
     'destination': None,
     'follow_symlinks': False,
@@ -57,7 +56,8 @@ class Poll(Flow):
 
         super().__init__(options)
 
-        if not 'poll' in self.plugins['load']:
+        if not '.poll.' in ','.join(self.plugins['load']):
+            logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:

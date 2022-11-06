@@ -530,7 +530,7 @@ class Flow:
                     last_time = now
                     continue
 
-            if (stime > 0):
+            if not self._stop_requested and (stime > 0):
                 try:
                     logger.debug('sleeping for stime: %.2f seconds' % stime)
                     time.sleep(stime)

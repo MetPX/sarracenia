@@ -11,8 +11,7 @@ sarracenia/flowcb/gather/nexrad.py: a sample gather option for sr3 poll.
 usage:
 	in an sr_poll configuration file:
 	poll_nexrad_day [YYYY-MM-DD]
-	callback gather.nexrad
-        poll_builtinGather off
+	callback poll.nexrad
 	
 	If poll_nexrad_day is set, it'll post all the keys from that day. Specify a day between 1991-06-05 
 	to now (if the current date is specified, it'll post all the keys from today that have been posted
@@ -143,4 +142,5 @@ class Nexrad(FlowCB):
             m = sarracenia.Message.fromFileInfo(keys[i], self.o, fakeStat)
             gathered_messages.append(m)
             i += 1
+        logger.info( f"Done, {len(gathered_messages)} messages to post" )
         return gathered_messages
