@@ -1200,6 +1200,15 @@ qu'un dossier puis être accepté.
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
+pollUrl
+-------
+
+Spécification de ressources d´une serveur à sonder
+Voir `Guide de ligne de commande <../Explication/GuideLigneDeCommande.html>`_ pour plus 
+d´informations.
+
+
+
 post_baseDir <chemin>
 ---------------------
 
@@ -1345,6 +1354,12 @@ Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
 *S’il y a plusieurs messages d'annonce parce que le fichier est publié
 par bloc parce que l’option *blocksize* a été définie, il y a une
 reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
+
+remoteUrl <url>
+---------------
+
+Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
 
 rename <chemin>
 ---------------

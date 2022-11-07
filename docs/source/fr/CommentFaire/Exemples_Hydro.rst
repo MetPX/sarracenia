@@ -63,7 +63,7 @@ Des exemples de configurations pour sr_poll et sr_subscribe sont inclus sous
 *exemples*, nommés `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollnoaa.conf>`_
 et `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subnoaa.conf>`_.
 Pour exécuter, ajoutez à la fois des plugins et des configurations à l’aide de l’action :code:`add`, modifiez les
-variables appropriées dans la config (le flowbroker, et la destination entre autres. Si vous exécutez à partir
+variables appropriées dans la config (le flowbroker, et la pollingUrl entre autres. Si vous exécutez à partir
 d’un serveur RabbitMQ local, de la documentation sous `Contibution/Dev.rst <../Contribution/Développement.html>`_
 sur la façon de configurer le serveur peut être utile). Si tout a été configuré correctement, la sortie doit
 ressemblez à quelque chose comme ceci::
@@ -195,7 +195,7 @@ Les plugins pour n’importe quel service Web GET peuvent être généralisés p
 utilisés pour l’API NOAA CO-OPS peuvent également être réutilisés dans ce contexte. Par défaut, les ID de station
 à transmettre sont différents, ainsi que le méthode de les passer, de sorte que le code de plug-in qui détermine les
 ID de station à utiliser diffère, mais la méthode conceptuellement, c’est toujours la même chose. Vous transmettez
-une version généralisée de l’URL comme destination dans la config, par exemple
+une version généralisée de l’URL comme pollingUrl dans la config, par exemple
  https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0}&period=PT3H&parameterCd=00060,00065,00011
 
 et dans le plugin, vous remplaceriez le '{0}' (Python rend cela facile avec le formatage de chaîne) par les sites qui

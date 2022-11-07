@@ -12,7 +12,8 @@ Polling
 
 Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Prêt à l’emploi, Sarracenia prend en charge les destinations de poll avec les protocoles HTTP/HTTPS et SFTP/FTP.
+
+De série, Sarracenia support les pollUrl pour sonder des serveurs avec les protocoles HTTP/HTTPS et SFTP/FTP.
 D’autres protocoles peuvent être pris en charge en sous-classant la classe sarracenia.flowcb.poll.Poll.
 Heureusement, il existe un plugin de poll par courrier, qui invoque un plugin.
 commencez par énumérer les exemples disponibles ::
@@ -24,7 +25,7 @@ commencez par énumérer les exemples disponibles ::
    poll/soapshc.conf                poll/usgs.conf                   
    fractal% 
 
-Ajoutant la configuration::
+Ajouter la configuration::
 
    fractal% sr3 add poll/mail.conf
    add: 2022-03-10 15:59:48,266 2785187 [INFO] sarracenia.sr add copying: /home/peter/Sarracenia/sr3/sarracenia/examples/poll/mail.conf to /home/peter/.config/sr3/poll/mail.conf 
@@ -39,7 +40,7 @@ Qu’avons-nous obtenu?::
    # and a tsource user/xs_tsource exchange exist, with FLOWBROKER set to the hostname
    # rabbitmq is running on (e.g. export FLOWBROKER='localhost')
    #
-   # The destination is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
+   # The pollUrl is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
    # <scheme>://<user>:<password>@<host>:<port>/ would be contained in your ~/.config/sarra/credentials.conf.
    # Valid schemes are pop/pops/imap/imaps, where the s denotes an SSL connection. If a port isn't 
    # specified, the default port associated with the scheme will be used (IMAPS -> 993, POPS -> 995,
@@ -51,7 +52,7 @@ Qu’avons-nous obtenu?::
    
    sleep 60
    
-   destination <scheme>://<user>@<host>:<port>/
+   pollUrl <scheme>://<user>@<host>:<port>/
    
    callback poll.mail
    
@@ -61,8 +62,8 @@ Maintenant, lorsque l’instance de poll est démarrée avec ce plugin,
 
 Mise en œuvre de POP/IMAP
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Avec les modules *poplib* et *imaplib* de Python, la destination peut être analysée et le serveur de messagerie
-peut être connecté selon le schéma spécifié. Sarracenia peut extraire les informations d’identification de la destination
+Avec les modules *poplib* et *imaplib* de Python, la pollUrl peut être analysée et le serveur de messagerie
+peut être connecté selon le schéma spécifié. Sarracenia peut extraire les informations d’identification de la pollUrl
 grâce à ses classes intégrées, aucun mot de passe n’a donc besoin d’être stocké dans le fichier de configuration pour se connecter. Pop3
 utilise un indicateur de lecture interne pour déterminer si un message a été vu ou non. Si un message n’est pas lu, après
 en le récupérant avec POP3, il sera marqué comme lu et il ne sera pas repris sur d’autres poll.

@@ -387,7 +387,7 @@ des données durant un transfer::
         if self.connected: self.close()
 
         self.connected = False
-        self.destination = self.o.destination.replace('scr', 'https', 1)
+        self.remoteUrl = self.o.remoteUrl.replace('scr', 'https', 1)
         self.timeout = self.o.timeout
 
         if not self.credentials(): return False

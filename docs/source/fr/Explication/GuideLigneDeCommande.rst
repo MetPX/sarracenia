@@ -865,7 +865,7 @@ SONDAGE (POLLING)
 =================
 
 On peut faire le même travail que post, sauf que les fichiers sont sur un serveur distant.
-Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option *destination*,
+Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option *pollUrl*,
 avec le chemin d’accès du produit (*directory*/« fichier correspondant »).  Il y en a une publication
 par fichier. La taille du fichier est prise dans le répertoire « ls »... mais sa somme
 de contrôle ne peut pas être déterminée, lors la stratégie de calcul de est ¨cod¨ qui signifie
@@ -1041,7 +1041,7 @@ informe qu'il y a nouveau produit.
 Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.rst>`_
 
 **poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
-une *destination* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
+une *pollUrl* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option *nodupe_fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.
@@ -1052,20 +1052,20 @@ nodupe_ttl) pour empêcher la publication de fichiers qui ont déjà été vus.
 **poll** peut être utilisé pour acquérir des fichiers distants en conjonction avec un `sarra`_ qui est
 abonné aux notifications d'un post, pour les télécharger et les republier à partir d’une pompe de données.
 
-L’option de destination spécifie ce qui est nécessaire pour se connecter au serveur distant
+L’option de pollUrl spécifie ce qui est nécessaire pour se connecter au serveur distant
 
-**destination protocol://<user>@<server>[:port]**
+**pollUrl protocol://<user>@<server>[:port]**
 
 ::
       (par défaut : Aucun et il est obligatoire de le définir )
 
-La *destination* doit être définie avec le minimum d’informations requises...
-**sr_poll** utilise le paramètre *destination* non seulement lors du poll, mais aussi
+La *pollUrl* doit être définie avec le minimum d’informations requises...
+**sr_poll** utilise le paramètre *pollUrl* non seulement lors du poll, mais aussi
 dans messages sr3_post produits.
 
 Par exemple, l’utilisateur peut définir :
 
-**destination ftp://myself@myserver**
+**pollUrl ftp://myself@myserver**
 
 Et compléter les informations nécessaires dans le fichier d’informations d’identification (credentials) avec la ligne :
 
@@ -1259,7 +1259,7 @@ et est utilisé comme modèle pour se faire remplacer dans le répertoire de bas
 (à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'link', 'oldname', 'newname'
 qui sont utilisés lors de la mise en miroir de liens symboliques ou de fichiers renommés.
 
-La **destination** définit le protocole et le serveur à utiliser pour livrer les produits.
+La **remoteUrl** définit le protocole et le serveur à utiliser pour livrer les produits.
 Sa forme est un url partiel, par exemple : **ftp://myuser@myhost**.
 Le programme utilise le fichier ~/.conf/sarra/credentials.conf pour obtenir les détails restants
 (mot de passe et options de connexion).  Les protocoles pris en charge sont ftp, ftps et sftp.
@@ -1277,7 +1277,7 @@ Maintenant, nous sommes prêts à envoyer le produit... par exemple, si la notif
 **sr_sender**  effectue la pseudo-livraison suivante :
 
 Envoie le fichier locale [**baseDir**]/relative/path/to/IMPORTANT_product
-à    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+à    **remoteUrl**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** est supérieur à 0, le processus tente de respecter
 cette vitesse de livraison... ftp,ftps,ou sftp)
 
@@ -1287,7 +1287,7 @@ cette vitesse de livraison... ftp,ftps,ou sftp)
 La notification sélectionnée contiennent toutes les bonnes informations
 (attributs de thème et d’en-tête) à l’exception du champ url dans l'avis... dans notre exemple : **http://this.pump.com/**
 
-Par défaut, **sr_sender** place la **destination** dans ce champ.
+Par défaut, **sr_sender** place la **remoteUrl** dans ce champ.
 L’utilisateur peut l’écraser en spécifiant l’option **post_baseUrl**. Par exemple:
 
 **post_baseUrl http://remote.apache.com**
@@ -1314,7 +1314,7 @@ Il y a 2 différences avec le cas précédent :
 les options **directory** et **filename**.
 
 Le **baseDir** est le même, tout comme la
-**destination** et les options **post_baseDir**.
+**remoteUrl** et les options **post_baseDir**.
 
 L’option **répertoire** définit un autre « chemin relatif » pour le produit
 à destination.  Il est marqué aux options **accept** définies après lui.
