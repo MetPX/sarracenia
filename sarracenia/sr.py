@@ -2077,6 +2077,9 @@ class sr_GlobalState:
 
         Returns: True if foreground, False if not.
         """
+        if not pid in self.procs:   # indicates a process that crashed.
+            return False
+
         if 'foreground' in self.procs[pid]['cmdline']:
             return True
         elif 'start' in self.procs[pid]['cmdline']:
