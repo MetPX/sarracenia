@@ -92,12 +92,12 @@ class Poll(FlowCB):
 
       when instantiated with options, the options honoured include:
 
-      * destination - the URL of the server to be polled.
+      * remoteUrl - the URL of the server to be polled.
 
       * post_baseURL - parameter for messages to be returned. Also used to look
         up credentials to help subscribers with retrieval.
 
-      * masks - These are the directories at the destination to poll.
+      * masks - These are the directories at the remoteUrl to poll.
         derived from the accept/reject clauses, but filtering should happen later.
         entire directories are listed at this point.
 
@@ -215,15 +215,15 @@ class Poll(FlowCB):
 
         self.o = options
 
-        # check destination
+        # check remoteUrl
 
         self.details = None
-        if self.o.destination is not None:
+        if self.o.remoteUrl is not None:
             ok, self.details = sarracenia.config.Config.credentials.get(
-                self.o.destination)
+                self.o.remoteUrl)
 
-        if self.o.destination is None or self.details == None:
-            logger.error("destination option incorrect or missing\n")
+        if self.o.remoteUrl is None or self.details == None:
+            logger.error("remoteUrl option incorrect or missing\n")
             sys.exit(1)
 
         if self.o.post_baseUrl is None:
@@ -234,6 +234,8 @@ class Poll(FlowCB):
             if self.details.url.password:
                 self.o.post_baseUrl = self.o.post_baseUrl.replace(
                     ':' + self.details.url.password, '')
+
+        self.o.remoteUrl = self.o.remoteUrl
 
         self.dest = sarracenia.transfer.Transfer.factory(
             self.details.url.scheme, self.o)
@@ -507,7 +509,7 @@ class Poll(FlowCB):
             self.dest.connect()
         except:
             logger.error("sr_poll/post_new_url: unable to connect to %s" %
-                         self.o.destination)
+                         self.o.remoteUrl)
             logger.debug('Exception details: ', exc_info=True)
             logger.error("Sleeping 30 secs and retry")
             time.sleep(30)

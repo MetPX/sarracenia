@@ -13,7 +13,7 @@ download_email_ingest: a sample do_download option for sr_subscribe.
 usage:
         in an sr_subscribe configuration file:
 
-        destination [imap|imaps|pop|pops]://[user[:password]@]host[:port]/
+        remoteUrl [imap|imaps|pop|pops]://[user[:password]@]host[:port]/
         do_download download_email_ingest
 
         IMAP over SSL uses 993, POP3 over SSL uses 995
@@ -47,7 +47,7 @@ class Fetcher(object):
             port = setting.port
         else:
             logger.error(
-                "download_email_ingest: destination has invalid credentials: %s"
+                "download_email_ingest: remoteUrl has invalid credentials: %s"
                 % parent.msg.baseurl)
             return False
 
@@ -146,7 +146,7 @@ class Fetcher(object):
 
         else:
             logger.error(
-                "download_email_ingest destination protocol must be one of 'imap/imaps' or 'pop/pops'."
+                "download_email_ingest remoteUrl protocol must be one of 'imap/imaps' or 'pop/pops'."
             )
             return False
 

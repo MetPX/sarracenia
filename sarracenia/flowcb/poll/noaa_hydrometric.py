@@ -8,7 +8,7 @@ sample url: https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=945
 
 in an sr_poll configuration file::
 
-	destination http://tidesandcurrents.noaa.gov/api
+	remoteUrl http://tidesandcurrents.noaa.gov/api
         retPathPattern /datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv
 
 	poll_noaa_stn_file [path/to/stn/file]
@@ -89,7 +89,7 @@ class Noaa_hydrometric(FlowCB):
         for site in sitecodes:
 
             retPath = self.o.retPathPattern.format(site, 'water_temperature')
-            url = self.o.destination + retPath
+            url = self.o.remoteUrl + retPath
             logger.info(f'polling {site}, polling: {url}')
             # Water temp request
             resp = urllib.request.urlopen(url).getcode()
@@ -107,7 +107,7 @@ class Noaa_hydrometric(FlowCB):
             # Water level request
             retPath = self.o.retPathPattern.format(
                 site, 'water_level') + '&datum=STND'
-            url = self.o.destination + retPath
+            url = self.o.remoteUrl + retPath
             resp = urllib.request.urlopen(url).getcode()
             logger.info(f"poll_noaa file posted: {url}")
 

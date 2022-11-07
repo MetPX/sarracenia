@@ -1365,6 +1365,13 @@ Active if *-rc|--reconnect* appears in the command line... or
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
+remoteUrl <url>
+---------------
+
+Specification of a remote resource to either query with a poll or deliver to 
+with a Sarracenia.transfer protocol. See the `POLLING <../Explanation/CommandlineGuide.html#POLLING>`_ 
+in the Command Line Guide.
+
 rename <path>
 -------------
 

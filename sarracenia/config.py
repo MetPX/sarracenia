@@ -124,10 +124,10 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
+    'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
     'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName',
+    'post_exchangeSuffix', 'queueName', 'remoteUrl',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -503,6 +503,7 @@ class Config:
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
+        'destination': 'remoteUrl',
         'chmod_dir': 'permDirDefault',
         'default_dir_mode': 'permDirDefault',
         'chmod_log': 'permLog',

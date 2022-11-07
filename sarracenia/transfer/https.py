@@ -97,7 +97,7 @@ class Https(Transfer):
 
         if not self.connected : return False
 
-        if self.destination != self.o.destination:
+        if self.remoteUrl != self.o.remoteUrl:
             self.close()
             return False
 
@@ -110,12 +110,12 @@ class Https(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_http connect %s" % self.o.destination)
+        logger.debug("sr_http connect %s" % self.o.remoteUrl)
 
         if self.connected: self.close()
 
         self.connected = False
-        self.destination = self.o.destination
+        self.remoteUrl = self.o.remoteUrl
         self.timeout = self.o.timeout
 
         if not self.credentials(): return False
@@ -124,10 +124,10 @@ class Https(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_http credentials %s" % self.destination)
+        logger.debug("sr_http credentials %s" % self.remoteUrl)
 
         try:
-            ok, details = self.o.credentials.get(self.destination)
+            ok, details = self.o.credentials.get(self.remoteUrl)
             if details: url = details.url
 
             self.user = url.username if url.username != '' else None
@@ -140,7 +140,7 @@ class Https(Transfer):
         except:
             logger.error(
                 "sr_http/credentials: unable to get credentials for %s" %
-                self.destination)
+                self.remoteUrl)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -160,9 +160,9 @@ class Https(Transfer):
         # open self.http
 
         if 'retPath' in msg:
-            url = self.destination + msg['retPath']
+            url = self.remoteUrl + msg['retPath']
         else:
-            url = self.destination + '/' + urllib.parse.quote(self.path + '/' +
+            url = self.remoteUrl + '/' + urllib.parse.quote(self.path + '/' +
                                                               remote_file)
 
         ok = self.__open__(url, remote_offset, length)
@@ -220,7 +220,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.destination + '/' + urllib.parse.quote(self.path)
+        url = self.remoteUrl + '/' + urllib.parse.quote(self.path)
 
         ok = self.__open__(url)
 

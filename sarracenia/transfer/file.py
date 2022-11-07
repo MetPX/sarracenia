@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 #
 # require   logger
 #           options.credentials
-#           options.destination
+#           options.remoteUrl
 #           options.batch
 #           options.permDefault
 #           options.permDirDefault
@@ -96,7 +96,7 @@ class File(Transfer):
 
     # connect
     def connect(self):
-        logger.debug("sr_file connect %s" % self.o.destination)
+        logger.debug("sr_file connect %s" % self.o.remoteUrl)
 
         self.recursive = True
         self.connected = True

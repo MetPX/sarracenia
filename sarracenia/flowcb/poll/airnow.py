@@ -6,7 +6,7 @@ Compatible with Python 3.5+.
 usage:
 	in an sr3 poll configuration file:
 
-	destination http://files.airnowtech.org/?prefix=airnow/today/
+	remoteUrl http://files.airnowtech.org/?prefix=airnow/today/
 
 	callback airnow
 
@@ -41,9 +41,9 @@ class Airnow(FlowCB):
             Filename = 'HourlyData_%s.dat' % last_hour_date_time.strftime(
                 '%Y%m%d%H')
             logger.debug("poll_airnow_http Filename: %s" % Filename)
-            URL = self.o.destination + '/' + Filename
+            URL = self.o.remoteUrl + '/' + Filename
             logger.info('INFO %s ' % URL)
-            #resp = requests.get(self.o.destination + '/' + Filename)
+            #resp = requests.get(self.o.remoteUrl + '/' + Filename)
             resp = requests.get(URL)
             if resp.ok:
                 mtime = datetime.datetime.strptime(resp.headers['last-modified'],\
