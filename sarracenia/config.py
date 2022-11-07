@@ -1574,6 +1574,11 @@ class Config:
                 self.documentRoot = path
             n = 2
 
+        if hasattr(self, 'pollUrl'):
+            if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
+                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                self.post_baseUrl = self.pollUrl
+            
         # verify post_baseDir
 
         if self.post_baseDir is None:
