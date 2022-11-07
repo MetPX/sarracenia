@@ -18,7 +18,7 @@ default_options = {
     'blocksize': 1,
     'bufsize': 1024 * 1024,
     'chmod': 0o400,
-    'remoteUrl': None,
+    'pollUrl': None,
     'follow_symlinks': False,
     'force_polling': False,
     'inflight': None,
@@ -68,8 +68,8 @@ class Poll(Flow):
                                     'sarracenia.flowcb.post.message.Message')
 
         if not sarracenia.extras['ftppoll']['present']:
-            if hasattr( self.o, 'remoteUrl' ) and ( self.o.remoteUrl.startswith('ftp') ):
-                logger.critical( f"attempting to configure an FTP poll remoteUrl={self.o.remoteUrl}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
+            if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
+                logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
                 sys.exit(1)
 
     def do(self):

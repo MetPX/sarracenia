@@ -8,7 +8,7 @@ Status: UNTESTED... don't have a working basis (even on v2) to compare against.
 
 usage:
 	in an sr3 poll configuration file:
-	remoteUrl http://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0:}&period=PT3H&parameterCd=00060,00065,00011
+	pollUrl http://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0:}&period=PT3H&parameterCd=00060,00065,00011
 
 	batch [station_chunk]
 	poll_usgs_station  station-declaration
@@ -90,15 +90,15 @@ class Usgs(FlowCB):
             ]:
                 stns = ','.join([s for s in sites])
                 file_cnt += 1
-                logger.debug('getting: %s' % self.o.remoteUrl.format(stns))
+                logger.debug('getting: %s' % self.o.pollUrl.format(stns))
 
                 status_code = urllib.request.urlopen(
-                    self.o.remoteUrl.format(stns)).getcode()
+                    self.o.pollUrl.format(stns)).getcode()
                 if status_code == 200:
                     logger.info("poll_usgs file updated %s" %
-                                self.o.remoteUrl.format(stns))
+                                self.o.pollUrl.format(stns))
 
-                    self.o.msg.new_baseurl = self.o.remoteUrl.format(stns)
+                    self.o.msg.new_baseurl = self.o.pollUrl.format(stns)
 
                     m = sarracenia.Message.fromFileInfo(
                         'usgs_{0}_sites{1}.xml'.format(run_time, file_cnt),
@@ -111,16 +111,16 @@ class Usgs(FlowCB):
 							unblocked.''')
                 else:
                     logger.debug("poll_usgs file not found: %s" %
-                                 self.o.remoteUrl.format(stns))
+                                 self.o.pollUrl.format(stns))
         else:  # Get stations one at a time
             for site in self.sitecodes:
-                logger.debug('getting: %s' % self.o.remoteUrl.format(site))
+                logger.debug('getting: %s' % self.o.pollUrl.format(site))
                 status_code = urllib.request.urlopen(
-                    self.o.remoteUrl.format(site)).getcode()
+                    self.o.pollUrl.format(site)).getcode()
                 if status_code == 200:
                     logger.info("poll_usgs file updated %s" %
-                                self.o.remoteUrl.format(site))
-                    self.o.msg.new_baseurl = self.o.remoteUrl.format(site)
+                                self.o.pollUrl.format(site))
+                    self.o.msg.new_baseurl = self.o.pollUrl.format(site)
                     m = sarracenia.Message.fromFileInfo(
                         'usgs_{0}_{1}.xml'.format(run_time, site), self.o)
                     gathered_messages.append(m)
@@ -131,5 +131,5 @@ class Usgs(FlowCB):
 							unblocked.''')
                 else:
                     logger.debug("poll_usgs file not found: %s" %
-                                 self.o.remoteUrl.format(site))
+                                 self.o.pollUrl.format(site))
         return gathered_messages

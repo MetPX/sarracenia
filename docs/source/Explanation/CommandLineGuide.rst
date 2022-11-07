@@ -854,7 +854,7 @@ POLLING
 =======
 
 Polling is doing the same job as a post, except for files on a remote server.
-In the case of a poll, the post will have its url built from the *remoteUrl* 
+In the case of a poll, the post will have its url built from the *pollUrl* 
 option, with the product's path (*directory*/"matched file").  There is one 
 post per file.  The file's size is taken from the directory "ls"... but its 
 checksum cannot be determined, so the default integrity method is "cod", asking
@@ -1035,7 +1035,7 @@ notify about the new product.
 The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.rst>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
-a *remoteUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists
+a *pollUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
 files. The *nodupe_fileAgeMax* option eliminates files that are too old 
 from consideration. When a file is found that matches a pattern given 
@@ -1048,20 +1048,20 @@ been seen.
 **poll** can be used to acquire remote files in conjunction with an `sarra`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
-The remoteUrl option specify what is needed to connect to the remote server
+The pollUrl option specify what is needed to connect to the remote server
 
-**remoteUrl protocol://<user>@<server>[:port]**
+**pollUrl protocol://<user>@<server>[:port]**
 
 ::
       (default: None and it is mandatory to set it )
 
-The *remoteUrl* should be set with the minimum required information...
-**sr_poll**  uses *remoteUrl* setting not only when polling, but also
+The *pollUrl* should be set with the minimum required information...
+**sr_poll**  uses *pollUrl* setting not only when polling, but also
 in the sr_post notification messages produced.
 
 For example, the user can set :
 
-**remoteUrl ftp://myself@myserver**
+**pollUrl ftp://myself@myserver**
 
 And complete the needed information in the credentials file with the line  :
 
@@ -1851,8 +1851,8 @@ The broker option sets all the credential information to connect to the  **Rabbi
       (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.config/sarra/credentials.conf.  This includes the remoteUrl and the broker
-passwords and settings needed by components.  The format is one entry per line.  Examples:
+only in ~/.config/sarra/credentials.conf. This includes the url and broker
+passwords and settings needed by components. The format is one entry per line. Examples:
 
 - **amqp://user1:password1@host/**
 - **amqps://user2:password2@host:5671/dev**

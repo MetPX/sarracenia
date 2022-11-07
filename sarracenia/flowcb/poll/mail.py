@@ -13,7 +13,7 @@ poll_email_ingest: a sample do_poll option for sr_poll.
 usage:
         in an sr_poll configuration file:
 
-        remoteUrl [imap|imaps|pop|pops]://[user[:password]@]host[:port]/
+        pollUrl [imap|imaps|pop|pops]://[user[:password]@]host[:port]/
 
         IMAP over SSL uses 993, POP3 over SSL uses 995
         IMAP unsecured uses 143, POP3 unsecured uses 110
@@ -44,7 +44,7 @@ class Mail(FlowCB):
 
         logger.debug("start")
 
-        ok, details = self.o.credentials.get(self.o.remoteUrl)
+        ok, details = self.o.credentials.get(self.o.pollUrl)
         if ok:
             setting = details.url
             user = setting.username
@@ -52,9 +52,9 @@ class Mail(FlowCB):
             server = setting.hostname
             protocol = setting.scheme.lower()
             port = setting.port
-            logger.debug("remoteUrl valid")
+            logger.debug("pollUrl valid")
         else:
-            logger.error("remoteUrl: invalid credentials")
+            logger.error("pollUrl: invalid credentials")
             return
 
         if not port:
@@ -146,6 +146,6 @@ class Mail(FlowCB):
 
         else:
             logger.error(
-                "poll_email_ingest remoteUrl protocol must be one of 'imap/imaps' or 'pop/pops'."
+                "poll_email_ingest pollUrl protocol must be one of 'imap/imaps' or 'pop/pops'."
             )
         return gathered_messages

@@ -1948,6 +1948,12 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                    elif k == 'destination':
+                        if component == 'poll':
+                            k = 'pollUrl'
+                        else:
+                            k = 'remoteUrl'
+
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)

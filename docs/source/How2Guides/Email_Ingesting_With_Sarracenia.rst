@@ -13,7 +13,7 @@ Polling
 
 Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Out of the box, Sarracenia supports polling remoteUrls with HTTP/HTTPS and SFTP/FTP protocols. 
+Out of the box, Sarracenia supports polling pollUrl with HTTP/HTTPS and SFTP/FTP protocols. 
 Other protocols can be supported by subclassing the sarracenia.flowcb.poll.Poll class.
 Fortunately there is an existing mail poll plugin, which invokes a plugin.
 start by listing available examples::
@@ -40,7 +40,7 @@ What did we get?::
    # and a tsource user/xs_tsource exchange exist, with FLOWBROKER set to the hostname
    # rabbitmq is running on (e.g. export FLOWBROKER='localhost')
    #
-   # The remoteUrls is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
+   # The pollUrl is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
    # <scheme>://<user>:<password>@<host>:<port>/ would be contained in your ~/.config/sarra/credentials.conf.
    # Valid schemes are pop/pops/imap/imaps, where the s denotes an SSL connection. If a port isn't 
    # specified, the default port associated with the scheme will be used (IMAPS -> 993, POPS -> 995,
@@ -52,7 +52,7 @@ What did we get?::
    
    sleep 60
    
-   remoteUrls <scheme>://<user>@<host>:<port>/
+   pollUrl <scheme>://<user>@<host>:<port>/
    
    callback poll.mail
    
@@ -67,8 +67,8 @@ Implementing POP/IMAP
 
 NOTE: not yet converted to v3.
 
-With Python's *poplib* and *imaplib* modules, the remoteUrls can be parsed and the email server
-connected to as per the scheme specified. Sarracenia can extract the credentials from the remoteUrls
+With Python's *poplib* and *imaplib* modules, the pollUrl can be parsed and the email server
+connected to as per the scheme specified. Sarracenia can extract the credentials from the pollUrl
 through its built-in classes, so no passwords need to be stored in the config file to connect. POP3
 uses an internal read-flag to determine if a message has been seen or not. If a message is unread, after
 retrieving it with POP3 it will be marked as read, and it won't be picked up on further polls. 
@@ -129,7 +129,7 @@ as indicated in the first header of the file. The metadata of the email is conve
 per line, in name:value format. This can be parsed for attachments, message bodies, encoding methods, etc. A
 *do_download* plugin can implement the retrieval of the message to output to a file by registering the 
 protocol in a separate module, as in the *do_poll* plugin. Once a message is received with the user/host 
-advertised, it can then connect to the mail server using the remoteUrls and the credentials as specified
+advertised, it can then connect to the mail server using the pollUrl and the credentials as specified
 in ~/.config/sarra/credentials.conf and retrieve the message locally. An example of a plugin that does this
 can be found under **plugins** as `download_email_ingest.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_email_ingest.py>`_. 
 

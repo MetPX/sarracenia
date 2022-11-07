@@ -126,7 +126,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 str_options = [
     'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
-    'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
+    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'queueName', 'remoteUrl',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
@@ -503,7 +503,6 @@ class Config:
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
-        'destination': 'remoteUrl',
         'chmod_dir': 'permDirDefault',
         'default_dir_mode': 'permDirDefault',
         'chmod_log': 'permLog',
@@ -1172,6 +1171,11 @@ class Config:
             k = line[0]
             if k in Config.synonyms:
                 k = Config.synonyms[k]
+            elif k == 'destination':
+                if component == 'poll':
+                    k = 'pollUrl'
+                else:
+                    k = 'remoteUrl'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
