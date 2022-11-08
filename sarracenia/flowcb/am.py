@@ -22,6 +22,7 @@ import pathlib
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
+from random import randint
 
 # default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
 logger = logging.getLogger(__name__)
@@ -45,13 +46,14 @@ class AM(FlowCB):
         # Initialise server variables
         self.inBuffer = bytes()
         self.limit = 32678
-        self.o.add_option('onlySync','flag', False)
         self.o.add_option('patternAM','str','80sII4sIIII20s')
         self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
-        self.childlist = []
-        self.o.timeCopy = True
+        #self.childlist = []
+        #self.o.timeCopy = True
+        self.minnum = 00000
+        self.maxnum = 99999
         self.remoteHost = None
 
         # Initialise socket
@@ -75,14 +77,13 @@ class AM(FlowCB):
         """      
 
         if self.host == 'None':
-            raise Exception("No remote host was specified.")
+            raise Exception("Nohost was specified.")
 
         try:
             # Bind socket to all interfaces and listen
             self.s.bind((self.host, self.port)) 
             self.s.listen(1)
-            logger.info("Socket listening on remote host %s and port %d.", self.host, self.port)
-            self.flag = True
+            logger.info("Socket listening on host %s and port %d.", self.host, self.port)
         except socket.error as e:
                 logger.info(f"Parent process bind failed. Retrying. Error: {e.args}")
                 time.sleep(5)
@@ -93,18 +94,20 @@ class AM(FlowCB):
             
                 try:
                     # Accept the connection from socket
-                    logger.info("Trying to accept connection from child process.")
-                    conn, self.remoteHost = self.s.accept()
+                    logger.info("Trying to accept connection.")
                     
+                    try:
+                        conn, self.remoteHost = self.s.accept()
+                    except Exception as e:
+                        logger.error(f"Stopping accept. Leaving. Error: {e}")
+                        sys.exit(0)   
+
                     # Parent process stays in the loop searching for other connections. 
                     # Child will proceed accepting or refusing connection.
                     pid = os.fork()
 
                     if pid == 0:
                         # Break from the loop if process is child
-                        # TODO: Log to file with correct instance ID
-                        # TODO: Write the pid file for the instance, so that sr status | stop | sanity
-                        # FIXME: Is this done??
                         self.s.close()
                         break                    
 
@@ -112,14 +115,19 @@ class AM(FlowCB):
                         raise logger.exception("Connection could not fork. Exiting.") 
                     else:
                         # Stay in loop if process is parent 
-                        self.childlist.append(pid)
+                        
+                        ## Set the logfiles properly
+                        sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
 
                         pidfilename = sarracenia.config.get_pid_filename(
                         None, self.o.component, self.o.config, child_inst)
 
+                        self.o.no = child_inst
+                        child_inst += 1
+
                         with open(pidfilename, 'w') as pfn:
                             pfn.write('%d' % pid)
-                            
+
                         conn.close()
                         pass
                    
@@ -156,15 +164,21 @@ class AM(FlowCB):
 
 
     def on_start(self):
+        if self.o.no != 1:
+            pidfilename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
+            if os.path.exists(pidfilename):
+                os.unlink(pidfilename)
+            sys.exit(0)
         self.conn = self.__establishconn__()
     
 
     def on_stop(self):
-        # Kill all child processes gathered in list
-        for child_pid in self.childlist:
-            os.kill(child_pid, 9)
-        
-        self.conn.close()
+        self.s.close()
+        if self.o.no == 1:
+            pass
+        else:
+            self.conn.close()
+        sys.exit(0)
 
 
     def AddBuffer(self):
@@ -190,8 +204,6 @@ class AM(FlowCB):
                 if not self.o.onlySync:
                     logger.exception("Connection was lost")
                     raise Exception("Connection was lost")
-            
-            logger.info("Message length - %d Bytes, Data received from socket - %s" % (len(tmp),tmp))
             
             self.inBuffer = self.inBuffer + tmp
 
@@ -219,11 +231,8 @@ class AM(FlowCB):
                 return INCOMPLETE
         """
 
-        logger.info("Verifying message integrity.")
-        
         # Only unpack data if buffer length satisfactory
         if len(self.inBuffer) >= self.o.sizeAM:
-            # TODO: Add variables to options with self.o.add_option?
             (header, src_inet, dst_inet, threads, start, length, firsttime, timestamp, future) = \
                     struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
         else:
@@ -286,20 +295,31 @@ class AM(FlowCB):
 
                 self.inBuffer = self.inBuffer[longlen:]
 
-                #Debug
+                logger.info(f"Bulletin length: {longlen}") 
                 logger.info(f"Bulletin contents: {bulletin}")
-                logger.info(f"Bulletin length: {longlen}")       
 
                 # Create a file for new messages and let sarracenia format data
-                # TODO: Change file path to end @ CACN00 CWAO 281900 WRR <-
-                filepath = self.o.directory + os.sep + self.header.split(b'\0',1)[0].decode('iso-8859-1').replace(' ', '_') 
-                file = open(filepath, 'wb')
-                file.write(bulletin)
-                file.close()
-                st = os.stat(filepath)
+                parse = self.header.split(b'\0',1)
+                bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
+                # origin = parse[1].decode('iso-8859-1').split('\n')[0].replace(' ', '_') 
 
-                sarramsg = sarracenia.Message.fromFileData(filepath,self.o, lstat=st)
-                newmsg.append(sarramsg)
+                try:
+                    # Filenames have the following naming scheme:
+                    #   1. Header
+                    #   2. Counter (makes filename unique for each bulletin)
+                    #   IF A* or R* present in header, include in filename
+                    filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
+
+                    file = open(filepath, 'wb')
+                    file.write(bulletin)
+                    file.close()
+                    st = os.stat(filepath)
+
+                    sarramsg = sarracenia.Message.fromFileData(filepath,self.o, lstat=st)
+                    newmsg.append(sarramsg)
+
+                except:
+                    logger.error("Unable to generate bulletin file.")
 
         return newmsg    
                                 

@@ -55,6 +55,7 @@ import sarracenia.integrity.arbitrary
 
 import sarracenia.moth
 import sarracenia.integrity
+import sarracenia.instance
 
 default_options = {
     'acceptSizeWrong': False,
@@ -2207,9 +2208,78 @@ def one_config(component, config, isPost=False):
 
     return cfg
 
+def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
+
+    lr_when = 'midnight'
+    if (type(cfg_preparse.logRotateInterval) == str) and (
+            cfg_preparse.logRotateInterval[-1] in 'mMhHdD'):
+        lr_when = cfg_preparse.logRotateInterval[-1]
+        logRotateInterval = int(float(cfg_preparse.logRotateInterval[:-1]))
+    else:
+        logRotateInterval = int(float(cfg_preparse.logRotateInterval))
+
+    if type(cfg_preparse.logRotateCount) == str:
+        logRotateCount = int(float(cfg_preparse.logRotateCount))
+    else:
+        logRotateCount = cfg_preparse.logRotateCount
+
+    # init logs here. need to know instance number and configuration and component before here.
+    if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
+
+        logfilename = get_log_filename(
+            hostdir, component, config, child_inst)
+
+        pidlogfn = logfilename
+
+        #print('logfilename= %s' % logfilename )
+        dir_not_there = not os.path.exists(os.path.dirname(logfilename))
+        while dir_not_there:
+            try:
+                os.makedirs(os.path.dirname(logfilename), exist_ok=True)
+                dir_not_there = False
+            except FileExistsError:
+                dir_not_there = False
+            except Exception as ex:
+                logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                logging.debug("Exception details:", exc_info=True)
+                os.sleep(1)
+
+        log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        if logging.getLogger().hasHandlers():
+            for h in logging.getLogger().handlers:
+                h.close()
+                logging.getLogger().removeHandler(h)
+        logger = logging.getLogger()
+        logger.setLevel(logLevel.upper())
+
+        handler = sarracenia.instance.RedirectedTimedRotatingFileHandler(
+            logfilename,
+            when=lr_when,
+            interval=logRotateInterval,
+            backupCount=logRotateCount)
+        handler.setFormatter(logging.Formatter(log_format))
+
+        logger.addHandler(handler)
+
+        if hasattr(cfg_preparse, 'permLog'):
+            os.chmod(logfilename, cfg_preparse.permLog)
+
+        # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
+        if sys.platform != 'win32':
+            os.dup2(handler.stream.fileno(), 1)
+            os.dup2(handler.stream.fileno(), 2)
+
+    else:
+        try:
+            logger.setLevel(logLevel)
+        except Exception:
+            logger.setLevel(logging.INFO)
 
 # add directory to python front of search path for plugins.
-
 plugin_dir = get_user_config_dir() + os.sep + "plugins"
 if os.path.isdir(plugin_dir) and not plugin_dir in sys.path:
     sys.path.insert(0, plugin_dir)
