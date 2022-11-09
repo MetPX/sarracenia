@@ -4,7 +4,7 @@ Retrieves file keys in the NEXRAD US Weather Radar public dataset.
 Can be adjusted slightly for other public datasets on the AWS S3 platform.
 Compatible with Python 3.5+.
 
-sarracenia/flowcb/gather/nexrad.py: a sample gather option for sr3 poll.
+sarracenia/flowcb/poll/nexrad.py: a sample gather option for sr3 poll.
 	        connects to a public aws s3 bucket and posts all the keys
 	        corresponding to files uploaded since it last woke up 
 
