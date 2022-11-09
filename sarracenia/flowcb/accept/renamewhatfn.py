@@ -1,5 +1,12 @@
 """
 Plugin renamewhatfn.py:
+    This plugin is no longer needed.  Sundew compoatibility was added to Sarracenia, 
+    so now can get the same effect by using the *filename* option which works like it
+    does in Sundew:
+
+    filename WHATFN
+
+    what it was used for:
     This renamer strips everything from the first colon in the file name to the end.
     This does the same thing as a 'WHATFN' config on a sundew sender.
 
