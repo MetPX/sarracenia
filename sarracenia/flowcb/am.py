@@ -18,7 +18,7 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os
 import urllib.parse
-import pathlib
+import psutil
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
@@ -50,8 +50,7 @@ class AM(FlowCB):
         self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
-        #self.childlist = []
-        #self.o.timeCopy = True
+        self.hostlist = [0]
         self.minnum = 00000
         self.maxnum = 99999
         self.remoteHost = None
@@ -98,6 +97,15 @@ class AM(FlowCB):
                     
                     try:
                         conn, self.remoteHost = self.s.accept()
+                        time.sleep(1)
+                        
+                        # Parent process gets forked when sr stop is called. 
+                        # This will kill all the processes when stopping.
+                        if self.remoteHost[0] == self.hostlist[-1]:
+                            sys.exit(0)
+                            
+                        self.hostlist.append(self.remoteHost[0])
+
                     except Exception as e:
                         logger.error(f"Stopping accept. Leaving. Error: {e}")
                         sys.exit(0)   
@@ -109,16 +117,15 @@ class AM(FlowCB):
                     if pid == 0:
                         # Break from the loop if process is child
                         self.s.close()
+                        ## Set the logfiles properly
+                        sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
+                        logger.info(f"Starting up service with host {self.remoteHost}")
                         break                    
 
                     elif pid == -1:
-                        raise logger.exception("Connection could not fork. Exiting.") 
+                        raise logger.exception("Connection could not fork. Exiting.")
                     else:
                         # Stay in loop if process is parent 
-                        
-                        ## Set the logfiles properly
-                        sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
-
                         pidfilename = sarracenia.config.get_pid_filename(
                         None, self.o.component, self.o.config, child_inst)
 
@@ -129,6 +136,8 @@ class AM(FlowCB):
                             pfn.write('%d' % pid)
 
                         conn.close()
+                        logger.info(f"Forked child from host {self.remoteHost} with instance {self.o.no}")
+
                         pass
                    
                 except TypeError:
@@ -179,7 +188,7 @@ class AM(FlowCB):
         else:
             self.conn.close()
         sys.exit(0)
-
+        
 
     def AddBuffer(self):
         """
@@ -197,13 +206,16 @@ class AM(FlowCB):
 
         try:
             # Receive data from socket
-            tmp = self.conn.recv(self.limit)
+            try:
+                tmp = self.conn.recv(self.limit)
+            except Exception as e:
+                tmp = ''
+                logger.error(f"Reception has been interrupted. Closing connection. Error message: {e}")
 
 
             if tmp == '':
-                if not self.o.onlySync:
-                    logger.exception("Connection was lost")
-                    raise Exception("Connection was lost")
+                # logger.exception("Connection was lost")
+                raise Exception()
             
             self.inBuffer = self.inBuffer + tmp
 
@@ -212,9 +224,9 @@ class AM(FlowCB):
 
             logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
             
-            if not self.o.onlySync:
-                logger.exception("Connection was lost")
-                raise Exception("Connection was lost")
+            # if not self.o.onlySync:
+                # logger.exception("Connection was lost")
+                # raise Exception("Connection was lost")
             
 
     def CheckNextMsgStatus(self):

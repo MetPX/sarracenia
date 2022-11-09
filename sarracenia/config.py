@@ -2233,8 +2233,6 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
         logfilename = get_log_filename(
             hostdir, component, config, child_inst)
 
-        pidlogfn = logfilename
-
         #print('logfilename= %s' % logfilename )
         dir_not_there = not os.path.exists(os.path.dirname(logfilename))
         while dir_not_there:
