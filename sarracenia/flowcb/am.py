@@ -18,7 +18,7 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os, signal
 import urllib.parse
-import pathlib
+import psutil
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
