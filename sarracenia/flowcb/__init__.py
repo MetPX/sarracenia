@@ -207,7 +207,7 @@ class FlowCB:
 def load_library(factory_path, options):
     """
        Loading the entry points for a python module. It searches 
-       the normal python module pat using the importlib module. 
+       the normal python module path using the importlib module. 
 
        the factory_path is a combined file specification with a dot separator
        with a special last entry being the name of the class within the file.
