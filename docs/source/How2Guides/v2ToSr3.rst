@@ -384,8 +384,8 @@ In general, v3 plugins:
   .. Note:: on_file plugins that become after_work plugins should be placed in the
             /flowcb/after_work directory
   
-* v3 has **no Need to set notification message fields in plugins**
-  in v2, one would need to set partstr, and sumstr for v2 notification messages in plugins. 
+* v3 has **Must not set notification message fields in plugins**
+  in v2, one would need to set **partstr**, and **sumstr** for v2 notification messages in plugins. 
   This required an excessive understanding of notification message formats, and meant that 
   changing notification message formats required modifying plugins (v03 notification message format is
   not supported by most v2 plugins, for example). To build a notification message from a 
@@ -395,7 +395,12 @@ In general, v3 plugins:
 
      m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
 
-  just look at  `do_poll -> poll`_
+  Setting **partstr** and **sumstr** are specific to v2 messages, and will not be interpreted 
+  properly in sr3.  The encoding of this information is completely different in v03 messages,
+  and sr3 supports alternate message encodings which may be different again. Setting of these
+  fields manually is actively counter-productive.
+
+  For an example of using the message builder, look at  `do_poll -> poll`_
 
 
 * v3 plugins **rarely, involve subclassing of moth or transfer classes.**
