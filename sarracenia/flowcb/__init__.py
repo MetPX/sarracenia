@@ -217,23 +217,45 @@ def load_library(factory_path, options):
        means import the module named a.b.c and instantiate an object of type
        C. In that class-C object, look for the known callback entry points. 
 
+       or C might be guessed by the last class in the path not following
+       python convention by not starting with a capital letter, in which case,
+       it will just guess.
+
        note that the ~/.config/sr3/plugins will also be in the python library 
        path, so modules placed there will be found, in addition to those in the
        package itself in the *sarracenia/flowcb*  directory
 
+       callback foo  -> foo.Foo
+                        sarracenia.flowcb.foo.Foo
+
+       callback foo.bar -> foo.bar.Bar
+                           sarracenia.flowcb.foo.bar.Bar
+                           foo.bar
+                           sarracenia.flowcb.foo.bar 
     """
 
     if not '.' in factory_path:
-        logger.error(
-            'flowCallback <file>.<Class> no dot... missing something from: %s'
-            % factory_path)
-        return None
+        packagename = factory_path
+        classname =factory_path.upper()
+    else:
+        if factory_path.split('.')[-1][0].islower():
+            packagename, classname = factory_path.rsplit('.', 1)
+        else:
+            packagename = factory_path
+            classname = factory_path.split('.')[-1].capitalize()
 
-    packagename, classname = factory_path.rsplit('.', 1)
-
-    module = importlib.import_module(packagename)
-    class_ = getattr(module, classname)
-
+    try:
+        module = importlib.import_module(packagename)
+        class_ = getattr(module, classname)
+    except ModuleNotFoundError:
+        packagename = 'sarracenia.flowcb.' + packagename
+        try:
+            module = importlib.import_module(packagename)
+            class_ = getattr(module, classname)
+        except ModuleNotFoundError:
+            # give up.
+            return None        
+ 
     if hasattr(options, 'settings'):
         opt = copy.deepcopy(options)
         # strip off the class prefix.
