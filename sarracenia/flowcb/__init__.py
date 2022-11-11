@@ -239,10 +239,10 @@ def load_library(factory_path, options):
         classname =factory_path.upper()
     else:
         if factory_path.split('.')[-1][0].islower():
-            packagename, classname = factory_path.rsplit('.', 1)
-        else:
             packagename = factory_path
             classname = factory_path.split('.')[-1].capitalize()
+        else:
+            packagename, classname = factory_path.rsplit('.', 1)
 
     try:
         module = importlib.import_module(packagename)
