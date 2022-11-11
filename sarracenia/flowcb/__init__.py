@@ -221,6 +221,7 @@ def load_library(factory_path, options):
        python convention by not starting with a capital letter, in which case,
        it will just guess.
 
+       re
        note that the ~/.config/sr3/plugins will also be in the python library 
        path, so modules placed there will be found, in addition to those in the
        package itself in the *sarracenia/flowcb*  directory
@@ -236,7 +237,7 @@ def load_library(factory_path, options):
 
     if not '.' in factory_path:
         packagename = factory_path
-        classname =factory_path.upper()
+        classname =factory_path.capitalize()
     else:
         if factory_path.split('.')[-1][0].islower():
             packagename = factory_path
@@ -245,10 +246,9 @@ def load_library(factory_path, options):
             packagename, classname = factory_path.rsplit('.', 1)
 
     try:
-        module = importlib.import_module(packagename)
+        module = importlib.import_module('sarracenia.flowcb.' + packagename)
         class_ = getattr(module, classname)
     except ModuleNotFoundError:
-        packagename = 'sarracenia.flowcb.' + packagename
         try:
             module = importlib.import_module(packagename)
             class_ = getattr(module, classname)

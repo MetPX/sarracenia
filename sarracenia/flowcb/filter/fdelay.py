@@ -20,7 +20,7 @@ from sarracenia import timestr2flt, nowflt
 logger = logging.getLogger(__name__)
 
 
-class FDelay(FlowCB):
+class Fdelay(FlowCB):
     def __init__(self, options):
 
         self.o = options
