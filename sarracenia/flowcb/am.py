@@ -18,13 +18,11 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os, signal
 import urllib.parse
-import psutil
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
 
-# default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
 logger = logging.getLogger(__name__)
 
 

@@ -175,9 +175,6 @@ class AM(FlowCB):
             # of bytes sent
         """
 
-        # Debug
-        logger.info(f"Sarracenia message: {msg}")
-
         try:
             # Wrap message
             packed_msg = self.wrapmsg(msg)
