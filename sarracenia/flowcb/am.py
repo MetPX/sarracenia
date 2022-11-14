@@ -18,13 +18,11 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os, signal
 import urllib.parse
-import psutil
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
 
-# default_options = {'download': False, 'logReject': False, 'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info', 'sleep': 0.1, 'vip': None}
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +48,6 @@ class AM(FlowCB):
         self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
-        self.hostlist = [0]
         self.minnum = 00000
         self.maxnum = 99999
         self.remoteHost = None
@@ -311,10 +308,3 @@ class AM(FlowCB):
                     logger.error("Unable to generate bulletin file.")
 
         return newmsg    
-                                
-
-# Debug
-# if __name__ == '__main__':
-    # am = AM(default_options, 5002, '127.0.0.1')
-    # while True:
-        # am.poll()
