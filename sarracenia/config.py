@@ -1229,7 +1229,7 @@ class Config:
                 #vv = v.split('.')
                 #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_early:
-                    self.plugins_early.append(v)
+                    self.plugins_early.inset(0,v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1264,7 +1264,7 @@ class Config:
                     self.plugins_late.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
                 if v not in self.plugins_early:
-                    self.plugins_early.append( v )
+                    self.plugins_early.insert(0, v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['integrity']:
