@@ -127,9 +127,6 @@ class AM(FlowCB):
                         pidfilename = sarracenia.config.get_pid_filename(
                         None, self.o.component, self.o.config, child_inst)
 
-                        self.o.no = child_inst
-                        child_inst += 1
-
                         with open(pidfilename, 'w') as pfn:
                             pfn.write('%d' % pid)
 

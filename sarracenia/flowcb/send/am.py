@@ -5,7 +5,7 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
 #
 
-""",1
+"""
 Sundew migration
 sarracenia.flowcb.send.am.AM is a sarracenia version 3 plugin used to encode and send messages with 
 the AM (Alpha numeric) protocol. This protocol is being migrated to mexpx-sr3 to retire sundew.
@@ -27,10 +27,10 @@ class AM(FlowCB):
 
         # Set logger options
         if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
-        logging.basicConfig(format=self.o['logFormat']) 
+        logging.basicConfig(format=self.o.logFormat) 
 
         # Set logger options
         if hasattr(options, 'logLevel'):
@@ -174,6 +174,9 @@ class AM(FlowCB):
             AND 
             # of bytes sent
         """
+
+        # Debug
+        logger.info(f"Sarracenia message: {msg}")
 
         try:
             # Wrap message
