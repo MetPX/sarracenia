@@ -30,12 +30,13 @@ Briefly, the algorithm has the following steps:
   
 A flow callback, is a python class built with routines named to
 indicate when the programmer wants them to be called.
-To do that, create a routine which subclasses *sarracenia.flowcb.FlowCB*
-so the class will normally have::
 
-   from sarracenia.flowcb import FlowCB
+There are a number of examples of flowcallback classes included
+with Sarracenia, given in the 
+`Flowcallback Reference <../Reference/flowcb.html>`_
+that can be used as the basis for building custom ones. 
 
-in among the imports.
+This guide describes how to build flow callback classes from scratch.
 
 
 Config File Entries to use Flow_Callbacks

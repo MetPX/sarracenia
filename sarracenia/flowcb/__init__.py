@@ -126,24 +126,6 @@ class FlowCB:
          This replaces built-in download functionality, providing an override.
          for individual file transfers. ideally you set checksums as you download.
             
-         looking at self.o.integrity_method to establish download checksum algorithm.
-         might have to allow for cod... say it is checksum_method
-            
-         checksum = sarracenia.integrity.Integrity.factory(checksum_method)
-         while downloading:
-             checksum.update(chunk)
-
-         where chunk is the bytes read.
- 
-         if the checksum does not match what is in the received message, then 
-         it is imperative, to avoid looping, to apply the actual checksum of the
-         data to the message.
-
-         msg['integrity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
-   
-         return Boolean success indicator.  if False, download  will be attempted again and/or
-         appended to retry queue.
-
     def metrics_report(self) -> dict:
 
         Return a dictionary of metrics. Example: number of messages remaining in retry queues.

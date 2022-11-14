@@ -1,4 +1,10 @@
 """
+   Task: look at the fields in the message, and perhaps settings and
+         return a new file name for the target of the send or download.
+
+kind of a last resort function, exists mostly for sundew compatibility.
+can be used for selective renaming using accept clauses.
+
 The flowcb modules here are for compatiblity with sundew "filename" options.
 a module that is focused on changing the names of files being sent or downloaded
 is called a Destination File Name script ... or DESTFNSCRIPT 
@@ -17,7 +23,7 @@ one can invoke a destfn using the *filename* option in a configuration::
 
 An alternative method of invocation is to apply it selectively in an *accept* line::
 
-     accept k* DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+     accept k* DESTFNSCRIPT=destfn.sample
 
 As with other flowcb plugins, the import will be done using normal
 python import mechanism equivalent to:

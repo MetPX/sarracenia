@@ -503,13 +503,13 @@ cleaning it out::
           total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
 
 
-CONSUMER
-========
+Message Gathering
+=================
 
-Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the notification messages are `sr_post(7) <../Reference/sr_post.7.html>`_ notification messages, 
-announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also report messages which can be processed using the 
+Most Metpx Sarracenia components loop on gathering and/or reception of sarracenia 
+notification messages. Usually, the notification messages are `sr_post(7) <../Reference/sr_post.7.html>`_ 
+notification messages, announcing the availability of a file by publishing its URL, 
+but there are also report messages which can be processed using the 
 same tools. AMQP messages are published to an exchange 
 on a broker (AMQP server). The exchange delivers notification messages to queues. To receive 
 notification messages, one must provide the credentials to connect to the broker. Once 

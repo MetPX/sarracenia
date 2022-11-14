@@ -500,6 +500,39 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or notification messages also?
 
+callback <classSpec> 
+--------------------
+
+**callback** appends a flowcallback class to the list of those to be called during processing.
+
+Most customizable processing or "plugin" logic, is implemented using the flow callback class.
+At different points in notification message processing, flow callback classes define
+entry_points that match that point in processing. for for every such point in the processing,
+there is a list of flow callback routines to call.
+
+`FlowCallback Reference <flowcb.html>`_
+
+the *classSpec* is similar to an *import* statement from python. It uses the python search
+path, and also includes ~/.config/sr3/plugins.  There is some shorthand to make usage 
+shorter for common cases.  for example:
+
+  callback log 
+
+Sarracenia will first attempt, to prepend *log* with *sarracenia.flowcb.log* and then
+instantiate the callback instance as an item of class sarracenia.flowcb.Log.  If it does not
+find such a class, then it will attempt to find a class name *log*, and instantiate an
+object *log.Log.*
+
+More detail here `FlowCallback load_library <flowcb.html#sarracenia.flowcb.load_library>`_
+
+
+callback_prepend <classSpec> 
+----------------------------
+
+identical to callback, but meant to specify functions to be executed early, that is prepended
+to the list of plugins to run.
+
+
 
 dangerWillRobinson (default: omitted)
 -------------------------------------
