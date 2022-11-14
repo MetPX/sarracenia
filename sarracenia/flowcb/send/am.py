@@ -5,7 +5,7 @@
 # Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
 #
 
-""",1
+"""
 Sundew migration
 
 sarracenia.flowcb.send.am.AM is a sarracenia version 3 plugin used to encode and send messages with 
@@ -15,15 +15,12 @@ By: André LeBlanc, Autumn 2022
 """
 
 import logging, socket, struct, time, sys
-
+import urllib.parse
 from sarracenia.flowcb import FlowCB
 from sarracenia.config import Config
 
-#TODO: Change encoding format to ISO-8859-1?
 
-default_options = {'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s', 'logLevel': 'info'}
 logger = logging.getLogger(__name__)
-# sys.setdefaultencoding('iso-8859-1')
 
 class AM(FlowCB):
     
@@ -33,26 +30,31 @@ class AM(FlowCB):
 
         # Set logger options
         if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, self.o['logLevel'].upper()))
+            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         else:
             logger.setLevel(logging.INFO)
-        logging.basicConfig(format=self.o['logFormat']) 
+        logging.basicConfig(format=self.o.logFormat) 
 
-        # Initialise server variables
-        self.am = Config()
-        self.am.add_option('port', 'count', 5002)
-        self.am.add_option('remoteHost', 'str', '127.0.0.1') 
+        self.url = urllib.parse.urlparse(self.o.destination)
 
         # Initialise format variables
-        self.am.add_option('threadnum', 'count', 255)
-        self.am.add_option('patternAM', 'str', '80sII4sIIII20s')
+        self.threadnum = 255
+
+        self.host = self.url.netloc.split(':')[0]
+        self.port = int(self.url.netloc.split(':')[1])
+
+        # Add config options
+        self.o.add_option('patternAM', 'str', '80sII4siIII20s')
+        # FIXME: Does this make sens?
+        self.o.add_option('host', 'str', f'{self.host}')
+        self.o.add_option('port', 'int', f'{self.port}')
 
         # Initialise socket
         ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    def wrapmsg(self): #TODO: Change msgdata with data 
+    def wrapmsg(self, data): 
         """
         Overview: 
             Wrap message in appropriate bytes format, performing necessary byte swaps and wrap with AM header
@@ -71,11 +73,12 @@ class AM(FlowCB):
 
         logger.info("Commencing message wrap.")
 
-        s = struct.Struct(self.am.patternAM)
+        s = struct.Struct(self.o.patternAM)
         size = struct.calcsize('80s')
 
         # debug
-        data = 'SACN31 CWAO 300651\nMETAR\nBGBW 131550Z 1,21010KT 8000 -RADZ BKN006 OVC012 03/00 Q1009 RMK 5SC\n     8SC=\n'
+        # data = 'FTXX60 KWBC 101451\nTAF\nTAF KLSV 101500Z 1015/1121 06009KT 9999 SKC QNH3010INS\n      BECMG 1104/1105 03012G18KT 9999 FEW250 QNH3015INS\n      BECMG 1110/1111 03009KT 9999 SKC QNH3012INS TX17/1022Z\n      TN05/1115Z=\nTAF KNMM 1015/1115 02007KT 9999 FEW150 BKN250 QNH2988INS\n      BECMG 1020/1021 36010G15KT 9999 SCT050 BKN220 QNH2970INS\n      BECMG 1102/1104 VRB06KT 9999 FEW010 SCT015 OVC030 QNH2965INS\n      TEMPO 1108/1114 VRB05KT 4800 BR OVC008 AUTOMATED SENSOR\n      METWATCH 1105 TIL 1111 T22/1020Z T14/1112Z FN20082=\nTAF KNUW 1015/1115 12007KT 9999 VCSH SCT018 BKN040 OVC055\n      QNH3037INS\n     FM101800 12008KT 9999 SCT025 BKN050 BKN250 QNH3036INS\n     FM110000 10008KT 9999 SCT020 SCT035 BKN150 BKN250 QNH3026INS\n      TEMPO 1102/1108 VRB05KT 9999 BKN020 OVC035\n     FM111000 09007KT 9999 FEW020 SCT080 BKN100 OVC200 QNH3017INS\n      T08/1023Z T02/1112Z FS30046=\n'
+    
 
         # Construct AM header
         header = data[0:size]
@@ -86,10 +89,12 @@ class AM(FlowCB):
         header = header + nulheaderstr[len(header):]
 
         ## Perform bite swaps AND init miscellaneous variables
-        length = socket.htonl(len(data))
+        # print(len(data))
+        length = socket.htonl(len(data.lstrip('\n')))
+
         firsttime = socket.htonl(int(time.time()))
         timestamp = socket.htonl(int(time.time()))
-        threadnum = chr(0) + chr(self.am.threadnum) + chr(0) + chr(0)
+        threadnum = chr(0) + chr(self.o.threadnum) + chr(0) + chr(0)
         future = '\0'
         start, src_inet, dst_inet = (0, 0, 0)
 
@@ -100,9 +105,9 @@ class AM(FlowCB):
         # Add message at the end of the header
         msg = packedheader + data.encode('iso-8859-1')
 
-        logger.info("Message packed.")
+        logger.info("Message has been packed.")
         # Debug
-        # logger.info(f"{msg}")
+        logger.info(f"Message contents: {msg}")
         
         return msg
 
@@ -123,17 +128,16 @@ class AM(FlowCB):
             Socket struct
         """       
 
-        logger.info("Binding socket to port %d",self.am.port)
+        logger.info("Binding socket to port %d",self.port)
 
-        if self.am.remoteHost == 'None':
-            logger.exception("No remote host specified. Connection will not be established")
+        if self.host == 'None':
             raise Exception("No remote host specified. Connection will not be established")
 
-        logger.info("Trying to connect remote host %s", str(self.am.remoteHost) )
+        logger.info("Trying to connect remote host %s", str(self.host) )
 
         while True:
             try:
-                self.s.connect((socket.gethostbyname(self.am.remoteHost), self.am.port))
+                self.s.connect((socket.gethostbyname(self.host), self.port))
                 break
 
             except socket.error:
@@ -141,7 +145,7 @@ class AM(FlowCB):
                     logger.error("Type: %s, Value: %s, Sleeping 30 seconds ..." % (type, value))
                     time.sleep(30)
 
-        logger.info("Connexion established with %s",str(self.am.remoteHost))
+        logger.info("Connection established with %s",str(self.host))
 
     
     # def on_start(self):
@@ -150,7 +154,9 @@ class AM(FlowCB):
     # def on_stop(self):
         # self.s.close()
 
-    def send(self):
+
+    # FIXME: Get the path from the message and read the data from that path. Test and clean afterwards
+    def send(self, msg):
         """
         Overview: 
             Send AM message through socket
@@ -168,23 +174,25 @@ class AM(FlowCB):
             # of bytes sent
         """
 
+        # Debug
+        logger.info(f"Sarracenia message: {msg}")
+
         try:
             # Wrap message
-            data = self.wrapmsg()
-            logger.info("First attempt at sending data.")
+            packed_msg = self.wrapmsg(msg)
 
             # Try to send data through socket. If can't raise an error and display error in logs.
             try:
                 # Establish connection and send bytes through socket
                 self.__establishconn__()
 
-                bytesSent = self.s.send(data)
+                bytesSent = self.s.send(packed_msg)
 
                 # Check if went okay
-                if bytesSent != len(data):
-                    return(0, bytesSent)
+                if bytesSent != len(packed_msg):
+                    return False
                 else:
-                    return(1, bytesSent)
+                    return True
                 
             except socket.error as e:
                 logger.error("Message not sent: %s",str(e.args))
@@ -207,8 +215,8 @@ class AM(FlowCB):
         # res = am_recv_man.poll()
         # recbytesnum = am_send_man.send()
     
-am_send_man = AM(default_options)
-rec = am_send_man.send()
+# am_send_man = AM(default_options)
+# rec = am_send_man.send()
 
 
 

@@ -16,7 +16,7 @@ By: André LeBlanc, Autumn 2022
 
 # TODO: Update method descriptions and file description
 
-import logging, socket, struct, time, sys, os
+import logging, socket, struct, time, sys, os, signal
 import urllib.parse
 import psutil
 import sarracenia
@@ -54,11 +54,15 @@ class AM(FlowCB):
         self.minnum = 00000
         self.maxnum = 99999
         self.remoteHost = None
+        # TODO: make another add option, add list of IPs to filter out with ipaddress (python import)
 
         # Initialise socket
         ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        # Add signal handler
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
  
     def __establishconn__(self):
@@ -76,7 +80,7 @@ class AM(FlowCB):
         """      
 
         if self.host == 'None':
-            raise Exception("Nohost was specified.")
+            raise Exception("No host was specified.")
 
         try:
             # Bind socket to all interfaces and listen
@@ -94,18 +98,12 @@ class AM(FlowCB):
                 try:
                     # Accept the connection from socket
                     logger.info("Trying to accept connection.")
-                    
+                    #if self.o._stop
+
                     try:
                         conn, self.remoteHost = self.s.accept()
                         time.sleep(1)
                         
-                        # Parent process gets forked when sr stop is called. 
-                        # This will kill all the processes when stopping.
-                        if self.remoteHost[0] == self.hostlist[-1]:
-                            sys.exit(0)
-                            
-                        self.hostlist.append(self.remoteHost[0])
-
                     except Exception as e:
                         logger.error(f"Stopping accept. Leaving. Error: {e}")
                         sys.exit(0)   
@@ -119,6 +117,7 @@ class AM(FlowCB):
                         self.s.close()
                         ## Set the logfiles properly
                         sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
+                        self.o.no = child_inst
                         logger.info(f"Starting up service with host {self.remoteHost}")
                         break                    
 
@@ -129,14 +128,13 @@ class AM(FlowCB):
                         pidfilename = sarracenia.config.get_pid_filename(
                         None, self.o.component, self.o.config, child_inst)
 
-                        self.o.no = child_inst
-                        child_inst += 1
-
                         with open(pidfilename, 'w') as pfn:
                             pfn.write('%d' % pid)
 
                         conn.close()
-                        logger.info(f"Forked child from host {self.remoteHost} with instance {self.o.no}")
+                        logger.info(f"Forked child from host {self.remoteHost} with instance number {child_inst} and pid {pid}")
+
+                        child_inst += 1
 
                         pass
                    
@@ -144,29 +142,6 @@ class AM(FlowCB):
                     logger.info("Couldn't accept connection. Retrying.")
                     time.sleep(1)
                 
-                """
-            try:
-            
-                # Bind socket to all interfaces and listen
-                self.s.bind(('', self.port)) 
-                self.s.listen(1)
-                logger.info("Socket bound.")
-
-                try:
-                    # Accept the connection from socket
-                    logger.info("Trying to accept connection.")
-                    conn, self.remoteHost = self.s.accept()
-                    break    
-
-                except TypeError:
-                    logger.info("Couldn't accept connection. Retrying.")
-                    time.sleep(1)
-                
-            except socket.error or OSError:
-                logger.info("Bind failed. Retrying.")
-                time.sleep(5)          
-            """            
-
         logger.info("Connection accepted with IP %s on port %d", self.remoteHost, self.port)     
 
         return conn                       
@@ -182,6 +157,7 @@ class AM(FlowCB):
     
 
     def on_stop(self):
+        logger.info("On stop called. Exiting.")
         self.s.close()
         if self.o.no == 1:
             pass
@@ -251,6 +227,8 @@ class AM(FlowCB):
             return 'INCOMPLETE'
 
         length = socket.ntohl(length)
+        # Debug
+        # logger.info(f"Buffer contents: {self.inBuffer}")
         
         if len(self.inBuffer) >= self.o.sizeAM + length:
             return 'OK'
@@ -307,13 +285,12 @@ class AM(FlowCB):
 
                 self.inBuffer = self.inBuffer[longlen:]
 
-                logger.info(f"Bulletin length: {longlen}") 
+                logger.info(f"Bulletin length: {longlen - 128}") 
                 logger.info(f"Bulletin contents: {bulletin}")
 
                 # Create a file for new messages and let sarracenia format data
                 parse = self.header.split(b'\0',1)
                 bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
-                # origin = parse[1].decode('iso-8859-1').split('\n')[0].replace(' ', '_') 
 
                 try:
                     # Filenames have the following naming scheme:
