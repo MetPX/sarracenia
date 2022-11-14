@@ -459,8 +459,8 @@ optimisé en n’envoyant que les pièces qui ont changé.
 L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
-Courtier (Broker)
------------------
+Broker
+------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
@@ -494,6 +494,36 @@ byteRateMax <size> (défaut: 0)
  en kilo-octets par seconde... ftp,ftps,ou sftp)
 
 **FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d'annonce aussi ?
+
+callback <SpéficationDeClass>
+-----------------------------
+
+La plupart des traitements personnalisables ou de la logique "plugin" sont implémentés à l'aide de la classe de flowCallback ("rappel de flux.") À différents stades du traitement des messages de notification, les classes de flowCallback définissent
+points d'entrée qui correspondent à ce point de traitement. pour chaque point de ce type dans le traitement,
+il existe une liste de routines de rappel de flux à appeler.
+
+ `flowCallback Reference (anglais) <../../Reference/flowcb.html>`_
+
+Le *SpécificationDeClass* est similaire à une instruction *import* de python. 
+Il utilise le chemin de recherche standard pour les modules python, et inclut également ~/.config/sr3/plugins. 
+Il y a un raccourci pour faire usage plus court pour les cas courants. par exemple::
+
+  callback log
+
+Sarracenia tentera d'abord de faire précéder *log* de *sarracenia.flowcb.log* puis
+instancier l'instance de rappel en tant qu'élément de la classe sarracenia.flowcb.log.Log. 
+S'il ne trouve pas une telle classe, alors il tentera de trouver un nom de classe *log*, et instanciera un
+objet *log.Log.*
+
+Pour plus de détails sur ce genre de recherche, consulter (en anglais) 
+`FlowCallback load_library <../../Reference/flowcb.html#sarracenia.flowcb.load_library>`_
+
+callback_prepend <SpécificationDeClass>
+---------------------------------------
+
+Identique à *callback* mais rajoute la class au début de la liste (pour éxecuter avant les point
+d´entrée des autres classes FlowCB)
+
 
 dangerWillRobinson (default: omis)
 -------------------------------------

@@ -505,16 +505,16 @@ en la nettoyant::
           total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
 
 
-CONSUMER
-========
+La ceuillette de messages
+=========================
 
-La plupart des composants Metpx Sarracenia boucle sur la réception et la
-consommation de messages AMQP. Habituellement, les messages d'intérêt sont
+La plupart des composants Metpx Sarracenia boucle sur la ceuillette et/ou
+réception de messages AMQP. Habituellement, les messages d'intérêt sont
 dans le format d´une *avis* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité
 d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
-Il y a également le format *rappor* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
+Il y a également le format *rapport* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
 être traités avec les mêmes outils. Les messages AMQP sont publiés avec
-un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange
+un *exchange* comme destinataire. Sur un courtier (serveur AMQP.) L'exchange
 délivre des messages aux files d'attente. Pour recevoir de messages,
 on doit fournir les informations d'identification pour se connecter au
 courtier (message AMQP).  Une fois connecté, un consommateur doit créer

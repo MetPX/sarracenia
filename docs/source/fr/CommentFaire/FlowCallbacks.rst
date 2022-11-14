@@ -28,15 +28,13 @@ En bref, l’algorithme comporte les étapes suivantes :
 
 * **post**  -- publier le résultat du travail effectué pour l’étape suivante.
 
-Un rappel de flux, est une classe python construite avec des routines nommées pour
+Un *flowcallback*, est une classe python construite avec des routines nommées pour
 indiquer quand le programmeur veut qu’elles soient appelés.
-Pour ce faire, créez une routine qui sous-classe *sarracenia.flowcb.FlowCB*
-donc la classe aura normalement::
+Il y a plusieurs exemples de class python *flowcallback* inclus avec Sarracenia,
+qu'on peut voir (en anglais) dans `Flowcallback Reference <../../Reference/flowcb.html>`_
+qui peuvent servir comment modèle pour partir de nouvelles classes.
 
-   from sarracenia.flowcb import FlowCB
-
-parmi les importations.
-
+Ce guide décrit les éléments nécessaire pour façonner des classes flowcb à partir de zéro.
 
 Entrées de fichier de configuration pour utiliser Flow_Callbacks
 ----------------------------------------------------------------
