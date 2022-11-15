@@ -66,6 +66,7 @@ default_options = {
     'documentRoot': None,
     'download': False,
     'filename': 'WHATFN',
+    'flowMain': None,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
@@ -124,10 +125,10 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
-    'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
-    'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName',
+    'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
+    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
+    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
+    'post_exchangeSuffix', 'queueName', 'remoteUrl',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -145,42 +146,43 @@ str_options = [
 convert_to_v3 = {
     'ls_file_index' : [ 'continue' ],
     'plugin': {
-        'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+        'msg_fdelay': ['callback', 'filter.fdelay'],
         'msg_pclean_f90':
-        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+        ['callback', 'filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+        ['callback', 'filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
         'msg_total_save': ['continue'],
-        'post_total_save': ['continue']
+        'post_total_save': ['continue'],
+        'post_total_interval': ['continue']
     },
     'do_send': {
-       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
+       'file_email' : [ 'callback', 'send.email' ],
     },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
     'on_message': {
-        'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'msg_replace_new_dir': [ 'flow_callback', 'sarracenia.flowcb.accept.adjustfileoppaths.Adjustfileoppaths' ],
-        'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-        'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-        'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'msg_save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-        'msg_2localfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-        'msg_rename_whatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-        'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-        'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-        'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-        'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-        'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-        'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-        'msg_speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-        'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-        'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-        'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-        'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+        'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
+        'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
+        'msg_skip_old': [ 'callback', 'accept.skipold.SkipOld'],
+        'msg_test_retry': [ 'callback', 'accept.testretry.TestRetry'],
+        'msg_to_clusters': [ 'callback', 'accept.toclusters.ToClusters'],
+        'msg_save': [ 'callback', 'accept.save'],
+        'msg_2localfile': [ 'callback', 'accept.tolocalfile.ToLocalFile'],
+        'msg_rename_whatfn': [ 'callback', 'accept.renamewhatfn.RenameWhatFn'],
+        'msg_rename_dmf': [ 'callback', 'accept.renamedmf.RenameDMF'],
+        'msg_hour_tree': [ 'callback', 'accept.hourtree.HourTree'],
+        'msg_renamer': [ 'callback', 'accept.renamer.Renamer'],
+        'msg_2http': [ 'callback', 'accept.tohttp.ToHttp'],
+        'msg_2local': [ 'callback', 'accept.tolocal.ToLocal'],
+        'msg_http_to_https': [ 'callback', 'accept.httptohttps.HttpToHttps'],
+        'msg_speedo': [ 'callback', 'accept.speedo.Speedo'],
+        'msg_WMO_type_suffix': [ 'callback', 'accept.wmotypesuffix.WmoTypeSuffix'],
+        'msg_sundew_pxroute': [ 'callback', 'accept.sundewpxroute.SundewPxRoute'],
+        'msg_rename4jicc': [ 'flow_callback', 'accept.rename4jicc.Rename4Jicc'],
+        'msg_delay': [ 'callback', 'accept.messagedelay.MessageDelay'],
+        'msg_download_baseurl': [ 'callback', 'accept.downloadbaseurl.DownloadBaseUrl'],
 	'msg_from_cluster': ['continue'],
 	'msg_stdfiles': ['continue'],
 	'msg_fdelay': ['continue'],
@@ -193,13 +195,13 @@ convert_to_v3 = {
 	'msg_dump': ['continue'],
 	'msg_total': ['continue'],
 	'post_total': ['continue'],
-        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+        'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
+        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept'],
-        'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
+        'post_long_flow': [ 'callback', 'accept.longflow.LongFLow'],
+        'post_override': [ 'callback', 'accept.postoverride.PostOverride'],
 	'post_rate_limit': ['continue'],
         'to': ['continue']
     },
@@ -466,7 +468,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'sender', 'watch', 'winnow'
     ]
 
@@ -520,7 +522,7 @@ class Config:
         'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
-        'msg_replace_new_dir' : 'adjustFileOpPaths',
+        'msg_replace_new_dir' : 'pathReplace',
         'no_duplicates': 'nodupe_ttl',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
@@ -1140,7 +1142,11 @@ class Config:
         else:
             cfname = cfg
 
+<<<<<<< HEAD
         logger.debug( f'looking for {cfg}')
+=======
+        logger.debug( f'looking for {cfg} (in {os.getcwd()}')
+>>>>>>> v03_wip
 
         if cfg[0] == os.sep:
             cfgfilepath=cfg
@@ -1157,7 +1163,7 @@ class Config:
             logger.debug( f'found {cfgfilepath}')
 
         lineno=0
-        for l in open(cfg, "r").readlines():
+        for l in open(cfgfilepath, "r").readlines():
             l = l.strip()
             lineno+=1
             line = l.split()
@@ -1170,6 +1176,11 @@ class Config:
             k = line[0]
             if k in Config.synonyms:
                 k = Config.synonyms[k]
+            elif k == 'destination':
+                if component == 'poll':
+                    k = 'pollUrl'
+                else:
+                    k = 'remoteUrl'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1215,15 +1226,15 @@ class Config:
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in [ 'callback', 'cb' ]:
-                vv = v.split('.')
-                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                #vv = v.split('.')
+                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_late:
                     self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
-                vv = v.split('.')
-                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                #vv = v.split('.')
+                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_early:
-                    self.plugins_early.append(v)
+                    self.plugins_early.inset(0,v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1258,7 +1269,7 @@ class Config:
                     self.plugins_late.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
                 if v not in self.plugins_early:
-                    self.plugins_early.append( v )
+                    self.plugins_early.insert(0, v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['integrity']:
@@ -1418,8 +1429,9 @@ class Config:
                 self.logEvents |= set( ['reject'] )
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
-            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
-                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+            if ('sarracenia.flowcb.log.Log' not in self.plugins_late) and \
+               ('log' not in self.plugins_late) :
+                self.plugins_late.append( 'log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
@@ -1429,9 +1441,9 @@ class Config:
 
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.data.Data' )
+                self.plugins_early.append( 'nodupe.data' )
             elif self.nodupe_basis == 'name': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.name.Name' )
+                self.plugins_early.append( 'nodupe.name' )
             delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
@@ -1568,6 +1580,11 @@ class Config:
                 self.documentRoot = path
             n = 2
 
+        if hasattr(self, 'pollUrl'):
+            if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
+                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                self.post_baseUrl = self.pollUrl
+            
         # verify post_baseDir
 
         if self.post_baseDir is None:

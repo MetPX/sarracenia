@@ -126,24 +126,6 @@ class FlowCB:
          This replaces built-in download functionality, providing an override.
          for individual file transfers. ideally you set checksums as you download.
             
-         looking at self.o.integrity_method to establish download checksum algorithm.
-         might have to allow for cod... say it is checksum_method
-            
-         checksum = sarracenia.integrity.Integrity.factory(checksum_method)
-         while downloading:
-             checksum.update(chunk)
-
-         where chunk is the bytes read.
- 
-         if the checksum does not match what is in the received message, then 
-         it is imperative, to avoid looping, to apply the actual checksum of the
-         data to the message.
-
-         msg['integrity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
-   
-         return Boolean success indicator.  if False, download  will be attempted again and/or
-         appended to retry queue.
-
     def metrics_report(self) -> dict:
 
         Return a dictionary of metrics. Example: number of messages remaining in retry queues.
@@ -207,7 +189,7 @@ class FlowCB:
 def load_library(factory_path, options):
     """
        Loading the entry points for a python module. It searches 
-       the normal python module pat using the importlib module. 
+       the normal python module path using the importlib module. 
 
        the factory_path is a combined file specification with a dot separator
        with a special last entry being the name of the class within the file.
@@ -217,23 +199,45 @@ def load_library(factory_path, options):
        means import the module named a.b.c and instantiate an object of type
        C. In that class-C object, look for the known callback entry points. 
 
+       or C might be guessed by the last class in the path not following
+       python convention by not starting with a capital letter, in which case,
+       it will just guess.
+
+       re
        note that the ~/.config/sr3/plugins will also be in the python library 
        path, so modules placed there will be found, in addition to those in the
        package itself in the *sarracenia/flowcb*  directory
 
+       callback foo  -> foo.Foo
+                        sarracenia.flowcb.foo.Foo
+
+       callback foo.bar -> foo.bar.Bar
+                           sarracenia.flowcb.foo.bar.Bar
+                           foo.bar
+                           sarracenia.flowcb.foo.bar 
     """
 
     if not '.' in factory_path:
-        logger.error(
-            'flowCallback <file>.<Class> no dot... missing something from: %s'
-            % factory_path)
-        return None
+        packagename = factory_path
+        classname =factory_path.capitalize()
+    else:
+        if factory_path.split('.')[-1][0].islower():
+            packagename = factory_path
+            classname = factory_path.split('.')[-1].capitalize()
+        else:
+            packagename, classname = factory_path.rsplit('.', 1)
 
-    packagename, classname = factory_path.rsplit('.', 1)
-
-    module = importlib.import_module(packagename)
-    class_ = getattr(module, classname)
-
+    try:
+        module = importlib.import_module('sarracenia.flowcb.' + packagename)
+        class_ = getattr(module, classname)
+    except ModuleNotFoundError:
+        try:
+            module = importlib.import_module(packagename)
+            class_ = getattr(module, classname)
+        except ModuleNotFoundError:
+            # give up.
+            return None        
+ 
     if hasattr(options, 'settings'):
         opt = copy.deepcopy(options)
         # strip off the class prefix.

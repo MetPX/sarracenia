@@ -790,7 +790,7 @@ class sr_GlobalState:
         self._resolve_brokers()
 
         if not os.path.exists( self.user_cache_dir ):
-            os.mkdir(self.user_cache_dir)
+            os.makedirs(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
@@ -852,7 +852,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
 
-        #logging.debug( 'starting match_patterns with: %s' % patterns )
+        logging.debug( 'starting match_patterns with: %s' % patterns )
         self.filtered_configurations = []
         self.leftovers = []
         leftover_matches = {}
@@ -871,25 +871,43 @@ class sr_GlobalState:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
 
+        logger.debug( f"candidates: {candidates}" )
+        new_patterns=[]
         for p in patterns:
+            if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
+                new_patterns.append(p)         
+            elif os.sep not in p:
+                p = 'flow/' + p
+                new_patterns.append(p)         
+            else:
+                new_patterns.append(p)         
             leftover_matches[p] = 0
+        patterns=new_patterns
 
+        logger.debug( f"patterns: {patterns}" )
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
             else:
                 for p in patterns:
+                    if p in [ 'examples','eg','ie','flow_callback','flowcb','fcb','v2plugins','v2p']:
+                        continue
                     if fnmatch.fnmatch(fcc, p):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
 
+                    if fcc[-5:] == '.conf' and fcc[0:-5] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    if fcc[-4:] == '.inc' and fcc[0:-4] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    # 22/11/01... pas thinks this is wrong and backwards, but not sure..
                     if p[-5:] == '.conf' and fnmatch.fnmatch(fcc, p[0:-5]):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
-
-                    # if p[-4:] == '.off' and fnmatch.fnmatch(fcc, p[0:-4]):
-                    #     self.filtered_configurations.append(fcc)
-                    #     leftover_matches[p] += 1
 
         for p in patterns:
             if leftover_matches[p] == 0:
@@ -929,8 +947,8 @@ class sr_GlobalState:
                         if fnmatch.fnmatch(fcc, p):
                             self.filtered_configurations.append(fcc)
 
-        #logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
-        #logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
+        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
+        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
 
     # FIXME: this should be in config.py
     @property
@@ -1052,6 +1070,8 @@ class sr_GlobalState:
     def add(self):
 
         if not hasattr(self, 'leftovers') or (len(self.leftovers) == 0):
+            if len(self.filtered_configurations) > 0:
+               logging.info( f"matched existing {self.filtered_configurations}" )
             logging.error("nothing specified to add")
 
         for l in self.leftovers:
@@ -1060,7 +1080,7 @@ class sr_GlobalState:
                 (len(sp) > 1) and
                 (sp[-2] not in sarracenia.config.Config.components +
                  ['plugins'])):
-                component = 'subscribe'
+                component = 'flow'
                 cfg = sp[-1]
             else:
                 component = sp[-2]
@@ -1082,7 +1102,11 @@ class sr_GlobalState:
                     found = True
                     break
             if not found:
-                logger.error("did not find anything to copy for: %s" % l)
+                logger.info("did not find anything to copy for: %s. creating an empty one." % l)
+                if cfg[-5:] not in [ '.inc', '.conf' ]:
+                    cfg = cfg + '.conf'
+                with open( destdir + os.sep + cfg, 'w' ) as f:
+                    f.write('')
 
     def declare(self):
 
@@ -1240,6 +1264,7 @@ class sr_GlobalState:
 
             if component_path == '':
                 continue
+
             if self.configs[c][cfg]['status'] in ['stopped']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
@@ -1907,7 +1932,7 @@ class sr_GlobalState:
                 return
 
         if not os.path.isdir(base_v3 + component):
-            os.mkdir(base_v3 + component)
+            os.makedirs(base_v3 + component)
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
@@ -1923,6 +1948,12 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                    elif k == 'destination':
+                        if component == 'poll':
+                            k = 'pollUrl'
+                        else:
+                            k = 'remoteUrl'
+
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
@@ -2052,6 +2083,9 @@ class sr_GlobalState:
 
         Returns: True if foreground, False if not.
         """
+        if not pid in self.procs:   # indicates a process that crashed.
+            return False
+
         if 'foreground' in self.procs[pid]['cmdline']:
             return True
         elif 'start' in self.procs[pid]['cmdline']:

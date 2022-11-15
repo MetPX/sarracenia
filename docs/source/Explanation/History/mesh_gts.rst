@@ -602,7 +602,7 @@ include the following elements:
 The stack consists of entirely free software, and other implementations can be
 substituted. The only uncommon element in the stack is Sarracenia, which so far 
 as only been used with the RabbitMQ broker. While Sarracenia 
-( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) 
+( https://metpx.github.io/sarracenia )
 was inspired by the GISC data exchange problem, it is in no way specialized to
 weather forecasting, and the plan is to offer it to other for in other domains
 to support high speed data transfers. 
@@ -742,7 +742,7 @@ Timeline:
 |                              |                                |
 +------------------------------+--------------------------------+
 
-For more information: `Deployments as of January 2018 <https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst>`_
+For more information: `Deployments as of January 2018 <deployment_2018.html>`_
 
 
 Statelessness/Crawlable
@@ -761,7 +761,7 @@ Programmability/Interoperability
 
 A new application to process sr_post messages can be re-implemented if there
 is a desire to do so, as in addition to full documentation, source code
-for a handful of `implementations <https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#implementations>`_
+for a handful of `implementations <../Overview.html#implementations>`_
 (Python, C, Go, node.js), is readily publically available. 
 The python implementation has an extensive plugin interface available to 
 customize processing in a wide variety of ways, such as to add file 

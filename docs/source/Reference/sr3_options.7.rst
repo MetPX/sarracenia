@@ -258,7 +258,7 @@ files.
 The options available in configuration files:
 
 
-accelTreshold <size> default: 0 (disabled.)
+accelThreshold <size> default: 0 (disabled.)
 ---------------------------------------------------
 
 The accelThreshold indicates the minimum size of file being transferred for
@@ -500,6 +500,59 @@ speed in kilobytes per second... ftp,ftps,or sftp)
 
 **FIXME**: byteRateMax... only implemented by sender? or subscriber as well, data only, or notification messages also?
 
+callback <classSpec> 
+--------------------
+
+**callback** appends a flowcallback class to the list of those to be called during processing.
+
+Most customizable processing or "plugin" logic, is implemented using the flow callback class.
+At different points in notification message processing, flow callback classes define
+entry_points that match that point in processing. for for every such point in the processing,
+there is a list of flow callback routines to call.
+
+`FlowCallback Reference <flowcb.html>`_
+
+the *classSpec* is similar to an *import* statement from python. It uses the python search
+path, and also includes ~/.config/sr3/plugins.  There is some shorthand to make usage 
+shorter for common cases.  for example:
+
+  callback log 
+
+Sarracenia will first attempt, to prepend *log* with *sarracenia.flowcb.log* and then
+instantiate the callback instance as an item of class sarracenia.flowcb.Log.  If it does not
+find such a class, then it will attempt to find a class name *log*, and instantiate an
+object *log.Log.*
+
+More detail here `FlowCallback load_library <flowcb.html#sarracenia.flowcb.load_library>`_
+
+
+callback_prepend <classSpec> 
+----------------------------
+
+identical to callback, but meant to specify functions to be executed early, that is prepended
+to the list of plugins to run.
+
+
+
+dangerWillRobinson (default: omitted)
+-------------------------------------
+
+This option is only recognized as a command line option. It is specified when an operation is expected
+to have irreversibly destructive or perhaps unexpected effects. for example::
+
+   sr3 stop
+
+will stop running components, but not those that are being run in the foreground. Stopping those
+may be surprising to the analysts that will be looking at them, so that is not done by default::
+
+  sr3 --dangerWillRobinson stop
+
+stops stops all components, including the foreground ones. Another example would be the *cleanup*
+action. This option deletes queues and exchanges related to a configuration, which can be
+destructive to flows. By default, cleanup only operates on a single configuration at a time.
+One can specify this option to wreak greater havoc.
+
+
 
 declare 
 -------
@@ -737,6 +790,23 @@ For example retrieving the following url, with options::
 would result in the creation of the filepath::
 
  /mylocaldirectory/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
+
+flowMain (default: None)
+------------------------
+
+By default, a flow will run the sarracenia.flow.Flow class, which implements the Flow algorithm generically.
+The generic version does no data transfer, only creating and manipulating messages. That is appropriate for 
+shovel, winnow, post & watch components, but components that transfer or transform data need
+to define additional behaviour by sub-classing Flow. Examples: sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.  
+
+The **flowMain** option allows a flow configuration to run a subclass of flow, instead of the default parent
+class.  Example::
+
+   flowMain subscribe
+
+In a generic flow configuration file will configure the flow to act as a subscriber component.
+One can create custom components by subclassing Flow and using the **flowMain** directive to have
+it invoked. 
 
 follow_symlinks <flag>
 ----------------------
@@ -1176,6 +1246,12 @@ a file to be accepted.
 The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
+pollUrl <url>
+-------------
+
+Specification of a remote server resources to query with a poll 
+See the `POLLING <../Explanation/CommandlineGuide.html#POLLING>`_ 
+in the Command Line Guide.
 
 post_baseDir <path> 
 -------------------
@@ -1327,6 +1403,12 @@ Active if *-rc|--reconnect* appears in the command line... or
 *If there are several notification messages because the file is posted
 by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
+
+
+remoteUrl <url>
+---------------
+
+Specification of a remote resource to deliver to in a sender.
 
 rename <path>
 -------------

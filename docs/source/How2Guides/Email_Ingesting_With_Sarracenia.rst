@@ -13,7 +13,7 @@ Polling
 
 Extending Polling Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Out of the box, Sarracenia supports polling destinations with HTTP/HTTPS and SFTP/FTP protocols. 
+Out of the box, Sarracenia supports polling pollUrl with HTTP/HTTPS and SFTP/FTP protocols. 
 Other protocols can be supported by subclassing the sarracenia.flowcb.poll.Poll class.
 Fortunately there is an existing mail poll plugin, which invokes a plugin.
 start by listing available examples::
@@ -40,7 +40,7 @@ What did we get?::
    # and a tsource user/xs_tsource exchange exist, with FLOWBROKER set to the hostname
    # rabbitmq is running on (e.g. export FLOWBROKER='localhost')
    #
-   # The destination is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
+   # The pollUrl is in RFC 1738 format, e.g. <scheme>://<user>@<host>:<port>/ where your full credentials,
    # <scheme>://<user>:<password>@<host>:<port>/ would be contained in your ~/.config/sarra/credentials.conf.
    # Valid schemes are pop/pops/imap/imaps, where the s denotes an SSL connection. If a port isn't 
    # specified, the default port associated with the scheme will be used (IMAPS -> 993, POPS -> 995,
@@ -52,7 +52,7 @@ What did we get?::
    
    sleep 60
    
-   destination <scheme>://<user>@<host>:<port>/
+   pollUrl <scheme>://<user>@<host>:<port>/
    
    callback poll.mail
    
@@ -60,10 +60,15 @@ What did we get?::
 
 Now when the poll instance is started up with this plugin, 
 
+
 Implementing POP/IMAP
 ~~~~~~~~~~~~~~~~~~~~~
-With Python's *poplib* and *imaplib* modules, the destination can be parsed and the email server
-connected to as per the scheme specified. Sarracenia can extract the credentials from the destination
+
+
+NOTE: not yet converted to v3.
+
+With Python's *poplib* and *imaplib* modules, the pollUrl can be parsed and the email server
+connected to as per the scheme specified. Sarracenia can extract the credentials from the pollUrl
 through its built-in classes, so no passwords need to be stored in the config file to connect. POP3
 uses an internal read-flag to determine if a message has been seen or not. If a message is unread, after
 retrieving it with POP3 it will be marked as read, and it won't be picked up on further polls. 
@@ -72,13 +77,13 @@ management options like moving between folders and generating more complex queri
 more than one client to connect to a mailbox at the same time, and supports tracking message flags like
 whether the message is read/unread, replied to/not yet replied to, or deleted/still in the inbox. The 
 example polling plugin
-`poll_email_ingest.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
+`poll_email_ingest.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py>`_
 only retrieves unread email in the inbox and marks them as unread after retrieving them, in both the 
 POP and IMAP versions. This setting can be easily changed as per the end user's intentions. If there
 are any new messages from the last time a POP/IMAP client had connected, it will then advertise the file 
 based on the subject and a timestamp, where an sr_subscribe instance can receive the posted message,
 connect individually to the server, and download the message to output into a file locally. A sample
-configuration has been included under **examples** as `pollingest.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollingest.conf>`_. Once you edit/supply the environment variables required for the 
+configuration has been included under **examples** as `pollingest.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollingest.conf>`_. Once you edit/supply the environment variables required for the 
 config to work, open a new terminal and run::
 
 	[aspymap:~]$ sr_poll foreground pollingest.conf
@@ -124,17 +129,17 @@ as indicated in the first header of the file. The metadata of the email is conve
 per line, in name:value format. This can be parsed for attachments, message bodies, encoding methods, etc. A
 *do_download* plugin can implement the retrieval of the message to output to a file by registering the 
 protocol in a separate module, as in the *do_poll* plugin. Once a message is received with the user/host 
-advertised, it can then connect to the mail server using the destination and the credentials as specified
+advertised, it can then connect to the mail server using the pollUrl and the credentials as specified
 in ~/.config/sarra/credentials.conf and retrieve the message locally. An example of a plugin that does this
-can be found under **plugins** as `download_email_ingest.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_email_ingest.py>`_. 
+can be found under **plugins** as `download_email_ingest.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_email_ingest.py>`_. 
 
 Decoding Contents
 ~~~~~~~~~~~~~~~~~
 Once the email message is downloaded, an *on_file* plugin can parse the MIME formatted file and extract the attachment, usually denoted by the Content-Disposition header, or the message body/subject/address fields, to be saved as a
 new file for further data refining. An example of a plugin that does this can be found under **plugins** as 
-`file_email_decode.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_email_decode.py>`_.
+`file_email_decode.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_email_decode.py>`_.
 A sample configuration incorporating this type of file processing is included under **examples** as 
-`downloademail.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/downloademail.conf>`_.
+`downloademail.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/downloademail.conf>`_.
 Once the environment variables have been provided and the rabbitmq server is set up correctly, open a new 
 terminal and run::
 

@@ -41,9 +41,6 @@ There are other ways to extend Sarracenia v3 by subclassing of:
 
 That will be discussed after callbacks are dealt with.
 
-There are short interactive demonstration to all of these topics in the
-`Jupyter Notebooks <../../jupyter>`_  included with Sarracenia.
-
 
 Introduction
 ------------
@@ -415,14 +412,14 @@ self is the notification message being processed. variables variables most used:
 *msg['new_file']*
   A popular variable in on_file and on_part plugins is: *msg['new_file*,
   giving the file name the downloaded product has been written to.  When the
-  same variable is modified in an on_message plugin, it changes the name of
+  same variable is modified in an after_accept plugin, it changes the name of
   the file to be downloaded. Similarly another often used variable is 
   *parent.new_dir*, which operates on the directory to which the file
   will be downloaded.
 
 *msg['new_inflight_file']*
   in download and send callbacks this field will be set with the temporary name
-  of a file used while the transfer is in progress.  Once the transfer is complete,
+  of a file used while the transfer is in progress. Once the transfer is complete,
   the file should be renamed to what is in *msg['new_file']*.
 
 *msg['pubTime']*
@@ -435,11 +432,32 @@ self is the notification message being processed. variables variables most used:
   The relative path from the baseURL of the file.
   concatenating the two gives the complete URL.
 
+*msg['fileOp']*
+  for non data download file operations, such as creation of symbolic links, file renames and removals.
+  content described in `sr_post(7) <../Reference/sr_post.7.html>`_
+
 *msg['integrity']*
   The checksum structure, a python dictionary with 'method' and 'value' fields.
 
-*msg['subtopic']*
+*msg['subtopic'], msg['new_subtopic']*
   list of strings (with the topic prefix stripped off)
+  do not use, as it will be generated from msg['new_relPath'] when the message is published.
+
+*msg['_deleteOnPost']*
+  when state needs to be stored in messages, one can declare additional temporary fields
+  for use only within the running process.  To mark them for deletion when forwarding,
+  this set valued field is used::
+
+      msg['my_new_field'] = my_temporary_state
+      msg['_deleteOnPost'] |= set(['my_new_field'])
+
+  For example, all of the *new_* fields are in the *_deleteOnPost* by default.
+
+*msg['onfly_checksum'], msg['data_checksum']*
+   the value of an *Integrity* checksum field calculated as data is downloaded.
+   In the case where data is modified while downloading, the *onfly_checksum*
+   is to verify that the upstream data was correctly received, while the
+   *data_checksum* is calculated for downstream consumers.
 
 These are the notification message fields which are most often of interest, but many other 
 can be viewed by the following in a configuration::
@@ -475,7 +493,7 @@ Some examples:
   Value of 0 indicates caching is disabled.
 
 *self.o.inflight*
-  The current setting of *inflight* (see `Delivery Completion <FileCompletion.rst>`_
+  The current setting of *inflight* (see `Delivery Completion <FileCompletion.html>`_
 
 *self.o.overwrite*
   setting which controls whether to files already downloaded should be overwritten unconditionally.
@@ -660,11 +678,11 @@ subclass specific entry points usually implemented in sub-classes:
 Examination of the built-in `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
 class is helpful 
 
-.. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
+.. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py>`_
 .. [#] see `Issue 74 <https://github.com/MetPX/sarracenia/issues/74>`_
-.. [#] see `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/part_clanav_scan.py>`_
-.. [#] see `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_total_save.py>`_
-.. [#] see `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
+.. [#] see `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/part_clanav_scan.py>`_
+.. [#] see `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_total_save.py>`_
+.. [#] see `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py>`_
 
 ---------------------
 Better File Reception
@@ -882,12 +900,12 @@ Examples of things that would be fun to do with plugins:
   for many types of events, indicating the area of coverage.  There is a 
   'polygon' field in the warning, that the source could add to messages using
   an on_post plugin.  Subscribers would have access to the 'polygon' header
-  through use of an on_message plugin, enabling them to determine whether the
+  through use of an after_accept plugin, enabling them to determine whether the
   alert affected an area of interest without downloading the entire warning.
 
 - A source that applies compression to products before posting, could add a
   header such as 'uncompressed_size' and 'uncompressed_sum' to allow 
-  subscribers with an on_message plugin to compare a file that has been locally
+  subscribers with an after_accept plugin to compare a file that has been locally
   uncompressed to an upstream file offered in compressed form.
 
 - add Bittorrent, S3, IPFS as transfer protocols (sub-classing Transfer)

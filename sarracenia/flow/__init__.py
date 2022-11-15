@@ -108,8 +108,14 @@ class Flow:
     """
     @staticmethod
     def factory(cfg):
+
+        if cfg.flowMain:
+              flowMain=cfg.flowMain
+        else:
+              flowMain=cfg.component
+
         for sc in Flow.__subclasses__():
-            if cfg.component == sc.__name__.lower():
+            if flowMain == sc.__name__.lower():
                 return sc(cfg)
 
         if cfg.component == 'flow':
@@ -524,7 +530,7 @@ class Flow:
                     last_time = now
                     continue
 
-            if (stime > 0):
+            if not self._stop_requested and (stime > 0):
                 try:
                     logger.debug('sleeping for stime: %.2f seconds' % stime)
                     time.sleep(stime)
@@ -1462,7 +1468,7 @@ class Flow:
                 return False
 
         try:
-            options.destination = msg['baseUrl']
+            options.remoteUrl = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or (self.proto[self.scheme] is None):
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
@@ -1660,8 +1666,8 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug("%s_transport destination: %s " %
-                     (self.scheme, self.o.destination))
+        logger.debug("%s_transport remoteUrl: %s " %
+                     (self.scheme, self.o.remoteUrl))
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 

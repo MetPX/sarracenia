@@ -17,9 +17,8 @@ default_options = {
     'acceptUnmatched': False,
     'blocksize': 1,
     'bufsize': 1024 * 1024,
-    'poll_builtinGather': True,
     'chmod': 0o400,
-    'destination': None,
+    'pollUrl': None,
     'follow_symlinks': False,
     'force_polling': False,
     'inflight': None,
@@ -57,7 +56,8 @@ class Poll(Flow):
 
         super().__init__(options)
 
-        if not 'poll' in self.plugins['load']:
+        if not '.poll.' in ','.join(self.plugins['load']):
+            logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
@@ -68,8 +68,8 @@ class Poll(Flow):
                                     'sarracenia.flowcb.post.message.Message')
 
         if not sarracenia.extras['ftppoll']['present']:
-            if hasattr( self.o, 'destination' ) and ( self.o.destination.startswith('ftp') ):
-                logger.critical( f"attempting to configure an FTP poll destination={self.o.destination}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
+            if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
+                logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(sarracenia.extras['ftppoll']['modules_needed'])}" )
                 sys.exit(1)
 
     def do(self):

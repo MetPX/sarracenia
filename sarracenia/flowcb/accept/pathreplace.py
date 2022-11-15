@@ -1,17 +1,17 @@
 """
-   Adjust fileOp paths, modifies the paths in file operation fileds, for file renaming,
-   removal or links.
+   Adjust file paths, modifies the paths in file operation fileds, for file renaming,
+   removal or links, or to give files different names on download.
 
    where files from a 'before' directory, are sent by an sr_sender to a 'after' directory.
    This also applies to the HPC mirroring case, where one would likely have a setting like
 
-   adjustFileOpPaths site5,site6
+   pathReplace site5,site6
 
    sample usage:
 
-   adjustFileOpPaths before,after
+   pathReplace before,after
 
-   flowcb accept.adjustfileoppaths
+   flowcb accept.pathreplace
  
 """
 
@@ -24,34 +24,40 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 
-class Adjustfileoppaths():
+class Pathreplace(FlowCB):
     def __init__(self, options):
 
         self.o = options
 
-        self.o.add_option('adjustFileOpPaths', 'list' )
+        self.o.add_option('pathReplace', 'list' )
 
 
     def on_start(self):
 
-        if not hasattr(self.o, 'adjustFileOpPaths'):
-            logger.error("adjustFileOpPaths setting mandatory")
+        if not hasattr(self.o, 'pathReplace'):
+            logger.error("pathReplace setting mandatory")
             return
 
-        logger.debug("adjustFileOpPaths is %s " % self.o.adjustFileOpPaths )
+        logger.debug("pathReplace is %s " % self.o.pathReplace )
 
     def after_accept(self, worklist):
 
-        if not hasattr(self.o, 'adjustFileOpPaths'):
+        if not hasattr(self.o, 'pathReplace'):
             return
 
         for msg in worklist.incoming:
-            for p in self.o.adjustFileOpPaths:
+            for p in self.o.pathReplace:
                 (b, a) = p.split(",")
 
                 # not sure if replacing in the main path is needed... maybe just in fileOp fields?
                 logger.info("replace: %s by %s " % (b, a) )
-                msg['new_dir'] = msg['new_dir'].replace(b, a, 1)
+                new_new_dir = msg['new_dir'].replace(b, a, 1)
+
+                if new_new_dir != msg['new_dir'] :
+                    msg['new_dir'] = new_new_dir
+                else:
+                    msg['new_file'] = msg['new_file'].replace(b, a, 1)
+
                 msg['new_relPath'] = msg['new_dir'] + os.sep + msg['new_file']
     
                 # adjust oldname/newname/link  if related to strings to replace

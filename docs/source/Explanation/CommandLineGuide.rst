@@ -31,6 +31,7 @@ The components of sarracenia are groups of defaults on the main algorithm,
 to reduce the size of individual components.  The components are:
 
  - cpump - copy notification messages from one pump another second one (a C implementation of shovel.)
+ - flow - generic flow with no default behaviours. Good basis for building user defined components.
  - poll  - poll a non-sarracenia web or file server to create notification messages for processing.
  - post & watch - create notification messages for files for processing.
  - sarra _ - download file from a remote server to the local one, and re-post them for others.
@@ -502,13 +503,13 @@ cleaning it out::
           total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
 
 
-CONSUMER
-========
+Message Gathering
+=================
 
-Most Metpx Sarracenia components loop on reception and consumption of sarracenia 
-AMQP messages. Usually, the notification messages are `sr_post(7) <../Reference/sr_post.7.html>`_ notification messages, 
-announcing the availability of a file by publishing its URL ( or a part 
-of a file ), but there are also report messages which can be processed using the 
+Most Metpx Sarracenia components loop on gathering and/or reception of sarracenia 
+notification messages. Usually, the notification messages are `sr_post(7) <../Reference/sr_post.7.html>`_ 
+notification messages, announcing the availability of a file by publishing its URL, 
+but there are also report messages which can be processed using the 
 same tools. AMQP messages are published to an exchange 
 on a broker (AMQP server). The exchange delivers notification messages to queues. To receive 
 notification messages, one must provide the credentials to connect to the broker. Once 
@@ -853,7 +854,7 @@ POLLING
 =======
 
 Polling is doing the same job as a post, except for files on a remote server.
-In the case of a poll, the post will have its url built from the *destination* 
+In the case of a poll, the post will have its url built from the *pollUrl* 
 option, with the product's path (*directory*/"matched file").  There is one 
 post per file.  The file's size is taken from the directory "ls"... but its 
 checksum cannot be determined, so the default integrity method is "cod", asking
@@ -1014,6 +1015,15 @@ on reception of a post, it looks up the notification message's **integity** fiel
 found, the file has already come through, so the notification is ignored. If not, then 
 the file is new, and the **sum** is added to the cache and the notification is posted.
 
+FLOW
+----
+
+Flow is the parent class from which all of the other components except cpost and cpump are built.
+Flow has no built-in behaviour. Settings can make it act like any other python component,
+or it can be used to build user defined components. Typically used with the *flowMain* option
+to run a user defined flow subclass.
+
+
 POLL
 ----
 
@@ -1025,7 +1035,7 @@ notify about the new product.
 The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.rst>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
-a *destination* (sftp, ftp, ftps). For each of the *directory* defined, it lists
+a *pollUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
 files. The *nodupe_fileAgeMax* option eliminates files that are too old 
 from consideration. When a file is found that matches a pattern given 
@@ -1038,20 +1048,20 @@ been seen.
 **poll** can be used to acquire remote files in conjunction with an `sarra`_
 subscribed to the posted notifications, to download and repost them from a data pump.
 
-The destination option specify what is needed to connect to the remote server
+The pollUrl option specify what is needed to connect to the remote server
 
-**destination protocol://<user>@<server>[:port]**
+**pollUrl protocol://<user>@<server>[:port]**
 
 ::
       (default: None and it is mandatory to set it )
 
-The *destination* should be set with the minimum required information...
-**sr_poll**  uses *destination* setting not only when polling, but also
+The *pollUrl* should be set with the minimum required information...
+**sr_poll**  uses *pollUrl* setting not only when polling, but also
 in the sr_post notification messages produced.
 
 For example, the user can set :
 
-**destination ftp://myself@myserver**
+**pollUrl ftp://myself@myserver**
 
 And complete the needed information in the credentials file with the line  :
 
@@ -1257,7 +1267,7 @@ server, and is used as a pattern to be replaced in the currently selected base d
 (from a *baseDir* or *directory* option) in the notification message fields: 'link', 'oldname', 'newname'
 which are used when mirroring symbolic links, or files that are renamed.
 
-The **destination** defines the protocol and server to be used to deliver the products.
+The **remoteUrl** defines the protocol and server to be used to deliver the products.
 Its form is a partial url, for example:  **ftp://myuser@myhost**
 The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
 (password and connection options).  Supported protocol are ftp, ftps and sftp. Should the
@@ -1275,7 +1285,7 @@ Now we are ready to send the product... for example, if the selected notificatio
 **sr_sender**  performs the following pseudo-delivery:
 
 Sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+to    **remoteUrl**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** is greater than 0, the process attempts to respect
 this delivery speed... ftp,ftps,or sftp)
 
@@ -1286,7 +1296,7 @@ The selected notification contains all the right information
 (topic and header attributes) except for url field in the
 notice... in our example :  **http://this.pump.com/**
 
-By default, **sr_sender** puts the **destination** in that field.
+By default, **sr_sender** puts the **remoteUrl** in that field.
 The user can overwrite this by specifying the option **post_baseUrl**. For example:
 
 **post_baseUrl http://remote.apache.com**
@@ -1314,10 +1324,10 @@ There are 2 differences with the previous case :
 the **directory**, and the **filename** options.
 
 The **baseDir** is the same, and so are the
-**destination**  and the **post_baseDir** options.
+**remoteUrl**  and the **post_baseDir** options.
 
 The **directory** option defines another "relative path" for the product
-at its destination.  It is tagged to the **accept** options defined after it.
+at its remoteUrl.  It is tagged to the **accept** options defined after it.
 If another sequence of **directory**/**accept** follows in the configuration file,
 the second directory is tagged to the following accepts and so on.
 
@@ -1342,7 +1352,7 @@ It was selected by the first **accept** option. The remote relative path becomes
 **/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
 
 sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **destination**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
+to    **remoteUrl**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
 
 
 Usually this way of using **sr_sender** would not require posting of the product.
@@ -1841,8 +1851,8 @@ The broker option sets all the credential information to connect to the  **Rabbi
       (default: amqps://anonymous:anonymous@dd.weather.gc.ca/ )
 
 For all **sarracenia** programs, the confidential parts of credentials are stored
-only in ~/.config/sarra/credentials.conf.  This includes the destination and the broker
-passwords and settings needed by components.  The format is one entry per line.  Examples:
+only in ~/.config/sarra/credentials.conf. This includes the url and broker
+passwords and settings needed by components. The format is one entry per line. Examples:
 
 - **amqp://user1:password1@host/**
 - **amqps://user2:password2@host:5671/dev**
@@ -1975,7 +1985,7 @@ was specified.)
 
 A variety of example configuration files are available here:
 
- `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
+ `https://github.com/MetPX/sarracenia/tree/main/sarracenia/examples <https://github.com/MetPX/sarracenia/tree/main/sarracenia/examples>`_
 
 
 

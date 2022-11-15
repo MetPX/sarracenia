@@ -459,8 +459,8 @@ optimisé en n’envoyant que les pièces qui ont changé.
 L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
-Courtier (Broker)
------------------
+Broker
+------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
@@ -494,6 +494,54 @@ byteRateMax <size> (défaut: 0)
  en kilo-octets par seconde... ftp,ftps,ou sftp)
 
 **FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d'annonce aussi ?
+
+callback <SpéficationDeClass>
+-----------------------------
+
+La plupart des traitements personnalisables ou de la logique "plugin" sont implémentés à l'aide de la classe de flowCallback ("rappel de flux.") À différents stades du traitement des messages de notification, les classes de flowCallback définissent
+points d'entrée qui correspondent à ce point de traitement. pour chaque point de ce type dans le traitement,
+il existe une liste de routines de rappel de flux à appeler.
+
+ `flowCallback Reference (anglais) <../../Reference/flowcb.html>`_
+
+Le *SpécificationDeClass* est similaire à une instruction *import* de python. 
+Il utilise le chemin de recherche standard pour les modules python, et inclut également ~/.config/sr3/plugins. 
+Il y a un raccourci pour faire usage plus court pour les cas courants. par exemple::
+
+  callback log
+
+Sarracenia tentera d'abord de faire précéder *log* de *sarracenia.flowcb.log* puis
+instancier l'instance de rappel en tant qu'élément de la classe sarracenia.flowcb.log.Log. 
+S'il ne trouve pas une telle classe, alors il tentera de trouver un nom de classe *log*, et instanciera un
+objet *log.Log.*
+
+Pour plus de détails sur ce genre de recherche, consulter (en anglais) 
+`FlowCallback load_library <../../Reference/flowcb.html#sarracenia.flowcb.load_library>`_
+
+callback_prepend <SpécificationDeClass>
+---------------------------------------
+
+Identique à *callback* mais rajoute la class au début de la liste (pour éxecuter avant les point
+d´entrée des autres classes FlowCB)
+
+
+dangerWillRobinson (default: omis)
+-------------------------------------
+
+Cette option n'est reconnue qu'en tant qu'option de ligne de commande. Il est spécifié quand une opération 
+aura des effets irréversiblement destructeurs ou peut-être inattendus. par exemple::
+
+   sr3 stop
+
+arrêtera d'exécuter les composants, mais pas ceux qui sont exécutés au premier plan. Arrêter ceux
+peut surprendre les analystes qui les examineront, donc ce n'est pas fait par défaut ::
+
+  sr3 --dangerWillRobinson stop
+
+arrête arrête tous les composants, y compris ceux de premier plan. Un autre exemple serait le *nettoyage*
+action. Cette option supprime les files d'attente et les échanges liés à une configuration, qui peuvent être
+destructeur pour les flux. Par défaut, le nettoyage ne fonctionne que sur une seule configuration à la fois.
+On peut spécifier cette option pour faire plus de ravages.
 
 
 declare
@@ -734,6 +782,24 @@ Par exemple, récupérer l’URL suivante, avec les options ::
 entraînerait la création du chemin d’accès au fichier::
 
  /monrépertoirelocal/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
+
+
+flowMain (défaut: None)
+-----------------------
+
+Par défaut, un flux exécutera la classe sarracenia.flow.Flow, qui implémente l'algorithme Flow de manière générique.
+La version générique ne transfère pas de données, crée et manipule uniquement des messages. Cela convient pour
+pelle, vanner, poster et surveiller les composants, mais les composants qui transfèrent ou transforment les données ont besoin
+pour définir un comportement supplémentaire en sous-classant Flow. Exemples : sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.
+
+L'option **flowMain** permet à une configuration de flux d'exécuter une sous-classe de flux, au lieu du parent par défaut
+classer. Exemple::
+
+   flowMain subscribe
+
+Dans un fichier de configuration de flux générique, le flux sera configuré pour agir en tant que composant d'abonné (subscribe.)
+On peut créer des composants personnalisés en sous-classant Flow et en utilisant la directive **flowMain** pour invoquer
+la nouvelle sous-classe.
 
 follow_symlinks <flag>
 ----------------------
@@ -1164,6 +1230,15 @@ qu'un dossier puis être accepté.
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
+pollUrl
+-------
+
+Spécification de ressources d´une serveur à sonder
+Voir `Guide de ligne de commande <../Explication/GuideLigneDeCommande.html>`_ pour plus 
+d´informations.
+
+
+
 post_baseDir <chemin>
 ---------------------
 
@@ -1309,6 +1384,12 @@ Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
 *S’il y a plusieurs messages d'annonce parce que le fichier est publié
 par bloc parce que l’option *blocksize* a été définie, il y a une
 reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
+
+remoteUrl <url>
+---------------
+
+Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
 
 rename <chemin>
 ---------------

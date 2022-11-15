@@ -596,7 +596,7 @@ comprendrait les éléments suivants:
 La pile se compose de logiciels entièrement libres, et d’autres implémentations peuvent
 être remplacées. Le seul élément rare de la pile est Sarracenia, qui n’a jusqu’à présent
 été utilisé qu’avec le courtier RabbitMQ. Bien que Sarracenia
-( https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst ) ait été inspiré par le
+( https://metpx.github.io/sarracenia/fr ) ait été inspiré par le
 problème d’échange de données GISC, il n’est en aucun cas spécialisé dans les prévisions
 météorologiques, et le plan est de l’offrir à d’autres pour dans d’autres domaines pour
 soutenir les transferts de données à grande vitesse.
@@ -732,7 +732,7 @@ Prochaines étapes:
 |                              | décalage)                      |
 +------------------------------+--------------------------------+
 
-Pour plus d"informations: `Deployments as of January 2018 <https://github.com/MetPX/sarracenia/blob/master/doc/deployment_2018.rst>`_
+Pour plus d"informations: `Deployments as of January 2018 <deploiment_2018.html>`_
 
 
 Apatridie/Crawlable
@@ -752,7 +752,7 @@ Programmabilité/interopérabilité
 
 Une nouvelle application pour traiter sr_post messages peut être réimplémentée s’il y a un désir
 de le faire, car en plus de la documentation complète, le code source d’une poignée
-`d’implémentations<https://github.com/MetPX/sarracenia/blob/master/doc/sarra.rst#implementations>`_
+`d’implémentations<../Aperçu.html#implémentations>`_
 (Python, C, Go, node.js), est facilement accessible au public. L’implémentation python dispose
 d’une interface de plug-in étendue disponible pour personnaliser le traitement de différentes
 manières, par exemple pour ajouter des protocoles de transfert de fichiers et effectuer un pré

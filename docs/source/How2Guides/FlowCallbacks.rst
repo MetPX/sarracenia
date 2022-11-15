@@ -30,12 +30,13 @@ Briefly, the algorithm has the following steps:
   
 A flow callback, is a python class built with routines named to
 indicate when the programmer wants them to be called.
-To do that, create a routine which subclasses *sarracenia.flowcb.FlowCB*
-so the class will normally have::
 
-   from sarracenia.flowcb import FlowCB
+There are a number of examples of flowcallback classes included
+with Sarracenia, given in the 
+`Flowcallback Reference <../Reference/flowcb.html>`_
+that can be used as the basis for building custom ones. 
 
-in among the imports.
+This guide describes how to build flow callback classes from scratch.
 
 
 Config File Entries to use Flow_Callbacks
@@ -414,7 +415,7 @@ The sarracenia.transfer class has an on_data entry point::
         if self.connected: self.close()
 
         self.connected = False
-        self.destination = self.o.destination.replace('scr', 'https', 1)
+        self.remoteUrl = self.o.remoteUrl.replace('scr', 'https', 1)
         self.timeout = self.o.timeout
 
         if not self.credentials(): return False
@@ -431,3 +432,17 @@ file::
 
 then messages where the retrieval url is set to use the *scr* retrieval scheme will use this 
 custome transfer protocol.
+
+
+Subclassing Flow
+----------------
+
+If none of the built-in components ( poll, post, sarra, shovel, subscribe, watch, winnow ) have the 
+behaviour desired, one can build a custom component to do the right thing by sub-classing flow.
+
+Copy one of the flow sub-classes from the source code, and modify to taste.  In the configuration
+file, add the line::
+
+   flowMain myComponent
+
+to have the flow use the new component.

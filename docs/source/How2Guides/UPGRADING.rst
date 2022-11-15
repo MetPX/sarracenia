@@ -191,6 +191,8 @@ V2 to Sr3
           default_dir_mode          permDirDefault
           default_log_mode          permLog
           default_mode              permDefault
+          destination               pollUrl in Poll
+          destination               remoteUrl others
           document_root             documentRoot
           e                         fileEvents
           events                    fileEvents
