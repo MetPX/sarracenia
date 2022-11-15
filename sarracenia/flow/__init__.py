@@ -314,6 +314,7 @@ class Flow:
         self._runCallbacksTime('please_stop')
         self._stop_requested = True
 
+
     def close(self) -> None:
 
         self._runCallbacksTime('on_stop')

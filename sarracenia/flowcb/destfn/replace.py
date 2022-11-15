@@ -4,7 +4,9 @@
 
 Sample usage in a config file:
 
+    destfn_replace 1stStringToReplace,replacementOf1st
     destfn_replace SRCN,sssssRCCCn
+
     accept .*SRCN.* DESTFNSCRIPT=flowcb.destfn.replace.Replace
 
     # files that do not match 
