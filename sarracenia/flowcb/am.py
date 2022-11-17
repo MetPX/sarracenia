@@ -18,6 +18,7 @@ By: André LeBlanc, Autumn 2022
 
 import logging, socket, struct, time, sys, os, signal
 import urllib.parse
+import ipaddress
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
@@ -39,22 +40,22 @@ class AM(FlowCB):
             logger.setLevel(logging.INFO)
         logging.basicConfig(format=self.o.logFormat)
 
-        self.url = urllib.parse.urlparse(self.o.destination)
+        self.url = urllib.parse.urlparse(self.o.remoteUrl)
 
         # Initialise server variables
         self.inBuffer = bytes()
         self.limit = 32678
-        self.o.add_option('patternAM','str','80sII4sIIII20s')
-        self.o.add_option('sizeAM', 'count', struct.calcsize(self.o.patternAM))
+        self.patternAM = '80sII4siIII20s'
+        self.sizeAM = struct.calcsize(self.patternAM)
+        self.o.add_option('AllowIPs', 'list', [])
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
         self.minnum = 00000
         self.maxnum = 99999
         self.remoteHost = None
-        # TODO: make another add option, add list of IPs to filter out with ipaddress (python import)
 
         # Initialise socket
-        ## Create a TCP/IP socket
+        ## Create a TCP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -95,16 +96,21 @@ class AM(FlowCB):
                 try:
                     # Accept the connection from socket
                     logger.info("Trying to accept connection.")
-                    #if self.o._stop
 
                     try:
                         conn, self.remoteHost = self.s.accept()
                         time.sleep(1)
-                        
+
                     except Exception as e:
                         logger.error(f"Stopping accept. Leaving. Error: {e}")
                         sys.exit(0)   
 
+                    if self.o.AllowIPs:
+                        if self.remoteHost[0] not in self.o.AllowIPs:
+                            logger.debug(f"Connection to IP {self.remoteHost[0]} rejected. Not a part of the Accepted IPs list.")
+                            conn.close()
+                            continue
+                    
                     # Parent process stays in the loop searching for other connections. 
                     # Child will proceed accepting or refusing connection.
                     pid = os.fork()
@@ -112,10 +118,12 @@ class AM(FlowCB):
                     if pid == 0:
                         # Break from the loop if process is child
                         self.s.close()
+
                         ## Set the logfiles properly
                         sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
+
                         self.o.no = child_inst
-                        logger.info(f"Starting up service with host {self.remoteHost}")
+                        logger.info(f"Starting up service with host {self.remoteHost[0]}")
                         break                    
 
                     elif pid == -1:
@@ -129,14 +137,14 @@ class AM(FlowCB):
                             pfn.write('%d' % pid)
 
                         conn.close()
-                        logger.info(f"Forked child from host {self.remoteHost} with instance number {child_inst} and pid {pid}")
+                        logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
 
                         child_inst += 1
 
                         pass
                    
                 except TypeError:
-                    logger.info("Couldn't accept connection. Retrying.")
+                    logger.error("Couldn't accept connection. Retrying.")
                     time.sleep(1)
                 
         logger.info("Connection accepted with IP %s on port %d", self.remoteHost, self.port)     
@@ -145,6 +153,10 @@ class AM(FlowCB):
 
 
     def on_start(self):
+        # Set ipadresses in proper format
+        for IP in self.o.AllowIPs:
+            IP = ipaddress.ip_address(IP)
+
         if self.o.no != 1:
             pidfilename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
             if os.path.exists(pidfilename):
@@ -187,7 +199,7 @@ class AM(FlowCB):
 
 
             if tmp == '':
-                # logger.exception("Connection was lost")
+                logger.error("Connection was lost. Exiting.")
                 raise Exception()
             
             self.inBuffer = self.inBuffer + tmp
@@ -217,9 +229,9 @@ class AM(FlowCB):
         """
 
         # Only unpack data if buffer length satisfactory
-        if len(self.inBuffer) >= self.o.sizeAM:
+        if len(self.inBuffer) >= self.sizeAM:
             (header, src_inet, dst_inet, threads, start, length, firsttime, timestamp, future) = \
-                    struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
+                    struct.unpack(self.patternAM,self.inBuffer[0:self.sizeAM])
         else:
             return 'INCOMPLETE'
 
@@ -227,7 +239,7 @@ class AM(FlowCB):
         # Debug
         # logger.info(f"Buffer contents: {self.inBuffer}")
         
-        if len(self.inBuffer) >= self.o.sizeAM + length:
+        if len(self.inBuffer) >= self.sizeAM + length:
             return 'OK'
         else:
             return 'INCOMPLETE'
@@ -239,12 +251,12 @@ class AM(FlowCB):
 
         if status == 'OK':
             (self.header,src_inet,dst_inet,threads,start,length,firsttime,timestamp,future) = \
-                    struct.unpack(self.o.patternAM,self.inBuffer[0:self.o.sizeAM])
+                    struct.unpack(self.patternAM,self.inBuffer[0:self.sizeAM])
 
             length = socket.ntohl(length)
 
-            bulletin = self.inBuffer[self.o.sizeAM:self.o.sizeAM + length]
-            longlen = self.o.sizeAM + length
+            bulletin = self.inBuffer[self.sizeAM:self.sizeAM + length]
+            longlen = self.sizeAM + length
             logger.info("Gather successful.")
             return (bulletin, longlen)
         
@@ -277,13 +289,13 @@ class AM(FlowCB):
                 break
 
             if status == 'OK':
-                ## TODO: Add corrupt data verifier?
+                ## FIXME: Add corrupt data verifier?
                 (bulletin, longlen) = self.unwrapmsg()
 
                 self.inBuffer = self.inBuffer[longlen:]
 
-                logger.info(f"Bulletin length: {longlen - 128}") 
-                logger.info(f"Bulletin contents: {bulletin}")
+                logger.debug(f"Bulletin length: {longlen - 128}") 
+                logger.debug(f"Bulletin contents: {bulletin}")
 
                 # Create a file for new messages and let sarracenia format data
                 parse = self.header.split(b'\0',1)
@@ -301,7 +313,7 @@ class AM(FlowCB):
                     file.close()
                     st = os.stat(filepath)
 
-                    sarramsg = sarracenia.Message.fromFileData(filepath,self.o, lstat=st)
+                    sarramsg = sarracenia.Message.fromFileData(filepath, self.o, lstat=st)
                     newmsg.append(sarramsg)
 
                 except:

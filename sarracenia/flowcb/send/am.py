@@ -39,19 +39,13 @@ class AM(FlowCB):
             logger.setLevel(logging.INFO)
         logging.basicConfig(format=self.o.logFormat) 
 
-        self.url = urllib.parse.urlparse(self.o.destination)
+        self.url = urllib.parse.urlparse(self.o.remoteUrl)
 
-        # Initialise format variables
+        # Initialise message header and network variables
         self.threadnum = 255
-
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
-
-        # Add config options
-        self.o.add_option('patternAM', 'str', '80sII4siIII20s')
-        # FIXME: Does this make sens?
-        self.o.add_option('host', 'str', f'{self.host}')
-        self.o.add_option('port', 'int', f'{self.port}')
+        self.patternAM = '80sII4siIII20s'
 
         # Initialise socket
         ## Create a TCP/IP socket
@@ -78,7 +72,7 @@ class AM(FlowCB):
 
         logger.info("Commencing message wrap.")
 
-        s = struct.Struct(self.o.patternAM)
+        s = struct.Struct(self.patternAM)
         size = struct.calcsize('80s')
 
         msg_path = sarra_msg['new_relPath']
@@ -112,8 +106,7 @@ class AM(FlowCB):
         msg = packedheader + data
 
         logger.info("Message has been packed.")
-        # Debug
-        logger.info(f"Message contents: {msg}")
+        # logger.debug(f"Message contents: {msg}")
         
         return msg
 
@@ -132,15 +125,15 @@ class AM(FlowCB):
             Socket struct
         """       
 
-        logger.info("Binding socket to port %d",self.port)
-
         if self.host == 'None':
             raise Exception("No remote host specified. Connection will not be established")
 
-        logger.info("Trying to connect remote host %s", str(self.host) )
+        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
 
         while True:
             try:
+                # debug
+                time.sleep(1)
                 self.s.connect((socket.gethostbyname(self.host), self.port))
                 break
 
@@ -198,4 +191,4 @@ class AM(FlowCB):
 
         except Exception as e:
             logger.error("msg wrap error: %s", str(e.args))
-            # raise Exception("msg wrap error: %s", str(e.args))
+            raise Exception("msg wrap error: %s", str(e.args))

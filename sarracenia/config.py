@@ -1142,11 +1142,7 @@ class Config:
         else:
             cfname = cfg
 
-<<<<<<< HEAD
-        logger.debug( f'looking for {cfg}')
-=======
         logger.debug( f'looking for {cfg} (in {os.getcwd()}')
->>>>>>> v03_wip
 
         if cfg[0] == os.sep:
             cfgfilepath=cfg
