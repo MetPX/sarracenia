@@ -2,30 +2,49 @@
 #
 # This file is part of sarracenia.
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
-# Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020
+# Copyright (C) His Majesty The King in Right of Canada, Environment Canada, 2008-2020
 #
 
 """
-Sundew migration
+Description:
+    Sundew migration
 
-sarracenia.flowcb.poll.am.AM is a sarracenia version 3 plugin used to migrate the message reception of sundew 
-AM (Alphanumeric Messaging) protocol.
+    This is a sr3 plugin built to migrate the reception of ECCC's
+    proprietary Alpha Manager(AM) socket protocol.
 
-By: André LeBlanc, Autumn 2022
+    For more information on the origins of AM and Sundew visit https://github.com/MetPX/Sundew/blob/main/doc/historical/Origins.rst
+
+    Code overview:
+        To start, when on_start is called, the socket binds, listens and afterwards accepts a connection when one is received from a remote host.
+        The receiver acts like an amtcp server. Instances are split into child/parent once an outbound connection is accepted.
+        The child proceeds to the receiver service while the parent stays and keeps accepting connections.   
+        In the service, bulletins are received and are stored locally inside of a given filepath.
+
+    Options:
+        AllowIPs (list): Filters outbound connections with provided IPs. All other IPs won't be accepted. 
+        If unselected, accept all IPs. 
+
+        directory (string): Specifies the directory where the bulletin files are to be stored. 
+
+    NOTE: AM cannot correct data corruption and AM cannot be stopped without data loss.
+    Precautions should be taken during maintenance interventions.
+
+Usage:
+    flowcb sarracenia.flowcb.am.AM
+    See sarracenia/examples/flow/am.conf for an example config file.
+
+Author:
+    André LeBlanc, ANL, Autumn 2022
 """
 
-# TODO: Update method descriptions and file description
-
-import logging, socket, struct, time, sys, os, signal
+import logging, socket, struct, time, sys, os, signal, ipaddress
 import urllib.parse
-import ipaddress
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
 
 logger = logging.getLogger(__name__)
-
 
 class AM(FlowCB):
 
@@ -42,7 +61,6 @@ class AM(FlowCB):
 
         self.url = urllib.parse.urlparse(self.o.remoteUrl)
 
-        # Initialise server variables
         self.inBuffer = bytes()
         self.limit = 32678
         self.patternAM = '80sII4siIII20s'
@@ -51,7 +69,7 @@ class AM(FlowCB):
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
         self.minnum = 00000
-        self.maxnum = 99999
+        self.maxnum = 99999 
         self.remoteHost = None
 
         # Initialise socket
@@ -60,33 +78,22 @@ class AM(FlowCB):
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # Add signal handler
+        ## Override outer signal handler with a default one to exit correctly.
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
  
-    def __establishconn__(self):
-        """
-        Overview: 
-            Establish a connexion with remote server.
-
-        Pseudocode:
-            Bind to socket
-            Listen for a reply from remote server
-            Accept connexion
-        
-        Return:
-            connected instance
-        """      
+    def __WaitForRemoteConnection__(self):
 
         if self.host == 'None':
-            raise Exception("No host was specified.")
+            raise Exception("No host was specified. Exiting.")
 
         try:
-            # Bind socket to all interfaces and listen
+            # Bind socket to specified host and listen
             self.s.bind((self.host, self.port)) 
             self.s.listen(1)
             logger.info("Socket listening on host %s and port %d.", self.host, self.port)
         except socket.error as e:
-                logger.info(f"Parent process bind failed. Retrying. Error: {e.args}")
+                logger.error(f"Bind failed. Retrying. Error message: {e.args}")
                 time.sleep(5)
         
         child_inst = 2
@@ -102,7 +109,7 @@ class AM(FlowCB):
                         time.sleep(1)
 
                     except Exception as e:
-                        logger.error(f"Stopping accept. Leaving. Error: {e}")
+                        logger.error(f"Stopping accept. Exiting. Error message: {e}")
                         sys.exit(0)   
 
                     if self.o.AllowIPs:
@@ -111,12 +118,13 @@ class AM(FlowCB):
                             conn.close()
                             continue
                     
-                    # Parent process stays in the loop searching for other connections. 
-                    # Child will proceed accepting or refusing connection.
+                    # Instance forks
+                    ## Instance 1 (Parent, pid=child_pid): Stays in the loop trying to accept other connections. 
+                    ## Instance 2 (Child, pid=0): Exits loop. Proceeds to initialise the service with the remote host.
                     pid = os.fork()
 
                     if pid == 0:
-                        # Break from the loop if process is child
+                        ## Close the unconnected socket instance as it is unused in the service.
                         self.s.close()
 
                         ## Set the logfiles properly
@@ -128,26 +136,28 @@ class AM(FlowCB):
 
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
+        
                     else:
-                        # Stay in loop if process is parent 
                         pidfilename = sarracenia.config.get_pid_filename(
                         None, self.o.component, self.o.config, child_inst)
 
                         with open(pidfilename, 'w') as pfn:
                             pfn.write('%d' % pid)
 
+                        ## Close the connected socket instance as it is unused in the parent
                         conn.close()
                         logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
 
                         child_inst += 1
-
                         pass
                    
-                except TypeError:
-                    logger.error("Couldn't accept connection. Retrying.")
+                except Exception:
+                    logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
+                    # self.s.close()
+                    # conn.close()
                     time.sleep(1)
                 
-        logger.info("Connection accepted with IP %s on port %d", self.remoteHost, self.port)     
+        logger.info("Connection accepted with IP %s on port %d. Starting service.", self.remoteHost[0], self.port)     
 
         return conn                       
 
@@ -157,16 +167,20 @@ class AM(FlowCB):
         for IP in self.o.AllowIPs:
             IP = ipaddress.ip_address(IP)
 
+        # If there are remaining instances, delete their filepaths and exit.
         if self.o.no != 1:
             pidfilename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
             if os.path.exists(pidfilename):
                 os.unlink(pidfilename)
             sys.exit(0)
-        self.conn = self.__establishconn__()
+        
+        self.conn = self.__WaitForRemoteConnection__()
     
 
     def on_stop(self):
         logger.info("On stop called. Exiting.")
+
+        # Close all socket connections (from parent and children) and exit.
         self.s.close()
         if self.o.no == 1:
             pass
@@ -176,59 +190,30 @@ class AM(FlowCB):
         
 
     def AddBuffer(self):
-        """
-        Overview::
-            Add buffer data from remote server
-        
-        Pseudocode::
-            Receive data from remote server
-            if only want to sync buffer:
-                Ignore all error logs
-
-        Return::
-            None
-        """
-
+        # try:
         try:
-            # Receive data from socket
-            try:
-                tmp = self.conn.recv(self.limit)
-            except Exception as e:
-                tmp = ''
-                logger.error(f"Reception has been interrupted. Closing connection. Error message: {e}")
+            tmp = self.conn.recv(self.limit)
 
+        except Exception as e:
+            tmp = ''
+            logger.error(f"Reception has been interrupted. Closing connection and exiting. Error message: {e}")
 
-            if tmp == '':
-                logger.error("Connection was lost. Exiting.")
-                raise Exception()
+        if tmp == '':
+            self.conn.close()
+            raise Exception()
+        
+        self.inBuffer = self.inBuffer + tmp
+
+        # except socket.error:
+            # (type, value, tb) = sys.exc_info()
+            # logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
             
-            self.inBuffer = self.inBuffer + tmp
-
-        except socket.error:
-            (type, value, tb) = sys.exc_info()
-
-            logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
             
-            # if not self.o.onlySync:
-                # logger.exception("Connection was lost")
-                # raise Exception("Connection was lost")
-            
-
     def CheckNextMsgStatus(self):
-        """
-        Overview:
-            Test integrity of message prior to unpacking it
 
-        Pseudocode:
-            Get buffer data
-            if buffer len at least 80 bytes:
-                unpack data
-                return OK
-            else
-                return INCOMPLETE
-        """
-
-        # Only unpack data if buffer length satisfactory
+        # Only unpack data if a bulletin is received
+        ## When unpacking, the length of the header is vital since it allows the receiver to extract the bulletin contents from the buffer.
+        ## AND it determines if all the bulletin contents are available inside the buffer.
         if len(self.inBuffer) >= self.sizeAM:
             (header, src_inet, dst_inet, threads, start, length, firsttime, timestamp, future) = \
                     struct.unpack(self.patternAM,self.inBuffer[0:self.sizeAM])
@@ -236,8 +221,8 @@ class AM(FlowCB):
             return 'INCOMPLETE'
 
         length = socket.ntohl(length)
-        # Debug
-        # logger.info(f"Buffer contents: {self.inBuffer}")
+
+        # logger.debug(f"Buffer contents: {self.inBuffer}")
         
         if len(self.inBuffer) >= self.sizeAM + length:
             return 'OK'
@@ -257,7 +242,9 @@ class AM(FlowCB):
 
             bulletin = self.inBuffer[self.sizeAM:self.sizeAM + length]
             longlen = self.sizeAM + length
-            logger.info("Gather successful.")
+
+            logger.debug("Gather successful.")
+
             return (bulletin, longlen)
         
         else:
@@ -265,19 +252,7 @@ class AM(FlowCB):
 
 
     def gather(self):
-        """
-        Overview: 
-            Unwrap data
-        
-        Pseudocode:
-            Get data and check integrity
-            if OK
-                Unpack data
-                Create file and let sarracenia format data
-                return sarramsg
-            else
-                return []
-        """
+
         self.AddBuffer()
 
         newmsg = []
@@ -289,23 +264,24 @@ class AM(FlowCB):
                 break
 
             if status == 'OK':
-                ## FIXME: Add corrupt data verifier?
                 (bulletin, longlen) = self.unwrapmsg()
 
+                # Set buffer for next bulletin ingestion
                 self.inBuffer = self.inBuffer[longlen:]
 
-                logger.debug(f"Bulletin length: {longlen - 128}") 
                 logger.debug(f"Bulletin contents: {bulletin}")
 
-                # Create a file for new messages and let sarracenia format data
                 parse = self.header.split(b'\0',1)
                 bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
 
+                # Create a file for new messages and let sarracenia format the data
                 try:
-                    # Filenames have the following naming scheme:
-                    #   1. Header
-                    #   2. Counter (makes filename unique for each bulletin)
-                    #   IF A* or R* present in header, include in filename
+                    ## Filenames have the following naming scheme:
+                    ##   1. Bulletin header
+                    ##   2. Counter (makes filename unique for each bulletin)
+                    ##   IF A* or R* present in header, include in filename
+                    ##
+                    ##   Example: SXVX65_KWNB_181800_RRB__99705
                     filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
 
                     file = open(filepath, 'wb')
