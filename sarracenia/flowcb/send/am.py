@@ -21,7 +21,7 @@ Description:
         If the send is successful, return True. If not, return False.
 
     Options:
-        None
+        MaxBulLen (int): Specify the maximum length of the bulletin. If the bulletin is too big, reject.
 
     NOTE: AM cannot correct data corruption and AM cannot be stopped without data loss.
     Precautions should be taken during maintenance interventions.
@@ -90,7 +90,7 @@ class AM(FlowCB):
 
         # Step out of the function if the bulletin size is too big
         if len(strdata) > self.o.MaxBulLen:
-            raise Exception(f"Bulletin length too long. Bulletin limit length: {self.o.MaxBulLen}. Latest bulletin length: {len(strdata)}")
+            raise Exception(f"Bulletin length too long. Bulletin limit length: {self.o.MaxBulLen}. Latest bulletin length: {len(strdata)}. Path to bulletin: {msg_path}")
 
         ## Attach rest of header with NULLs (if not long enough)
         nulheader = ['\0' for _ in range(size)]
@@ -118,32 +118,6 @@ class AM(FlowCB):
         
         return msg
 
-    """
-    def __ConnectToRemote__(self): 
-
-        if self.host == 'None':
-            raise Exception("No remote host specified. Connection cannot not be established")
-
-        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
-
-        while True:
-            try:
-                time.sleep(1)
-                self.s.connect((socket.gethostbyname(self.host), self.port))
-                break
-
-            except socket.error:
-                    (type, value, tb) = sys.exc_info()
-                    logger.error("Type: %s, Value: %s, Trying to reestablish connection." % (type, value))
-                    self.reEstablishConnection()
-
-        logger.info("Connection established with %s",str(self.host))
-    
-    def on_start(self):
-        self.__ConnectToRemote__()
-    """
-
-
     def on_stop(self):
         self.s.close()
 
@@ -151,21 +125,26 @@ class AM(FlowCB):
         # Use exponential backoff to try and connect or reconnect to remote host
         
         if self.host == 'None':
-            raise Exception("No remote host specified. Connection cannot not be established")
+            raise Exception("No remote host specified.")
 
         logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
 
         backoff_range = 1
         while True:
             try:
+                # Initialise socket
+                ## Create a TCP/IP socket
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 2)
+
                 time.sleep(1)
                 self.s.connect((socket.gethostbyname(self.host), self.port))
-                self.s.send(self.packed_bulletin)
                 break
                 
             except socket.error as e:
-                logger.debug("Connection not established. Error msg: %s" % str(e.args))
+                logger.debug("Error msg: %s" % str(e.args))
                 logger.error("Trying to establish connection in %d seconds" % (2**backoff_range))
+                self.s.close()
                 time.sleep(2**backoff_range)
                 if backoff_range < 6:
                     backoff_range += 1
@@ -175,21 +154,18 @@ class AM(FlowCB):
         try:
             self.packed_bulletin = self.wrapbulletin(bulletin)
 
-            try:
-                bytesSent = self.s.send(self.packed_bulletin)
+            while True:
+                try:
+                    bytesSent = self.s.send(self.packed_bulletin)
 
-                # Check if went okay
-                if bytesSent != len(self.packed_bulletin):
-                    return False
-                else:
-                    return True
-                
-            except socket.error as e:
-                logger.debug("Bulletin not sent. Error message: %s",str(e.args))
-                logger.error("Connection interrupted. Attempting to reconnect")
-                self.reEstablishConnection()
-                return False
+                    # Check if went okay
+                    return bytesSent == len(self.packed_bulletin)
+                    
+                except socket.error as e:
+                    logger.debug("Bulletin not sent. Error message: %s",str(e.args))
+                    logger.error("Connection interrupted. Attempting to reconnect")
+                    self.s.close()
+                    self.reEstablishConnection()
 
         except Exception as e:
-            self.s.close()
             raise Exception("Generalized error handler. Error message: %s", str(e.args))
