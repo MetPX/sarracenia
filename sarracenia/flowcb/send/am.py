@@ -34,7 +34,7 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, signal, os
+import logging, socket, struct, time, signal, sys, os
 import urllib.parse
 from sarracenia.flowcb import FlowCB
 
@@ -60,13 +60,19 @@ class AM(FlowCB):
         self.port = int(self.url.netloc.split(':')[1])
         self.patternAM = '80sII4siIII20s'
 
+        self.o.add_option('MaxBulLen', 'count', 32768)
+
         # Initialise socket
         ## Create a TCP/IP socket
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 2)
+
+        # Add signal handler
+        ## Override outer signal handler with a default one to exit correctly.
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
 
-    def wrapmsg(self, sarra_msg): 
+    def wrapbulletin(self, sarra_msg): 
 
         logger.info("Commencing message wrap.")
 
@@ -81,6 +87,10 @@ class AM(FlowCB):
         # Construct msg header
         strdata = data.decode('iso-8859-1')
         header = strdata[0:size]
+
+        # Step out of the function if the bulletin size is too big
+        if len(strdata) > self.o.MaxBulLen:
+            raise Exception(f"Bulletin length too long. Bulletin limit length: {self.o.MaxBulLen}. Latest bulletin length: {len(strdata)}")
 
         ## Attach rest of header with NULLs (if not long enough)
         nulheader = ['\0' for _ in range(size)]
@@ -104,10 +114,11 @@ class AM(FlowCB):
         msg = packedheader + data
 
         logger.debug("Message has been packed.")
-        # logger.debug(f"Message contents: {msg}")
+        # llogger.debug(f"Message contents: {msg}")
         
         return msg
 
+    """
     def __ConnectToRemote__(self): 
 
         if self.host == 'None':
@@ -123,48 +134,62 @@ class AM(FlowCB):
 
             except socket.error:
                     (type, value, tb) = sys.exc_info()
-                    logger.error("Type: %s, Value: %s, Sleeping 30 seconds ..." % (type, value))
-                    time.sleep(30)
+                    logger.error("Type: %s, Value: %s, Trying to reestablish connection." % (type, value))
+                    self.reEstablishConnection()
 
         logger.info("Connection established with %s",str(self.host))
-
     
     def on_start(self):
         self.__ConnectToRemote__()
-    
+    """
+
+
     def on_stop(self):
         self.s.close()
 
     def reEstablishConnection(self):
-        # Use exponential backoff to try and reconnect to remote host
-        for iter in range(1,6):
-            try:
-                self.s.connect((socket.gethostbyname(self.host), self.port))
-                break
+        # Use exponential backoff to try and connect or reconnect to remote host
         
-            except socket.error:
-                logger.error("Trying to reestablish connection in %d seconds" % (2**iter))
-                time.sleep(2**iter)
-            
+        if self.host == 'None':
+            raise Exception("No remote host specified. Connection cannot not be established")
 
-    def send(self, msg):
-        try:
-            packed_msg = self.wrapmsg(msg)
+        logger.info("Trying to connect to remote host %s and port %d" % (str(self.host) , self.port))
+
+        backoff_range = 1
+        while True:
             try:
-                bytesSent = self.s.send(packed_msg)
+                time.sleep(1)
+                self.s.connect((socket.gethostbyname(self.host), self.port))
+                self.s.send(self.packed_bulletin)
+                break
+                
+            except socket.error as e:
+                logger.debug("Connection not established. Error msg: %s" % str(e.args))
+                logger.error("Trying to establish connection in %d seconds" % (2**backoff_range))
+                time.sleep(2**backoff_range)
+                if backoff_range < 6:
+                    backoff_range += 1
+
+
+    def send(self, bulletin):
+        try:
+            self.packed_bulletin = self.wrapbulletin(bulletin)
+
+            try:
+                bytesSent = self.s.send(self.packed_bulletin)
 
                 # Check if went okay
-                if bytesSent != len(packed_msg):
+                if bytesSent != len(self.packed_bulletin):
                     return False
                 else:
                     return True
                 
             except socket.error as e:
-                logger.error("Bulletin not sent: %s",str(e.args))
-                logger.info("Closing socket connection and attempting to reconnect")
-                self.s.close()
+                logger.debug("Bulletin not sent. Error message: %s",str(e.args))
+                logger.error("Connection interrupted. Attempting to reconnect")
                 self.reEstablishConnection()
                 return False
 
         except Exception as e:
-            raise Exception("Msg wrap error: %s", str(e.args))
+            self.s.close()
+            raise Exception("Generalized error handler. Error message: %s", str(e.args))
