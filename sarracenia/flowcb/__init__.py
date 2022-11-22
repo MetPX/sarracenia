@@ -231,12 +231,8 @@ def load_library(factory_path, options):
         module = importlib.import_module('sarracenia.flowcb.' + packagename)
         class_ = getattr(module, classname)
     except ModuleNotFoundError:
-        try:
-            module = importlib.import_module(packagename)
-            class_ = getattr(module, classname)
-        except ModuleNotFoundError:
-            # give up.
-            return None        
+        module = importlib.import_module(packagename)
+        class_ = getattr(module, classname)
  
     if hasattr(options, 'settings'):
         opt = copy.deepcopy(options)

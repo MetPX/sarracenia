@@ -341,6 +341,7 @@ In general, v3 plugins:
   v2                     sr3                   Notes
   ====================== ===================== ==================================================
   parent.currentDir      msg['new_dir'] ?      equivalent depends on purpose of use.
+  parent.user_cache_dir  self.o.cfg_run_dir    actually one level down... new place is better.
   parent.masks           *none*                internals of sr_subscribe class.
   parent.program_name    self.o.program_name   name of the program being run e.g. 'sr_subscribe'
   parent.consumer        *none*                instance of sr_consumer class ...
