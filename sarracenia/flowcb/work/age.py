@@ -34,7 +34,7 @@ class Age(FlowCB):
             if not 'mtime' in m:
                 return None
 
-            now = nowflt()
+            completed = timestr2flt(m['timeCompleted'])
             mtime = timestr2flt(m['mtime'])
-            age = now - mtime
+            age = completed - mtime
             logger.info("file %s is %d seconds old" % (m['new_file'], age))

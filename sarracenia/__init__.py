@@ -188,7 +188,7 @@ def nowstr():
     return timeflt2str(time.time())
 
 
-def timeflt2str(f):
+def timeflt2str(f=None):
     """
         timeflt2str - accepts a float and returns a string.
 
@@ -595,6 +595,7 @@ class Message(dict):
         if code in known_report_codes:
             if text is None:
                 text = known_report_codes[code]
+                
         else:
             logger.warning('unknown report code supplied: %d:%s' %
                            (code, text))
@@ -605,8 +606,9 @@ class Message(dict):
             logger.warning('overriding initial report: %d: %s' %
                            (msg['report']['code'], msg['report']['message']))
 
-        msg['_deleteOnPost'] |= set(['report'])
+        msg['timeCompleted'] = nowstr()
         msg['report'] = {'code': code, 'message': text}
+        msg['_deleteOnPost'] |= set(['report','timeCompleted'])
 
     def updatePaths(msg, options, new_dir, new_file):
         """
