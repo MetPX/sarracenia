@@ -7,7 +7,7 @@
 
 """
 Description:
-    Sundew migration
+    AM Server         
 
     This is a sr3 plugin built to migrate the reception of ECCC's
     proprietary Alpha Manager(AM) socket protocol.
@@ -29,8 +29,11 @@ Description:
     NOTE: AM cannot correct data corruption and AM cannot be stopped without data loss.
     Precautions should be taken during maintenance interventions.
 
+Platform:
+    Linux/Mac: because of process forking, this will not work on Windows. 
+
 Usage:
-    flowcb sarracenia.flowcb.am.AM
+    flowcb am
     See sarracenia/examples/flow/am.conf for an example config file.
 
 Author:
