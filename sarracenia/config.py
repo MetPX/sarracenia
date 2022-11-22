@@ -153,6 +153,7 @@ convert_to_v3 = {
         ['callback', 'filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
+        'accel_cp': ['continue'],
         'msg_total_save': ['continue'],
         'post_total_save': ['continue'],
         'post_total_interval': ['continue']
@@ -483,6 +484,7 @@ class Config:
 
     # Correct name on the right, old name on the left.
     synonyms = {
+        'accel_cp_threshold': 'accelThreshold',
         'accel_scp_threshold': 'accelThreshold',
         'accel_wget_threshold': 'accelThreshold',
         'accept_unmatch': 'acceptUnmatched',
