@@ -48,7 +48,8 @@ Mises en garde :
    :maxdepth: 1
    :caption: Contents:
 
-   Reference/index.rst
-   Explication/index.rst 
-   Tutoriel/index.rst
-   CommentFaire/index.rst
+   Reference/index
+   Explication/index
+   Tutoriel/index
+   CommentFaire/index
+   Contribution/index

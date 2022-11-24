@@ -1,5 +1,12 @@
 """
 Plugin renamewhatfn.py:
+    This plugin is no longer needed.  Sundew compoatibility was added to Sarracenia, 
+    so now can get the same effect by using the *filename* option which works like it
+    does in Sundew:
+
+    filename WHATFN
+
+    what it was used for:
     This renamer strips everything from the first colon in the file name to the end.
     This does the same thing as a 'WHATFN' config on a sundew sender.
 
@@ -24,7 +31,6 @@ class RenameWhatFn(FlowCB):
         self.o = options
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             parts = message['new_file'].split(':')
 
@@ -33,5 +39,3 @@ class RenameWhatFn(FlowCB):
             message['new_file'] = message['new_file'].replace(extra, '')
             message['headers']['rename'] = message['headers'][
                 'rename'].replace(extra, '')
-            new_incoming.append(message)
-        worklist.incoming = new_incoming

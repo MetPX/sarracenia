@@ -8,7 +8,7 @@ Histoire
    Annoncements_v03
    deploiement_2018
    Evolution
-   HPC_Mirroring_Cas_Dutilisation
+   HPC_mirroring_cas_dutilisation
    mesh_gts
    messages_v01
    messages_v02

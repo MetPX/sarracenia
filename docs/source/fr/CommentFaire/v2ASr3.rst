@@ -1,21 +1,26 @@
 
 ===============================
 Portage des plugins V2 vers Sr3
-==============================
+===============================
 
 Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
 Sarracenia version 3.x (metpx-sr3)
 
-.. Contenu::
+.. Contenu ::
 
-.. avertissement:: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
+.. note :: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
    ne lisez pas ceci. cela ne fera que vous confondre. **Ce guide s’adresse à ceux qui ont besoin de prendre des
    Plugins v2 et les porter à Sr3.** Vous feriez mieux d’obtenir un nouveau regard en regardant le
    `jupyter notebook examples <../Tutorials>`_ qui fournissent une introduction à la v3 sans
    les références déroutantes à la v2.
 
-Les `exemples de jupyter notebook <.. /Tutorials>`_ sont probablement un bon pré-requis pour tout le monde,
-pour comprendre comment fonctionnent les plugins Sr3, avant d’essayer de porter ceux de la v2.
+.. note :: Même si vous avez réellement besoin de porter des plugins v2 vers sr3, vous devriez toujours être
+   familier avec les plugins sr3 avant d'essayer d'en porter un. Ressources pour cela :
+
+   `Guide de Programmation <../Explication/SarraPluginDev.html>`_
+
+    Les `exemples de jupyter notebook <.. /Tutorials>`_ sont probablement un bon pré-requis pour tout 
+    le monde, pour comprendre comment fonctionnent les plugins Sr3, avant d’essayer de porter ceux de la v2.
 
 `Exemple de plugin Sr3 <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
 
@@ -108,7 +113,7 @@ Exemples de choses qui devraient fonctionner:
   le plugin flowcb/v2wrapper.py qui sera automatiquement appelé lorsque les plugins v2 sont
   lu dans le fichier de configuration.
 
-.. Remarque:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
+.. Note:: Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
   rapidement. Il y a un succès de performance à l’utilisation de v2wrapper.
 
 
@@ -217,9 +222,18 @@ En général, les plugins v3:
   Lors du portage des plugins v2 -> v3 : *logger.x* remplace *parent.logger.x*.
   Parfois, il y a aussi self.logger x... je ne sais pas pourquoi... ne demandez pas.
   
-  .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage::
+  .. Astuce:: Dans vi, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage::
   
              :%s/parent.logger/logger/g
+
+* En v2, **parent** est un gâchis. L'objet *self* variait en fonction des points d'entrée
+  appelé. Par exemple, *self* dans __init__ n'est pas identique à *self* dans on_message. En conséquence, tous les 
+  variables d´états doivent être stocké dans le parent. l'objet parent contient des options, des paramètres et 
+  les variable d´instance de la classe qui appelle le plugin.
+
+  Pour les attributs réels, sr3 fonctionne désormais comme les programmeurs python s'y attendent : self, 
+  est le même self, dans __init__() et tous les autres points d'entrée, donc on peut définir des variables
+  d'état pour le plugin en utilisant les attributs self.x dans le code du plugin.
 
 * Les plugins v3 *ont des options comme argument pour le __init__ (self, options): routine* plutôt
   que dans la v2 où ils se trouvaient dans l’objet parent. Par convention, dans la plupart des modules, la
@@ -240,12 +254,91 @@ En général, les plugins v3:
   ces paramètres sont accessibles à partir de self.o
 
 * Dans les paramètres sr3, **recherchez le remplacement de nombreux traits de soulignement par le camelCase**
-  conformément à la normalisation de WMO. l’exception étant post\_ où le trait de soulignement semble mieux
+  
+  
   correspondre à l’intention.  ainsi:
-  *  custom_setting_thing -> customSettingThing
-  *  post_base_dir -> post_baseDir
-  *  post_broker est inchangé.
-  *  post_base_url -> post_baseUrl
+    *  custom_setting_thing -> customSettingThing
+    *  post_base_dir -> post_baseDir
+    *  post_broker est inchangé.
+    *  post_base_url -> post_baseUrl
+
+* Dans la v2, *parent.msg* stockait les messages, avec certains champs comme attributs intégrés et d'autres comme en-têtes.
+  Dans la v3 **les messages de notification sont maintenant des dictionnaires python** , donc un `msg.relpath` v2 devient `msg['relPath']` dans la v3.
+
+  plutôt que d'être transmis via le parent, il existe une option *worklist* transmise aux points d'entrée du plugin qui manipulent
+  messages. par exemple, un *on_message(self,parent)* dans un plugin v2 devient un *after_accept(self,worklist)* dans sr3.
+  la liste de travail.incoming contient tous les messages qui ont passé le filtrage d'acceptation/rejet et seront traités
+  (pour télécharger, envoyer ou publier) donc la logique ressemblera à ::
+
+
+     for msg in worklist.incoming:
+         do the same logic as in the v2 plugin. 
+         for one message at a time in the loop.
+
+  les mappages de tous les points d'entrée sont décrits dans `Mappage des points d'entrée v2 aux rappels v3`_
+  section plus loin dans ce document
+
+  Chaque message de notification v3 agit comme un dictionnaire python. Ci-dessous un mappage de table
+  champs de la représentation sarra v2 à celle de sr3 :
+
+  ================ =================== ===========================================================
+  v2               sr3                 Notes
+  ================ =================== ===========================================================
+  msg.pubtime      msg['pubTime']      quand le message a été initialement publié 
+  msg.baseurl      msg['baseUrl']      racine de l'arborescence url du fichier annoncé.
+  msg.relpath      msg['relPath']      chemin relatif concaténé à baseUrl pour le chemin canonique
+  *no equivalent*  msg['retPath']      chemin opaque pour remplacer le chemin canonique.
+  msg.notice       pas disponible      calculé à partir d'un autre champ sur l'écriture v2
+  msg.new_subtopic msg['new_subtopic'] à éviter en sr3, champ calculé à partir de relPath
+  msg.new_dir      msg['new_dir']      nom de répertoire où le fichier sera écrite.
+  msg.new_file     msg['new_file']     nom de fichier à écrire en new_dir.
+  msg.headers      msg                 pour les champs variables/optionnels. 
+  msg.headers['x'] msg['x']            un message est un dict python
+  msg.message_ttl  msg['message_ttl']  le même option de réglage.
+  msg.exchange     msg['exchange']     le canal sur lequel le message à été reçu.
+  msg.logger       logger              les journeaux fonctionnent ¨normalement" pour python
+  msg.parts        msg['size']         oublie ca, utilise une constructeur de sarracenia.Message
+  msg.sumflg       msg['integrity']    oublie ca, utilise une constructeur de sarracenia.Message
+  parent.msg       worklist.incoming   sr3 traite des groupe des messages, pas individuelement
+  ================ =================== ===========================================================
+
+* pubTime, baseUrl, relPath, retPath, size, integrity, sont tous des champs de message standard
+  mieux décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
+
+* si l'on a besoin de stocker par état de message, alors on peut déclarer des champs temporaires dans le message,
+  qui ne seront pas transmis lors de la publication du message. Il y a un champ défini *msg['_deleteOnPost']* ::
+
+      msg['my_new_field'] = my_new_value
+      msg['_deleteOnPost'] |= set(['my_new_field'])
+
+  Sarracenia supprimera le champ donné du message avant de le publier pour les consommateurs en aval.
+
+* dans les anciennes versions de v2 (<2.17), il y avait msg.local_file, et msg.remote_file, certains anciens plugins peuvent contenir
+  ce. Ils représentaient la destination dans les cas d'abonnement et d'expéditeur, respectivement.
+  les deux ont été remplacés par new_dir concaténé avec new_file pour couvrir les deux cas.
+  la séparation du répertoire et du nom de fichier a été considérée comme une amélioration.
+
+* dans la v2 *parent* était l'objet sr_subscribe, qui avait toutes ses variables d'instance, dont aucune
+  étaient destinés à être utilisés par des plugins. Dans les fonctions du plugin __init__(), elles 
+  peuvent être référencées en tant que *soi* plutôt que *parent* :
+
+  ====================== ===================== ===================================================
+  v2                     sr3                   Notes
+  ====================== ===================== ===================================================
+  parent.currentDir      msg['new_dir'] ?      répertoire *courant*... ca dépend... 
+  parent.masks           *none*                valeur interne de la class sr_subscribe
+  parent.program_name    self.o.program_name   nom de la programme qui execute e.g. 'sr_subscribe'
+  parent.consumer        *none*                ivaleur interne de la class sr_consumer
+  parent.publisher       *none*                instance de Publisher de sr_amqp.py
+  parent.post_hc         *none*                instance de HostConnect class from sr_amqp.py
+  parent.cache           *none*                cache pour mémoriser les fichiers traités.
+  parent.retry           *none*                fil d´attente pour les ressais.
+  ====================== ===================== ===================================================
+
+  Il existe des dizaines (des centaines ?) de ces attributs qui étaient destinés à servir de données internes au
+  sr_subscribe et ne devrait pas vraiment être disponible pour les plugins.
+  La plupart d'entre eux n'apparaissent pas, mais si un développeur a trouvé quelque chose, il peut être présent.
+  Difficile de prédire ce qu'un développeur de plugin utilisant l'une de ces valeurs attendait.
 
 * Dans la v3 **les messages de notification sont maintenant des dictionnaires python** , donc `msg.relpath` dans v2
   devient `msg['relPath']` dans la v3. Les messages de notification v3, car les dictionnaires sont la
@@ -265,7 +358,7 @@ En général, les plugins v3:
       worklist.incoming=new_incoming
 
 
-  .. Remarque:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
+  .. Note:: les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
             et plus précisément, les plugins on_message qui se transforment en plugins after_accept devraient être
             placé dans le répertoire flowcb/accept (afin que les plugins similaires puissent être regroupés).
 
@@ -278,7 +371,7 @@ En général, les plugins v3:
   la routine *after_work* modifierait le fichier worklist.ok pour qu’il contienne des messages de notification pour
   les fichiers individuels, plutôt que les .tar collectifs d’origine.
 
-  .. Remarque:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
+  .. Note:: les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
             répertoire /flowcb/after_work
 
 * v3 a **pas besoin de définir des champs de message de notification dans les plugins**
@@ -295,7 +388,7 @@ En général, les plugins v3:
   juste a regarder `do_poll -> poll`_
 
 * les plugins v3 **impliquent rarement la sous-classification des classes de Moth ou de Transfer.**
-  La classe sarracenia.moth implémente un support pour les protocoles de mise en file d’attente
+  La classe sarracenia.moth implémente un support pour les protocoles de mise en fil d’attente
   des messages de notification qui prennent en charge les abonnements basés sur la hiérarchie des topics.
   Il y a actuellement deux sous-classes de Moth: amqp (pour rabbitmq) et mqtt.  Ce serait
   idéal pour quelqu’un d’ajouter un amq1 (pour le support qpid amqp 1.0.)
@@ -735,7 +828,7 @@ créer une classe flowCallback avec un point d’entrée *download*.
 * renvoie la valeur True si le téléchargement réussit.
 
 * s’il renvoie False, la logique de nouvelle tentative s’applique (le téléchargement sera appelé à nouveau
-  puis placé dans la file d’attente de nouvelles tentatives, retry queue.)
+  puis placé dans la fil d’attente de nouvelles tentatives, retry queue.)
 
 * utiliser msg['new_dir'], msg['new_file'], msg['new_inflight_path']
   pour respecter les paramètres tels que *inflight* et placer le fichier correctement.
@@ -887,7 +980,7 @@ flowcb/retry
 ~~~~~~~~~~~~
 
   * dispose d’une fonction after_accept pour ajouter des messages de notification à la
-    file d’attente entrante, afin de déclencher une autre tentative de traitement.
+    fil d’attente entrante, afin de déclencher une autre tentative de traitement.
   * a une routine after_work faisant quelque chose d’inconnu ... FIXME.
   * a une fonction de publication pour prendre les téléchargements échoués et les mettre
     sur la liste des nouvelles tentatives pour un examen ultérieur.

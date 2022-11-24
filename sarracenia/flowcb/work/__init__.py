@@ -11,5 +11,12 @@
   plugins that use primarily the after_work entry point, normally 
   executed after the file transfer (either send or get) has completed.
 
+  usually such plugins will contain a loop:
+
+  for msg in worklist.ok
+      do_something.
+
+  to operate on all the files transferrred or processed successfully.
+
 """
 pass

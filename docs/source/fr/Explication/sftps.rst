@@ -51,7 +51,7 @@ de fichiers, il y aura probablement un grand nombre d'appareils de réseau
 entre les serveurs d’Alice et bob.  Le diagramme suivant est un diagramme typique
 d'un cas simple que l’on est susceptible de rencontrer dans la réalité:
 
-.. image::  sftps/ftp_proxy_today.svg
+.. image::  ../../Explanation/sftps/ftp_proxy_today.svg
   :align: center
 
 Pour envoyer un grand nombre de fichiers et résister aux défaillances de

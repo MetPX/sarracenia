@@ -1,11 +1,15 @@
-===================
-GLOSSARY
-===================
+==========================
+Traduction de terminologie
+==========================
 
 +----------------+-------------------------------------------+
-| English        | French                                    |
+| English        | Français                                  |
 +================+===========================================+
-| Advertisement  | publication                               |
+| Advertisement  | annonce                                   |
+| Notification   | publication                               |
+| post           | message                                   |
+| message        | message d´annonce                         |
+| notification   | n.b voir en bas de la table               |
 +----------------+-------------------------------------------+
 | Data Pump      | Pompe de données                          |
 +----------------+-------------------------------------------+
@@ -27,11 +31,17 @@ GLOSSARY
 +----------------+-------------------------------------------+
 | mirror         | miroir                                    |
 +----------------+-------------------------------------------+
+| notification   | message d'annonce                         |
+| message        | n.b voir en bas de la table               |
++----------------+-------------------------------------------+
 | pattern        | modèle                                    |
 +----------------+-------------------------------------------+
 | payload        | charge utile                              |
 +----------------+-------------------------------------------+
-| Poll           | scrutin                                   |
+| Poll           | nom: sonde, verbe: sonder,                |
+|                | résultat: sondage                         |
++----------------+-------------------------------------------+
+| queue          | fil d'attente                             |
 +----------------+-------------------------------------------+
 | regexp pattern | Modèle regexp                             |
 +----------------+-------------------------------------------+
@@ -55,13 +65,19 @@ GLOSSARY
 +----------------+-------------------------------------------+
 | wildcards      | caractère de remplacement                 |
 +----------------+-------------------------------------------+
-| message        | message d'annonce (notification message)  |
-+----------------+-------------------------------------------+
 
-message, notification message, post, notification, announcement -> message, publicité? , annonce? , article?
 
-The canonical term is now:
+.. note::
 
-"notification message" in English, and "message d'annonce" in French.
+  Documentation is inconsistent in that it uses a variety of words
+  to describe the same object: messages that contain notifications
+  of the new availability of data. It may be called any of:
 
-Please replace with the canonical term when you find it.
+  message, notification message, post, notification, announcement -> message, publicité? , annonce? , article?
+
+  The canonical term is now:
+
+  *notification message* in English, and *message d'annonce* in French.
+
+  There is an issue to standardize this usage, but it may not have
+  propagated to all occurrences. ( https://github.com/MetPX/sarracenia/issues/552 )

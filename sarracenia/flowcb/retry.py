@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 
 class Retry(FlowCB):
     """
-      overall goal:  When file transfers fail, write the messages to disk to be retried later. There is also a second
-                     retry queue for failed posts.
+      overall goal:  
+      *  When file transfers fail, write the messages to disk to be retried later. 
+         There is also a second retry queue for failed posts.
 
       how it works:
       * the after_accept checks how many incoming messages we received.

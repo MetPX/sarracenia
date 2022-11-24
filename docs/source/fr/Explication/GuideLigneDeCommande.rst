@@ -31,6 +31,7 @@ Les composants de sarracenia sont des groupes de valeurs choisi par défaut sur 
 pour réduire la taille des composants individuels.  Les composants sont les suivants :
 
  - cpump - copier des messages d'une pompe a une autre (une implémentation C d'un shovel.)
+ - flow  - flux générique sans comportement par défaut. Bonne base pour créer un composant défini par l'utilisateur
  - poll  - interroger un serveur Web ou de fichiers non sarracenia pour créer des messages à traiter.
  - post & watch - créer des messages pour les fichiers à traiter.
  - sarra  - télécharger le fichier d’un serveur distant vers le serveur local et les republier pour d’autres.
@@ -60,7 +61,7 @@ le courtier ou pour gérer les configurations.
 
  - cleanup:       supprime les ressources du composant sur le serveur
  - declare:       crée les ressources du composant sur le serveur.
- - setup:         comme declare, fait en plus des liaisons de file d'attente.
+ - setup:         comme declare, fait en plus des liaisons de fil d'attente.
  - add:           copie une configuration à la liste des configurations disponibles.
  - list:          Énumérer toutes les configurations disponibles.
  - list plugins:  Énumérer toutes les *plugins* disponibles.
@@ -78,7 +79,7 @@ en se servant de la configuration dd.
 L'action **foreground** est utilisée lors de la construction d'une
 configuration ou pour le débogage. L'instance **foreground** sera exécutée
 indépendamment des autres instances qui sont en cours d'exécution.
-Si des instances sont en cours d'exécution, il partage la même file d'attente
+Si des instances sont en cours d'exécution, il partage la même fil d'attente
 d'avis avec eux. Un utilisateur arrête l'instance **foreground** en
 utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le processus.
 
@@ -259,7 +260,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
 
     
     % sr3 show subscribe/q_f71
-    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_file download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
+    2022-03-20 15:30:32,507 1084652 [INFO] sarracenia.config parse_fil download_f20.conf:35 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
     2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file tsource2send_f50.conf:26 obsolete v2:"on_message msg_rawlog" converted to sr3:"logEvents after_accept"
     2022-03-20 15:30:32,508 1084652 [INFO] sarracenia.config parse_file rabbitmqtt_f22.conf:6 obsolete v2:"on_message msg_log" converted to sr3:"logEvents after_accept"
     
@@ -385,7 +386,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
 
 
 convert
-~~~~~
+~~~~~~~
 
 Conversion d’une configuration : les deux formats sont acceptés, ainsi que les fichiers d’inclusion (.inc) ::
 
@@ -470,7 +471,7 @@ Les colonnes à droite donnent plus d’informations, détaillant le nombre de p
 L’entrée attendu indique le nombre de processus à exécuter en fonction de la configuration et indique si elle est arrêtée
 ou pas.  Le contenu des colonnes Run et Miss doit toujours correspondre à ce qui se trouve dans la colonne Exp.
 
-La dernière colonne est le nombre de messages stockés dans la file d’attente de nouvelles tentatives locale, indiquant quels
+La dernière colonne est le nombre de messages stockés dans la fil d’attente de nouvelles tentatives locale, indiquant quels
 channels ont des difficultés de traitement. Voici un exemple d’une seule configuration qui est en cours d’exécution, en l’arrêtant, et
 en la nettoyant::
 
@@ -504,22 +505,22 @@ en la nettoyant::
           total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
 
 
-CONSUMER
-========
+La ceuillette de messages
+=========================
 
-La plupart des composants Metpx Sarracenia boucle sur la réception et la
-consommation de messages AMQP. Habituellement, les messages d'intérêt sont
+La plupart des composants Metpx Sarracenia boucle sur la ceuillette et/ou
+réception de messages AMQP. Habituellement, les messages d'intérêt sont
 dans le format d´une *avis* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité
 d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
-Il y a également le format *rappor* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
+Il y a également le format *rapport* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
 être traités avec les mêmes outils. Les messages AMQP sont publiés avec
-un *exchange* comme destinataire.  Sur un courtier (serveur AMQP.) L'exchange
+un *exchange* comme destinataire. Sur un courtier (serveur AMQP.) L'exchange
 délivre des messages aux files d'attente. Pour recevoir de messages,
 on doit fournir les informations d'identification pour se connecter au
 courtier (message AMQP).  Une fois connecté, un consommateur doit créer
-une file d'attente pour retenir les messages en attente. Le consommateur
-doit ensuite lier la file d'attente à une ou plusieurs échanges de manière
-à ce qu'il mette dans sa file d'attente.
+une fil d'attente pour retenir les messages en attente. Le consommateur
+doit ensuite lier la fil d'attente à une ou plusieurs échanges de manière
+à ce qu'il mette dans sa fil d'attente.
 
 Une fois les liaisons (anglais: *bindings*) établies, le programme peut
 recevoir des messages. Lorsqu'un message est reçu, un filtrage
@@ -560,15 +561,15 @@ L'option courtier indique à chaque composante quel courtier contacter.
 ::
       (par défaut : Aucun et il est obligatoire de le définir)
 
-Une fois connecté à un courtier AMQP, l'utilisateur doit lier une file d'attente.
+Une fois connecté à un courtier AMQP, l'utilisateur doit lier une fil d'attente.
 à l´*exchange* et aux thèmes (*topics*) pour déterminer les messages intérêsseants.
 
-Creating the Queue
-------------------
+Configuration de fil d´attente
+------------------------------
 
-Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'attente.
+Une fois connecté à un courtier AMQP, l'utilisateur doit créer une fil d'attente.
 
-Mise en file d'attente sur broker :
+Mise en fil d'attente sur broker :
 
 - **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
@@ -579,13 +580,13 @@ Mise en file d'attente sur broker :
 Habituellement, les composants devinent des valeurs par défaut raisonnables pour
 toutes ces valeurs et les utilisateurs n'ont pas besoin de les définir.  Pour
 les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
-par défaut. La file d'attente est l'endroit où les avis sont conservés
+par défaut. La fil d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
 [ queue|queue_name|qn <name>]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Par défaut, les composants créent un nom de file d’attente qui doit être unique. Le
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Le
 queue_name par défaut créé par les composants et suit la convention suivante :
 
    **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
@@ -594,7 +595,7 @@ Ou:
 
 * *brokerUser* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *programName* est le composant qui utilise la file d’attente (par exemple *sr_subscribe* )
+* *programName* est le composant qui utilise la fil d’attente (par exemple *sr_subscribe* )
 
 * *configName* est le fichier de configuration utilisé pour régler le comportement des composants
 
@@ -603,22 +604,22 @@ Ou:
 
 Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par **q_<brokerUser>**.
 
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour du multi-tasking simple.
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour du multi-tasking simple.
 Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queue_name est écrit à :
 
  ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds.
 
 AMQP QUEUE BINDINGS
 -------------------
 
-Une fois qu'on a une file d'attente, elle doit être liée à un échange (exchange.)
+Une fois qu'on a une fil d'attente, elle doit être liée à un échange (exchange.)
 Les utilisateurs ont presque toujours besoin de définir ces options. Une
-fois qu'une file d'attente existe sur le courtier, il doit être lié (*bound*) à
+fois qu'une fil d'attente existe sur le courtier, il doit être lié (*bound*) à
 une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
 les avis que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
@@ -693,7 +694,7 @@ On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
 Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
 clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
-On peut désactiver la liaison de file d’attente comme cela::
+On peut désactiver la liaison de fil d’attente comme cela::
 
   subtopic None
 
@@ -707,7 +708,7 @@ Client-side Filtering
 ---------------------
 
 Nous avons sélectionné nos messages via **exchange**, **subtopic** et **subtopic**.
-Le courtier met les messages correspondants dans notre file d'attente (*queue*).
+Le courtier met les messages correspondants dans notre fil d'attente (*queue*).
 Le composant télécharge ces messages.
 
 Les clients Sarracenia implémentent un filtrage plus flexible côté client
@@ -796,23 +797,23 @@ les fichiers téléchargés seront définis en fonction de l’en-tête relPath 
 dans le message. Toutefois, si *baseUrl_relPath* est défini, le relPath du message va
 être précédé des sous-répertoires du champ baseUrl du message.
 
-NAMING QUEUES
--------------
+Convention d´appellation de files d´attente
+-------------------------------------------
 
+Alors que dans la plupart des cas, une bonne valeur de nom de fil d´attente (en anglais: queue) est 
+générée par l'application, dans certains cas, c´est nécessaire de remplacer ces choix par une 
+spécification utilisateur explicite. Pour ce faire, il faut connaître les règles de nommage des files d'attente :
 
-Alors que dans la plupart des cas, une bonne valeur est générée par l'application, dans certains cas,
-c´est nécessaire de remplacer ces choix par une spécification utilisateur explicite.
-Pour ce faire, il faut connaître les règles de nommage des files d'attente :
-
-1. les noms de file d'attente commencent par q\_.
-2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la file d'attente).
+1. les noms de fil d'attente commencent par q\_.
+2. ceci est suivi de <amqpUserName> (le propriétaire/utilisateur du nom d'utilisateur du courtier de la fil d'attente).
 3. suivi d'un deuxième tiret de soulignement ( _ )
 4. suivi d'une chaîne de caractères au choix de l'utilisateur.
 
-La longueur totale du nom de la file d'attente est limitée à 255 octets de caractères UTF-8.
+La longueur totale du nom de la fil d'attente est limitée à 255 octets de caractères UTF-8.
 
-POSTING
-=======
+
+PUBLICATION (POST)
+==================
 
 Comme de nombreux composants consomment un flux de messages, de nombreux composants
 (souvent les mêmes) produisent également un flux de sortie de messages.  Pour créer des fichiers
@@ -834,8 +835,8 @@ courtier au saut suivant, l’utilisateur définit ces options :
 FIXME : Des exemples de ce à quoi ils servent, de ce qu’ils font...
 
 
-NAMING EXCHANGES
-----------------
+Convention d´appellation des EXCHANGES
+--------------------------------------
 
 1. Les noms d’échange commencent par x
 2. Les échanges qui se terminent par *public* sont accessibles (pour lecture) par tout utilisateur authentifié.
@@ -859,18 +860,19 @@ Habituellement, un sr_sarra exécuté par un administrateur de pompe lira à par
 pour récupérer les données correspondant au message *post* d’Alice, et les rendre disponibles sur la pompe,
 en le ré-annonçant sur l’échange xpublic.
 
-POLLING
-=======
 
-Polling fait le même travail que post, sauf que les fichiers sont sur un serveur distant.
-Dans le cas d’un poll, l’URL de la publication sera générée à partir de la *destination*,
+SONDAGE (POLLING)
+=================
+
+On peut faire le même travail que post, sauf que les fichiers sont sur un serveur distant.
+Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option *pollUrl*,
 avec le chemin d’accès du produit (*directory*/« fichier correspondant »).  Il y en a une publication
-par fichier.  La taille du fichier est prise dans le répertoire « ls »... mais sa somme
-de contrôle ne peut pas être déterminée, de sorte que l’en-tête « sum » dans la publication est défini
-à « 0,0 ».
+par fichier. La taille du fichier est prise dans le répertoire « ls »... mais sa somme
+de contrôle ne peut pas être déterminée, lors la stratégie de calcul de est ¨cod¨ qui signifie
+que ca devrait être calculé lors du transfert.
 
 Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
-(le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *broker* est obligatoire.
+(le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *post_broker* est obligatoire.
 Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.
 
 Référez `sr3_post(1) <../Reference/sr3_post.1.html>`_ - pour comprendre l’ensemble du processus de notification.
@@ -1019,6 +1021,15 @@ et s'abonne aux notifications d’intérêt. Si _suppress_duplicates_ est actif,
 trouvé, le fichier est déjà passé, de sorte que la notification est ignorée. Si ce n’est pas le cas, alors
 le fichier est nouveau, et la **sum** est ajoutée à la cache et la notification est publiée.
 
+FLOW
+----
+
+Flow est la classe parent à partir de laquelle tous les autres composants, à l'exception de cpost et cpump, sont construits.
+Flow n'a pas de comportement intégré. Les paramètres peuvent le faire agir comme n'importe quel autre composant python,
+ou il peut être utilisé pour créer des composants définis par l'utilisateur. Généralement utilisé avec l'option *flowMain*
+pour exécuter une sous-classe de flux définie par l'utilisateur.
+
+
 POLL
 ----
 
@@ -1030,7 +1041,7 @@ informe qu'il y a nouveau produit.
 Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.rst>`_
 
 **poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
-une *destination* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
+une *pollUrl* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option *nodupe_fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.
@@ -1041,20 +1052,20 @@ nodupe_ttl) pour empêcher la publication de fichiers qui ont déjà été vus.
 **poll** peut être utilisé pour acquérir des fichiers distants en conjonction avec un `sarra`_ qui est
 abonné aux notifications d'un post, pour les télécharger et les republier à partir d’une pompe de données.
 
-L’option de destination spécifie ce qui est nécessaire pour se connecter au serveur distant
+L’option de pollUrl spécifie ce qui est nécessaire pour se connecter au serveur distant
 
-**destination protocol://<user>@<server>[:port]**
+**pollUrl protocol://<user>@<server>[:port]**
 
 ::
       (par défaut : Aucun et il est obligatoire de le définir )
 
-La *destination* doit être définie avec le minimum d’informations requises...
-**sr_poll** utilise le paramètre *destination* non seulement lors du poll, mais aussi
+La *pollUrl* doit être définie avec le minimum d’informations requises...
+**sr_poll** utilise le paramètre *pollUrl* non seulement lors du poll, mais aussi
 dans messages sr3_post produits.
 
 Par exemple, l’utilisateur peut définir :
 
-**destination ftp://myself@myserver**
+**pollUrl ftp://myself@myserver**
 
 Et compléter les informations nécessaires dans le fichier d’informations d’identification (credentials) avec la ligne :
 
@@ -1248,7 +1259,7 @@ et est utilisé comme modèle pour se faire remplacer dans le répertoire de bas
 (à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'link', 'oldname', 'newname'
 qui sont utilisés lors de la mise en miroir de liens symboliques ou de fichiers renommés.
 
-La **destination** définit le protocole et le serveur à utiliser pour livrer les produits.
+La **remoteUrl** définit le protocole et le serveur à utiliser pour livrer les produits.
 Sa forme est un url partiel, par exemple : **ftp://myuser@myhost**.
 Le programme utilise le fichier ~/.conf/sarra/credentials.conf pour obtenir les détails restants
 (mot de passe et options de connexion).  Les protocoles pris en charge sont ftp, ftps et sftp.
@@ -1266,7 +1277,7 @@ Maintenant, nous sommes prêts à envoyer le produit... par exemple, si la notif
 **sr_sender**  effectue la pseudo-livraison suivante :
 
 Envoie le fichier locale [**baseDir**]/relative/path/to/IMPORTANT_product
-à    **destination**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+à    **remoteUrl**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** est supérieur à 0, le processus tente de respecter
 cette vitesse de livraison... ftp,ftps,ou sftp)
 
@@ -1276,7 +1287,7 @@ cette vitesse de livraison... ftp,ftps,ou sftp)
 La notification sélectionnée contiennent toutes les bonnes informations
 (attributs de thème et d’en-tête) à l’exception du champ url dans l'avis... dans notre exemple : **http://this.pump.com/**
 
-Par défaut, **sr_sender** place la **destination** dans ce champ.
+Par défaut, **sr_sender** place la **remoteUrl** dans ce champ.
 L’utilisateur peut l’écraser en spécifiant l’option **post_baseUrl**. Par exemple:
 
 **post_baseUrl http://remote.apache.com**
@@ -1303,7 +1314,7 @@ Il y a 2 différences avec le cas précédent :
 les options **directory** et **filename**.
 
 Le **baseDir** est le même, tout comme la
-**destination** et les options **post_baseDir**.
+**remoteUrl** et les options **post_baseDir**.
 
 L’option **répertoire** définit un autre « chemin relatif » pour le produit
 à destination.  Il est marqué aux options **accept** définies après lui.
@@ -1346,6 +1357,7 @@ Notice: **20150813161959.854 http://remote.apache.com/ my/new/important_location
 
 SHOVEL
 ------
+
 shovel copie les messages sur un courtier (donné par l’option *broker*) à
 un autre (donné par l’option *post_broker*) soumis au filtrage
 par (*exchange*, *subtopic*, et éventuellement, *accept*/*reject*.)
@@ -1923,13 +1935,13 @@ détectée, le problème est noté pour une nouvelle tentative.  Des erreurs peu
 Initialement, les programmes essaient de télécharger (ou d’envoyer) un fichier un nombre de fois fixe (*tentatives*, par défaut: 3).
 Si les trois tentatives de traitement du fichier échouent, le fichier est placé dans "réessayer".
 Le programme poursuit ensuite le traitement des nouveaux éléments. Lorsqu’il n’y a pas de nouveaux éléments,
-le programme recherche un fichier à traiter dans la file d’attente de nouvelles tentatives. Il vérifie ensuite si le fichier
+le programme recherche un fichier à traiter dans la fil d’attente de nouvelles tentatives. Il vérifie ensuite si le fichier
 est vieux, au-delà du *retry_expire* (par défaut : 2 jours). Si le fichier n’a pas expiré, alors
 il déclenche une nouvelle série de tentatives de traitement du fichier. Si les tentatives échouent, il revient en arrière
-dans la file d’attente de nouvelles tentatives.
+dans la fil d’attente de nouvelles tentatives.
 
 Cet algorithme garantit que les programmes ne restent pas bloqués sur un seul mauvais produit qui empêche
-le reste de la file d’attente en cours de traitement, et permet une récupération raisonnable et progressive,
+le reste de la fil d’attente en cours de traitement, et permet une récupération raisonnable et progressive,
 permettant aux nouvelles données de circuler et en envoyant les anciennes données de manière opportuniste
 lorsqu’il y a des lacunes.
 
@@ -1959,22 +1971,22 @@ a été spécifié.)
 
 Divers exemples de fichiers de configuration sont disponibles ici :
 
- `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
+ `https://github.com/MetPX/sarracenia/tree/main/sarra/examples <https://github.com/MetPX/sarracenia/tree/main/sarra/examples>`_
 
 
 
 QUEUES and MULTIPLE STREAMS
 ---------------------------
 
-Lorsqu’il est exécuté, **subscribe** choisit un nom de file d’attente, ou il écrit
+Lorsqu’il est exécuté, **subscribe** choisit un nom de fil d’attente, ou il écrit
 à un fichier nommé d’après le fichier de configuration donné comme argument pour **subscribe**
 avec un suffixe .queue ( ."configfile".queue).
 Si l’abonnement est arrêté, les messages publiés continuent de s’accumuler sur le
-broker dans la file d’attente.  Lorsque le programme est redémarré, il utilise le nom de la file d’attente
-stocké dans ce fichier pour se connecter à la même file d’attente et ne perd aucun message.
+broker dans la fil d’attente.  Lorsque le programme est redémarré, il utilise le nom de la fil d’attente
+stocké dans ce fichier pour se connecter à la même fil d’attente et ne perd aucun message.
 
 Les téléchargements de fichiers peuvent être parallélisés en exécutant plusieurs abonnements à l’aide de
-la même file d’attente.  Les processus partageront la file d’attente et téléchargerons
+la même fil d’attente.  Les processus partageront la fil d’attente et téléchargerons
 une partie de ce qui a été sélectionné.  Il suffit de lancer plusieurs instances
 d'abonnement dans le même utilisateur/répertoire à l’aide du même fichier de configuration.
 
@@ -1985,9 +1997,9 @@ et ce flux de téléchargement peut également être multi-flux.
 .. REMARQUE::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur
-  les courtiers, et sont nettoyés de temps en temps.  Une file d’attente à laquelle on n’accède pas pour
-  une longue période (dépendante de la mise en œuvre) sera détruite.  Une file d’attente qui n’est pas
-  accédé et ayant trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  les courtiers, et sont nettoyés de temps en temps.  Une fil d’attente à laquelle on n’accède pas pour
+  une longue période (dépendante de la mise en œuvre) sera détruite.  Une fil d’attente qui n’est pas
+  accédé et ayant trop de fichiers (définis par l’implémentation) en fil d’attente seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
   perte de notifications.
 
@@ -2036,10 +2048,10 @@ Dans le répertoire ~/.cache/sarra/log::
 
 .. Note::
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur les
-  courtiers, et sont nettoyés de temps en temps.  Une file d’attente qui n’est pas
-  accédé et ayant trop de fichiers en file d’attente (définis par l’implémentation) seront détruits.
+  courtiers, et sont nettoyés de temps en temps.  Une fil d’attente qui n’est pas
+  accédé et ayant trop de fichiers en fil d’attente (définis par l’implémentation) seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
-  perte de notifications.  Une file d’attente à laquelle on n’accède pas pendant une longue période (dépendant de l’implémentation)
+  perte de notifications.  Une fil d’attente à laquelle on n’accède pas pendant une longue période (dépendant de l’implémentation)
   sera détruite.
 
 vip - ACTIVE/PASSIVE OPTIONS
@@ -2086,7 +2098,7 @@ L'option *outlet*  permet la sortie finale d'être autre chose qu'un post.
 Voir `sr3_cpump(1) <sr3_cpump.1.rst>`_ pour plus de détails.
 
 [-pbd|--post_baseDir <path>] (facultatif)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option *post_baseDir* fournit le chemin du répertoire qui, lorsqu'il est
 combiné (ou trouvé) dans le chemin d'accès donné, donne le chemin absolu local
@@ -2116,7 +2128,7 @@ définir de déclencher un script. L'option **on_post** serait utilisée pour fa
 une telle configuration.
 
 post_exchangeSplit   <number>   (défaut: 0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **post_exchangeSplit** ajoute un suffixe à deux chiffres résultant d'une
 division entière du dernier digit de la somme de contrôle, afin de répartir les
@@ -2175,7 +2187,7 @@ Les utilisateurs peuvent placer leurs propres scripts dans le sous-répertoire d
 ( sur Linux, le ~/.config/sarra/plugins).
 
 flowCallback et flowCallbackPrepend <class>
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 La directive flowCallback prend une classe à charger et peut analyser les points d’entrée comme argument ::
 
@@ -2391,7 +2403,8 @@ Pour la compatibilité avec Sundew, il existe des options de livraison suppléme
 
 
 destfn_script <script> (défaut:None)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Cette option définit un script à exécuter lorsque tout est prêt
 pour la livraison du produit. Le script reçoit une instance de la classe sender.
 Le script prends le parent comme argument, et par exemple, une
@@ -2485,6 +2498,7 @@ Un message sélectionné par le quatrième *accept* sera remis inaltérée à un
 
 Field Replacements
 ~~~~~~~~~~~~~~~~~~
+
 Dans MetPX Sundew, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de

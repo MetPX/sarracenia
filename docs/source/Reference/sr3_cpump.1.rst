@@ -113,7 +113,7 @@ SEE ALSO
 
 `sr3_options(7) <sr3_options.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
 
-`sr3_post(7) <sr3_post.7.html>`_ - The format of notification message messages.
+`sr_post(7) <sr_post.7.html>`_ - The format of notification message messages.
 
 **Home Page:**
 

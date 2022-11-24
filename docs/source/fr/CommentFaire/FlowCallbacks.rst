@@ -28,15 +28,13 @@ En bref, l’algorithme comporte les étapes suivantes :
 
 * **post**  -- publier le résultat du travail effectué pour l’étape suivante.
 
-Un rappel de flux, est une classe python construite avec des routines nommées pour
+Un *flowcallback*, est une classe python construite avec des routines nommées pour
 indiquer quand le programmeur veut qu’elles soient appelés.
-Pour ce faire, créez une routine qui sous-classe *sarracenia.flowcb.FlowCB*
-donc la classe aura normalement::
+Il y a plusieurs exemples de class python *flowcallback* inclus avec Sarracenia,
+qu'on peut voir (en anglais) dans `Flowcallback Reference <../../Reference/flowcb.html>`_
+qui peuvent servir comment modèle pour partir de nouvelles classes.
 
-   from sarracenia.flowcb import FlowCB
-
-parmi les importations.
-
+Ce guide décrit les éléments nécessaire pour façonner des classes flowcb à partir de zéro.
 
 Entrées de fichier de configuration pour utiliser Flow_Callbacks
 ----------------------------------------------------------------
@@ -347,14 +345,73 @@ C’est une bonne idée de regarder le code source de sarracenia lui-même. Par 
   *gather*, en lisant un système de fichiers et en créant une liste de messages de notification à traiter.
 
 * *sarracenia.flowcb.gather.message.Message* est une classe qui implémente la réception des messages
-  de notification à partir des flux de protocole de file d’attente de messages.
+  de notification à partir des flux de protocole de fil d’attente de messages.
 
 * *sarracenia.flowcb.nodupe.NoDupe* Ce module supprime les doublons des flux de messages en fonction
   des sommes de contrôle d’intégrité.
 
 * *sarracenia.flowcb.post.message.Message* est une classe qui implémente la publication de messages
-  de notification dans les flux de protocole de file d’attente de messages
+  de notification dans les flux de protocole de fil d’attente de messages
 
 * *sarracenia.flowcb.retry.Retry* lorsque le transfert d’un fichier échoue, Sarracenia doit conserver
   le message de notification correspondant dans un fichier d’état pour une période ultérieure lorsqu’il
   pourra être réessayé. Cette classe implémente cette fonctionnalité.
+
+
+Modification de fichiers en transit
+-----------------------------------
+
+La classe *sarracenia.transfer* inclu un point d'entrée *on_data* qui permet de transformer
+des données durant un transfer::
+
+
+    def on_data(self, chunk) -> bytes:
+        """
+            transform data as it is being read. 
+            Given a buffer, return the transformed buffer. 
+            Checksum calculation is based on pre transformation... likely need
+            a post transformation value as well.
+        """
+        # modify the chunk in this body...
+        return chunk
+
+   def registered_as():
+        return ['scr' ]
+
+   # copied from sarracenia.transfer.https
+
+   def connect(self):
+
+        if self.connected: self.close()
+
+        self.connected = False
+        self.remoteUrl = self.o.remoteUrl.replace('scr', 'https', 1)
+        self.timeout = self.o.timeout
+
+        if not self.credentials(): return False
+
+        return True
+        
+Pour effectuer la modification des données en vol, on peut sous-classer la classe de transfert pertinente.
+Une telle classe (scr - strip retour chariot) peut être ajoutée en mettant un import dans la configuration
+dossier::
+
+   import scr.py
+
+alors les messages où l'url de récupération est définie pour utiliser le schéma de récupération *scr* utiliseront ce
+protocole de transfert personnalisé.
+
+
+flots modifiés
+--------------
+
+Si aucun des composants intégrés ( poll, post, sarra, shovel, subscribe, watch, winnow ) n'a le
+comportement souhaité, on peut créer un composant personnalisé pour faire ce qu'il faut en sous-classant le flux.
+
+Copiez l'une des sous-classes de sarracenia.flow à partir du code source et modifiez-la à votre goût. Dans la configuration
+fichier, ajoutez la ligne ::
+
+   flowMain MaComposant
+
+pour que le flux utilise le nouveau composant.
+

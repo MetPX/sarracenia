@@ -11,7 +11,7 @@ Administration des pompes de données AMQP
 Aperçu
 ------
 Décrit la configuration et le fonctionnement d’une pompe de données MetPX-Sarracenia à l’aide de
-Rabbitmq en tant que courtier de protocole de mise en file d’attente de messages. Pour l’administration,
+Rabbitmq en tant que courtier de protocole de mise en fil d’attente de messages. Pour l’administration,
 la plupart des tâches sont différentes, selon le courtier utilisé. Si vous utilisez
 un autre courtier, il doit y avoir un autre guide d’administration.
 
@@ -119,7 +119,7 @@ création d´un l'échange ou un utilisateurs, sont effectuées par l'administra
 Entretien ménager - sr_audit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lorsqu'un client se connecte à un courtier, il crée une file d'attente qui est
+Lorsqu'un client se connecte à un courtier, il crée une fil d'attente qui est
 ensuite liée à une bourse. L'utilisateur peut choisir d'avoir
 l'autodestruction du client lorsqu'il est déconnecté (*auto-delete*), ou il
 peut spécifier *durable* ce qui signifie qu'il doit rester, en attendant que
@@ -127,23 +127,23 @@ le client se connecte à nouveau, même si le courtier ou serveur est reparti.
 Les clients veulent souvent reprendre là où ils se sont arrêtés, de sorte que
 les files d'attente doivent rester.
 
-Le courtier rabbitmq ne détruira jamais une file d'attente qui n'est pas en
+Le courtier rabbitmq ne détruira jamais une fil d'attente qui n'est pas en
 auto-delete (ou durable).  Ils s'accumuleront au fil du temps, alors sr_audit
 périodiquement rechercher les files d'attente inutilisées et les nettoyer.
-Actuellement, la valeur par défaut est que toute file d'attente inutilisée
+Actuellement, la valeur par défaut est que toute fil d'attente inutilisée
 ayant plus de 25000 messages sera supprimée.  On peut changer cette limite
 en ayant l'option *max_queue_size 50000* dans default.conf.
 
 
 
-Excès de file d'attente/performance
+Excès de fil d'attente/performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lorsque rabbitmq a des centaines de milliers de messages en file d'attente, la
+Lorsque rabbitmq a des centaines de milliers de messages en fil d'attente, la
 performance du courtier peut en souffrir. Un tel accumulation peuvent se
 produire lorsque la destination d'un expéditeur est en panne pour une période
 prolongée, ou n'est pas disponible pour une raison quelconque. Dans de nombreux
-cas, on peut simplement fermer l'expéditeur et supprimer la file d'attente du
+cas, on peut simplement fermer l'expéditeur et supprimer la fil d'attente du
 courtier. Bien que cela résout le problème de la performance des courtiers,
 l'utilisateur ne recevra pas les avis.
 
@@ -155,7 +155,7 @@ d'envoyer chaque fichier, les messages écrits sur un fichier disque. Lorsque
 l'utilisateur distant est de retour, on invoque le mode *restore*, et le
 fichier disque est relu, et les fichiers sont envoyés.  Dans les versions
 >= 2.18, il est logique d'enregistrer automatiquement les transferts échoués
-pour les réessayer plus tard, le rechargement de la file d'attente du courtier
+pour les réessayer plus tard, le rechargement de la fil d'attente du courtier
 se fait automatiquement, de sorte qu'aucune intervention n'est nécessaire.
 
 Dans le cas de composants autres qu'un expéditeur, veuillez consulter la
@@ -165,20 +165,20 @@ d'attente sur le disque, pour éviter qu'ils surchargent le courtier. Lorsque
 le consommateur est de nouveau en service, L'option *restore_to_queue* peut
 être utilisée pour récupérer les messages manquants.
 
-Si l'on arrive au point où le trafic à travers une file d'attente est excessif
-(plusieurs centaines de messages par seconde à une seule file d'attente),
-surtout s'il y a plusieurs instances partageant la même file d'attente.
-(si plus de 40 instances pour desservir une seule file d'attente) alors on
+Si l'on arrive au point où le trafic à travers une fil d'attente est excessif
+(plusieurs centaines de messages par seconde à une seule fil d'attente),
+surtout s'il y a plusieurs instances partageant la même fil d'attente.
+(si plus de 40 instances pour desservir une seule fil d'attente) alors on
 peut se heurter à un point où l'ajout d'instances n'améliore pas le débit
 global. Par exemple, rabbitmq utilise un seul processeur pour servir une file
 d'attente. Dans de tels cas, la création de configurations multiples,
-(chacun avec sa propre file d'attente) diviser le trafic entre eux permettra
+(chacun avec sa propre fil d'attente) diviser le trafic entre eux permettra
 d'autres améliorations de débit.
 
 sr_winnow est utilisé pour supprimer les doublons.
 **Notez que le cache de suppression des doublons est local pour chaque instance**.
 Lorsque N instances
-partagent une file d'attente, la première fois qu'un message est reçu, il
+partagent une fil d'attente, la première fois qu'un message est reçu, il
 pourrait être choisi par une instance, et si un duplicata est reçu  il
 serait probablement pris en charge par une autre instance. **Pour une suppression
 efficace des doublons avec les instances**, il faut **déployer deux couches
@@ -207,7 +207,7 @@ xs\_<user> exchange, et après validation envoyée à l'échange xreport par
 des configurations shovel créées par sr_audit.
 
 Les messages dans xreports destinés à d’autres clusters sont routés vers des destinations par
-pelles configurées manuellement. Voir la section Reports_ pour plus de détails.
+pelles configurées manuellement. Voir la section Rapports_ pour plus de détails.
 
 
 Que se passe-t-il ?
@@ -314,7 +314,7 @@ Il faut crypter le trafic des courtiers. L'obtention de certificats
 n'entre pas dans le champ d'application de ces instructions, de
 sorte qu'il n'est pas discuté en détail. Aux fins de l'exemple,
 une méthode consiste à obtenir des certificats à partir
-de `http://www.letsencrypt.org>`_ ::
+de `<http://www.letsencrypt.org>`_ ::
 
     root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
     Cloning into 'letsencrypt'...
@@ -356,8 +356,8 @@ probablement que la façon la plus simple de le faire est de les copier ailleurs
     root@boule:~# chown -R rabbitmq.rabbitmq boule*
 
 Maintenant que nous avons la bonne chaîne de certificats, configurez
-rabbitmq pour utilisez que le `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.rst>`https://www.rabbitmq.com/ssl.rst>`_ (voir
-également `RabbitMQ Management <https://www.rabbitmq.com/management.rst>`_)::
+rabbitmq pour utilisez que le `RabbitMQ TLS Support <https://www.rabbitmq.com/ssl.html>`_ (voir
+également `RabbitMQ Management <https://www.rabbitmq.com/management.html>`_)::
 
     root@boule:~#  cat >/etc/rabbitmq/rabbitmq.config <<EOT
 
@@ -650,7 +650,7 @@ La création est automatisée car les modèles de lecture/écriture/configuratio
 
 
 Premier abonnement
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Lors de la configuration d'une pompe, le but est normalement de la connecter à une autre pompe. Pour régler
 le paramétrage d'un abonnement nous aide à paramétrer les paramètres pour sarra plus tard. Donc d'abord
@@ -699,9 +699,9 @@ l'arrêter après quelques messages::
   sarra@boule:~/.config/sarra/subscribe$
 
 La connexion à l'amont est donc fonctionnelle. La connexion au serveur signifie
-qu'une file d'attente est allouée sur le serveur, et il continuera à accumuler
+qu'une fil d'attente est allouée sur le serveur, et il continuera à accumuler
 des messages, en attendant que le client se connecte à nouveau. Ce n'était qu'un test
-alors on veut que le serveur supprime la file d'attente::
+alors on veut que le serveur supprime la fil d'attente::
 
 
   sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
@@ -818,7 +818,7 @@ aide au routage en créant les configurations suivantes:
 - Pour chaque abonné, une configuration de pelle nommée rr_<user>2xreport.conf est créée.
 - Pour chaque source, une configuration de pelle nommée rr_xreport2<user>user>user.conf est créée.
 
-Les pelles *2xreport* s'abonne aux messages postés dans l'échange xs_ de
+Les pelles *2xreport* s'abonne aux messages postés dans l'échange xs\_ de
 chaque utilisateur et les poste à l'échange xreport commun. Exemple de fichier
 de configuration::
 
@@ -1303,7 +1303,7 @@ un Sundew Sender (nommé wxo-b1-oper-dd.conf) avec un script d'envoi::
 Nous voyons toutes les informations de configuration pour un expéditeur à fichier unique, mais le script send_script remplace le paramètre
 expéditeur normal avec quelque chose qui construit aussi des messages AMQP. Cette configuration de l'expéditeur Sundew
 invoque *sftp_amqp.py* comme un script pour faire l'envoi proprement dit, mais aussi pour placer la charge utile d'un fichier
-Message AMQP dans le fichier /apps/px/txq/dd-notify-wxo-b1/, le mettant en file d'attente pour un expéditeur AMQP Sundew.
+Message AMQP dans le fichier /apps/px/txq/dd-notify-wxo-b1/, le mettant en fil d'attente pour un expéditeur AMQP Sundew.
 Cette configuration sender´s c'est::
 
 

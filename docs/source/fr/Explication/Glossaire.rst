@@ -40,7 +40,7 @@ intégré à la bibliothèque, de sorte que l’accusé de réception se produit
 aucun nombre maximal de messages pouvant se trouver dans la bibliothèque, avant que l’application ne les
 voie. Si l’application s’arrête, tous ces messages, encore invisibles par l’application,
 sont perdus. Dans MQTT v5, il existe un paramètre receiveMaximum qui limite au moins le nombre
-des messages que la bibliothèque mettra en file d’attente pour l’application, mais idéalement,
+des messages que la bibliothèque mettra en fil d’attente pour l’application, mais idéalement,
 la bibliothèque python obtiendrait des accusés de réception contrôlés par l’application, comme la bibliothèque Java l’a déjà fait.
 
 Pompes sans Données (anglais: Dataless Pumps)
@@ -61,7 +61,7 @@ et une latence élevée peut indiquer des problèmes de configuration ou de capa
 
 MQTT
 ----
-Le Message Queue Telemetry Transport (MQTT) version 5 est un deuxième protocole de file d’attente de messages avec toutes les fonctionnalités
+Le Message Queue Telemetry Transport (MQTT) version 5 est un deuxième protocole de fil d’attente de messages avec toutes les fonctionnalités
 nécessaire pour soutenir les modèles d’échange de données de sarracenia.
 
 * `mqtt.org <https://mqtt.org>`_
@@ -85,7 +85,7 @@ source d’origine de la publication, afin que les messages de rapport puissent 
 Pompe
 -----
 Une pompe est un hôte exécutant Sarracenia, soit un serveur AMQP rabbitmq, soit un MQTT
-comme mosquitto. Le middleware de mise en file d’attente des messages s’appelle un *broker*.
+comme mosquitto. Le middleware de mise en fil d’attente des messages s’appelle un *broker*.
 La pompe a des utilisateurs administratifs et gère le courtier MQP
 en tant que ressource dédiée. Une sorte de moteur de transport, comme un serveur apache,
 ou un serveur openssh est utilisé pour prendre en charge les transferts de fichiers. SFTP, et

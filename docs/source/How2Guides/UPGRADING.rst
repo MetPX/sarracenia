@@ -3,7 +3,7 @@
  UPGRADE GUIDE
 ---------------
 
-This file documents changes in behaviour to provide guidance to those upgrading 
+This document describes changes in behaviour to provide guidance to those upgrading 
 from a previous version. Sections are titled to indicate changes needed when
 upgrading to that version. To upgrade across several versions, one needs to start
 at the version after the one installed, and heed all notifications for interim
@@ -191,6 +191,8 @@ V2 to Sr3
           default_dir_mode          permDirDefault
           default_log_mode          permLog
           default_mode              permDefault
+          destination               pollUrl in Poll
+          destination               remoteUrl others
           document_root             documentRoot
           e                         fileEvents
           events                    fileEvents

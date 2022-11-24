@@ -25,7 +25,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.20"
+__version__ = "3.00.21"
 
 from base64 import b64decode, b64encode
 import calendar
@@ -53,16 +53,14 @@ class Sarracenia:
         python built-in, but also we have a few major entry points some factoryies:
     
 
-        Building a message from a file
-        ------------------------------
+        **Building a message from a file**
 
         m = sarracenia.Message.fromFileData( path, options, lstat )
      
         builds a message from a given existing file, consulting *options*, a parsed
         in memory version of the configuration settings that are applicable
 
-        Options
-        -------
+        **Options**
 
         see the sarracenia.config.Config class for functions to parse configuration files
         and create corresponding python option dictionaries. One can supply small 
@@ -76,8 +74,7 @@ class Sarracenia:
         example called moth_api_consumer.py. often 
         
 
-        If you don't have a file
-        ------------------------
+        **If you don't have a file**
 
         If you don't have a local file, then build your message with:
     
@@ -191,7 +188,7 @@ def nowstr():
     return timeflt2str(time.time())
 
 
-def timeflt2str(f):
+def timeflt2str(f=None):
     """
         timeflt2str - accepts a float and returns a string.
 
@@ -266,8 +263,7 @@ def durationToSeconds(str_value, default=None) -> float:
     try:
         duration = float(str_value) * factor
     except:
-        logger.error("durationToSeconds, conversion failed for: %s" %
-                     str_value)
+        logger.error("conversion failed for: %s" % str_value)
         duration = 0.0
 
     return duration
@@ -474,7 +470,7 @@ class Message(dict):
 
         msg = Message()
 
-        #FIXME no variable substitution... o.set_dir_pattern ?
+        #FIXME no variable substitution... o.variableExpansion ?
         if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
             msg['version'] = o.post_topicPrefix[0]
         else:
@@ -598,6 +594,7 @@ class Message(dict):
         if code in known_report_codes:
             if text is None:
                 text = known_report_codes[code]
+                
         else:
             logger.warning('unknown report code supplied: %d:%s' %
                            (code, text))
@@ -608,8 +605,9 @@ class Message(dict):
             logger.warning('overriding initial report: %d: %s' %
                            (msg['report']['code'], msg['report']['message']))
 
-        msg['_deleteOnPost'] |= set(['report'])
+        msg['timeCompleted'] = nowstr()
         msg['report'] = {'code': code, 'message': text}
+        msg['_deleteOnPost'] |= set(['report','timeCompleted'])
 
     def updatePaths(msg, options, new_dir, new_file):
         """
@@ -633,7 +631,7 @@ class Message(dict):
         relPath = new_dir + '/' + new_file
 
         if options.post_baseUrl:
-            baseUrl_str = options.set_dir_pattern(options.post_baseUrl, msg)
+            baseUrl_str = options.variableExpansion(options.post_baseUrl, msg)
         else:
             if 'baseUrl' in msg:
                 baseUrl_str = msg['baseUrl']
@@ -651,7 +649,7 @@ class Message(dict):
            
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
-            pbd_str = options.set_dir_pattern(options.post_baseDir, msg)
+            pbd_str = options.variableExpansion(options.post_baseDir, msg)
             parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
 
             if relPath.startswith(pbd_str):

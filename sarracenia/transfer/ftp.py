@@ -123,7 +123,7 @@ class Ftp(Transfer):
         if self.ftp == None: return False
         if not self.connected: return False
 
-        if self.destination != self.o.destination:
+        if self.remoteUrl != self.o.remoteUrl:
             self.close()
             return False
 
@@ -165,10 +165,10 @@ class Ftp(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_ftp connect %s" % self.o.destination)
+        logger.debug("sr_ftp connect %s" % self.o.remoteUrl)
 
         self.connected = False
-        self.destination = self.o.destination
+        self.remoteUrl = self.o.remoteUrl
 
         if not self.credentials(): return False
 
@@ -228,10 +228,10 @@ class Ftp(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_ftp credentials %s" % self.destination)
+        logger.debug("sr_ftp credentials %s" % self.remoteUrl)
 
         try:
-            ok, details = self.o.credentials.get(self.destination)
+            ok, details = self.o.credentials.get(self.remoteUrl)
             if details: url = details.url
 
             self.host = url.hostname
@@ -249,7 +249,7 @@ class Ftp(Transfer):
         except:
             logger.error(
                 "sr_ftp/credentials: unable to get credentials for %s" %
-                self.destination)
+                self.remoteUrl)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -453,7 +453,7 @@ class Ftp(Transfer):
 
     def putAccelerated(self, msg, local_file, remote_file, length=0):
 
-        dest_baseUrl = self.o.destination
+        dest_baseUrl = self.o.remoteUrl
         if dest_baseUrl[-1] == '/':
             dest_baseUrl = dest_baseUrl[0:-1]
         arg2 = dest_baseUrl + msg['new_dir'] + os.sep + remote_file

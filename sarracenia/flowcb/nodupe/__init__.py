@@ -160,23 +160,11 @@ class NoDupe(FlowCB):
         """
 
         key = self.deriveKey(msg)
- 
+
         if ('nodupe_override' in msg) and ('path' in msg['nodupe_override']):
             path = msg['nodupe_override']['path']
         else:
-            if 'integrity' in msg and msg['integrity']['method'] in ['cod']:
-                if 'mtime' in msg:
-                    path = msg['mtime']
-                elif 'size' in msg:
-                    path = msg['size']
-                else:
-                    path = msg['pubTime']
-            else: 
-                # FIXME:
-                # with SFTP sometimes relpaths are absolute, but other servers participating in poll (sharing the vip)
-                # will be priming their recently used with posts, and the posts are relative... so lstrip here...
-                # perhaps there is a better answer.
-                path = msg['relPath'].lstrip('/')
+            path = msg['relPath'].lstrip('/')
 
         msg['noDupe'] = { 'key': key, 'path': path }
         msg['_deleteOnPost'] |= set(['noDupe'])

@@ -31,7 +31,7 @@ fonctionner sur un sous-ensemble de toutes les configurations présentes.
 * Si vous êtes déjà familier avec Sarracenia et que vous cherchez de l'information spécifique par rapport a des
   options ou des directives, il vaut mieux regarder `sr3 Options (7) <sr3_options.7.html>`_
 * Pour commencer plus facilement, jetez un coup d’œil sur `the Subscriber Guide on GitHub <../How2Guides/subscriber.html>`_
-* Pour un guide général de l’interface : voir le `Command Line Guide <../Explanation/CommandLineGuide.html>`_
+* Pour un guide général de l’interface : voir le `Command Line Guide <../Explication/CommandLineGuide.html>`_
 
 La ligne de commande a trois éléments importants:
 * options
@@ -84,20 +84,22 @@ Les types d'actions disponible. Une seule parmi:
 COMPOSANTS
 ==========
 
-`The Flow Algorithme <../Explanation/Concepts.html#the-flow-algorithm>`_ est ce qui est exécuté
+`The Flow Algorithme <../Explication/Concepts.html#the-flow-algorithm>`_ est ce qui est exécuté
 par tout les processus de sr3. Le comportement de l'algorithme du flux est adaptable aves les options,
 dont certaines contrôlent des modules optionnels (flowcallbacks). Chaque composant possède de
 différents ensembles de paramètres d’options par défaut pour couvrir un cas d’utilisation courant.
 
 
-* `cpump <../Explanation/CommandLineGuide.html#cpump>`_ - copier un message d'annonce d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
-* `poll <../Explanation/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages d'annonce pour un traitement.
-* `post|sr3_post|sr_cpost|watch <../Explanation/CommandLineGuide.html#post-or-watch>`_ - créer es messages d'annonce pour les fichiers qui doivent être traités.
-* `sarra <../Explanation/CommandLineGuide.html#sarra>`_ - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.
-* `sender <../Explanation/CommandLineGuide.html#sender>`_ - envoyer des fichiers d’un serveur local à un serveur distant.
-* `shovel <../Explanation/CommandLineGuide.html#shovel>`_ - copier seulement des messages d'annonce et non des fichiers.
-* `watch <../Explanation/CommandLineGuide.html#watch>`_ - crée un message d'annonce pour chaque nouveau fichier qui arrive dans un répertoire.
-* `winnow <../Explanation/CommandLineGuide.html#winnow>`_ - copier des messages d'annonce et supprime les doublons.
+* `cpump <../Explication/CommandLineGuide.html#cpump>`_ - copier un message d'annonce d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
+* `flow <../Explication/CommandLineGuide.html#flow>`_ - flux générique, pas de valeurs par défaut, bonne base pour convenir à la construction personnalisée
+ les flux
+* `poll <../Explication/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages d'annonce pour un traitement.
+* `post|sr3_post|sr_cpost|watch <../Explication/CommandLineGuide.html#post-or-watch>`_ - créer es messages d'annonce pour les fichiers qui doivent être traités.
+* `sarra <../Explication/CommandLineGuide.html#sarra>`_ - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.
+* `sender <../Explication/CommandLineGuide.html#sender>`_ - envoyer des fichiers d’un serveur local à un serveur distant.
+* `shovel <../Explication/CommandLineGuide.html#shovel>`_ - copier seulement des messages d'annonce et non des fichiers.
+* `watch <../Explication/CommandLineGuide.html#watch>`_ - crée un message d'annonce pour chaque nouveau fichier qui arrive dans un répertoire.
+* `winnow <../Explication/CommandLineGuide.html#winnow>`_ - copier des messages d'annonce et supprime les doublons.
 
 
 CONFIGURATIONS
@@ -216,7 +218,7 @@ a été spécifié.)
 
 Divers exemples de fichiers de configuration sont disponibles ici :
 
- `https://github.com/MetPX/sarracenia/tree/master/sarra/examples <https://github.com/MetPX/sarracenia/tree/master/sarra/examples>`_
+ `https://github.com/MetPX/sarracenia/tree/main/sarra/examples <https://github.com/MetPX/sarracenia/tree/main/sarra/examples>`_
 
 
 

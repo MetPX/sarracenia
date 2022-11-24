@@ -313,15 +313,15 @@ It is a comma separated string. Valid Integrity methods are ::
 topicPrefix <key>
 -----------------
 
-  *Not usually used*
-  By default, the topic is made of the default topicPrefix : version *V03*
-  followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
-  You can overwrite the topicPrefix by setting this option.
+*Not usually used*
+By default, the topic is made of the default topicPrefix : version *V03*
+followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+You can overwrite the topicPrefix by setting this option.
 
 header <name>=<value>
 ---------------------
 
-  Add a <name> header with the given value to notification messages. Used to pass strings as metadata.
+Add a <name> header with the given value to notification messages. Used to pass strings as metadata.
 
 
 SHIM LIBRARY USAGE

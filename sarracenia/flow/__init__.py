@@ -108,8 +108,14 @@ class Flow:
     """
     @staticmethod
     def factory(cfg):
+
+        if cfg.flowMain:
+              flowMain=cfg.flowMain
+        else:
+              flowMain=cfg.component
+
         for sc in Flow.__subclasses__():
-            if cfg.component == sc.__name__.lower():
+            if flowMain == sc.__name__.lower():
                 return sc(cfg)
 
         if cfg.component == 'flow':
@@ -308,6 +314,7 @@ class Flow:
         self._runCallbacksTime('please_stop')
         self._stop_requested = True
 
+
     def close(self) -> None:
 
         self._runCallbacksTime('on_stop')
@@ -378,8 +385,9 @@ class Flow:
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
 
-                logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " %
-                            (current_rate, self.o.messageRateMax))
+                if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
+                    logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+
                 self.worklist.incoming = []
 
                 if not stopping:
@@ -453,8 +461,9 @@ class Flow:
                     self.worklist.rejected = []
                     self.ack(self.worklist.failed)
 
-                    self.post()
-                    self._runCallbacksWorklist('after_post')
+                    if len(self.plugins["post"]) > 0:
+                        self.post()
+                        self._runCallbacksWorklist('after_post')
 
                     self.report()
 
@@ -522,7 +531,7 @@ class Flow:
                     last_time = now
                     continue
 
-            if (stime > 0):
+            if not self._stop_requested and (stime > 0):
                 try:
                     logger.debug('sleeping for stime: %.2f seconds' % stime)
                     time.sleep(stime)
@@ -717,7 +726,7 @@ class Flow:
 
         #if self.o.currentDir : new_dir = self.o.currentDir
         if maskDir:
-            new_dir = self.o.set_dir_pattern(maskDir, msg)
+            new_dir = self.o.variableExpansion(maskDir, msg)
         else:
             new_dir = ''
 
@@ -725,7 +734,7 @@ class Flow:
             if new_dir:
                 d = new_dir
             elif self.o.post_baseDir:
-                d = self.o.set_dir_pattern(self.o.post_baseDir, msg)
+                d = self.o.variableExpansion(self.o.post_baseDir, msg)
             else:
                 d = None
 
@@ -740,7 +749,7 @@ class Flow:
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
-        new_dir = self.o.set_dir_pattern(new_dir, msg)
+        new_dir = self.o.variableExpansion(new_dir, msg)
         # resolution of sundew's dirPattern
 
         tfname = filename
@@ -777,7 +786,7 @@ class Flow:
                 continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
-                url = self.o.set_dir_pattern(m['baseUrl'],
+                url = self.o.variableExpansion(m['baseUrl'],
                                              m) + os.sep + m['fileOp']['rename']
                 if 'sundew_extension' in m and url.count(":") < 1:
                     urlToMatch = url + ':' + m['sundew_extension']
@@ -790,7 +799,7 @@ class Flow:
                         oldname_matched = accepting
                         break
 
-            url = self.o.set_dir_pattern(m['baseUrl'],
+            url = self.o.variableExpansion(m['baseUrl'],
                                          m) + os.sep + m['relPath']
             if 'sundew_extension' in m and url.count(":") < 1:
                 urlToMatch = url + ':' + m['sundew_extension']
@@ -1460,7 +1469,7 @@ class Flow:
                 return False
 
         try:
-            options.destination = msg['baseUrl']
+            options.remoteUrl = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or (self.proto[self.scheme] is None):
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
@@ -1658,8 +1667,8 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug("%s_transport destination: %s " %
-                     (self.scheme, self.o.destination))
+        logger.debug("%s_transport remoteUrl: %s " %
+                     (self.scheme, self.o.remoteUrl))
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
@@ -1675,7 +1684,7 @@ class Flow:
             return True
 
         if self.o.baseDir:
-            local_path = self.o.set_dir_pattern(self.o.baseDir,
+            local_path = self.o.variableExpansion(self.o.baseDir,
                                                 msg) + '/' + msg['relPath']
         else:
             local_path = '/' + msg['relPath']

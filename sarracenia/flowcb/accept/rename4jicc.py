@@ -26,7 +26,6 @@ class Rename4Jicc(FlowCB):
         self.o = options
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
 
             if not 'ccstn.dat' in message['new_file']:
@@ -43,6 +42,3 @@ class Rename4Jicc(FlowCB):
 
             # dont use this... new_file is where the file will be downloaded... so need to keep a rename in headers
             #message['headers']['rename'] = local_file
-
-            new_incoming.append(message)
-        worklist.incoming = new_incoming

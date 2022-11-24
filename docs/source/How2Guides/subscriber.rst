@@ -25,7 +25,7 @@ To find out what data is already available on a pump,
 view the tree with a web browser.  
 For simple immediate needs, one can download data using the 
 browser itself, or a standard tool such as wget.
-The usual intent is for sr_subscribe to automatically 
+The usual intent is for sr3 subsribe to automatically 
 download the data wanted to a directory on a subscriber
 machine where other software can process it.  Please note:
 
@@ -36,9 +36,9 @@ machine where other software can process it.  Please note:
 - the tool can be used as either an end-user tool, or a system-wide transfer engine.
   This guide is focused on the end-user case.  
 - More detailed reference material is available at the 
-  traditional sr_subscribe(1) man page,
+  traditional sr3(1) man page,
 - All documentation of the package is available 
-  at https://github.com/MetPX
+  at https://metpx.github.io/sarracenia
 
 While Sarracenia can work with any web tree, or any URL 
 that sources choose to post, there is a conventional layout.
@@ -66,7 +66,7 @@ will be shorter.  For other pumps, where long term outages need
 to be tolerated, more days will be kept. 
 
 Under the first level of date trees, there is a directory
-per source.  A Source in Sarracenia is an account used to inject
+per source. A Source in Sarracenia is an account used to inject
 data into the pump network.  Data can cross many pumps on its
 way to the visible ones::
 
@@ -85,7 +85,7 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
-To list the available configurations with *sr_subscribe list* ::
+To list the available configurations with *sr3 list* ::
 
   $ sr3 list examples
     Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
@@ -104,21 +104,20 @@ To list the available configurations with *sr_subscribe list* ::
 Each section of the listing shows the contents of the directory shown in parentheses.
 To use an example as a starting point::
 
-  $ sr3 add subscribe/dd_amis.conf
+    $ sr3 add subscribe/dd_amis.conf
     add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf 
-
 
 Now files in `.config/` can be used directly::
  
-  $ sr3 list
+    $ sr3 list
     User Configurations: (from: /home/peter/.config/sr3 )
     subscribe/dd_amis.conf           admin.conf                       credentials.conf                 default.conf                     
     logs are in: /home/peter/.cache/sr3/log
 
 
-To view a configuration, give it to `sr_subscribe list` as an argument:: 
+To view a configuration, give it to `sr3 list` as an argument:: 
 
-  $ sr3 list subscribe/dd_amis.conf
+    $ sr3 list subscribe/dd_amis.conf
     # this is a feed of wmo bulletin (a set called AMIS in the old times)
     
     broker amqps://dd.weather.gc.ca/
@@ -136,7 +135,7 @@ To view a configuration, give it to `sr_subscribe list` as an argument::
 
 To delete a configuration::
 
-  $ sr3 remove subscribe/dd_amis
+    $ sr3 remove subscribe/dd_amis
     2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
     2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
 
@@ -177,38 +176,42 @@ Working with Multiple Configurations
 
 Place all configuration files, with the .conf suffix, in a standard 
 directory: ~/.config/sr3/subscribe/ For example, if there are two files in 
-that directory: CMC.conf and NWS.conf, one could then run:: 
+that directory: dd_amis.conf and hpfx_amis.conf, one could then run:: 
 
-  peter@idefix:~/test$ sr3 start subscribe/CMC.conf 
-  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
-  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
-  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
-  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
-  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
-  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
-  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
-  peter@idefix:~/test$ 
+    fractal% sr3 start subscribe/dd_amis.conf
+    starting:.( 5 ) Done
 
-to start the CMC downloading configuration.  One can use by
-using the sr command to start/stop multiple configurations at once. 
-The sr command will go through the default directories and start up 
+    fractal%
+
+to start the CMC downloading configuration. One can use by
+using the sr3 command to start/stop multiple configurations at once. 
+The sr3 command will go through the default directories and start up 
 all the configurations it finds::
 
-  peter@idefix:~/test$ sr3 start
-  2016-01-14 18:13:01,414 [INFO] installing script validate_content.py 
-  2016-01-14 18:13:01,416 [INFO] installing script validate_content.py 
-  2016-01-14 18:13:01,416 [INFO] sr_subscribe CMC 0001 starting
-  2016-01-14 18:13:01,418 [INFO] sr_subscribe CMC 0002 starting
-  2016-01-14 18:13:01,419 [INFO] sr_subscribe CMC 0003 starting
-  2016-01-14 18:13:01,421 [INFO] sr_subscribe CMC 0004 starting
-  2016-01-14 18:13:01,423 [INFO] sr_subscribe CMC 0005 starting
-  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0001 starting
-  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0002 starting
-  2016-01-14 18:13:01,416 [INFO] sr_subscribe NWS 0003 starting
-  peter@idefix:~/test$ 
+    fractal% sr3 status
+    status: 
+    Component/Config                         State             Run  Miss   Exp Retry
+    ----------------                         -----             ---  ----   --- -----
+    subscribe/dd_amis                        stopped             0     0     0     0
+    subscribe/hpfx_amis                      stopped             0     0     0     0
+          total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
+    fractal% sr3 edit subscribe/hpfx_amis
+    
+    fractal% sr3 start
+    starting:.( 10 ) Done
+    
+    fractal% sr3 status
+    status: 
+    Component/Config                         State             Run  Miss   Exp Retry
+    ----------------                         -----             ---  ----   --- -----
+    subscribe/dd_amis                        running             5     0     5     0
+    subscribe/hpfx_amis                      running             5     0     5     0
+          total running configs:   2 ( processes: 10 missing: 0 stray: 0 )
+    fractal% 
+    
 
 will start up some sr3 processes as configured by CMC.conf and others 
-to match NWS.conf. Sr3 stop will also do what you would expect. As will sr3 status.  
+to match hpfx_amis.conf. Sr3 stop will also do what you would expect. As will sr3 status.  
 Note that there are 5 sr_subscribe processes start with the CMC 
 configuration and 3 NWS ones. These are *instances* and share the same 
 download queue. 
@@ -241,29 +244,44 @@ processed the fastest, RADARS will queue up against each other and so experience
 more delay, and other products will share a single queue and be subject to more
 delay in cases of backlog.
 
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_hipri.conf::
+https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_cap-xml.conf::
 
-  broker amqps://dd.weather.gc.ca/
-  mirror
-  directory /data/web
-  subtopic alerts.cap.#
-  accept .*
+    broker amqps://dd.weather.gc.ca/
+    topicPrefix v02.post
+
+    #expiration du file d´attende sur le serveur. doit excèder la durée maximale 
+    #     de panne qu´on veut tolérer sans perte. (1d un jour?)
+    expire 10m
+    subtopic alerts.cap.#
+
+    mirror
+
+    directory ${HOME}/datamartclone
+
+    acceptUnmatched on
+
+https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_normal.conf::
+
+   broker amqps://dd.weather.gc.ca/
+   topicPrefix v02.post
+
+   subtopic #
+
+   # reject hi priority data captured by other configuration.
+   reject .*alerts/cap.*
+
+   #expire, needs to be longer than the longest expected interruption in service.
+   expire 10m
+
+   mirror
+   directory ${HOME}/datamartclone
+
+   acceptUnmatched on
 
 
-
-https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/ddc_normal.conf::
-
-  broker amqps://dd.weather.gc.ca/
-  subtopic #
-  reject .*alerts/cap.*
-  mirror
-  directory /data/web
-  accept .*
-
-
-Where you want the mirror of the data mart to start at /data/web (presumably there is a web
-server configured do display that directory.)  Likely, the *ddc_normal* configuration 
-will experience a lot of queueing, as there is a lot of data to download.  The *ddc_hipri.conf* is 
+Where you want the mirror of the data mart to start at $(HOME)/datamartclone (presumably there is a web
+server configured do display that directory.) Likely, the *ddc_normal* configuration 
+will experience a lot of queueing, as there is a lot of data to download. The *ddc_hipri.conf* is 
 only subscribed to weather warnings in Common Alerting Protocol format, so there will be
 little to no queueing for that data.
 
@@ -339,16 +357,16 @@ the *directory* option.
 If downloading a directory tree, and the intent is to mirror the tree, 
 then the option mirror should be set::
 
-$ sr3 edit subscribe/swob
+    $ sr3 edit subscribe/swob
 
-  broker amqps://anonymous@dd.weather.gc.ca
-  subtopic observations.swob-ml.#
-  directory /tmp
-  mirror True
-  accept .*
-  #
-  # instead of writing to current working directory, write to /tmp.
-  # in /tmp. Mirror: create a hierarchy like the one on the source server.
+      broker amqps://anonymous@dd.weather.gc.ca
+      subtopic observations.swob-ml.#
+      directory /tmp
+      mirror True
+      acceptUnmatched on
+      #
+      # instead of writing to current working directory, write to /tmp.
+      # in /tmp. Mirror: create a hierarchy like the one on the source server.
 
 One can also intersperse *directory* and *accept/reject* directives to build
 an arbitrarily different hierarchy from what was on the source data pump.
@@ -356,7 +374,7 @@ The configuration file is read from top to bottom, so then sr_subscribe
 finds a ''directory'' option setting, only the ''accept'' clauses after
 it will cause files to be placed relative to that directory::
 
-$ sr3 edit subscribe/ddi_ninjo_part1.conf 
+  $ sr3 edit subscribe/ddi_ninjo_part1.conf 
 
   broker amqps://ddi.cmc.ec.gc.ca/
   subtopic ec.ops.*.*.ninjo-a.#
@@ -538,38 +556,62 @@ sample output::
    flowcb/work/rxpipe.py            
    $ 
 
-Plugins can be included in configurations by adding 'flow_callback' lines like::
+One can browse built-in plugins via the `FlowCallback Reference <../Reference/flowcb.html>`_
+Plugins are written in python, and users can create their own and place them in ~/.config/sr3/plugins,
+or anywhere in the PYTHONPATH (available for *import* )
+
+Another way view documentation and source code of any plugin, the directory containing 
+them is listed on the first line of the *list* directive above, and the rest of the path 
+to the plugin is in the listing, so::
+
+   vi /home/peter/Sarracenia/sr3/sarracenia/flowcb/nodupe/name.py
+
+will start the vi editor to view the source of the plugin in question, which
+also contains its documentation. Another way to view documentation, in addition 
+to the above, is the standard pythonic way::
+
+    fractal% python3
+    Python 3.10.6 (main, Nov  2 2022, 18:53:38) [GCC 11.3.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import sarracenia.flowcb.run
+    >>> help(sarracenia.flowcb.run)
+
+Of importing the class in question, and then invoking python help() on the class.
 
 
-   flowcb work.rxpipe
+Plugins can be included in flow configurations by adding 'flow_callback' lines like::
+
+   callback work.rxpipe
 
 which appends the given callback to the list of callbacks to be invoked.
 There is also::
 
-   flowcb_prepend work.rxpipe
+   callback_prepend work.rxpipe
 
 which will prepend this callback to the list, so that is is called before the
-non prepended ones.
+non prepended ones. 
 
-Plugins are all written in python, and users can create their own and place them in ~/.config/sr3/plugins. 
+
 For information on creating new custom plugins, see `Writing Flow Callbacks <FlowCallbacks.rst>`_  
 
 
 To recap:
 
 * To view the plugins currently available on the system  *sr3 list fcb*
-* To view the contents of a plugin: *sr3 list <plugin>*
-* Plugins can have option settings, just like built-in ones
+* To view the contents of a plugin, browse the `FlowCallback Reference <../Reference/flowcb.html>`_use,
+  or use a text editor, or import in a python interpretre, and use python help()
+* Plugins can have option settings, just like built-in ones. They are described 
+  in each plugin's documentation.
 * To set them, place the options in the configuration file before the plugin call itself
-* To make your own plugins, create them in ~/.config/sr3/plugins.
+* To make your own plugins, start with `Writing Flow Callbacks <FlowCallbacks.rst>`_, and
+  put them in ~/.config/sr3/plugins, or anythere in your python environment's search path.
 
 
 file_rxpipe
 -----------
 
-The file_rxpipe plugin for sr_subscribe makes all the instances write the names 
-of files downloaded to a named pipe. Setting this up required two lines in 
-an sr_subscribe configuration file::
+The file_rxpipe plugin that writes the names of files downloaded to a named pipe. 
+Setting this up required two lines in an flow configuration file::
 
 $ mknod /home/peter/test/.rxpipe p
 $ sr3 edit subscribe/swob 
@@ -579,12 +621,12 @@ $ sr3 edit subscribe/swob
 
   rxpipe_name /home/peter/test/.rxpipe
 
-  callback work/rxpipe
+  callback work.rxpipe
 
   directory /tmp
   mirror True
   accept .*
-  # rxpipe is a builtin on_file plugin which writes the name of the file received to
+  # rxpipe is a builtin after_work plugin which writes the name of the file received to
   # a pipe named '.rxpipe' in the current working directory.
 
 
@@ -674,7 +716,7 @@ FIXME: not implemented properly. normally use "foreground" command instead.
 
 Where *myconfig* is the name of the running configuration. Log files
 are placed as per the XDG Open Directory Specification. There will be a log file
-for each *instance* (download process) of an sr_subscribe process running the myflow configuration::
+for each *instance* (download process) of an flow process running the myflow configuration::
 
    in linux: ~/.cache/sarra/log/sr_subscribe_myflow_01.log
 

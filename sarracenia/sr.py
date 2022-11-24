@@ -83,7 +83,7 @@ class sr_GlobalState:
         """
             return the string to be used to run a component in Popen.
         """
-        if c in [
+        if c in [ 'flow',
                 'poll', 'report', 'sarra', 'sender', 'shovel', 'subscribe',
                 'watch', 'winnow'
         ]:
@@ -129,7 +129,7 @@ class sr_GlobalState:
                         logging.debug("Exception details:", exc_info=True)
                         os.sleep(1)
                 
-        if c in [
+        if c in [ 'flow',
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
                 'subscribe', 'watch', 'winnow'
         ]:
@@ -790,7 +790,7 @@ class sr_GlobalState:
         self._resolve_brokers()
 
         if not os.path.exists( self.user_cache_dir ):
-            os.mkdir(self.user_cache_dir)
+            os.makedirs(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
         for c in self.components:
@@ -852,7 +852,7 @@ class sr_GlobalState:
           put all the ones that do not match in leftovers.
         """
 
-        #logging.debug( 'starting match_patterns with: %s' % patterns )
+        logging.debug( 'starting match_patterns with: %s' % patterns )
         self.filtered_configurations = []
         self.leftovers = []
         leftover_matches = {}
@@ -871,25 +871,43 @@ class sr_GlobalState:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
 
+        logger.debug( f"candidates: {candidates}" )
+        new_patterns=[]
         for p in patterns:
+            if p in [ 'examples','eg','ie', 'flow_callback','flowcb','fcb','v2plugins','v2p']:
+                new_patterns.append(p)         
+            elif os.sep not in p:
+                p = 'flow/' + p
+                new_patterns.append(p)         
+            else:
+                new_patterns.append(p)         
             leftover_matches[p] = 0
+        patterns=new_patterns
 
+        logger.debug( f"patterns: {patterns}" )
         for fcc in candidates:
             if (patterns is None) or (len(patterns) < 1):
                 self.filtered_configurations.append(fcc)
             else:
                 for p in patterns:
+                    if p in [ 'examples','eg','ie','flow_callback','flowcb','fcb','v2plugins','v2p']:
+                        continue
                     if fnmatch.fnmatch(fcc, p):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
 
+                    if fcc[-5:] == '.conf' and fcc[0:-5] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    if fcc[-4:] == '.inc' and fcc[0:-4] == p :
+                        self.filtered_configurations.append(fcc)
+                        leftover_matches[p] += 1
+ 
+                    # 22/11/01... pas thinks this is wrong and backwards, but not sure..
                     if p[-5:] == '.conf' and fnmatch.fnmatch(fcc, p[0:-5]):
                         self.filtered_configurations.append(fcc)
                         leftover_matches[p] += 1
-
-                    # if p[-4:] == '.off' and fnmatch.fnmatch(fcc, p[0:-4]):
-                    #     self.filtered_configurations.append(fcc)
-                    #     leftover_matches[p] += 1
 
         for p in patterns:
             if leftover_matches[p] == 0:
@@ -929,8 +947,8 @@ class sr_GlobalState:
                         if fnmatch.fnmatch(fcc, p):
                             self.filtered_configurations.append(fcc)
 
-        #logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
-        #logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
+        logging.debug( 'match_patterns result filtered_configurations: %s' % self.filtered_configurations )
+        logging.debug( 'match_patterns result leftovers: %s' % self.leftovers )
 
     # FIXME: this should be in config.py
     @property
@@ -980,7 +998,7 @@ class sr_GlobalState:
                   self.appname)
 
         self.components = [
-            'cpost', 'cpump', 'poll', 'post', 'report', 'sarra',
+            'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
@@ -1052,6 +1070,8 @@ class sr_GlobalState:
     def add(self):
 
         if not hasattr(self, 'leftovers') or (len(self.leftovers) == 0):
+            if len(self.filtered_configurations) > 0:
+               logging.info( f"matched existing {self.filtered_configurations}" )
             logging.error("nothing specified to add")
 
         for l in self.leftovers:
@@ -1060,7 +1080,7 @@ class sr_GlobalState:
                 (len(sp) > 1) and
                 (sp[-2] not in sarracenia.config.Config.components +
                  ['plugins'])):
-                component = 'subscribe'
+                component = 'flow'
                 cfg = sp[-1]
             else:
                 component = sp[-2]
@@ -1082,7 +1102,11 @@ class sr_GlobalState:
                     found = True
                     break
             if not found:
-                logger.error("did not find anything to copy for: %s" % l)
+                logger.info("did not find anything to copy for: %s. creating an empty one." % l)
+                if cfg[-5:] not in [ '.inc', '.conf' ]:
+                    cfg = cfg + '.conf'
+                with open( destdir + os.sep + cfg, 'w' ) as f:
+                    f.write('')
 
     def declare(self):
 
@@ -1240,6 +1264,7 @@ class sr_GlobalState:
 
             if component_path == '':
                 continue
+
             if self.configs[c][cfg]['status'] in ['stopped']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
@@ -1252,7 +1277,7 @@ class sr_GlobalState:
 
                 cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
 
-                if c in [
+                if c in [ 'flow',
                         'poll', 'post', 'report', 'sarra', 'sender', 'shovel', 
                         'subscribe', 'watch', 'winnow'
                 ]:
@@ -1628,6 +1653,7 @@ class sr_GlobalState:
 
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
+        fg_instances = set()
         # kill sr_audit first, so it does not restart while others shutting down.
         # https://github.com/MetPX/sarracenia/issues/210
 
@@ -1643,8 +1669,10 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
 
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
@@ -1687,12 +1715,17 @@ class sr_GlobalState:
             for f in self.filtered_configurations:
                 if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
-                # exclude foreground instances when ``sr3 stop`` called without specific configs
-                if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+                # exclude foreground instances unless --dangerWillRobinson specified
+                if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                    fg_instances.add(f"{c}/{cfg}")
+                    continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
             if running_pids == 0:
                 print('All stopped after try %d' % attempts)
+                if len(fg_instances) > 0:
+                    print(f"Foreground instances {fg_instances} are running and were not stopped.")
+                    print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
                 return 0
             attempts += 1
 
@@ -1706,8 +1739,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
@@ -1736,8 +1771,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
-            # exclude foreground instances when ``sr3 stop`` called without specific configs
-            if self._action_all_configs and self._cfg_running_foreground(c, cfg): continue
+            # exclude foreground instances unless --dangerWillRobinson specified
+            if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
+                fg_instances.add(f"{c}/{cfg}")
+                continue
             if self.configs[c][cfg]['status'] in ['running', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
@@ -1745,11 +1782,16 @@ class sr_GlobalState:
 
         if len(self.procs) == 0:
             print('All stopped after KILL')
+            if len(fg_instances) > 0:
+                print(f"Foreground instances {fg_instances} are running and were not stopped.")
+                print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
             return 0
         else:
             print('not responding to SIGKILL:')
             for p in self.procs:
-                print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
+                # exclude foreground instances from printing unless --dangerWillRobinson specified
+                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)):
+                    print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
     def dump(self):
@@ -1890,7 +1932,7 @@ class sr_GlobalState:
                 return
 
         if not os.path.isdir(base_v3 + component):
-            os.mkdir(base_v3 + component)
+            os.makedirs(base_v3 + component)
 
         synonyms = sarracenia.config.Config.synonyms
         with open(v3_config_path, 'w') as v3_cfg:
@@ -1906,6 +1948,12 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
+                    elif k == 'destination':
+                        if component == 'poll':
+                            k = 'pollUrl'
+                        else:
+                            k = 'remoteUrl'
+
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
@@ -2022,13 +2070,34 @@ class sr_GlobalState:
 
         return bad
 
-    def _cfg_running_foreground(self, component, config):
-        """Returns True if the specified config is running in the foreground.
+    def _pid_running_foreground(self, pid):
+        """Returns True if the specified pid is running in the foreground.
         Possible cases:
           * anything with ``foreground`` in its cmd_line is always foreground.
           * anything with ``start`` in its cmd_line is always a daemon (not foreground).
           * posts and cposts without ``start`` in the cmd_line are always foreground.
           * other components without ``start`` or ``foreground`` will return False.
+
+        Args:
+            pid: the pid to check.
+
+        Returns: True if foreground, False if not.
+        """
+        if not pid in self.procs:   # indicates a process that crashed.
+            return False
+
+        if 'foreground' in self.procs[pid]['cmdline']:
+            return True
+        elif 'start' in self.procs[pid]['cmdline']:
+            return False
+        # Default behavior for sr3_(c)post is to run in the foreground
+        elif 'sr3_cpost' in self.procs[pid]['cmdline'] or 'sr3_post' in self.procs[pid]['cmdline']:
+            return True
+        else:
+            return False
+
+    def _cfg_running_foreground(self, component, config):
+        """Returns True if the specified config is running in the foreground.
 
         Args:
             component: the config's component
@@ -2037,14 +2106,7 @@ class sr_GlobalState:
         Returns: True if foreground, False if not.
         """
         for pid_id, pid in self.states[component][config]['instance_pids'].items():
-            if 'foreground' in self.procs[pid]['cmdline']:
-                return True
-            elif 'start' in self.procs[pid]['cmdline']:
-                return False
-            # Default behavior for sr3_(c)post is to run in the foreground
-            elif 'sr3_cpost' in self.procs[pid]['cmdline'] or 'sr3_post' in self.procs[pid]['cmdline']:
-                return True
-        return False
+            return self._pid_running_foreground(pid)
 
     def _post_can_be_daemon(self, component, config):
         """Returns True if a post or cpost config can run as a daemon. Criteria is that a path and sleep value > 0 are

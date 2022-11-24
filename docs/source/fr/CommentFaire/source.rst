@@ -7,11 +7,11 @@
 Injection de données dans un réseau de pompes MetPX-Sarracenia
 --------------------------------------------------------------
 
-.. avertissement::
+.. warning::
   **FIXME** : Les sections manquantes sont mises en surbrillance par **FIXME**.
   Pas vraiment prêt à l’emploi, il en manque trop pour l’instant.
 
-.. remarque::
+.. NOTE::
   **FIXME**: éléments manquants connus: bonne discussion sur le choix de la somme de contrôle.
   Mise en garde sur les stratégies de mise à jour des fichiers. Cas d’utilisation d’un fichier constamment mis à jour,
   plutôt que d’émettre de nouveaux fichiers.)
@@ -64,7 +64,8 @@ petite et plus simples, cela fait peu de différence pratique.
 Dans le cas le plus simple, la pompe prend les données de votre compte, où que vous les ayez,
 à condition que vous lui donniez la permission. Nous décrivons d’abord ce cas.
 
-.. [1] Bien que l’arborescence de fichiers elle-même n’ait pas de limites en profondeur ou en nombre, la possibilité de
+.. note::
+   Bien que l’arborescence de fichiers elle-même n’ait pas de limites en profondeur ou en nombre, la possibilité de
    filtrer basé sur *topics* est limité par AMQP à 255 caractères. Donc la configuration de l'item *subtopic*
    est limité à un peu moins que cela. Il n’y a pas delimite fixe
    car les topics sont codées en utf8 qui est de longueur variable. Notez que le
@@ -96,8 +97,11 @@ informations d’identification du courtier en toute sécurité ::
 
   echo 'amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca' >> ~/.config/sarra/credentials.conf:
 
-.. REMARQUE::
+.. notice::
   Les mots de passe sont toujours stockés dans le fichier credentials.conf.
+  pour éviter cela, il est préférable d'utiliser des clés, que Sarracenia peut trouver en
+  en regardant les fichiers de configuration ssh. Configurez ssh pour qu'il fonctionne, et Sarracenia
+  fonctionnera aussi.
 
 Donc, maintenant, la ligne de commande pour sr_post n’est que l’URL pour que ddsr récupère le
 fichier sur grumpy::
@@ -154,7 +158,7 @@ Et puis::
 
 S’il existe différentes variétés de publication utilisées, les configurations peuvent être enregistrées pour chacune d’elles.
 
-.. avertissement::
+.. warning::
    **FIXME**: Besoin de faire un exemple réel. ce truc inventé n’est pas suffisamment utile.
 
    **FIXME**: sr_post n’accepte pas les fichiers de configuration pour le moment, indique la page de manuel.  Vrai/Faux ?
@@ -165,7 +169,7 @@ sr_post revient généralement immédiatement car son seul travail est d’infor
 de fichiers. Les fichiers ne sont pas transférés lorsque sr_post revient, il ne faut donc pas supprimer les fichiers
 après avoir posté sans être sûr que la pompe les a réellement ramassés.
 
-.. REMARQUE::
+.. NOTE::
 
   sftp est peut-être le plus simple à implémenter et à comprendre pour l’utilisateur, mais il est aussi
   le plus coûteux en termes de CPU sur le serveur.  Tout le travail de transfert de données est
@@ -203,7 +207,7 @@ Ensuite, une watch est démarrée::
 
   sr_watch start project 
 
-.. avertissement::
+.. warning::
   **FIXME** : exemple réel.
 
   **FIXME** : sr_watch était censé prendre les fichiers de configuration, mais qui cela n'a peut-être pas
@@ -214,13 +218,13 @@ il sera annoncé à la pompe (sur localhost, c’est-à-dire le serveur blacklab
 
  cp frog.dna  /var/www/project/outgoing
 
-.. avertissement::
+.. warning::
   **FIXME** : exemple réel.
 
 Cela déclenche un message à la pompe. Tous les abonnés pourront alors télécharger
 le fichier.
 
-.. avertissement::
+.. warning::
    **FIXME**. trop cassé pour l’instant pour vraiment l'éxécuter aussi facilement...
    donc la création d’une vraie démo est différée.
 
@@ -237,7 +241,7 @@ listes de produits, de sorte que le traitement personnalisé de la liste est sou
 a le paramètre do_poll, ce qui signifie que l’utilisation d’un script de plug-in est pratiquement requise
 pour l’utiliser.
 
-.. REMARQUE::
+.. NOTE::
    voir les poll_script inclus dans le répertoire des plugins de package pour un exemple.
    **FIXME**:
 
@@ -260,7 +264,7 @@ Pour afficher les messages de rapport indiquant ce qui est arrivé aux élément
 réseau à partir de la même pompe utilisant ce compte (rnd, dans l’exemple). On peut déclencher
 post-traitement arbitraire des messages de rapport à l’aide de plugins on_message.
 
-.. avertissement::
+.. warning::
    **FIXME**: besoin de quelques exemples.
 
 Fichiers volumineux
@@ -323,7 +327,7 @@ le réseau::
 Ainsi, les clients en aval peuvent obtenir et appliquer la même algorithme pour comparer les messages de notification
 provenant de sources multiples.
 
-.. avertissement::
+.. warning::
    **FIXME**: science-fiction encore: aucun répertoire de configuration de ce type n’existe encore. aucun moyen de les mettre à jour.
    chemin de recherche pour les algos de somme de contrôle?  intégré, à l’échelle du système, par source?
 
@@ -335,7 +339,7 @@ provenant de sources multiples.
    **FIXME**: pas nécessaire au début, mais probablement à un moment donné.
    en attendant, nous parlons simplement aux gens et incluons leurs algorithmes dans le package.
 
-.. REMARQUE::
+.. NOTE::
 
   Méthodes d’empreintes digitales basées sur le nom, plutôt que sur les données réelles,
   entraînera la réexpédition de l’intégralité du fichier lorsqu’ils seront mis à jour.
@@ -350,7 +354,7 @@ avertissements météorologiques. Les noms de fichiers peuvent inclure des avert
 ne sont intéressés que par le téléchargement d’avertissements qui leur sont locaux, alors, une source de données pourrait
 utilisez le hook on_post afin d’ajouter des en-têtes supplémentaires au message de notification.
 
-.. REMARQUE::
+.. NOTE::
   Une grande flexibilité s’accompagne d’un grand potentiel de préjudice. Les noms de chemin doivent inclure autant d’informations
   que possible car sarracenia est construit pour optimiser le routage en les utilisant.  Des métadonnées supplémentaires doivent être utilisées
   pour compléter, plutôt que remplacer, le routage intégré.
@@ -358,9 +362,9 @@ utilisez le hook on_post afin d’ajouter des en-têtes supplémentaires au mess
   Pour ajouter des en-têtes aux messages de notification en cours de publication, vous pouvez utiliser l’option d’en-tête.
   Dans une configuration, ajoutez les instructions suivantes ::
 
-  header CAP_province=Ontario
-  header CAP_area-desc=Uxbridge%20-%20Beaverton%20-%20Northern%20Durham%20Region
-  header CAP_polygon=43.9984,-79.2175 43.9988,-79.219 44.2212,-79.3158 44.4664,-79.2343 44.5121,-79.1451 44.5135,-79.1415 44.5136,-79.1411 44.5137,-79.1407 44.5138,-79.14 44.5169,-79.0917 44.517,-79.0879 44.5169,-79.0823 44.218,-78.7659 44.0832,-78.7047 43.9984,-79.2175
+    header CAP_province=Ontario
+    header CAP_area-desc=Uxbridge%20-%20Beaverton%20-%20Northern%20Durham%20Region
+    header CAP_polygon=43.9984,-79.2175 43.9988,-79.219 44.2212,-79.3158 44.4664,-79.2343 44.5121,-79.1451 44.5135,-79.1415 44.5136,-79.1411 44.5137,-79.1407 44.5138,-79.14 44.5169,-79.0917 44.517,-79.0879 44.5169,-79.0823 44.218,-78.7659 44.0832,-78.7047 43.9984,-79.2175
 
 Ainsi, lorsqu’un message de notification de fichier est publié, il inclura les en-têtes avec les valeurs données.
 Cet exemple est artificiel parce qu’il affecte statiquement les valeurs d’en-tête appropriées

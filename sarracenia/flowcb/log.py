@@ -43,6 +43,8 @@ class Log(FlowCB):
             self.action_verb = 'noticed'
         elif self.o.component in ['shovel']:
             self.action_verb = 'filtered'
+        elif self.o.component in ['flow']:
+            self.action_verb = 'flowed'
         else:
             self.action_verb = 'downloaded'
         self.started = nowflt()

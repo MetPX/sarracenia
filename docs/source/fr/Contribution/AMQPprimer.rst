@@ -62,14 +62,14 @@ dans le passage à la version 1.0 faisant des échanges thématiques, un fondeme
 beaucoup plus difficile.
 
 
-dans AMQP 0.9, un abonné peut déclarer une file d’attente, puis plusieurs processus (avec les bonnes
-autorisations et le nom de la file d’attente) peuvent consommer à partir de la même file d’attente. Cela nécessite d’être capable
-de nommer la file d’attente. Dans un autre protocole, tel que MQTT, on ne peut pas nommer la file d’attente, et donc
+dans AMQP 0.9, un abonné peut déclarer une fil d’attente, puis plusieurs processus (avec les bonnes
+autorisations et le nom de la fil d’attente) peuvent consommer à partir de la même fil d’attente. Cela nécessite d’être capable
+de nommer la fil d’attente. Dans un autre protocole, tel que MQTT, on ne peut pas nommer la fil d’attente, et donc
 ce modèle de traitement n’est pas pris en charge.
 
-La convention de mappage décrite dans `Topic <.. /Reference/sr3_post.7.html#topic>`_, permet à
+La convention de mappage décrite dans `Topic < ../../Reference/sr3_post.7.html#topic>`_, permet à
 MQTT d'établir des hiérarchies distinctes qui fournissent une distribution fixe entre
-les travailleurs, mais pas exactement la file d’attente partagée auto-équilibrée fournie par AMQP.
+les travailleurs, mais pas exactement la fil d’attente partagée auto-équilibrée fournie par AMQP.
 
 
 .. NOTE::
@@ -147,10 +147,10 @@ est assuré en faisant les bons choix.
 
 * persistance (les files d’attente survivent aux redémarrages du courtier, par défaut true),
 
-* expiration (combien de temps une file d’attente doit exister lorsque personne n’en consomme.  Valeur par défaut : quelques
+* expiration (combien de temps une fil d’attente doit exister lorsque personne n’en consomme.  Valeur par défaut : quelques
   minutes pour le développement, mais peut être réglé beaucoup plus longtemps pour la production)
 
-* message_ttl (durée de vie des messages de notification en file d’attente. Les messages trop vieux ne le pourront pas
+* message_ttl (durée de vie des messages de notification en fil d’attente. Les messages trop vieux ne le pourront pas
   être livré : la valeur par défaut est éternelle.)
 
 * La pré-récupération est un AMQP réglable pour déterminer le nombre de messages de notification qu’un client va
@@ -162,7 +162,7 @@ traitement des messages.  Cette liste n’est pas exhaustive.
 Mappage des concepts AMQP à Sarracenia
 --------------------------------------
 
-.. image:: ../Explanation/Concepts/AMQP4Sarra.svg
+.. image:: ../../Explanation/Concepts/AMQP4Sarra.svg
     :scale: 50%
     :align: center
 
@@ -175,7 +175,7 @@ Ne pas essayer d’être spécifique à rabbitmq, mais les fonctions de gestion 
 Ainsi, les tâches d’administration nécessitent un 'portage' alors que les principaux éléments de l’application ne le font pas.
 
 *Queues* sont généralement prises en charge de manière transparente, mais vous devez savoir
-   - Un consommateur/abonné crée une file d’attente pour recevoir des messages de notification.
+   - Un consommateur/abonné crée une fil d’attente pour recevoir des messages de notification.
    - Les files d’attente des consommateurs sont *liées* aux échanges (AMQP-speak)
 
 Un *exchange* est un entremetteur entre les files d’attente *publisher* et *consumer*.
@@ -189,7 +189,7 @@ Un *exchange* est un entremetteur entre les files d’attente *publisher* et *co
    - Ceci est fortement utilisé pour sr_sarra et sr_subcribe plusieurs instances.
 
 - Les *Queues* peuvent être *durables*, donc même si votre processus d’abonnement meurt,
-  si vous revenez dans un délai raisonnable et que vous utilisez la même file d’attente,
+  si vous revenez dans un délai raisonnable et que vous utilisez la même fil d’attente,
   vous n’aurez manqué aucun message de notification.
 
 - Comment décider si quelqu’un est intéressé.
@@ -226,7 +226,7 @@ moins spécifique à l’AMQP.
   - les utilisateurs peuvent explicitement choisir leurs noms de *queue*.
   - les utilisateurs définissent *subtopic*,
   - les sujets avec séparateur de points sont peu transformés, plutôt que codés.
-  - file d’attente *durable*.
+  - fil d’attente *durable*.
   - nous utilisons des *message headers* (AMQP-speak pour les paires clé-valeur) plutôt
     que l’encodage en JSON ou dans un autre format de charge utile.
 
@@ -253,7 +253,7 @@ Si vous avez compris le reste du document, cela devrait avoir du sens pour vous 
 Un courtier AMQP est un processus de serveur qui héberge les échanges et les files d’attente
 utilisés pour acheminer les messages de notification
 avec une latence très faible. Un éditeur envoie des messages de notification à un échange, tandis qu’un consommateur lit les
-messages de notification de leur file d’attente. Les files d’attente sont *liées* aux échanges. Sarracenia lie un courtier
+messages de notification de leur fil d’attente. Les files d’attente sont *liées* aux échanges. Sarracenia lie un courtier
 à un serveur Web pour fournir des notifications rapides et utilise des échanges de sujets pour activer le
 filtrage côté serveur des consommateurs. L’arborescence des rubriques est basée sur l’arborescence de fichiers que vous pouvez
 naviguez si vous visitez le serveur Web correspondant.
@@ -286,7 +286,7 @@ Pile Intel/Cray HPC
 
 `Intel/Cray HPC stack <http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html>`_ 
 
-.. image:: AMQPprimer/IntelHPCStack.png
+.. image:: ../../Contribution/AMQPprimer/IntelHPCStack.png
     :scale: 50%
     :align: center
 
@@ -297,7 +297,7 @@ OpenStack
 `AMQP is the messaging technology chosen by the OpenStack cloud. <http://docs.openstack.org/developer/nova/rpc.html>`_
 
 
-.. image:: AMQPprimer/OpenStackArch.png
+.. image:: ../../Contribution/AMQPprimer/OpenStackArch.png
     :scale: 70%
     :align: center
 

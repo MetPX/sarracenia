@@ -55,6 +55,7 @@ import sarracenia.integrity.arbitrary
 
 import sarracenia.moth
 import sarracenia.integrity
+import sarracenia.instance
 
 default_options = {
     'acceptSizeWrong': False,
@@ -65,6 +66,7 @@ default_options = {
     'documentRoot': None,
     'download': False,
     'filename': 'WHATFN',
+    'flowMain': None,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
@@ -123,10 +125,10 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'cluster', 'destination', 'directory', 'exchange',
-    'exchangeSuffix', 'feeder', 'filename', 'header', 'integrity', 'logLevel', 'path',
-    'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName',
+    'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
+    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
+    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
+    'post_exchangeSuffix', 'queueName', 'remoteUrl',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -144,42 +146,44 @@ str_options = [
 convert_to_v3 = {
     'ls_file_index' : [ 'continue' ],
     'plugin': {
-        'msg_fdelay': ['flowCallback', 'sarracenia.flowcb.filter.fdelay.FDelay'],
+        'msg_fdelay': ['callback', 'filter.fdelay'],
         'msg_pclean_f90':
-        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f90.PClean_F90'],
+        ['callback', 'filter.pclean_f90.PClean_F90'],
         'msg_pclean_f92':
-        ['flowCallback', 'sarracenia.flowcb.filter.pclean_f92.PClean_F92'],
+        ['callback', 'filter.pclean_f92.PClean_F92'],
         'accel_wget': ['continue'],
         'accel_scp': ['continue'],
+        'accel_cp': ['continue'],
         'msg_total_save': ['continue'],
-        'post_total_save': ['continue']
+        'post_total_save': ['continue'],
+        'post_total_interval': ['continue']
     },
     'do_send': {
-       'file_email' : [ 'flowCallback', 'sarracenia.flowcb.send.email.Email' ],
+       'file_email' : [ 'callback', 'send.email' ],
     },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
     'on_message': {
-        'msg_print_lag': [ 'flow_callback', 'sarracenia.flowcb.accept.printlag.PrintLag'],
-        'msg_replace_new_dir': [ 'flow_callback', 'sarracenia.flowcb.accept.adjustfileoppaths.Adjustfileoppaths' ],
-        'msg_skip_old': [ 'flow_callback', 'sarracenia.flowcb.accept.skipold.SkipOld'],
-        'msg_test_retry': [ 'flow_callback', 'sarracenia.flowcb.accept.testretry.TestRetry'],
-        'msg_to_clusters': [ 'flow_callback', 'sarracenia.flowcb.accept.toclusters.ToClusters'],
-        'msg_save': [ 'flow_callback', 'sarracenia.flowcb.accept.save.Save'],
-        'msg_2localfile': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocalfile.ToLocalFile'],
-        'msg_rename_whatfn': [ 'flow_callback', 'sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn'],
-        'msg_rename_dmf': [ 'flow_callback', 'sarracenia.flowcb.accept.renamedmf.RenameDMF'],
-        'msg_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.hourtree.HourTree'],
-        'msg_renamer': [ 'flow_callback', 'sarracenia.flowcb.accept.renamer.Renamer'],
-        'msg_2http': [ 'flow_callback', 'sarracenia.flowcb.accept.tohttp.ToHttp'],
-        'msg_2local': [ 'flow_callback', 'sarracenia.flowcb.accept.tolocal.ToLocal'],
-        'msg_http_to_https': [ 'flow_callback', 'sarracenia.flowcb.accept.httptohttps.HttpToHttps'],
-        'msg_speedo': [ 'flow_callback', 'sarracenia.flowcb.accept.speedo.Speedo'],
-        'msg_WMO_type_suffix': [ 'flow_callback', 'sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix'],
-        'msg_sundew_pxroute': [ 'flow_callback', 'sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute'],
-        'msg_rename4jicc': [ 'flow_callback', 'sarracenia.flowcb.accept.rename4jicc.Rename4Jicc'],
-        'msg_delay': [ 'flow_callback', 'sarracenia.flowcb.accept.messagedelay.MessageDelay'],
-        'msg_download_baseurl': [ 'flow_callback', 'sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl'],
+        'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
+        'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
+        'msg_skip_old': [ 'callback', 'accept.skipold.SkipOld'],
+        'msg_test_retry': [ 'callback', 'accept.testretry.TestRetry'],
+        'msg_to_clusters': [ 'callback', 'accept.toclusters.ToClusters'],
+        'msg_save': [ 'callback', 'accept.save'],
+        'msg_2localfile': [ 'callback', 'accept.tolocalfile.ToLocalFile'],
+        'msg_rename_whatfn': [ 'callback', 'accept.renamewhatfn.RenameWhatFn'],
+        'msg_rename_dmf': [ 'callback', 'accept.renamedmf.RenameDMF'],
+        'msg_hour_tree': [ 'callback', 'accept.hourtree.HourTree'],
+        'msg_renamer': [ 'callback', 'accept.renamer.Renamer'],
+        'msg_2http': [ 'callback', 'accept.tohttp.ToHttp'],
+        'msg_2local': [ 'callback', 'accept.tolocal.ToLocal'],
+        'msg_http_to_https': [ 'callback', 'accept.httptohttps.HttpToHttps'],
+        'msg_speedo': [ 'callback', 'accept.speedo.Speedo'],
+        'msg_WMO_type_suffix': [ 'callback', 'accept.wmotypesuffix.WmoTypeSuffix'],
+        'msg_sundew_pxroute': [ 'callback', 'accept.sundewpxroute.SundewPxRoute'],
+        'msg_rename4jicc': [ 'flow_callback', 'accept.rename4jicc.Rename4Jicc'],
+        'msg_delay': [ 'callback', 'accept.messagedelay.MessageDelay'],
+        'msg_download_baseurl': [ 'callback', 'accept.downloadbaseurl.DownloadBaseUrl'],
 	'msg_from_cluster': ['continue'],
 	'msg_stdfiles': ['continue'],
 	'msg_fdelay': ['continue'],
@@ -192,13 +196,13 @@ convert_to_v3 = {
 	'msg_dump': ['continue'],
 	'msg_total': ['continue'],
 	'post_total': ['continue'],
-        'wmo2msc': [ 'flow_callback', 'sarracenia.flowcb.filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'flow_callback', 'sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles'],
+        'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
+        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
         'msg_log': ['logEvents', 'after_accept'],
         'msg_rawlog': ['logEvents', 'after_accept'],
-        'post_hour_tree': [ 'flow_callback', 'sarracenia.flowcb.accept.posthourtree.PostHourTree'],
-        'post_long_flow': [ 'flow_callback', 'sarracenia.flowcb.accept.longflow.LongFLow'],
-        'post_override': [ 'flow_callback', 'sarracenia.flowcb.accept.postoverride.PostOverride'],
+        'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
+        'post_long_flow': [ 'callback', 'accept.longflow.LongFLow'],
+        'post_override': [ 'callback', 'accept.postoverride.PostOverride'],
 	'post_rate_limit': ['continue'],
         'to': ['continue']
     },
@@ -465,7 +469,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'sender', 'watch', 'winnow'
     ]
 
@@ -480,6 +484,7 @@ class Config:
 
     # Correct name on the right, old name on the left.
     synonyms = {
+        'accel_cp_threshold': 'accelThreshold',
         'accel_scp_threshold': 'accelThreshold',
         'accel_wget_threshold': 'accelThreshold',
         'accept_unmatch': 'acceptUnmatched',
@@ -519,7 +524,7 @@ class Config:
         'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
-        'msg_replace_new_dir' : 'adjustFileOpPaths',
+        'msg_replace_new_dir' : 'pathReplace',
         'no_duplicates': 'nodupe_ttl',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
@@ -559,6 +564,11 @@ class Config:
         self.directory = None
 
         self.env = copy.deepcopy(os.environ)
+
+        egdir = os.path.dirname(inspect.getfile(sarracenia.config.Config)) + os.sep + 'examples' 
+
+        self.config_search_path = [ "." , get_user_config_dir(), egdir, egdir + os.sep + 'flow'  ]
+
 
         for k in default_options:
             setattr(self, k, default_options[k])
@@ -794,16 +804,24 @@ class Config:
         """
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
            
-           'count'      integer count type. 
-           'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
-                        modified by a unit suffix ( m-minute, h-hour, w-week ) 
-           'flag'       boolean (True/False) option.
-           'float'      a simple floating point number.
-           'list'       a list of string values, each succeeding occurrence catenates to the total.
-                        all v2 plugin options are declared of type list.
-           'set'        a set of string values, each succeeding occurrence is unioned to the total.
-           'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-           'str'        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.
+           * 'count'      integer count type. 
+
+           * 'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+                          modified by a unit suffix ( m-minute, h-hour, w-week ) 
+
+           * 'flag'       boolean (True/False) option.
+
+           * 'float'      a simple floating point number.
+
+           * 'list'       a list of string values, each succeeding occurrence catenates to the total.
+                          all v2 plugin options are declared of type list.
+
+           * 'set'        a set of string values, each succeeding occurrence is unioned to the total.
+
+           * 'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+
+           * 'str'        an arbitrary string value, as will all of the above types, each 
+                          succeeding occurrence overrides the previous one.
     
         """
         #Blindly add the option to the list if it doesn't already exist
@@ -1133,8 +1151,25 @@ class Config:
             cfname = f'{component}/{cfg}'
         else:
             cfname = cfg
+
+        logger.debug( f'looking for {cfg} (in {os.getcwd()}')
+
+        if cfg[0] == os.sep:
+            cfgfilepath=cfg
+        else:
+            cfgfilepath=None
+            for d in self.config_search_path:
+                 cfgfilepath=d + os.sep + cfg
+                 if os.path.isfile( cfgfilepath ):
+                     break
+
+            if not cfgfilepath:
+                 logger.error( f'failed to find {cfg}' )
+                 return
+            logger.debug( f'found {cfgfilepath}')
+
         lineno=0
-        for l in open(cfg, "r").readlines():
+        for l in open(cfgfilepath, "r").readlines():
             l = l.strip()
             lineno+=1
             line = l.split()
@@ -1147,6 +1182,11 @@ class Config:
             k = line[0]
             if k in Config.synonyms:
                 k = Config.synonyms[k]
+            elif k == 'destination':
+                if component == 'poll':
+                    k = 'pollUrl'
+                else:
+                    k = 'remoteUrl'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1192,15 +1232,15 @@ class Config:
             if k in ['accept', 'reject', 'get']:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in [ 'callback', 'cb' ]:
-                vv = v.split('.')
-                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                #vv = v.split('.')
+                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_late:
                     self.plugins_late.append(v)
             elif k in [ 'callback_prepend', 'cbp' ]:
-                vv = v.split('.')
-                v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+                #vv = v.split('.')
+                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_early:
-                    self.plugins_early.append(v)
+                    self.plugins_early.inset(0,v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
@@ -1235,7 +1275,7 @@ class Config:
                     self.plugins_late.append(v)
             elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
                 if v not in self.plugins_early:
-                    self.plugins_early.append( v )
+                    self.plugins_early.insert(0, v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
             elif k in ['integrity']:
@@ -1395,8 +1435,9 @@ class Config:
                 self.logEvents |= set( ['reject'] )
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
-            if not 'sarracenia.flowcb.log.Log' in self.plugins_late:
-                self.plugins_late.append( 'sarracenia.flowcb.log.Log' )
+            if ('sarracenia.flowcb.log.Log' not in self.plugins_late) and \
+               ('log' not in self.plugins_late) :
+                self.plugins_late.append( 'log' )
 
         # patch, as there is no 'none' level in python logging module...
         #    mapping so as not to break v2 configs.
@@ -1406,9 +1447,9 @@ class Config:
 
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.data.Data' )
+                self.plugins_early.append( 'nodupe.data' )
             elif self.nodupe_basis == 'name': 
-                self.plugins_early.append( 'sarracenia.flowcb.nodupe.name.Name' )
+                self.plugins_early.append( 'nodupe.name' )
             delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
@@ -1545,6 +1586,11 @@ class Config:
                 self.documentRoot = path
             n = 2
 
+        if hasattr(self, 'pollUrl'):
+            if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
+                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                self.post_baseUrl = self.pollUrl
+            
         # verify post_baseDir
 
         if self.post_baseDir is None:
@@ -1592,7 +1638,7 @@ class Config:
       sundew_* ... 
    """
 
-    def sundew_basename_parts(self, pattern, basename):
+    def _sundew_basename_parts(self, pattern, basename):
         """
         modified from metpx SenderFTP
         """
@@ -1619,7 +1665,7 @@ class Config:
         BN = basename.split(":")
         EN = BN[0].split("_")
 
-        BP = self.sundew_basename_parts(pattern, urlstr)
+        BP = self._sundew_basename_parts(pattern, urlstr)
 
         ndestDir = ""
         DD = destDir.split("/")
@@ -1683,7 +1729,14 @@ class Config:
 
         return defval
 
-    def set_dir_pattern(self, cdir, message=None ):
+    def variableExpansion(self, cdir, message=None ):
+        """
+            replace substitution patterns, variable substitutions as described in
+            https://metpx.github.io/sarracenia/Reference/sr3_options.7.html#variables
+
+            examples:   ${YYYYMMDD-70m} becomes 20221107 assuming that was the current date 70 minutes ago.
+                        environment variables, and built-in settings are replaced also.
+        """
 
         if not '$' in cdir:
             return cdir
@@ -1756,7 +1809,8 @@ class Config:
         # ${YYYY-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 0: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1766,7 +1820,8 @@ class Config:
         # ${MM-[number][time_unit]}
         offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 1: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1776,7 +1831,8 @@ class Config:
         # ${JJJ-[number][time_unit]}
         offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 2: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1786,11 +1842,12 @@ class Config:
         # ${YYYYMMDD-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 3: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
-
             epoch = time.mktime(time.gmtime()) - seconds
             YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch))
+            logger.info( f"seconds: {seconds} YYYYMMDD {YYYYMMDD}" )
             new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
 
         new_dir = self._varsub(new_dir)
@@ -2185,9 +2242,76 @@ def one_config(component, config, isPost=False):
 
     return cfg
 
+def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
+
+    lr_when = 'midnight'
+    if (type(cfg_preparse.logRotateInterval) == str) and (
+            cfg_preparse.logRotateInterval[-1] in 'mMhHdD'):
+        lr_when = cfg_preparse.logRotateInterval[-1]
+        logRotateInterval = int(float(cfg_preparse.logRotateInterval[:-1]))
+    else:
+        logRotateInterval = int(float(cfg_preparse.logRotateInterval))
+
+    if type(cfg_preparse.logRotateCount) == str:
+        logRotateCount = int(float(cfg_preparse.logRotateCount))
+    else:
+        logRotateCount = cfg_preparse.logRotateCount
+
+    # init logs here. need to know instance number and configuration and component before here.
+    if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
+
+        logfilename = get_log_filename(
+            hostdir, component, config, child_inst)
+
+        #print('logfilename= %s' % logfilename )
+        dir_not_there = not os.path.exists(os.path.dirname(logfilename))
+        while dir_not_there:
+            try:
+                os.makedirs(os.path.dirname(logfilename), exist_ok=True)
+                dir_not_there = False
+            except FileExistsError:
+                dir_not_there = False
+            except Exception as ex:
+                logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                logging.debug("Exception details:", exc_info=True)
+                os.sleep(1)
+
+        log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        if logging.getLogger().hasHandlers():
+            for h in logging.getLogger().handlers:
+                h.close()
+                logging.getLogger().removeHandler(h)
+        logger = logging.getLogger()
+        logger.setLevel(logLevel.upper())
+
+        handler = sarracenia.instance.RedirectedTimedRotatingFileHandler(
+            logfilename,
+            when=lr_when,
+            interval=logRotateInterval,
+            backupCount=logRotateCount)
+        handler.setFormatter(logging.Formatter(log_format))
+
+        logger.addHandler(handler)
+
+        if hasattr(cfg_preparse, 'permLog'):
+            os.chmod(logfilename, cfg_preparse.permLog)
+
+        # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
+        if sys.platform != 'win32':
+            os.dup2(handler.stream.fileno(), 1)
+            os.dup2(handler.stream.fileno(), 2)
+
+    else:
+        try:
+            logger.setLevel(logLevel)
+        except Exception:
+            logger.setLevel(logging.INFO)
 
 # add directory to python front of search path for plugins.
-
 plugin_dir = get_user_config_dir() + os.sep + "plugins"
 if os.path.isdir(plugin_dir) and not plugin_dir in sys.path:
     sys.path.insert(0, plugin_dir)

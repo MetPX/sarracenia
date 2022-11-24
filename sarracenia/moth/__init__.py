@@ -131,8 +131,7 @@ class Moth():
 
 
 
-       messaging_strategy:
-       ~~~~~~~~~~~~~~~~~~~
+       **messaging_strategy**
 
        how to manage the connection. Covers whether to treat the connection
        as new or assume it is set up. Also, If something goes wrong.  
@@ -154,11 +153,9 @@ class Moth():
        Changing recovery_strategy setting, might result in having to destroy and re-create 
        consumer queues (AMQP.)
 
-       Options
-       -------
+       **Options**
 
-       both:
-       ~~~~~
+       **both**
 
        * 'topicPrefix' : [ 'v03' ]
 
@@ -170,8 +167,7 @@ class Moth():
 
        * 'inlineByteMax': 4096,  - Maximum size of messages to inline.
 
-       for get:
-       ~~~~~~~~
+       **for get**
 
        *  'batch'  : 100  # how many messages to get at once
 
@@ -183,13 +179,11 @@ class Moth():
 
        *  'loop'
 
-       optional:
-       ~~~~~~~~~
+       **optional:**
 
        *  'message_ttl'    
 
-       for put:
-       ~~~~~~~~
+       **for put:**
 
        *   'exchange' (only in AMQP... hmm...)
        

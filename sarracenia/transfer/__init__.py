@@ -108,7 +108,7 @@ class Transfer():
     
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
-     * destination  - server to connect to.
+     * remoteUrl  - server to connect to.
      * batch   - how many files to transfer before a connection is torn down and re-established.
      * permDefault - what permissions to set on files transferred.
      * permDirDefault - what permission to set on directories created.
@@ -309,7 +309,7 @@ class Transfer():
         if self.sumalgo: self.sumalgo.set_path(src_path)
         if self.data_sumalgo: self.data_sumalgo.set_path(src_path)
 
-        # copy source to destination
+        # copy source to remoteUrl
 
         rw_length = self.read_write(src, dst, length)
 
@@ -331,7 +331,7 @@ class Transfer():
         # open
         src = self.local_read_open(local_file, local_offset)
 
-        # copy source to destination
+        # copy source to remoteUrl
 
         rw_length = self.read_write(src, dst, length)
 

@@ -72,7 +72,7 @@ En plus de detail:
  +----------+-------------------------------------------------------------+
  | *gather* | Obtenez de l'information sur une liste initiale de fichiers |
  |          |                                                             |
- |          | A partir: d'une file d’attente, un répertoire,              |
+ |          | A partir: d'une fil d’attente, un répertoire,              |
  |          | un script de polling.                                       |
  |          |                                                             |
  |          | Sortie: worklist.incoming rempli de messages d'annonce.     |
@@ -110,76 +110,91 @@ Les composants ont juste des paramètres par défaut différents:
 .. table:: **Tableau 2 : Utilisation de l’algorithme de flux par chaque composant**
  :align: center
 
- +------------------------+------------------------------+
- | Composant              | Utilisation de l’algorithme  |
- +------------------------+------------------------------+
- +------------------------+------------------------------+
- | *subscribe*            | Gather = gather.message      |
- |                        |                              |
- |   Télécharger un       | Filter                       |
- |   fichier d'une pompe  |                              |
- |                        | Work = Télécharger           |
- |   défaut mirror=False  |                              |
- |   Tout les autres sont |                              |
- |   True                 | Post = faculatif             |
- +------------------------+------------------------------+
- | *sarra*                | Gather = gather.message      |
- |                        |                              |
- |   Utilisé sur des      |                              |
- |   pompes. Télécharge un|                              |
- |   fichier d'une pompe  |                              |
- |   a une autre pompe.   |                              |
- |   Post le fichier à    |                              |
- |   partir de la nouvelle| Work = Télécharger           |
- |   pompe pour que les   |                              |
- |   abonnés de cette     | Post = publier               |
- |   pompe puisse les     |                              |
- |   télécharger.         |                              |
- |                        |                              |
- +------------------------+------------------------------+
- | *poll*                 | Gather                       |
- |                        | if has_vip: poll             |
- |   Trouver des fichiers |                              |
- |   sur d'autre serveurs | Filter                       |
- |   pour poster sur une  |                              |
- |   pompe.               | if has_vip:                  |
- |                        |     Work = nil               |
- |   Utilise has_vip*     |                              |
- |   (voir ci-dessous)    |     Post = oui               |
- +------------------------+------------------------------+
- | *shovel*               | Gather = gather.message      |
- |                        |                              |
- |   Bouge les posts ou   | Filter (shovel cache=off)    |
- |   rapports de place.   |                              |
- |                        | Work = nil                   |
- |                        |                              |
- |                        | Post = oui                   |
- +------------------------+------------------------------+
- | *winnow*               | Gather = gather.message      |
- |                        |                              |
- |   Bouge les posts ou   | Filter (shovel cache=off)    |
- |   rapports de place.   |                              |
- |                        | Work = nil                   |
- |   suppression de       |                              |
- |   doublons             | Post = oui                   |
- +------------------------+------------------------------+
- | *post/watch*           | Gather = gather.file         |
- |                        |                              |
- |   Trouve un fichier sur| Filter                       |
- |   un serveur local pour|                              |
- |   le publier           | Work = nil                   |
- |                        |                              |
- |                        | Post = oui                   |
- |                        |   Message?, File?            |
- +------------------------+------------------------------+
- | *sender*               | Gather = gather.message      |
- |                        |                              |
- |   Enovoyer des fichiers| Filter                       |
- |   d'une pompe. Si a    |                              |
- |   distanc est aussi une| Do = sendfile                |
- |   pompe, envoyer les   |                              |
- |   messages la.         | Outlet = facultatif          |
- +------------------------+------------------------------+
+ +------------------------+------------------------------+------------------------+
+ | Composant              | Utilisation de l’algorithme  | equiv. en fichier. cfg |
+ +------------------------+------------------------------+------------------------+
+ +------------------------+------------------------------+------------------------+
+ | *subscribe*            | Gather = gather.message      | flowMain subscribe     |
+ |                        |                              |                        |
+ |   Télécharger un       | Filter                       |                        |
+ |   fichier d'une pompe  |                              |                        |
+ |                        | Work = Télécharger           |                        |
+ |   défaut mirror=False  |                              |                        |
+ |   (True pour tous les  |                              |                        |
+ |   autres)              | Post = faculatif             |                        |
+ +------------------------+------------------------------+------------------------+
+ | *sarra*                | Gather = gather.message      |                        |
+ |                        |                              | flowMain sarra         |
+ | Utilisé sur des        |                              |                        |
+ | pompes.                |                              |                        |
+ |                        |                              |                        |
+ | Télécharge un fichier  |                              |                        |
+ |                        |                              |                        |
+ | publie-le              |                              |                        |
+ |                        |                              |                        |
+ | abonnés de la pomple   | Work = Télécharger           |                        |
+ | locale puissent        |                              |                        |
+ | télécharer à leur      | Post = publier               |                        |
+ | tour                   |                              |                        |
+ |                        |                              |                        |
+ +------------------------+------------------------------+------------------------+
+ | *poll*                 | Gather                       |                        |
+ |                        | if has_vip: poll             | flowMain poll          |
+ | Trouver des fichiers   |                              |                        |
+ | sur d'autre serveurs   | Filter                       |                        |
+ | pour publier.          |                              |                        |
+ |                        | if has_vip:                  |                        |
+ |                        |     Work = nil               |                        |
+ | Utilise has_vip*       |                              |                        |
+ | (voir ci-dessous)      |     Post = oui               |                        |
+ +------------------------+------------------------------+------------------------+
+ | *shovel*               | Gather = gather.message      | acceptUnmatched True   |
+ |                        |                              |                        |
+ |                        |                              | nodupe_ttl 0           |
+ | manutention de         | Filter (shovel cache=off)    |                        |
+ | messages d´annonce.    |                              | callback gather.message|
+ |                        |                              |                        |
+ |                        | Work = nil                   | callback post.message  |
+ |                        |                              |                        |
+ |                        | Post = oui                   |                        |
+ +------------------------+------------------------------+------------------------+
+ | *winnow*               | Gather = gather.message      |                        |
+ |                        |                              | acceptUnmatched true   |
+ |                        |                              |                        |
+ | Bouge les posts ou     | Filter (shovel cache=off)    | nodupe_ttle 300        |
+ | rapports de place.     |                              |                        |
+ |                        | Work = nil                   | callback gather.message|
+ |                        |                              |                        |
+ | suppression de         |                              | callback post.message  |
+ | doublons               | Post = oui                   |                        |
+ +------------------------+------------------------------+------------------------+
+ | *post/watch*           | Gather = gather.file         |                        |
+ |                        |                              | <plusieurs options de  |
+ | Trouve un fichier sur  | Filter                       |  défaut>               |
+ |                        |                              |                        |
+ | un serveur local pour  |                              | sleep -1 # pour post   |
+ |                        |                              |                        |
+ | le publier             | Work = nil                   | sleep 5  # pour watch  |
+ |                        |                              |                        |
+ |                        | Post = oui                   | callback gather.file   |
+ |                        |                              |                        |
+ |                        |   Message?, File?            | callback post.message  |
+ +------------------------+------------------------------+------------------------+
+ | *sender*               | Gather = gather.message      |                        |
+ |                        |                              | flowMain sender        |
+ | Enovoyer des fichiers  | Filter                       |                        |
+ |                        |                              |                        |
+ | publier après envoi    | Do = sendfile                |                        |
+ |                        |                              |                        |
+ |                        | Outlet = facultatif          |                        |
+ +------------------------+------------------------------+------------------------+
+
+
+Dans la colonne de gauche, on peut voir le nom et la description générale de chaque composant.
+dans la colonne du milieu, on voit à quoi s'appliquent les différentes phases de l'algorithme Flow.
+A droite, on voit comment exprimer, dans un fichier de configuration de flux générique, le composant.
+La plupart des composants peuvent utiliser la classe de flux parent, mais ceux qui ont besoin 
+de plus utilise des sous-classes de flux. Ces cas sont configurés à l'aide de l'option flowMain.
 
 Les composants sont facilement composés à l'aide de courtiers AMQP, qui créent
 des réseaux élégants de communiquer des processus séquentiels. (CSP dans
@@ -234,7 +249,7 @@ sur l'AMQP lui-même, un ensemble de liens est maintenu à l'adresse suivante
 le site web `Metpx web site <sarra.rst#amqp>`_
 mais un moteur de recherche révèlera aussi une richesse matérielle.
 
-.. image:: Concepts/amqp_flow_concept.svg
+.. image:: Concepts/amqp_notion_de_flux.svg
     :scale: 50%
     :align: center
 
@@ -248,7 +263,7 @@ les fonctions de gestion diffèrent d'une implémentation à l'autre.
 
 
 Les *Queues* (files d´attentes) sont généralement prises en charge de manière transparente, mais vous avez besoin de connaître
-   - Un consommateur/abonné crée une file d'attente pour recevoir des messages d'annonce.
+   - Un consommateur/abonné crée une fil d'attente pour recevoir des messages d'annonce.
    - Les files d'attente des consommateurs sont *liées* aux échanges (langage AMQP).
 
 Un *exchange* est un entremeteur entre *publisher* et les files d´attentes du
@@ -279,7 +294,7 @@ AMQP v09 (Rabbitmq) Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MetPX-Sarracenia n’est qu’un léger revêtement autour des protocoles de
-file d’attente des messages. Pour ceux qui sont familiers avec
+fil d’attente des messages. Pour ceux qui sont familiers avec
 les protocoles sous-jacents, voici les mappages:
 
 - Une pompe de données MetPX-Sarracenia est une application python AMQP qui utilise un (rabbitmq).
@@ -297,9 +312,9 @@ les protocoles sous-jacents, voici les mappages:
     - les utilisateurs peuvent explicitement choisir leurs noms *files d'attente*.
     - les utilisateurs définissent *subtopic*,
     - les sujets avec séparateur de points sont transformés au minimum, plutôt qu'encodés.
-    - La file d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
+    - La fil d’attente est définie sur *durable* afin que les messages ne soient pas perdus lors des redémarrages du broker.
     - nous utilisons des *en-têtes de message* (langage AMQP pour les paires clé-valeur) plutôt que d'encoder en JSON ou dans un autre format de charge utile.
-    - *expire* combien de temps pour conserver une file d’attente inactive ou un échange.
+    - *expire* combien de temps pour conserver une fil d’attente inactive ou un échange.
 
 - réduire la complexité par le biais de conventions.
    - n'utiliser qu'un seul type d'échanges (Topic), prendre soin des fixations.
@@ -320,9 +335,9 @@ ne sont qu’un parmi une variété de choix pour les méthodes de routage dans 
   - Le caractère générique de la rubrique MQTT *#* est le même que dans AMQP (correspond au reste du sujet)
   - Le caractère générique de la rubrique MQTT *+* est le même que l’AMQP *\** (correspond à un thème).
   - Un « Échange » AMQP est mappé à la racine de l’arborescence des thèmes MQTT,
-  - Une « file d’attente » AMQP est représentée dans MQTT par *client-id* et un *abonnement partagé*. Remarque : Les abonnements partagés ne sont présents que dans MQTTv5.
+  - Une « fil d’attente » AMQP est représentée dans MQTT par *client-id* et un *abonnement partagé*. Remarque : Les abonnements partagés ne sont présents que dans MQTTv5.
 
-    * AMQP: Une file d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
+    * AMQP: Une fil d’attente nommée *queuename* est liée à un échange xpublic avec clé: v03.observations ...
     * Abonnement MQTT: thème $shared/*queuename*/xpublic/v03/observations ...
 
   - Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.
@@ -336,7 +351,7 @@ MQTT v3 manque d’abonnements partagés et la logique de récupération est tr�
 Le flux à travers des Pompes
 ----------------------------
 
-.. image:: Concepts/sr3_flow_example.svg
+.. image:: Concepts/sr3_exemple_de_flux.svg
     :scale: 100%
     :align: center
 

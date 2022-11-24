@@ -42,9 +42,6 @@ Il existe d’autres façons d’étendre Sarracenia v3 en sous-classant :
 
 Cela sera discuté après que les rappels auront été traités.
 
-Il y a une courte démonstration interactive de tous ces sujets dans
-`Jupyter Notebooks <../../jupyter>`_ inclus avec Sarracenia.
-
 Introduction
 ------------
 
@@ -260,14 +257,14 @@ que le reste de sr3.
 set sarracenia.moth.amqp.AMQP.logLevel debug
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Imprimez les messages de débogage spécifiques à la file d’attente de messages AMQP (classe sarracenia.moth.amqp.AMQP).
+Imprimez les messages de débogage spécifiques à la fil d’attente de messages AMQP (classe sarracenia.moth.amqp.AMQP).
 utilisé uniquement lors du débogage avec le MQP lui-même, pour traiter les problèmes de connectivité du courtier par exemple.
 diagnostic et test d’interopérabilité.
 
 set sarracenia.moth.mqtt.MQTT.logLevel debug
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Imprimez les messages de débogage spécifiques à la file d’attente de messages MQTT (classe sarracenia.moth.mqtt.MQTT).
+Imprimez les messages de débogage spécifiques à la fil d’attente de messages MQTT (classe sarracenia.moth.mqtt.MQTT).
 utilisé uniquement lors du débogage avec le MQP lui-même, pour traiter les problèmes de connectivité du courtier par exemple.
 diagnostic et test d’interopérabilité.
 
@@ -397,15 +394,16 @@ self est le message en cours de traitement. variables les plus utilisées :
 *msg['new_file']*
   Une variable populaire dans les plugins on_file et on_part est : *msg['new_file]*,
   en donnant le nom de fichier dans lequel le produit téléchargé a été écrit.  Lorsque
-  la même variable est modifiée dans un plugin on_message, elle change le nom du
+  la même variable est modifiée dans un plugin after_accept, elle change le nom du
   fichier à télécharger. De même, une autre variable souvent utilisée est
   *parent.new_dir*, qui fonctionne sur le répertoire dans lequel le fichier
   sera téléchargé.
 
 *msg['new_inflight_file']*
-  dans les rappels de téléchargement et d’envoi, ce champ sera défini avec le nom temporaire
-  d’un fichier utilisé pendant le transfert.  Une fois le transfert terminé,
+  dans téléchargements et envois, ce champ sera défini avec le nom temporaire
+  d’un fichier utilisé pendant le transfert. Une fois le transfert terminé,
   le fichier doit être renommé à qui se trouve dans *msg['new_file']*.
+
 
 *msg['pubTime']*
   Heure à laquelle le message a été inséré dans le réseau (premier champ d’un avis).
@@ -417,11 +415,40 @@ self est le message en cours de traitement. variables les plus utilisées :
   Chemin d’accès relatif à partir de l’URL de base du fichier.
   la concaténation des deux donne l’URL complète.
 
+*msg['retPath']*
+  Pour le supprimer le chemin logique resultant de *baseUrl et relPath*, on peut specifier
+  un url pour chercher la ressource distant.
+
+*msg['fileOp']*
+  pour les opérations de téléchargement de fichiers sans données, telles que la création de liens 
+  symboliques, les changements de nom et les suppressions de fichiers. 
+  Contenu décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
+
 *msg['integrity']*
   La structure de somme de contrôle, un dictionnaire python avec les champs 'méthode' et 'valeur'.
 
-*msg['subtopic']*
+*msg['subtopic'], msg['new_subtopic']*
   liste des chaînes (avec le préfixe de thème supprimé)
+  généré automatiquement à partir dur msg[´relPath´] inutile de le modifié.
+
+*msg['_deleteOnPost']*
+  lorsque l'état doit être stocké dans les messages, on peut déclarer des champs temporaires supplémentaires
+  à utiliser uniquement dans le cadre du processus en cours d'exécution. Pour les marquer pour suppression lors du transfert,
+  ce champ (de type: python set) est utilisé ::
+
+      msg['my_new_field'] = my_temporary_state
+      msg['_deleteOnPost'] |= set(['my_new_field'])
+
+  Par exemple, tous les champs *new_* sont dans *_deleteOnPost* par défaut.
+
+*msg['onfly_checksum'], msg['data_checksum']*
+  
+   la valeur d'un champ de somme de contrôle *Intégrité* calculée au fur et à mesure que 
+   les données sont téléchargées. Dans le cas où les données sont modifiées lors 
+   du téléchargement, le *onfly_checksum* est de vérifier que les données 
+   amont ont été correctement reçues, tandis que *data_checksum* est calculé 
+   pour les consommateurs en aval.
+
 
 Ce sont les champs de message qui sont le plus souvent d’intérêt, mais beaucoup d’autres
 peuvent être consulté par les éléments suivants dans une configuration ::
@@ -456,7 +483,7 @@ Quelques exemples :
   La valeur 0 indique que la mise en cache est désactivée.
 
 *self.o.inflight*
-  Le paramètre actuel de *inflight* (voir `Delivery Completion <FileCompletion.rst>`_)
+  Le paramètre actuel de *inflight* (voir `Delivery Completion <FileCompletion.html>`_)
 
 *self.o.overwrite*
   qui contrôle si les fichiers déjà téléchargés doivent être remplacés sans condition.
@@ -494,7 +521,7 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     |                                                    |
 |                     | Pour indiquer l’échec du traitement, déplacez :    |
 |                     | worklist.incoming -> worklist.failed               |
-|                     |ira dans la file d’attente pour réessayer plus tard |
+|                     |ira dans la fil d’attente pour réessayer plus tard  |
 |                     |                                                    |
 |                     | Exaeples: msg_* dans le répertoire exemples        |
 |                     |                                                    |
@@ -612,11 +639,11 @@ points d’entrée spécifiques généralement implémentés dans les sous-class
 Voir les classes intégrés `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
 est utile.
 
-.. [#] voir `smc_download_cp <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/smc_download_cp.py>`_
+.. [#] voir `smc_download_cp <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py>`_
 .. [#] voir `Issue 74 <https://github.com/MetPX/sarracenia/issues/74>`_
-.. [#] voir `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/part_clanav_scan.py>`_
-.. [#] voir `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/file_total_save.py>`_
-.. [#] voir `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_email_ingest.py>`_
+.. [#] voir `part_clanav_scan.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/part_clanav_scan.py>`_
+.. [#] voir `file_total_save.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_total_save.py>`_
+.. [#] voir `poll_email_ingest.py  <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py>`_
 
 --------------------------------
 Meilleure réception des fichiers
@@ -712,7 +739,7 @@ au fichier suivant.
 Si le code du script on_file est modifié pour effectuer du traitement réel, alors
 plutôt que d’être indépendant, le traitement pourrait fournir une contre-pression au
 mécanisme de livraison des données.  Si le traitement est bloqué, le sr_subscriber
-arrêtera le téléchargement et la file d’attente sera sur le serveur, plutôt que de créer
+arrêtera le téléchargement et la fil d’attente sera sur le serveur, plutôt que de créer
 un énorme répertoire local sur le client.  Différents modèles s’appliquent dans différents
 Situations.
 
@@ -825,12 +852,12 @@ Exemples de choses qui seraient amusantes à faire avec les plugins:
   pour de nombreux types d’événements, en indiquant la zone de couverture.  Il y a un
   champ 'polygone' dans l’avertissement, que la source pourrait ajouter aux messages en utilisant
   un plugin on_post.  Les abonnés auraient accès à l’en-tête 'polygone'
-  grâce à l’utilisation d’un plugin on_message, leur permettant de déterminer si l’avertissement
+  grâce à l’utilisation d’un plugin after_accept, leur permettant de déterminer si l’avertissement
   affecté une zone d’intérêt sans télécharger l’intégralité de l’avertissement.
 
 - Une source qui applique la compression aux produits avant de poster, pourrait ajouter un
   en-tête tel que 'uncompressed_size' et 'uncompressed_sum' pour permettre aux
-  abonnés avec un plugin on_message de comparer un fichier qui a été localement
+  abonnés avec un plugin after_accept de comparer un fichier qui a été localement
   non compressé dans un fichier en amont proposé sous forme compressée.
 
 - ajouter Bittorrent, S3, IPFS comme protocoles de transfert (sous-classification Transfer)

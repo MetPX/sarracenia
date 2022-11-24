@@ -9,6 +9,7 @@ nécessaire pour étendre la fonctionnalité de polling.
 
 Protocoles de polling pris en charge en mode natif
 --------------------------------------------------
+
 Prêt à l’emploi, Sarracenia prend en charge l’interrogation des sources HTTP / HTTPS et SFTP / FTP où le nom de fichier
 est ajouté à la fin de l’URL de base. Par exemple, si vous essayez d’accéder les données de niveau de l’eau
 du réservoir du lac Ghost près de Cochrane en Alberta, auxquelles on peut accéder en naviguant jusqu’à
@@ -25,8 +26,9 @@ pour localiser le fichier et le télécharger.
 
 Extension des protocoles de poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Si la source de données ne respecte pas cette convention (voir `NOAA CO-OPS API`_ et `USGS Instantaneous Values
-Web Service`_ pour des exemples de deux sources de données qui ne le font pas), un module **registered_as**
+
+Si la source de données ne respecte pas cette convention (voir `API NOAA CO-OPS`_ et `Service Web de valeurs instantanées USGS`_
+pour des exemples de deux sources de données qui ne le font pas), un module **registered_as**
 peut être inclus en bas d’un fichier plugin pour définir la liste des protocoles en cours
 d’extension ou d’implémentation ::
 
@@ -37,8 +39,10 @@ Ca surchargerait alors la méthode de transfert et utiliserait celle décrite da
 
 Exemples d’intégration d’API dans des plugins
 ---------------------------------------------
+
 API NOAA CO-OPS
 ~~~~~~~~~~~~~~~
+
 Le département des marées et des courants de National Oceanic and Atmospheric Administration publie son
 programme coopératif données d’observations et de prédictions de stations via un service Web GET RESTful,
 disponible à l’adresse `the NOAA Tides et le site Web de Currents <https://tidesandcurrents.noaa.gov/api/>`_.
@@ -51,16 +55,16 @@ que la source de données maintienne son accord). Pour télécharger ce nouveau 
 à un sr_subscribe au même échange sur lequel il a été annoncé, et il récupérerait l’URL, qu’un *do_download*
 plugin pourrait alors prendre et télécharger. Un exemple de plugin de poll qui saisit toute la température et le niveau d’eau
 de la dernière heure de toutes les stations CO-OPS et les publient, sont incluses sous *plugins* comme
-`poll_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_noaa.py>`_.
+`poll_noaa.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py>`_.
 
 Un plugin *do_download* qui correspond à une une instance sarra pour télécharger ce fichier est inclus
-comme `download_noaa.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_noaa.py>`_.
+comme `download_noaa.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py>`_.
 Des exemples de configurations pour sr_poll et sr_subscribe sont inclus sous
-*exemples*, nommés `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollnoaa.conf>`_
-et `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subnoaa.conf>`_.
+*exemples*, nommés `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollnoaa.conf>`_
+et `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subnoaa.conf>`_.
 Pour exécuter, ajoutez à la fois des plugins et des configurations à l’aide de l’action :code:`add`, modifiez les
-variables appropriées dans la config (le flowbroker, et la destination entre autres. Si vous exécutez à partir
-d’un serveur RabbitMQ local, de la documentation sous `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/master/doc/Dev.rst>`_
+variables appropriées dans la config (le flowbroker, et la pollingUrl entre autres. Si vous exécutez à partir
+d’un serveur RabbitMQ local, de la documentation sous `Contibution/Dev.rst <../Contribution/Développement.html>`_
 sur la façon de configurer le serveur peut être utile). Si tout a été configuré correctement, la sortie doit
 ressemblez à quelque chose comme ceci::
 
@@ -168,11 +172,11 @@ Chaque demande est renvoyée avec un message d’état confirmant s’il s’agi
 ensuite vérifier que le message d’état est correct avant de publier le message annonçant de nouvelles données sur l’échange.
 Un plugin *do_download* prend ces paramètres passés dans le message, forme une requête SOAP avec eux, et
 extrait les données/les enregistre dans un fichier. Des exemples de plugins qui effectuent ces deux étapes peuvent être trouvés sous
-*plugins*, nommés `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_shc_soap.py>`_
-et `download_shc_soap.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_shc_soap.py>`_.
+*plugins*, nommés `poll_shc_soap.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_shc_soap.py>`_
+et `download_shc_soap.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_shc_soap.py>`_.
 Des exemples de configurations pour l’exécution des deux sont inclus sous *exemples*, nommés
-`pollsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollsoapshc.conf>`_ et
-`subsoapshc.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subsoapshc.conf>`_. 
+`pollsoapshc.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollsoapshc.conf>`_ et
+`subsoapshc.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subsoapshc.conf>`_. 
 
 Service Web de valeurs instantanées USGS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +195,7 @@ Les plugins pour n’importe quel service Web GET peuvent être généralisés p
 utilisés pour l’API NOAA CO-OPS peuvent également être réutilisés dans ce contexte. Par défaut, les ID de station
 à transmettre sont différents, ainsi que le méthode de les passer, de sorte que le code de plug-in qui détermine les
 ID de station à utiliser diffère, mais la méthode conceptuellement, c’est toujours la même chose. Vous transmettez
-une version généralisée de l’URL comme destination dans la config, par exemple
+une version généralisée de l’URL comme pollingUrl dans la config, par exemple
  https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0}&period=PT3H&parameterCd=00060,00065,00011
 
 et dans le plugin, vous remplaceriez le '{0}' (Python rend cela facile avec le formatage de chaîne) par les sites qui
@@ -205,10 +209,10 @@ groupes de données de stations en fonction du nombre passé (cela réduit les r
 la collecte de données en cas de collecte en bloc).
 
 Pour exécuter cet exemple, les configs et les plugins se trouvent sous *plugins*
-(`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/poll_usgs.py>`_ 
-et `download_usgs.py <https://github.com/MetPX/sarracenia/blob/master/sarra/plugins/download_usgs.py>`_)
-et *examples* (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/poll/pollusgs.conf>`_
-et `subusgs.conf <https://github.com/MetPX/sarracenia/blob/master/sarra/examples/subscribe/subusgs.conf>`_).
+(`poll_usgs.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_usgs.py>`_ 
+et `download_usgs.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_usgs.py>`_)
+et *examples* (`pollusgs.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollusgs.conf>`_
+et `subusgs.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subusgs.conf>`_).
 
 Cas d'utilisation
 -----------------

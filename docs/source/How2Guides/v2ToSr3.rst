@@ -11,11 +11,18 @@ Sarracenia version 3.x (metpx-sr3)
 .. warning:: If you are new to Sarracenia, and have no experience or need to look at v2 plugins,
    don't read this. it will just confuse you. **This guide is for those who need to take existing
    v2 plugins and port them to Sr3.**  You are better off getting a fresh look by looking at the
-   `jupyter notebook examples <../Tutorials>`_ which provide an introduction to v3 without
+   `jupyter notebook examples <../Tutorials>`_ which provide an introduction to sr3 without
    the confusing references to v2.
    
-The `jupyter notebook examples <../Tutorials>`_ are probably a good pre-requisite for everyone,
-to understand how Sr3 plugins work, before trying to port v2 ones.
+.. warning:: Even if you actually need to port v2 plugins to sr3, you still should likely be
+   familiar with sr3 plugins before attempting to port one. Resources for that:
+
+   `writing Sarra Plugins <../Explanation/SarraPluginDev.html>`_
+   
+    Another resource is the `jupyter notebook examples <../Tutorials>`_ 
+
+    The material here describes how v2 plugins worked in detail, without necessarily
+    describing sr3 ones. Some knowledge of sr3 callback's is necessary.
 
 `Sample Sr3 plugin <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
 
@@ -91,9 +98,9 @@ Examples of things that should work:
   to v3 equivalents, ie:
 
   ========================== ===============
-  v2 Option                  v3 Option
+  v2 Option                  sr3 Option
   ========================== ===============
-  accept_scp_threshold       accel_threshold
+  accept_scp_threshold       accelThreshold
   heartbeat                  housekeeping
   chmod_log                  permLog
   loglevel                   logLevel
@@ -136,12 +143,14 @@ For this shorthand to work there should be a file named <pluginName>.py somewher
 PYTHONPATH (~/.config/plugins is added for convenience.) and that python source file needs
 to have a class <PluginName> declared in it (same as the file name but first letter capitalized.)
 If you need to name it differently there is a longer form that allows one to violate the
-convention in v3::
+convention::
 
   flowCallback <pluginName>.MyFavouriteClass
 
-the individual routine plugin declarations on_message, on_file, etc... are not a way of
-doing things in v3. You declare callbacks, and have them contain the entry points you need.
+This is equivalent to *import <pluginName>* followed by instantiating and instance of
+the *<pluginName>.MyFavoriteClass()* so that the entry points get called at the right time.
+The individual routine plugin declarations on_message, on_file, etc... are not a way of
+doing things in v3. in v3 callbacks are declared, and they contain the entry points you need.
 
 * DESTFNSCRIPT work similar in v3 to v2, but the API is made to match v3 flowCallbacks,
 the new routines, one returns the new filename as output, instead of modifying a field
@@ -229,6 +238,15 @@ In general, v3 plugins:
   
              :%s/parent.logger/logger/g
 
+* in v2, **parent** is a mess.  The *self* object varied depending on which entry points were 
+  called. For example, *self* in __init__ is Not the same as *self* in on_message. As a result, all state
+  is stored in parent. the parent object contained options, and settings, and instance
+  variables. 
+ 
+  For actual attributes, sr3 now operates the way python programmers expect: self, is
+  the same self, in __init__() and all the other entry points, so one can set state
+  for the plugin using self.x attributes in the the plugin code.
+
 * v3 plugins *have options as an argument to the __init__(self, options): routine* rather
   than in v2 where they were in the parent object. By convention, in most modules the 
   __init__ function includes a::
@@ -236,27 +254,122 @@ In general, v3 plugins:
        self.o = options
        self.o.add_option('OptionName', Type, DefaultValue)
        
-  .. Tip:: In VI you can use the global replace::
+  .. Tip:: In vi you can use the global replace::
   
              :%s/parent/self.o/g
 
+* v2 options are all lists, sr3 options are typed, and default type is str.
+  in v2 you will see::
 
-* **you can see what options are active by starting a component with the 'show' command** ::
+          parent.option[0] 
 
-      sr3 show subscribe/myconf
+  This shows up because one needs to extract the first value given from the list.
+  If the option type is not list, should become::
+
+          self.o.option
+
+  This happens often.  
+
+* you can see what options are active by starting a component with the 'show' command**::
+
+          sr3 show subscribe/myconf
 
   these settings can be accessed from self.o
 
-* In sr3 settings, **look for replacement of many underscores with camelCase** as per WMO standardization.
-  the exception being post\_  where the underscore seems to better match intent.  so:
+
+* In sr3 settings, **look for replacement of many underscores with camelCase.** 
+  Underscore is now reserved for cases where it represents a grouping of options, or 
+  options related to a given class. For example, post\_  settings retained the first underscore, but not the rest.  so:
 
   *  custom_setting_thing -> customSettingThing
   *  post_base_dir -> post_baseDir
   *  post_broker is unchanged. 
   *  post_base_url -> post_baseUrl
 
-* In v3 **notification messages are now python dictionaries** , so a v2 `msg.relpath` becomes `msg['relPath']` in v3.
-  v3 notification messages, as dictionaries are the default internal representation.
+  for example, in a v2 plugin, it would be parent.post_base_url, in v3, the same setting would be self.o.post_baseUrl.
+  See `Upgrading <Upgrading.html>` for a list of equivalent options.
+  See `sr3_option(7) <../Reference/sr3_options.7.html>` for reference information on each option.
+
+* In v2, *parent.msg* stored the messages, with some fields as built-in attributes, and others as headers.
+  In v3 **notification messages are now python dictionaries** , so a v2 `msg.relpath` becomes `msg['relPath']` in v3.
+  
+  rather than being passed via parent, there is a *worklist* option passed to those plugin entry points that manipulate
+  messages.  for example, an *on_message(self,parent)* in a v2 plugin becomes an *after_accept(self,worklist)* in sr3.
+  the worklist.incoming contains all the messages that have passed accept/reject filtering, and will be processed
+  (for download, send, or post) so the logic will look like::
+
+     for msg in worklist.incoming:
+         do the same logic as in the v2 plugin. 
+         for one message at a time in the loop.
+         
+  mappings of all the entry points are described in the `Mapping v2 Entry Points to v3 Callbacks`_
+  section later in this document.
+
+  Each v3 notification message acts like a python dictionary.  Below is a table mapping 
+  fields from the v2 sarra representation to the one in sr3:
+
+  ================ =================== ==========================================================
+  v2               sr3                 Notes
+  ================ =================== ==========================================================
+  msg.pubtime      msg['pubTime']      when the message was originally published (standard field)
+  msg.baseurl      msg['baseUrl']      root of the url tree of posted file (standard field)
+  msg.relpath      msg['relPath']      relative path concatenated to baseUrl for canonical path
+  *no equivalent*  msg['retPath']      opaque retrieval path to override canonical one.
+  msg.notice       no equivalent       calculated from other field on v2 write
+  msg.new_subtopic msg['new_subtopic'] avoid in sr3... calculated from relPath
+  msg.new_dir      msg['new_dir']      name of the directory where files will be written
+  msg.new_file     msg['new_file']     name of the file to be writen in new_dir
+  msg.headers      msg                 the in memory sr3 message is a dict, includes headers
+  msg.headers['x'] msg['x']            headers are dict items.
+  msg.message_ttl  msg['message_ttl']  same setting.
+  msg.exchange     msg['exchange']     the channel on which the message was received.
+  msg.logger       logger              pythonic logging setup describe above.
+  msg.parts        msg['size']         just omit, use sarracenia.Message constructor.
+  msg.sumflg       msg['integrity']    just omit, use sarracenia.Message constructor.
+  parent.msg       worklist.incoming   v2 is 1 message at a time, sr3 has lists or messages.
+  ================ =================== ==========================================================
+
+* the pubTime, baseUrl, relPath, retPath, size, integrity, are all standard message fields
+  better described in `sr_post(7) <../Reference/sr_post.7.html>`_
+
+* if one needs to store per message state, then one can declare temporary fields in the message,
+  that will not be forwarded when the message is published. There is a set field *msg['_deleteOnPost']*  ::
+
+      msg['my_new_field'] = my_new_value
+      msg['_deleteOnPost'] |= set(['my_new_field'])
+
+  Sarracenia will delete the given field from the message before posting for downstream consumers.
+
+* in older versions of v2 (<2.17), there was msg.local_file, and msg.remote_file, some old plugins may contain
+  that. They represented destination in the subscribe and sender cases, respectively.
+  both were replaced by new_dir concatenated with new_file to cover both cases.
+  separation of the directory and file name was considered an improvement.
+
+* in v2 *parent* was the sr_subscribe object, which had all of it's instance variables, none of which
+  were intended for use by plugins. In plugin __init__() functions, they may be referred to 
+  as *self* rather than *parent*:
+
+  ====================================== ===================================== ==================================================
+  v2                                     sr3                                   Notes
+  ====================================== ===================================== ==================================================
+  parent.cache                           *none*                                instance of the duplicate suppression cache.
+  parent.consumer                        *none*                                instance of sr_consumer class ...
+  parent.currentDir                      msg['new_dir'] ?                      equivalent depends on purpose of use.
+  parent.destination                     self.o.pollUrl                        in a poll
+  parent.destination                     self.o.remoteUrl                      in a sender
+  parent.masks                           *none*                                internals of sr_subscribe class.
+  parent.program_name                    self.o.program_name                   name of the program being run e.g. 'sr_subscribe'
+  parent.publisher                       *none*                                instance of Publisher class from sr_amqp.py
+  parent.post_hc                         *none*                                instance of HostConnect class from sr_amqp.py
+  parent.retry                           *none*                                instance of the retry queue.
+  parent.msg.set_notice(b,r)             msg['baseUrl'] = b, msg['relPath']=r  v2 uses v2 messages internally, sr3 uses... v3.
+  parent.user_cache_dir                  self.o.cfg_run_dir                    actually one level down... new place is better.
+  ====================================== ===================================== ==================================================
+
+  There are dozens (hundreds?) of these attributes that were intended as internal data to the
+  sr_subscribe class, and should not really be available to plugins. 
+  Most of them don't show up, but if a developer found someting, it might be present.
+  Hard to predict what a plugin developer using one of these values intended.
 
 * In v3 **plugins operate on batches of notification messages**. v2 *on_message* gets parent as a parameter,
   and the notification message is in parent.message. In v3, *after_accept* has worklist as an
@@ -287,8 +400,8 @@ In general, v3 plugins:
   .. Note:: on_file plugins that become after_work plugins should be placed in the
             /flowcb/after_work directory
   
-* v3 has **no Need to set notification message fields in plugins**
-  in v2, one would need to set partstr, and sumstr for v2 notification messages in plugins. 
+* v3 has **Must not set notification message fields in plugins**
+  in v2, one would need to set **partstr**, and **sumstr** for v2 notification messages in plugins. 
   This required an excessive understanding of notification message formats, and meant that 
   changing notification message formats required modifying plugins (v03 notification message format is
   not supported by most v2 plugins, for example). To build a notification message from a 
@@ -298,7 +411,12 @@ In general, v3 plugins:
 
      m = sarracenia.Message.fromFileData(sample_fileName, self.o, os.stat(sample_fileName) )
 
-  just look at  `do_poll -> poll`_
+  Setting **partstr** and **sumstr** are specific to v2 messages, and will not be interpreted 
+  properly in sr3.  The encoding of this information is completely different in v03 messages,
+  and sr3 supports alternate message encodings which may be different again. Setting of these
+  fields manually is actively counter-productive.
+
+  For an example of using the message builder, look at  `do_poll -> poll`_
 
 
 * v3 plugins **rarely, involve subclassing of moth or transfer classes.**

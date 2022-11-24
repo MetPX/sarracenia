@@ -163,7 +163,7 @@ Notez que les paramètres de *flatten* peuvent être modifiés entre les options
 Substitutions Compatible Sundew
 -------------------------------
 
-Dans `MetPX Sundew <../Explanation/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
+Dans `MetPX Sundew <../Explication/Glossary.html#sundew>`_, le format de la nomination de fichier est beaucoup plus
 stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
 Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
 dénomination des fichiers de WMO actuellement approuvée, et est utilisé strictement comme format interne. Les fichiers sont
@@ -267,7 +267,7 @@ accelXxxCommand
 On peut spécifier d’autres fichiers binaires pour les téléchargeurs pour des cas particuliers,
 
 +-----------------------------------+--------------------------------+
-|  Option                           |  Valeur par Défaut                  |
+|  Option                           |  Valeur par Défaut             |
 +-----------------------------------+--------------------------------+
 |  accelWgetCommand                 |  /usr/bin/wget %s -O %d        |
 +-----------------------------------+--------------------------------+
@@ -393,7 +393,7 @@ acceptSizeWrong: <booléen> (défaut: False)
 
 Lorsqu’un fichier est téléchargé et que sa taille ne correspond pas à celle annoncée, il est
 normalement rejeté, comme un échec. Cette option accepte le fichier même avec la mauvaise
-taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en file d’attente, donc
+taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
 le fichier est modifié au moment de sa récupération.
 
 attempts <count> (défaut: 3)
@@ -404,9 +404,9 @@ Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’
 le fichier est immédiatement supprimé.
 
 Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
-des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de file d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la file d’attente AMQP,
-les requêtes se feront avec la file d’attente de "retry".
+des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de fil d’attente
+pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+les requêtes se feront avec la fil d’attente de "retry".
 
 baseDir <chemin> (défaut: /)
 ----------------------------
@@ -459,8 +459,8 @@ optimisé en n’envoyant que les pièces qui ont changé.
 L’option *outlet* permet à la sortie finale d’être autre qu’un poste.
 Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
-Courtier (Broker)
------------------
+Broker
+------
 
 **broker [amqp|mqtt]{s}://<utilisateur>:<mot-de-passe>@<hoteDuCourtier>[:port]/<vhost>**
 
@@ -483,7 +483,7 @@ L’option broker indique à chaque composant quel courtier contacter.
 ::
       (défaut: None et il est obligatoire de le définir )
 
-Une fois connecté à un courtier AMQP, l’utilisateur doit lier une file d’attente
+Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
 
@@ -494,6 +494,54 @@ byteRateMax <size> (défaut: 0)
  en kilo-octets par seconde... ftp,ftps,ou sftp)
 
 **FIXME**: byteRateMax... uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d'annonce aussi ?
+
+callback <SpéficationDeClass>
+-----------------------------
+
+La plupart des traitements personnalisables ou de la logique "plugin" sont implémentés à l'aide de la classe de flowCallback ("rappel de flux.") À différents stades du traitement des messages de notification, les classes de flowCallback définissent
+points d'entrée qui correspondent à ce point de traitement. pour chaque point de ce type dans le traitement,
+il existe une liste de routines de rappel de flux à appeler.
+
+ `flowCallback Reference (anglais) <../../Reference/flowcb.html>`_
+
+Le *SpécificationDeClass* est similaire à une instruction *import* de python. 
+Il utilise le chemin de recherche standard pour les modules python, et inclut également ~/.config/sr3/plugins. 
+Il y a un raccourci pour faire usage plus court pour les cas courants. par exemple::
+
+  callback log
+
+Sarracenia tentera d'abord de faire précéder *log* de *sarracenia.flowcb.log* puis
+instancier l'instance de rappel en tant qu'élément de la classe sarracenia.flowcb.log.Log. 
+S'il ne trouve pas une telle classe, alors il tentera de trouver un nom de classe *log*, et instanciera un
+objet *log.Log.*
+
+Pour plus de détails sur ce genre de recherche, consulter (en anglais) 
+`FlowCallback load_library <../../Reference/flowcb.html#sarracenia.flowcb.load_library>`_
+
+callback_prepend <SpécificationDeClass>
+---------------------------------------
+
+Identique à *callback* mais rajoute la class au début de la liste (pour éxecuter avant les point
+d´entrée des autres classes FlowCB)
+
+
+dangerWillRobinson (default: omis)
+-------------------------------------
+
+Cette option n'est reconnue qu'en tant qu'option de ligne de commande. Il est spécifié quand une opération 
+aura des effets irréversiblement destructeurs ou peut-être inattendus. par exemple::
+
+   sr3 stop
+
+arrêtera d'exécuter les composants, mais pas ceux qui sont exécutés au premier plan. Arrêter ceux
+peut surprendre les analystes qui les examineront, donc ce n'est pas fait par défaut ::
+
+  sr3 --dangerWillRobinson stop
+
+arrête arrête tous les composants, y compris ceux de premier plan. Un autre exemple serait le *nettoyage*
+action. Cette option supprime les files d'attente et les échanges liés à une configuration, qui peuvent être
+destructeur pour les flux. Par défaut, le nettoyage ne fonctionne que sur une seule configuration à la fois.
+On peut spécifier cette option pour faire plus de ravages.
 
 
 declare
@@ -600,7 +648,7 @@ Se définit a False par défaut dans les composants de shovel ou de winnow.
 
 
 dry_run <flag> (défaut: False)
--------------------------------
+------------------------------
 
 Exécuter en mode simulation par rapport aux transferts de fichiers. Se connecte toujours à un courtier et télécharge et traite
 les messages d´annonce, mais les transferts de fichiers corréspondants sont désactivés, à utiliser lors du test d'un expéditeur 
@@ -610,9 +658,9 @@ si l'expéditeur est configuré pour envoyer les mêmes fichiers que l'ancien (i
 durable <flag> (défaut: True)
 -----------------------------
 
-L’option AMQP **durable**, sur les déclarations de file d’attente. Si la valeur est True,
-le courtier conservera la file d’attente lors des redémarrages du courtier.
-Cela signifie que la file d’attente est sur le disque si le courtier est redémarré.
+L’option AMQP **durable**, sur les déclarations de fil d’attente. Si la valeur est True,
+le courtier conservera la fil d’attente lors des redémarrages du courtier.
+Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.
 
 
 fileEvents <évènement, évènement,...>
@@ -626,7 +674,7 @@ de modification ou de suppression.
 Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
 comment les traiter. S’il n’est pas défini, aucun événement de lien symbolique sera publié.
 
-.. remarque::
+.. note::
    déplacer ou renommer des événements entraîne un modèle spécial de double publication, avec une publication en
    utilisant l'ancien nom et définissant le champ *newname*, et un deuxième message d'annonce avec le nouveau nom, et un champ *oldname*.
    Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déclencher un téléchargement lorsque cela est possible.
@@ -635,7 +683,7 @@ FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de
 
 
 exchange <nom> (défaut: xpublic) et exchangeSuffix
----------------------------------------------------
+--------------------------------------------------
 
 La norme pour les pompes de données est d’utiliser l’échange *xpublic*. Les utilisateurs peuvent établir un
 flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
@@ -650,17 +698,17 @@ exchangeDeclare <flag>
 
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles
 sont à jour. Si l’échange existe déjà, cet indicateur peut être défini a False,
-donc aucune tentative d’échange de la file d’attente n’est faite, ou il s’agit de liaisons.
+donc aucune tentative d’échange de la fil d’attente n’est faite, ou il s’agit de liaisons.
 Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs de déclarer leurs échanges.
 
 
 expire <duration> (défaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)
 ------------------------------------------------------------------------
-L'option *expire* est exprimée sous forme d'une duration... ça fixe combien de temps une file d’attente devrait
+L'option *expire* est exprimée sous forme d'une duration... ça fixe combien de temps une fil d’attente devrait
 vivre sans connexions.
 
 Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,w est utilisés, l’intervalle est en minutes,
-heures, jours ou semaines respectivement. Après l’expiration de la file d’attente, le contenu est supprimé et
+heures, jours ou semaines respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
 des différences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
 1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
 l’abonné est sensé s’arrêter et ne pas subir de perte de données.
@@ -735,6 +783,24 @@ entraînerait la création du chemin d’accès au fichier::
 
  /monrépertoirelocal/model_gem_global-25km-grib2-lat_lon-12-015-CMC_glb_TMP_TGL_2_latlon.24x.24_2013121612_P015.grib2
 
+
+flowMain (défaut: None)
+-----------------------
+
+Par défaut, un flux exécutera la classe sarracenia.flow.Flow, qui implémente l'algorithme Flow de manière générique.
+La version générique ne transfère pas de données, crée et manipule uniquement des messages. Cela convient pour
+pelle, vanner, poster et surveiller les composants, mais les composants qui transfèrent ou transforment les données ont besoin
+pour définir un comportement supplémentaire en sous-classant Flow. Exemples : sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.
+
+L'option **flowMain** permet à une configuration de flux d'exécuter une sous-classe de flux, au lieu du parent par défaut
+classer. Exemple::
+
+   flowMain subscribe
+
+Dans un fichier de configuration de flux générique, le flux sera configuré pour agir en tant que composant d'abonné (subscribe.)
+On peut créer des composants personnalisés en sous-classant Flow et en utilisant la directive **flowMain** pour invoquer
+la nouvelle sous-classe.
+
 follow_symlinks <flag>
 ----------------------
 
@@ -745,7 +811,7 @@ surveillé par « watch ». Si *follow_symlinks* est false, alors aucune action 
 lien symbolique est prise.
 
 force_polling <flag> (défaut: False)
--------------------------------------
+------------------------------------
 
 Par défaut, « watch » sélectionne une méthode optimale (dépendante du système d’exploitation) pour regarder un
 répertoire.
@@ -758,7 +824,7 @@ de « polling » plus fiable et portable.  Le mot-clé *force_polling* oblige «
 la méthode de « polling » malgré le fait qu'il y ait une meilleur option de disponible.
 
 Pour une discussion détaillée, voir:
- `Detecting File Changes <../Explanation/DetectFileHasChanged.html>`_
+ `Detecting File Changes <../Explication/DetectFileHasChanged.html>`_
 
 REMARQUE::
 
@@ -782,7 +848,7 @@ avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être ut
 taille des messages d'annonce a des impacts importants sur la performance.
 
 housekeeping <intervalle> (défaut: 300 secondes)
-----------------------------------------------
+------------------------------------------------
 
 L’option **housekeeping** définit la fréquence d’exécution du traitement périodique tel que déterminé par
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
@@ -794,12 +860,12 @@ inclure une autre configuration dans cette configuration.
 
 
 inflight <string> (défaut: .tmp ou NONE si post_broker est définit)
-------------------------------------------------------------
+-------------------------------------------------------------------
 
 L’option **inflight** définit comment ignorer les fichiers lorsqu’ils sont transférés
 ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
 transferts peu fiables, et des précautions doivent être prises.  Voir
-`Delivery Completion <../Explanation/FileCompletion.html>`_ pour plus de détails.
+`Delivery Completion <../Explication/FileCompletion.html>`_ pour plus de détails.
 
 La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer un nom temporaire pendant
 le transfert.  Si **inflight** est défini a **.**, alors il s’agit d’un préfixe pour se conformer à
@@ -851,7 +917,7 @@ inlineOnly
 ignorer les messages d´annonce si les données ne sont pas inline.
 
 inplace <flag> (défaut: On)
-----------------------------
+---------------------------
 
 Les fichiers volumineux peuvent être envoyés en plusieurs parties, plutôt que de tout en même temps.
 Lors du téléchargement, si **inplace** est True, ces parties seront rajoutées au fichier
@@ -878,17 +944,17 @@ le répertoire ~/.cache/sarra/sender/nomDeConfig ::
   A .sender_nomDeConfig.state         est créé, contenant le nombre d’instances.
   A .sender_nomDeConfig_$instance.pid est créé, contenant le PID du processus $instance .
 
-Dans le répertoire ~/.cache/sarra/log::
+Dans le répertoire ~/.cache/sarra/log:
 
   Un .sender_nomDeConfig_$instance.log  est créé en tant que journal du processus $instance.
 
-.. Remarque::
+.. NOTE::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente
-  prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une file d’attente qu'on
-  n’accède pas et a trop de fichiers (définis par l’implémentation) en file d’attente seront détruits.
+  prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une fil d’attente qu'on
+  n’accède pas et a trop de fichiers (définis par l’implémentation) en fil d’attente seront détruits.
   Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
-  perte de notifications. Une file d’attente qu'on n’accède pas pendant une longue période
+  perte de notifications. Une fil d’attente qu'on n’accède pas pendant une longue période
   (dépendant de l’implémentation) sera détruite.
 
 integrity <string>
@@ -919,7 +985,7 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 
 
 logEvents ( défaut: after_accept,after_work,on_housekeeping )
---------------------------------------------------------------
+-------------------------------------------------------------
 
 émettre des messages de journal standard au moment approprié du traitement des messages.
 autres valeurs : on_start, on_stop, post, gather, ... etc...
@@ -987,11 +1053,11 @@ un message d´annonce sera produit :
 message_ttl <duration>  (défaut: None)
 --------------------------------------
 
-L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la file d’attente.
-Après ce temps, le message d´annonce est retiré de la file d’attente par le courtier.
+L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
+Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.
 
 mirror <flag> (défaut: off)
-----------------------------
+---------------------------
 
 L’option **miroir** peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
 Si l'option est défini a **True** le répertoire donné par l’option **directory** sera le nom de base
@@ -1041,7 +1107,7 @@ Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition
 mesure qu’un fichier grandit.
 
 **Notez que le stockage de suppression de doublons est local à chaque instance**. Lorsqu’un nombre N d'instances partagent
-une file d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
+une fil d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
 et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
 **Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
 Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
@@ -1070,7 +1136,7 @@ ou:
  callback_prepend nodupe.data
 
 
-Pour plus d´information: `Supprimer les doublons<../Explanation/SupprimerLesDoublons.html>`_
+Pour plus d´information: `Supprimer les doublons <../Explication/SupprimerLesDoublons.html>`_
 
 nodupe_fileAgeMax
 -----------------
@@ -1105,7 +1171,7 @@ l'afficher à un courtier. Les valeurs d’argument valides sont les suivantes :
 **json:**
 
   écrire chaque message d´annonce en sortie standard, un par ligne dans le même format json que celui utilisé pour
-  l'enregistrement et la restauration de la file d’attente par l’implémentation python.
+  l'enregistrement et la restauration de la fil d’attente par l’implémentation python.
 
 **url:**
 
@@ -1164,8 +1230,17 @@ qu'un dossier puis être accepté.
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
+pollUrl
+-------
+
+Spécification de ressources d´une serveur à sonder
+Voir `Guide de ligne de commande <../Explication/GuideLigneDeCommande.html>`_ pour plus 
+d´informations.
+
+
+
 post_baseDir <chemin>
--------------------
+---------------------
 
 L’option *post_baseDir* fournit le chemin d’accès au répertoire qui, lorsqu’il est combiné (ou trouvé)
 dans le *path* donné, donne le chemin absolu local au fichier de données à publier.
@@ -1188,7 +1263,7 @@ post_broker <url>
 l’URL du courtier pour publier des messages d'annonce. Voir `broker <#broker>`_ pour plus de détails.
 
 post_exchange <name> (défaut: xpublic)
----------------------------------------
+--------------------------------------
 
 FIXME: L’option **post_exchange** est définie sous quelle échange la nouvelle notification
 sera affiché. Lors de la publication sur une pompe en tant qu’administrateur, un
@@ -1200,7 +1275,7 @@ pour modifier les messages d'annonce générés à propos des fichiers avant leu
 
 
 post_exchangeSplit <count> (défaut: 0)
----------------------------------------
+--------------------------------------
 
 L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
 de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
@@ -1221,7 +1296,7 @@ Lors du démarrage de watch, on peut soit demander au programme de publier tous 
 surveillés, ou pas.
 
 post_topicPrefix (défaut: topicPrefix)
----------------------------------------
+--------------------------------------
 
 Rajouter au subtopic pour former une hiérarchie complète des sujets.
 Cette option s’applique à la publication.  Elle indique la version des messages d'annonce publiés
@@ -1229,7 +1304,7 @@ dans les subtopics. (v03 fait référence à `<sr3_post.7.html>`_) Cette valeur 
 a été reçue.
 
 prefetch <N> (défaut: 1)
--------------------------
+------------------------
 
 L’option **prefetch** définit le nombre de messages d'annonce à récupérer en même temps.
 Lorsque plusieurs instances sont en cours d’exécution et que prefetch est égale à 4, chaque instance obtient jusqu’à quatre
@@ -1242,7 +1317,7 @@ queueName|queue|queue_name|qn
 
 * queueName <nom>
 
-Par défaut, les composants créent un nom de file d’attente qui doit être unique. Par défaut, le
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
 queue_name crée par les composants suit la convention suivante :
 
    **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<aléatoire>.<aléatoire>**
@@ -1251,7 +1326,7 @@ Ou:
 
 * *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
 
-* *nomDuProgramme* est le composant qui utilise la file d’attente (par exemple *subscribe* ),
+* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
 
 * *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
 
@@ -1260,22 +1335,22 @@ Ou:
 
 Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
 
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même file d’attente, pour faire plusieurs
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
 taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
 queue_name est écrit à :
 
  ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
 
 Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même file d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
+même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
 de partager le travail sur plusieurs nœuds.
 
 queueBind
 ---------
 
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
-Si la file d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
-ne soit effectuée pour file d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
+Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
+ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.
 
 queueDeclare <flag> (défaut: True)
@@ -1310,6 +1385,12 @@ Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
 par bloc parce que l’option *blocksize* a été définie, il y a une
 reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
 
+remoteUrl <url>
+---------------
+
+Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
+
 rename <chemin>
 ---------------
 
@@ -1338,15 +1419,15 @@ informations statistiques. Définissez cette option a **False**, pour empêcher 
 reset <flag> (défaut: False)
 ----------------------------
 
-Lorsque **reset** est défini et qu’un composant est (re)démarré, sa file d’attente est
-supprimé (si elle existe déjà) et recréé en fonction des options de file d’attente.
+Lorsque **reset** est défini et qu’un composant est (re)démarré, sa fil d’attente est
+supprimé (si elle existe déjà) et recréé en fonction des options de fil d’attente.
 C’est à ce moment-là qu’une option de courtier est modifiée, car le courtier refusera
-l’accès à une file d’attente déclarée avec des options différentes de celles qui étaient
-défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une file d’attente
+l’accès à une fil d’attente déclarée avec des options différentes de celles qui étaient
+défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une fil d’attente
 lorsqu’un récepteur a été fermé pendant une longue période de temps. Si la suppression des doublons est active, alors
 la cache de réception est également supprimé.
 
-Le protocole AMQP définit d’autres options de file d’attente qui ne sont pas exposées
+Le protocole AMQP définit d’autres options de fil d’attente qui ne sont pas exposées
 via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.
 
 retryEmptyBeforeExit: <booléen> (défaut: False)
@@ -1363,7 +1444,7 @@ retry_ttl <duration> (défaut: identique à expire)
 -------------------------------------------------
 
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
-un fichier avant qu’il ne soit  rejeté de la file d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
+un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
 sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
@@ -1499,7 +1580,8 @@ Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subto
 parcourir le site Web **http://dd.weather.gc.ca** et noter tous les répertoires
 d’intérêt.  Pour chaque arborescence de répertoires d’intérêt, il faut écrire une option de **subtopic**
 comme cela:
- **subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#**
+
+**subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#**
 
 ::
 
@@ -1529,7 +1611,7 @@ On peut utiliser plusieurs liaisons à plusieurs échanges comme cela::
 Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
 Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
 clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
-On peut désactiver la liaison de file d’attente comme cela::
+On peut désactiver la liaison de fil d’attente comme cela::
 
   subtopic None
 

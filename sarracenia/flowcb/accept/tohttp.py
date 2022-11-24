@@ -26,7 +26,6 @@ class ToHttp(FlowCB):
         self.o.hurlre = re.compile('file:/' + self.o.ldocroot)
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             logger.debug("msg_2http input: urlstr: %s" % message['urlstr'])
             message['urlstr'] = self.o.hurlre.sub(message['savedurl'],
@@ -35,5 +34,3 @@ class ToHttp(FlowCB):
             message['set_notice_url'](message['url'])
             logger.debug("msg_2http baseDir=%s " % (self.o.baseDir))
             logger.info("msg_2http output: urlstr: %s" % message['urlstr'])
-            new_incoming.append(message)
-        worklist.incoming = new_incoming
