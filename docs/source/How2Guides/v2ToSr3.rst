@@ -258,12 +258,24 @@ In general, v3 plugins:
   
              :%s/parent/self.o/g
 
+* v2 options are all lists, sr3 options are typed, and default type is str.
+  in v2 you will see::
+
+          parent.option[0] 
+
+  This shows up because one needs to extract the first value given from the list.
+  If the option type is not list, should become::
+
+          self.o.option
+
+  This happens often.  
 
 * you can see what options are active by starting a component with the 'show' command**::
 
           sr3 show subscribe/myconf
 
   these settings can be accessed from self.o
+
 
 * In sr3 settings, **look for replacement of many underscores with camelCase.** 
   Underscore is now reserved for cases where it represents a grouping of options, or 
@@ -337,19 +349,22 @@ In general, v3 plugins:
   were intended for use by plugins. In plugin __init__() functions, they may be referred to 
   as *self* rather than *parent*:
 
-  ====================== ===================== ==================================================
+  ====================================== ===================================== ==================================================
   v2                     sr3                   Notes
-  ====================== ===================== ==================================================
-  parent.currentDir      msg['new_dir'] ?      equivalent depends on purpose of use.
-  parent.user_cache_dir  self.o.cfg_run_dir    actually one level down... new place is better.
-  parent.masks           *none*                internals of sr_subscribe class.
-  parent.program_name    self.o.program_name   name of the program being run e.g. 'sr_subscribe'
-  parent.consumer        *none*                instance of sr_consumer class ...
-  parent.publisher       *none*                instance of Publisher class from sr_amqp.py
-  parent.post_hc         *none*                instance of HostConnect class from sr_amqp.py
-  parent.cache           *none*                instance of the duplicate suppression cache.
-  parent.retry           *none*                instance of the retry queue.
-  ====================== ===================== ==================================================
+  ====================================== ===================================== ==================================================
+  parent.cache                           *none*                                instance of the duplicate suppression cache.
+  parent.consumer                        *none*                                instance of sr_consumer class ...
+  parent.currentDir                      msg['new_dir'] ?                      equivalent depends on purpose of use.
+  parent.destination                     self.o.pollUrl                        in a poll
+  parent.destination                     self.o.remoteUrl                      in a sender
+  parent.masks                           *none*                                internals of sr_subscribe class.
+  parent.program_name                    self.o.program_name                   name of the program being run e.g. 'sr_subscribe'
+  parent.publisher                       *none*                                instance of Publisher class from sr_amqp.py
+  parent.post_hc                         *none*                                instance of HostConnect class from sr_amqp.py
+  parent.retry                           *none*                                instance of the retry queue.
+  parent.msg.set_notice(b,r)             msg['baseUrl'] = b, msg['relPath']=r  v2 uses v2 messages internally, sr3 uses... v3.
+  parent.user_cache_dir                  self.o.cfg_run_dir                    actually one level down... new place is better.
+  ====================================== ===================================== ==================================================
 
   There are dozens (hundreds?) of these attributes that were intended as internal data to the
   sr_subscribe class, and should not really be available to plugins. 
