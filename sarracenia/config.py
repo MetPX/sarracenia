@@ -163,6 +163,9 @@ convert_to_v3 = {
     },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
+    'on_file': {
+        'file_age' : [ 'callback', 'work.age' ],
+    },
     'on_message': {
         'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
         'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
