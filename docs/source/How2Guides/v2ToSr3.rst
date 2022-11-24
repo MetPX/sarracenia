@@ -100,7 +100,7 @@ Examples of things that should work:
   ========================== ===============
   v2 Option                  sr3 Option
   ========================== ===============
-  accept_scp_threshold       accel_threshold
+  accept_scp_threshold       accelThreshold
   heartbeat                  housekeeping
   chmod_log                  permLog
   loglevel                   logLevel

@@ -263,8 +263,7 @@ def durationToSeconds(str_value, default=None) -> float:
     try:
         duration = float(str_value) * factor
     except:
-        logger.error("durationToSeconds, conversion failed for: %s" %
-                     str_value)
+        logger.error("conversion failed for: %s" % str_value)
         duration = 0.0
 
     return duration
@@ -471,7 +470,7 @@ class Message(dict):
 
         msg = Message()
 
-        #FIXME no variable substitution... o.set_dir_pattern ?
+        #FIXME no variable substitution... o.variableExpansion ?
         if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
             msg['version'] = o.post_topicPrefix[0]
         else:
@@ -632,7 +631,7 @@ class Message(dict):
         relPath = new_dir + '/' + new_file
 
         if options.post_baseUrl:
-            baseUrl_str = options.set_dir_pattern(options.post_baseUrl, msg)
+            baseUrl_str = options.variableExpansion(options.post_baseUrl, msg)
         else:
             if 'baseUrl' in msg:
                 baseUrl_str = msg['baseUrl']
@@ -650,7 +649,7 @@ class Message(dict):
            
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
-            pbd_str = options.set_dir_pattern(options.post_baseDir, msg)
+            pbd_str = options.variableExpansion(options.post_baseDir, msg)
             parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
 
             if relPath.startswith(pbd_str):

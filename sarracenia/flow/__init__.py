@@ -726,7 +726,7 @@ class Flow:
 
         #if self.o.currentDir : new_dir = self.o.currentDir
         if maskDir:
-            new_dir = self.o.set_dir_pattern(maskDir, msg)
+            new_dir = self.o.variableExpansion(maskDir, msg)
         else:
             new_dir = ''
 
@@ -734,7 +734,7 @@ class Flow:
             if new_dir:
                 d = new_dir
             elif self.o.post_baseDir:
-                d = self.o.set_dir_pattern(self.o.post_baseDir, msg)
+                d = self.o.variableExpansion(self.o.post_baseDir, msg)
             else:
                 d = None
 
@@ -749,7 +749,7 @@ class Flow:
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
-        new_dir = self.o.set_dir_pattern(new_dir, msg)
+        new_dir = self.o.variableExpansion(new_dir, msg)
         # resolution of sundew's dirPattern
 
         tfname = filename
@@ -786,7 +786,7 @@ class Flow:
                 continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
-                url = self.o.set_dir_pattern(m['baseUrl'],
+                url = self.o.variableExpansion(m['baseUrl'],
                                              m) + os.sep + m['fileOp']['rename']
                 if 'sundew_extension' in m and url.count(":") < 1:
                     urlToMatch = url + ':' + m['sundew_extension']
@@ -799,7 +799,7 @@ class Flow:
                         oldname_matched = accepting
                         break
 
-            url = self.o.set_dir_pattern(m['baseUrl'],
+            url = self.o.variableExpansion(m['baseUrl'],
                                          m) + os.sep + m['relPath']
             if 'sundew_extension' in m and url.count(":") < 1:
                 urlToMatch = url + ':' + m['sundew_extension']
@@ -1684,7 +1684,7 @@ class Flow:
             return True
 
         if self.o.baseDir:
-            local_path = self.o.set_dir_pattern(self.o.baseDir,
+            local_path = self.o.variableExpansion(self.o.baseDir,
                                                 msg) + '/' + msg['relPath']
         else:
             local_path = '/' + msg['relPath']

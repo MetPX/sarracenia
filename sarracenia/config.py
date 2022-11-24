@@ -1638,7 +1638,7 @@ class Config:
       sundew_* ... 
    """
 
-    def sundew_basename_parts(self, pattern, basename):
+    def _sundew_basename_parts(self, pattern, basename):
         """
         modified from metpx SenderFTP
         """
@@ -1665,7 +1665,7 @@ class Config:
         BN = basename.split(":")
         EN = BN[0].split("_")
 
-        BP = self.sundew_basename_parts(pattern, urlstr)
+        BP = self._sundew_basename_parts(pattern, urlstr)
 
         ndestDir = ""
         DD = destDir.split("/")
@@ -1729,7 +1729,14 @@ class Config:
 
         return defval
 
-    def set_dir_pattern(self, cdir, message=None ):
+    def variableExpansion(self, cdir, message=None ):
+        """
+            replace substitution patterns, variable substitutions as described in
+            https://metpx.github.io/sarracenia/Reference/sr3_options.7.html#variables
+
+            examples:   ${YYYYMMDD-70m} becomes 20221107 assuming that was the current date 70 minutes ago.
+                        environment variables, and built-in settings are replaced also.
+        """
 
         if not '$' in cdir:
             return cdir
@@ -1802,7 +1809,8 @@ class Config:
         # ${YYYY-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 0: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1812,7 +1820,8 @@ class Config:
         # ${MM-[number][time_unit]}
         offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 1: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1822,7 +1831,8 @@ class Config:
         # ${JJJ-[number][time_unit]}
         offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 2: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
 
             epoch = time.mktime(time.gmtime()) - seconds
@@ -1832,11 +1842,12 @@ class Config:
         # ${YYYYMMDD-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)
         if offset_check:
-            seconds = self.duration_from_str(''.join(offset_check.group(1, 2)),
+            logger.info( f"offset 3: {offset_check.group(1,2)}" )
+            seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
                                              's')
-
             epoch = time.mktime(time.gmtime()) - seconds
             YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch))
+            logger.info( f"seconds: {seconds} YYYYMMDD {YYYYMMDD}" )
             new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
 
         new_dir = self._varsub(new_dir)
