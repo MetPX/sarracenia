@@ -190,6 +190,14 @@ on their __init__() routines::
 The example above defines an "accel\_wget\_command" option 
 as being of string type, with default value _/usr/bin/wget\_ .
 
+Other useful methods in the sarracenia.config.Config class:
+
+* variableExpansion( value, Message=None) ... to expand patterns such as ${YYYYMMDD-5m} in configuration files.
+  one may want to evaluate these expansions at different times in processing, depending on the purpose
+  of the user defined options.
+
+full list here: https://metpx.github.io/sarracenia/Reference/code.html#sarracenia.config.Config
+
 
 Hierarchical Settings
 ~~~~~~~~~~~~~~~~~~~~~
