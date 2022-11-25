@@ -531,7 +531,7 @@ class Poll(FlowCB):
             path = path.replace('/', '_')
             lsPath = self.o.cfg_run_dir + os.sep + 'ls' + path
 
-            currentDir = self.o.set_dir_pattern(destDir)
+            currentDir = self.o.variableExpansion(destDir)
 
             if currentDir == '': currentDir = destDir
             msgs.extend(self.poll_directory(currentDir, lsPath))

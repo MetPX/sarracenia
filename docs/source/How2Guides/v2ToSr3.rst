@@ -100,7 +100,7 @@ Examples of things that should work:
   ========================== ===============
   v2 Option                  sr3 Option
   ========================== ===============
-  accept_scp_threshold       accel_threshold
+  accept_scp_threshold       accelThreshold
   heartbeat                  housekeeping
   chmod_log                  permLog
   loglevel                   logLevel
@@ -350,7 +350,7 @@ In general, v3 plugins:
   as *self* rather than *parent*:
 
   ====================================== ===================================== ==================================================
-  v2                     sr3                   Notes
+  v2                                     sr3                                   Notes
   ====================================== ===================================== ==================================================
   parent.cache                           *none*                                instance of the duplicate suppression cache.
   parent.consumer                        *none*                                instance of sr_consumer class ...

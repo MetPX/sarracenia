@@ -118,7 +118,7 @@ built-in ones:
 **${YYYY-1D}      current year   - 1 day**
 **${MM-1D}        current month  - 1 day**
 **${JJJ-1D}       current julian - 1 day**
-**${YYYYMMDD-1D}  current date   - 1 day**
+**${YYYYMMDD-70m}  current date   - 70 minutes**
 
 ::
 
