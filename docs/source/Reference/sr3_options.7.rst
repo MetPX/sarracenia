@@ -115,10 +115,10 @@ built-in ones:
 **${JJJ}          current julian**
 **${YYYYMMDD}     current date**
 
-**${YYYY-1D}      current year   - 1 day**
-**${MM-1D}        current month  - 1 day**
-**${JJJ-1D}       current julian - 1 day**
-**${YYYYMMDD-70m}  current date   - 70 minutes**
+**${YYYY-1D}      current year .. evaluated 1 day in the past**
+**${MM-1D}        current month  .. evaluated 1 day in the past**
+**${JJJ-1D}       current julian .. evaluated 1 day in the past**
+**${YYYYMMDD-70m}  current date .. evaluated 70 minutes in the past**
 
 ::
 
@@ -129,9 +129,11 @@ built-in ones:
         reject    .*Reg.*
         accept    .*GRIB.*
 
+        varTimeOffset -5m
         directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
+In the last example above, the *varTimeOffset* will modify the evaluation of YYYYMMDD to be 5m in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
@@ -1695,6 +1697,20 @@ users <flag> (default: false)
 
 As an adjunct when the *declare* action is used, to ask sr3 to declare users
 on the broker, as well as queues and exchanges.
+
+
+varTimeOffset (default: 0)
+--------------------------
+
+For example::
+
+  varTimeOffset -7m 
+
+will cause variable substitions that involve the date/time substitutions.
+so in a pattern like ${YYYY}/${MM}/${DD} will be evaluated to be the
+date, evaluated seven minutes in the past.
+
+
 
 
 vip - ACTIVE/PASSIVE OPTIONS
