@@ -83,7 +83,8 @@ default_options = {
     'realpath_post': False,
     'report': False,
     'retryEmptyBeforeExit': False,
-    'sourceFromExchange': False
+    'sourceFromExchange': False,
+    'varTimeOffset': 0
 }
 
 count_options = [
@@ -105,7 +106,7 @@ float_options = [ ]
 
 duration_options = [
     'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
-    'sanity_log_dead', 'sleep', 'timeout'
+    'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = []
@@ -1739,6 +1740,9 @@ class Config:
 
             examples:   ${YYYYMMDD-70m} becomes 20221107 assuming that was the current date 70 minutes ago.
                         environment variables, and built-in settings are replaced also.
+
+           timeoffset -70m
+
         """
 
         if not '$' in cdir:
@@ -1779,31 +1783,33 @@ class Config:
             )
             new_dir = new_dir.replace('${PDR}', self.post_baseDir, 1)
 
+        whenStamp = time.mktime(time.gmtime()) + self.varTimeOffset
+
         if '${YYYYMMDD}' in cdir:
-            YYYYMMDD = time.strftime("%Y%m%d", time.gmtime())
+            YYYYMMDD = time.strftime("%Y%m%d", whenStamp)
             new_dir = new_dir.replace('${YYYYMMDD}', YYYYMMDD)
 
         if '${SOURCE}' in cdir:
             new_dir = new_dir.replace('${SOURCE}', message['source'])
 
         if '${DD}' in cdir:
-            DD = time.strftime("%d", time.gmtime())
+            DD = time.strftime("%d", whenStamp)
             new_dir = new_dir.replace('${DD}', DD)
 
         if '${HH}' in cdir:
-            HH = time.strftime("%H", time.gmtime())
+            HH = time.strftime("%H", whenStamp)
             new_dir = new_dir.replace('${HH}', HH)
 
         if '${YYYY}' in cdir:
-            YYYY = time.strftime("%Y", time.gmtime())
+            YYYY = time.strftime("%Y", whenStamp)
             new_dir = new_dir.replace('${YYYY}', YYYY)
 
         if '${MM}' in cdir:
-            MM = time.strftime("%m", time.gmtime())
+            MM = time.strftime("%m", whenStamp)
             new_dir = new_dir.replace('${MM}', MM)
 
         if '${JJJ}' in cdir:
-            JJJ = time.strftime("%j", time.gmtime())
+            JJJ = time.strftime("%j", whenStamp)
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
         # Parsing cdir to subtract time from it in the following formats
