@@ -29,11 +29,6 @@ Parameters:
 
 * filter_wmo2msc_replace_dir  old,new
 
-* filter_wmo2msc_bad_tac SFUK45 EGRR,FPCN11 CWAO
-  - When receiving bulletins with the given Abbreviated Headers, force their type to 'unknown binary'
-  - list of AHL's comma separated.
-  - default: SFUK45 EGRR
-
 * filter_wmo2msc_uniquify hash|time|anything else
   - whether to add a string in addition to the AHL to make the filename unique.
   - hash - means apply a hash, so that the additional string is content based.
@@ -44,9 +39,6 @@ Parameters:
 * filter_wmo2msc_convert on|off
   if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS & MetPX Sundew
   this involves \n as termination character, and other charater substitutions.
-
-* filter_wmo2msc_use_symlink on|off
-  if on, instead of copying the bulletin is will be symlink from is original filepath
 
 * filter_wmo2msc_tree  on|off
   if tree is off, files are just placed in destination directory.
@@ -89,43 +81,22 @@ logger = logging.getLogger('__name__')
 class Wmo2msc(FlowCB):
     def __init__(self, options):
         self.o = options
-        self.o.uniquify = 'hash'
+
+        self.o.add_option( 'filter_wmo2msc_uniquify', 'str', 'hash' )
+        self.o.add_option( 'filter_wmo2msc_replace_dir', 'str' )
+        self.o.add_option( 'filter_wmo2msc_treeify', 'flag', True )
+        self.o.add_option( 'filter_wmo2msc_convert', 'flag', True )
+
         if not hasattr(self.o, 'filter_wmo2msc_replace_dir'):
             logger.error("filter_wmo2msc_replace_dir setting is mandatory")
             return
 
-        (self.o.filter_olddir, self.o.filter_newdir
-         ) = self.o.filter_wmo2msc_replace_dir[0].split(',')
+        (self.o.filter_olddir, self.o.filter_newdir) = self.o.filter_wmo2msc_replace_dir.split(',')
 
         logger.info("filter_wmo2msc old-dir=%s, newdir=%s" %
                     (self.o.filter_olddir, self.o.filter_newdir))
-        if hasattr(self.o, 'filter_wmo2msc_uniquify'):
-            logger.info('filter_wmo2msc, override')
-            self.o.uniquify = self.o.filter_wmo2msc_uniquify[0]
-
-        if hasattr(self.o, 'filter_wmo2msc_bad_ahls'):
-            self.o.bad_ahl = []
-            for i in self.o.filter_wmo2msc_bad_ahls:
-                for j in i.split(','):
-                    self.o.bad_ahl.append(j.replace('_', ' '))
-        else:
-            self.o.bad_ahl = ['SFUK45 EGRR']
-
-        self.o.treeify = False
-        if hasattr(self.o, 'filter_wmo2msc_tree'):
-            self.o.treeify = self.o.isTrue(self.o.filter_wmo2msc_tree[0])
-
-        self.o.convert2msc = False
-
-        if hasattr(self.o, 'filter_wmo2msc_convert'):
-            self.o.convert2msc = self.o.isTrue(self.o.filter_convert[0])
-
-        if hasattr(self.o, 'filter_use_symlink'):
-            self.o.use_symlink = self.o.isTrue(self.o.filter_use_symlink[0])
 
         self.trimre = re.compile(b" +\n")
-        logger.info('filter_wmo2msc initialized, uniquify=%s bad_ahls=%s' % \
-           ( self.o.uniquify, self.o.bad_ahl ) )
 
     def replaceChar(self, oldchar, newchar):
         """
@@ -267,7 +238,7 @@ class Wmo2msc(FlowCB):
                                                   bytearray('', 'latin_1'), 2)
             else:
                 fmt = 'wmo-alphanumeric'
-                if self.o.convert2msc:
+                if self.o.filter_wmo2msc_convert:
                     self.doSpecificProcessing()
 
             # apply 'd' checksum (md5)
@@ -277,15 +248,15 @@ class Wmo2msc(FlowCB):
             sumstr = ''.join(format(x, '02x') for x in s.digest())
 
             # Determine local file name.
-            if self.o.uniquify in ['time']:
+            if self.o.filter_wmo2msc_uniquify in ['time']:
 
                 AHLfn += '_' + time.strftime( "%Y%m%d%H%M%S", time.gmtime(time.time()) ) + \
                          '_%05d' % random.randint(0,9999)
-            elif self.o.uniquify in ['hash']:
+            elif self.o.filter_wmo2msc_uniquify in ['hash']:
                 #AHLfn += '_%s' % ''.join( format(x, '02x') for x in s.digest() )
                 AHLfn += '_' + sumstr
 
-            if self.o.treeify:
+            if self.o.filter_wmo2msc_treeify:
                 d = os.path.dirname(input_file)
                 logger.debug('filter_wmo2msc check %s start match: %s' %
                              (d, self.o.filter_olddir))
@@ -312,14 +283,14 @@ class Wmo2msc(FlowCB):
             # write the data.
             fileOK = False
 
-            if not self.o.convert2msc:
+            if not self.o.filter_wmo2msc_convert:
                 try:
                     os.link(input_file, local_file)
                     fileOK = True
                 except:
                     pass
 
-            if self.o.convert2msc or not fileOK:
+            if self.o.filter_wmo2msc_convert or not fileOK:
                 d = open(local_file, 'wb+')
                 d.write(self.bintxt)
                 d.close()
