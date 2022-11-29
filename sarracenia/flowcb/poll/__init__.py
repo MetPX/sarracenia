@@ -515,8 +515,6 @@ class Poll(FlowCB):
             time.sleep(30)
             return []
 
-        if hasattr(self.dest, 'file_index'):
-            self.dest_file_index = self.dest.file_index
         # loop on all directories where there are pulls to do
 
         for destDir in self.pulls:
