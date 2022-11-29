@@ -1249,7 +1249,7 @@ class Config:
                 #vv = v.split('.')
                 #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
                 if v not in self.plugins_early:
-                    self.plugins_early.inset(0,v)
+                    self.plugins_early.insert(0,v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
             elif k in ['feeder']:
