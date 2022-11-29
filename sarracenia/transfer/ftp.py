@@ -211,10 +211,6 @@ class Ftp(Transfer):
 
             self.ftp = ftp
 
-            self.file_index_cache = self.o.cfg_run_dir + os.sep + '.dest_file_index'
-            if os.path.isfile(self.file_index_cache): self.load_file_index()
-            else: self.init_file_index()
-
             #alarm_cancel()
             return True
 
@@ -323,31 +319,6 @@ class Ftp(Transfer):
         alarm_cancel()
         return pwd
 
-    # init_file_index
-    def init_file_index(self):
-        logger.debug("sr_ftp init_file_index")
-        self.init_nlst = sorted(self.ftp.nlst())
-        logger.debug("sr_ftp nlst: %s" % self.init_nlst)
-        self.init_nlst_index = 0
-        if self.init_nlst:
-            self.ftp.retrlines('LIST', self.ls_file_index)
-        else:
-            alarm_cancel()
-        if hasattr(self, 'file_index'): self.write_file_index()
-
-    # load_file_index
-    def load_file_index(self):
-        logger.debug("sr_ftp load_file_index")
-        alarm_cancel()
-        try:
-            with open(self.file_index_cache, 'r') as fp:
-                index = int(fp.read())
-                self.file_index = index
-        except:
-            logger.error(
-                "load_file_index: Unable to determine file index from %s" %
-                self.file_index_cache)
-
     # ls
     def ls(self):
         logger.debug("sr_ftp ls")
@@ -355,7 +326,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         self.ftp.retrlines('LIST', self.line_callback)
         alarm_cancel()
-        logger.debug("sr_ftp ls = %s" % self.entries)
+        logger.debug("sr_ftp ls = %s ..." % str(self.entries)[0:255])
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
@@ -375,42 +346,12 @@ class Ftp(Transfer):
             if p == '': continue
             opart2.append(p)
         # else case is in the event of unlikely race condition
-        if hasattr(self, 'file_index'):
-            fil = ' '.join(opart2[self.file_index:])
-        else:
-            fil = ' '.join(opart2[8:])
-        # next line is for backwards compatibility only
-        #if not self.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.ls_file_index:])
+        fil = ' '.join(opart2[8:])
         line = ' '.join(opart2)
 
         self.entries[fil] = line
 
         alarm_set(self.o.timeout)
-
-    # ls_file_index
-    def ls_file_index(self, iline):
-        logger.debug("sr_ftp ls_file_index")
-
-        alarm_cancel()
-
-        oline = iline
-        oline = oline.strip('\n')
-        oline = oline.strip()
-        oline = oline.replace('\t', ' ')
-        opart1 = oline.split(' ')
-        opart2 = []
-
-        for p in opart1:
-            if p == '': continue
-            opart2.append(p)
-
-        try:
-            file_index = opart2.index(self.init_nlst[self.init_nlst_index])
-            self.file_index = file_index
-        except:
-            pass
-        finally:
-            self.init_nlst_index += 1
 
     # mkdir
     def mkdir(self, remote_dir):
@@ -492,13 +433,3 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         self.ftp.voidcmd('SITE UMASK 777')
         alarm_cancel()
-
-    # write_file_index
-    def write_file_index(self):
-        logger.debug("sr_ftp write_file_index")
-        try:
-            with open(self.file_index_cache, 'w') as fp:
-                fp.write(str(self.file_index))
-        except:
-            logger.warning("Unable to write file_index to cache file %s" %
-                           self.file_index_cache)

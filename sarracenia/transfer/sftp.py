@@ -224,11 +224,6 @@ class Sftp(Transfer):
             self.connected = True
             self.sftp = sftp
 
-            # FIXME #367 index cache init should only happen when polling, not sender.
-            self.file_index_cache = self.o.cfg_run_dir + os.sep + '.dest_file_index'
-            if os.path.isfile(self.file_index_cache): self.load_file_index()
-            else: self.init_file_index()
-
             #alarm_cancel()
             return True
 
@@ -390,36 +385,6 @@ class Sftp(Transfer):
         alarm_cancel()
         return cwd
 
-    # init_file_index
-    def init_file_index(self):
-        logger.debug("sr_sftp init_file_index")
-        dir_fils = self.sftp.listdir()
-        logger.debug("sr_sftp listdir(): %s" % dir_fils)
-        if dir_fils:
-            dir_attr = self.sftp.listdir_attr()
-            alarm_cancel()
-            for index in range(len(dir_fils)):
-                attr = dir_attr[index]
-                line = attr.__str__()
-                fil = dir_fils[index]
-                self.ls_file_index(fil, line)
-        else:
-            alarm_cancel()
-        if hasattr(self, 'file_index'): self.write_file_index()
-
-    # load_file_index
-    def load_file_index(self):
-        logger.debug("sr_sftp load_file_index")
-        alarm_cancel()
-        try:
-            with open(self.file_index_cache, 'r') as fp:
-                index = int(fp.read())
-                self.file_index = index
-        except:
-            logger.error(
-                "load_file_index: Unable to determine file index from %s" %
-                self.file_index_cache)
-
     # ls
     def ls(self):
         logger.debug("sr_sftp ls")
@@ -450,35 +415,10 @@ class Sftp(Transfer):
             if p == '': continue
             opart2.append(p)
         # else case is in the event of unlikely race condition
-        if hasattr(self, 'file_index'):
-            fil = ' '.join(opart2[self.file_index:])
-        else:
-            fil = ' '.join(opart2[8:])
-        # next line is for backwards compatibility only
-        # FIXME: 2020/08/01 caused error, so removed during v3 port.
-        #if not self.o.ls_file_index in [-1,len(opart2)-1] : fil =  ' '.join(opart2[self.o.ls_file_index:])
+        fil = ' '.join(opart2[8:])
         line = ' '.join(opart2)
 
         self.entries[fil] = attr
-
-    # ls_file_index
-    def ls_file_index(self, ifil, iline):
-        oline = iline
-        oline = oline.strip('\n')
-        oline = oline.strip()
-        oline = oline.replace('\t', ' ')
-        opart1 = oline.split(' ')
-        opart2 = []
-
-        for p in opart1:
-            if p == '': continue
-            opart2.append(p)
-
-        try:
-            file_index = opart2.index(ifil)
-            self.file_index = file_index
-        except:
-            pass
 
     # mkdir
     def mkdir(self, remote_dir):
@@ -580,13 +520,3 @@ class Sftp(Transfer):
         alarm_set(self.o.timeout)
         self.sftp.utime(path, tup)
         alarm_cancel()
-
-    # write_file_index
-    def write_file_index(self):
-        logger.debug("sr_sftp write_file_index")
-        try:
-            with open(self.file_index_cache, 'w') as fp:
-                fp.write(str(self.file_index))
-        except:
-            logger.warning("Unable to write file_index to cache file %s" %
-                           self.file_index_cache)
