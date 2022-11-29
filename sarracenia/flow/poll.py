@@ -58,7 +58,7 @@ class Poll(Flow):
 
         if not 'poll' in ','.join(self.plugins['load']):
             logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
-            self.plugins['load'].append('poll')
+            self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
             self.plugins['load'].insert(

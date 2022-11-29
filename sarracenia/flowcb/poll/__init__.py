@@ -61,7 +61,7 @@ file_type_dict = {
 }
 
 
-def modstr2num(self, m) -> int:
+def modstr2num(m) -> int:
     mode = 0
     if (m[0] == 'r'): mode += 4
     if (m[1] == 'w'): mode += 2
@@ -72,9 +72,9 @@ def modstr2num(self, m) -> int:
 def filemode(self, modstr) -> int:
     mode = 0
     mode += file_type_dict[modstr[0]]
-    mode += self.modstr2num(modstr[1:4]) << 6
-    mode += self.modstr2num(modstr[4:7]) << 3
-    mode += self.modstr2num(modstr[7:10])
+    mode += modstr2num(modstr[1:4]) << 6
+    mode += modstr2num(modstr[4:7]) << 3
+    mode += modstr2num(modstr[7:10])
     return mode
 
 
@@ -301,9 +301,9 @@ class Poll(FlowCB):
         elif type(line) is str and len(line.split()) > 7:
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
-            sftp_obj.st_mode = self.filemode(parts[0])
-            sftp_obj.st_uid = self.fileid(parts[2])
-            sftp_obj.st_gid = self.fileid(parts[3])
+            sftp_obj.st_mode = filemode(self,parts[0])
+            sftp_obj.st_uid = fileid(self,parts[2])
+            sftp_obj.st_gid = fileid(self,parts[3])
             sftp_obj.st_size = int(parts[4])
             sftp_obj.st_mtime = self.filedate(line)
             sftp_obj.filename = parts[-1]
