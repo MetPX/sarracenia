@@ -415,7 +415,9 @@ In general, v3 plugins:
   Setting **partstr** and **sumstr** are specific to v2 messages, and will not be interpreted 
   properly in sr3.  The encoding of this information is completely different in v03 messages,
   and sr3 supports alternate message encodings which may be different again. Setting of these
-  fields manually is actively counter-productive.
+  fields manually is actively counter-productive. The same applies with checksum logic found in v2 plugins. 
+  The checksum is already performed when the new notification message is being generated so most likely
+  any message fields such as **sumalgo** and other **algo** fields can be discarded.
 
   For an example of using the message builder, look at  `do_poll -> poll`_
 
@@ -572,8 +574,9 @@ v3: receives worklist
     can also be used to work on worklist.failed (retry logic does this.)
 
 examples:
-
-.. Danger:: THERE ARE NO EXAMPLES?!?! 
+   v3: flowcb/work/age.py
+ 
+.. Danger:: THERE ARE NO v2 EXAMPLES?!?! 
             TODO: add some examples
 
 
