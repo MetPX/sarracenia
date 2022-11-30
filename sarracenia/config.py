@@ -74,6 +74,7 @@ default_options = {
     'logStdout': False,
     'nodupe_ttl': 0,
     'overwrite': True,
+    'path': [],
     'permDefault': 0,
     'permDirDefault': 0o775,
     'permLog': 0o600,
@@ -109,7 +110,7 @@ duration_options = [
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = []
+list_options = ['path']
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -127,7 +128,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 'path',
+    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'queueName', 'remoteUrl',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
@@ -1347,12 +1348,10 @@ class Config:
             elif k in count_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in list_options:
-                logger.critical('k=%s is a list!' % k )
                 if not hasattr(self, k):
                     setattr(self, k, [' '.join(line[1:])])
                 else:
-                    setattr(self, k, getattr(self, k).append(' '.join(line[1:])))
-                logger.critical('k=%s new value: %s' % getattr(self,k)  )
+                    getattr(self, k).append(' '.join(line[1:]))
             elif k in set_options:
                 vs = set(v.split(','))
                 if v=='None':

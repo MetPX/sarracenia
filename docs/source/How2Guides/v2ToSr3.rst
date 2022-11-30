@@ -361,6 +361,7 @@ In general, v3 plugins:
   parent.program_name                    self.o.program_name                   name of the program being run e.g. 'sr_subscribe'
   parent.publisher                       *none*                                instance of Publisher class from sr_amqp.py
   parent.post_hc                         *none*                                instance of HostConnect class from sr_amqp.py
+  parent.pulls                           self.o.masks                          used in polls, example poll.cocorahs_precip.py
   parent.retry                           *none*                                instance of the retry queue.
   parent.msg.set_notice(b,r)             msg['baseUrl'] = b, msg['relPath']=r  v2 uses v2 messages internally, sr3 uses... v3.
   parent.user_cache_dir                  self.o.cfg_run_dir                    actually one level down... new place is better.
@@ -605,10 +606,13 @@ v2: call do_poll from plugin.
  * runs, one must worry about whether one has the vip or not to decide what processing
    to do in each plugin.
  * poll_without_vip setting available.
+ * parent.pulls is a list of *get* directives (which are different from accept)
+
 
 v3: define poll in a flowcb class.
 
- * poll only runs when has_vip is true.
+ * poll only runs when has_vip is true. (so remove any has_vip() tests, unneeded.)
+   also consult section on virtual ip addresses below.
 
  * registered_as() entry point is moot.
 
@@ -616,6 +620,8 @@ v3: define poll in a flowcb class.
    allowing the nodupe cache to be kept uptodate.
 
  * api defined to build notification messages from file data regardless of notification message format.
+
+ * get is gone, poll uses accept like any other component.
 
  * returns a list of notification messages to be filtered and posted.
 
