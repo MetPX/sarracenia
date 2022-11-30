@@ -447,6 +447,8 @@ class Flow:
                         if ('new_baseUrl' in m) and (m['baseUrl'] !=
                                                      m['new_baseUrl']):
                             m['baseUrl'] = m['new_baseUrl']
+                        if ('new_retPath' in m) :
+                            m['retPath'] = m['new_retPath']
                         if ('new_relPath' in m) and (m['relPath'] !=
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
