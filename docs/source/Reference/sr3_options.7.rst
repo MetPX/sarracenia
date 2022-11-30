@@ -1248,6 +1248,16 @@ a file to be accepted.
 The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
+please_stop_immediately <flag> (EXPERIMENTAL)
+---------------------------------------------
+
+Have sr3 flows stop much more quickly, by not doing any drainage/cleanup work.
+When interrupting processing, or asking for termination, some message flows may be
+stateful, where it is important to let activities that are in progress complete.
+It may take many minutes for a *stop* directive to take effect in such cases.
+With this option the application can be told that there is no need for this
+extensive, clean termination code.
+
 pollUrl <url>
 -------------
 
