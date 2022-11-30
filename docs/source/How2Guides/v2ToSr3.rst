@@ -401,8 +401,8 @@ In general, v3 plugins:
   .. Note:: on_file plugins that become after_work plugins should be placed in the
             /flowcb/after_work directory
   
-* v3 has **Must not set notification message fields in plugins**
-  in v2, one would need to set **partstr**, and **sumstr** for v2 notification messages in plugins. 
+* **Must not set notification message fields (like partstr, sumstr) in plugins.**
+  In v2, one would need to set **partstr**, and **sumstr** for v2 notification messages in plugins. 
   This required an excessive understanding of notification message formats, and meant that 
   changing notification message formats required modifying plugins (v03 notification message format is
   not supported by most v2 plugins, for example). To build a notification message from a 
