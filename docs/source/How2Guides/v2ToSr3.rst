@@ -578,7 +578,7 @@ examples:
  
 .. Danger:: THERE ARE NO v2 EXAMPLES?!?! 
             TODO: add some examples
-
+            See: `Table of v2 and sr3 Equivalents`_
 
 on_heartbeat -> on_housekeeping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1046,7 +1046,8 @@ Table of v2 and sr3 Equivalents
 -------------------------------
 
 Here is an overview of plugins included in Sarracenia, 
-so people can review, compare and contrast the implementations.
+One can browse the two trees, and using the table below,
+can review, compare and contrast the implementations.
 
 V2 plugins are under: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
 Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
