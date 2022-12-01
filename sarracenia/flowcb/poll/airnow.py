@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Posts updated files of airnowtech. 
 Compatible with Python 3.5+.

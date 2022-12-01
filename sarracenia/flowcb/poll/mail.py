@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Posts any new emails from an email server, connected to using 
 the specified protocol, either pop3 or imap. The imaplib/poplib 

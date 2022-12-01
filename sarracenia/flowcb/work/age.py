@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
    print the age of files written (compare current time to mtime of message.)
    usage:

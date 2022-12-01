@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin save.py:
     Converts a consuming component into one that writes the queue into a file. 

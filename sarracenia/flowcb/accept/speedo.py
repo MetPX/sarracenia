@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin speedo.py:
     Gives a *speedometer* reading on the messages going through an exchange.

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin postoverride.py:
     Override message header for products that are posted. This can be useful or necessary 

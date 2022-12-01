@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin httptohttps.py:
     This plugin simply turns messages with baseUrl http://...  into   https://...

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
     sarracenia.flowcb.send.email.Email is an sr3 sender plugin. Once a file is 
     posted, the plugin matches the topic(what the filename begins with) to the

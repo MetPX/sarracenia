@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
 to MSC internal format in an alternate tree.  It is analogous to Sundew's 'bulletin-file'.

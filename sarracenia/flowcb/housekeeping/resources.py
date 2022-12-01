@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Default on_housekeeping handler that:
 - Logs Memory and CPU usage.

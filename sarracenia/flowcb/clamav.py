@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
  A sample on_part plugin to perform virus scanning, using the ClamAV engine.
 

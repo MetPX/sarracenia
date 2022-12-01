@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ 
    msg_pclean_f90 module: file propagation test for Sarracenia components (in flow test)
    https://github.com/MetPX/sr_insects/

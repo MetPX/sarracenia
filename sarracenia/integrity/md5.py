@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from hashlib import md5
 
 from sarracenia.integrity import Integrity

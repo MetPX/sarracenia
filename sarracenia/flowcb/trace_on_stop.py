@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 This plugin prints a traceback when the program is stopped
 

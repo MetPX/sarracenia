@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from hashlib import sha512
 
 from sarracenia.integrity import Integrity

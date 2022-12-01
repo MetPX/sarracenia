@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin testretry.py:
     This changes the message randomly so that it will cause

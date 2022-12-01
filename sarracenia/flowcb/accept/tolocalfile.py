@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin tolocalfile.py:
     This is a helper script to work with converters (filters) and senders.

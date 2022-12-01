@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Retrieves file keys in the NEXRAD US Weather Radar public dataset.
 Can be adjusted slightly for other public datasets on the AWS S3 platform.

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ msg_pclean module: base module for propagation tests and cleanup for Sarracenia components (in flow test)
     Used by https://github.com/MetPX/sr_insects test suite for CI/CD.
 """

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Plugin sundewpxroute.py:
     Implement message filtering based on a routing table from MetPX-Sundew.

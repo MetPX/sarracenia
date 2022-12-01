@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin longflow.py:
     This plugin is strictly for self-test purposes.

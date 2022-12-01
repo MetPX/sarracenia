@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Posts updated files of NOAA water level/temperature hydrometric data. Station site IDs provided
 in the poll_noaa_stn_file. Compatible with Python 3.5+.

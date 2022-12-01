@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
   This plugin delays processing of messages by *message_delay* seconds
 

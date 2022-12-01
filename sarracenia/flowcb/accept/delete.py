@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin delete.py:
     the default after_accept handler for log.

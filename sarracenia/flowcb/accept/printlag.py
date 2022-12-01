@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin printlag.py:
      This is an after_accept plugin.

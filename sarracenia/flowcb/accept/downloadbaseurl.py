@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin downloadbaseurl.py:
     Downloads files sourced from the baseUrl of the poster, and saves them in the

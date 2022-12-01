@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 This plugin can be use to add ownership and group of a file in a post message (on_post)
 and change the owner/group of products at destination (on_file)

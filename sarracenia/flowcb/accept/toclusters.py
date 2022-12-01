@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Plugin toclusters.py:
     Implements inter-pump routing by filtering destinations.

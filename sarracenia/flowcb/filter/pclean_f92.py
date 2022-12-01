@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """ msg_pclean_f90 module: second file propagation test for Sarracenia components (in flow test)
 """
 
