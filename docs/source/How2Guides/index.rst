@@ -5,17 +5,16 @@ HOWTOS
    :maxdepth: 2
    :caption: For Users:
 
-   Subscribing to Data Feeds <subscriber>
-
-   Using Flow Callback Plugins <FlowCallbacks>
-   Email_Ingesting_With_Sarracenia
-   Hydro_Examples
-   source
-   docker
-   Release Notes (Advice on Upgrades)<UPGRADING>
    Admin
    Admin_Rabbit_Addendum
+   docker
+   Email_Ingesting_With_Sarracenia
+   Hydro_Examples
+   Release Notes (Advice on Upgrades)<UPGRADING>
+   source
+   Subscribing to Data Feeds <subscriber>
    UPGRADING
+   Using Flow Callback Plugins <FlowCallbacks>
    v2ToSr3
 
 
