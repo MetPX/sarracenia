@@ -610,6 +610,8 @@ v2: call do_poll from plugin.
    to do in each plugin.
  * poll_without_vip setting available.
  * parent.pulls is a list of *get* directives (which are different from accept)
+ * often paired with download\_something plugins where a partial message is built with the poll
+   and the download one is specialized to to the actual download.
 
 
 v3: define poll in a flowcb class.
@@ -625,6 +627,9 @@ v3: define poll in a flowcb class.
  * api defined to build notification messages from file data regardless of notification message format.
 
  * get is gone, poll uses accept like any other component.
+
+ * the combination with download plugins is generally replaced by a single plugin that implements
+   alternate naming using *retPath* field. so it is all done in one plugin.
 
  * returns a list of notification messages to be filtered and posted.
 

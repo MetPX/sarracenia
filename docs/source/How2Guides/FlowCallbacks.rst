@@ -260,6 +260,22 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
          before the full stop happens.
 
 
+new_* Fields
+------------
+
+During processing of notification messages, the original standard field values are generally left un-changed (as-read in.)
+To change fields of notification messages forwarded to downstream consumers, one modifies new_field instead
+of the one from the message, as the original is necessary for successful upstream retrieval:
+
+* msg['new_dir'] ... the directory into which a file will be downloaded or sent.
+
+* msg['new_file'] .... name of the file to write.
+
+* msg['new_inflight_path'] ... the name of the temporary file to be written before renaming to above msg['new_name']
+
+* msg['new_baseUrl'] ... baseUrl to pass to downstream consumers.
+
+* msg['post_version'] ... the encoding format of the message to post.
 
 
 
@@ -357,6 +373,38 @@ The try/except part of the routine deals with the case that, should
 a file arrive with a name from which a topic tree cannot be built, then an exception
 may occur, and the notification message is added to the failed worklist, and will not be
 processed by later plugins.
+
+Download Renaming
+------------------
+
+Sometimes the URL used to obtain data from a server isn't the same as the name
+one wants to assign to the downloaded result. This occurs often when polling upstream
+arbitrary web services. For such cases the message format defines the *retPath*, or 
+retrieval path, used as follows:
+
+* msg['retPath'] = https://server/cgi-bin/get?param1=hoho&.... The retrieval URL
+
+* msg['relPath'] = https://server/relPath/defining/local/placement ... where to download it to.
+
+Standard subscribers will download using *retPath* but assign the download path using *relPath.*
+When forwarding after download, the *retPath* should often be removed (to avoid downstream clients
+pulling from the original source instead of the downloaded copy.)
+
+While the above is a preferred way of defining messages where the download will have a different
+name from the upstream source, a second method is available, the *rename* used as follows:
+
+* msg['rename'] = alternate *relPath* ... download it to here instead of using relPath.
+
+again, once downloaded, the *rename* header should be removed from the message prior to
+forwarding to downstream clients. the *relPath* needs to be adjusted.
+
+Note that both of these methods work the same for senders as well. The term 'download' is
+used for simplicity.
+  
+Web Sites with non-standard file listings
+-----------------------------------------
+
+The poll/nasa_mls
 
 Other Examples
 --------------
