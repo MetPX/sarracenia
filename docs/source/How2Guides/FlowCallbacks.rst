@@ -267,17 +267,19 @@ During processing of notification messages, the original standard field values a
 To change fields of notification messages forwarded to downstream consumers, one modifies new_field instead
 of the one from the message, as the original is necessary for successful upstream retrieval:
 
-* msg['new_dir'] ... the directory into which a file will be downloaded or sent.
-
-* msg['new_file'] .... name of the file to write.
-
-* msg['new_inflight_path'] ... the name of the temporary file to be written before renaming to above msg['new_name']
-
 * msg['new_baseUrl'] ... baseUrl to pass to downstream consumers.
 
-* msg['post_version'] ... the encoding format of the message to post.
+* msg['new_dir'] ... the directory into which a file will be downloaded or sent.
 
+* msg['new_file'] .... final name of the file to write.
 
+* msg['new_inflight_path'] ... calculated name of the temporary file to be written before renaming to msg['new_file'] ... do not set manually.
+
+* msg['new_relPath'] ... calculated from 'new_baseUrl', 'post_baseDir', 'new_dir', 'new_file' ... do not set manually.
+
+* msg['post_version'] ... calculated the encoding format of the message to post (from settings)
+
+* msg['new_subtopic'] ... the subtopic hierarchy that will be encoded in the notification message for downstream consumers.
 
 
 Sample Flowcb Sub-Class
