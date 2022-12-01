@@ -16,16 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 class Age(FlowCB):
+
     def __init__(self, options):
         logger.debug("file_age initialized")
         self.o = options
 
     def after_work(self, worklist):
-
         for m in worklist.ok:
             if not 'mtime' in m:
                 return None
-
             completed = timestr2flt(m['timeCompleted'])
             mtime = timestr2flt(m['mtime'])
             age = completed - mtime
