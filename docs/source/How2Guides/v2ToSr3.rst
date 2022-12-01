@@ -1053,18 +1053,18 @@ Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracen
 
 The naming also gives an example of the name convention mapping... e.g. 
 
-* msg\_ -> filter/ or accept/
-* file\_ -> work/
-* poll\_ -> poll/
-* hb\_ -> housekeeping/
+* msg\_... -> filter/... or accept/...
+* file\_... -> work/...
+* poll\_... -> poll/... or gather/...
+* hb\_... -> housekeeping/...
 
 Relative paths are in the table:
 
 +-------------------------------------------------+--------------------------------------------------+
 | V2 plugins (all in one directory...)            | Sr3 flow callbacks (treeified)                   |
 +-------------------------------------------------+--------------------------------------------------+
+| data\_...                                       | subclass sarracenia.transfer class instead       |
 |                                                 |                                                  |
-| data\_                                          | subclass sarracenia.transfer class instead       |
 |                                                 | no example available consult source code         |
 +-------------------------------------------------+--------------------------------------------------+
 | destfn_sample.py                                | destfn/sample.py                                 |
@@ -1079,8 +1079,9 @@ Relative paths are in the table:
 +-------------------------------------------------+--------------------------------------------------+
 | hb_memory                                       | housekeeping/resources.py                        |
 +-------------------------------------------------+--------------------------------------------------+
-| html_page.py                                    | subclass sarracenia.transfer class instead       |
-|                                                 | no example available consult source code         |
+| html_page.py                                    | subclass sarracenia.transfer class instead.      |
+|                                                 |                                                  |
+|                                                 | no example available consult source code.        |
 |                                                 |                                                  |
 |                                                 | also see poll/nasa_mls_nrt.py for example of     |
 |                                                 | parsing custom resmote server lines.             |
