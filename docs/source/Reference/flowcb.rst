@@ -227,6 +227,15 @@ sarracenia.flowcb.clamav
    :private-members:
    :special-members:
 
+sarracenia.flowcb.destfn.sample
+-------------------------------
+
+.. automodule:: sarracenia.flowcb.destfn.sample
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
 sarracenia.flowcb.filter
 ------------------------
 
@@ -533,10 +542,10 @@ sarracenia.flowcb.work
    :private-members:
    :special-members:
 
-sarracenia.flowcb.work.delete
------------------------------
+sarracenia.flowcb.work.age
+--------------------------
 
-.. automodule:: sarracenia.flowcb.work.delete
+.. automodule:: sarracenia.flowcb.work.age
    :show-inheritance:
    :members:
    :private-members:
