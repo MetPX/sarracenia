@@ -1167,7 +1167,9 @@ class Flow:
                 % (old, path))
             # if the destination file exists, assume rename already happenned,
             # otherwis return false so that caller falls back to downloading/sending the file.
-            return os.path.isfile(path)
+            # return os.path.isfile(path) 
+            # PAS 2022/12/01 ... only 1 message to interpret, will never be a previous rename.
+            return False
 
         try:
 

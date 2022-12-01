@@ -5,14 +5,14 @@ Explanation
    :maxdepth: 2
    :caption: Contents:
 
-   Overview
    Concepts
    CommandLineGuide.rst
+   DeploymentConsiderations
    DetectFileReady.rst
    DuplicateSuppression.rst
    FileCompletion.rst
-   DeploymentConsiderations
-   SarraPluginDev
    Glossary
-   sftps
    History/index
+   Overview
+   SarraPluginDev
+   sftps

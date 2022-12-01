@@ -6,15 +6,15 @@ Contributing to Sarracenia
    :maxdepth: 2
    :caption: Contents:
 
+   AMQPprimer
+   deltas
    Development
    Documentation
+   Evolution
    man_page_template.rst
-   v03
+   mqtt_issues
+   on_part_assembly
    Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
-   Evolution
-   AMQPprimer
-   mqtt_issues
-   deltas
-   on_part_assembly
+   v03
 
