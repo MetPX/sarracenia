@@ -5,14 +5,6 @@
 
    flowcb work.age
 
-   
-   FIXME ( @petersilva 22/09/25 ) this is actually really bogus, because it is
-   ported from v2... where files were processed one at a time.  The way this
-   works is it will only get called after an entire batch of files has been
-   downloaded, so the times listed will be significantly offset in many cases.
-
-   probably should do something built-in (add a field to the message or something.)
-
 """
 
 import os, stat, time
