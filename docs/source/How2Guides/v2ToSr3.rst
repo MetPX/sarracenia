@@ -1049,26 +1049,30 @@ Here is an overview of plugins included in Sarracenia,
 One can browse the two trees, and using the table below,
 can review, compare and contrast the implementations.
 
-V2 plugins are under: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
-Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
+* V2 plugins are under: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
+* Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
 
-The naming also gives an example of the name convention mapping... e.g. 
+The naming also gives an example of the name convention mapping... e.g. plugins whos v2 name start with:
 
 * msg\_... -> filter/... or accept/...
 * file\_... -> work/...
 * poll\_... -> poll/... or gather/...
 * hb\_... -> housekeeping/...
 
-Relative paths are in the table:
+are mapped to the sr3 conventional directories at right.
+
+Relative paths from the above given folders are in the table:
 
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 | V2 plugins (all in one directory...)            | Sr3 flow callbacks (treeified)                                                                                                               |
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 | data\_...                                       | subclass sarracenia.transfer class instead                                                                                                   |
 |                                                 |                                                                                                                                              |
-|                                                 | no example available consult source code                                                                                                     |
+| modify file data during transfer                | no example available consult source code                                                                                                     |
+|                                                 |                                                                                                                                              |
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 | destfn_sample.py                                | `destfn/sample.py <../Reference/flowcb.html#module-sarracenia.flowcb.destfn.sample>`_                                                        |
+|                                                 |                                                                                                                                              |
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 | file_age.py                                     | `work/age.py <../Reference/flowcb.html#module-sarracenia.flowcb.work.age>`_                                                                  |
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
