@@ -84,6 +84,7 @@ default_options = {
     'report': False,
     'retryEmptyBeforeExit': False,
     'sourceFromExchange': False,
+    'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
 
@@ -99,7 +100,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'please_stop_immediately', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
     'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
-    'statehost', 'users'
+    'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]

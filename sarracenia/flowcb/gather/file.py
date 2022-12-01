@@ -371,14 +371,16 @@ class File(FlowCB):
         # file
 
         if os.path.isfile(dst):
-            messages.extend(self.post_delete(src, 'newname', dst))
+            if hasattr(self.o,'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
+                messages.extend(self.post_delete(src, 'newname', dst))
             messages.extend(self.post_file(dst, sarracenia.stat(dst), 'rename', src))
             return messages
 
         # link
 
         if os.path.islink(dst):
-            messages.extend(self.post_delete(src, 'newname', dst))
+            if hasattr(self.o,'v2compatRenameDoublePost') and self.o.v2compatRenameDoublePost:
+                messages.extend(self.post_delete(src, 'newname', dst))
             messages.extend(self.post_link(dst, 'rename', src))
             return messages
 
