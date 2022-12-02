@@ -1708,6 +1708,12 @@ users <flag> (default: false)
 As an adjunct when the *declare* action is used, to ask sr3 to declare users
 on the broker, as well as queues and exchanges.
 
+v2compatRenameDoublePost <flag> ( default: false)
+-------------------------------------------------
+
+version 3 of Sarracenia features improved logic around file renaming, using a single message per rename operation.
+Version 2 required two posts.  When posting, in a mirroring situation, for consumption by v2 clients, this flag 
+should be set. 
 
 varTimeOffset (default: 0)
 --------------------------
