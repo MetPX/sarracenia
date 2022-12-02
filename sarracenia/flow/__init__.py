@@ -647,7 +647,7 @@ class Flow:
     # ==============================================
 
     def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
-                             maskFileOption, mirror, strip, pstrip, flatten):
+                             maskFileOption, mirror, strip, pstrip, flatten) -> None:
         """
            Set new message fields according to values when the message is accepted.
            
@@ -766,7 +766,7 @@ class Flow:
 
 
 
-    def filter(self):
+    def filter(self) -> None:
 
         logger.debug(
             'start len(incoming)=%d, rejected=%d' %
@@ -871,7 +871,7 @@ class Flow:
             'end len(incoming)=%d, rejected=%d' %
             (len(self.worklist.incoming), len(self.worklist.rejected)))
 
-    def gather(self):
+    def gather(self) -> None:
         for p in self.plugins["gather"]:
             try:
                 new_incoming = p()
@@ -883,7 +883,7 @@ class Flow:
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
 
-    def do(self):
+    def do(self) -> None:
         """
             stub to do the work: does nothing, marking everything done.
             to be replaced in child classes that do transforms or transfers.
@@ -895,7 +895,7 @@ class Flow:
         logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.ok), self._stop_requested))
 
-    def post(self):
+    def post(self) -> None:
         for p in self.plugins["post"]:
             try:
                 p(self.worklist)
@@ -903,12 +903,12 @@ class Flow:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
 
-    def report(self):
+    def report(self) -> None:
         # post reports
         # apply on_report plugins
         pass
 
-    def write_inline_file(self, msg):
+    def write_inline_file(self, msg) -> bool:
         """
            write local file based on a message with inlined content.
 
@@ -1007,7 +1007,7 @@ class Flow:
 
         return True
 
-    def compute_local_checksum(self, msg):
+    def compute_local_checksum(self, msg) -> None:
 
         if sarracenia.filemetadata.supports_extended_attributes:
             try:
@@ -1043,7 +1043,7 @@ class Flow:
         }
         msg['_deleteOnPost'] |= set(['local_integrity'])
 
-    def file_should_be_downloaded(self, msg):
+    def file_should_be_downloaded(self, msg) -> bool:
         """
           determine whether a comparison of local_file and message metadata indicates that it is new enough
           that writing the file locally is warranted.
@@ -1136,7 +1136,7 @@ class Flow:
         else:
             return True
 
-    def removeOneFile(self, path):
+    def removeOneFile(self, path) -> bool:
         """
           process an unlink event, returning boolean success.
         """
@@ -1156,7 +1156,7 @@ class Flow:
 
         return ok
 
-    def renameOneItem(self, old, path):
+    def renameOneItem(self, old, path) -> bool:
         """
             for messages with an rename file operation, it is to rename a file.
         """
@@ -1186,7 +1186,7 @@ class Flow:
             ok = False
         return ok
 
-    def link1file(self, msg, symbolic=True):
+    def link1file(self, msg, symbolic=True) -> bool:
         """        
           perform a link of a single file, based on a message, returning boolean success
           if it's Symbolic, then do that. else do a hard link.
@@ -1233,7 +1233,7 @@ class Flow:
 
         return ok
 
-    def do_download(self):
+    def do_download(self) -> None:
         """
            do download work for self.worklist.incoming, placing files:
                 successfully downloaded in worklist.ok
