@@ -1,6 +1,6 @@
-==============================
-SR3 Guide De Ligne De Commande
-==============================
+==========================
+Guide De Ligne De Commande
+==========================
 
 
 SR3 - Tout
@@ -536,8 +536,8 @@ partie "consommateur" de les programmes de Sarracenia.
 
 
 
-Setting the Broker 
-------------------
+Réglage de Broker 
+-----------------
 
 **broker [amqp|mqtt]{s}://<user>:<password>@<brokerhost>[:port]/<vhost>**
 

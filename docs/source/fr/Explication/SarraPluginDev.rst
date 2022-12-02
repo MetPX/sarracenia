@@ -186,6 +186,14 @@ ou flowcb accepte comme paramètre _options_ dans leurs routines __init__() ::
 L’exemple ci-dessus définit une option "accel\_wget\_command"
 comme étant de type chaîne, avec la valeur par défaut _/usr/bin/wget_ .
 
+Autres méthodes utiles dans la classe sarracenia.config.Config :
+
+* variableExpansion( value, Message=None) ... pour que des modèles tels que ${YYYYMMDD-5m} soient évalué 
+  dans les fichiers de configuration. On peut vouloir évaluer ces expansions à différents moments du traitement, 
+  selon le but des options définies par l'utilisateur.
+
+liste complète ici : https://metpx.github.io/sarracenia/Reference/code.html#sarracenia.config.Config
+
 Paramètres hiérarchiques
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

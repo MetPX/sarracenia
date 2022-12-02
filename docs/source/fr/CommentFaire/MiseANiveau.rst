@@ -11,7 +11,7 @@ Bien que la stabilité du langage de configuration soit importante, à l’occas
 être évités. Ce fichier ne documente pas les nouveaux, mais uniquement les modifications qui posent problème lors des
 mises à niveau. Les avis prennent la forme :
 
-**CHANGE**
+**CHANGEMENT**
    Indique où les fichiers de configuration doivent être modifiés pour obtenir le même comportement qu’avant la publication.
 
 **ACTION**
@@ -38,15 +38,25 @@ Instructions d’installation
 git
 ---
 
+3.0.22
+------
+
+*CHANGEMENTMENT*: option *destination* dans une configuration de poll est remplacé par *pollUrl*
+
+*CHANGEMENTMENT*: option *destination* dans une configuration de sender est remplacé par *remoteUrl*
+
+*ACTION*: remplacer les *destination* dans les configurations affectés (traité automatiquement
+dans le cas de conversion à partir de v2.)
+
 3.0.17
 ------
 
-*CHANGE*: La chaine de charactères "Vendor" est changé de "science.gc.ca" à "MetPX". 
+*CHANGEMENT*: La chaine de charactères "Vendor" est changé de "science.gc.ca" à "MetPX". 
      Ce changement modifie le placement des fichiers sur la platteforme *Windows*.
 
-*CHANGE*: l´encodage des messages d´annonce v03 est changé: *Integrity* est rendu optionnel.
+*CHANGEMENT*: l´encodage des messages d´annonce v03 est changé: *Integrity* est rendu optionnel.
 
-*CHANGE*: l'encodage des messages d'annonce v03 est changé: le champs *fileOp* est rajouté
+*CHANGEMENT*: l'encodage des messages d'annonce v03 est changé: le champs *fileOp* est rajouté
      pour séparer les operations sur des fichiers qui ne comprennent pas des transmissions
      de données: créations de liens symboliques, renommage de fichier, suppression de fichiers.
      Le champs *Integrity* est maintenant dédié au sommes de contrôle pour les données.
@@ -60,7 +70,7 @@ git
     qui sont difficiles à satisfaire. À partir de la version 3.0.15, les dépendances sont modulaires.
 
 
-*CHANGE*: il y a maintenant quatre "extras" configurés pour les paquets pip pour metpx-sr3.
+*CHANGEMENT*: il y a maintenant quatre "extras" configurés pour les paquets pip pour metpx-sr3.
 
   * amqp - capacité de communiquer avec les courtiers AMQP (rabbitmq)
 
@@ -85,7 +95,7 @@ git
 
   sr3 recherche les modules pertinents au démarrage et active automatiquement la prise en charge des fonctionnalités pertinentes.
 
-**CHANGE**: le placement des fichiers pour indiquer des configurations désactivées.
+**CHANGEMENT**: le placement des fichiers pour indiquer des configurations désactivées.
      Avant, l’action *disable* ajoutait un *.off* au nom de fichier de configuration.
      Maintenant, on crée à la place un fichier *disabled* dans le répertoire d’état.
      Les fichiers de configuration ne sont plus modifié par la gestion routinière
@@ -110,19 +120,19 @@ V2 to Sr3
           pythonique. Sr3 est construit avec moins de code, plus de code maintenable, et
           prend en charge plus de fonctionnalités, et plus naturellement.
 
-**CHANGE** : les messages de journal sont complètement différents. Toute analyse des journaux devra être examinée.
+**CHANGEMENT** : les messages de journal sont complètement différents. Toute analyse des journaux devra être examinée.
           Le nouveau format de journal inclut un préfixe avec un process-id et la routine générant le message.
 
 *NOTICE* : Lors de la migration de la v2 vers la sr3, les configurations simples "fonctionneront simplement".
           Cependant, les cas reposant sur des plugins construits par l’utilisateur nécessiteront des efforts de portage.
           Les plugins intégrés fournis avec Sarracenia ont été portés comme des exemples.
 
-**CHANGE**: placement du fichier. Sous Linux : ~/.cache/sarra -> ~/.cache/sr3
+**CHANGEMENT**: placement du fichier. Sous Linux : ~/.cache/sarra -> ~/.cache/sr3
           ~/.config/sarra -> ~/.config/sr3
           Changement similaire sur d’autres plateformes. Les différents placements
           permettent d’exécuter v2 et sr3 en même temps sur le même serveur.
 
-**CHANGE**: L’interface de ligne de commande (CLI) est différente. Il n’y a qu’un seul entry_point principal : sr3.
+**CHANGEMENT**: L’interface de ligne de commande (CLI) est différente. Il n’y a qu’un seul entry_point principal : sr3.
           donc la plupart des invocations sont différentes dans un modèle comme ci-dessous::
 
              sr_subscribe start config -> sr3 start subscribe/config
@@ -131,7 +141,7 @@ V2 to Sr3
 
              sr3 start poll/airnow subscribe/airnow sender/cmqb
 
-**CHANGE**: dans sr3, utilisez -- pour les options de mots complets, comme --config ou --broker.  Dans la v2, vous
+**CHANGEMENT**: dans sr3, utilisez -- pour les options de mots complets, comme --config ou --broker.  Dans la v2, vous
            pouvez utiliser -config et -broker, mais un tiret unique est réservé aux options à caractère unique.
            Ceci est le résultat de sr3 utilisant la classe ArgParse standard python::
 
@@ -144,7 +154,7 @@ V2 to Sr3
 
            le fait comme prévu.
 
-**CHANGE**: En général, les traits de soulignement dans les options sont remplacés par camelCase. p. ex. :
+**CHANGEMENT**: En général, les traits de soulignement dans les options sont remplacés par camelCase. p. ex. :
 
           v2 loglevel -> sr3 logLevel
 
@@ -210,11 +220,11 @@ V2 to Sr3
           topic_prefix              topicPrefix
           ========================= ==================
 
-**CHANGE** : topic_prefix v02.post par défaut -> topicPrefix v03
+**CHANGEMENT** : topic_prefix v02.post par défaut -> topicPrefix v03
           peut avoir besoin de modifier les configurations pour remplacer la valeur par défaut pour obtenir des
           configurations compatibles.
 
-**CHANGE**: v2 : *mirror* a la valeur false sur tous les composants à l’exception de sarra.
+**CHANGEMENT**: v2 : *mirror* a la valeur false sur tous les composants à l’exception de sarra.
           sr3 : la valeur par défaut de *mirror* est True sur tous les composants, à l’exception de subscribe.
 
 *NOTICE* : Les plugins v2 les plus courants sont on_message, et on_file
@@ -335,12 +345,12 @@ V2 to Sr3
           la classe `Flow Callback <FlowCallbacks.html>`_. La nouvelle fonctionnalité de plugin
           peut principalement être implémenté sous forme de plugins.
 
-**CHANGE**: les plugins do_poll v2 doivent être remplacés par une sous-classification pour `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
+**CHANGEMENT**: les plugins do_poll v2 doivent être remplacés par une sous-classification pour `poll <../Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
           Exemple dans  `plugin porting <v2ToSr3.html>`_
 
-**CHANGE**: Les plugins on_html_page v2 sont également remplacés par la sous-classification `poll <.. /Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
+**CHANGEMENT**: Les plugins on_html_page v2 sont également remplacés par la sous-classification `poll <.. /Reference/flowcb.html#module-sarracenia.flowcb.poll>`_
 
-**CHANGE**: v2 do_send remplacé par send entrypoint dans un plugin Flowcb `plugin portage <v2ToSr3.html>`_
+**CHANGEMENT**: v2 do_send remplacé par send entrypoint dans un plugin Flowcb `plugin portage <v2ToSr3.html>`_
 
 *NOTICE* : les plugins d’accélérateur v2 sont remplacés par l’accélérateur intégré.
           accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
@@ -360,22 +370,22 @@ V2 to Sr3
           de flux s’exécuteront avec moins de charge cpu et mémoire si les plugins sont portés sur sr3.
           Pour créer des plugins sr3 natifs, il faut étudier la classe flowCallback (flowcb).
 
-**CHANGE**: on_watch plugins devient entry_point un point d’entrée after_accept sr3 dans un flowcb dans un watch.
+**CHANGEMENT**: on_watch plugins devient entry_point un point d’entrée after_accept sr3 dans un flowcb dans un watch.
 
 *ACTION* : Le composant **sr_audit a disparu**. Remplacé par l’exécution de *sr sanity* en tant que cron
           (ou tâche planifiée sous Windows) pour s’assurer que les processus nécessaires continuent de s’exécuter.
 
-**CHANGE** : paramètres obsolètes : use_amqplib, use_pika. Le nouveau `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
+**CHANGEMENT** : paramètres obsolètes : use_amqplib, use_pika. Le nouveau `sarracenia.moth.amqp <../Reference/code.html#module-sarracenia.moth.amqp>`_
           utilise la bibliothèque amqp.  Pour utiliser d’autres bibliothèques, il faut créer de nouvelles sous-classes de sarracenia.moth.
 
-**CHANGE**: statehost est maintenant un indicateur booléen, l’option fqdn n’est plus implémentée.
+**CHANGEMENT**: statehost est maintenant un indicateur booléen, l’option fqdn n’est plus implémentée.
           s’il s’agit d’un problème, soumettez un problème. Ce n’est tout simplement pas considéré comme intéressant pour l’instant.
 
-**CHANGEMENT**: sr_retry est devenu `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_.
+**CHANGEMENTMENT**: sr_retry est devenu `retry.py <../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_.
           Tous les plugins accédant aux structures internes de sr_retry.py doivent être réécrits.
           Cet accès n’est plus nécessaire, car l’API définit comment mettre des messages sur
           la fil d’attente de nouvelle tentative (déplacer les messages vers worklist.failed. )
 
-*CHANGE* : le watch sr3, avec l’option *force_polling*, est beaucoup moins efficace
+*CHANGEMENT* : le watch sr3, avec l’option *force_polling*, est beaucoup moins efficace
           sur sr3 que v2 pour les grandes arborescences de répertoires (voir numéro #403 )
           Idéalement, on n’utilise pas du tout *force_polling*.

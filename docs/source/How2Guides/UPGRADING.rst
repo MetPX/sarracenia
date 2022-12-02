@@ -40,6 +40,16 @@ git
 ---
 
 
+3.0.22
+------
+
+*CHANGE*: *destination*, when used in a poll is replaced by *pollUrl*
+
+*CHANGE*: *destination*, when used in a sender is replaced by *remoteUrl*
+
+*ACTION*: replace *destination* settings in affected configurations.
+          (automatically taken care of in v2 when converting.)
+
 3.0.17
 ------
 

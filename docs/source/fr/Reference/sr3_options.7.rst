@@ -1360,6 +1360,16 @@ Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente p
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
 
+please_stop_immediately <flag> (EXPERIMENTAL)
+---------------------------------------------
+
+Faire en sorte que les débits de SR3 s'arrêtent beaucoup plus rapidement, en n'effectuant aucun travail de drainage/nettoyage.
+Lors de l'interruption du traitement ou de la demande d'arrêt, certains flux de messages peuvent avoir des
+operations en cours, où il est important de les laisser terminer.
+Cela peut prendre plusieurs minutes pour qu'une directive *stop* prenne effet dans de tels cas.
+Avec cette option, l'application peut être informée qu'il n'y a pas besoin de cela
+code de terminaison complet et propre.
+
 randomize <flag>
 ----------------
 
@@ -1664,6 +1674,27 @@ users <flag> (défaut: false)
 
 Utiliser comme complément lorsque l’action *declare* est utilisée, pour demander à sr3 de déclarer des utilisateurs
 sur le courtier, ainsi que les files d’attente et les échanges.
+
+v2compatRenameDoublePost <flag> ( default: false)
+-------------------------------------------------
+
+la version 3 de Sarracenia propose une logique améliorée autour du renommage des fichiers, 
+en utilisant un seul message par opération de renommage. La version 2 nécessitait deux postes.
+Lors de la publication, dans une situation de mise en miroir, pour la consommation par les clients 
+v2, cet indicateur doit être réglé.
+
+
+varTimeOffset (default: 0)
+--------------------------
+
+For example::
+
+  varTimeOffset -7m 
+
+
+modifiera des substitutions de variables qui impliquent des substitutions de date/heure.
+Dans un modèle comme ${YYYY}/${MM}/${DD} sera évalué comme étant le
+date, évaluée sept minutes dans le passé.
 
 vip - OPTIONS ACTIVE/PASSIVE
 ----------------------------

@@ -378,8 +378,13 @@ En général, les plugins v3:
   dans la v2, il faudrait définir partstr, et sumstr pour les messages de notification v2 dans les plugins.
   Cela nécessitait une compréhension excessive des formats de message de notification et signifiait que la
   modification des formats de message de notification demande de modifier les plugins (le format de message de
-  notification v03 est non pris en charge par la plupart des plugins v2, par exemple). Pour créer un message de
-  notification à partir d’un fichier local dans un plugin v3 ::
+  notification v03 est non pris en charge par la plupart des plugins v2, par exemple). 
+
+ La manipulation de ces champs manuellement est activement contre-productif.
+ La somme de contrôle est déjà effectuée lorsque le nouveau message de notification est généré, donc très probablement
+ tous les champs de message tels que **sumalgo** et d'autres champs **algo** peuvent être ignorés.
+
+  Pour créer un message de notification à partir d’un fichier local dans un plugin v3 ::
 
      import sarracenia
 
@@ -984,3 +989,117 @@ flowcb/retry
   * a une routine after_work faisant quelque chose d’inconnu ... FIXME.
   * a une fonction de publication pour prendre les téléchargements échoués et les mettre
     sur la liste des nouvelles tentatives pour un examen ultérieur.
+
+
+
+Table of v2 and sr3 Equivalents
+-------------------------------
+
+
+Voici un aperçu des plugins inclus dans Sarracenia,
+On peut parcourir les deux arbres, et à l'aide du tableau ci-dessous,
+peut examiner, comparer et contraster les implémentations.
+
+
+* arbo v2: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
+* arbo Sr3: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
+
+La dénomination donne également un exemple de mappage de convention de nom... par ex. plugins dont le nom v2 commence par :
+
+* msg\_... -> filter/... où accept/...
+* file\_... -> work/...
+* poll\_... -> poll/... où gather/...
+* hb\_... -> housekeeping/...
+
+sont mappés aux répertoires conventionnels sr3 à droite.
+
+Les chemins relatifs des dossiers ci-dessus sont indiqués dans le tableau (les liens sont dans le code source, donc en anglais):
+
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| V2 plugins (all in one directory...)            | Sr3 flow callbacks (treeified)                                                                                                               |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| data\_...                                       | subclass sarracenia.transfer                                                                                                                 |
+|                                                 |                                                                                                                                              |
+| modifier le fichier en vol.                     | pas d´exemple disponible actuelement, veuillez consulter le code source.                                                                     |
+|                                                 |                                                                                                                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| destfn_sample.py                                | `destfn/sample.py <../../Reference/flowcb.html#module-sarracenia.flowcb.destfn.sample>`_                                                     |
+|                                                 |                                                                                                                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| file_age.py                                     | `work/age.py <../../Reference/flowcb.html#module-sarracenia.flowcb.work.age>`_                                                               |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| file_delete.py                                  | `work/delete.py <../../Reference/flowcb.html#module-sarracenia.flowcb.work.delete>`_                                                         |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| file_email.py                                   | `send/email.py <../../Reference/flowcb.html#module-sarracenia.flowcb.work.email>`_                                                           |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| file_rxpipe.py                                  | `work/rxpipe.py  <../../Reference/flowcb.html#module-sarracenia.flowcb.work.rxpipe>`_                                                        |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| hb_memory                                       | `housekeeping/resources.py  <../../Reference/flowcb.html#module-sarracenia.flowcb.housekeeping.resources>`_                                  |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| html_page.py                                    | subclass sarracenia.transfer                                                                                                                 |
+|                                                 |                                                                                                                                              |
+|                                                 | pas d´exemple disponible actuelement, veuillez consulter le code source.                                                                     |
+|                                                 |                                                                                                                                              |
+|                                                 | voir poll/nasa_mls_nrt.py comme exemple de tel cas.                                                                                          |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_2http.py                                    | `accept/tohttp.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.tohttp>`_                                                     |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_2localfile.py, msg_2local.py (not sure)     | `accept/tolocalfile.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.tolocalfile>`_                                           |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_delete.py                                   | `filter/deleteflowfiles.py <../../Reference/flowcb.html#module-sarracenia.flowcb.filter.deleteflowfiles>`_                                   |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_fdelay.py                                   | `filter/fdelay.py <../../Reference/flowcb.html#module-sarracenia.flowcb.filter.fdelay>`_                                                     |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_filter_wmo2msc.py                           | `filter/wmo2msc.py <../../Reference/flowcb.html#module-sarracenia.flowcb.filter.wmo2msc>`_                                                   |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_log.py,file_log.py, hb_log.py, post_log.py  | `log.py  <../../Reference/flowcb.html#module-sarracenia.flowcb.log>`_                                                                        |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_pclean.py, msg_pclean_f90.py                | `pclean.py <../../Reference/flowcb.html#module-sarracenia.flowcb.pclean>`_                                                                   |
+|                                                 | `filter/pcleanf90.py <../../Reference/flowcb.html#module-sarracenia.flowcb.filter.pcleanf92>`_                                               |
+|                                                 |                                                                                                                                              |
+| msg_pclean_f92.py                               | filter/pcleanf92.py <../../Reference/flowcb.html#module-sarracenia.flowcb.filter.pcleanf92>`_                                                |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| post_rate_limit.py                              | incorporé dans l´application messageRateMax                                                                                                  |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_rename_dmf.py                               | `accept/renamedmf.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.renamedmf>`_                                               |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_rename_whatfn.py                            | `accept/renamewhatfn.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.renamewhatfn>`_                                         |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_rename4jicc.py                              | `accept/rename4jicc.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.rename4jicc>`_                                           |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_stopper.py                                  | incorporé dans l´application messageCountMax                                                                                                 |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_sundew_pxroute.py                           | `accept/sundewpxroute.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.sundewpxroute>`_                                       |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_speedo.py                                   | `accept/speedo.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.speedo>`_                                                     |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_to_clusters.py                              | `accept/toclusters.py <../../Reference/flowcb.html#module-sarracenia.flowcb.accept.toclusters>`_                                             |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| msg_WMO_type_suffix.py                          | `accept/wmotypesuffix.py <../../Reference/flowcb.html#module-sarracenia.accept.wmotypesuffix>`_                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| anciennement inclu dans l´application           | `nodupe/__init__.py <../../Reference/flowcb.html#module-sarracenia.flowcb.nodupe>`_                                                          |
+| suppresion de duplicata                         |                                                                                                                                              |
+| hb_cache.py                                     |                                                                                                                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| incoporé dan l´appli message subscriber         | `gather/message.py <../../Reference/flowcb.html#module-sarracenia.flowcb.gather.message>`_                                                   |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| incoporé dan l´appli message poster             | `post/message.py <../../Reference/flowcb.html#module-sarracenia.flowcb.post.message>`_                                                       |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| incoporé dan l´appli file scan or noticing.     | `gather/file.py <../../Reference/flowcb.html#module-sarracenia.flowcb.gather.file>`_                                                         |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| incoporé dan l´appli retry logic                | `retry.py <../../Reference/flowcb.html#module-sarracenia.flowcb.retry>`_                                                                     |
+|                                                 |                                                                                                                                              |
+| hb_retry.py                                     |                                                                                                                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| poll_email.py                                   | `poll/mail.py <../../Reference/flowcb.html#module-sarracenia.flowcb.poll.mail>`_                                                             |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| poll_nexrad.py                                  | `poll/nexrad.py <../../Reference/flowcb.html#module-sarracenia.flowcb.poll.nexrad>`_                                                         |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| poll_noaa.py                                    | `poll/noaa_hydrometric.py <../../Reference/flowcb.html#module-sarracenia.flowcb.poll.noaa_hydrometric>`_                                     |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| poll_usgs.py                                    | `poll/usgs.py <../../Reference/flowcb.html#module-sarracenia.flowcb.poll.usgs>`_                                                             |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+| spare                                           |                                                                                                                                              |
++-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+
+

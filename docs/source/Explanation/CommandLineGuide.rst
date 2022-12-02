@@ -1,6 +1,6 @@
-======================
-SR3 Command Line Guide
-======================
+==================
+Command Line Guide
+==================
 
 
 SR3 - Everything

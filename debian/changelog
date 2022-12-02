@@ -1,3 +1,26 @@
+metpx-sr3 (3.00.22) UNRELEASED; urgency=medium
+
+  * Client seeing many bad messages. Force reading of entire file on transfers. warn when messages are "wrong"
+  * AM sender and server plugins added. (Thanks André)
+  * send only one message per rename operation (added v2compatRenameDoublePost to get old behaviour.)
+  * bad logic in one case of rename, where dest file already exists but should be overwritten
+  * added please_stop_immediately option. experimental means to accellerate shutdowns.
+  * added varTimeOffset option. To modify date substitutions in variable expansion.
+  * option change: destination -> pollUrl in polls.
+  * option change: destination -> remoteUrl in senders.
+  * added flowcb/poll/sr3bucket module.
+  * added support for new_retPath for plugins (part of porting work.)
+  * improved load_library module search to be easier/shorter to work with.
+  * improved api Config.variableExpansion() entry point, for use in callbacks.
+  * improved documentation of flowcallbacks and v2 porting advice.
+  * removed unused vestiges of "index" files for ftp and sftp protocols.
+  * callbackprepend was broken. fixed.
+  * list option parsing was broken. fixed.
+  * ftp server line parsing was broken. fixed.
+  * fixes for duplicate suppression of cod integrity case.
+  
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 02 Dec 2022 10:32:41 -0500
+
 metpx-sr3 (3.00.21) unstable; urgency=medium
 
   * added "flow" component, vanilla flow class, to increased flexibility. #575
