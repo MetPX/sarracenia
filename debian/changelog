@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.22) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.22) unstable; urgency=medium
 
   * Client seeing many bad messages. Force reading of entire file on transfers. warn when messages are "wrong"
   * AM sender and server plugins added. (Thanks André)
