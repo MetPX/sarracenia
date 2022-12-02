@@ -347,7 +347,7 @@ class Transfer():
         #   logger.error("util/readlocal mismatched file length reading %s. Message announced it as %d bytes, but read %d bytes " % (local_file,length,rw_length))
 
         # 2022/12/02 - pas attempting to get files that get shorter addressed.
-        if (rw_length < length) and hasattr(dst,'truncate'):
+        if ((length==0) or (rw_length < length)) and hasattr(dst,'truncate'):
              dst.truncate(rw_length)
 
         return rw_length
