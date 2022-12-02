@@ -13,11 +13,12 @@ metpx-sr3 (3.00.22) UNRELEASED; urgency=medium
   * improved load_library module search to be easier/shorter to work with.
   * improved api Config.variableExpansion() entry point, for use in callbacks.
   * improved documentation of flowcallbacks and v2 porting advice.
-  * removed unused vestiges of "index" files for ftp and sftp protocols.
+  * flowcb/work/age.py did not report correct file ages. fixed.
   * callbackprepend was broken. fixed.
   * list option parsing was broken. fixed.
   * ftp server line parsing was broken. fixed.
   * fixes for duplicate suppression of cod integrity case.
+  * removed unused vestiges of "index" files for ftp and sftp protocols.
   
  -- Peter Silva <peter@bsqt.homeip.net>  Fri, 02 Dec 2022 10:32:41 -0500
 
