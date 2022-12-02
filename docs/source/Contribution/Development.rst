@@ -1369,12 +1369,13 @@ A tag should be created to identify the end of the cycle::
    git push
    git push origin sarra-v3.16.01a01
 
-Once the tag is there in the v03_wip branch, one can promote it to main::
+Once the tag is in the v03_wip branch, promote it to main::
 
    git checkout main
    git merge v03_wip
+   git push
 
-Once in main, the docker images will be automatically upgraded, but
+Once main is updated on github, the docker images will be automatically upgraded, but
 we then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
 
 Once package generation is complete, one should `Set the Version`_
