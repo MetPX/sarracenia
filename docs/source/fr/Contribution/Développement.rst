@@ -1396,10 +1396,11 @@ Une balise doit être créée pour identifier la fin du cycle ::
    git push
    git push origin sarra-v3.16.01a01
 
-Une fois que la balise est là dans la branche v03_wip, on peut la promouvoir sur main::
+Une fois que la balise est là dans la branche v03_wip, il faut promouvoir sur main::
 
    git checkout main
    git merge v03_wip
+   git push
 
 Une fois en main, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
 les différentes méthodes de distribution: `PyPI`_, et `Launchpad`_
