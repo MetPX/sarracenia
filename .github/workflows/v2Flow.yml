@@ -17,7 +17,8 @@ on:
 
 env:
    sarra_py_version: 2.22
-   V2SKIP_KNOWN_BAD: yes
+   V2_SKIP_KNOWN_BAD: yes
+   SKIP_KNOWN_BAD: yes
 
 jobs:
 
