@@ -349,6 +349,7 @@ class Sftp(Transfer):
         rw_length = self.read_writelocal(remote_file, rfp, local_file,
                                          local_offset, length)
 
+        
         # close
 
         alarm_set(self.o.timeout)
