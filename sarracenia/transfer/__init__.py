@@ -309,15 +309,18 @@ class Transfer():
 
         # copy source to remoteUrl
 
-        rw_length = self.read_write(src, dst, length)
+        # 2022/12/02 - pas - need copies to always work...
+        # in HPC mirroring case, a lot of short files, likely length is wrong in announcements.
+        # grab the whole file unconditionally for now, detect error using mismatch.
+        rw_length = self.read_write(src, dst, 0)
 
         # close
         self.local_write_close(dst)
 
         # warn if length mismatch without transformation.
-
+        # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
         if length != 0 and rw_length != length:
-            logger.error(
+            logger.warning(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))
 
