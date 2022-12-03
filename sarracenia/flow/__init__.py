@@ -313,8 +313,8 @@ class Flow:
         )
         self._runCallbacksTime('please_stop')
 
-        if self.o.please_stop_immediately:
-            sys.exit(0)
+        #if self.o.please_stop_immediately:
+        #    sys.exit(0)
 
         self._stop_requested = True
 
@@ -538,12 +538,18 @@ class Flow:
                     continue
 
             if not self._stop_requested and (stime > 0):
-                try:
-                    logger.debug('sleeping for stime: %.2f seconds' % stime)
-                    time.sleep(stime)
-                except:
-                    logger.info("flow woken abnormally from sleep")
-                    self.please_stop()
+                # dividing into small sleeps so exit processing happens faster
+                # bug #595, still relatively low cpu usage in increment sized chunks.
+                if 5 < stime:
+                    increment=5
+                else:
+                    increment=stime
+                while (stime > 0):
+                    time.sleep(increment)
+                    if self._stop_requested:
+                        break
+                    else:
+                        stime -= 5 
 
                 last_time = now
 

@@ -107,8 +107,3 @@ class Poll(Flow):
                 if len(new_incoming) > 0:
                     self.worklist.incoming.extend(new_incoming)
 
-    def please_stop(self):
-        """
-           since poll has no state to flush, one can exit it immediately at any point.
-        """
-        sys.exit(0)
