@@ -1,3 +1,11 @@
+metpx-sr3 (3.00.23) UNRELEASED; urgency=medium
+
+  * fixing #595 flows taking a long time to stop.
+  * more robust decode of v2 messages.
+  * added conversion of sum field to sr3 convert.
+
+ -- Peter Silva <aspypas@srdev1.cmc.ec.gc.ca>  Sat, 03 Dec 2022 19:53:21 +0000
+
 metpx-sr3 (3.00.22) unstable; urgency=medium
 
   * Client seeing many bad messages. Force reading of entire file on transfers. warn when messages are "wrong"

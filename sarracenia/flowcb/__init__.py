@@ -171,7 +171,7 @@ class FlowCB:
 
          This replaces built-in send functionality for individual files.
 
-    def stop_requested(self):
+    def please_stop(self):
          Pre-warn a flowcb that a stop has been requested, allowing processing to wrap up
          before the full stop happens.
 
@@ -191,7 +191,6 @@ class FlowCB:
            flow callbacks should not time.sleep for long periods, but only nap and check
            between naps if a stop has been requested.
         """
-        logger.info('acknowledged')
         self.stop_requested = True
 
 def load_library(factory_path, options):
