@@ -178,12 +178,21 @@ class FlowCB:
     """
     def __init__(self, options):
         self.o = options
+        self.stop_requested = False
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
+
+    def please_stop(self):
+        """
+           flow callbacks should not time.sleep for long periods, but only nap and check
+           between naps if a stop has been requested.
+        """
+        logger.info('acknowledged')
+        self.stop_requested = True
 
 def load_library(factory_path, options):
     """

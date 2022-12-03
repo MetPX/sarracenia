@@ -101,6 +101,3 @@ class MDelayLatest(FlowCB):
         )
         self.suppressions = 0
 
-    def please_stop(self):
-        logger.error('acknowledged')
-        self.stop_requested = True
