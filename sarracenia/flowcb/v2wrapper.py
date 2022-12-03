@@ -84,7 +84,7 @@ class Message:
 
 
         if 'integrity' in h:
-            if h['integrity']['method'] in sumalgo_v3tov2:
+            if h['integrity']['method'] in sum_algo_v3tov2:
                sa = sum_algo_v3tov2[h["integrity"]["method"]]
             else: # FIXME ... 1st md5name case... default when unknown...
                logger.error('integrity method unknown to v2: %s, replacing with md5name' % h['integrity']['method'] )
