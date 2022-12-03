@@ -1113,7 +1113,7 @@ class Config:
         self.settings[opt_class][opt_var] = ' '.join(value)
 
     def _parse_sum(self, value):
-        #logger.error('input value: %s' % value)
+        #logger.error('FIXME! input value: %s' % value)
 
         if not value:
             value = self.integrity_method
@@ -1124,6 +1124,7 @@ class Config:
             #logger.error('returning 1: %s' % value)
             return
 
+        #logger.error( f'1 value: {value} self.integrity_method={self.integrity_method}' )
         if (value[0:2] == 'z,'):
             value = value[2:]
             self.integrity_method = 'cod,'
@@ -1132,22 +1133,31 @@ class Config:
             self.integrity_arbitrary_value = value[2:]
         else:
             self.integrity_method = value
+        #logger.error( f'2 value: {value} self.integrity_method={self.integrity_method}' )
 
         if value in [ 'N', 'none' ]:
             self.integrity_method = None
-            #logger.error('returning 1.1: %s' % 'none')
+            logger.error('returning 1.1: %s' % 'none')
             return 
+        #logger.error( f'3 value: {value} self.integrity_method={self.integrity_method}' )
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
-            #logger.error('against 3: %s' % sc.__name__.lower() )
-            if self.integrity_method == sc.__name__.lower():
-                #logger.error('returning 2: %s' % self.integrity_method)
+            logger.error('against 3: %s' % sc.__name__.lower() )
+            if value == sc.__name__.lower():
+                #logger.error('returning 2: %s' % value )
+                if self.integrity_method == 'cod,':
+                      self.integrity_method += value
+                else:
+                      self.integrity_method = value
                 return
             if hasattr(sc, 'registered_as'):
                 #logger.error('against 3: %s' % sc.registered_as() )
 
                 if (sc.registered_as() == value):
-                    self.integrity_method = sc.__name__.lower()
+                    if self.integrity_method == 'cod,':
+                          self.integrity_method += sc.__name__.lower()
+                    else:
+                          self.integrity_method = sc.__name__.lower()
                     #logger.error('returning 3: %s' % self.integrity_method)
                     return
         # FIXME this is an error return case, how to designate an invalid checksum?
