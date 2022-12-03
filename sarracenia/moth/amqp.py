@@ -86,6 +86,8 @@ class AMQP(Moth):
                     logger.warning('message is missing content-type header')
                 logger.info('raw message body: type: %s (%d bytes) %s' %
                              (type(body), len(body), body))
+                logger.info('raw message headers: type: %s (%d elements) %s' %
+                             (type(raw_msg.headers), len(raw_msg.headers), raw_msg.headers))
                 logger.info('raw message properties:' % raw_msg.properties)
 
             if type(body) is bytes:
@@ -104,6 +106,7 @@ class AMQP(Moth):
 
             msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
+                logger.error('Decode failed, discarding message')
                 return None
 
             topic = raw_msg.delivery_info['routing_key'].replace(

@@ -45,66 +45,80 @@ class V02(Encoding):
             msg['_deleteOnPost'] = set()
         msg['_deleteOnPost'] |= set(['subtopic'])
     
-        pubTime, baseUrl, relPath = body.split(' ')[0:3]
+        try:
+            pubTime, baseUrl, relPath = body.split(' ')[0:3]
+        except Exception as ex:
+            logger.error( f"body should have three space separated fields: {body}, error: {ex}" )
+            return None
+
         msg['pubTime'] = sarracenia.timev2tov3str(pubTime)
         msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
         msg['relPath'] = relPath
         msg['subtopic'] = relPath.split('/')
+
         for t in ['atime', 'mtime']:
             if t in msg:
-                msg[t] = sarracenia.timev2tov3str(msg[t])
+                try: 
+                    msg[t] = sarracenia.timev2tov3str(msg[t])
+                except Exception as ex:
+                    logger.warning( f"invalid time field: {t} value: {msg['t']}, error: {ex}" )
+        try:
+            if 'sum' in msg:
+                sum_algo_map = {
+                    "a": "arbitrary",
+                    "d": "md5",
+                    "s": "sha512",
+                    "n": "md5name",
+                    "0": "random",
+                    "L": "link",
+                    "R": "remove",
+                    "z": "cod"
+                }
+                sm = sum_algo_map[msg["sum"][0]]
+                if sm in ['random', 'arbitrary']:
+                    sv = msg["sum"][2:]
+                elif sm in ['cod']:
+                    sv = sum_algo_map[msg["sum"][2:]]
+                else:
+                    sv = encode(decode(msg["sum"][2:], 'hex'),
+                                'base64').decode('utf-8').strip()
+                if 'oldname' in msg:
+                    msg['fileOp'] = { 'rename': msg['oldname'] }
+                    del msg['oldname']
+                    msg["integrity"] = {"method": sm, "value": sv}
+                elif sm == 'remove':
+                    msg['fileOp'] = { 'remove': '' }
+                elif 'link' in msg:
+                    msg['fileOp'] = { 'link': msg['link'] }
+                    del msg['link']
+                elif sm == 'md5name':
+                    pass
+                else:
+                    msg["integrity"] = {"method": sm, "value": sv}
     
-        if 'sum' in msg:
-            sum_algo_map = {
-                "a": "arbitrary",
-                "d": "md5",
-                "s": "sha512",
-                "n": "md5name",
-                "0": "random",
-                "L": "link",
-                "R": "remove",
-                "z": "cod"
-            }
-            sm = sum_algo_map[msg["sum"][0]]
-            if sm in ['random', 'arbitrary']:
-                sv = msg["sum"][2:]
-            elif sm in ['cod']:
-                sv = sum_algo_map[msg["sum"][2:]]
-            else:
-                sv = encode(decode(msg["sum"][2:], 'hex'),
-                            'base64').decode('utf-8').strip()
-            if 'oldname' in msg:
-                msg['fileOp'] = { 'rename': msg['oldname'] }
-                del msg['oldname']
-                msg["integrity"] = {"method": sm, "value": sv}
-            elif sm == 'remove':
-                msg['fileOp'] = { 'remove': '' }
-            elif 'link' in msg:
-                msg['fileOp'] = { 'link': msg['link'] }
-                del msg['link']
-            elif sm == 'md5name':
-                pass
-            else:
-                msg["integrity"] = {"method": sm, "value": sv}
+                del msg['sum']
+        except Exception as ex:
+            logger.warning( f"sum field corrupt: {msg['sum']} ignored: {ex}" )
 
-            del msg['sum']
-    
-        if 'parts' in msg:
-            (style, chunksz, block_count, remainder,
-             current_block) = msg['parts'].split(',')
-            if style in ['i', 'p']:
-                msg['blocks'] = {}
-                msg['blocks']['method'] = {
-                    'i': 'inplace',
-                    'p': 'partitioned'
-                }[style]
-                msg['blocks']['size'] = int(chunksz)
-                msg['blocks']['count'] = int(block_count)
-                msg['blocks']['remainder'] = int(remainder)
-                msg['blocks']['number'] = int(current_block)
-            else:
-                msg['size'] = int(chunksz)
-            del msg['parts']
+        try:
+            if 'parts' in msg:
+                (style, chunksz, block_count, remainder,
+                 current_block) = msg['parts'].split(',')
+                if style in ['i', 'p']:
+                    msg['blocks'] = {}
+                    msg['blocks']['method'] = {
+                        'i': 'inplace',
+                        'p': 'partitioned'
+                    }[style]
+                    msg['blocks']['size'] = int(chunksz)
+                    msg['blocks']['count'] = int(block_count)
+                    msg['blocks']['remainder'] = int(remainder)
+                    msg['blocks']['number'] = int(current_block)
+                else:
+                    msg['size'] = int(chunksz)
+                del msg['parts']
+        except Exception as ex:
+            logger.warning( f"parts field corrupt: {msg['parts']}, ignored: {ex}" )
     
         msg["version"] = 'v02'
         return msg
