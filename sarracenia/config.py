@@ -1752,10 +1752,13 @@ class Config:
             replace substitution patterns, variable substitutions as described in
             https://metpx.github.io/sarracenia/Reference/sr3_options.7.html#variables
 
+            returns:  the given string with the substiturions done.
+
             examples:   ${YYYYMMDD-70m} becomes 20221107 assuming that was the current date 70 minutes ago.
                         environment variables, and built-in settings are replaced also.
 
            timeoffset -70m
+
 
         """
 
@@ -1797,7 +1800,7 @@ class Config:
             )
             new_dir = new_dir.replace('${PDR}', self.post_baseDir, 1)
 
-        whenStamp = time.mktime(time.gmtime()) + self.varTimeOffset
+        whenStamp = time.gmtime( time.time()+self.varTimeOffset )
 
         if '${YYYYMMDD}' in cdir:
             YYYYMMDD = time.strftime("%Y%m%d", whenStamp)
