@@ -84,11 +84,20 @@ class AMQP(Moth):
             if self.o['messageDebugDump']:
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
-                logger.info('raw message body: type: %s (%d bytes) %s' %
+                if body:
+                    logger.info('raw message body: type: %s (%d bytes) %s' %
                              (type(body), len(body), body))
-                logger.info('raw message headers: type: %s (%d elements) %s' %
+                else:
+                    logger.info('raw message had no body')
+                if raw_msg.headers:
+                    logger.info('raw message headers: type: %s (%d elements) %s' %
                              (type(raw_msg.headers), len(raw_msg.headers), raw_msg.headers))
-                logger.info('raw message properties:' % raw_msg.properties)
+                else:
+                    logger.info('raw message had no headers')
+                if raw_msg.properties:
+                    logger.info('raw message properties:' % raw_msg.properties)
+                else:
+                    logger.info('raw message had no properties')
 
             if type(body) is bytes:
                 try:
