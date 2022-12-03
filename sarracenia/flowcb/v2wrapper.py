@@ -82,8 +82,12 @@ class Message:
                 "remove": "R",
                 "cod": "z"
             }
-            sa = sum_algo_v3tov2[h["integrity"]["method"]]
-
+            if h['integrity']['method'] in sumalgo_v3tov2:
+               sa = sum_algo_v3tov2[h["integrity"]["method"]]
+            else: # FIXME ... 1st md5name case... default when unknown...
+               logger.error('integrity method unknown to v2: %s, replacing with md5name' % h['integrity']['method'] )
+               sa = 'n'
+               sv = md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
 
             self.sumflag = sa
 
@@ -100,7 +104,7 @@ class Message:
             self.sumflg = sa
             self.sumstr = h["sum"]
         else:
-            # FIXME ... md5name case.
+            # FIXME ... 2nd md5name case.
             self.sumstr = 'n,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
             self.sumflg = 'n'
             h["sum"] = self.sumstr
