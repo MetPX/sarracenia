@@ -101,8 +101,8 @@ class Message:
             self.sumstr = h["sum"]
         else:
             # FIXME ... md5name case.
-            self.sumstr = 'N,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
-            self.sumflg = 'N'
+            self.sumstr = 'n,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
+            self.sumflg = 'n'
             h["sum"] = self.sumstr
 
         # fileOp case... link, and remove need different treatment.
