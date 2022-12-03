@@ -1137,12 +1137,12 @@ class Config:
 
         if value in [ 'N', 'none' ]:
             self.integrity_method = None
-            logger.error('returning 1.1: %s' % 'none')
+            #logger.error('returning 1.1: %s' % 'none')
             return 
         #logger.error( f'3 value: {value} self.integrity_method={self.integrity_method}' )
 
         for sc in sarracenia.integrity.Integrity.__subclasses__():
-            logger.error('against 3: %s' % sc.__name__.lower() )
+            #logger.error('against 1.8: %s' % sc.__name__.lower() )
             if value == sc.__name__.lower():
                 #logger.error('returning 2: %s' % value )
                 if self.integrity_method == 'cod,':
