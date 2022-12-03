@@ -158,7 +158,7 @@ class Https(Transfer):
         # open self.http
 
         if 'retPath' in msg:
-            url = self.remoteUrl + msg['retPath']
+            url = self.remoteUrl + '/' + msg['retPath']
         else:
             url = self.remoteUrl + '/' + urllib.parse.quote(self.path + '/' +
                                                               remote_file)
@@ -253,7 +253,7 @@ class Https(Transfer):
 
     # open
     def __open__(self, path, remote_offset=0, length=0):
-        logger.debug("sr_http open")
+        logger.debug( f"sr_http open {path}")
 
         self.http = None
         self.connected = False
