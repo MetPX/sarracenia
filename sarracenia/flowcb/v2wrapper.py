@@ -18,6 +18,18 @@ from sarracenia import nowflt, timestr2flt, timev2tov3str
 
 logger = logging.getLogger(__name__)
 
+sum_algo_v3tov2 = {
+                "arbitrary": "a",
+                "md5": "d",
+                "sha512": "s",
+                "md5name": "n",
+                "random": "0",
+                "link": "L",
+                "remove": "R",
+                "cod": "z"
+}
+
+sum_algo_v2tov3 = { v: k for k,v in sum_algo_v3tov2.items() }
 
 class Message:
     def __init__(self, h):
@@ -72,16 +84,6 @@ class Message:
 
 
         if 'integrity' in h:
-            sum_algo_v3tov2 = {
-                "arbitrary": "a",
-                "md5": "d",
-                "sha512": "s",
-                "md5name": "n",
-                "random": "0",
-                "link": "L",
-                "remove": "R",
-                "cod": "z"
-            }
             if h['integrity']['method'] in sumalgo_v3tov2:
                sa = sum_algo_v3tov2[h["integrity"]["method"]]
             else: # FIXME ... 1st md5name case... default when unknown...

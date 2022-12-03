@@ -40,6 +40,8 @@ import subprocess
 import sys
 import time
 
+from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
+
 from sarracenia import user_config_dir, user_cache_dir
 from sarracenia.config import *
 import sarracenia.moth
@@ -1953,7 +1955,19 @@ class sr_GlobalState:
                             k = 'pollUrl'
                         else:
                             k = 'remoteUrl'
-
+                    elif k == 'integrity':
+                        if line[1][0] in sum_algo_v2tov3:
+                           method=sum_algo_v2tov3[line[1][0]]
+                           if method == 'cod':
+                               if line[1][3] in sum_algo_v2tov3:
+                                   value=sum_algo_v2tov3[line[1][3]]
+                                   line[1]=f"{method},{value}"
+                               else:
+                                   logger.error( f"unknown checksum spec: {line}")
+                                   continue
+                        else:
+                            logger.error( f"unknown checksum spec: {line}")
+                            continue
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
