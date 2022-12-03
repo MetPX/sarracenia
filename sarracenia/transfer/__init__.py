@@ -242,7 +242,6 @@ class Transfer():
 
         if length == 0:
             while True:
-                logger.debug("FIXME: reading a chunk")
                 if self.o.timeout: alarm_set(self.o.timeout)
                 chunk = src.read(self.o.bufsize)
                 if chunk:
