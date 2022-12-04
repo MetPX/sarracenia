@@ -220,6 +220,15 @@ convert_to_v3 = {
     'xattr_disable': [ 'continue' ]
 }
 
+convert_patterns_to_v3 = {
+   '${YYYYMMDD}' : '${%Y%m%d}',
+   '${YYYY}': '${%Y}',
+   '${JJJ}': '${%j}',
+   '${HH}': '${%H}',
+   '${DD}': '${%d}',
+
+}
+
 logger = logging.getLogger(__name__)
 
 """

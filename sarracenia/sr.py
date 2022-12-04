@@ -1985,8 +1985,14 @@ class sr_GlobalState:
 
                     if k == 'continue':
                         continue
+
+                    if len(line) > 1:
+                        for p in convert_patterns_to_v3:
+                            while p in line[1]:
+                               line[1] = line[1].replace(p,convert_patterns_to_v3[p])
+
                     v3_cfg.write(' '.join(line)+'\n')
-        logging.info('converting %s from v2 to v3 ' % cfg)
+        logging.info('wrote conversion from v2 %s to sr3 ' % cfg)
 
 
     def overview(self):
