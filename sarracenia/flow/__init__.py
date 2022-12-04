@@ -367,6 +367,9 @@ class Flow:
         logger.info(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
+        if not self.has_vip():
+           logger.info('starting up passive, as do not possess vip' )
+
         self._runCallbacksTime(f'on_start')
 
         spamming = True

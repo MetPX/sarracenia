@@ -59,18 +59,6 @@ class Scheduled(FlowCB):
         scheduled_hour 25
         scheduled_minute 45
     
-    grca_timeseries: at 15 and 55 every hour.
-    
-    manitoba_surface: 20 minutes past each hour.
-    
-    rwin_bc: 10,20,40,59 past the hour...
-    
-    trca_precip: 3,18,33,48 past every hour...
-    
-    yukon_hourly: at 30 minutes past each hour.
-    
-    
-    
     notes to future self:
     
     would there be a more pythonic way of doing this?
