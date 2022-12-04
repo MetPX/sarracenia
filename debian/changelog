@@ -3,6 +3,9 @@ metpx-sr3 (3.00.23) UNRELEASED; urgency=medium
   * fixing #595 flows taking a long time to stop.
   * more robust decode of v2 messages.
   * added conversion of sum field to sr3 convert.
+  * date patterns changed from sundew pattern to python time.strftime patterns.
+  * sr3 conversion code now includes date patterns.
+  * added rename setting, that honours variable expansion.
 
  -- Peter Silva <aspypas@srdev1.cmc.ec.gc.ca>  Sat, 03 Dec 2022 19:53:21 +0000
 
