@@ -111,15 +111,6 @@ Il est possible de faire une substitution dans la valeur d'une option. Les valeu
 Le nom peut être une variable d’environnement ordinaire, ou choisi parmi un certain nombre de variables déjà
 intégrés:
 
-**${YYYY}         année actuelle**
-**${MM}           mois actuel**
-**${JJJ}          julian actuelle**
-**${YYYYMMDD}     date actuelle**
-
-**${YYYY-1D}      année actuelle   - 1 jour**
-**${MM-1D}        mois actuel - 1 jour**
-**${JJJ-1D}       julian actuelle - 1 jour**
-**${YYYYMMDD-1D}  date actuelle   - 1 jour**
 
 ::
 
@@ -136,13 +127,13 @@ intégrés:
 Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du *directory*
 en utilisant la notation *${..} * :
 
+* %...     - un patron tel qu'accepté par `time.strftime() https://docs.python.org/fr/3/library/time.html#time.strftime`_
+  exemple:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34
 * SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
 * BD       - le répertoire de base.
 * BUP      - le composant du chemin de baseUrl (ou : baseUrlPath).
 * BUPL     - le dernier élément du chemin du baseUrl. (ou: baseUrlPathLast).
 * PBD      - le "post base dir".
-* YYYYMMDD - l’horodatage quotidien actuel.
-* HH       - l’horodatage horaire actuel.
 * *var*    - n'importe quelle variable d’environnement.
 * BROKER_USER - le nom d’utilisateur pour l’authentification auprès du courtier (par exemple, anonyme)
 * PROGRAM     - le nom du composant (subscribe, shovel, etc...)
@@ -151,9 +142,10 @@ en utilisant la notation *${..} * :
 * RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
 
 
-Les horodatages YYYYMMDD et HH font référence à l’heure à laquelle les données sont traitées par
+Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
 le composant, ceci n’est pas décodé ou dérivé du contenu des fichiers livrés.
-Toutes les dates/heures de Sarracenia sont en UTC.
+Toutes les dates/heures de Sarracenia sont en UTC. Le paramètre varTimeOffset peut spécifier
+une déviation par rapport à l'heure actuelle.
 
 Référez  à *sourceFromExchange* pour un exemple d’utilisation. Notez que toute valeur déjà intégrée
 dans Sarracenia a priorité par rapport à une variable du même nom dans l’environnement.
@@ -198,10 +190,19 @@ les champs de substitution suivants seront disponibles::
   ${RHH}   remplacer par l'heure de réception
   ${RMN}   remplacer par la minute de réception
   ${RSS}   remplacer par la seconde de réception
+  ${YYYY}         année actuelle (utilisé %Y est préféré)
+  ${MM}           mois actuel (utilisé %M est préféré)
+  ${JJJ}          julian actuelle (utilisé %j est préféré)
+  ${YYYYMMDD}     date actuelle (utilisé %Y%M%D est préféré)
+
 
 Les champs 'R' proviennent du sixième champ, et les autres viennent du premier champ.
 Lorsque des données sont injectées dans Sarracenia à partir de Sundew, l’en-tête du message d'annonce *sundew_extension*
 fournira la source de ces substitions même si ces champs ont été supprimés des fichiers livrés.
+
+note::
+   les versions périmés de spécification temporelles éventuellement vont cessé d´être interprétés
+   ands une version ultérieur.
 
 SR_DEV_APPNAME
 ~~~~~~~~~~~~~~
