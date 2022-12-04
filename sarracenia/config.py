@@ -130,7 +130,7 @@ str_options = [
     'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName', 'remoteUrl',
+    'post_exchangeSuffix', 'queueName', 'remoteUrl', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -1828,6 +1828,10 @@ class Config:
         if '${JJJ}' in cdir:
             JJJ = time.strftime("%j", whenStamp)
             new_dir = new_dir.replace('${JJJ}', JJJ)
+
+        if '${%' in cdir:
+            new_dir = re.sub( "\$\{\%(.*)\}", "%\g<1>", new_dir )
+            new_dir = time.strftime(new_dir, whenStamp)
 
         # Parsing cdir to subtract time from it in the following formats
         # time unit can be: sec/mins/hours/days/weeks

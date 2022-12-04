@@ -16,7 +16,6 @@ default_options = {
     'permCopy': True,
     'timeCopy': True,
     'randomize': False,
-    'rename': None,
     'post_on_start': False,
     'sleep': -1,
     'nodupe_ttl': 0

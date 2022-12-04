@@ -497,12 +497,12 @@ class Message(dict):
         # rename path given with no filename
 
         if o.rename:
-            newname = o.rename
+            msg['retPath'] = msg['new_relPath']
+            newname = o.variableExpansion(o.rename)
             if o.rename[-1] == '/':
                 newname += os.path.basename(path)
 
         # strip 'N' heading directories
-
         if o.strip > 0:
             strip = o.strip
             if path[0] == '/': strip = strip + 1

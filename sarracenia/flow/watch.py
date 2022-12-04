@@ -16,7 +16,6 @@ default_options = {
     'permCopy': True,
     'timeCopy': True,
     'randomize': False,
-    'rename': None,
     'sumflg': 'sha512',
     'post_on_start': False,
     'sleep': 5,
