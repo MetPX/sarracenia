@@ -147,6 +147,11 @@ le composant, ceci n’est pas décodé ou dérivé du contenu des fichiers livr
 Toutes les dates/heures de Sarracenia sont en UTC. Le paramètre varTimeOffset peut spécifier
 une déviation par rapport à l'heure actuelle.
 
+note::
+
+   Lorsque les substitutions de date ${% sont présentes, l'interprétation des modèles % dans les noms de fichiers
+   par strftime, peut signifier qu'il faut leur échapper les caractères précédents via le doublage : %%
+
 Référez  à *sourceFromExchange* pour un exemple d’utilisation. Notez que toute valeur déjà intégrée
 dans Sarracenia a priorité par rapport à une variable du même nom dans l’environnement.
 Notez que les paramètres de *flatten* peuvent être modifiés entre les options de *directory*.
