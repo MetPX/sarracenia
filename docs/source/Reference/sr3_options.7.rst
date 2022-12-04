@@ -106,44 +106,27 @@ ones higher in the file..
 Variables
 =========
 
-One can include substitutions in option values.  They are represented by ${name}.
+One can include substitutions in option values. They are represented by ${name}.
 The name can be an ordinary environment variable, or a chosen from a number of 
-built-in ones:
-
-**${YYYY}         current year**
-**${MM}           current month**
-**${JJJ}          current julian**
-**${YYYYMMDD}     current date**
-
-**${YYYY-1D}      current year .. evaluated 1 day in the past**
-**${MM-1D}        current month  .. evaluated 1 day in the past**
-**${JJJ-1D}       current julian .. evaluated 1 day in the past**
-**${YYYYMMDD-70m}  current date .. evaluated 70 minutes in the past**
-
-::
-
-  ex.   directory /mylocaldirectory/myradars
-        accept    .*RADAR.*
-
-        directory /mylocaldirectory/mygribs
-        reject    .*Reg.*
-        accept    .*GRIB.*
+built-in ones. For example::
 
         varTimeOffset -5m
-        directory /mylocaldirectory/${YYYYMMDD}/mydailies
+        directory /mylocaldirectory/${%Y%m%d}/mydailies
         accept    .*observations.*
+
+        rename hoho.${%Y%m%d_%H%M%S}.csv
 
 In the last example above, the *varTimeOffset* will modify the evaluation of YYYYMMDD to be 5m in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
+* %...     - a `time.strftime() <https://docs.python.org/3/library/time.html#time.strftime>`_ compatible date/time formatting string.
+  example:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34 
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 
 * BUPL     - the last element of the baseUrl path. (or: baseUrlPathLast)
 * PBD      - the post base dir
-* YYYYMMDD - the current daily timestamp.
-* HH       - the current hourly timestamp.
 * *var*    - any environment variable.
 * BROKER_USER - the user name for authenticating to the broker (e.g. anonymous)
 * PROGRAM     - the name of the component (subscribe, shovel, etc...)
@@ -151,16 +134,19 @@ option, with the use of *${..}* notation:
 * HOSTNAME    - the hostname running the client.
 * RANDID      - a random id that will be consistent within a single invocation.
 
-
-
-The YYYYMMDD and HH time stamps refer to the time at which the data is processed by
+The %Y%m%d and %h time stamps refer to the time at which the data is processed by
 the component, it is not decoded or derived from the content of the files delivered.
-All date/times in Sarracenia are in UTC.
+All date/times in Sarracenia are in UTC. use the varTimeOffset setting to adjust
+from the current time.
 
 Refer to *sourceFromExchange* for a common example of usage. Note that any sarracenia
 built-in value takes precedence over a variable of the same name in the environment.
 Note that flatten settings can be changed between directory options.
 
+Note::
+
+   the ${% date substitutions are present, the interpretation of % patterns in filenames 
+   by strftime, may mean it is necessary to escape precent characters them via doubling: %%
 
 Sundew Compatible Substituions 
 ------------------------------
@@ -200,11 +186,22 @@ following substitution fields are available::
   ${RHH}   replace by reception hour
   ${RMN}   replace by reception minutes
   ${RSS}   replace by reception second
+  YYYYMMDD - the current daily timestamp. (v2 compat, prefer strftime %Y%m%d )
+  HH       - the current hourly timestamp. (v2 compat, prefer strftime %h )
+  JJJ      - the current hourly timestamp. (v2 compat, prefer strftime %j )
+
 
 The 'R' fields come from the sixth field, and the others come from the first one.
 When data is injected into sarracenia from Sundew, the *sundew_extension* notification message header
 will provide the source for these substitions even if the fields have been removed
 from the delivered file names.
+
+Note:: 
+
+   The version 2 compatible date strings (e.g. YYYYMMDD) originate with obsolete 
+   WMO practices, and support will be removed at a future date. Please use strftime 
+   style patterns in new configurations. 
+
 
 SR_DEV_APPNAME
 ~~~~~~~~~~~~~~
