@@ -121,8 +121,10 @@ intégrés:
         reject    .*Reg.*
         accept    .*GRIB.*
 
-        directory /monrépertoirelocal/${YYYYMMDD}/mydailies
+        directory /monrépertoirelocal/${%Y%m%d_%Hh%m:%S.%f}/mydailies
         accept    .*observations.*
+
+        rename lala_${%Y%m%d%H%m%S.%f}
 
 Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du *directory*
 en utilisant la notation *${..} * :
@@ -1410,10 +1412,9 @@ Specification du serveur auquel on veut livrer des données (dans un *sender*)
 rename <chemin>
 ---------------
 
-Avec l’option *renommer*, l’utilisateur peut
-suggérer un chemin de destination pour ses fichiers. Si le
-chemin se termine par '/' il suggère un chemin de répertoire...
-Si ce n’est pas le cas, l’option spécifie un changement de nom de fichier.
+Avec l’option *renommer*, l’utilisateur peut suggérer un chemin de destination pour ses fichiers. Si le
+chemin se termine par '/' il suggère un chemin de répertoire...  Si ce n’est pas le cas, l’option 
+spécifie un changement de nom de fichier.
 
 report et report_exchange
 -------------------------

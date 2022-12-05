@@ -114,7 +114,7 @@ built-in ones. For example::
         directory /mylocaldirectory/${%Y%m%d}/mydailies
         accept    .*observations.*
 
-        rename hoho.${%Y%m%d_%H%M%S}.csv
+        rename hoho.${%Y%m%d_%H%M%S.%f}.csv
 
 In the last example above, the *varTimeOffset* will modify the evaluation of YYYYMMDD to be 5m in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
@@ -1422,10 +1422,9 @@ Specification of a remote resource to deliver to in a sender.
 rename <path>
 -------------
 
-With the *rename* option, the user can
-suggest a destination path for its files. If the given
-path ends with '/' it suggests a directory path...
-If it doesn't, the option specifies a file renaming.
+With the *rename* option, the user can suggest a destination path for its files. If the given
+path ends with '/' it suggests a directory path... If it doesn't, the option specifies a file renaming.
+Often used with variable substitutions, to provide dynamic, patterned names.
 
 
 report and report_exchange
