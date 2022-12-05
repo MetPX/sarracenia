@@ -1809,38 +1809,40 @@ class Config:
             )
             new_dir = new_dir.replace('${PDR}', self.post_baseDir, 1)
 
-        whenStamp = time.gmtime( time.time()+self.varTimeOffset )
+        #whenStamp = time.gmtime( time.time()+self.varTimeOffset )
+
+        whenStamp = datetime.datetime.fromtimestamp( time.time()+self.varTimeOffset )
 
         if '${YYYYMMDD}' in cdir:
-            YYYYMMDD = time.strftime("%Y%m%d", whenStamp)
+            YYYYMMDD = whenStamp.strftime("%Y%m%d")
             new_dir = new_dir.replace('${YYYYMMDD}', YYYYMMDD)
 
         if '${SOURCE}' in cdir:
             new_dir = new_dir.replace('${SOURCE}', message['source'])
 
         if '${DD}' in cdir:
-            DD = time.strftime("%d", whenStamp)
+            DD = whenStamp.strftime("%d")
             new_dir = new_dir.replace('${DD}', DD)
 
         if '${HH}' in cdir:
-            HH = time.strftime("%H", whenStamp)
+            HH = whenStamp.strftime("%H")
             new_dir = new_dir.replace('${HH}', HH)
 
         if '${YYYY}' in cdir:
-            YYYY = time.strftime("%Y", whenStamp)
+            YYYY = whenStamp.strftime("%Y")
             new_dir = new_dir.replace('${YYYY}', YYYY)
 
         if '${MM}' in cdir:
-            MM = time.strftime("%m", whenStamp)
+            MM = whenStamp.strftime("%m")
             new_dir = new_dir.replace('${MM}', MM)
 
         if '${JJJ}' in cdir:
-            JJJ = time.strftime("%j", whenStamp)
+            JJJ = whenStamp.strftime("%j")
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
         if '${%' in cdir:
             new_dir = re.sub( "\$\{\%(.*)\}", "%\g<1>", new_dir )
-            new_dir = time.strftime(new_dir, whenStamp)
+            new_dir = whenStamp.strftime(new_dir)
 
         # Parsing cdir to subtract time from it in the following formats
         # time unit can be: sec/mins/hours/days/weeks

@@ -127,7 +127,7 @@ intégrés:
 Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du *directory*
 en utilisant la notation *${..} * :
 
-* %...     - un patron tel qu'accepté par `time.strftime() https://docs.python.org/fr/3/library/time.html#time.strftime`_
+* %...     - un patron tel qu'accepté par `datetime.strftime() <https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime>`_
   exemple:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34
 * SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
 * BD       - le répertoire de base.

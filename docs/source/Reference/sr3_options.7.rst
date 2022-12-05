@@ -120,7 +120,7 @@ In the last example above, the *varTimeOffset* will modify the evaluation of YYY
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
-* %...     - a `time.strftime() <https://docs.python.org/3/library/time.html#time.strftime>`_ compatible date/time formatting string.
+* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string.
   example:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34 
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
