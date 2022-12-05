@@ -121,7 +121,7 @@ One can also specify variable substitutions to be performed on arguments to the 
 option, with the use of *${..}* notation:
 
 * %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string.
-  example:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34 
+  example:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 

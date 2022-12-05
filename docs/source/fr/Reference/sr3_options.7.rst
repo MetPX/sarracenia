@@ -128,7 +128,7 @@ Il est également possible de spécifier des substitutions de variables sur les 
 en utilisant la notation *${..} * :
 
 * %...     - un patron tel qu'accepté par `datetime.strftime() <https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime>`_
-  exemple:  ${%Y/%m/%d_%H%M:%S} --> 2022/12/04_17h36:34
+  exemple:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.123479
 * SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
 * BD       - le répertoire de base.
 * BUP      - le composant du chemin de baseUrl (ou : baseUrlPath).
