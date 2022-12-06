@@ -146,6 +146,16 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
+    'integrity' : {
+       'n' : [ 'integrity', 'none' ],
+       's' : [ 'integrity', 'sha512' ],
+       'd' : [ 'integrity', 'md5' ],
+       'a' : [ 'integrity', 'arbitrary' ],
+       'r' : [ 'integrity', 'random' ],
+       'z,d' : [ 'integrity', 'cod,md5' ],
+       'z,s' : [ 'integrity', 'cod,sha512' ],
+       'z,n' : [ 'integrity', 'none' ]
+    },
     'ls_file_index' : [ 'continue' ],
     'plugin': {
         'msg_fdelay': ['callback', 'filter.fdelay'],
@@ -216,16 +226,6 @@ convert_to_v3 = {
     },
     'recursive' : ['continue'],
     'report_daemons': ['continue'],
-    'sum' : {
-       'n' : [ 'integrity', 'none' ],
-       's' : [ 'integrity', 'sha512' ],
-       'd' : [ 'integrity', 'md5' ],
-       'a' : [ 'integrity', 'arbitrary' ],
-       'r' : [ 'integrity', 'random' ],
-       'z,d' : [ 'integrity', 'cod,md5' ],
-       'z,s' : [ 'integrity', 'cod,sha512' ],
-       'z,n' : [ 'integrity', 'none' ]
-    },
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
