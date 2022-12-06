@@ -45,6 +45,8 @@ git
 *NOTICE*: now prefer strftime date specification in patterns, in place of 
           ones inherited from Sundew. converted by sr3 convert.
 
+*CHANGE*: removed *please_stop_immediately* option added in 3.0.22
+          (all components now stop more quickly, so not needed.)
 
 3.0.22
 ------

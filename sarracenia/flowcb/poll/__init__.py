@@ -511,8 +511,9 @@ class Poll(FlowCB):
             logger.error("sr_poll/post_new_url: unable to connect to %s" %
                          self.o.pollUrl)
             logger.debug('Exception details: ', exc_info=True)
-            logger.error("Sleeping 30 secs and retry")
-            time.sleep(30)
+            nap=15
+            logger.error("Sleeping {nap} secs and retry")
+            time.sleep(nap)
             return []
 
         # loop on all directories where there are pulls to do
