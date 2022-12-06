@@ -225,7 +225,7 @@ convert_to_v3 = {
        'z,d' : [ 'integrity', 'cod,md5' ],
        'z,s' : [ 'integrity', 'cod,sha512' ],
        'z,n' : [ 'integrity', 'none' ]
-    }
+    },
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
