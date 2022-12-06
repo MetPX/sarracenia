@@ -13,10 +13,16 @@ logger = logging.getLogger(__name__)
 class Scheduled(FlowCB):
 
     """
-    
     Scheduled flow callback plugin arranges to post url's
+    at scheduled times. 
     
-    at scheduled times. the schedule can be a specified as:
+    usage:
+
+    In the configuration file, need::
+ 
+        callback scheduled
+
+    and the schedule can be a specified as:
     
     * scheduled_interval 1m   (once a minute) a duration
     * scheduled_hour  4,9    at 4Z and 9Z every day.
@@ -25,10 +31,10 @@ class Scheduled(FlowCB):
     Scheduled_interval takes precedence over the others, making it
     easier to specify an interval for testing/debugging purposes.
     
-    currently: when using scheduled_hour, only one minute can
-      be given within the hour.
+    currently: when using scheduled_hour, only one minute can be given within the hour.
+    if only using scheduled_minute, then repeated values are fine.
     
-    use in code:
+    use in code (for subclassing):
    
     from sarracenia.scheduled import Scheduled 
 
@@ -39,41 +45,16 @@ class Scheduled(FlowCB):
             if self.stop_requested:
                 return []
 
+            # this code works if only invoked at scheduled times...
     
-            
-            # this code works if only invoked once within an hour...
-    
-    
-    Config:
-    
-    uses self.o.scheduled_hour as a sarracenia option list of hours
-    
-    uses self.o.scheduled_minute is a sarracenia option list of minutes...
-    
-    cocorahs: once an hour.
-    
-        scheduled_minute 25  # once an hour at 25 minutes after the hour.
-    
-    examples inventoried to build:
-    
-    dfo_spine: at hours: 5, 11, 17, 23 ... :45
-    
-        scheduled_hour 5,7,11
-        scheduled_hour 17
-        scheduled_hour 25
-        scheduled_minute 45
-    
-    notes to future self:
     
     would there be a more pythonic way of doing this?
     
         https://schedule.readthedocs.io/en/stable/
     
     would probably be dead easy to do multiple minute within hour,
-    just haven't thought about it... 
+    just haven't thought about it. opportunity for improvement.
 
-    hmm...
-    
     """
 
 

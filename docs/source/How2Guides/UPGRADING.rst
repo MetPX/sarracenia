@@ -39,6 +39,12 @@ Installation Instructions
 git
 ---
 
+3.0.23
+------
+
+*NOTICE*: now prefer strftime date specification in patterns, in place of 
+          ones inherited from Sundew. converted by sr3 convert.
+
 
 3.0.22
 ------
@@ -50,6 +56,11 @@ git
 *ACTION*: replace *destination* settings in affected configurations.
           (automatically taken care of in v2 when converting.)
 
+*NOTICE*: when a file is renamed, sr3 has always only processed one of the two messages
+          produced to announce it, for compatibility with v2 naming.
+          there is now an option: v2compatRenameDoublePost in sr3 to post only a single message
+          when a file is renamed.  This is now the default behaviour.
+
 3.0.17
 ------
 
@@ -58,6 +69,7 @@ git
 
 *CHANGE*: v03 notification message encoding changed: *Integrity* checksum is now optional.
           (details: https://github.com/MetPX/sarracenia/issues/547 )
+         *md5sum* is no longer defined, replaced with *none* in sr3.
 
 *CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
      and removals. There is now a 'fileOp' field for these dataless file operations.

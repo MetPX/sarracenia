@@ -1368,16 +1368,6 @@ Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente p
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
 
-please_stop_immediately <flag> (EXPERIMENTAL)
----------------------------------------------
-
-Faire en sorte que les débits de SR3 s'arrêtent beaucoup plus rapidement, en n'effectuant aucun travail de drainage/nettoyage.
-Lors de l'interruption du traitement ou de la demande d'arrêt, certains flux de messages peuvent avoir des
-operations en cours, où il est important de les laisser terminer.
-Cela peut prendre plusieurs minutes pour qu'une directive *stop* prenne effet dans de tels cas.
-Avec cette option, l'application peut être informée qu'il n'y a pas besoin de cela
-code de terminaison complet et propre.
-
 randomize <flag>
 ----------------
 

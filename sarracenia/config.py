@@ -76,7 +76,6 @@ default_options = {
     'permDefault': 0,
     'permDirDefault': 0o775,
     'permLog': 0o600,
-    'please_stop_immediately': False,
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
@@ -97,7 +96,7 @@ count_options = [
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpath_filter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
-    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'please_stop_immediately', 'post_on_start', \
+    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
     'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
     'statehost', 'users', 'v2compatRenameDoublePost'

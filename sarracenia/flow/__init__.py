@@ -312,10 +312,6 @@ class Flow:
             f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
         )
         self._runCallbacksTime('please_stop')
-
-        #if self.o.please_stop_immediately:
-        #    sys.exit(0)
-
         self._stop_requested = True
 
 
