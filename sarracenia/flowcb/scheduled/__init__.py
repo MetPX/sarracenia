@@ -29,14 +29,18 @@ class Scheduled(FlowCB):
       be given within the hour.
     
     use in code:
-    
-    import scheduled
-    
+   
+    from sarracenia.scheduled import Scheduled 
+
+    class hoho(Scheduled):
          in the routine...
-            self.wait_until_hour()  # comment out for just every hour.
+            self.wait_until_next()  # comment out for just every hour.
+
+            if self.stop_requested:
+                return []
+
     
-            self.wait_for_minute()
-    
+            
             # this code works if only invoked once within an hour...
     
     
