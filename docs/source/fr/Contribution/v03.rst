@@ -137,7 +137,6 @@ code sr3::
    226 ./instance.py
     36 ./integrity/arbitrary.py
     93 ./integrity/__init__.py
-    33 ./integrity/md5name.py
     24 ./integrity/md5.py
     17 ./integrity/random.py
     24 ./integrity/sha512.py

@@ -295,7 +295,6 @@ C'est une chaîne séparée par des virgules. Les méthodes d'intégrité valide
         cod,x - Calculer au téléchargement en appliquant x
         sha512 - faire SHA512 sur le contenu du fichier (par défaut)
         md5 - faire md5sum sur le contenu du fichier
-        md5name - faire la somme de contrôle md5sum sur le nom de fichier
         random - inventez une valeur aléatoire pour chaque publication.
         arbitrary - appliquer la valeur fixe littérale.
 

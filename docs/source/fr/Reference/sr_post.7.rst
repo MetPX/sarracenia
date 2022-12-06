@@ -65,7 +65,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
    un de:
           "integrity"     - Version WMO du champ de sum v02, en cours de développement.
           {
-             "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
+             "method" : "md5" | "sha512" | "cod" | "arbitrary" | "random" ,
              "value"  : "base64 valeur de somme de contrôle encodée"
           }
    ou:

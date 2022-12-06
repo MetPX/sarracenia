@@ -204,15 +204,6 @@ sarracenia.integrity.random
    :private-members:
    :special-members:
 
-sarracenia.integrity.md5name
-----------------------------
-
-.. automodule:: sarracenia.integrity.md5name
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
 sarracenia.moth
 ---------------
 

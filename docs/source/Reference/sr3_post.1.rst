@@ -299,7 +299,6 @@ It is a comma separated string. Valid Integrity methods are ::
          cod,x      - Calculate On Download applying x
          sha512     - do SHA512 on file content  (default)
          md5        - do md5sum on file content
-         md5name    - do md5sum checksum on filename 
          random     - invent a random value for each post.
          arbitrary  - apply the literal fixed value.
 

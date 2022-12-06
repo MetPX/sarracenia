@@ -284,7 +284,7 @@ class File(FlowCB):
             }
             # compute checksum if needed
 
-            if not self.sumflg in ['random', 'md5name', 'cod']:
+            if not self.sumflg in ['random', 'cod']:
                 bufsize = self.o.bufsize
                 if length < bufsize: bufsize = length
 
