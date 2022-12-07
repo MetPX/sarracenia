@@ -32,7 +32,7 @@
 
 #
 # Assumptions:
-# 1. sarra/__init__.py exists and has the desired version number
+# 1. sarracenia/__init__.py exists and has the desired version number
 # 
 # Steps:
 # 1. Update debian/changelog using "dch command"
@@ -56,8 +56,8 @@ fi
 # VERSION=$1
 MSG=$1
 
-# Verify sarra/__init__.py has the same version
-VERSION=`grep __version__ sarra/__init__.py | cut -c15- | sed -e 's/"//g'`
+# Verify sarracenia/__init__.py has the same version
+VERSION=`grep __version__ sarracenia/__init__.py | cut -c15- | sed -e 's/"//g'`
 
 # Verify version format
 if [[ ! $VERSION =~ ^[0-9]\.[0-9]{2}\.[0-9]{2} ]]; then	
@@ -65,7 +65,7 @@ if [[ ! $VERSION =~ ^[0-9]\.[0-9]{2}\.[0-9]{2} ]]; then
 	echo 
 	echo "Where P is the numeric protocol version, YY is the year, and MM is the month"
 	echo 
-	echo "Please correct the version number in sarra/__init__.py"
+	echo "Please correct the version number in sarracenia/__init__.py"
 	exit 1
 fi
 
@@ -103,7 +103,7 @@ read -e -p "Enter the name of the git remote that you would like to push to: [de
 # echo "git push origin master"
 # echo "git push origin --tags"
 
-git push $REMOTE master
+git push $REMOTE main
 git push $REMOTE --tags
 
 
