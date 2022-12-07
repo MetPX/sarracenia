@@ -25,6 +25,7 @@ setup(
     python_requires='>=3.6',
     version=sarracenia.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
+    long_description_content_type='text/x-rst',
     long_description=(read('README.rst')), 
     url='https://github.com/MetPX/sarracenia',
     license='GPLv2',

@@ -1,17 +1,21 @@
-metpx-sr3 (3.00.23) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.23) unstable; urgency=medium
 
+  * new: date pattern expansion from datetime.strftime.
   * fixing #595 flows taking a long time to stop.
   * more robust decode of v2 messages.
   * added conversion of sum field to sr3 convert.
   * added flowcb.scheduled as built-in way to easily post periodically.
-  * date patterns changed from sundew pattern to python time.strftime patterns.
   * tilde expansion for pathnames for more settings.
   * configuration conversion now includes date patterns.
   * configuration conversion now includes sum/integrity option arguments.
   * variable expansion now added for path option.
+  * more path expansion for settings likely to be paths.
   * added rename setting, that honours variable expansion.
   * vestiges of md5name (already gone from code) removed from documentation.
   * removed please_stop_immediately in favour of improved behaviour to always exit more quickly.
+  * bugfix incorrectly generated v2 messages (sum: N instead of n)
+  * bugfix, many date patterns not honoured correctly (different reasons.)
+  * bugfix, sum z,x not parsed correctly.
 
  -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Sat, 03 Dec 2022 19:53:21 +0000
 
