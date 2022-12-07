@@ -139,13 +139,25 @@ To delete a configuration::
     2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
     2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
 
+more:
+
+* `CLI Introduction (Jupyter Notebook) <../Tutorials/1_CLI_introduction.html>`_
+* `Setup a Remote Subscriber <../Tutorials/Setup_a_remote_subscriber.html>`_
+* `Options in the configuration file <../Reference/sr3_options.7.rst>`_
 
 Server Side Resources Allocated for Subscribers
 -----------------------------------------------
 
-Every configuration results in corresponding resources being declared on the broker.
-When changing *subtopic* or *queue* settings, or when one expects to not use 
-a configuration for an extended period of time, it is best to::
+Every configuration results in corresponding resources being declared on the broker,
+whose lifetime is controlled by the *expire* setting. The default *expire* is set
+to 300 seconds to avoid cluttering up servers with small experiments.  Set *expire*
+the the value that makes the most sense for your application (long enough to cover
+outages you may experience.) In a configuration file, something like::
+
+  expire 3h
+
+might be appropriate. When changing *subtopic* or *queue* settings, or when one 
+expects to not use a configuration for an extended period of time, it is best to::
 
   sr3 cleanup subscribe/swob.conf
 
@@ -215,6 +227,11 @@ to match hpfx_amis.conf. Sr3 stop will also do what you would expect. As will sr
 Note that there are 5 sr_subscribe processes start with the CMC 
 configuration and 3 NWS ones. These are *instances* and share the same 
 download queue. 
+
+more:
+
+* `Command line Guide <../Explanation/CommandLineGuide.html>`_
+* `Sr3 Manual page <Reference/sr3.1.html>`_
 
 
 High Priority Delivery
@@ -405,13 +422,34 @@ accept clauses.
   topic names) has a different meaning than it does in an accept 
   clause, where it means match any string.
   
-  Yes, this is confusing.  No, it cannot be helped.  
+  Yes, this is confusing. No, it cannot be helped.  
+
+more:
+
+* `Downloading using the Command Line (Jupyter Notebook) <../Tutorials/1_CLI_introduction.html>`_
 
 
 Performance
 -----------
 
-If transfers are going too slowly, the steps are as follows:
+
+There are many aspects of Performance that we won't go into here.
+
+more:
+
+Minimizing the time after a file has been delivered, and before it is picked up by the next hop:
+
+* `Knowing when to pick up a file <../Explanation/DetectFileReady.html>`_ 
+* `Knowing when a file is delivered <../Explanation/FileCompletion.html>`_ 
+
+Getting file changes noticed rapidly, filtering frequent file re-writes, scheduling copies:
+
+* `Case Study: HPC Mirroring <../Explanation/History/HPC_Mirroring_Use_Case.html>`_
+* C implementation: `sr3_cpost <../Reference/sr3_post.1.rst>`_ `sr3_cpump <../Reference/sr3_cpump.1.rst>`_
+  used mostly when python isn't easy to get working.
+
+The most common desire when performance is raised is speed up their downloads.
+the steps are as follows:
 
 
 Optimize File Selection per Process
@@ -511,6 +549,9 @@ systems to appear up, when not actually being completely functional. The
 applications do not need to know that there is another stack producing the same
 products, which simplifies them as well.
 
+more:
+
+* `Duplicate Suppression <../Explanation/DuplicateSuppression.rst>`_
  
 Plugins
 -------
@@ -592,9 +633,6 @@ which will prepend this callback to the list, so that is is called before the
 non prepended ones. 
 
 
-For information on creating new custom plugins, see `Writing Flow Callbacks <FlowCallbacks.rst>`_  
-
-
 To recap:
 
 * To view the plugins currently available on the system  *sr3 list fcb*
@@ -605,6 +643,16 @@ To recap:
 * To set them, place the options in the configuration file before the plugin call itself
 * To make your own plugins, start with `Writing Flow Callbacks <FlowCallbacks.rst>`_, and
   put them in ~/.config/sr3/plugins, or anythere in your python environment's search path.
+
+more:
+
+* `Sarracenia General Concepts <../Explanation/Concepts.html>`_
+* `using callbacks from command line (Jupyter Notebook) <../Tutorials/2_CLI_with_flowcb_demo.html>`_
+
+Even more:
+* `Sarracenia Programming Guide <../Explanation/SarraPluginDev.html>`_
+* `Writing Flow Callbacks <FlowCallbacks.rst>`_  
+
 
 
 file_rxpipe
@@ -783,6 +831,10 @@ has additional options:
 
 etc... One can also modify the provided plugins, or write new ones to completely change the logging.
 
+more:
+
+* `Log module <../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
+
 
 moth Debug Tuning
 ~~~~~~~~~~~~~~~~~
@@ -804,7 +856,9 @@ Sometimes during interoperability testing, one must see the raw notification mes
 
 Either or both of these options will make very large logs, and are best used judiciously.
 
+more:
 
+* `Moth API <api-documentation.html#module-sarracenia.moth>`_
 
   
 Housekeeping Metrics
@@ -823,6 +877,9 @@ resource monitoring callbacks, for example, give lines in the log like so::
     2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats files transferred: 0 bytes: 0 Bytes rate: 0 Bytes/sec
     2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats lag: average: 778.91, maximum: 931.06 
   
+more:
+
+* `Housekeeping callbacks <../Reference/flowcb.html#module-sarracenia.flowcb.housekeeping>`_
   
   
 Redundant File Reception
@@ -839,6 +896,11 @@ or not.
 This filtering requires implementation of a local dataless pump with 
 sr_winnow. See the Administrator Guide for more information.
 
+more:
+
+* `Duplicate Suppression <../Explanation/DuplicateSuppression.html>`_
+
+
 Web Proxies
 -----------
 
@@ -852,11 +914,31 @@ Putting in default.conf ensures that all subscribers will use
 the proxy, not just a single configuration. 
 
 
+API Level Access
+----------------
+
+Sarracenia version 3 also offers python modules that can be called
+from existing python applications.
+
+* `Flow API to replace CLI usage <../Tutorials/3_api_flow_demo.html>`_
+
+The flow API brings in all the option placement and parsing from
+Sarracenia, it is a pythonic way of starting up a flow from python itself.
+
+Or one may not want to use the Sarracenia configuration scheme, 
+perhaps one just wants to use the message protocol support, for 
+that: 
+
+* Subscribing using the (much less complex) Moth API (Jupyter Notebook) `<../Tutorials/4_api_moth_sub_demo.html>`_
+* Posting from python code with Moth (Jupyter Notebook) `../Tutorials/5_api_moth_post_demo.html>`_
+
+
+
 More Information
 ----------------
 
-The `sr3(1) <../Reference/sr3.1.html>`_ is the definitive source of reference
-information for configuration options. For additional information,
-consult: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
 
+* The `sr3(1) <../Reference/sr3.1.html>`_ is the definitive source of reference
+  information for configuration options. For additional information,
+* the main web site: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
 
