@@ -1192,6 +1192,8 @@ class Config:
 
         logger.debug( f'looking for {cfg} (in {os.getcwd()}')
 
+        cfg=os.path.expanduser(cfg)
+
         if cfg[0] == os.sep:
             cfgfilepath=cfg
         else:
@@ -1606,7 +1608,7 @@ class Config:
             self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
-            path = os.path.abspath(self.documentRoot)
+            path = os.path.expanduser(os.path.abspath(self.documentRoot))
             if self.realpath_post:
                 path = os.path.realpath(path)
 
@@ -1631,13 +1633,13 @@ class Config:
 
         if self.post_baseDir is None:
             if self.post_documentRoot is not None:
-                self.post_baseDir = self.post_documentRoot
+                self.post_baseDir = os.path.expanduser(self.post_documentRoot)
                 logger.warning("use post_baseDir instead of post_documentRoot")
             elif self.documentRoot is not None:
-                self.post_baseDir = self.documentRoot
+                self.post_baseDir = os.path.expanduser(self.documentRoot)
                 logger.warning("use post_baseDir instead of documentRoot")
             elif self.baseDir is not None:
-                self.post_baseDir = self.baseDir
+                self.post_baseDir = os.path.expanduser(self.baseDir)
                 logger.debug("defaulting post_baseDir to same as baseDir")
 
 
@@ -1647,6 +1649,9 @@ class Config:
                 logger.info(
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
+
+        self.path = list(map( os.path.expanduser, self.path ))
+
         if self.vip and not sarracenia.extras['vip']['present']:
             logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
             sys.exit(1)
@@ -1785,34 +1790,34 @@ class Config:
 
         new_dir = cdir
 
-        if '${BD}' in cdir and self.baseDir != None:
+        while '${BD}' in new_dir and self.baseDir != None:
             new_dir = new_dir.replace('${BD}', self.baseDir, 1)
 
-        if ( '${BUP}' in cdir ) and ( 'baseUrl' in message ):
+        while ( '${BUP}' in new_dir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUP}', u.path, 1 )
 
-        if ( '${baseUrlPath}' in cdir ) and ( 'baseUrl' in message ):
+        while ( '${baseUrlPath}' in new_dir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPath}', u.path, 1)
 
-        if ( '${BUPL}' in cdir ) and ( 'baseUrl' in message ):
+        while ( '${BUPL}' in new_dir ) and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1 )
 
-        if ( '${baseUrlPathLast}' in cdir )  and ( 'baseUrl' in message ):
+        while ( '${baseUrlPathLast}' in new_dir )  and ( 'baseUrl' in message ):
             u = urllib.parse.urlparse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1 )
 
-        if '${PBD}' in cdir and self.post_baseDir != None:
+        while '${PBD}' in new_dir and self.post_baseDir != None:
             new_dir = new_dir.replace('${PBD}', self.post_baseDir, 1)
 
-        if '${DR}' in cdir and self.documentRoot != None:
+        while '${DR}' in new_dir and self.documentRoot != None:
             logger.warning(
                 "DR = documentRoot should be replaced by BD for base_dir")
             new_dir = new_dir.replace('${DR}', self.documentRoot, 1)
 
-        if '${PDR}' in cdir and self.post_baseDir != None:
+        while '${PDR}' in new_dir and self.post_baseDir != None:
             logger.warning(
                 "PDR = post_documentRoot should be replaced by PBD for post_baseDir"
             )
@@ -1822,34 +1827,34 @@ class Config:
 
         whenStamp = datetime.datetime.fromtimestamp( time.time()+self.varTimeOffset )
 
-        if '${YYYYMMDD}' in cdir:
+        while '${YYYYMMDD}' in new_dir:
             YYYYMMDD = whenStamp.strftime("%Y%m%d")
             new_dir = new_dir.replace('${YYYYMMDD}', YYYYMMDD)
 
-        if '${SOURCE}' in cdir:
+        while '${SOURCE}' in new_dir:
             new_dir = new_dir.replace('${SOURCE}', message['source'])
 
-        if '${DD}' in cdir:
+        while '${DD}' in new_dir:
             DD = whenStamp.strftime("%d")
             new_dir = new_dir.replace('${DD}', DD)
 
-        if '${HH}' in cdir:
+        while '${HH}' in new_dir:
             HH = whenStamp.strftime("%H")
             new_dir = new_dir.replace('${HH}', HH)
 
-        if '${YYYY}' in cdir:
+        while '${YYYY}' in new_dir:
             YYYY = whenStamp.strftime("%Y")
             new_dir = new_dir.replace('${YYYY}', YYYY)
 
-        if '${MM}' in cdir:
+        while '${MM}' in new_dir:
             MM = whenStamp.strftime("%m")
             new_dir = new_dir.replace('${MM}', MM)
 
-        if '${JJJ}' in cdir:
+        while '${JJJ}' in new_dir:
             JJJ = whenStamp.strftime("%j")
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
-        if '${%' in cdir:
+        while '${%' in new_dir:
             new_dir = re.sub( "\$\{\%(.*)\}", "%\g<1>", new_dir )
             new_dir = whenStamp.strftime(new_dir)
 
@@ -2255,9 +2260,9 @@ def one_config(component, config, isPost=False):
     os.chdir(component)
 
     if config[-5:] != '.conf':
-        fname = config + '.conf'
+        fname = os.path.expanduser(config + '.conf')
     else:
-        fname = config
+        fname = os.path.expanduser(config)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)
@@ -2279,7 +2284,7 @@ def one_config(component, config, isPost=False):
     cfg.fill_missing_options(component, config)
 
     if component in ['post', 'watch']:
-        cfg.postpath = cfg.configurations[1:]
+        cfg.postpath = list( map( os.path.expanduser, cfg.configurations[1:]))
         if hasattr(cfg, 'path') and (cfg is not None):
             if type(cfg.path) is list:
                 cfg.postpath.extend(cfg.path)
@@ -2287,6 +2292,7 @@ def one_config(component, config, isPost=False):
                 cfg.postpath.append(cfg.path)
             logger.debug('path is : %s' % cfg.path)
             logger.debug('postpath is : %s' % cfg.postpath)
+        
     #pp = pprint.PrettyPrinter(depth=6)
     #pp.pprint(cfg)
 

@@ -5,8 +5,10 @@ metpx-sr3 (3.00.23) UNRELEASED; urgency=medium
   * added conversion of sum field to sr3 convert.
   * added flowcb.scheduled as built-in way to easily post periodically.
   * date patterns changed from sundew pattern to python time.strftime patterns.
-  * sr3 configuration conversion now includes date patterns.
-  * sr3 configuration conversion now includes sum/integrity option arguments.
+  * tilde expansion for pathnames for more settings.
+  * configuration conversion now includes date patterns.
+  * configuration conversion now includes sum/integrity option arguments.
+  * variable expansion now added for path option.
   * added rename setting, that honours variable expansion.
   * vestiges of md5name (already gone from code) removed from documentation.
   * removed please_stop_immediately in favour of improved behaviour to always exit more quickly.

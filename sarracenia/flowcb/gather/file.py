@@ -726,6 +726,7 @@ class File(FlowCB):
             # convert relative path to absolute.
             if d[0] != os.sep: d = cwd + os.sep + d
 
+            d=self.o.variableExpansion(d)
             logger.debug("postpath = %s" % d)
 
             if self.o.sleep > 0:
