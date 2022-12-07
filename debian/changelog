@@ -1,3 +1,10 @@
+metpx-sr3 (3.00.24) unstable; urgency=medium
+
+  * critical: sr3 would crash when sum none present in a configuration.
+  * documentation touchups to README.txt (shown on pypi.python.org)
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Wed, 07 Dec 2022 15:42:47 -0500
+
 metpx-sr3 (3.00.23) unstable; urgency=medium
 
   * new: date pattern expansion from datetime.strftime.
