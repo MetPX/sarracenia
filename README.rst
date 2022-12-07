@@ -53,8 +53,8 @@ page web / homepage: https://metpx.github.io/sarracenia
 |                                                                |                                                                        |
 +----------------------------------------------------------------+------------------------------------------------------------------------+
 
-To download data from a Sarracenia data pump: [ `Good first practical stop: <https://metpx.github.io/sarracenia/How2Guides/subscriber.html>`_  ] [ `un bon départ <https://metpx.github.io/sarracenia/fr/CommentFaire/subscriber.html>`_ ]
+To download data from a Sarracenia data pump: [ `Getting Started<https://metpx.github.io/sarracenia/How2Guides/subscriber.html>`_  ] [ `Un bon départ<https://metpx.github.io/sarracenia/fr/CommentFaire/subscriber.html>`_ ]
 
-To offer data to Sarracenia data pump: [ `Source Guide` <https://metpx.github.io/sarracenia/How2Guides/source.html>`_ ] [ `Guide de Source` <https://metpx.github.io/sarracenia/fr/CommentFaire/source.html>`_ ]
+To offer data to Sarracenia data pump: [ `Source Guide<https://metpx.github.io/sarracenia/How2Guides/source.html>`_ ] [ `Guide de Source<https://metpx.github.io/sarracenia/fr/CommentFaire/source.html>`_ ]
 
 
