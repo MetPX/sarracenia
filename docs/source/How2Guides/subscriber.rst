@@ -231,7 +231,7 @@ download queue.
 more:
 
 * `Command line Guide <../Explanation/CommandLineGuide.html>`_
-* `Sr3 Manual page <Reference/sr3.1.html>`_
+* `Sr3 Manual page <../Reference/sr3.1.html>`_
 
 
 High Priority Delivery
@@ -427,6 +427,110 @@ accept clauses.
 more:
 
 * `Downloading using the Command Line (Jupyter Notebook) <../Tutorials/1_CLI_introduction.html>`_
+
+
+Data Loss
+---------
+
+
+Outage
+~~~~~~
+
+The *expire* determines how long the data pump will hold onto your queued subscription,
+after a disconnection. The setting needs to be set longer than the longest outage your 
+feed needs to survive without data loss.
+
+
+Too slow, Queue Too Large
+~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+The performance of a feed
+is important, as, serving the internet, a one client´s slow download affects all the other ones,
+and a few slow clients can overwhelm a data pump.  Often there are server policies in place
+to prevent mis-configured (i.e. too slow) subscriptions from resulting in very long queues.
+
+
+When the queue becomes too long, the data pump may start discarding messages, and
+the subscriber will perceive that as data loss.
+
+
+To identify slow downloads, examine the lag in the download log. For example, create
+a sample subscriber like so::
+
+ fractal% sr3 list ie
+
+ Sample Configurations: (from: /home/peter/Sarracenia/sr3/sarracenia/examples )
+ cpump/cno_trouble_f00.inc        flow/amserver.conf               flow/poll.inc                    flow/post.inc                    flow/report.inc                  flow/sarra.inc                   
+ flow/sender.inc                  flow/shovel.inc                  flow/subscribe.inc               flow/watch.inc                   flow/winnow.inc                  poll/airnow.conf                 
+ poll/aws-nexrad.conf             poll/mail.conf                   poll/nasa-mls-nrt.conf           poll/noaa.conf                   poll/soapshc.conf                poll/usgs.conf                   
+ post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              sender/am_send.conf              sender/ec2collab.conf            sender/pitcher_push.conf         shovel/no_trouble_f00.inc        
+ subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          subscribe/dd_all.conf            subscribe/dd_amis.conf           subscribe/dd_aqhi.conf           subscribe/dd_cacn_bulletins.conf 
+ subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           subscribe/dd_gdps.conf           subscribe/dd_radar.conf          subscribe/dd_rdps.conf           subscribe/dd_swob.conf           
+ subscribe/ddc_cap-xml.conf       subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        subscribe/hpfxWIS2DownloadAll.conf subscribe/hpfx_amis.conf         
+ subscribe/hpfx_citypage.conf     subscribe/local_sub.conf         subscribe/ping.conf              subscribe/pitcher_pull.conf      subscribe/sci2ec.conf            subscribe/subnoaa.conf           
+ subscribe/subsoapshc.conf        subscribe/subusgs.conf           sender/am_send.conf              sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                
+ watch/pitcher_client.conf        watch/pitcher_server.conf        watch/sci2ec.conf                
+ fractal% 
+
+pick one ane add it local configuration::
+
+ fractal% sr3 add subscribe/hpfx_amis.conf
+ missing state for subscribe/hpfx_amis
+ add: 2022-12-07 12:39:15,513 3286889 [INFO] root add matched existing ['subscribe/hpfx_amis']
+ 2022-12-07 12:39:15,513 3286889 [ERROR] root add nothing specified to add
+ fractal%
+
+run it in foreground for a few seconds and stop it::
+
+    fractal% sr3 foreground subscribe/hpfx_amis
+    .2022-12-07 12:39:37,977 [INFO] 3286919 sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup queue declared q_anonymous_subscribe.hpfx_amis.67711727.37906289 (as: amqps://anonymous@hpfx.collab.science.gc.ca/) 
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup binding q_anonymous_subscribe.hpfx_amis.67711727.37906289 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flowcb.log __init__ subscribe initialized with: {'post', 'on_housekeeping', 'after_accept', 'after_work', 'after_post'}
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run callbacks loaded: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run pid: 3286919 subscribe/hpfx_amis instance: 0
+    2022-12-07 12:39:38,241 [INFO] 3286919 sarracenia.flow run now active on vip None
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.20 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 3.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN20_KWAL_071739___19368 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 1.19 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SX/KWAL/17/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN20_KWAL_071739___19368 
+    fractal% sr3 foreground subscribe/hpfx_amis
+    .2022-12-07 12:39:37,977 [INFO] 3286919 sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup queue declared q_anonymous_subscribe.hpfx_amis.67711727.37906289 (as: amqps://anonymous@hpfx.collab.science.gc.ca/) 
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup binding q_anonymous_subscribe.hpfx_amis.67711727.37906289 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flowcb.log __init__ subscribe initialized with: {'post', 'on_housekeeping', 'after_accept', 'after_work', 'after_post'}
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run callbacks loaded: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run pid: 3286919 subscribe/hpfx_amis instance: 0
+    2022-12-07 12:39:38,241 [INFO] 3286919 sarracenia.flow run now active on vip None
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.20 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 3.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN20_KWAL_071739___19368 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 1.19 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SX/KWAL/17/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN20_KWAL_071739___19368 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___40860 
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SA/KNKA/17/SAAK41_KNKA_071739___36105 
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___19641 
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___40860 
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SAAK41_KNKA_071739___36105 
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___19641 
+    2022-12-07 12:39:43,924 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.40 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___44806 
+    2022-12-07 12:39:43,924 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.40 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/UA/CWAO/17/UANT01_CWAO_071739___24012 
+    2022-12-07 12:39:44,098 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___44806 
+    2022-12-07 12:39:44,098 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/UANT01_CWAO_071739___24012 
+
+The **lag:** numbers reported in the foreground display indicate how old the data is (in seconds, based on the time it was added to the network
+by the source. If you see that lag grow unreasonably, your subscription has a performance problem.
 
 
 Performance
@@ -858,7 +962,7 @@ Either or both of these options will make very large logs, and are best used jud
 
 more:
 
-* `Moth API <api-documentation.html#module-sarracenia.moth>`_
+* `Moth API <../api-documentation.html#module-sarracenia.moth>`_
 
   
 Housekeeping Metrics

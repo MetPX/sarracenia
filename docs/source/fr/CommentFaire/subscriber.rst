@@ -18,6 +18,7 @@ Enregistrement de révision
 
 Introduction
 ------------
+
 Une pompe de données Sarracenia est un serveur Web avec des notifications
 pour que les abonnés sachent rapidement, quand de nouvelles données sont arrivées.
 Pour savoir quelles données sont déjà disponibles sur une pompe, il faut
@@ -141,11 +142,26 @@ Pour supprimer une configuration::
     2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
     2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
 
+pour plus d'informations:
+
+* `CLI Introduction (Jupyter Notebook) <../Tutoriel/1_CLI_introduction.html>`_
+* `Subscriber à distance<../Tutoriel/Mettre_en_place_un_subscriber_distant.html>`_
+* `les options dans les fichiers de configuration <../Reference/sr3_options.7.rst>`_
+
 
 Ressources côté serveur allouées aux abonnés
 --------------------------------------------
 
+Chaque configuration entraîne la déclaration des ressources correspondantes sur le broker,
+dont la durée de vie est contrôlée par le paramètre *expire*. La valeur par défaut *expire* est définie
+à 300 secondes pour éviter d'encombrer les serveurs avec de petites expér
 Chaque configuration entraîne la déclaration des ressources correspondantes sur le courtier.
+
+Régler *expire* à la valeur qui a le plus de sens pour votre application (suffisamment longue pour traverser
+pannes que vous rencontrer.) Dans un fichier de configuration, quelque chose comme ::
+
+   expire 3h
+
 Lors de la modification des paramètres *subtopic* ou *queue*, ou lorsque l’on s’attend à ne pas utiliser
 une configuration pour une période prolongée, il est préférable de::
 
@@ -216,6 +232,13 @@ pour correspondre à dd_amis.conf. Sr3 stop fera également ce que vous attendez
 Notez qu’il existe 5 processus sr3 subscribe commencent par le CMC
 et 3 NWS. Ce sont des *instances* et partagent les mêmes
 fil d’attentes de téléchargement.
+
+
+more:
+
+* `Command line Guide <../Explication/CommandLineGuide.html>`_
+* `Sr3 Manual page <../Reference/sr3.1.html>`_
+
 
 Livraison hautement prioritaire
 -------------------------------
@@ -395,11 +418,107 @@ clauses d'accept.
   de sujet) a une signification différente de celle qui est dans une clause accept,
   où cela signifie correspondre à n’importe quelle chaîne.
 
-  Oui, c’est déroutant.  Non, on ne peut pas l’aider.
+  Oui, c’est déroutant.  Non, on ne peut pas l’éviter.
+
+
+Pour plus d´informations:
+
+* `Téléchargement en mode ligne (Jupyter Notebook) <../Tutoriel/1_CLI_introduction.html>`_
+ 
+Perte de données
+----------------
+
+Panne trop longue
+-----------------
+
+L'*expire* détermine combien de temps la pompe de données conservera votre abonnement et file d'attente
+après une déconnexion. Le réglage doit être défini plus longtemps que la plus longue panne de votre
+flux doit survivre sans perte de données.
+
+
+File d´attente trop important
+-----------------------------
+Les performances d'un flux
+est important, car, au service d'Internet, le téléchargement lent d'un client affecte tous les autres,
+et quelques clients lents peuvent submerger une pompe de données. Il existe souvent des politiques de serveur en place
+pour éviter que des abonnements mal configurés (c'est-à-dire trop lents) n'entraînent de très longues files d'attente.
+
+Lorsque la file d'attente devient trop longue, la pompe de données peut commencer à rejeter les messages, et
+l'abonné percevra cela comme une perte de données.
+
+Pour identifier les téléchargements lents, examinez le décalage dans le journal de téléchargement. Par exemple, créez
+un exemple d'abonné comme ceci ::
+
+ fractal% sr3 list ie
+
+ Sample Configurations: (from: /home/peter/Sarracenia/sr3/sarracenia/examples )
+ cpump/cno_trouble_f00.inc        flow/amserver.conf               flow/poll.inc                    flow/post.inc                    flow/report.inc                  flow/sarra.inc                   
+ flow/sender.inc                  flow/shovel.inc                  flow/subscribe.inc               flow/watch.inc                   flow/winnow.inc                  poll/airnow.conf                 
+ poll/aws-nexrad.conf             poll/mail.conf                   poll/nasa-mls-nrt.conf           poll/noaa.conf                   poll/soapshc.conf                poll/usgs.conf                   
+ post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              sender/am_send.conf              sender/ec2collab.conf            sender/pitcher_push.conf         shovel/no_trouble_f00.inc        
+ subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          subscribe/dd_all.conf            subscribe/dd_amis.conf           subscribe/dd_aqhi.conf           subscribe/dd_cacn_bulletins.conf 
+ subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           subscribe/dd_gdps.conf           subscribe/dd_radar.conf          subscribe/dd_rdps.conf           subscribe/dd_swob.conf           
+ subscribe/ddc_cap-xml.conf       subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        subscribe/hpfxWIS2DownloadAll.conf subscribe/hpfx_amis.conf         
+ subscribe/hpfx_citypage.conf     subscribe/local_sub.conf         subscribe/ping.conf              subscribe/pitcher_pull.conf      subscribe/sci2ec.conf            subscribe/subnoaa.conf           
+ subscribe/subsoapshc.conf        subscribe/subusgs.conf           sender/am_send.conf              sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                
+ watch/pitcher_client.conf        watch/pitcher_server.conf        watch/sci2ec.conf                
+ fractal% 
+
+
+choisissez-en un et ajoutez-le configuration locale ::
+
+    fractal% sr3 foreground subscribe/hpfx_amis
+    .2022-12-07 12:39:37,977 [INFO] 3286919 sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup queue declared q_anonymous_subscribe.hpfx_amis.67711727.37906289 (as: amqps://anonymous@hpfx.collab.science.gc.ca/) 
+    2022-12-07 12:39:38,194 [INFO] 3286919 sarracenia.moth.amqp __getSetup binding q_anonymous_subscribe.hpfx_amis.67711727.37906289 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flowcb.log __init__ subscribe initialized with: {'post', 'on_housekeeping', 'after_accept', 'after_work', 'after_post'}
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run callbacks loaded: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'log']
+    2022-12-07 12:39:38,226 [INFO] 3286919 sarracenia.flow run pid: 3286919 subscribe/hpfx_amis instance: 0
+    2022-12-07 12:39:38,241 [INFO] 3286919 sarracenia.flow run now active on vip None
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.20 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 3.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 2.17 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRMN20_KWAL_071739___19368 
+    2022-12-07 12:39:42,564 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 1.19 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SX/KWAL/17/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRWA20_KWAL_071739___7440 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN70_KWAL_071739___39755 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___132 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMN20_KWAL_071739___19368 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXAK50_KWAL_071739___15077 
+    2022-12-07 12:39:42,957 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXAK50_KWAL_071739___15077
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___40860
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SA/KNKA/17/SAAK41_KNKA_071739___36105
+    2022-12-07 12:39:43,227 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.71 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___19641
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___40860
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SAAK41_KNKA_071739___36105
+    2022-12-07 12:39:43,457 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___19641
+    2022-12-07 12:39:43,924 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.40 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/SR/KWAL/17/SRCN40_KWAL_071739___44806
+    2022-12-07 12:39:43,924 [INFO] 3286919 sarracenia.flowcb.log after_accept accepted: (lag: 0.40 ) https://hpfx.collab.science.gc.ca /20221207/WXO-DD/bulletins/alphanumeric/20221207/UA/CWAO/17/UANT01_CWAO_071739___24012
+    2022-12-07 12:39:44,098 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_071739___44806
+    2022-12-07 12:39:44,098 [INFO] 3286919 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/UANT01_CWAO_071739___24012
+
+Les nombres **lag :** signalés dans la session *foreground* indiquent l'ancienneté des données (en secondes, 
+en fonction de l'heure à laquelle elles ont été ajoutées au réseau par la source. Si vous voyez ce décalage 
+augmenter de manière déraisonnable, votre abonnement a un problème de performances.
 
 Performance
 -----------
 
+Il y a de nombreux aspects de la performance que nous n'aborderons pas ici.
+
+plus :
+
+* `Quand ramasser un fichier<../Explication/StrategieDetectionFichiers.html>`_ 
+* `Quand savoir qu´un fichier est livré<../Explication/AssurerLaLivraison.html>`_ 
+ 
+Dans les cas de haut-débit, comment faire remarquer rapidement les modifications de fichiers, 
+filtrer les réécritures fréquentes de fichiers, planifier des copies :
+
+* `Case Study: HPC Mirroring <../Explication/History/HPC_Mirroring_Use_Case.html>`_
+* C implementation: `sr3_cpost <../Reference/sr3_post.1.rst>`_ `sr3_cpump <../Reference/sr3_cpump.1.rst>`_
+  used mostly when python isn't easy to get working.
+
+Mais Le but le plus courant lorsque les performances sont augmentées est d'accélérer leurs téléchargements.
 Si les transferts vont trop lentement, les étapes sont les suivantes:
 
 
@@ -504,6 +623,11 @@ systèmes à apparaître, lorsqu’ils ne sont pas complètement fonctionnels. L
 applications n’ont pas besoin de savoir qu’il existe une autre pile produisant le même
 produit, ce qui les simplifie également.
 
+pour plus:
+
+* `<../Explication/SupprimerLesDoublons.rst>`_
+  
+
 Plugins
 -------
 
@@ -588,6 +712,19 @@ Pour récapituler :
 * Pour les définir, placez les options dans le fichier de configuration avant que le plugin ne s’appelle lui-même
 * Pour créer vos propres plugins, créez-les dans ~/.config/sr3/plugins, ou dans le chemin PYTHONPATH configurer
   pour acceder a vos modules Python.
+
+plus:
+
+* `Concepts <../Explication/Concepts.html>`_
+* `using callbacks from command line (Jupyter Notebook) <../Tutoriel/2_CLI_with_flowcb_demo.html>`_
+
+encore davantage:
+
+* `Sarracenia Programming Guide <../Explication/SarraPluginDev.html>`_
+* `Writing Flow Callbacks <../CommentFaire/FlowCallbacks.rst>`_  
+
+
+
 
 
 file_rxpipe
@@ -764,6 +901,10 @@ a des options supplémentaires:
 
 etc... On peut également modifier les plugins fournis, ou en écrire de nouveaux pour changer complètement la journalisation.
 
+plus:
+
+* (code source, en anglais) `Log module <../../Reference/flowcb.html#module-sarracenia.flowcb.log>`_
+
 
 Réglage du débogage moth
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -784,6 +925,9 @@ Parfois, lors des tests d’interopérabilité, il faut voir les messages de not
 
 L’une ou l’autre de ces options ou les deux feront de très gros journaux et sont mieux utilisées judicieusement.
 
+plus:
+
+* (code source, en anglais) `Moth API <../../api-documentation.html#module-sarracenia.moth>`_
 Métrique Housekeeping
 ---------------------
 Les rappels de flux peuvent implémenter un point d’entrée on_housekeeping.  Ce point d’entrée est généralement
@@ -798,6 +942,10 @@ les rappels de surveillance des ressources, par exemple, donnent des lignes dans
     2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats files transferred: 0 bytes: 0 Bytes rate: 0 Bytes/sec
     2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.log housekeeping_stats lag: average: 778.91, maximum: 931.06 
   
+plus:
+
+* (code source, en anglais) `Housekeeping callbacks <../../Reference/flowcb.html#module-sarracenia.flowcb.housekeeping>`_ 
+
 
 Réception de fichiers redondants
 --------------------------------
@@ -813,6 +961,7 @@ ou pas.
 Ce filtrage nécessite la mise en œuvre d’une pompe locale sans données avec
 sr_winnow. Consultez le Guide de l’administrateur pour plus d’informations.
 
+
 Proxys Web
 ----------
 
@@ -825,11 +974,30 @@ dans le fichier default.conf::
 La mise en place de default.conf garantit que tous les abonnés utiliseront
 le proxy, pas seulement une seule configuration.
 
+
+Accès au niveau de l'API
+------------------------
+
+Sarracenia version 3 propose également des modules python qui peuvent être appelés
+à partir d'applications Python existantes.
+
+* `API Flow pour remplacer l'utilisation de la CLI <../Tutoriel/3_api_flow_demo.html>`_
+
+L'API de *flow* apporte toutes les options de placement et d'analyse de
+Sarracenia, c'est une manière pythonique de démarrer un flux à partir de python lui-même.
+
+Ou on peut éviter le schéma de configuration de Sarracenia, peut-être que l'on veut 
+juste utiliser le support du protocole de message:
+
+* abnonnement avec l´API **Moth** (plus simple) (Jupyter Notebook) `<../Tutoriel/4_api_moth_sub_demo.html>`_
+* annoncer des produits avec l´API **Moth** (Jupyter Notebook) `../Tutoriel/5_api_moth_post_demo.html>`_
+
+
+
 Plus d’informations
 -------------------
 
-L3 `sr3(1) <../Reference/sr3.1.html>`_ est la source de référence informative définitive
-sur les options de configuration. Pour plus d’informations,
-consulter: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
+la page `sr3(1) <../Reference/sr3.1.html>`_ contient de l'informative définitive
+La page principale: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
 
 
