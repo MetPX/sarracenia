@@ -21,7 +21,7 @@ def latest_changelog() -> str:
           if l[2] == '*' :
              lines.append(l)  
           elif l[2] == '-': break
-    return 'New in this release:\n' + '\n'.join(lines)
+    return '\nChanges:\n' + '\n'.join(lines)
 
 def read(*parts):
     # intentionally *not* adding an encoding option to open, See:
