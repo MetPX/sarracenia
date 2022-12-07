@@ -11,6 +11,18 @@ import sarracenia
 here = os.path.abspath(os.path.dirname(__file__))
 
 
+def latest_changelog() -> str:
+    
+    lines=[]
+    started=False
+    with open('debian/changelog','r') as clf:
+       for l in clf.readlines():
+          if len(l) < 2: continue
+          if l[2] == '*' :
+             lines.append(l)  
+          elif l[2] == '-': break
+    return 'Changes:\n' + '\n'.join(lines)
+
 def read(*parts):
     # intentionally *not* adding an encoding option to open, See:
     #   https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
@@ -26,7 +38,7 @@ setup(
     version=sarracenia.__version__,
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description_content_type='text/x-rst',
-    long_description=(read('README.rst')), 
+    long_description=(read('README.rst')+latest_changelog()), 
     url='https://github.com/MetPX/sarracenia',
     license='GPLv2',
     author='Shared Services Canada, Supercomputing, Data Interchange',

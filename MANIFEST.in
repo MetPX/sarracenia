@@ -1,4 +1,4 @@
-include AUTHORS.txt
+include debian/changelog
 include LICENSE.txt
 include README.rst
 
