@@ -1134,6 +1134,8 @@ class Config:
         #logger.error('FIXME! input value: %s' % value)
 
         if not value:
+            if not self.integrity_method:
+               return
             value = self.integrity_method
 
         if (value in sarracenia.integrity.known_methods) or (
@@ -1153,7 +1155,7 @@ class Config:
             self.integrity_method = value
         #logger.error( f'2 value: {value} self.integrity_method={self.integrity_method}' )
 
-        if value in [ 'N', 'none' ]:
+        if value.lower() in [ 'n', 'none' ]:
             self.integrity_method = None
             #logger.error('returning 1.1: %s' % 'none')
             return 
