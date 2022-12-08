@@ -25,23 +25,24 @@ To find out what data is already available on a pump,
 view the tree with a web browser.  
 For simple immediate needs, one can download data using the 
 browser itself, or a standard tool such as wget.
-The usual intent is for sr3 subsribe to automatically 
-download the data wanted to a directory on a subscriber
+
+The usual intent is to automatically download the data 
+wanted to a directory on a subscriber
 machine where other software can process it.  Please note:
 
-- the tool is entirely command line driven (there is no GUI) More accurately, it is mostly config file driven.
+- the tool is entirely command line driven (there is no GUI) More accurately, it is mostly configuration file driven.
   most of the *interface* involves using a text editor to modify configuration files.
-- while written to be compatible with other environments, 
-  the focus is on Linux usage. 
+- while written to be compatible with other environments, the focus is on Linux usage. 
 - the tool can be used as either an end-user tool, or a system-wide transfer engine.
   This guide is focused on the end-user case.  
-- More detailed reference material is available at the 
-  traditional sr3(1) man page,
 - All documentation of the package is available 
   at https://metpx.github.io/sarracenia
 
 While Sarracenia can work with any web tree, or any URL 
-that sources choose to post, there is a conventional layout.
+that sources choose to post, there is a conventional layout, for example at:
+
+   http://hpfx.collab.science.gc.ca
+
 A data pump's web server will just expose web accessible folders
 and the root of the tree is the date, in YYYYMMDD format.
 These dates do not represent anything about the data other than 
@@ -63,7 +64,7 @@ the current date/time in the location of the subscriber::
 A variable number of days are stored on each data pump, for those
 with an emphasis on real-time reliable delivery, the number of days
 will be shorter.  For other pumps, where long term outages need
-to be tolerated, more days will be kept. 
+to be tolerated, more days will be kept.  
 
 Under the first level of date trees, there is a directory
 per source. A Source in Sarracenia is an account used to inject
@@ -85,6 +86,42 @@ The data under each of these directories was obtained from the named
 source. In these examples, it is actually injected by DataInterchange
 staff, and the names are chosen to represent the origin of the data.
 
+The original Environment and Climate Change Canada data mart, is
+one "source" in this sense, showing up on hpfx as WXO-DD, or the same
+tree being available at the root of::
+
+  https://dd.weather.gc.ca
+
+
+once down to the viewing the content from a given source,
+products are organized in a way defined by the source::
+
+
+   Icon  Name                    Last modified      Size  Description
+   [TXT] about_dd_apropos.txt    2021-05-17 13:23  1.0K  
+   [DIR] air_quality/            2020-12-10 14:47    -   
+   [DIR] alerts/                 2022-07-13 12:00    -   
+   [DIR] analysis/               2022-07-13 13:17    -   
+   [DIR] barometry/              2022-03-22 22:00    -   
+   [DIR] bulletins/              2022-07-13 13:19    -   
+   [DIR] citypage_weather/       2022-07-13 13:21    -   
+   [DIR] climate/                2020-09-03 16:30    -   
+   [DIR] doc/                    2022-09-28 20:00    -   
+   [DIR] ensemble/               2022-07-13 13:34    -   
+   [DIR] hydrometric/            2021-01-14 14:12    -   
+   [DIR] marine_weather/         2020-12-15 14:51    -   
+   [DIR] meteocode/              2022-07-13 14:01    -   
+   [DIR] model_gdsps/            2021-12-01 21:41    -   
+   [DIR] model_gdwps/            2021-12-01 16:50    -   
+
+Directories below that level are related to the date being sought.
+
+
+One can run sr3 to download selected products from Data pumps like these.
+The configuration files are a few lines of configuration, and sr3
+includes some examples.
+
+
 To list the available configurations with *sr3 list* ::
 
   $ sr3 list examples
@@ -100,9 +137,13 @@ To list the available configurations with *sr3 list* ::
     sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                watch/pitcher_client.conf        watch/pitcher_server.conf        
     watch/sci2ec.conf
 
+AMIS, the Canadian AES (Atmospheric Environment Service) Meteorological Information Service, was a satellite 
+broadcast system for weather data in the 1980's. It is a continuous stream of text messages (originally at 4800 bps!) 
+and each message is limited to 14000 bytes. The service was transitioned to an internet streaming feed in the early 2000's,
+and the streaming version is still fed to those interested in air and maritime navigation across the country.
 
-Each section of the listing shows the contents of the directory shown in parentheses.
-To use an example as a starting point::
+One can download a continuous feed of such traditional weather bulletins from the original datamart using the subscribe/dd_amis.conf 
+configuration example::
 
     $ sr3 add subscribe/dd_amis.conf
     add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf 
@@ -130,14 +171,12 @@ To view a configuration, give it to `sr3 list` as an argument::
     
     subtopic bulletins.alphanumeric.#
     
+    directory /tmp/dd_amis
     accept .*
 
-
-To delete a configuration::
-
-    $ sr3 remove subscribe/dd_amis
-    2021-01-26 01:17:24,967 [INFO] root remove FIXME remove! ['subscribe/dd_amis']
-    2021-01-26 01:17:24,967 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_amis.conf 
+Then it can be run interactively *sr3 foreground subscribe/dd_amis* or as a service
+with *sr3 start subscribe/dd_amis*  in both cases, files will be downloaded from
+dd.weather.gc.ca into the local machine's /tmp/dd_amis directory.
 
 more:
 

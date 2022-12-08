@@ -41,7 +41,10 @@ machine d'un abonné où d’autres logiciels peuvent les traiter.  Veuillez not
 - Toute la documentation du paquet est disponible à https://metpx.github.io/sarracenia
 
 Alors que Sarracenia peut fonctionner avec n’importe quel arbre Web, ou n’importe quelle URL
-que les sources choisissent de poster, il y a une mise en page conventionnelle.
+que les sources choisissent de poster, il y a une format conventionnelle. un exemple:
+
+    http://hpfx.collab.science.gc.ca
+
 Le serveur Web d’une pompe de données exposera simplement des dossiers accessibles sur le Web
 et la racine de l’arbre est la date, dans le format AAAAMMJJ.
 Ces dates ne représentent rien sur les données autres que
@@ -87,7 +90,40 @@ Les données sous chacun de ces répertoires ont été obtenues à partir de la
 source. Dans ces exemples, il est en fait injecté par DataInterchange
 et les noms sont choisis pour représenter l’origine des données.
 
-Pour lister les configurations disponibles avec *sr3 list* ::
+Le dépôt de données original d'Environnement et Changement climatique Canada est
+une "source" dans ce sens, apparaissant sur hpfx en tant que WXO-DD, ou le même
+tree étant disponible à la racine de ::
+
+   https://dd.weather.gc.ca
+
+Le dépôt de données original d'Environnement et Changement climatique Canada est
+une "source" dans ce sens, apparaissant sur hpfx en tant que WXO-DD, ou le même
+tree étant disponible à la racine de ::
+
+
+   Icon  Name                    Last modified      Size  Description
+   [TXT] about_dd_apropos.txt    2021-05-17 13:23  1.0K  
+   [DIR] air_quality/            2020-12-10 14:47    -   
+   [DIR] alerts/                 2022-07-13 12:00    -   
+   [DIR] analysis/               2022-07-13 13:17    -   
+   [DIR] barometry/              2022-03-22 22:00    -   
+   [DIR] bulletins/              2022-07-13 13:19    -   
+   [DIR] citypage_weather/       2022-07-13 13:21    -   
+   [DIR] climate/                2020-09-03 16:30    -   
+   [DIR] doc/                    2022-09-28 20:00    -   
+   [DIR] ensemble/               2022-07-13 13:34    -   
+   [DIR] hydrometric/            2021-01-14 14:12    -   
+   [DIR] marine_weather/         2020-12-15 14:51    -   
+   [DIR] meteocode/              2022-07-13 14:01    -   
+   [DIR] model_gdsps/            2021-12-01 21:41    -   
+   [DIR] model_gdwps/            2021-12-01 16:50    -   
+
+Les répertoires en dessous de ce niveau sont liés à la date recherchée.
+
+On peut exécuter sr3 pour télécharger des produits sélectionnés à partir de pompes de données comme celles-ci.
+Les fichiers de configuration sont quelques lignes de mots clés, et sr3 comprend quelques exemples.
+
+Lister les échantillons de configurations disponibles avec *sr3 list* ::
 
   $ sr3 list examples
     Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
@@ -103,8 +139,15 @@ Pour lister les configurations disponibles avec *sr3 list* ::
     watch/sci2ec.conf
 
 
-Chaque section de la liste affiche le contenu du répertoire entre parenthèses.
-Pour utiliser un exemple comme point de départ ::
+
+AMIS, le *AES (Service de l'environnement atmosphérique, en anglais) Meteorological Information Service*, était un 
+système de diffusion des données météorologiques via satellite dans les années 1980. Il s'agit d'un flux continu de messages 
+texte (à l'origine à 4800 bps !) et chaque message est limité à 14000 octets. Le service est passé à un flux Internet en continu 
+au début des années 2000, et la version internet est toujours transmise à ceux qui s'intéressent à la navigation aérienne 
+et maritime à travers le pays.
+
+On peut receivoir un flux continu de ces bulletins météorologiques traditionnels à partir du datamart d'origine en utilisant 
+le modèle de subscribe/dd_amis.conf::
 
   $ sr3 add subscribe/dd_amis.conf
     add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf 
