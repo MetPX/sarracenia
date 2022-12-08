@@ -30,7 +30,7 @@ page web / homepage: https://metpx.github.io/sarracenia
 
 +----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 |                                                                                        |                                                                                           |
-| [ `home page <https://metpx.github.io/sarracenia>`_ ]                                  | [ `site web <https://metpx.github.io/sarracenia/fr>`_ ]                                   |
+|                                                                                        | [ `site web <https://metpx.github.io/sarracenia/fr>`_ ]                                   |
 | [ `Getting Started <https://metpx.github.io/sarracenia/How2Guides/subscriber.html>`_ ] | [ `Un bon départ <https://metpx.github.io/sarracenia/fr/CommentFaire/subscriber.html>`_ ] |
 | [ `Source Guide <https://metpx.github.io/sarracenia/How2Guides/source.html>`_ ]        | [ `Guide de Source <https://metpx.github.io/sarracenia/fr/CommentFaire/source.html>`_ ]   |
 |                                                                                        |                                                                                           |
@@ -49,11 +49,5 @@ page web / homepage: https://metpx.github.io/sarracenia
 |                                                                                        | maintenir l'intégrité de la structure des                                                 |
 |                                                                                        | données, tel que proposée et organisée par la                                             |
 |                                                                                        | source jusqu'à destination.                                                               |
-|                                                                                        |                                                                                           |
-+----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-|                                                                                        |                                                                                           |
-| An initiative of Shared Services Canada                                                | Une initiative de Services partagés Canada                                                |
-| http://ssc-spc.gc.ca in support of internal                                            | https://ssc-spc.gc.ca pour appuyer les opérations                                         |
-| needs of the Government of Canada                                                      | du gouvernement du Canada                                                                 |
 |                                                                                        |                                                                                           |
 +----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
