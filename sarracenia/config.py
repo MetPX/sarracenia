@@ -229,12 +229,15 @@ convert_to_v3 = {
     'xattr_disable': [ 'continue' ]
 }
 
+# question: why don't these have matching closing braces? 
+# answer: there might be an offset (-1h, -5m, etc...) and covering those cases is hard with simple substitution.
+
 convert_patterns_to_v3 = {
-   '${YYYYMMDD}' : '${%Y%m%d}',
-   '${YYYY}': '${%Y}',
-   '${JJJ}': '${%j}',
-   '${HH}': '${%H}',
-   '${DD}': '${%d}',
+   '${YYYYMMDD' : '${%Y%m%d',
+   '${YYYY': '${%Y',
+   '${JJJ': '${%j',
+   '${HH': '${%H',
+   '${DD': '${%d',
 
 }
 
