@@ -1,3 +1,11 @@
+metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
+
+  * change translation of v2 poll destination & get to sr3 path
+  * add interpretation of offsets in strftime date patterns.
+  * documentation improvements
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Fri, 09 Dec 2022 11:02:27 -0500
+
 metpx-sr3 (3.00.24) unstable; urgency=medium
 
   * critical: sr3 would crash when sum none present in a configuration.
