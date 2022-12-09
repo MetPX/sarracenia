@@ -246,13 +246,13 @@ class Poll(FlowCB):
         # rebuild mask as pulls instructions
         # pulls[directory] = [mask1,mask2...]
 
-        self.pulls = {}
-        for mask in self.o.masks:
-            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-            logger.debug(mask)
-            if not maskDir in self.pulls:
-                self.pulls[maskDir] = []
-            self.pulls[maskDir].append(mask)
+        #self.pulls = {}
+        #for mask in self.o.masks:
+        #    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
+        #    logger.debug(mask)
+        #    if not maskDir in self.pulls:
+        #        self.pulls[maskDir] = []
+        #    self.pulls[maskDir].append(mask)
 
         self.on_html_parser_init()
 
@@ -347,8 +347,8 @@ class Poll(FlowCB):
 
         return False, {}, {}
 
-    def poll_directory(self, pdir, lspath):
-        #logger.debug("poll_directory %s %s" % (pdir, lspath))
+    def poll_directory(self, pdir):
+        #logger.debug("poll_directory %s %s" % (pdir))
         npost = 0
         msgs = []
 
@@ -378,10 +378,10 @@ class Poll(FlowCB):
         for d in sdir:
             if d == '.' or d == '..': continue
 
-            d_lspath = lspath + '_' + d
+            #d_lspath = lspath + '_' + d
             d_pdir = pdir + os.sep + d
 
-            msgs.extend(self.poll_directory(d_pdir, d_lspath))
+            msgs.extend(self.poll_directory(d_pdir))
 
         return msgs
 
@@ -518,22 +518,22 @@ class Poll(FlowCB):
 
         # loop on all directories where there are pulls to do
 
-        for destDir in self.pulls:
+        for destDir in self.o.path:
 
             # setup of poll directory info
 
-            self.pulllst = self.pulls[destDir]
+            #self.pulllst = self.pulls[destDir]
 
-            path = destDir
-            path = path.replace('${', '')
-            path = path.replace('}', '')
-            path = path.replace('/', '_')
-            lsPath = self.o.cfg_run_dir + os.sep + 'ls' + path
+            #path = destDir
+            #path = path.replace('${', '')
+            #path = path.replace('}', '')
+            #path = path.replace('/', '_')
+            #lsPath = self.o.cfg_run_dir + os.sep + 'ls' + path
 
             currentDir = self.o.variableExpansion(destDir)
 
             if currentDir == '': currentDir = destDir
-            msgs.extend(self.poll_directory(currentDir, lsPath))
+            msgs.extend(self.poll_directory(currentDir))
             logger.debug('poll_directory returned: %s' % len(msgs))
 
         # close connection

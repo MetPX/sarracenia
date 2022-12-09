@@ -529,6 +529,7 @@ class Config:
         'events' : 'fileEvents',
         'exchange_split': 'exchangeSplit',
         'exchange_suffix': 'exchangeSuffix',
+        'get' : 'path', 
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
@@ -814,7 +815,7 @@ class Config:
             self.destfn_scripts.append(script)
 
         return (arguments[0], self.directory, fn, regex,
-                option.lower() in ['accept', 'get'], self.mirror, self.strip,
+                option.lower() in ['accept' ], self.mirror, self.strip,
                 self.pstrip, self.flatten)
 
     def mask_ppstr(self, mask):
@@ -1232,8 +1233,10 @@ class Config:
                     k = 'pollUrl'
                 else:
                     k = 'remoteUrl'
-            elif k == 'broker' and component == 'poll':
+            elif k == 'broker' and component == 'poll' :
                 k = 'post_broker'
+            elif k == 'directory' and component == 'poll' :
+                k = 'path'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1276,7 +1279,7 @@ class Config:
             if len(line) < 2:
                 logger.error('%s:%d %s missing argument(s) ' % ( cfname, lineno, k ) )
                 continue
-            if k in ['accept', 'reject', 'get']:
+            if k in ['accept', 'reject' ]:
                 self.masks.append(self._build_mask(k, line[1:]))
             elif k in [ 'callback', 'cb' ]:
                 #vv = v.split('.')

@@ -1214,8 +1214,9 @@ and possibly the **post_baseDir** if the option is used.
 
 If a path defines a file then this file is watched.
 
-If a path defines a directory then all files in that directory are
-watched...
+If a path defines a directory then all files in that directory are watched...
+
+This is also used to say which directories to look at for a poll
 
 If this path defines a directory, all files in that directory are
 watched and should **watch** find one (or more) directory(ies), it

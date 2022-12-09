@@ -1957,6 +1957,8 @@ class sr_GlobalState:
                             k = 'remoteUrl'
                     elif (k == 'broker') and (component == 'poll'):
                         k = 'post_broker'
+                    elif (k == 'directory' ) and (component == 'poll'):
+                        k = 'path'
                     elif k == 'integrity':
                         if line[1][0] in sum_algo_v2tov3:
                            method=sum_algo_v2tov3[line[1][0]]
