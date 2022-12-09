@@ -2,7 +2,7 @@
  Sarracenia v3 (MetPX-Sr3)
 ==========================
 
-page web / homepage: https://metpx.github.io/sarracenia
+[ homepage (En): https://metpx.github.io/sarracenia ] [ `(Fr) fr/ <https://metpx.github.io/sarracenia/fr>`_ ]
 
 .. image:: https://img.shields.io/pypi/v/metpx-sr3?style=flat
   :alt: PyPI version
@@ -30,7 +30,6 @@ page web / homepage: https://metpx.github.io/sarracenia
 
 +----------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 |                                                                                        |                                                                                           |
-|                                                                                        | [ `site web <https://metpx.github.io/sarracenia/fr>`_ ]                                   |
 | [ `Getting Started <https://metpx.github.io/sarracenia/How2Guides/subscriber.html>`_ ] | [ `Un bon départ <https://metpx.github.io/sarracenia/fr/CommentFaire/subscriber.html>`_ ] |
 | [ `Source Guide <https://metpx.github.io/sarracenia/How2Guides/source.html>`_ ]        | [ `Guide de Source <https://metpx.github.io/sarracenia/fr/CommentFaire/source.html>`_ ]   |
 |                                                                                        |                                                                                           |

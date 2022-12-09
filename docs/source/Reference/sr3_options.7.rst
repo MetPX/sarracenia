@@ -114,13 +114,14 @@ built-in ones. For example::
         directory /mylocaldirectory/${%Y%m%d}/mydailies
         accept    .*observations.*
 
-        rename hoho.${%Y%m%d_%H%M%S.%f}.csv
+        rename hoho.${%Y%m%d_%H%M%S.%f-1h}.csv
 
 In the last example above, the *varTimeOffset* will modify the evaluation of YYYYMMDD to be 5m in the past.
+In the rename option, the time to be substituted is one hour in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
-* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string.
+* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string augmented by an offset duration suffix (- for in the past, + for in the future)
   example:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory

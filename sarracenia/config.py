@@ -1229,6 +1229,8 @@ class Config:
                     k = 'pollUrl'
                 else:
                     k = 'remoteUrl'
+            elif k == 'broker' and component == 'poll':
+                k = 'post_broker'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1857,6 +1859,26 @@ class Config:
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
         while '${%' in new_dir:
+            offset_check = re.search( "\$\{\%.*([-+])(\d+)(\D)\}", new_dir )
+            if offset_check:
+                seconds = durationToSeconds(''.join(offset_check.group(2,3)), 's')
+                if offset_check.group(1) == '-':
+                     whenStamp = datetime.datetime.fromtimestamp( time.time()-seconds )
+                else:
+                     whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
+                # remove offset from strftime pattern.
+                new_dir = re.sub(  r'\$\{\%(.*)[-+]\d+\D\}', '${%\\1}', new_dir ) 
+            else: # no units specified, seconds assumed (as per duration settings)
+                offset_check = re.search( "\$\{\%.*([-+])(\d+)\}", new_dir )
+                if offset_check:
+                        seconds = durationToSeconds(offset_check.group(2))
+                        if offset_check.group(1) == '-':
+                            whenStamp = datetime.datetime.fromtimestamp( time.time()-seconds )
+                        else:
+                            whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
+                        # remove offset from pattern.
+                        new_dir = re.sub(  r'\$\{\%(.*)[-+]\d+\}', '${%\\1}', new_dir ) 
+
             new_dir = re.sub( "\$\{\%(.*)\}", "%\g<1>", new_dir )
             new_dir = whenStamp.strftime(new_dir)
 
