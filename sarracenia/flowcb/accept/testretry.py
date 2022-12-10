@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class TestRetry(FlowCB):
     def __init__(self, options):
         self.o = options
-        sefl.remoteUrl = None
+        sefl.sendTo = None
         self.msg_baseUrl_good = None
         self.details_bad = None
         self.msg_baseUrl_bad = 'sftp://ruser:rpass@retryhost'
@@ -28,8 +28,8 @@ class TestRetry(FlowCB):
         for message in worklist.incoming:
             logger.debug("testretry")
 
-            if sefl.remoteUrl == None:
-                sefl.remoteUrl = self.o.remoteUrl
+            if sefl.sendTo == None:
+                sefl.sendTo = self.o.sendTo
             if self.msg_baseUrl_good == None:
                 self.msg_baseUrl_good = message['baseUrl']
 
@@ -39,8 +39,8 @@ class TestRetry(FlowCB):
             # 2022-06-10: isRetry was removed. Maybe can check if the message has msg_baseUrl_bad?
             #             see issues #466 and #527.
             if 'isRetry' in message and message['isRetry']:
-                self.o.remoteUrl = sefl.remoteUrl
-                ok, self.o.details = self.o.credentials.get(sefl.remoteUrl)
+                self.o.sendTo = sefl.sendTo
+                ok, self.o.details = self.o.credentials.get(sefl.sendTo)
 
                 # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
                 message['set_notice'](self.msg_baseUrl_good,
@@ -53,7 +53,7 @@ class TestRetry(FlowCB):
                 if self.o.component != 'sr_sender':
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(
-                        sefl.remoteUrl)
+                        sefl.sendTo)
 
                     # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
                     message['set_notice'](self.msg_baseUrl_bad,
@@ -64,7 +64,7 @@ class TestRetry(FlowCB):
                 else:
                     logger.debug("making it bad 2")
                     self.o.sleep_connect_try_interval_max = 1.0
-                    self.o.remoteUrl = self.msg_baseUrl_bad
+                    self.o.sendTo = self.msg_baseUrl_bad
                     self.o.credentials.parse(self.msg_baseUrl_bad)
                     ok, self.o.details = self.o.credentials.get(
                         self.msg_baseUrl_bad)

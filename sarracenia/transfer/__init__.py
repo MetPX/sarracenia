@@ -106,7 +106,7 @@ class Transfer():
     
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
-     * remoteUrl  - server to connect to.
+     * sendTo  - server to connect to.
      * batch   - how many files to transfer before a connection is torn down and re-established.
      * permDefault - what permissions to set on files transferred.
      * permDirDefault - what permission to set on directories created.
@@ -306,7 +306,7 @@ class Transfer():
         if self.sumalgo: self.sumalgo.set_path(src_path)
         if self.data_sumalgo: self.data_sumalgo.set_path(src_path)
 
-        # copy source to remoteUrl
+        # copy source to sendTo
 
         # 2022/12/02 - pas - need copies to always work...
         # in HPC mirroring case, a lot of short files, likely length is wrong in announcements.
@@ -331,7 +331,7 @@ class Transfer():
         # open
         src = self.local_read_open(local_file, local_offset)
 
-        # copy source to remoteUrl
+        # copy source to sendTo
 
         rw_length = self.read_write(src, dst, length)
 

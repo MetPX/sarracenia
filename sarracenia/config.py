@@ -129,7 +129,7 @@ str_options = [
     'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName', 'remoteUrl', 'rename',
+    'post_exchangeSuffix', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -496,7 +496,7 @@ class Config:
     ]
     components = [
         'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
-        'subscribe', 'sender', 'watch', 'winnow'
+        'subscribe', 'watch', 'winnow'
     ]
 
     actions = [
@@ -570,6 +570,7 @@ class Config:
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
+        'remoteUrl'  : 'sendTo',
         'report_back': 'report',
         'source_from_exchange': 'sourceFromExchange', 
         'sum' : 'integrity',  
@@ -1232,7 +1233,7 @@ class Config:
                 if component == 'poll':
                     k = 'pollUrl'
                 else:
-                    k = 'remoteUrl'
+                    k = 'sendTo'
             elif k == 'broker' and component == 'poll' :
                 k = 'post_broker'
             elif k == 'directory' and component == 'poll' :

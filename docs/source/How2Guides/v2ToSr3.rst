@@ -356,7 +356,7 @@ In general, v3 plugins:
   parent.consumer                        *none*                                instance of sr_consumer class ...
   parent.currentDir                      msg['new_dir'] ?                      equivalent depends on purpose of use.
   parent.destination                     self.o.pollUrl                        in a poll
-  parent.destination                     self.o.remoteUrl                      in a sender
+  parent.destination                     self.o.sendTo                      in a sender
   parent.masks                           *none*                                internals of sr_subscribe class.
   parent.program_name                    self.o.program_name                   name of the program being run e.g. 'sr_subscribe'
   parent.publisher                       *none*                                instance of Publisher class from sr_amqp.py

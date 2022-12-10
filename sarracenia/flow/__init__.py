@@ -1482,7 +1482,7 @@ class Flow:
                 return False
 
         try:
-            options.remoteUrl = msg['baseUrl']
+            options.sendTo = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or (self.proto[self.scheme] is None):
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
@@ -1680,8 +1680,8 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug("%s_transport remoteUrl: %s " %
-                     (self.scheme, self.o.remoteUrl))
+        logger.debug("%s_transport sendTo: %s " %
+                     (self.scheme, self.o.sendTo))
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 

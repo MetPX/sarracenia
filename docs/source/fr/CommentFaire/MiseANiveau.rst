@@ -43,7 +43,7 @@ git
 
 *CHANGEMENTMENT*: option *destination* dans une configuration de poll est remplacé par *pollUrl*
 
-*CHANGEMENTMENT*: option *destination* dans une configuration de sender est remplacé par *remoteUrl*
+*CHANGEMENTMENT*: option *destination* dans une configuration de sender est remplacé par *sendTo*
 
 *ACTION*: remplacer les *destination* dans les configurations affectés (traité automatiquement
 dans le cas de conversion à partir de v2.)

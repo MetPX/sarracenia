@@ -1406,7 +1406,7 @@ by block because the *blocksize* option was set, there is a
 reconnection to the broker everytime a post is to be sent.
 
 
-remoteUrl <url>
+sendTo <url>
 ---------------
 
 Specification of a remote resource to deliver to in a sender.

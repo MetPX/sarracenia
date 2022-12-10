@@ -1954,7 +1954,7 @@ class sr_GlobalState:
                         if component == 'poll':
                             k = 'pollUrl'
                         else:
-                            k = 'remoteUrl'
+                            k = 'sendTo'
                     elif (k == 'broker') and (component == 'poll'):
                         k = 'post_broker'
                     elif (k == 'directory' ) and (component == 'poll'):
