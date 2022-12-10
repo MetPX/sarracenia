@@ -95,7 +95,7 @@ class Https(Transfer):
 
         if not self.connected : return False
 
-        if self.remoteUrl != self.o.remoteUrl:
+        if self.sendTo != self.o.sendTo:
             self.close()
             return False
 
@@ -108,12 +108,12 @@ class Https(Transfer):
 
     # connect...
     def connect(self):
-        logger.debug("sr_http connect %s" % self.o.remoteUrl)
+        logger.debug("sr_http connect %s" % self.o.sendTo)
 
         if self.connected: self.close()
 
         self.connected = False
-        self.remoteUrl = self.o.remoteUrl
+        self.sendTo = self.o.sendTo
         self.timeout = self.o.timeout
 
         if not self.credentials(): return False
@@ -122,10 +122,10 @@ class Https(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_http credentials %s" % self.remoteUrl)
+        logger.debug("sr_http credentials %s" % self.sendTo)
 
         try:
-            ok, details = self.o.credentials.get(self.remoteUrl)
+            ok, details = self.o.credentials.get(self.sendTo)
             if details: url = details.url
 
             self.user = url.username if url.username != '' else None
@@ -138,7 +138,7 @@ class Https(Transfer):
         except:
             logger.error(
                 "sr_http/credentials: unable to get credentials for %s" %
-                self.remoteUrl)
+                self.sendTo)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -158,9 +158,9 @@ class Https(Transfer):
         # open self.http
 
         if 'retPath' in msg:
-            url = self.remoteUrl + '/' + msg['retPath']
+            url = self.sendTo + '/' + msg['retPath']
         else:
-            url = self.remoteUrl + '/' + urllib.parse.quote(self.path + '/' +
+            url = self.sendTo + '/' + urllib.parse.quote(self.path + '/' +
                                                               remote_file)
 
         ok = self.__open__(url, remote_offset, length)
@@ -218,7 +218,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.remoteUrl + '/' + urllib.parse.quote(self.path)
+        url = self.sendTo + '/' + urllib.parse.quote(self.path)
 
         ok = self.__open__(url)
 

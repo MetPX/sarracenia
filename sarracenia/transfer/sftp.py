@@ -130,7 +130,7 @@ class Sftp(Transfer):
         if self.sftp == None: return False
         if not self.connected: return False
 
-        if self.remoteUrl != self.o.remoteUrl:
+        if self.sendTo != self.o.sendTo:
             self.close()
             return False
 
@@ -180,12 +180,12 @@ class Sftp(Transfer):
     # connect...
     def connect(self):
 
-        logger.debug("sr_sftp connect %s" % self.o.remoteUrl)
+        logger.debug("sr_sftp connect %s" % self.o.sendTo)
 
         if self.connected: self.close()
 
         self.connected = False
-        self.remoteUrl = self.o.remoteUrl
+        self.sendTo = self.o.sendTo
 
         if not self.credentials(): return False
 
@@ -235,10 +235,10 @@ class Sftp(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_sftp credentials %s" % self.remoteUrl)
+        logger.debug("sr_sftp credentials %s" % self.sendTo)
 
         try:
-            ok, details = self.o.credentials.get(self.remoteUrl)
+            ok, details = self.o.credentials.get(self.sendTo)
             if details: url = details.url
 
             self.host = url.hostname
@@ -281,7 +281,7 @@ class Sftp(Transfer):
         except:
             logger.error(
                 "sr_sftp/credentials: unable to get credentials for %s" %
-                self.remoteUrl)
+                self.sendTo)
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -476,7 +476,7 @@ class Sftp(Transfer):
 
     def putAccelerated(self, msg, local_file, remote_file, length=0):
 
-        dest_baseUrl = self.o.remoteUrl.replace('sftp://', '')
+        dest_baseUrl = self.o.sendTo.replace('sftp://', '')
         if dest_baseUrl[-1] == '/':
             dest_baseUrl = dest_baseUrl[0:-1]
         arg2 = dest_baseUrl + ':' + msg['new_dir'] + os.sep + remote_file

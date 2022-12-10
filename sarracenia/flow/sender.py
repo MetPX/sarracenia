@@ -24,7 +24,7 @@ class Sender(Flow):
             self.plugins['load'].insert(
                 0, 'sarracenia.flowcb.post.message.Message')
 
-        self.scheme = urllib.parse.urlparse(self.o.remoteUrl).scheme
+        self.scheme = urllib.parse.urlparse(self.o.sendTo).scheme
 
     def do(self):
 

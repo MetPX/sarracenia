@@ -1259,7 +1259,7 @@ et est utilisé comme modèle pour se faire remplacer dans le répertoire de bas
 (à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'link', 'oldname', 'newname'
 qui sont utilisés lors de la mise en miroir de liens symboliques ou de fichiers renommés.
 
-La **remoteUrl** définit le protocole et le serveur à utiliser pour livrer les produits.
+La **sendTo** définit le protocole et le serveur à utiliser pour livrer les produits.
 Sa forme est un url partiel, par exemple : **ftp://myuser@myhost**.
 Le programme utilise le fichier ~/.conf/sarra/credentials.conf pour obtenir les détails restants
 (mot de passe et options de connexion).  Les protocoles pris en charge sont ftp, ftps et sftp.
@@ -1277,7 +1277,7 @@ Maintenant, nous sommes prêts à envoyer le produit... par exemple, si la notif
 **sr_sender**  effectue la pseudo-livraison suivante :
 
 Envoie le fichier locale [**baseDir**]/relative/path/to/IMPORTANT_product
-à    **remoteUrl**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+à    **sendTo**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** est supérieur à 0, le processus tente de respecter
 cette vitesse de livraison... ftp,ftps,ou sftp)
 
@@ -1287,7 +1287,7 @@ cette vitesse de livraison... ftp,ftps,ou sftp)
 La notification sélectionnée contiennent toutes les bonnes informations
 (attributs de thème et d’en-tête) à l’exception du champ url dans l'avis... dans notre exemple : **http://this.pump.com/**
 
-Par défaut, **sr_sender** place la **remoteUrl** dans ce champ.
+Par défaut, **sr_sender** place la **sendTo** dans ce champ.
 L’utilisateur peut l’écraser en spécifiant l’option **post_baseUrl**. Par exemple:
 
 **post_baseUrl http://remote.apache.com**
@@ -1314,7 +1314,7 @@ Il y a 2 différences avec le cas précédent :
 les options **directory** et **filename**.
 
 Le **baseDir** est le même, tout comme la
-**remoteUrl** et les options **post_baseDir**.
+**sendTo** et les options **post_baseDir**.
 
 L’option **répertoire** définit un autre « chemin relatif » pour le produit
 à destination.  Il est marqué aux options **accept** définies après lui.

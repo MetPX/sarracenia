@@ -1389,7 +1389,7 @@ Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
 par bloc parce que l’option *blocksize* a été définie, il y a une
 reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
 
-remoteUrl <url>
+sendTo <url>
 ---------------
 
 Specification du serveur auquel on veut livrer des données (dans un *sender*) 

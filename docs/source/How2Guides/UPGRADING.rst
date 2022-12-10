@@ -53,7 +53,7 @@ git
 
 *CHANGE*: *destination*, when used in a poll is replaced by *pollUrl*
 
-*CHANGE*: *destination*, when used in a sender is replaced by *remoteUrl*
+*CHANGE*: *destination*, when used in a sender is replaced by *sendTo*
 
 *ACTION*: replace *destination* settings in affected configurations.
           (automatically taken care of in v2 when converting.)
@@ -186,6 +186,37 @@ V2 to Sr3
 
            does that as intended.
 
+**CHANGE**: sr3 poll works very differently from v2.
+
+          ============================================== =====================================================
+          v2 behaviour                                   sr3 behaviour
+          ---------------------------------------------- -----------------------------------------------------
+          all participants in a vip poll remote always   One node (with vip) polls remote.
+          all participants in a vip update ls_files      nodes subscribe to the output exchange          
+          poll builds strings to describe files          poll builds stat(2) like paramiko.SftpAttributes() 
+          participants rely on their ls_files for state  poll uses flowcb.nodupe module like rest of sr3
+          file_time_limit to ignore older files          nodupe_fileAgeMax 
+          *destination* gives where to poll              *pollUrl*
+          *directory* gives remote directory to list     *path* used like in *post* and *watch*
+          *get* is a sort of remote pattern filtering    *accept* as used by all other components.
+          do_poll plugins used to override default       *poll* entry point in flow callbacks
+          *do_poll* used to *HTTP GET* periodically      flowcb.scheduled more elegant.
+          ============================================== =====================================================
+
+          The sr3 convert function takes care of the necessary configuration changes, but plugins
+          need ground up rewrites, as they work completely differently.
+
+          All of the changes makes poll's use of the configuration language less different than how it is 
+          used in other components. For example, *directory* was confusing because it is used to determine 
+          the source directory to be polled. In all other components it refers to the download location. 
+          The *path* option is used in *post* and *watch* components to denote the paths that should 
+          be observed.
+      
+          In sr3 when vip setting is present, poll will create a queue bound to the post_broker/post_exchange 
+          in order to see the posts done by other participants in the queue. queue naming options are therefore
+          useful in sr3
+
+          
 **CHANGE**: In general, underscores in options are replaced with camelCase. e.g.:
 
           v2 loglevel -> sr3 logLevel
@@ -216,7 +247,7 @@ V2 to Sr3
           default_log_mode          permLog
           default_mode              permDefault
           destination               pollUrl in Poll
-          destination               remoteUrl others
+          destination               sendTo in Sender
           document_root             documentRoot
           e                         fileEvents
           events                    fileEvents

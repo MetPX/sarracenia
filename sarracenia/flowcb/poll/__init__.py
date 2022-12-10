@@ -235,7 +235,7 @@ class Poll(FlowCB):
                 self.o.post_baseUrl = self.o.post_baseUrl.replace(
                     ':' + self.details.url.password, '')
 
-        self.o.remoteUrl = self.o.pollUrl
+        self.o.sendTo = self.o.pollUrl
 
         self.dest = sarracenia.transfer.Transfer.factory(
             self.details.url.scheme, self.o)

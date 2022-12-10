@@ -60,7 +60,7 @@ class Amserver(FlowCB):
             logger.setLevel(logging.INFO)
         logging.basicConfig(format=self.o.logFormat)
 
-        self.url = urllib.parse.urlparse(self.o.remoteUrl)
+        self.url = urllib.parse.urlparse(self.o.sendTo)
 
         self.inBuffer = bytes()
         self.limit = 32678

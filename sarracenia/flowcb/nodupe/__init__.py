@@ -9,7 +9,7 @@ import urllib.parse
 
 import logging
 
-from sarracenia import nowflt, timestr2flt
+from sarracenia import nowflt, timestr2flt, timeflt2str
 
 from sarracenia.flowcb import FlowCB
 
@@ -181,8 +181,8 @@ class NoDupe(FlowCB):
         for m in worklist.incoming:
             if ('mtime' in m) and (timestr2flt(m['mtime']) < min_mtime):
                 m['_deleteOnPost'] |= set(['reject'])
-                m['reject'] = "too old (nodupe check)"
-                m.setReport(304, 'too old (nodupe check)')
+                m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
+                m.setReport(304,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                 worklist.rejected.append(m)
                 continue
             if self.check_message(m):

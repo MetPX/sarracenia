@@ -53,7 +53,7 @@ as `download_noaa.py <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/p
 *examples*, named `pollnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollnoaa.conf>`_ 
 and `subnoaa.conf <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subnoaa.conf>`_. 
 To run, add both plugins and configurations using the :code:`add` action, edit the proper variables in the 
-config (the flowbroker, remoteUrl among others. If running off a local RabbitMQ server, some of the 
+config (the flowbroker, sendTo among others. If running off a local RabbitMQ server, some of the 
 documentation under `doc/Dev.rst <https://github.com/MetPX/sarracenia/blob/v2_stable/doc/Dev.rst>`_ 
 on how to set up the server might be useful). If everything was configured correctly, the output should 
 look something like this::
@@ -180,7 +180,7 @@ A list of parameter codes to use to tailor your results can be found `here <http
 The plugins for any GET web service can be generalized for use, so the plugins used for the NOAA CO-OPS API
 can be reused in this context as well. By default, the station IDs to pass are different, as well as the 
 method of passing them, so the plugin code that determines which station IDs to use differs, but the method
-conceptually is still the same. You would pass a generalized version of the URL in as the remoteUrl in the 
+conceptually is still the same. You would pass a generalized version of the URL in as the sendTo in the 
 config, e.g. https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0}&period=PT3H&parameterCd=00060,00065,00011
 and in the plugin you would replace the '{0}' (Python makes this easy with string formatting) with the sites
 you're interested in, and if any other parameters need to be varied they can be replaced in a similar way.

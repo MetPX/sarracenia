@@ -1267,7 +1267,7 @@ server, and is used as a pattern to be replaced in the currently selected base d
 (from a *baseDir* or *directory* option) in the notification message fields: 'link', 'oldname', 'newname'
 which are used when mirroring symbolic links, or files that are renamed.
 
-The **remoteUrl** defines the protocol and server to be used to deliver the products.
+The **sendTo** defines the protocol and server to be used to deliver the products.
 Its form is a partial url, for example:  **ftp://myuser@myhost**
 The program uses the file ~/.conf/sarra/credentials.conf to get the remaining details
 (password and connection options).  Supported protocol are ftp, ftps and sftp. Should the
@@ -1285,7 +1285,7 @@ Now we are ready to send the product... for example, if the selected notificatio
 **sr_sender**  performs the following pseudo-delivery:
 
 Sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **remoteUrl**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
+to    **sendTo**/[**post_baseDir**]/relative/path/to/IMPORTANT_product
 (**kbytes_ps** is greater than 0, the process attempts to respect
 this delivery speed... ftp,ftps,or sftp)
 
@@ -1296,7 +1296,7 @@ The selected notification contains all the right information
 (topic and header attributes) except for url field in the
 notice... in our example :  **http://this.pump.com/**
 
-By default, **sr_sender** puts the **remoteUrl** in that field.
+By default, **sr_sender** puts the **sendTo** in that field.
 The user can overwrite this by specifying the option **post_baseUrl**. For example:
 
 **post_baseUrl http://remote.apache.com**
@@ -1324,10 +1324,10 @@ There are 2 differences with the previous case :
 the **directory**, and the **filename** options.
 
 The **baseDir** is the same, and so are the
-**remoteUrl**  and the **post_baseDir** options.
+**sendTo**  and the **post_baseDir** options.
 
 The **directory** option defines another "relative path" for the product
-at its remoteUrl.  It is tagged to the **accept** options defined after it.
+at its sendTo.  It is tagged to the **accept** options defined after it.
 If another sequence of **directory**/**accept** follows in the configuration file,
 the second directory is tagged to the following accepts and so on.
 
@@ -1352,7 +1352,7 @@ It was selected by the first **accept** option. The remote relative path becomes
 **/my/new/important_location** ... and **sr_sender**  performs the following pseudo-delivery:
 
 sends local file [**baseDir**]/relative/path/to/IMPORTANT_product
-to    **remoteUrl**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
+to    **sendTo**/[**post_baseDir**]/my/new/important_location/IMPORTANT_product
 
 
 Usually this way of using **sr_sender** would not require posting of the product.
