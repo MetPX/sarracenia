@@ -529,7 +529,7 @@ class Config:
         'events' : 'fileEvents',
         'exchange_split': 'exchangeSplit',
         'exchange_suffix': 'exchangeSuffix',
-        'get' : 'path', 
+        'get' : 'accept', 
         'instance': 'instances',
         'chmod': 'permDefault',
         'default_mode': 'permDefault',
