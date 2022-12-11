@@ -1937,6 +1937,7 @@ class sr_GlobalState:
             os.makedirs(base_v3 + component)
 
         synonyms = sarracenia.config.Config.synonyms
+        accept_all_seen=False
         with open(v3_config_path, 'w') as v3_cfg:
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
@@ -1972,6 +1973,10 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
+                    elif (k == 'accept') and (component == 'poll'):
+                        if line[1] == '.*':
+                            accept_all_seen=True
+                            continue
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
@@ -1996,6 +2001,8 @@ class sr_GlobalState:
                                line[1] = line[1].replace(p,convert_patterns_to_v3[p])
 
                     v3_cfg.write(' '.join(line)+'\n')
+                if accept_all_seen:
+                    v3_cfg.write('accept .*\n')
         logging.info('wrote conversion from v2 %s to sr3 ' % cfg)
 
 

@@ -14,7 +14,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 default_options = {
-    'acceptUnmatched': False,
+    'acceptUnmatched': True,
     'blocksize': 1,
     'bufsize': 1024 * 1024,
     'chmod': 0o400,

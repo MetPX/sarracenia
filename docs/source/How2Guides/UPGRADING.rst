@@ -198,7 +198,8 @@ V2 to Sr3
           file_time_limit to ignore older files          nodupe_fileAgeMax 
           *destination* gives where to poll              *pollUrl*
           *directory* gives remote directory to list     *path* used like in *post* and *watch*
-          *get* is a sort of remote pattern filtering    *accept* as used by all other components.
+          need *accept* per *directory*                  need only one *accept*
+          *get* is a sort of remote pattern filtering    *accept* same as used by all other components.
           do_poll plugins used to override default       *poll* entry point in flow callbacks
           *do_poll* used to *HTTP GET* periodically      flowcb.scheduled more elegant.
           ============================================== =====================================================
