@@ -145,6 +145,7 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
+    'blocksize' : ['continue'],
     'integrity' : {
        'n' : [ 'integrity', 'none' ],
        's' : [ 'integrity', 'sha512' ],
@@ -169,14 +170,26 @@ convert_to_v3 = {
         'post_total_save': ['continue'],
         'post_total_interval': ['continue']
     },
+    'destfn_script': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_get': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_poll': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_put': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_download': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_put': { 'manual_conversion_requited' : [ 'continue' ] },
     'do_send': {
        'file_email' : [ 'callback', 'send.email' ],
     },
+    'do_task': { 'manual_conversion_requited' : [ 'continue' ] },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
+    'do_data': { 'manual_conversion_requited' : [ 'continue' ] },
     'on_file': {
         'file_age' : [ 'callback', 'work.age' ],
     },
+    'on_heartbeat': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_html_page': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_part': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_line': { 'manual_conversion_requited' : [ 'continue' ] },
     'on_message': {
         'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
         'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
@@ -223,6 +236,11 @@ convert_to_v3 = {
     'on_post': {
         'post_log': ['logEvents', 'after_work']
     },
+    'on_report': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_stop': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_start': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_watch': { 'manual_conversion_requited' : [ 'continue' ] },
+    'parts' : [ 'continue' ],
     'recursive' : ['continue'],
     'report_daemons': ['continue'],
     'windows_run': [ 'continue' ],

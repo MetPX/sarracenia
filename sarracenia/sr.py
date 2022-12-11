@@ -1951,7 +1951,8 @@ class sr_GlobalState:
                     k = line[0]
                     if k in synonyms:
                         k = synonyms[k]
-                    elif k == 'destination':
+
+                    if k == 'destination':
                         if component == 'poll':
                             k = 'pollUrl'
                         else:
@@ -1973,10 +1974,12 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
+
                     if (k == 'accept') and (component == 'poll'):
                         if line[1] == '.*':
                             accept_all_seen=True
                             continue
+
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
@@ -1985,6 +1988,9 @@ class sr_GlobalState:
                                 if 'continue' in line:
                                     logger.info("obsolete v2: " + v)
                                     continue
+                            else:
+                                logger.error( f"unknown {k} {v}, manual conversion required.")
+                                v3_cfg.write( f"# PROBLEM: unknown {k} {v}, manual conversion required.\n")
                         else:
                             line = convert_to_v3[k]
                             k = line[0]
