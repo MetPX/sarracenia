@@ -210,8 +210,8 @@ V2 to Sr3
           All of the changes makes poll's use of the configuration language less different than how it is 
           used in other components. For example, *directory* was confusing because it is used to determine 
           the source directory to be polled. In all other components it refers to the download location. 
-          The *path* option is used in *post* and *watch* components to denote the paths that should 
-          be observed.
+          The *path* option replaces it, poll uses it the same *post* and *watch* do: 
+          to denote the paths that should be observed.
       
           In sr3 when vip setting is present, poll will create a queue bound to the post_broker/post_exchange 
           in order to see the posts done by other participants in the queue. queue naming options are therefore
