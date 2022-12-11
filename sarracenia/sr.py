@@ -1973,7 +1973,7 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
-                    elif (k == 'accept') and (component == 'poll'):
+                    if (k == 'accept') and (component == 'poll'):
                         if line[1] == '.*':
                             accept_all_seen=True
                             continue
