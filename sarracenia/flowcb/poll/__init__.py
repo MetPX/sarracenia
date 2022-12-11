@@ -40,7 +40,7 @@ def file_size_fix(str_value) -> int:
         elif str_value[-1] in 'tT': factor = 1024 * 1024 * 1024 * 1024
         if str_value[-1].isalpha(): str_value = str_value[:-1]
 
-        fsize = (float(str_value) + 0.5) * factor
+        fsize = float(str_value) * factor
         isize = int(fsize)
 
     except:
@@ -304,7 +304,7 @@ class Poll(FlowCB):
             sftp_obj = paramiko.SFTPAttributes()
             ldate = dateparser.parse( ' '.join(parts[0:2]), settings={ 'TIMEZONE': self.o.timezone, 'TO_TIMEZONE':'UTC' } )
             sftp_obj.st_mtime = ldate.timestamp()
-            sftp_obj.st_size = int(parts[2])
+            sftp_obj.st_size = file_size_fix(parts[2])
             sftp_obj.longname = ' '.join(line[3:])
             sftp_obj.st_mode = 0o644 # just make it work... no permission info provided.
             #logger.info( f"windows line parsing result: {sftp_obj}")
@@ -317,11 +317,11 @@ class Poll(FlowCB):
             sftp_obj.st_gid = fileid(self,parts[3])
 
             if parts[4].isnumeric(): # normal linux/unix ftp server case.
-                sftp_obj.st_size = int(parts[4])
+                sftp_obj.st_size = file_size_fix(parts[4])
                 sftp_obj.filename = line[8:]
                 sftp_obj.st_mtime = self.filedate(line)
             else: # university of wisconsin (some special file system? has third ownship field before size) 
-                sftp_obj.st_size = int(parts[5])
+                sftp_obj.st_size = file_size_fix(parts[5])
                 sftp_obj.filename = line[9:]
                 sftp_obj.st_mtime = self.filedate(line[1:])
 
@@ -448,7 +448,7 @@ class Poll(FlowCB):
         if type(desc) == str:
             line = desc.split()
             st = paramiko.SFTPAttributes()
-            st.st_size = int(line[4])
+            st.st_size = file_size_fix(line[4])
             # actionally only need to convert normalized time to number here...
             # just being lazy...
             lstime = dateparser.parse(line[5] + " " + line[6]).timestamp()
