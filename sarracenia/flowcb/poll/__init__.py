@@ -306,7 +306,7 @@ class Poll(FlowCB):
             sftp_obj.st_mtime = ldate.timestamp()
             sftp_obj.st_size = int(parts[2])
             sftp_obj.longname = ' '.join(line[3:])
-            sftp_obj.st_mode = 0x644 # just make it work... no permission info provided.
+            sftp_obj.st_mode = 0o644 # just make it work... no permission info provided.
             #logger.info( f"windows line parsing result: {sftp_obj}")
         elif type(line) is str and len(line.split()) > 7:
             parts = line.split()
