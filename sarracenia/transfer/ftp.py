@@ -348,7 +348,11 @@ class Ftp(Transfer):
 
         # on linux, there are 8 fields, with spaces, perhaps more...
         if len(opart2) > 7:
-            fil = ' '.join(opart2[8:])
+            # university of Wisconsin as an ftp server that has an extra auth field.
+            if opart2[4].isnumeric(): # normal linux case.
+                fil = ' '.join(opart2[8:])
+            else:  # U. Wisconsin case.
+                fil = ' '.join(opart2[9:])
         else:
             # guess it is on windows... 
             fil = ' '.join(opart2[3:])

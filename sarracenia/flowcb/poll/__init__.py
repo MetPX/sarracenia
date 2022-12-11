@@ -309,15 +309,24 @@ class Poll(FlowCB):
             sftp_obj.st_mode = 0o644 # just make it work... no permission info provided.
             #logger.info( f"windows line parsing result: {sftp_obj}")
         elif type(line) is str and len(line.split()) > 7:
+
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
             sftp_obj.st_mode = filemode(self,parts[0])
             sftp_obj.st_uid = fileid(self,parts[2])
             sftp_obj.st_gid = fileid(self,parts[3])
-            sftp_obj.st_size = int(parts[4])
-            sftp_obj.st_mtime = self.filedate(line)
-            sftp_obj.filename = parts[-1]
-            sftp_obj.longname = line
+
+            if parts[4].isnumeric(): # normal linux/unix ftp server case.
+                sftp_obj.st_size = int(parts[4])
+                sftp_obj.filename = line[8:]
+                sftp_obj.st_mtime = self.filedate(line)
+            else: # university of wisconsin (some special file system? has third ownship field before size) 
+                sftp_obj.st_size = int(parts[5])
+                sftp_obj.filename = line[9:]
+                sftp_obj.st_mtime = self.filedate(line[1:])
+
+            sftp_obj.longname = sftp_obj.filename
+
 
         # assert at this point we have an sftp_obj...
         if 'sftp_obj' in locals() and ((sftp_obj.st_mode
