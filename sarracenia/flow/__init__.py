@@ -806,7 +806,7 @@ class Flow:
                 oldname_matched = False
                 for mask in self.o.masks:
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-                    if mask_regexp.match(urlToMatch):
+                    if (pattern == '.*') or mask_regexp.match(urlToMatch):
                         oldname_matched = accepting
                         break
 
@@ -822,7 +822,7 @@ class Flow:
             for mask in self.o.masks:
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
 
-                if mask_regexp.match(urlToMatch):
+                if (pattern == '.*') or mask_regexp.match(urlToMatch):
                     matched = True
                     if not accepting:
                         if 'fileOp' in m and 'rename' in m['fileOp'] and oldname_matched:
