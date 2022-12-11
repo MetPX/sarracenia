@@ -324,7 +324,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         self.ftp.retrlines('LIST', self.line_callback)
         alarm_cancel()
-        logger.debug("sr_ftp ls = %s ..." % str(self.entries)[0:255])
+        logger.debug("sr_ftp ls = (size: %d) %s ..." % (len(self.entries), str(self.entries)[0:255]))
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
@@ -343,8 +343,16 @@ class Ftp(Transfer):
         for p in opart1:
             if p == '': continue
             opart2.append(p)
+
         # else case is in the event of unlikely race condition
-        fil = ' '.join(opart2[8:])
+
+        # on linux, there are 8 fields, with spaces, perhaps more...
+        if len(opart2) > 7:
+            fil = ' '.join(opart2[8:])
+        else:
+            # guess it is on windows... 
+            fil = ' '.join(opart2[3:])
+
         line = ' '.join(opart2)
 
         self.entries[fil] = line

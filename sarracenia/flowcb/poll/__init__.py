@@ -294,10 +294,20 @@ class Poll(FlowCB):
         """
            default line processing, converts a file listing into an SFTPAttributes.
            does nothing if input is already an SFTPAttributes item, returning it unchanged.
-           verifies that file is accessible (based on self.o.chmod pattern to establish minimum permissions.)
+           verifies that file is accessible (based on self.o.permDefault pattern to establish minimum permissions.)
         """
         if type(line) is paramiko.SFTPAttributes:
             sftp_obj = line
+        elif type(line) is str and len(line.split()) < 7:
+            # assume windows...
+            parts = line.split()
+            sftp_obj = paramiko.SFTPAttributes()
+            ldate = dateparser.parse( ' '.join(parts[0:2]), settings={ 'TIMEZONE': self.o.timezone, 'TO_TIMEZONE':'UTC' } )
+            sftp_obj.st_mtime = ldate.timestamp()
+            sftp_obj.st_size = int(parts[2])
+            sftp_obj.longname = ' '.join(line[3:])
+            sftp_obj.st_mode = 0x644 # just make it work... no permission info provided.
+            #logger.info( f"windows line parsing result: {sftp_obj}")
         elif type(line) is str and len(line.split()) > 7:
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
@@ -308,8 +318,10 @@ class Poll(FlowCB):
             sftp_obj.st_mtime = self.filedate(line)
             sftp_obj.filename = parts[-1]
             sftp_obj.longname = line
+
+        # assert at this point we have an sftp_obj...
         if 'sftp_obj' in locals() and ((sftp_obj.st_mode
-                                        & self.o.chmod) == self.o.chmod):
+                                        & self.o.permDefault) == self.o.permDefault):
             return sftp_obj
         else:
             return None
@@ -318,6 +330,8 @@ class Poll(FlowCB):
 
         try:
             ls = self.dest.ls()
+
+            logger.info( f"len of ls {len(ls)} " )
 
             if type(ls) is bytes:
                 ls = self.on_html_page(ls.decode('utf-8'))
