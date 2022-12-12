@@ -45,7 +45,7 @@ def file_size_fix(str_value) -> int:
 
     except:
         logger.debug("bad size %s" % str_value)
-        return 0
+        return -1
 
     return isize
 
@@ -316,7 +316,7 @@ class Poll(FlowCB):
             sftp_obj.st_uid = fileid(self,parts[2])
             sftp_obj.st_gid = fileid(self,parts[3])
 
-            if parts[4].isnumeric(): # normal linux/unix ftp server case.
+            if file_size_fix(parts[4]) >= 0: # normal linux/unix ftp server case.
                 sftp_obj.st_size = file_size_fix(parts[4])
                 sftp_obj.filename = line[8:]
                 sftp_obj.st_mtime = self.filedate(line)
