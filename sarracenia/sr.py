@@ -696,6 +696,26 @@ class sr_GlobalState:
                       for each queue: [ 'c/cfg', 'c/cfg', ... ]
         """
         self.brokers = {}
+
+        o=self.default_cfg
+        if hasattr(o, 'admin') and (o.admin is not None):
+            # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
+            if o.admin.url is not None and type(o.admin.url) == str:
+                o.admin.url = urllib.parse(o.admin.url)
+            host = self._init_broker_host(o.admin.url.netloc)
+            self.brokers[host]['admin'] = o.admin
+            if hasattr(o, 'declared_exchanges'):
+                for x in o.declared_exchanges:
+                    if not x in self.brokers[host]['exchanges']:
+                        self.brokers[host]['exchanges'][x] = [
+                            'declared'
+                        ]
+                    else:
+                        if not 'declared' in self.brokers[host][
+                                'exchanges'][x]:
+                            self.brokers[host]['exchanges'][x].append(
+                                'declared')
+
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -710,29 +730,9 @@ class sr_GlobalState:
                     o.instances = 1
                 name = c + os.sep + cfg
 
-                if hasattr(o, 'admin') and (o.admin is not None):
-                    # FIXME: sometimes o.admin is a string... no idea why.. upstream cause should be addressed.
-                    if o.admin.url is not None and type(o.admin.url) == str:
-                        o.admin.url = urllib.parse(o.admin.url)
-                    host = self._init_broker_host(o.admin.url.netloc)
-                    self.brokers[host]['admin'] = o.admin
-                    if hasattr(o, 'declared_exchanges'):
-                        for x in o.declared_exchanges:
-                            if not x in self.brokers[host]['exchanges']:
-                                self.brokers[host]['exchanges'][x] = [
-                                    'declared'
-                                ]
-                            else:
-                                if not 'declared' in self.brokers[host][
-                                        'exchanges'][x]:
-                                    self.brokers[host]['exchanges'][x].append(
-                                        'declared')
-
                 if hasattr(o, 'broker') and o.broker is not None and o.broker.url is not None:
                     host = self._init_broker_host(o.broker.url.netloc)
-
                     xl = self.__resolved_exchanges(c, cfg, o)
-
                     q = self.__guess_queueName(c, cfg, o)
 
                     self.configs[c][cfg]['options'].resolved_qname = q
