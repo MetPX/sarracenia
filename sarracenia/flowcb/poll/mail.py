@@ -5,9 +5,9 @@ implementations in Python use the most secure SSL settings by
 default: PROTOCOL_TLS, OP_NO_SSLv2, and OP_NO_SSLv3.
 Compatible with Python 2.7+.
 
-poll_email_ingest: a sample do_poll option for sr_poll.
-             connects to an email server with the provided
-             credentials and posts all new messages by their msg ID.
+A sample do_poll option for sr_poll.
+connects to an email server with the provided
+credentials and posts all new messages by their msg ID.
 
 usage:
         in an sr_poll configuration file:
@@ -20,6 +20,14 @@ usage:
         Full credentials must be in credentials.conf.
         If port is not specified it'll default to the ones above based on protocol/ssl setting.
 
+This posts what messages are available. A separate component is needed to 
+download the message, which would need:
+
+     callback download.mail_ingest
+ 
+to process these posts.
+
+
 """
 
 import datetime
@@ -28,12 +36,12 @@ import imaplib
 import logging
 import poplib
 import sarracenia
-from sarracenia.flowcb import FlowCB
+from sarracenia.flowcb.poll import Poll
 
 logger = logging.getLogger(__name__)
 
 
-class Mail(FlowCB):
+class Mail(Poll):
     def __init__(self, options):
 
         self.o = options

@@ -206,7 +206,7 @@ class Flow:
                 logger.debug( "details:", exc_info=True )
                 return False
 
-        logger.info('flowCallback plugins to load: %s' % (plugins_to_load))
+        logger.info( f'flowCallback plugins to load: {plugins_to_load}' )
         for c in plugins_to_load:
             try:
                 plugin = sarracenia.flowcb.load_library(c, self.o)
@@ -215,12 +215,12 @@ class Flow:
                 logger.debug( "details:", exc_info=True )
                 return False
 
-            logger.debug('flowCallback plugin loading: %s an instance of: %s' % (c, plugin))
+            logger.debug( f'flowCallback plugin loading: {c} an instance of: {plugin}' )
             for entry_point in sarracenia.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
                     if callable(fn):
-                        logger.debug('registering %s/%s' % (c, entry_point))
+                        logger.debug( f'registering {c}/{entry_point}' )
                         if entry_point in self.plugins:
                             self.plugins[entry_point].append(fn)
                         else:
@@ -294,8 +294,7 @@ class Flow:
                         j += 1
         except Exception as ex:
             logger.error(
-                'error while looking for interfaces to compare with vip (%s): '
-                % (self.o.vip, ex))
+                f'error while looking for interfaces to compare with vip {self.o.vip}: {ex}' )
             logger.debug('Exception details: ', exc_info=True)
 
         return False
@@ -344,7 +343,7 @@ class Flow:
         if not self.loadCallbacks(self.plugins['load']+self.o.destfn_scripts):
            return
 
-        logger.debug("working directory: %s" % os.getcwd())
+        logger.debug( f"working directory: {os.getpid()}" )
 
         next_housekeeping = nowflt() + self.o.housekeeping
 
@@ -364,7 +363,7 @@ class Flow:
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
         if not self.has_vip():
-           logger.info('starting up passive, as do not possess vip' )
+           logger.info( f'starting up passive, as do not possess vip {self.o.vip}' )
 
         self._runCallbacksTime(f'on_start')
 

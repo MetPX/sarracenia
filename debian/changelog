@@ -3,6 +3,13 @@ metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
   * change translation of v2 poll destination & get to sr3 path
   * add interpretation of offsets in strftime date patterns.
   * documentation improvements
+  * optimization: skip evaluating a regex if pattern is .*
+  * more advice/information about porting polls from v2 to sr3 
+  * added message downloader for mail servers flowcb/download/mail_ingest.py
+  * poll default acceptUnmatched is now True ( #601)
+  * conversion of poll configurations improved to remove redundant accepts.
+  * much more explanations around v2->sr3 porting of polls
+  * Sender setting change: remoteUrl -> sendTo (grandfathered with synonyms.)
   * bugfix: sr3 --users declare does nothing if no component configurations exist.
 
  -- Peter Silva <peter@bsqt.homeip.net>  Fri, 09 Dec 2022 11:02:27 -0500

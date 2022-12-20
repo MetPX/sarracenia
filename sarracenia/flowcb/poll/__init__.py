@@ -40,12 +40,12 @@ def file_size_fix(str_value) -> int:
         elif str_value[-1] in 'tT': factor = 1024 * 1024 * 1024 * 1024
         if str_value[-1].isalpha(): str_value = str_value[:-1]
 
-        fsize = (float(str_value) + 0.5) * factor
+        fsize = float(str_value) * factor
         isize = int(fsize)
 
     except:
         logger.debug("bad size %s" % str_value)
-        return 0
+        return -1
 
     return isize
 
@@ -294,22 +294,43 @@ class Poll(FlowCB):
         """
            default line processing, converts a file listing into an SFTPAttributes.
            does nothing if input is already an SFTPAttributes item, returning it unchanged.
-           verifies that file is accessible (based on self.o.chmod pattern to establish minimum permissions.)
+           verifies that file is accessible (based on self.o.permDefault pattern to establish minimum permissions.)
         """
         if type(line) is paramiko.SFTPAttributes:
             sftp_obj = line
+        elif type(line) is str and len(line.split()) < 7:
+            # assume windows...
+            parts = line.split()
+            sftp_obj = paramiko.SFTPAttributes()
+            ldate = dateparser.parse( ' '.join(parts[0:2]), settings={ 'TIMEZONE': self.o.timezone, 'TO_TIMEZONE':'UTC' } )
+            sftp_obj.st_mtime = ldate.timestamp()
+            sftp_obj.st_size = file_size_fix(parts[2])
+            sftp_obj.longname = ' '.join(line[3:])
+            sftp_obj.st_mode = 0o644 # just make it work... no permission info provided.
+            #logger.info( f"windows line parsing result: {sftp_obj}")
         elif type(line) is str and len(line.split()) > 7:
+
             parts = line.split()
             sftp_obj = paramiko.SFTPAttributes()
             sftp_obj.st_mode = filemode(self,parts[0])
             sftp_obj.st_uid = fileid(self,parts[2])
             sftp_obj.st_gid = fileid(self,parts[3])
-            sftp_obj.st_size = int(parts[4])
-            sftp_obj.st_mtime = self.filedate(line)
-            sftp_obj.filename = parts[-1]
-            sftp_obj.longname = line
+
+            if file_size_fix(parts[4]) >= 0: # normal linux/unix ftp server case.
+                sftp_obj.st_size = file_size_fix(parts[4])
+                sftp_obj.filename = line[8:]
+                sftp_obj.st_mtime = self.filedate(line)
+            else: # university of wisconsin (some special file system? has third ownship field before size) 
+                sftp_obj.st_size = file_size_fix(parts[5])
+                sftp_obj.filename = line[9:]
+                sftp_obj.st_mtime = self.filedate(line[1:])
+
+            sftp_obj.longname = sftp_obj.filename
+
+
+        # assert at this point we have an sftp_obj...
         if 'sftp_obj' in locals() and ((sftp_obj.st_mode
-                                        & self.o.chmod) == self.o.chmod):
+                                        & self.o.permDefault) == self.o.permDefault):
             return sftp_obj
         else:
             return None
@@ -318,6 +339,8 @@ class Poll(FlowCB):
 
         try:
             ls = self.dest.ls()
+
+            logger.info( f"len of ls {len(ls)} " )
 
             if type(ls) is bytes:
                 ls = self.on_html_page(ls.decode('utf-8'))
@@ -425,7 +448,7 @@ class Poll(FlowCB):
         if type(desc) == str:
             line = desc.split()
             st = paramiko.SFTPAttributes()
-            st.st_size = int(line[4])
+            st.st_size = file_size_fix(line[4])
             # actionally only need to convert normalized time to number here...
             # just being lazy...
             lstime = dateparser.parse(line[5] + " " + line[6]).timestamp()

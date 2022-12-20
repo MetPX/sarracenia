@@ -324,7 +324,7 @@ class Ftp(Transfer):
         alarm_set(self.o.timeout)
         self.ftp.retrlines('LIST', self.line_callback)
         alarm_cancel()
-        logger.debug("sr_ftp ls = %s ..." % str(self.entries)[0:255])
+        logger.debug("sr_ftp ls = (size: %d) %s ..." % (len(self.entries), str(self.entries)[0:255]))
         return self.entries
 
     # line_callback: entries[filename] = 'stripped_file_description'
@@ -343,8 +343,20 @@ class Ftp(Transfer):
         for p in opart1:
             if p == '': continue
             opart2.append(p)
+
         # else case is in the event of unlikely race condition
-        fil = ' '.join(opart2[8:])
+
+        # on linux, there are 8 fields, with spaces, perhaps more...
+        if len(opart2) > 7:
+            # university of Wisconsin as an ftp server that has an extra auth field.
+            if opart2[4].isnumeric(): # normal linux case.
+                fil = ' '.join(opart2[8:])
+            else:  # U. Wisconsin case.
+                fil = ' '.join(opart2[9:])
+        else:
+            # guess it is on windows... 
+            fil = ' '.join(opart2[3:])
+
         line = ' '.join(opart2)
 
         self.entries[fil] = line
