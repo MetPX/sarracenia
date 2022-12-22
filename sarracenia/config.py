@@ -590,6 +590,7 @@ class Config:
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
         'realpath' : 'realpathPost',
+        'realpath_filter' : 'realpathFilter',
         'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
