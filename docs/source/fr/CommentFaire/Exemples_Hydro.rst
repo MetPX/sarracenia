@@ -75,8 +75,8 @@ ressemblez à quelque chose comme ceci::
 	2018-09-26 15:26:57,704 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=Nonems
 	2018-09-26 15:26:57,704 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-09-26 15:26:57,705 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
-	2018-09-26 15:26:57,705 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-09-26 15:26:57,705 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
+	2018-09-26 15:26:57,705 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+	2018-09-26 15:26:57,705 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
 	2018-09-26 15:26:57,705 [INFO]  post_base_dir=None post_base_url=http://tidesandcurrents.noaa.gov/api/datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv/ sum=z,d blocksize=209715200 
 	2018-09-26 15:26:57,705 [INFO]  Plugins configured:
 	2018-09-26 15:26:57,705 [INFO]          on_line: Line_Mode 
@@ -114,8 +114,8 @@ pour le polling et::
 	2018-09-26 15:26:53,473 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=300000ms
 	2018-09-26 15:26:53,473 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-09-26 15:26:53,473 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
-	2018-09-26 15:26:53,473 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-09-26 15:26:53,473 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=False
+	2018-09-26 15:26:53,473 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+	2018-09-26 15:26:53,473 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=False
 	2018-09-26 15:26:53,473 [INFO]  Plugins configured:
 	2018-09-26 15:26:53,473 [INFO]          do_download: BaseURLDownloader 
 	2018-09-26 15:26:53,473 [INFO]          do_get     : 

@@ -633,7 +633,7 @@ so below is the things leftover after refactor:
   check_undeclared_options missing defaults: {'discard', 'exchangeSplit', 
   'pipe', 'post_total_maxlag', 'exchangeSuffix', 'destination', 'inplace', 
   'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange', 
-  'sanity_log_dead', 'report_daemons', 'realpath_filter', 'reconnect', 
+  'sanity_log_dead', 'report_daemons', 'realpathFilter', 'reconnect', 
   'post_exchangeSuffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
   'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
   #405
@@ -655,7 +655,7 @@ so below is the things leftover after refactor:
 
 * sr_poll active/passive bug #29
 
-* realpath_filter is used by CMOI. Seems to be disappeared in sr3. It's there in the C version. #399
+* realpathFilter is used by CMOI. Seems to be disappeared in sr3. It's there in the C version. #399
 
 * port rest of v02 plugins to v03 equivalents and add mappings in config.py, #400
   so that we have barely any v2's left. 

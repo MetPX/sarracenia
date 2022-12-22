@@ -95,8 +95,8 @@ Si les informations d’identification ont été incluses correctement et que to
 	2018-10-03 15:24:58,617 [INFO]  suppress_duplicates=1200 retry_mode=True retry_ttl=Nonems
 	2018-10-03 15:24:58,617 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-10-03 15:24:58,617 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
-	2018-10-03 15:24:58,617 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
+	2018-10-03 15:24:58,617 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+	2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
 	2018-10-03 15:24:58,617 [INFO]  post_base_dir=None post_base_url=pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sum=z,d blocksize=209715200 
 	2018-10-03 15:24:58,617 [INFO]  Plugins configured:
 	2018-10-03 15:24:58,617 [INFO]          on_line: Line_Mode 
@@ -154,8 +154,8 @@ Si tout a été fourni correctement, la sortie devrait ressembler à ceci::
 	2018-10-03 15:24:57,159 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=300000ms
 	2018-10-03 15:24:57,159 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
 	2018-10-03 15:24:57,159 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
-	2018-10-03 15:24:57,159 [INFO]  preserve_mode=True preserve_time=True realpath_post=False base_dir=None follow_symlinks=False
-	2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpath_post=False strip=0 base_dir=None report=True
+	2018-10-03 15:24:57,159 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+	2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
 	2018-10-03 15:24:57,159 [INFO]  Plugins configured:
 	2018-10-03 15:24:57,159 [INFO]          do_download: Fetcher 
 	2018-10-03 15:24:57,159 [INFO]          do_get     : 

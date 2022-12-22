@@ -359,7 +359,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'queue_filename': '/home/peter/.cache/sr3/subscribe/q_f71/subscribe.q_f71.tsource.qname',
      'randid': 'cedf',
      'randomize': False,
-     'realpath_post': False,
+     'realpathPost': False,
      'rename': None,
      'report': False,
      'reset': False,
