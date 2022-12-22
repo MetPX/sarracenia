@@ -1388,13 +1388,27 @@ to True in the configuration file used. If there are several notification messag
 file is posted by block (the *blocksize* option was set), the block notification messages 
 are randomized meaning that they will not be posted
 
-realpath <flag>
----------------
+realpathFilter <flag> (Experimental)
+------------------------------------
 
-The realpath option resolves paths given to their canonical ones, eliminating
+the realpathFilter option resolves paths using the C standard realpath library routine,
+but only for the purpose of applying accept reject filters. This is used only during
+posting.
+
+This option is being used to study some use cases, and may disappear in future.
+
+Implemented in C, but not 3 python currently. 
+
+
+realpathPost <flag> (Experimental)
+----------------------------------
+
+The realpathPost option resolves paths given to their canonical ones, eliminating
 any indirection via symlinks. The behaviour improves the ability of watch to
 monitor trees, but the trees may have completely different paths than the arguments
 given. This option also enforces traversing of symbolic links.
+
+This option is being used to investigate some use cases, and may disappear in future.
 
 reconnect <flag>
 ----------------

@@ -1372,13 +1372,27 @@ Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* 
 le fichier est publié par bloc (l’option *blocksize* a été définie), les messages d'annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.
 
-realpath <flag>
----------------
+realpathFilter <flag> (Expérimentale)
+-------------------------------------
 
-L’option realpath résout les chemins donnés à leurs chemins canoniques, éliminant ainsi
+l'option realpathFilter résout les chemins à l'aide de la routine de bibliothèque **realpath** standard C,
+mais uniquement dans le but d'appliquer des filtres d'acceptation de rejet. Ceci est utilisé uniquement pendant
+affectation.
+
+Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
+
+Implémenté en C, mais pas python actuellement.
+
+
+realpathPost <flag> (Expérimentale)
+-----------------------------------
+
+L’option realpathPost résout les chemins donnés à leurs chemins canoniques, éliminant ainsi
 toute indirection via des liens symboliques. Le comportement améliore la capacité de watch à
 surveiller l'arborescence, mais l'arborescence peut avoir des chemins complètement différents de ceux des arguments
 donné. Cette option impose également la traversée de liens symboliques.
+
+Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
 reconnect <flag>
 ----------------
