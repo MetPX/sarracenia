@@ -80,7 +80,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
-    'realpath_post': False,
+    'realpathPost': False,
     'report': False,
     'retryEmptyBeforeExit': False,
     'sourceFromExchange': False,
@@ -95,10 +95,10 @@ count_options = [
 
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
-    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpath_filter', \
+    'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpath_post', 'reconnect', \
+    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpathPost', 'reconnect', \
     'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
     'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
@@ -589,6 +589,8 @@ class Config:
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
         'queue_name' : 'queueName', 
+        'realpath' : 'realpathPost',
+        'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
         'source_from_exchange': 'sourceFromExchange', 
@@ -1639,7 +1641,7 @@ class Config:
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
-            if self.realpath_post:
+            if self.realpathPost:
                 path = os.path.realpath(path)
 
             if sys.platform == 'win32' and words0.find('\\'):

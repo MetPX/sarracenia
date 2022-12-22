@@ -363,7 +363,7 @@ class File(FlowCB):
         src = src.replace('/./', '/')
         dst = dst.replace('/./', '/')
 
-        if os.path.islink(dst) and self.o.realpath_post:
+        if os.path.islink(dst) and self.o.realpathPost:
             dst = os.path.realpath(dst)
             if sys.platform == 'win32':
                 dst = dst.replace('\\', '/')
@@ -566,7 +566,7 @@ class File(FlowCB):
 
         # how to proceed with symlink
 
-        if os.path.islink(src) and self.o.realpath_post:
+        if os.path.islink(src) and self.o.realpathPost:
             src = os.path.realpath(src)
             if sys.platform == 'win32':
                 src = src.replace('\\', '/')
@@ -598,7 +598,7 @@ class File(FlowCB):
                 realp = realp.replace('\\', '/')
 
             logger.info("sr_watch %s is a link to directory %s" % (p, realp))
-            if self.o.realpath_post:
+            if self.o.realpathPost:
                 d = realp
             else:
                 d = p + '/' + '.'
@@ -694,8 +694,8 @@ class File(FlowCB):
         #logger.debug("%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s" % \
         #      ( self.o.component, self.o.partflg, self.o.sumflg, self.o.nodupe_ttl,
         #        self.o.nodupe_basis, self.o.post_baseDir ))
-        #logger.debug("%s realpath_post=%s follow_links=%s force_polling=%s batch=%s"  % \
-        #      ( self.o.component, self.o.realpath_post, self.o.follow_symlinks, \
+        #logger.debug("%s realpathPost=%s follow_links=%s force_polling=%s batch=%s"  % \
+        #      ( self.o.component, self.o.realpathPost, self.o.follow_symlinks, \
         #        self.o.force_polling, self.o.batch ) )
         #logger.info("%s len(self.queued_messages)=%d" % \
         #     ( self.o.component, len(self.queued_messages) ) )
