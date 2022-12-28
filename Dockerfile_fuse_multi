@@ -1,0 +1,80 @@
+# Steps
+# Install Sarracenia (sr) v3 from apt
+# Define a TARGET_DIR for sr v3 subscriptions
+#
+# Intended usage : mount TARGET_DIR to an existing directory on host which itself is FUSE mounted to cloud storage
+# e.g. via `s3fs` fow S3 buckets or `blobfuse2` for Azure blob storage containers
+# 
+# As a result, files written in TARGET_DIR get written to the cloud by virtue of TARGET_DIR being mapped to cloud.
+# FUSE mounting directories on the host mean no credentials are included in -- or need to be passed to -- the image
+FROM ubuntu:22.04 as build
+LABEL org.opencontainers.image.authors="yves.moisan@ec.gc.ca"
+
+# Duration (s) that sr3 will be running for; defaults to 60
+ENV duration 60
+
+#RUN apt update && apt-get -y install  \
+#    && adduser --disabled-password --gecos '' g2c
+
+
+# Add ppa and blobfuse2 as root
+RUN apt-get update && apt-get install -y curl gnupg software-properties-common \ 
+    && curl -sSL https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && apt-add-repository https://packages.microsoft.com/ubuntu/22.04/prod && apt-get update \
+    && apt-get -y install blobfuse2 \
+    && add-apt-repository ppa:ssc-hpc-chp-spc/metpx && apt update \
+    && apt-get -y install metpx-sr3 python3-amqp
+
+RUN adduser --disabled-password --gecos '' g2c
+
+USER g2c
+WORKDIR /home/g2c
+
+# We have to create directories in /home/g2c for sr3 to work
+# IMPORTANT : Running this image needs each of the 5 directories to be mapped to localhost directories
+# e.g.
+# docker run -d \
+# -e duration=10 \
+# -v /localhost_config_dir/subscribe:/home/g2c/.config/sr3/subscribe \
+# -v /localhost_config_dir/log:/home/g2c/.config/sr3/log \
+# -v /localhost_cache_dir/subscribe:/home/g2c/.cache/sr3/subscribe \
+# -v /localhost_cache_dir/log:/home/g2c/.cache/sr3/log \
+# -v /localhost_fuse-mounted_dir:/home/g2c/.config/sr3/output \
+# image
+RUN mkdir -p /home/g2c/.config/sr3/subscribe \
+    && mkdir -p /home/g2c/.config/sr3/log \
+    && mkdir -p /home/g2c/.cache/sr3/subscribe \
+    && mkdir -p /home/g2c/.cache/sr3/log \
+    && mkdir -p /home/g2c/.config/sr3/output
+   # && cp /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_swob.conf /home/g2c/.config/sr3/subscribe
+# TODO : ADD A STAGE TO KEEP SR3 ONLY
+
+# Now copy it into our base image.
+FROM gcr.io/distroless/static-debian11
+RUN adduser --disabled-password --gecos '' g2c
+
+USER g2c
+WORKDIR /home/g2c
+
+# We have to create directories in /home/g2c for sr3 to work
+# IMPORTANT : Running this image needs each of the 5 directories to be mapped to localhost directories
+# e.g.
+# docker run -d \
+# -e duration=10 \
+# -v /localhost_config_dir/subscribe:/home/g2c/.config/sr3/subscribe \
+# -v /localhost_config_dir/log:/home/g2c/.config/sr3/log \
+# -v /localhost_cache_dir/subscribe:/home/g2c/.cache/sr3/subscribe \
+# -v /localhost_cache_dir/log:/home/g2c/.cache/sr3/log \
+# -v /localhost_fuse-mounted_dir:/home/g2c/.config/sr3/output \
+# image
+RUN mkdir -p /home/g2c/.config/sr3/subscribe \
+    && mkdir -p /home/g2c/.config/sr3/log \
+    && mkdir -p /home/g2c/.cache/sr3/subscribe \
+    && mkdir -p /home/g2c/.cache/sr3/log \
+    && mkdir -p /home/g2c/.config/sr3/output
+   # && cp /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_swob.conf /home/g2c/.config/sr3/subscribe
+
+COPY --from=build /usr/bin/sr3 /usr/bin/sr3 
+CMD ["sr3", "start", ]
+CMD sr3 start subscribe/swob && sleep $duration && sr3 stop subscribe/swob && sleep 10
+
