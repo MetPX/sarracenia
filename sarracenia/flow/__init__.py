@@ -35,7 +35,7 @@ allFileEvents = set(['create', 'delete', 'link', 'modify'])
 
 default_options = {
     'accelThreshold': 0,
-    'acceptUnmatched': False,
+    'acceptUnmatched': True,
     'attempts': 3,
     'batch': 100,
     'byteRateMax': None,
