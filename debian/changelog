@@ -1,6 +1,6 @@
 metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
 
-  * change translation of v2 poll destination & get to sr3 path
+  * change translation of v2 poll *destination* & *get* to sr3 *path*
   * add interpretation of offsets in strftime date patterns.
   * documentation improvements
   * optimization: skip evaluating a regex if pattern is .*
@@ -11,6 +11,7 @@ metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
   * much more explanations around v2->sr3 porting of polls
   * Sender setting change: remoteUrl -> sendTo (grandfathered with synonyms.)
   * bugfix: sr3 --users declare does nothing if no component configurations exist.
+  * local file copy was broken
 
  -- Peter Silva <peter@bsqt.homeip.net>  Fri, 09 Dec 2022 11:02:27 -0500
 

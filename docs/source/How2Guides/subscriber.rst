@@ -314,8 +314,6 @@ https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_
 
     directory ${HOME}/datamartclone
 
-    acceptUnmatched on
-
 https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_normal.conf::
 
    broker amqps://dd.weather.gc.ca/
@@ -331,8 +329,6 @@ https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_
 
    mirror
    directory ${HOME}/datamartclone
-
-   acceptUnmatched on
 
 
 Where you want the mirror of the data mart to start at $(HOME)/datamartclone (presumably there is a web
@@ -419,7 +415,6 @@ then the option mirror should be set::
       subtopic observations.swob-ml.#
       directory /tmp
       mirror True
-      acceptUnmatched on
       #
       # instead of writing to current working directory, write to /tmp.
       # in /tmp. Mirror: create a hierarchy like the one on the source server.
@@ -448,6 +443,7 @@ it will cause files to be placed relative to that directory::
 
   directory /tmp/apps/ninjo/import/point/scit_tracker/in
   accept .*~~TRACKER,TRACK_MAXR.*
+  acceptUnmatched off
 
 In the above example, ninjo-station catalog data is placed in the
 catalog_common/in directory, rather than in the point data 

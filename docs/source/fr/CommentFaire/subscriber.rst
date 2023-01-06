@@ -176,8 +176,6 @@ Pour afficher une configuration, donnez-la à `sr3 list` comme argument::
     
     subtopic bulletins.alphanumeric.#
     
-    accept .*
-
 
 Pour supprimer une configuration::
 
@@ -317,7 +315,6 @@ https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_
     mirror
     directory ${HOME}/datamartclone
     subtopic alerts.cap.#
-    acceptUnmatched on
 
 https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_normal.conf::
 
@@ -336,7 +333,6 @@ https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_
 
     mirror
     directory ${HOME}/datamartclone
-    acceptUnmatched on
 
 Là où vous voulez le miroir du data mart qui commence à ${HOME}/datamartclone (vraisemblablement il y a un
 serveur web configuré pour afficher ce répertoire.) Probablement, la configuration *ddc_normal*
@@ -818,7 +814,6 @@ fichier de configuration d'un abonné::
   batch 1
   callback clamav
   subtopic observations.swob-ml.#
-  accept .*
 
 Pour que chaque fichier téléchargé soit analysé av. Exemple d’exécution ::
 

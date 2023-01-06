@@ -295,7 +295,7 @@ accept, reject and acceptUnmatched
 
 - **accept     <regexp pattern> (optional) [<keywords>]**
 - **reject     <regexp pattern> (optional)**
-- **acceptUnmatched   <boolean> (default: False)**
+- **acceptUnmatched   <boolean> (default: True)**
 
 The  **accept**  and  **reject**  options process regular expressions (regexp).
 The regexp is applied to the the notification message's URL for a match.
@@ -310,8 +310,8 @@ with the **directory** option.  They then relate accepted notification messages
 to the **directory** value they are specified under.
 
 After all **accept** / **reject**  options are processed, normally
-the notification message is acknowledged as consumed and skipped. To override that
-default, set **acceptUnmatched** to True. The **accept/reject**
+the notification message is accepted for further processing. To override that
+default, set **acceptUnmatched** to False. The **accept/reject**
 settings are interpreted in order. Each option is processed orderly
 from top to bottom. For example:
 

@@ -38,6 +38,15 @@ Instructions d’installation
 git
 ---
 
+3.0.25
+------
+
+*CHANGE* : la valeur par défaut pour acceptUnmatched est maintenant True pour tous les composants.
+    avant cette version, la valeur par défaut était False dans le composant *subscribe*
+    mais Vrai pour tous les autres.
+
+
+
 3.0.22
 ------
 

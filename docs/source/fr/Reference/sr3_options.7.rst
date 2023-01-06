@@ -296,7 +296,7 @@ accept, reject et acceptUnmatched
 
 - **accept     <modèle regexp> (optionnel) [<mot-clés>]**
 - **reject     <modèle regexp> (optionnel)**
-- **acceptUnmatched   <booléen> (défaut: False)**
+- **acceptUnmatched   <booléen> (défaut: True)**
 
 Les options **accept** et **reject** traitent les expressions régulières (regexp).
 Le regexp est appliqué à l’URL du message d'annonce pour trouver une correspondance.
@@ -311,8 +311,8 @@ avec l’option **directory**.  Ces options associent les messages d'annonce acc
 à la valeur du **directory** sous laquelle elles sont spécifiées.
 
 Une fois que toutes les options **accept** / **reject** sont traitées, normalement
-le message d'annonce est reconnu comme consommé et ignoré. Pour remplacer ce comportement,
-il est possible de définir **acceptUnmatched** en étant True. Les paramètres de **accept/reject**
+le message d'annonce est accepté. Pour changer ce comportement,
+il est possible de définir **acceptUnmatched** à False. Les paramètres de **accept/reject**
 sont interprétés dans l’ordre. Chaque option est traitée de manière ordonnée
 de haut en bas. Par exemple:
 

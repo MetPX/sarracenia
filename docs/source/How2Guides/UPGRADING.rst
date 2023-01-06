@@ -39,6 +39,13 @@ Installation Instructions
 git
 ---
 
+3.0.25
+------
+
+*CHANGE*: default value for acceptUnmatched is now True for all components.
+          prior to this release, default was False in subscribe component,
+          and True for all others.
+
 3.0.23
 ------
 
