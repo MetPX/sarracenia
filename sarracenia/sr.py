@@ -1938,6 +1938,7 @@ class sr_GlobalState:
 
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
+        acceptUnmatched_explicit=False
         with open(v3_config_path, 'w') as v3_cfg:
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
@@ -1975,9 +1976,12 @@ class sr_GlobalState:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
 
-                    if (k == 'accept') and (component == 'poll'):
+                    if (k == 'accept') :
                         if line[1] == '.*':
                             accept_all_seen=True
+                            continue
+                    elif ( k == 'acceptUnmatched' ):
+                            acceptUnmatched_explicit=line[1]
                             continue
 
                     if k in convert_to_v3:
@@ -2009,6 +2013,11 @@ class sr_GlobalState:
                     v3_cfg.write(' '.join(line)+'\n')
                 if accept_all_seen:
                     v3_cfg.write('accept .*\n')
+                elif acceptUnmatched_explicit:
+                    v3_cfg.write( f"acceptUnmatched {acceptUnmatched_explicit}")
+                elif component == 'subscribe': # accomodate change of default from v2 to sr3
+                    v3_cfg.write( f"acceptUnmatched False")
+
         logging.info('wrote conversion from v2 %s to sr3 ' % cfg)
 
 
