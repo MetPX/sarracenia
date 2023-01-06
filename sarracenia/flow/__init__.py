@@ -1418,7 +1418,8 @@ class Flow:
                          (self.scheme, msg['relPath']))
 
             token = msg['relPath'].split('/')
-            cdir = '/' + '/'.join(token[:-1])
+            u = urllib.parse.urlparse(msg['baseUrl'])
+            cdir = '/' + u.path[1:] + '/'.join(token[:-1])
             remote_file = token[-1]
             urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
@@ -1475,6 +1476,7 @@ class Flow:
                     self.worklist.directories_ok.append(new_dir)
                     os.makedirs(new_dir, 0o775, True)
                 os.chdir(new_dir)
+                logger.debug( f"local cd to {new_dir}") 
             except Exception as ex:
                 logger.warning("making %s: %s" % (new_dir, ex))
                 logger.debug('Exception details:', exc_info=True)
@@ -1503,13 +1505,12 @@ class Flow:
             #   return False
 
             cwd = None
-
          
             if (not self.o.dry_run) and hasattr(self.proto[self.scheme], 'getcwd'):
                 cwd = self.proto[self.scheme].getcwd()
 
             if cwd != cdir:
-                logger.debug("%s_transport download cd to %s" % (self.scheme, cdir))
+                logger.debug("%s_transport remote cd to %s" % (self.scheme, cdir))
                 if self.o.dry_run:
                     cwd = cdir
                 else:
