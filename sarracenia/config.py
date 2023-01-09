@@ -1569,6 +1569,7 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
+
         if self.sourceFromExchange and self.exchange:
            self.source = self.get_source_from_exchange(self.exchange)
 
@@ -1674,6 +1675,8 @@ class Config:
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
                 logger.debug("defaulting post_baseDir to same as baseDir")
+            elif self.post_baseUrl and ( self.post_baseUrl[0:5] == 'file:' ):
+                self.post_baseDir = self.post_baseUrl[5:]
 
 
         if self.messageCountMax > 0:
