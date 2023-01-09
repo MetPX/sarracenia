@@ -2012,7 +2012,8 @@ class sr_GlobalState:
 
                     v3_cfg.write(' '.join(line)+'\n')
                 if accept_all_seen:
-                    v3_cfg.write('accept .*\n')
+                    pass
+                    #v3_cfg.write('accept .*\n')
                 elif acceptUnmatched_explicit:
                     v3_cfg.write( f"acceptUnmatched {acceptUnmatched_explicit}")
                 elif component == 'subscribe': # accomodate change of default from v2 to sr3
