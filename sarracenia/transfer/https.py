@@ -27,10 +27,11 @@ import sarracenia
 import ssl
 import subprocess
 import sys
-import urllib.request, urllib.error
 
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
+
+import urllib.error, urllib.parse, urllib.request
 from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
@@ -151,8 +152,7 @@ class Https(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0):
-        logger.debug("sr_http get %s %s %d" %
-                     (remote_file, local_file, local_offset))
+        logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
         logger.debug("sr_http self.path %s" % self.path)
 
         # open self.http
@@ -160,7 +160,8 @@ class Https(Transfer):
         if 'retPath' in msg:
             url = self.sendTo + '/' + msg['retPath']
         else:
-            url = self.sendTo + '/' + urllib.parse.quote(self.path + '/' +
+            u = urllib.parse.urlparse( self.sendTo )
+            url = u.scheme + '://' + u.netloc + '/' + urllib.parse.quote(self.path + '/' +
                                                               remote_file)
 
         ok = self.__open__(url, remote_offset, length)
@@ -253,7 +254,7 @@ class Https(Transfer):
 
     # open
     def __open__(self, path, remote_offset=0, length=0):
-        logger.debug( f"sr_http open {path}")
+        logger.debug( f"{path}")
 
         self.http = None
         self.connected = False

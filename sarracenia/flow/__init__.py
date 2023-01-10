@@ -1419,18 +1419,16 @@ class Flow:
         self.o = options
 
         if 'retPath' in msg:
-            logger.debug("%s_transport download override retPath=%s" %
-                         (self.scheme, msg['retPath']))
+            logger.debug("%s_transport download override retPath=%s" % (self.scheme, msg['retPath']))
             remote_file = msg['retPath']
             cdir = '/'
             urlstr = msg['baseUrl'] + '/' + msg['retPath']
         else:
-            logger.debug("%s_transport download relPath=%s" %
-                         (self.scheme, msg['relPath']))
+            logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']))
 
             token = msg['relPath'].split('/')
             u = urllib.parse.urlparse(msg['baseUrl'])
-            cdir = '/' + u.path[1:] + '/'.join(token[:-1])
+            cdir = '/' + u.path[1:] + '/' + '/'.join(token[:-1])
             remote_file = token[-1]
             urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
