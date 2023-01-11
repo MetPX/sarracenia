@@ -1,5 +1,12 @@
-metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.26) UNRELEASED; urgency=medium
 
+  * incrementing version.
+
+ -- Peter <peter@bsqt.homeip.net>  Wed, 11 Jan 2023 13:41:21 -0500
+
+metpx-sr3 (3.00.25) unstable; urgency=medium
+
+  [ Peter Silva ]
   * change: default acceptUnmatched is now True everywhere ( #601)
   * change: translation of v2 poll *destination* & *get* to sr3 *path*
   * add interpretation of offsets in strftime date patterns.
@@ -13,7 +20,6 @@ metpx-sr3 (3.00.25) UNRELEASED; urgency=medium
   * Sender setting change: remoteUrl -> sendTo (grandfathered with synonyms.)
   * bugfix: sr3 --users declare does nothing if no component configurations exist.
   * new default: when post_baseUrl use file:/... use /... to set post_baseDir.
-    
 
  -- Peter Silva <peter@bsqt.homeip.net>  Fri, 09 Dec 2022 11:02:27 -0500
 
