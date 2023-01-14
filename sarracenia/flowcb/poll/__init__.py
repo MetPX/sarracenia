@@ -155,6 +155,13 @@ class Poll(FlowCB):
            if the line is about a file, then create a new entry for it
            with a metadata available from SFTPAttributes.
 
+           example lines:
+
+              from hpfx.collab.science.gc.ca:
+                  20230113T00Z_MSC_REPS_HGT_ISBL-0850_RLatLon0.09x0.09_PT000H.grib2   2023-01-13 03:49  5.2M
+              from https://data.cosmic.ucar.edu/suominet/nrt/ncConus/y2023/
+                  CsuPWVh_2023.011.22.00.0060_nc                     11-Jan-2023 23:58     47K
+
            this can be overridden by subclassing to deal with new web sites.
         """
 
@@ -174,10 +181,11 @@ class Poll(FlowCB):
             t = time.strptime(sdate, '%Y-%m-%d %H:%M')
         mydate = time.strftime('%b %d %H:%M', t)
 
-        self.mysize = file_size_fix(words[-1])
-
         entry = paramiko.SFTPAttributes()
         entry.st_mtime = time.mktime(t)
+
+        # size is rounded, need a way to be more precise.
+        #entry.st_size = file_size_fix(words[-1])
 
         if self.myfname[-1] != '/':
             entry.st_mode = 0o755
