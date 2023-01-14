@@ -31,6 +31,46 @@ sum_algo_v3tov2 = {
 
 sum_algo_v2tov3 = { v: k for k,v in sum_algo_v3tov2.items() }
 
+def sumstrFromMessage( msg ) -> str:
+    """
+   accepts a v3 message as argument msg. returns the corresponding sum string for a v2 'sum' header.
+    """
+
+    if 'integrity' in msg:
+        if msg['integrity']['method'] in sum_algo_v3tov2:
+           sa = sum_algo_v3tov2[msg["integrity"]["method"]]
+        else: # FIXME ... 1st md5name case... default when unknown...
+           logger.error('integrity method unknown to v2: %s, replacing with md5name' % msg['integrity']['method'] )
+           sa = 'n'
+           sv = md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
+
+        # transform sum value
+        if sa in ['0', 'a']:
+            sv = msg["integrity"]["value"]
+        elif sa in ['z']:
+            sv = sum_algo_v3tov2[msg["integrity"]["value"]]
+        else:
+            sv = encode(
+                decode(msg["integrity"]["value"].encode('utf-8'), "base64"),
+                'hex').decode('utf-8')
+        sumstr = sa + ',' + sv
+    else:
+        # FIXME ... 2nd md5name case.
+        sumstr = 'n,%s' % md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
+
+    if 'fileOp' in msg:
+        if 'link' in msg['fileOp']:
+            hash = sha512()
+            hash.update( bytes( msg['fileOp']['link'], encoding='utf-8' ) )
+            sumstr = 'L,%s' % hash.hexdigest()
+        elif 'remove' in msg['fileOp']:
+            hash   = sha512()
+            hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
+            sumstr = 'R,%s' % hash.hexdigest()
+        else:
+            logger.error('unknown fileOp: %s' % msg['fileOp'] )
+    return sumstr
+
 class Message:
     def __init__(self, h):
         """
@@ -82,53 +122,12 @@ class Message:
         #else:
         #    self.partstr = None
 
+        self.sumstr = sumstrFromMessage( h )
+        self.sumflg = self.sumstr[0]
+        h['sum'] = self.sumstr
 
-        if 'integrity' in h:
-            if h['integrity']['method'] in sum_algo_v3tov2:
-               sa = sum_algo_v3tov2[h["integrity"]["method"]]
-            else: # FIXME ... 1st md5name case... default when unknown...
-               logger.error('integrity method unknown to v2: %s, replacing with md5name' % h['integrity']['method'] )
-               sa = 'n'
-               sv = md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
-
-            self.sumflag = sa
-
-            # transform sum value
-            if sa in ['0', 'a']:
-                sv = h["integrity"]["value"]
-            elif sa in ['z']:
-                sv = sum_algo_v3tov2[h["integrity"]["value"]]
-            else:
-                sv = encode(
-                    decode(h["integrity"]["value"].encode('utf-8'), "base64"),
-                    'hex').decode('utf-8')
-            h["sum"] = sa + ',' + sv
-            self.sumflg = sa
-            self.sumstr = h["sum"]
-        else:
-            # FIXME ... 2nd md5name case.
-            self.sumstr = 'n,%s' % md5(bytes(os.path.basename(h['relPath']),'utf-8')).hexdigest()
-            self.sumflg = 'n'
-            h["sum"] = self.sumstr
-
-        # fileOp case... link, and remove need different treatment.
-        if 'fileOp' in h:
-            if 'link' in h['fileOp']:
-                hash = sha512()
-                hash.update( bytes( h['fileOp']['link'], encoding='utf-8' ) )
-                self.sumstr = 'L,%s' % hash.hexdigest()
-                self.sumflg = 'L'
-                h["sum"] = self.sumstr
-            elif 'remove' in h['fileOp']:
-                hash   = sha512()
-                hash.update(bytes(os.path.basename(h['relPath']), encoding='utf-8'))
-                self.sumstr = 'R,%s' % hash.hexdigest()
-                self.sumflg = 'R'
-                h["sum"] = self.sumstr
-            elif 'rename' in h['fileOp']:
-                h['oldname'] = h['fileOp']['rename']
-            else:
-                logger.error('unknown fileOp: %s' % h['fileOp'] )
+        if 'fileOp' in h and  'rename' in h['fileOp'] :
+            h['oldname'] = h['fileOp']['rename'] 
        
         self.headers = h
         self.hdrstr = str(h)
