@@ -96,10 +96,10 @@ Tableau de stratégie de détection de fichiers
 |numéro       |                                       |marche.                               |
 |(mtime)      | - rajout ce délai sur chaque transfert|                                      |
 |             | - Vulnérable à des pannes réseau.     |Réception de sources non-coopératives |
-|             | - Vulnérable à des horloges désynchr  |                                      |
+| où          | - Vulnérable à des horloges désynchr  |                                      |
 |             |   onizés                              |(choix valable avec PDS)              |
-|             |                                       |                                      |
-|             |                                       |Si un processus re-écrit un fichier   |
+|nodupe_\     |                                       |                                      |
+|fileAgeMin   |                                       |Si un processus re-écrit un fichier   |
 |             |                                       |souvent, mtime peut servire à réduire |
 |             |                                       |le rhythme de publication d´avis.     |
 +-------------+---------------------------------------+--------------------------------------+

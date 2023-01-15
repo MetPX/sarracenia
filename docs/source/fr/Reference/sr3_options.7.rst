@@ -880,24 +880,29 @@ sous-répertoire de la destination dans lequel le fichier doit être écrit pend
 Si un préfixe ou un suffixe est spécifié, lorsque le transfert est
 terminé, le fichier est renommé à son nom permanent pour permettre un traitement ultérieur.
 
-Lors de la publication d’un fichier avec sr3_post, sr3_cpost ou sr3_watch, l’option **inflight**
+Lors de la publication d’un fichier avec sr3_post, sr3_cpost, watch, ou poll, l’option **inflight**
 peut également être spécifié comme une intervalle de temps, par exemple, 10 pour 10 secondes.
 Lorsque l'option est défini sur une intervalle de temps, le processus de publication de fichiers attends
 jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
 ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
-Si le message d’erreur suivant s’affiche ::
-
-    inflight setting: 300, not for remote
-
-C'est parce que le paramètre d’intervalle de temps n’est pris en charge que par sr3_post/sr3_cpost/sr3_watch.
-En regardant les fichiers locaux avant de générer un message, il n’est pas utilisé comme prescrit, un moyen
-de retarder l’envoi des fichiers.
 
 Enfin, **inflight** peut être réglé a *NONE*. Dans ce cas, le fichier est écrit directement
 avec le nom final, où le destinataire attendra de recevoir un poste pour notifier l’arrivée du fichier.
 Il s’agit de l’option la plus rapide et la moins coûteuse lorsqu’elle est disponible.
 C’est aussi le défaut lorsqu’un *post_broker* est donné, indiquant qu'un autre processus doit être
 notifié après la livraison.
+
+NOTE::
+
+     Lors de l'écriture d'un fichier, si vous voyez le message d'erreur ::
+
+     paramètre en vol : 300, pas pour les téléchargements
+
+     C'est parce que le réglage de l'intervalle de temps est uniquement pour la lecture des fichiers. Le processus
+     qui écrit le fichier, ne peut pas contrôler combien de temps un processus lecteur ultérieur attendra pour 
+     regarder un fichier en cours téléchargé, il est donc inapproprié de spécifier un temps de modification minimum.
+     en regardant les fichiers locaux avant de générer un post, ça ne sert pas comme disons, un moyen
+     de retarder l'envoi des fichiers.
 
 inline <flag> (défaut: False)
 -----------------------------
@@ -1090,7 +1095,6 @@ de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec
 nodupe_ttl <off|on|999[smhdw]>
 ------------------------------
 
-
 Lorsque **nodupe_ttl** est défini à une intervalle de temps
 qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
 c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
@@ -1147,6 +1151,12 @@ nodupe_fileAgeMax
 
 Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu'il puisse être posté.
+
+nodupe_fileAgeMin
+-----------------
+
+Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
+neufs pour qu'ils puissent être postés.
 
 outlet post|json|url (défaut: post)
 -----------------------------------
