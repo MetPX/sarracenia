@@ -18,26 +18,34 @@ logger = logging.getLogger(__name__)
 
 class NoDupe(FlowCB):
     """
-       generalised duplicate suppression for sr3
-       programs, it is used as a time based buffer that prevents, when activated,
-       identical files (of some kinds) from being processed more than once.
+       generalised duplicate suppression for sr3 programs. It is used as a 
+       time based buffer that prevents, when activated, identical files (of some kinds) 
+       from being processed more than once, by rejecting files identified as duplicates.
 
        options:
 
        nodupe_ttl - duration in seconds (floating point.)
                     The time horizon of the receiption cache.
-                    how long to remember files, so they are marked as duplicates.
+                    how long to remember files, so they are rejected as duplicates.
 
        The expiry based on nodupe_ttl is applied every housekeeping interval.
 
+       nodupe_fileAgeMax - the oldest file that will be considered for processing.
+                           files older than this threshold will be rejected.
+
+       nodupe_fileAgeMin - the newest file that can be considered for processing.
+                           files newer than this threshold will be rejected.
+                           if not specified, the value of option *inflight*
+                           may be referenced if it is an integer value.
+
        NoDupe supports/uses::
        
-        cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
-                     each line in file is
-                     sum time path part
+           cache_file : default ~/.cache/sarra/'pgm'/'cfg'/recent_files_0001.cache
+                        each line in file is
+                        sum time path part
        
-        cache_dict : {}
-                     cache_dict[key] = {path1: time1, path2: time2, ...}
+           cache_dict : {}
+                        cache_dict[key] = {path1: time1, path2: time2, ...}
        
     """
     def __init__(self, options):
@@ -45,11 +53,11 @@ class NoDupe(FlowCB):
 
         self.o = options
 
-        logging.basicConfig(format=self.o.logFormat,
-                            level=getattr(logging, self.o.logLevel.upper()))
+        logging.basicConfig(format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()))
 
-        if hasattr(options, 'nodupe_ttl'):
-            self.o.nodupe_ttl = options.nodupe_ttl
+        self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
+        self.o.add_option( 'nodupe_fileAgeMax', 'duration', 0 ) 
+        self.o.add_option( 'nodupe_fileAgeMin', 'duration', 0 ) 
 
         logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
 
@@ -178,13 +186,31 @@ class NoDupe(FlowCB):
         else:
             min_mtime = 0
 
+        if self.o.nodupe_fileAgeMin > 0:
+            max_mtime = self.now - self.o.nodupe_fileAgeMin
+        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
+            max_mtime = self.now - self.o.inflight
+        else:
+            # FIXME: should we add some time here to allow for different clocks?
+            #        100 seconds in the future? hmm...
+            max_mtime = self.now + 100
+
         for m in worklist.incoming:
-            if ('mtime' in m) and (timestr2flt(m['mtime']) < min_mtime):
-                m['_deleteOnPost'] |= set(['reject'])
-                m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
-                m.setReport(304,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
-                worklist.rejected.append(m)
-                continue
+            if ('mtime' in m) :
+                mtime=timestr2flt(m['mtime'])
+                if mtime < min_mtime:
+                    m['_deleteOnPost'] |= set(['reject'])
+                    m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
+                    m.setReport(304,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
+                    worklist.rejected.append(m)
+                    continue
+                elif mtime > max_mtime:
+                    m['_deleteOnPost'] |= set(['reject'])
+                    m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
+                    m.setReport(304,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
+                    worklist.rejected.append(m)
+                    continue
+
             if self.check_message(m):
                 new_incoming.append(m)
             else:

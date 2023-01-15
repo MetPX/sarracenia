@@ -90,11 +90,11 @@ File Detection Strategy Table
 |number       |of the file before it is considered    |no other method works.                |
 |(mtime)      |complete.                              |                                      |
 |             |                                       |Receiving from uncooperative          |
-|             | - Adds delay in every transfer.       |sources.                              |
-|             | - Vulnerable to network failures.     |                                      |
+|Alternate    | - Adds delay in every transfer.       |sources.                              |
+|setting      | - Vulnerable to network failures.     |                                      |
 |             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
-|             |                                       |                                      |
-|             |                                       |If a process is re-writing a file     |
+|nodupe_\     |                                       |                                      |
+|fileAgeMin   |                                       |If a process is re-writing a file     |
 |             |                                       |often, can use mtime to smooth out    |
 |             |                                       |the i/o pattern, by slowing posts.    |
 +-------------+---------------------------------------+--------------------------------------+

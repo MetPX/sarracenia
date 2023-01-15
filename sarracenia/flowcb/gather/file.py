@@ -44,6 +44,31 @@ if sarracenia.extras['watch']['present']:
             self.on_moved = parent.on_moved
             super().__init__()
 
+def path_inflight_tooNew(inflight, lstat):
+    """
+      check the inflight, compare fail age against it.
+      return True if the file is too new to be posted.
+    """
+
+    if not isinstance(inflight, int):
+        #logger.debug("ok inflight unused")
+        return False
+
+    if lstat == None or not hasattr(lstat,'st_mtime'):
+        #logger.debug("ok lstat None")
+        return False
+
+    age = nowflt() - lstat.st_mtime
+    if age < inflight:
+        logger.debug("%d vs (inflight setting) %d seconds. Too New!" % \
+            (age,inflight) )
+        return True
+
+    return False
+
+
+
+
 class File(FlowCB):
     """
     read the file system, create messages for the files you find.
@@ -105,28 +130,6 @@ class File(FlowCB):
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
-    def path_inflight_mtime(self, path, lstat):
-        """
-          check the self.o.inflight, compare fail age against it.
-          return True if the file is old enough to be posted.
-        """
-        #logger.debug("path_inflight_mtime %s" % path)
-
-        if not isinstance(self.o.inflight, int):
-            #logger.debug("ok inflight unused")
-            return False
-
-        if lstat == None:
-            #logger.debug("ok lstat None")
-            return False
-
-        age = nowflt() - lstat.st_mtime
-        if age < self.o.inflight:
-            logger.debug("%d vs (inflight setting) %d seconds. Too New!" % \
-                (age,self.o.inflight) )
-            return True
-
-        return False
 
     def post_delete(self, path, key=None, value=None):
         #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
@@ -505,7 +508,7 @@ class File(FlowCB):
 
         lstat = sarracenia.stat(src)
 
-        if self.path_inflight_mtime(src, lstat): return []
+        if path_inflight_tooNew(self.o.inflight, lstat): return []
 
         # post it
 

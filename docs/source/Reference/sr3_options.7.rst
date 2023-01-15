@@ -885,24 +885,29 @@ sub-directory of the destination into which the file should be written while in 
 Whether a prefix or suffix is specified, when the transfer is
 complete, the file is renamed to its permanent name to allow further processing.
 
-When posting a file with sr3_post, sr3_cpost, or sr3_watch, the  **inflight**  option
+When detecting a file with sr3_post, sr3_cpost, or watch, or poll, the  **inflight** option
 can also be specified as a time interval, for example, 10 for 10 seconds.
 When set to a time interval, file posting process ensures that it waits until
 the file has not been modified in that interval. So a file will
 not be processed until it has stayed the same for at least 10 seconds.
-If you see the error message::
-
-    inflight setting: 300, not for remote
-
-It is because the time interval setting is only supported by sr3_post/sr3_cpost/sr3_watch.
-in looking at local files before generating a post, it is not used as say, a means
-of delaying sending files.
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
 of the file's arrival.  This is the fastest, lowest overhead option when it is available.
 It is also the default when a *post_broker* is given, indicating that some
 other process is to be notified after delivery.
+
+NOTE::
+
+    When writing a file, if you see the error message::
+
+        inflight setting: 300, not for downloads
+
+    It is because the time interval setting is only for reading files. The writer
+    cannot control how long a subsequent reader will wait to look at a file being
+    downloaded, so specifying a minimum modification time is inappropriate.
+    in looking at local files before generating a post, it is not used as say, a means
+    of delaying sending files.
 
 
 inline <flag> (default: False)
@@ -1157,8 +1162,14 @@ More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.htm
 nodupe_fileAgeMax
 -----------------
 
-If files are older than this setting (default: 30d), then ignore them, they are too
-old to post.
+If files are older than this setting (default: 30d in poll, 0 in other components), 
+then ignore them, they are too old to post. 0 deactivates the setting.
+
+nodupe_fileAgeMin
+-----------------
+
+If files are newer than this setting (default: 0), then ignore them, they are too
+old to post. 0 deactivates the setting.
 
 
 outlet post|json|url (default: post)

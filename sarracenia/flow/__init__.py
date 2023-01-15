@@ -1330,7 +1330,7 @@ class Flow:
                     new_inflight_path = new_file + self.o.inflight
             else:
                 #inflight is interval: minimum the age of the source file, as per message.
-                logger.error('interval inflight setting: %s, not for remote.' %
+                logger.error('interval inflight setting: %s, not appropriate for downloads.' %
                              self.o.inflight)
                 # FIXME... what to do?
                 self.reject(
@@ -1453,7 +1453,7 @@ class Flow:
             elif options.inflight[0] == '.':
                 new_inflight_path = new_file + options.inflight
         else:
-            logger.error('inflight setting: %s, not for remote.' %
+            logger.error('inflight setting: %s, not for downloads.' %
                          options.inflight)
         if new_inflight_path:
             msg['new_inflight_path'] = new_inflight_path
