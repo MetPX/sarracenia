@@ -7,7 +7,7 @@
   or more simply:
 
   fdelay 30
-  callback fdelay
+  callback filter.fdelay
 
   every message will be at least 30 seconds old before it is forwarded by this plugin.
   in the meantime, the message is placed on the retry queue by marking it as failed.

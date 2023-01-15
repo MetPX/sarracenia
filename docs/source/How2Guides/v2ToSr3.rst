@@ -310,24 +310,25 @@ In general, v3 plugins:
 
   ================ =================== ==========================================================
   v2               sr3                 Notes
-  ================ =================== ==========================================================
-  msg.pubtime      msg['pubTime']      when the message was originally published (standard field)
-  msg.baseurl      msg['baseUrl']      root of the url tree of posted file (standard field)
-  msg.relpath      msg['relPath']      relative path concatenated to baseUrl for canonical path
-  *no equivalent*  msg['retPath']      opaque retrieval path to override canonical one.
-  msg.notice       no equivalent       calculated from other field on v2 write
-  msg.new_subtopic msg['new_subtopic'] avoid in sr3... calculated from relPath
-  msg.new_dir      msg['new_dir']      name of the directory where files will be written
-  msg.new_file     msg['new_file']     name of the file to be writen in new_dir
-  msg.headers      msg                 the in memory sr3 message is a dict, includes headers
-  msg.headers['x'] msg['x']            headers are dict items.
-  msg.message_ttl  msg['message_ttl']  same setting.
-  msg.exchange     msg['exchange']     the channel on which the message was received.
-  msg.logger       logger              pythonic logging setup describe above.
-  msg.parts        msg['size']         just omit, use sarracenia.Message constructor.
-  msg.sumflg       msg['integrity']    just omit, use sarracenia.Message constructor.
-  parent.msg       worklist.incoming   v2 is 1 message at a time, sr3 has lists or messages.
-  ================ =================== ==========================================================
+  ================ ================================== ==========================================================
+  msg.pubtime      msg['pubTime']                     when the message was originally published (standard field)
+  msg.baseurl      msg['baseUrl']                     root of the url tree of posted file (standard field)
+  msg.relpath      msg['relPath']                     relative path concatenated to baseUrl for canonical path
+  *no equivalent*  msg['retPath']                     opaque retrieval path to override canonical one.
+  msg.notice       no equivalent                      calculated from other field on v2 write
+  msg.new_subtopic msg['new_subtopic']                avoid in sr3... calculated from relPath
+  msg.new_dir      msg['new_dir']                     name of the directory where files will be written
+  msg.new_file     msg['new_file']                    name of the file to be writen in new_dir
+  msg.headers      msg                                the in memory sr3 message is a dict, includes headers
+  msg.headers['x'] msg['x']                           headers are dict items.
+  msg.message_ttl  msg['message_ttl']                 same setting.
+  msg.exchange     msg['exchange']                    the channel on which the message was received.
+  msg.logger       logger                             pythonic logging setup describe above.
+  msg.parts        msg['size']                        just omit, use sarracenia.Message constructor.
+  msg.sumflg       msg['integrity']                   just omit, use sarracenia.Message constructor.
+  msg.sumstr       v2wrapper.sumstrFromMessage(msg)   the literal string for a v2 checksum field.     
+  parent.msg       worklist.incoming                  v2 is 1 message at a time, sr3 has lists or messages.
+  ================ ================================== ==========================================================
 
 * the pubTime, baseUrl, relPath, retPath, size, integrity, are all standard message fields
   better described in `sr_post(7) <../Reference/sr_post.7.html>`_
