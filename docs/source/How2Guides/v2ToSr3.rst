@@ -958,6 +958,12 @@ v2 plugin code::
     renamer=Renamer()
     self.destfn_script=renamer.perform
 
+Notes:
+
+* the v2 plugin returns True, and one must set a new_file field to change the name.
+* in sr3, the return value is the name of the file, so review all *return* statements.
+* in sr3, there is no need to update any message fields, sinc that is taken care of.
+  just return the new name.
 
 Turns into sr3
 
@@ -978,10 +984,6 @@ flow callback code::
    logger = logging.getLogger(__name__)
 
    class Sender_Renamer_Add_Date(FlowCB):
-
-      def __init__(self,options):
-          self.o = options
-          pass
 
       def destfn(self,msg) -> str:
 

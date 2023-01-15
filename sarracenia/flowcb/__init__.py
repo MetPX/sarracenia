@@ -180,10 +180,12 @@ class FlowCB:
         self.o = options
         self.stop_requested = False
 
-        logging.basicConfig(format=self.o.logFormat,
+        if hasattr(self.o,'logFormat'):
+            logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        if hasattr(self.o,'logLevel'):
+            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
 
     def please_stop(self):
