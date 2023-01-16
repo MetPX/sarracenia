@@ -103,8 +103,9 @@ class File(Transfer):
 
     # delete
     def delete(self, path):
-        logger.debug("sr_file rm %s" % path)
-        os.unlink(path)
+        p = os.path.join( self.cwd, path )
+        logger.debug("sr_file rm %s" % p)
+        os.unlink(p)
 
     # get
     def get(self,
@@ -158,7 +159,7 @@ class File(Transfer):
         return sz
 
     def getcwd(self):
-        return os.getcwd()
+        return self.cwd
 
     # ls
     def ls(self):
@@ -204,7 +205,7 @@ def file_link(msg):
     except:
         pass
     try:
-        os.link(msg['relPath'], msg['new_file'])
+        os.link(msg['fileOp']['link'], os.path.join(self.cwd,msg['new_file']))
     except:
         return False
 
@@ -244,7 +245,7 @@ def file_process(options):
         return True
 
     try:
-        curdir = os.getcwd()
+        curdir = self.cwd
     except:
         curdir = None
 
@@ -253,16 +254,17 @@ def file_process(options):
 
     # try link if no inserts
 
+    p=os.path.join(self.cwd,msg['relPath'])
+
     if msg.partflg == '1' or \
        (msg.partflg == 'p' and  msg.in_partfile) :
         ok = file_link(msg)
         if ok:
             if options.delete:
                 try:
-                    os.unlink(msg['relPath'])
+                    os.unlink(p)
                 except:
-                    logger.error("delete of link to %s failed" %
-                                 (msg['relPath']))
+                    logger.error("delete of link to %s failed" % p)
             return ok
 
     # This part is for 2 reasons : insert part
@@ -275,10 +277,9 @@ def file_process(options):
                             (msg['relPath']))
             else:
                 try:
-                    os.unlink(msg['relPath'])
+                    os.unlink(p)
                 except:
-                    logger.error("delete of %s after copy failed" %
-                                 (msg['relPath']))
+                    logger.error("delete of %s after copy failed" % p)
 
         if ok: return ok
 
@@ -286,7 +287,7 @@ def file_process(options):
         logger.error('sr_file/file_process error')
         logger.debug('Exception details: ', exc_info=True)
 
-    logger.error("could not copy %s in %s" % (msg['relPath'], msg['new_file']))
+    logger.error("could not copy %s in %s" % (p, msg['new_file']))
 
     return False
 
