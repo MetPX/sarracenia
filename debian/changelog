@@ -1,6 +1,9 @@
 metpx-sr3 (3.00.26) UNRELEASED; urgency=medium
 
-  * incrementing version.
+  * #433 adding nodupe_fileAgeMin, and having nodupe honour inflight durations
+  * #433 made nodupe.v2wrapper.sumstr
+  * #433 made flowcb __init__ routine more robust to empty options for testing.
+  * #605 attempt to fix delete option in file: transfer protocol
 
  -- Peter <peter@bsqt.homeip.net>  Wed, 11 Jan 2023 13:41:21 -0500
 
@@ -9,14 +12,14 @@ metpx-sr3 (3.00.25) unstable; urgency=medium
   [ Peter Silva ]
   * change: default acceptUnmatched is now True everywhere ( #601)
   * change: translation of v2 poll *destination* & *get* to sr3 *path*
-  * add interpretation of offsets in strftime date patterns.
+  * #433 add interpretation of offsets in strftime date patterns.
   * local file copy was broken.
   * documentation improvements
   * optimization: skip evaluating a regex if pattern is .*
-  * more advice/information about porting polls from v2 to sr3 
-  * added message downloader for mail servers flowcb/download/mail_ingest.py
-  * conversion of poll configurations improved to remove redundant accepts.
-  * much more explanations around v2->sr3 porting of polls
+  * #433 more advice/information about porting polls from v2 to sr3 
+  * #433 added message downloader for mail servers flowcb/download/mail_ingest.py
+  * #433 conversion of poll configurations improved to remove redundant accepts.
+  * #433 much more explanations around v2->sr3 porting of polls
   * Sender setting change: remoteUrl -> sendTo (grandfathered with synonyms.)
   * bugfix: sr3 --users declare does nothing if no component configurations exist.
   * new default: when post_baseUrl use file:/... use /... to set post_baseDir.
