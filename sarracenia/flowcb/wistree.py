@@ -29,7 +29,7 @@ class Wistree(FlowCB):
             logger.setLevel(logging.INFO)
 
         self.topic_builder = GTStoWIS2.GTStoWIS2()
-        self.o = options
+        super().__init__(options)
         self.date_pattern = re.compile("^[0-9]{8}$")
 
     def after_accept(self, worklist):

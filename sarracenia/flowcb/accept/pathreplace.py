@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Pathreplace(FlowCB):
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
 
         self.o.add_option('pathReplace', 'list' )
 

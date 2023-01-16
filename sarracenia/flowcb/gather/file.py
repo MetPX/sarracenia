@@ -109,7 +109,7 @@ class File(FlowCB):
         """ 
         """
 
-        self.o = options
+        super().__init__(options)
 
         if not sarracenia.extras['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")

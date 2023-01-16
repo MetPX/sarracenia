@@ -239,7 +239,7 @@ En général, les plugins v3:
   que dans la v2 où ils se trouvaient dans l’objet parent. Par convention, dans la plupart des modules, la
   fonction __init__ comprend un::
 
-       self.o = options
+       super().__init__(options)
        self.o.add_option('OptionName', Type, DefaultValue)
        
   .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global::
@@ -922,10 +922,6 @@ code du flow callback::
    logger = logging.getLogger(__name__)
 
    class Sender_Renamer_Add_Date(FlowCB):
-
-      def __init__(self,options):
-          self.o = options
-          pass
 
       def destfn(self,msg) -> str:
 

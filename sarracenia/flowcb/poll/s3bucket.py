@@ -41,7 +41,8 @@ logger = logging.getLogger(__name__)
 class S3bucket(FlowCB):
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
+
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(minutes=-70)
         
         logger.info( f" url: {self.o.pollUrl} " )

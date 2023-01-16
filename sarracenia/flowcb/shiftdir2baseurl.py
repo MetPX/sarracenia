@@ -19,7 +19,7 @@ class ShiftDir2baseUrl(FlowCB):
     """
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
         self.o.add_option('shiftDir2baseUrl', 'count', 1)
 
     def after_work(self, worklist):

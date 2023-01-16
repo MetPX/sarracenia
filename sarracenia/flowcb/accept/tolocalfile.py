@@ -79,8 +79,6 @@ logger = logging.getLogger('__name__')
 
 
 class ToLocalFile(FlowCB):
-    def __init__(self, options):
-        self.o = options
 
     def after_accept(self, worklist):
         new_incoming = []

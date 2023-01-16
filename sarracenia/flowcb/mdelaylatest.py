@@ -23,7 +23,7 @@ class MDelayLatest(FlowCB):
     """
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
         self.stop_requested = False
         self.suppressions = 0
         self.ok_delay = []

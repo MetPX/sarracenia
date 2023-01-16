@@ -239,7 +239,7 @@ In general, v3 plugins:
              :%s/parent.logger/logger/g
 
 * in v2, **parent** is a mess.  The *self* object varied depending on which entry points were 
-  called. For example, *self* in __init__ is Not the same as *self* in on_message. As a result, all state
+  called. For example, *self* in __init__ is **NOT** the same as *self* in on_message. As a result, all state
   is stored in parent. the parent object contained options, and settings, and instance
   variables. 
  
@@ -251,7 +251,7 @@ In general, v3 plugins:
   than in v2 where they were in the parent object. By convention, in most modules the 
   __init__ function includes a::
 
-       self.o = options
+       super().__init__(options)
        self.o.add_option('OptionName', Type, DefaultValue)
        
   .. Tip:: In vi you can use the global replace::
@@ -939,9 +939,6 @@ v2 plugin code::
     # and returns :                       AACN01_CWAO_160316___00009_20170316031254
 
     class Renamer(object):
-
-      def __init__(self) :
-          pass
 
       def perform(self,parent):
  

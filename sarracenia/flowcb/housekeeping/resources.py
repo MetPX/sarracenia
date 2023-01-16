@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 class Resources(FlowCB):
     def __init__(self, options):
-        self.o = options
+        super().__init__(options)
         # Set option to neg value to determine if user set in config
         self.o.add_option('MemoryMax', 'size', '0')
         self.o.add_option('MemoryBaseLineFile', 'count', 100)

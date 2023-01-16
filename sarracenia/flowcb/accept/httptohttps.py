@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class HttpToHttps(FlowCB):
-    def __init__(self, options):
-        self.o = options
 
     def after_accept(self, worklist):
         new_incoming = []

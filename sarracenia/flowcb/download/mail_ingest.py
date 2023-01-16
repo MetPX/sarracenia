@@ -38,10 +38,6 @@ logger = logging.getLogger(__name__)
 
 class Mail_ingest(FlowCB):
 
-        def __init__(self, options):
-                self.o = options
-                logger.info("download_email_ingest init")
-
         def download(self, msg) -> bool:
 
                 #ok, details = self.o.credentials.get(parent.msg.notice.split()[1])

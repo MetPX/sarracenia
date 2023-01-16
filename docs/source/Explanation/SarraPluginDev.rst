@@ -362,7 +362,7 @@ file placed in any directory in the PYTHONPATH::
 
         def __init__(self, options):
 
-            self.o = options
+            super().__init__(options)
 
             # implement class specific logging priority.
             logger.setLevel(getattr(logging, self.o.logLevel.upper()))
@@ -626,13 +626,13 @@ the file that will be downloaded.
 
 In the configuration file, one can use the filename option like so::
 
-  filename DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+  filename DESTFNSCRIPT=destfn.sample
 
 To identify a class containing the destfn entry point to be applied.
 using the filename directive applies it to all files. One can also
 do it selectively in the configuration file's accept clause::
 
-  accept k.* DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
+  accept k.* DESTFNSCRIPT=destfn.sample
 
 which has it call the routine to rename only selected files (starting with *k*
 as per the accept clause) 
@@ -748,7 +748,7 @@ provided with sarracenia::
 
       def __init__(self,options):
 
-          self.o=options
+          super().__init__(options)
           logger.setLevel(getattr(logging, self.o.logLevel.upper()))
           self.o.add_option( option='rxpipe_name', kind='str' )
 

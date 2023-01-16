@@ -11,9 +11,6 @@ class Name(FlowCB):
       This is useful when receiving data from two different sources (two different trees)
       and winnowing between them.
     """
-    def __init__(self, options):
-        self.o = options
-
     def after_accept(self, worklist):
         for m in worklist.incoming:
             if not 'nodupe_override' in m:

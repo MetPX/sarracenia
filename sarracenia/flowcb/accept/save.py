@@ -28,7 +28,7 @@ logger = logging.getLogger('__name__')
 
 class Save(FlowCB):
     def __init__(self, options):
-        self.o = options
+        super().__init__(options)
 
         if not hasattr(self.o, "msgSaveFile"):
             logger.error(

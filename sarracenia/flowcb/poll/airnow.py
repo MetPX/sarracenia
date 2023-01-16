@@ -24,10 +24,6 @@ logger = logging.getLogger(__name__)
 
 
 class Airnow(FlowCB):
-    def __init__(self, options):
-        self.o = options
-
-        logger.debug('init')
 
     def poll(self):
 

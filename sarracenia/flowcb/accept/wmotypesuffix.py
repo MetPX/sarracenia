@@ -25,8 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 class WmoTypeSuffix(FlowCB):
-    def __init__(self, options):
-        self.o = options
 
     def find_type(self, TT):
         if TT[0] in ['G']: return '.grid'

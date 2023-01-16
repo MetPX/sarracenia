@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class TestRetry(FlowCB):
     def __init__(self, options):
-        self.o = options
+        super().__init__(options)
         sefl.sendTo = None
         self.msg_baseUrl_good = None
         self.details_bad = None

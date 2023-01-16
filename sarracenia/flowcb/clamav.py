@@ -38,7 +38,7 @@ class Clamav(FlowCB):
     """
     def __init__(self, options) -> None:
 
-        self.o = options
+        super().__init__(options)
         self.av = pyclamd.ClamdAgnostic()
         self.metric_scanned = 0
         self.metric_hits = 0

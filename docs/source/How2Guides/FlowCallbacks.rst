@@ -151,7 +151,7 @@ initialize things for the callback class::
 
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
@@ -304,13 +304,8 @@ https://github.com/wmo-im/GTStoWIS2) ::
 
     def __init__(self, options):
 
-        if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, options.logLevel.upper()))
-        else:
-            logger.setLevel(logging.INFO)
+        super().__init__(options)
         self.topic_builder=GTStoWIS2.GTStoWIS2()
-        self.o = options
-
 
     def after_accept(self, worklist):
 

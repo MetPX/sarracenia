@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 class PostOverride(FlowCB):
     def __init__(self, options):
-        self.o = options
-
+        super().__init__(options)
         self.o.add_option('postOverride', 'str')
         self.o.add_option('postOverrideDel', 'str')
         if hasattr(self.o, 'postOverride'):

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Fdelay(FlowCB):
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
 
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))

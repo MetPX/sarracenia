@@ -1,16 +1,16 @@
 import logging
 import os
 
+from sarracenia.flowcb import FlowCB
+
 logger = logging.getLogger(__name__)
 
 
-class DeleteFlowFiles(object):
+class DeleteFlowFiles(FlowCB):
     """
        This is a custom callback class for the sr_insects flow tests.
        delete files for messages in two directories.
     """
-    def __init__(self, parent):
-        logger.debug("msg_delete initialized")
 
     def after_accept(self, worklist):
 

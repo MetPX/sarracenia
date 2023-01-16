@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class Delete(FlowCB):
-    def __init__(self, options):
-        self.o = options
-        logger.debug("msg_delete initialized")
 
     def after_accept(self, worklist):
         new_incoming = []

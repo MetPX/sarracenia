@@ -18,7 +18,7 @@ class Message(FlowCB):
     """
     def __init__(self, options):
 
-        self.o = options
+        super().__init__(options)
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
         if hasattr(self.o, 'broker'):

@@ -53,7 +53,7 @@ class Run(FlowCB):
         else:
             logger.setLevel(logging.INFO)
 
-        self.o = options
+        super().__init__(options)
         self.o.add_option('run_gather', 'str')
         self.o.add_option('run_accept', 'str')
         self.o.add_option('run_accept_item', 'str')

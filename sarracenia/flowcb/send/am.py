@@ -42,7 +42,7 @@ class AM(FlowCB):
     
     def __init__(self, options):
              
-        self.o = options
+        super().__init__(options)
 
         # Set logger options
         if hasattr(options, 'logLevel'):

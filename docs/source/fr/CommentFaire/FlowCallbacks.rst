@@ -145,11 +145,7 @@ initialiser des éléments pour la classe de callback::
 
     def __init__(self, options):
 
-        self.o = options
-
-        logging.basicConfig(format=self.o.logFormat,
-                            level=getattr(logging, self.o.logLevel.upper()))
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        super().__init__(options)
 
         self.o.add_option( 'myoption', 'str', 'usuallythis')
 

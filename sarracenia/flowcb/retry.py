@@ -45,7 +45,7 @@ class Retry(FlowCB):
 
         logger.debug("sr_retry __init__")
 
-        self.o = options
+        super().__init__(options)
 
         self.download_retry_name = 'work_retry_%02d' % options.no
         self.download_retry = DiskQueue(options, self.download_retry_name)

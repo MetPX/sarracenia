@@ -29,7 +29,7 @@ class Speedo(FlowCB):
         """
            set defaults for options.  can be overridden in config file.
         """
-        self.o = options
+        super().__init__(options)
         if hasattr(self.o, 'msg_speedo_maxlag'):
             if type(self.o.msg_speedo_maxlag) is list:
                 self.o.msg_speedo_maxlag = int(self.o.msg_speedo_maxlag[0])

@@ -21,8 +21,7 @@ class RxQueue_gzip(FlowCB):
 
     def __init__(self,options):
 
-        self.o=options
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        super().__init__(options)
         self.o.add_option( option='rxq_name', kind='str' )
 
     def on_start(self):

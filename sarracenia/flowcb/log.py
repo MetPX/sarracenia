@@ -32,7 +32,7 @@ class Log(FlowCB):
         else:
             logger.setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
-        self.o = options
+        super().__init__(options)
         self.o.add_option('logEvents', 'set',
                           ['after_accept', 'on_housekeeping'])
         self.o.add_option('logMessageDump', 'flag', False)

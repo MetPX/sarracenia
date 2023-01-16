@@ -21,9 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 class DownloadBaseUrl(FlowCB):
-    def __init__(self, options):
-        self.o = options
-        logger.debug("msg_download_baseurl initialized")
 
     def after_accept(self, worklist):
         for message in worklist.incoming:

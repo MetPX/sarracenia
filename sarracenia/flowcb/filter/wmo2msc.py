@@ -79,7 +79,7 @@ logger = logging.getLogger('__name__')
 
 class Wmo2msc(FlowCB):
     def __init__(self, options):
-        self.o = options
+        super().__init__(options)
 
         self.o.add_option( 'filter_wmo2msc_uniquify', 'str', 'hash' )
         self.o.add_option( 'filter_wmo2msc_replace_dir', 'str' )
