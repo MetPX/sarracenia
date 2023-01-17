@@ -21,7 +21,7 @@ class RxQueue_gzip(FlowCB):
 
     def __init__(self,options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
         self.o.add_option( option='rxq_name', kind='str' )
 
     def on_start(self):

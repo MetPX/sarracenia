@@ -51,7 +51,7 @@ class Amserver(FlowCB):
 
     def __init__(self, options):
         
-        super().__init__(options)
+        super().__init__(options,logger)
 
         # Set logger options
         if hasattr(options, 'logLevel'):

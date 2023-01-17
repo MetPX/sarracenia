@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class ToHttp(FlowCB):
     def __init__(self, options):
-        super().__init__(options)
+        super().__init__(options,logger)
         if hasattr(self.o, 'baseDir'):
             self.o.ldocroot = self.o.baseDir
         if hasattr(self.o, 'toHttpRoot'):

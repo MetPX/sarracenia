@@ -59,7 +59,7 @@ class Scheduled(FlowCB):
 
 
     def __init__(self,options):
-        super().__init__(options)
+        super().__init__(options,logger)
         self.o.add_option( 'scheduled_interval', 'duration', 0 )
         self.o.add_option( 'scheduled_hour', 'list', [] )
         self.o.add_option( 'scheduled_minute', 'list', [] )

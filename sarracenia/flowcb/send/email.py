@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class Email(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
         self.o.add_option('file_email_command', 'str', '/usr/bin/mail')
         self.o.add_option('file_email_to', 'list')
         self.o.add_option('file_email_from', 'str')

@@ -17,7 +17,7 @@ class Message(FlowCB):
     """
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
 
         if hasattr(self.o, 'post_broker'):
             props = sarracenia.moth.default_options

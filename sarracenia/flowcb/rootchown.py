@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class Rootchown(FlowCB):
     def __init__(self, options):
-        super().__init__(options)
+        super().__init__(options,logger)
         self.o.declare_option('rootChownMappingFile')
         self.mapping = {}
 

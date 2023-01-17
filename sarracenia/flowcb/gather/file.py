@@ -109,13 +109,11 @@ class File(FlowCB):
         """ 
         """
 
-        super().__init__(options)
+        super().__init__(options,logger)
 
         if not sarracenia.extras['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")
             
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-
         logger.debug("%s used to be overwrite_defaults" % self.o.component)
 
         self.obs_watched = []

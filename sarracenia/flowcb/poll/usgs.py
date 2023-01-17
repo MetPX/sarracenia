@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 class Usgs(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
         self.o.add_option('poll_usgs_station', 'list')
 
         # Parse sitecodes from file if provided, or the usgs website (turns excel spreadsheet into pandas

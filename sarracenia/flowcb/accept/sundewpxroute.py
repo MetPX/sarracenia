@@ -30,7 +30,7 @@ class SundewPxRoute(FlowCB):
           init sets 'ahls_to_route' according to the contents of pxrouting
 
         """
-        super().__init__(options)
+        super().__init__(options,logger)
         self.ahls_to_route = {}
 
         pxrf = open(self.o.pxRouting[0], 'r')

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class Sample(sarracenia.flowcb.FlowCB):
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
 
         # implement class specific logging priority.
         logger.setLevel(getattr(logging, self.o.logLevel.upper()))

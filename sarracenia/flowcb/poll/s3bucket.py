@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 class S3bucket(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
 
         self.minutetracker = datetime.datetime.utcnow() + datetime.timedelta(minutes=-70)
         

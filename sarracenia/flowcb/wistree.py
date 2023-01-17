@@ -21,15 +21,8 @@ class Wistree(FlowCB):
     """
     def __init__(self, options):
 
-        # FIXME: should a logging module have a logLevel setting?
-        #        just put in a cookie cutter for now...
-        if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, options.logLevel.upper()))
-        else:
-            logger.setLevel(logging.INFO)
-
+        super().__init__(options,logger)
         self.topic_builder = GTStoWIS2.GTStoWIS2()
-        super().__init__(options)
         self.date_pattern = re.compile("^[0-9]{8}$")
 
     def after_accept(self, worklist):

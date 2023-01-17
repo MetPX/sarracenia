@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 class Noaa_hydrometric(FlowCB):
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
 
         # these options are only for the poll.
         self.o.add_option(option='poll_noaa_stn_file', kind='str')

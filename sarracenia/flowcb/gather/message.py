@@ -18,8 +18,7 @@ class Message(FlowCB):
     """
     def __init__(self, options):
 
-        super().__init__(options)
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        super().__init__(options,logger)
 
         if hasattr(self.o, 'broker'):
             od = sarracenia.moth.default_options

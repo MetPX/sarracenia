@@ -49,9 +49,9 @@ class NoDupe(FlowCB):
        
     """
     def __init__(self, options):
-        logger.debug("NoDupe init")
 
-        super().__init__(options)
+        super().__init__(options,logger)
+        logger.debug("NoDupe init")
         logging.basicConfig(format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()))
 
         self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 

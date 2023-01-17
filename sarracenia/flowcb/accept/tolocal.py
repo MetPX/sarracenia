@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 class ToLocal(FlowCB):
     def __init__(self, options):
-        super().__init__(options)
+        super().__init__(options,logger)
         if hasattr(self.o, 'baseDir'):
             self.o.ldocroot = self.o.baseDir
 

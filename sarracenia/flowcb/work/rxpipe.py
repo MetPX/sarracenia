@@ -14,8 +14,7 @@ class Rxpipe(FlowCB):
     """
     def __init__(self, options):
 
-        super().__init__(options)
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        super().__init__(options,logger)
         self.o.add_option(option='rxpipe_name', kind='str')
 
     def on_start(self):

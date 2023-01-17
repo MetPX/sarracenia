@@ -176,7 +176,7 @@ class FlowCB:
          before the full stop happens.
 
     """
-    def __init__(self, options):
+    def __init__(self, options, class_logger=None):
         self.o = options
         self.stop_requested = False
 
@@ -184,8 +184,8 @@ class FlowCB:
             logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        if hasattr(self.o,'logLevel'):
-            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+        if hasattr(self.o,'logLevel') and class_logger:
+            class_logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
 
     def please_stop(self):
