@@ -239,7 +239,7 @@ En général, les plugins v3:
   que dans la v2 où ils se trouvaient dans l’objet parent. Par convention, dans la plupart des modules, la
   fonction __init__ comprend un::
 
-       super().__init__(options)
+       super().__init__(options,logger)
        self.o.add_option('OptionName', Type, DefaultValue)
        
   .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global::

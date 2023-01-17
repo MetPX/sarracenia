@@ -53,13 +53,6 @@ class Amserver(FlowCB):
         
         super().__init__(options,logger)
 
-        # Set logger options
-        if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-        else:
-            logger.setLevel(logging.INFO)
-        logging.basicConfig(format=self.o.logFormat)
-
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
         self.inBuffer = bytes()

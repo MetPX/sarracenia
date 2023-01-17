@@ -4,6 +4,7 @@ metpx-sr3 (3.00.26) UNRELEASED; urgency=medium
   * #433 made nodupe.v2wrapper.sumstr
   * #433 made flowcb __init__ routine more robust to empty options for testing.
   * #605 attempt to fix delete option in file: transfer protocol
+  * flowcb now accepts child class logger to propagate priority.
 
  -- Peter <peter@bsqt.homeip.net>  Wed, 11 Jan 2023 13:41:21 -0500
 

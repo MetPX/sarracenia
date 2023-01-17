@@ -48,11 +48,6 @@ class Run(FlowCB):
 
         # FIXME: should a logging module have a logLevel setting?
         #        just put in a cookie cutter for now...
-        if hasattr(options, 'logLevel'):
-            logger.setLevel(getattr(logging, options.logLevel.upper()))
-        else:
-            logger.setLevel(logging.INFO)
-
         super().__init__(options,logger)
         self.o.add_option('run_gather', 'str')
         self.o.add_option('run_accept', 'str')

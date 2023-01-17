@@ -304,7 +304,7 @@ https://github.com/wmo-im/GTStoWIS2) ::
 
     def __init__(self, options):
 
-        super().__init__(options)
+        super().__init__(options,logger)
         self.topic_builder=GTStoWIS2.GTStoWIS2()
 
     def after_accept(self, worklist):

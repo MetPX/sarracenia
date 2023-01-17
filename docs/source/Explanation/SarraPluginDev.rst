@@ -362,11 +362,7 @@ file placed in any directory in the PYTHONPATH::
 
         def __init__(self, options):
 
-            super().__init__(options)
-
-            # implement class specific logging priority.
-            logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-
+            super().__init__(options,logger)
             # declare a module specific setting.
             options.add_option('announce_list', list )
 
@@ -748,8 +744,7 @@ provided with sarracenia::
 
       def __init__(self,options):
 
-          super().__init__(options)
-          logger.setLevel(getattr(logging, self.o.logLevel.upper()))
+          super().__init__(options,logger)
           self.o.add_option( option='rxpipe_name', kind='str' )
 
       def on_start(self):

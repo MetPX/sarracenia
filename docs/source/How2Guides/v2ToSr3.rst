@@ -251,7 +251,7 @@ In general, v3 plugins:
   than in v2 where they were in the parent object. By convention, in most modules the 
   __init__ function includes a::
 
-       super().__init__(options)
+       super().__init__(options,logger)
        self.o.add_option('OptionName', Type, DefaultValue)
        
   .. Tip:: In vi you can use the global replace::

@@ -9,9 +9,6 @@ class Sample(sarracenia.flowcb.FlowCB):
 
         super().__init__(options,logger)
 
-        # implement class specific logging priority.
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
-
         # declare a module specific setting.
         options.add_option('announce_list', 'list')
 

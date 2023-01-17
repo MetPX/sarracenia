@@ -52,7 +52,6 @@ class Retry(FlowCB):
         self.post_retry_name = 'post_retry_%03d' % options.no
         self.post_retry = DiskQueue(options, self.post_retry_name)
 
-        logger.setLevel(getattr(logging, self.o.logLevel.upper()))
         logger.debug('logLevel=%s' % self.o.logLevel)
 
     def cleanup(self) -> None:
