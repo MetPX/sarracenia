@@ -313,8 +313,8 @@ In general, v3 plugins:
   Each v3 notification message acts like a python dictionary.  Below is a table mapping 
   fields from the v2 sarra representation to the one in sr3:
 
-  ================ =================== ==========================================================
-  v2               sr3                 Notes
+  ================ ================================== ==========================================================
+  v2               sr3                                Notes
   ================ ================================== ==========================================================
   msg.pubtime      msg['pubTime']                     when the message was originally published (standard field)
   msg.baseurl      msg['baseUrl']                     root of the url tree of posted file (standard field)
