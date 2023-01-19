@@ -314,7 +314,23 @@ Implemented in moth sub-classes, prints out the bytes actually received or sent
 for the MQP protocol in use.
 
 
+Debugging in callbacks
+~~~~~~~~~~~~~~~~~~~~~~
 
+Pythonic logging involves having distinct logging objects per file. So adding debugging levels
+requires setting debug up in each class where you need it.  To turn debugging on in callback,
+for example one called convert.geps_untar, in the config file place::
+
+  convert.geps_untar.logLevel debug
+
+and in addition, if that flow_callback does not have an __init__() entry point, one will
+need to add it::
+
+
+    def __init__(self,options):
+        super().__init__(options,logger)
+
+This will apply the log formatting and priority to the logger in the current file.
 
 
 Extending Classes
