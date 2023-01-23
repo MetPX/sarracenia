@@ -305,10 +305,11 @@ In general, v3 plugins:
   mappings of all the entry points are described in the `Mapping v2 Entry Points to v3 Callbacks`_
   section later in this document.
   
-* In V2, a method called *correct_extension* would be implemented in plugins to adapt sundew messages via *parent.msg.headers['sundew_extension']* to the plugin
+* In V2, a method called *correct_extension* is implemented in plugins to adapt sundew messages via *parent.msg.headers['sundew_extension']* to the plugin
   specific functionalities.
   
-  In V3, there is no need to call this method. The *msg* does not have any key for *sundew_extension* available. Not being used. 
+  In V3, the usability of this method depends on if and how it is being used with live incoming data. Unless testing with live data, it's best this method remains
+  untouched.
  
   Each v3 notification message acts like a python dictionary.  Below is a table mapping 
   fields from the v2 sarra representation to the one in sr3:
