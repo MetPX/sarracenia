@@ -72,9 +72,10 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "fileOp"   - pour décrire des opérations de fichiers sans transfert de données.
           {            
              "link" : "la valeur d´un lien symbolique"
-             "remove" : True/False     - un valeur pour indique que le fichier a été détruit
+             "remove" : ""  - un valeur pour indique que le fichier a été détruit
              "hlink" : "fichier a cibler pour un lien dure (non-symbolique)¨
              "rename" : "pour de renommage de fichier. valeur indique l´ancien nom."
+             "directory": "" - indique que l'opẃereation (soit création ou suppresion) est sur un répertoire.
           }
   ou:
           rien. Si aucun des champs ci-haut sont inclus, la suppression des duplicats
@@ -110,7 +111,6 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "source"        - l’entité d’origine du message d´annonce.
           "from_cluster"  - le cluster d’origine d’un message d´annonce.
           "to_clusters"   - une spécification de destination.
-          "link"          - valeur d’un lien symbolique. (si 'sum' commence par L)
           "atime"         - heure du dernier accès à un fichier (facultatif)
           "mtime"         - heure de la dernière modification d’un fichier (facultatif)
           "mode"          - bits d’autorisation (facultatif)
@@ -285,11 +285,11 @@ L’en-tête from_cluster définit le nom du cluster source où
 les données ont été introduites dans le réseau. Cela est utilisé pour renvoyer les journaux
 au cluster chaque fois que ses produits sont utilisés.
 
-**link=<valeur du lien symbolique>**
+**fileOp { "link": "<valeur du lien symbolique>" }**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'link' est créé pour
-contenir sa valeur.
+Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'fileOp' est créé avec
+le sous-entête "link" pour contenir sa valeur.
 
 **size and blocks**
 ~~~~~~~~~~~~~~~~~~~
@@ -362,18 +362,17 @@ normalement 0, pour le dernier bloc, octets restants dans le fichier
 
 Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.
 
-**oldname=<chemin>** / **newname=<chemin>**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**fileOp { 'rename':<oldpath> ... }**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 lorsqu’un fichier est renommé à la source, pour l’envoyer aux abonnés, il va y avoir deux posts: un message
-est annoncé avec le nouveau nom comme base_url, et l’en-tête *oldname* va prendre la valeur de l'ancien nom du fichier.
-Un autre message d´annonce est envoyé avec l’ancien nom comme chemin src et le *newname*
-comme en-tête.  Cela garantit que les clauses *accept/reject* sont correctement
-interprété, parce qu'un *rename* peut entraîner un téléchargement si l’ancien nom
-correspond à une clause *reject* ou à une suppression de fichier si le nouveau nom
-correspond à une clause *reject*.
+est annoncé avec le nouveau nom comme base_url, et l’en-tête *FileOp* va inclure la valeur de l'ancien nom du fichier,
+dans un sous-champs appellé 'rename'.
 
-Les hard links sont également traités comme un post ordinaire du fichier avec un ensemble d'en-tête *oldname*.
+Les liens dures (hard links) sont, par contre, traités comme un post ordinaire du fichier avec un ensemble d'en-tête *fileOp*.
+Les changements de noms de liens symboliques et répertoires sont representés pas la présences de sous champs "directory"
+(répertoire) et "link"  (lien) dans le champs "fileOp" qui contient également un *rename*.
+
 
 **integrity**
 ~~~~~~~~~~~~~

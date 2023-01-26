@@ -401,6 +401,8 @@ class Poll(FlowCB):
 
         # post poll list
 
+        msgs.extend(self.poll_list_post(pdir, dir_dict, dir_dict.keys()))
+
         msgs.extend(self.poll_list_post(pdir, desclst, filelst))
 
         # poll in children directory
@@ -467,7 +469,10 @@ class Poll(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
-        if stat.S_ISLNK(desc.st_mode):
+        if stat.S_ISDIR(desc.st_mode):
+             msg['fileOp'] = { 'directory':'' }
+             
+        elif stat.S_ISLNK(desc.st_mode):
             if not self.o.follow_symlinks:
                 try: 
                     msg['fileOp'] = { 'link': self.dest.readlink(path) }

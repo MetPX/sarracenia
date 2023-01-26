@@ -31,7 +31,7 @@ from sarracenia import nowflt
 
 logger = logging.getLogger(__name__)
 
-allFileEvents = set(['create', 'delete', 'link', 'modify'])
+allFileEvents = set(['create', 'delete', 'link', 'mkdir', 'modify','rmdir'])
 
 default_options = {
     'accelThreshold': 0,
@@ -178,8 +178,6 @@ class Flow:
         if self.o.nodupe_ttl > 0:
             # prepend...
             self.plugins['load'].append('sarracenia.flowcb.nodupe.NoDupe')
-
-        # FIXME: open retry
 
         # transport stuff.. for download, get, put, etc...
         self.scheme = None
@@ -1176,7 +1174,8 @@ class Flow:
             for messages with an rename file operation, it is to rename a file.
         """
         ok = True
-        if not os.path.isfile(old):
+        logger.info( f" pwd is {os.getcwd()}  " )
+        if not os.path.exists(old):
             logger.info(
                 "old file %s not found, if destination (%s) missing, then fall back to copy"
                 % (old, path))
@@ -1201,6 +1200,42 @@ class Flow:
             ok = False
         return ok
 
+    def mkdir(self, msg) -> bool:
+        """
+            perform an mkdir.
+        """
+        logger.debug("message is to mkdir %s " %
+                     (msg['new_file']))
+
+        ok=False
+        path = msg['new_dir'] + '/' + msg['new_file']
+
+        if not os.path.isdir(msg['new_dir']):
+            try:
+                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
+            except Exception as ex:
+                logger.warning("making %s: %s" % (msg['new_dir'], ex))
+                logger.debug('Exception details:', exc_info=True)
+
+        if os.path.isdir(path):
+            return ok
+
+        if 'mode' in msg:
+            mode=msg['mode']
+        else:
+            mode=self.o.permDirDefault
+
+        if type(mode) is not int:
+            mode=int(mode,base=8)
+
+        try:
+            os.mkdir(path,mode=mode)
+            ok=True
+        except Exception as ex:
+            logger.error( f"mkdir {path} failed." )
+            logger.debug('Exception details:', exc_info=True)
+        return ok
+
     def link1file(self, msg, symbolic=True) -> bool:
         """        
           perform a link of a single file, based on a message, returning boolean success
@@ -1220,7 +1255,7 @@ class Flow:
         if not os.path.isdir(msg['new_dir']):
             try:
                 self.worklist.directories_ok.append(msg['new_dir'])
-                os.makedirs(msg['new_dir'], 0o775, True)
+                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
@@ -1231,7 +1266,7 @@ class Flow:
 
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
-            if os.path.isdir(path): os.rmdir(path)
+            #if os.path.isdir(path): os.rmdir(path)
 
             if 'hlink' in msg['fileOp'] :
                 os.link(msg['fileOp']['hlink'], path)
@@ -1274,6 +1309,16 @@ class Flow:
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
 
+            if not os.path.isdir(msg['new_dir']):
+                try:
+                    self.worklist.directories_ok.append(msg['new_dir'])
+                    os.makedirs(msg['new_dir'], 0o775, True)
+                except Exception as ex:
+                    logger.warning("making %s: %s" % (msg['new_dir'], ex))
+                    logger.debug('Exception details:', exc_info=True)
+        
+            os.chdir(msg['new_dir'])
+
             if 'fileOp' in msg :
                 if 'rename' in msg['fileOp']:
                     if 'renameUnlink' in msg:
@@ -1291,7 +1336,18 @@ class Flow:
                             msg.setReport(201, 'renamed')
                             continue
 
-                if ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
+                elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ) and ( 'rmdir' in self.o.fileEvents):
+                    if self.removeOneFile(new_path):
+                        msg.setReport(201, 'rmdired')
+                        self.worklist.ok.append(msg)
+                    else:
+                        #FIXME: should this really be queued for retry? or just permanently failed?
+                        # in rejected to avoid retry, but wondering if failed and deferred
+                        # should be separate lists in worklist...
+                        self.reject(msg, 500, "rmdir %s failed" % new_path)
+                    continue
+
+                elif ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
@@ -1302,7 +1358,16 @@ class Flow:
                         self.reject(msg, 500, "remove %s failed" % new_path)
                     continue
 
-                if 'link' in msg['fileOp'] or 'hlink' in msg['fileOp'] and ('link' in self.o.fileEvents):
+                elif ('directory' in msg['fileOp']) and ('mkdir' in self.o.fileEvents):
+                    if self.mkdir(msg):
+                        msg.setReport(201, 'made directory')
+                        self.worklist.ok.append(msg)
+                    else:
+                        # as above...
+                        self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
+                    continue
+
+                elif 'link' in msg['fileOp'] or 'hlink' in msg['fileOp'] and ('link' in self.o.fileEvents):
                     if self.link1file(msg):
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
@@ -1801,10 +1866,32 @@ class Flow:
                     if hasattr(self.proto[self.scheme], 'delete'):
                         logger.debug("message is to remove %s" % new_file)
                         if not self.o.dry_run:
-                            self.proto[self.scheme].delete(new_file)
+                            if 'directory' in msg['fileOp']: 
+                                self.proto[self.scheme].rmdir(new_file)
+                            else:
+                                self.proto[self.scheme].delete(new_file)
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
+
+                if 'rename' in msg['fileOp'] :
+                    if hasattr(self.proto[self.scheme], 'delete'):
+                        logger.debug( f"message is to rename {msg['fileOp']['rename']} to {new_file}" )
+                        if not self.o.dry_run:
+                            self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                        return True
+                    logger.error("%s, delete not supported" % self.scheme)
+                    return False
+
+                if 'directory' in msg['fileOp'] :
+                    if hasattr(self.proto[self.scheme], 'delete'):
+                        logger.debug( f"message is to mkdir {new_file}")
+                        if not self.o.dry_run:
+                            self.proto[self.scheme].mkdir(new_file)
+                        return True
+                    logger.error("%s, delete not supported" % self.scheme)
+                    return False
+
 
                 #=================================
                 # link event

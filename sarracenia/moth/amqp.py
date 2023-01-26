@@ -82,22 +82,30 @@ class AMQP(Moth):
             body = raw_msg.body
 
             if self.o['messageDebugDump']:
+                logger.info('raw message start')
                 if not ('content_type' in raw_msg.properties):
                     logger.warning('message is missing content-type header')
                 if body:
-                    logger.info('raw message body: type: %s (%d bytes) %s' %
+                    logger.info('body: type: %s (%d bytes) %s' %
                              (type(body), len(body), body))
                 else:
-                    logger.info('raw message had no body')
+                    logger.info('had no body')
                 if raw_msg.headers:
-                    logger.info('raw message headers: type: %s (%d elements) %s' %
+                    logger.info('headers: type: %s (%d elements) %s' %
                              (type(raw_msg.headers), len(raw_msg.headers), raw_msg.headers))
                 else:
-                    logger.info('raw message had no headers')
+                    logger.info('had no headers')
                 if raw_msg.properties:
-                    logger.info('raw message properties:' % raw_msg.properties)
+                    logger.info('properties:' % raw_msg.properties)
                 else:
-                    logger.info('raw message had no properties')
+                    logger.info('had no properties')
+                if raw_msg.delivery_info: 
+                    logger.info( f"delivery info: {raw_msg.delivery_info}" )
+                else:
+                    logger.info('had no delivery info')
+                logger.info('raw message end')
+
+
 
             if type(body) is bytes:
                 try:
@@ -424,10 +432,13 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return
 
+       
         # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
         if not 'ack_id' in m:
+            #logger.warning( f"FIXME: no ackid present" )
             return
 
+        #logger.info( f"FIXME acknowledging {m['ack_id']}" )
         ebo = 1
         while True:
             try:

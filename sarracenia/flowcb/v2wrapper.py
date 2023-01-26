@@ -59,6 +59,8 @@ def sumstrFromMessage( msg ) -> str:
         sumstr = 'n,%s' % md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
 
     if 'fileOp' in msg:
+        if 'rename' in msg['fileOp']:
+            msg['oldname'] = msg['fileOp']['rename']
         if 'link' in msg['fileOp']:
             hash = sha512()
             hash.update( bytes( msg['fileOp']['link'], encoding='utf-8' ) )
@@ -67,6 +69,15 @@ def sumstrFromMessage( msg ) -> str:
             hash   = sha512()
             hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
             sumstr = 'R,%s' % hash.hexdigest()
+        elif 'directory' in msg['fileOp']:
+            hash   = sha512()
+            hash.update(bytes(os.path.basename(msg['relPath']), encoding='utf-8'))
+
+            if 'remove' in msg['fileOp']:
+                sumstr = 'r,%s' % hash.hexdigest()
+            else:
+                sumstr = 'm,%s' % hash.hexdigest()
+
         else:
             logger.error('unknown fileOp: %s' % msg['fileOp'] )
     return sumstr
@@ -348,10 +359,15 @@ class V2Wrapper(FlowCB):
 
         outgoing = []
         for m in worklist.incoming:
-            if self.run_entry('on_message', m):
-                outgoing.append(m)
-            else:
-                worklist.rejected.append(m)
+            try:
+                if self.run_entry('on_message', m):
+                    outgoing.append(m)
+                else:
+                    worklist.rejected.append(m)
+            except Exception as Ex:
+               logger.error( f"plugin {m} died: {Ex}" );
+               logger.debug( 'details: ', exc_info=True)
+               worklist.rejected.append(m)
         # set incoming for future steps.
         worklist.incoming = outgoing
 

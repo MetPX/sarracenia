@@ -98,7 +98,7 @@ class NoDupe(FlowCB):
         qpath = urllib.parse.quote(relpath)
 
         if key not in self.cache_dict:
-            #logger.debug("adding a new entry in NoDupe cache")
+            logger.debug("adding entry to NoDupe cache")
             kdict = {}
             kdict[relpath] = self.now
             self.cache_dict[key] = kdict
@@ -106,7 +106,7 @@ class NoDupe(FlowCB):
             self.count += 1
             return True
 
-        #logger.debug("sum already in NoDupe cache: key={}".format(key))
+        logger.debug( f"entry already in NoDupe cache: key={key}" )
         kdict = self.cache_dict[key]
         present = relpath in kdict
         kdict[relpath] = self.now
@@ -116,11 +116,11 @@ class NoDupe(FlowCB):
         self.count += 1
 
         if present:
-            #logger.debug("updated time of old NoDupe entry: relpath={}".format(relpath))
+            logger.debug( f"updated time of old NoDupe entry: relpath={relpath}" )
             self.cache_hit = relpath
             return False
         else:
-            logger.debug("added relpath={}".format(relpath))
+            logger.debug( f"added relpath={relpath}")
 
         return True
 
@@ -132,7 +132,9 @@ class NoDupe(FlowCB):
         elif 'fileOp' in msg :
             if 'link' in msg['fileOp']:
                 key = msg['fileOp']['link']
-            #elif 'remove' in msg['fileOp']: // falls through to pubTime
+            elif 'directory' in msg['fileOp']: 
+                if 'remove' not in msg['fileOp']:
+                    key = msg['relPath']
         elif 'integrity' in msg:
             if msg['integrity']['method'] in ['cod']:
                 # if cod, revert to using the path.
