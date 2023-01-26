@@ -564,7 +564,7 @@ class Flow:
 
         ex: mask[2] = 'NONE:TIME'
         """
-        if currentFileOption == None: return filename
+        if currentFileOption is None or currentFileOption == 'None': return filename
 
         timeSuffix = ''
         satnet = ''

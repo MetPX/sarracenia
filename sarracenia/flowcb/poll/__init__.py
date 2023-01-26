@@ -219,9 +219,9 @@ class Poll(FlowCB):
 
     """
 
-    def __init__(self, options):
+    def __init__(self, options,class_logger=None):
 
-        super().__init__(options,logger)
+        super().__init__(options,class_logger)
 
         # check pollUrl
 

@@ -168,8 +168,8 @@ class File(FlowCB):
 
         # if we should send the file in parts
 
-        if blksz > 0 and blksz < fsiz:
-            return self.post_file_in_parts(path, lstat)
+        #if blksz > 0 and blksz < fsiz:
+        #    return self.post_file_in_parts(path, lstat)
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
@@ -227,7 +227,7 @@ class File(FlowCB):
         # check the value of blocksize
 
         fsiz = lstat.st_size
-        chunksize = self.set_blocksize(self.blocksize, fsiz)
+        chunksize = self.set_blocksize(self.o.blocksize, fsiz)
 
         # count blocks and remainder
 
