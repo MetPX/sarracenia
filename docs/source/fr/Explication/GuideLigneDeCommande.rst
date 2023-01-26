@@ -301,7 +301,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'exchangeSuffix': 'poll',
      'expire': 1800.0,
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
-     'fileEvents': {'create', 'link', 'modify', 'delete'},
+     'fileEvents': {'create', 'link', 'modify', 'delete', 'mkdir', 'rmdir' },
      'file_total_interval': '0',
      'filename': 'WHATFN',
      'fixed_headers': {},
@@ -1256,7 +1256,7 @@ La valeur par défaut est Aucun, ce qui signifie que le chemin d’accès dans l
 
 Dans un subscriber, baseDir représente le préfixe du chemin relatif en amont,
 et est utilisé comme modèle pour se faire remplacer dans le répertoire de base actuellement sélectionné
-(à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'link', 'oldname', 'newname'
+(à partir d’une option *baseDir* ou *directory*) dans les champs de message : 'fileOp', 
 qui sont utilisés lors de la mise en miroir de liens symboliques ou de fichiers renommés.
 
 La **sendTo** définit le protocole et le serveur à utiliser pour livrer les produits.

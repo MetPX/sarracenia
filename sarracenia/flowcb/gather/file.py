@@ -91,11 +91,17 @@ class File(FlowCB):
 
     def on_created(self, event):
         # on_created (for SimpleEventHandler)
-        self.on_add('create', event.src_path, None)
+        if event.is_directory:
+            self.on_add('mkdir', event.src_path, None)
+        else:
+            self.on_add('create', event.src_path, None)
 
     def on_deleted(self, event):
         # on_deleted (for SimpleEventHandler)
-        self.on_add('delete', event.src_path, None)
+        if event.is_directory:
+            self.on_add('rmdir', event.src_path, None)
+        else:
+            self.on_add('delete', event.src_path, None)
 
     def on_modified(self, event):
         # on_modified (for SimpleEventHandler)
@@ -129,12 +135,15 @@ class File(FlowCB):
             'modify' in self.o.fileEvents)
 
 
-    def post_delete(self, path, key=None, value=None):
+    def post_delete(self, path, key=None, value=None,is_directory=False):
         #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, None)
 
         msg['fileOp'] = { 'remove':'' }
+
+        if is_directory: 
+            msg['fileOp']['directory'] = ''
 
         # partstr
         partstr = None
@@ -173,6 +182,16 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
+        # used when moving a file
+        if key != None:
+            if not 'fileOp' in msg:
+                msg['fileOp'] = { key : value }
+            else:
+                msg['fileOp'][key] = value
+
+        if os_stat.S_ISDIR(lstat.st_mode):
+            return [msg]
+
         # complete message
         if (self.o.post_topicPrefix[0] == 'v03') and self.o.inline:
             if fsiz < self.o.inlineByteMax:
@@ -208,14 +227,6 @@ class File(FlowCB):
                     logger.error('skipping file %s too large (%d bytes > %d bytes max)) for inlining' % \
                        ( path, fsiz, self.o.inlineByteMax )  )
                     return []
-
-        # used when moving a file
-
-        if key != None:
-            if not 'fileOp' in msg:
-                msg['fileOp'] = { key : value }
-            else:
-                msg['fileOp'][key] = value
 
         return [msg]
 
@@ -399,7 +410,23 @@ class File(FlowCB):
 
         return messages
 
-    def post1file(self, path, lstat):
+    def post1file(self, path, lstat, is_directory=False) -> list:
+        """
+          create the notification message for a single file, based on the lstat metadata.
+
+          when lstat is present it is used to decide whether the file is an ordinary file, a link
+          or a directory, and the appropriate message is built and returned.
+
+          if the lstat metadata is None, then that signifies a "remove" message to be created.
+          In the remove case, without the lstat, one needs the is_directory flag to decide whether
+          it is an ordinary file remove, or a directory remove.   is_directory is not used other
+          than for the remove case.
+
+          The return value is a list that usually contains a single message.  It is a list to allow
+          for if options are combined such that a symbolic link and the realpath it posts to may
+          involve multiple messages for a single file. Similarly in the multi-block transfer case.
+
+        """
 
         messages = []
 
@@ -431,21 +458,16 @@ class File(FlowCB):
 
                 messages.extend(self.post1file(rpath, lstat))
 
-            return messages
-
         # path deleted
 
-        if lstat == None:
-            messages.extend(self.post_delete(path))
-            return messages
+        elif lstat == None:
+            messages.extend(self.post_delete(path,key=None,value=None,is_directory=is_directory))
 
         # path is a file
 
-        if os.path.isfile(path):
+        elif os.path.isfile(path) or os.path.isdir(path):
             messages.extend(self.post_file(path, lstat))
-            return messages
 
-        # at this point it is a create,modify directory
         return messages
 
     def post1move(self, src, dst):
@@ -470,9 +492,14 @@ class File(FlowCB):
 
         # delete
 
-        if event == 'delete':
+        if event == 'delete' :
             if event in self.o.fileEvents:
                 return self.post1file(src, None)
+            return []
+
+        if event == 'rmdir' :
+            if event in self.o.fileEvents:
+                return self.post1file(src, None, is_directory=True)
             return []
 
         # move
@@ -484,11 +511,9 @@ class File(FlowCB):
         # create or modify
 
         # directory : skipped, its content is watched
-
-        if os.path.isdir(src):
-            dirs = list(map(lambda x: x[1][1], self.inl.items()))
-            #logger.debug("skipping directory %s list: %s" % (src, dirs))
-            return []
+        #if self.o.recursive and os.path.isdir(src):
+        #    dirs = list(map(lambda x: x[1][1], self.inl.items()))
+        #    #logger.debug("skipping directory %s list: %s" % (src, dirs))
 
         # link ( os.path.exists = false, lstat = None )
 
@@ -510,7 +535,9 @@ class File(FlowCB):
 
         # post it
 
-        if self.o.create_modify:
+        if event == 'mkdir' and 'mkdir' in self.o.fileEvents:
+            return self.post1file(src, lstat, is_directory=True)
+        elif self.o.create_modify:
             return self.post1file(src, lstat)
         return []
 
@@ -572,20 +599,30 @@ class File(FlowCB):
             if sys.platform == 'win32':
                 src = src.replace('\\', '/')
 
+        messages = []
+
+        # need to post root of tree first, so mode bits get propagated on creation.
+        if src == self.o.post_baseDir :
+            logger.debug("skip posting of post_baseDir {src}")
+        else:
+            messages.extend(self.post1file(src, sarracenia.stat(src), is_directory=True))
+
         # walk src directory, this walk is depth first... there could be a lot of time
         # between *listdir* run, and when a file is visited, if there are subdirectories before you get there.
         # hence the existence check after listdir (crashed in flow_tests of > 20,000)
 
-        messages = []
-        for x in os.listdir(src):
-            path = src + '/' + x
-            if os.path.isdir(path):
-                messages.extend(self.walk(path))
-                continue
+        if self.o.recursive:
+            for x in os.listdir(src):
+                path = src + '/' + x
+                # add path created
+                if os.path.isdir(path):
+                    messages.extend(self.walk(path))
+                    continue
 
-            # add path created
-            if os.path.exists(path):
-                messages.extend(self.post1file(path, sarracenia.stat(path)))
+                if os.path.exists(path):
+                    messages.extend(self.post1file(path, sarracenia.stat(path)))
+
+
         return messages
 
     def walk_priming(self, p):

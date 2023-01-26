@@ -81,6 +81,7 @@ default_options = {
     'post_baseDir': None,
     'post_baseUrl': None,
     'realpathPost': False,
+    'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
     'sourceFromExchange': False,
@@ -98,7 +99,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'realpathPost', 'reconnect', \
+    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
     'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
     'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
@@ -117,7 +118,7 @@ set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
     'logEvents': sarracenia.flowcb.entry_points + [ 'reject', 'all' ],
-    'fileEvents': set( [ 'create', 'delete', 'link', 'modify' ] )
+    'fileEvents': set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
@@ -242,7 +243,6 @@ convert_to_v3 = {
     'on_start': { 'manual_conversion_requited' : [ 'continue' ] },
     'on_watch': { 'manual_conversion_requited' : [ 'continue' ] },
     'parts' : [ 'continue' ],
-    'recursive' : ['continue'],
     'report_daemons': ['continue'],
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]

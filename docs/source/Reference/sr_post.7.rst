@@ -79,6 +79,7 @@ The headers are an array of name:value pairs::
              "remove" : ""     - flag present when removing a file (argument ignored.)
              "hlink" : "hardlink value string (file being linked to.)"
              "rename" : "name of file before rename."
+             "directory": ""  - flag presend for directory creation and remove events.
           }
     or:
          nothing... If neither of these is present, then duplication
@@ -379,6 +380,10 @@ Additional fields:
 
  Hard links are also handled as an ordinary post of the file with a *hlink*
  header set.
+
+ Note that directories and links can be renamed not just regular files. The fileOp field
+ will have 'rename' and 'link' or 'directory' elements in that case.
+
 
 **integrity**
 ~~~~~~~~~~~~~

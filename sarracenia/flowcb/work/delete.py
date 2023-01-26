@@ -20,7 +20,7 @@ class Delete(FlowCB):
     """
     def __init__(self, options):
         super().__init__(options,logger)
-        logger.debug("msg_delete initialized")
+        logger.debug("initialized")
         self.o.add_option('delete_source', 'flag', True)
         self.o.add_option('delete_destination', 'flag', False)
 

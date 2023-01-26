@@ -299,7 +299,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'exchangeSuffix': 'poll',
      'expire': 1800.0,
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
-     'fileEvents': {'create', 'link', 'modify', 'delete'},
+     'fileEvents': {'create', 'link', 'modify', 'delete', 'mkdir', 'rmdir' },
      'file_total_interval': '0',
      'filename': 'WHATFN',
      'fixed_headers': {},
@@ -1264,7 +1264,7 @@ The default is None which means that the path in the notification is the absolut
 
 In a subscriber, the baseDir represents the prefix to the relative path on the upstream
 server, and is used as a pattern to be replaced in the currently selected base directory
-(from a *baseDir* or *directory* option) in the notification message fields: 'link', 'oldname', 'newname'
+(from a *baseDir* or *directory* option) in the notification message fields: 'fileOp',
 which are used when mirroring symbolic links, or files that are renamed.
 
 The **sendTo** defines the protocol and server to be used to deliver the products.

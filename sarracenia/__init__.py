@@ -36,7 +36,7 @@ import os.path
 import paramiko
 import re
 import sarracenia.filemetadata
-import stat
+import stat as os_stat
 import sys
 import time
 import urllib
@@ -446,7 +446,8 @@ class Message(dict):
             returns a well-formed message, or none.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
-        m.__computeIntegrity(path, o)
+        if lstat and os_stat.S_ISREG(lstat.st_mode):
+            m.__computeIntegrity(path, o)
         return m
 
     @staticmethod
@@ -551,6 +552,14 @@ class Message(dict):
 
         if lstat is None: return msg
 
+        if (lstat.st_mode is not None) and  \
+            (o.permCopy and lstat.st_mode):
+            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+
+        if os_stat.S_ISDIR(lstat.st_mode):
+            msg['fileOp'] = { 'directory': '' }
+            return msg
+
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
 
@@ -559,10 +568,6 @@ class Message(dict):
                 msg['mtime'] = timeflt2str(lstat.st_mtime)
             if lstat.st_atime is not None:
                 msg['atime'] = timeflt2str(lstat.st_atime)
-
-        if (lstat.st_mode is not None) and  \
-            (o.permCopy and lstat.st_mode):
-            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
 
         return msg
 

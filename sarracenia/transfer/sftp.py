@@ -421,8 +421,22 @@ class Sftp(Transfer):
 
     # mkdir
     def mkdir(self, remote_dir):
-        logger.debug("sr_sftp mkdir %s" % remote_dir)
+        logger.debug("mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
+        
+        try:
+            s = self.sftp.lstat(path)
+            if S_ISDIR(s.st_mode):
+                return
+            logger.error( f"cannot mkdir {path}, file exists" )
+            alarm_cancel()
+            return
+        except FileNotFoundError:
+            pass
+        except:
+            alarm_cancel()
+            return
+
         self.sftp.mkdir(remote_dir, self.o.permDirDefault)
         alarm_cancel()
 

@@ -19,10 +19,10 @@ class Delete(FlowCB):
         new_incoming = []
         for message in worklist.incoming:
             f = "%s/%s" % (message['new_dir'], message['new_file'])
-            logger.info("msg_delete: %s" % f)
             try:
                 os.unlink(f)
                 os.unlink(f.replace('/cfr/', '/cfile/'))
+                logger.info("deleted: %s and the cfile version." % f)
             except OSError as err:
                 logger.error("could not unlink {}: {}".format(f, err))
                 logger.debug("Exception details:", exc_info=True)

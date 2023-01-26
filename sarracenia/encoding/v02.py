@@ -68,9 +68,11 @@ class V02(Encoding):
                     "a": "arbitrary",
                     "d": "md5",
                     "s": "sha512",
+                    "m": "mkdir",
                     "n": "md5name",
                     "0": "random",
                     "L": "link",
+                    "r": "rmdir",
                     "R": "remove",
                     "z": "cod"
                 }
@@ -88,6 +90,10 @@ class V02(Encoding):
                     msg["integrity"] = {"method": sm, "value": sv}
                 elif sm == 'remove':
                     msg['fileOp'] = { 'remove': '' }
+                elif sm == 'mkdir':
+                    msg['fileOp'] = { 'directory': '' }
+                elif sm == 'rmdir':
+                    msg['fileOp'] = { 'remove':'', 'directory': '' }
                 elif 'link' in msg:
                     msg['fileOp'] = { 'link': msg['link'] }
                     del msg['link']
