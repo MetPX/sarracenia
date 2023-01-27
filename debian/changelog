@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.28) UNRELEASED; urgency=medium
+
+  * new version.
+
+ -- Peter <peter@bsqt.homeip.net>  Fri, 27 Jan 2023 10:48:17 -0500
+
 metpx-sr3 (3.00.27) unstable; urgency=medium
 
   * adding directory creation/deletion events #558
