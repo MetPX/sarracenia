@@ -3,6 +3,7 @@ metpx-sr3 (3.00.27) UNRELEASED; urgency=medium
   * adding directory creation/deletion events #558
   * re-introducing *recursive* option as a result of #558. to suppress when
   * directories are posted.
+  * change set parsing to be less surprising #608
 
  -- Peter <peter@bsqt.homeip.net>  Wed, 25 Jan 2023 18:07:29 -0500
 

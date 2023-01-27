@@ -117,7 +117,7 @@ list_options = ['path']
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + [ 'reject', 'all' ],
+    'logEvents': sarracenia.flowcb.entry_points + [ 'reject' ],
     'fileEvents': set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
@@ -227,8 +227,8 @@ convert_to_v3 = {
 	'post_total': ['continue'],
         'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
-        'msg_log': ['logEvents', 'after_accept'],
-        'msg_rawlog': ['logEvents', 'after_accept'],
+        'msg_log': ['logEvents', '+after_accept'],
+        'msg_rawlog': ['logEvents', '+after_accept'],
         'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
         'post_long_flow': [ 'callback', 'accept.longflow.LongFLow'],
         'post_override': [ 'callback', 'accept.postoverride.PostOverride'],
@@ -236,7 +236,7 @@ convert_to_v3 = {
         'to': ['continue']
     },
     'on_post': {
-        'post_log': ['logEvents', 'after_work']
+        'post_log': ['logEvents', '+after_work']
     },
     'on_report': { 'manual_conversion_requited' : [ 'continue' ] },
     'on_stop': { 'manual_conversion_requited' : [ 'continue' ] },
@@ -915,15 +915,25 @@ class Config:
                 sv=v
             elif type(v) is str:
                 if v == 'None': 
-                    delattr(self, option)
+                    sv=set([])
                 else:
-                    v=v.replace('|',',')
+                    if v[0] in [ '+', '-']:
+                        op=v[0]
+                        v=v[1:]
+                    else:
+                        op='r'
+
                     if ',' in v: 
-                        sv=set(v.split(','))
+                        sv=set(v[1:].split(','))
                     else: 
+                        sv=set([v[1:]])
+
+                    if op == '+':
+                        sv= getattr(self,option) | sv
+                    elif op == '-' :
+                        sv= getattr(self,option) - sv
+                    else:
                         sv=set([v])
-            if hasattr(self, option):
-                sv= getattr(self,option) | sv
             setattr(self, option, sv)
 
         elif kind == 'size':
@@ -1297,6 +1307,9 @@ class Config:
                     setattr(self, k, True)
                 else:
                     setattr(self, k, isTrue(v))
+            
+                if k in ['logReject'] and self.logReject:
+                    self.logEvents = self.logEvents | set(['reject'])
                 continue
 
             if len(line) < 2:
@@ -1416,19 +1429,33 @@ class Config:
                 else:
                     getattr(self, k).append(' '.join(line[1:]))
             elif k in set_options:
-                vs = set(v.split(','))
-                if v=='None':
-                   setattr(self, k, set([]))
-                   continue
-
-                if not hasattr(self, k):
-                    setattr(self, k, vs )
+                if v.lower() == 'none':
+                    setattr(self, k, set([]))
+                    continue
+                if v.lower() in [ 'all' , '+all' ]:
+                    setattr(self,k,set_choices[k])
+                    continue
+                v=v.replace('|',',')
+                if v[0] in ['-','+']:
+                    op=v[0]
+                    v=v[1:]
                 else:
-                    setattr(self, k, getattr(self, k) | vs)
-                if hasattr(self, k) and (k in set_choices) :
-                   for i in getattr(self,k):
-                       if i not in set_choices[k]:
-                          logger.error('invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
+                    op='r'
+
+                if op == '+':
+                    vs = getattr(self,k) | set(v.split(','))
+                elif op == '-':
+                    vs = getattr(self,k) - set(v.split(','))
+                else:
+                    vs = set( v.split(',') )
+
+                setattr(self, k, vs )
+
+                if k in set_choices :
+                    for i in getattr(self,k):
+                        if i not in set_choices[k]:
+                            logger.error('invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
+
             elif k in str_options:
                 v = ' '.join(line[1:])
                 setattr(self, k, v)
@@ -1500,10 +1527,6 @@ class Config:
         for f in float_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
                 setattr(self, f, float(getattr(self, f)))
-
-        if hasattr(self,'logReject'):
-            if self.logReject:
-                self.logEvents |= set( ['reject'] )
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
             if ('sarracenia.flowcb.log.Log' not in self.plugins_late) and \

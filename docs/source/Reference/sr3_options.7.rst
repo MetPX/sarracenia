@@ -675,7 +675,9 @@ fileEvents <event,event,...>
 ----------------------------
 
 A comma separated list of file event types to monitor.
-Available file events:  create, delete, link, modify
+Available file events:  create, delete, link, modify, mkdir, rmdir
+to only add events to the current list start the event list with a plus sign (+).
+To remove them, prefix with a minus sign (-).
 
 The *create*, *modify*, and *delete* events reflect what is expected: a file being created, modified, or deleted.
 If *link* is set, symbolic links will be posted as links so that consumers can choose
@@ -1004,8 +1006,10 @@ v2 options are a comma separated string.  Valid checksum flags are :
 logEvents ( default: after_accept,after_work,on_housekeeping )
 --------------------------------------------------------------
 
-emit standard log messages at the given points in message processing.
-other values: on_start, on_stop, post, gather, ... etc...
+The set of points during notification message processing to emit standard log messages.
+other values: on_start, on_stop, post, gather, ... etc... It is comma separated, and
+if the list starts with a plus sign (+) then the selected events are appended to current value.
+A minus signe (-) can be used to remove events from the set.
 
 logLevel ( default: info )
 --------------------------

@@ -670,9 +670,9 @@ Cela signifie que la fil d’attente est sur le disque si le courtier est redém
 fileEvents <évènement, évènement,...>
 -------------------------------------
 
-Liste séparée par des virgules de types d'événements de fichiers à surveiller.
-Événements de fichiers disponibles : créer, supprimer, lier, modifier
-
+ensemble séparée par des virgules de d'événements de fichiers à surveiller.
+Événements de fichiers disponibles : *create, delete, link, modify, mkdir, rmdir*
+Si on commence la liste avec plus (+) ca signifie un rajout à l´ensemble actuel
 Les événements *create*, *modify* et *delete* reflètent ce qui est attendu : un fichier en cours de création,
 de modification ou de suppression.
 Si *link* est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
@@ -996,8 +996,10 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 logEvents ( défaut: after_accept,after_work,on_housekeeping )
 -------------------------------------------------------------
 
-émettre des messages de journal standard au moment approprié du traitement des messages.
-autres valeurs : on_start, on_stop, post, gather, ... etc...
+l´ensemble des moments durant le traitement des message de notification ou on veut émettre des 
+messages de journal. Autres valeurs : on_start, on_stop, post, gather, ... etc...
+On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
+la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel. 
 
 logLevel ( défaut: info )
 -------------------------

@@ -38,13 +38,25 @@ Instructions d’installation
 git
 ---
 
+3.0.26
+------
+
+*CHANGEMENT* : les options d'événement (logEvents et fileEvents) remplacent désormais la valeur précédente.
+          Avant ils etaient être uni (ou'd) avec la valeur précédente. Peut maintenant préfacer
+          les éléments set avec + pour obtenir le comportement précédent.
+          Également - est disponible pour supprimer un élément d'une option définie.
+          (la conversion sr3 préfixe maintenant les valeurs v2 avec +)
+
+*CHANGEMENT* : fileEvents, nouveaux événements présents *mkdir*, et *rmdir*, quelques ajustements
+          les paramètres fileEvents peuvent maintenant être requis.
+
+
 3.0.25
 ------
 
-*CHANGE* : la valeur par défaut pour acceptUnmatched est maintenant True pour tous les composants.
+*CHANGEMENT* : la valeur par défaut pour acceptUnmatched est maintenant True pour tous les composants.
     avant cette version, la valeur par défaut était False dans le composant *subscribe*
     mais Vrai pour tous les autres.
-
 
 
 3.0.22

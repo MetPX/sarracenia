@@ -54,7 +54,7 @@ class Log(FlowCB):
         self.transferCount = 0
 
     def gather(self):
-        if set(['gather', 'all']) & self.o.logEvents:
+        if set(['gather']) & self.o.logEvents:
             logger.info('')
 
         return []
@@ -71,7 +71,7 @@ class Log(FlowCB):
         self.msgCount += len(worklist.incoming)
         now = nowflt()
 
-        if set(['reject', 'all']) & self.o.logEvents:
+        if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info(
@@ -86,13 +86,13 @@ class Log(FlowCB):
             self.lagTotal += lag
             if lag > self.lagMax:
                 self.lagMax = lag
-            if set(['after_accept', 'all']) & self.o.logEvents:
+            if set(['after_accept']) & self.o.logEvents:
 
                 logger.info("accepted: (lag: %.2f ) %s " %
                             (lag, self._messageStr(msg)))
 
     def after_post(self, worklist):
-        if set(['after_post', 'all']) & self.o.logEvents:
+        if set(['after_post']) & self.o.logEvents:
             for msg in worklist.ok:
                 logger.info("posted %s" % msg)
             for msg in worklist.failed:
@@ -101,7 +101,7 @@ class Log(FlowCB):
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
         self.transferCount += len(worklist.ok)
-        if set(['reject', 'all']) & self.o.logEvents:
+        if set(['reject']) & self.o.logEvents:
             for msg in worklist.rejected:
                 if 'report' in msg:
                     logger.info(
@@ -114,7 +114,7 @@ class Log(FlowCB):
             if 'size' in msg:
                 self.fileBytes += msg['size']
 
-            if set(['after_work', 'all']) & self.o.logEvents:
+            if set(['after_work']) & self.o.logEvents:
                 if 'fileOp' in msg :
                     if 'link' in msg['fileOp']:
                         verb = 'linked'
@@ -159,17 +159,17 @@ class Log(FlowCB):
                         (self.lagTotal / self.msgCount, self.lagMax))
 
     def on_stop(self):
-        if set(['on_stop', 'all']) & self.o.logEvents:
+        if set(['on_stop']) & self.o.logEvents:
             self.stats()
             logger.info("stopping")
 
     def on_start(self):
-        if set(['on_start', 'all']) & self.o.logEvents:
+        if set(['on_start']) & self.o.logEvents:
             self.stats()
             logger.info("starting")
 
     def on_housekeeping(self):
-        if set(['on_housekeeping', 'all']) & self.o.logEvents:
+        if set(['on_housekeeping']) & self.o.logEvents:
             self.stats()
             logger.info("housekeeping")
         self.__reset()

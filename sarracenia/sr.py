@@ -2000,7 +2000,11 @@ class sr_GlobalState:
                             k = line[0]
                             v = line[1]
                     else:
-                       line[0] = k
+                        line[0] = k
+
+                    if k in [ 'logEvents', 'fileEvents' ]: # set option semantics changed as per https://github.com/MetPX/sarracenia/issues/608 
+                        line[1]= '+' + line[1]
+                        v=line[1]
 
                     if k == 'continue':
                         continue

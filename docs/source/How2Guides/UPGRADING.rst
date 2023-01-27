@@ -39,12 +39,25 @@ Installation Instructions
 git
 ---
 
+3.0.26
+------
+
+*CHANGE*: event options (logEvents, and fileEvents) now replace previous value
+          used to be unioned (or'd) with previous value.  now can preface
+          the set elements with + to get the previous behaviour.
+          Also - is available to remove an element from a set option.
+          (sr3 convert now prefixes v2 values with +)
+
+*CHANGE*: fileEvents, new events present *mkdir*, and *rmdir*, some adjustment
+          to fileEvents settings may now be required.
+
 3.0.25
 ------
 
 *CHANGE*: default value for acceptUnmatched is now True for all components.
           prior to this release, default was False in subscribe component,
           and True for all others.
+
 
 3.0.23
 ------
