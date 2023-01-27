@@ -1307,7 +1307,7 @@ post_on_start
 -------------
 
 Lors du démarrage de watch, on peut soit demander au programme de publier tous les fichiers dans les répertoires
-surveillés, ou pas.
+surveillés, ou pas. (pas implanté en sr3_cpost)
 
 post_topicPrefix (défaut: topicPrefix)
 --------------------------------------

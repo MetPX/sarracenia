@@ -1319,7 +1319,7 @@ post_on_start
 -------------
 
 When starting watch, one can either have the program post all the files in the directories watched
-or not.
+or not. (not implemented in sr3_cpost)
 
 post_topicPrefix (default: topicPrefix)
 ---------------------------------------
