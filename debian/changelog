@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.27) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.27) unstable; urgency=medium
 
   * adding directory creation/deletion events #558
   * re-introducing *recursive* option as a result of #558. to suppress when
