@@ -1403,6 +1403,16 @@ to True in the configuration file used. If there are several notification messag
 file is posted by block (the *blocksize* option was set), the block notification messages 
 are randomized meaning that they will not be posted
 
+realpathAdjust <count> (Experimental) (default: 0)
+--------------------------------------------------
+
+The realpathAdjust option adjusts how much paths are resolved with the C standard realpath 
+library routine. The count indicates how many path elements should be ignored, counting
+from the beginning of the path with positive numbers, or the end with negative ones.
+An adjustment of zero means to apply realpath to the entire path.
+
+Implemented in C, but not python currently. 
+
 realpathFilter <flag> (Experimental)
 ------------------------------------
 
@@ -1412,7 +1422,7 @@ posting.
 
 This option is being used to study some use cases, and may disappear in future.
 
-Implemented in C, but not 3 python currently. 
+Implemented in C, but not python currently. 
 
 
 realpathPost <flag> (Experimental)

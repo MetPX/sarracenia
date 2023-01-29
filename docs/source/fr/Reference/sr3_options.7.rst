@@ -1290,8 +1290,8 @@ un point d'entrée de rappel de flux (flow callback) tels que **after_accept** e
 pour modifier les messages d'annonce générés à propos des fichiers avant leur publication.
 
 
-post_exchangeSplit <count> (défaut: 0)
---------------------------------------
+post_exchangeSplit <compte> (défaut: 0)
+---------------------------------------
 
 L’option **post_exchangeSplit** ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
 de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
@@ -1383,6 +1383,15 @@ Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* 
 à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
 le fichier est publié par bloc (l’option *blocksize* a été définie), les messages d'annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.
+
+realpathAdjust <compte> (Experimental) (défaut: 0)
+--------------------------------------------------
+
+L'option realpathAdjust ajuste le nombre d'éléments de chemin de fichier résolus avec la routine realpath
+provenant du bibliotech standard C. Le nombre indique combien d'éléments de chemin doivent être ignorés, en comptant
+depuis le début du chemin avec des nombres positifs, ou la fin avec des nombres négatifs. Le défaut est zéro
+indiquant que le chemin au complet est résolu.
+
 
 realpathFilter <flag> (Expérimentale)
 -------------------------------------
