@@ -117,8 +117,8 @@ list_options = ['path']
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + [ 'reject' ],
-    'fileEvents': set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
+    'logEvents' : sarracenia.flowcb.entry_points + [ 'reject' ],
+    'fileEvents' : set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
@@ -855,7 +855,7 @@ class Config:
         w = 'with ' if fn or flatten or strip else ''
         return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
-    def add_option(self, option, kind='list', default_value=None):
+    def add_option(self, option, kind='list', default_value=None, all_values=None ):
         """
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
            
@@ -872,6 +872,7 @@ class Config:
                           all v2 plugin options are declared of type list.
 
            * 'set'        a set of string values, each succeeding occurrence is unioned to the total.
+                          if all_values is provided, then constrain set to that.
 
            * 'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
 
@@ -935,6 +936,8 @@ class Config:
                     else:
                         sv=set([v])
             setattr(self, option, sv)
+            if all_values:
+                set_choices[option] = all_values
 
         elif kind == 'size':
             size_options.append(option)
@@ -1433,7 +1436,8 @@ class Config:
                     setattr(self, k, set([]))
                     continue
                 if v.lower() in [ 'all' , '+all' ]:
-                    setattr(self,k,set_choices[k])
+                    if k in set_choices:
+                        setattr(self,k,set_choices[k])
                     continue
                 v=v.replace('|',',')
                 if v[0] in ['-','+']:
