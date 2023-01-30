@@ -346,7 +346,7 @@ class AMQP(Moth):
         try:
             for x in self.o['exchange']:
                 logger.info("deleting exchange: %s" % x )
-                self.channel.exchange_delete(x)
+                self.channel.exchange_delete(x, if_unused=True)
         except Exception as err:
             logger.error("failed on {} with {}".format(
                 self.o['broker'].url.hostname, err))
