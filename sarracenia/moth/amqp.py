@@ -345,8 +345,12 @@ class AMQP(Moth):
 
         try:
             for x in self.o['exchange']:
-                logger.info("deleting exchange: %s" % x )
-                self.channel.exchange_delete(x, if_unused=True)
+                try:
+                    self.channel.exchange_delete(x, if_unused=True)
+                    logger.info("deleted exchange: %s" % x)
+                except amqp.exceptions.PreconditionFailed as err:
+                    err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
+                    logger.warning("failed to delete exchange: %s" % err_msg)
         except Exception as err:
             logger.error("failed on {} with {}".format(
                 self.o['broker'].url.hostname, err))
