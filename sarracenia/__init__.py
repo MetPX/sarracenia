@@ -616,9 +616,11 @@ class Message(dict):
         msg['report'] = {'code': code, 'message': text}
         msg['_deleteOnPost'] |= set(['report','timeCompleted'])
 
-    def updatePaths(msg, options, new_dir, new_file):
+    def updatePaths(msg, options, new_dir=None, new_file=None):
         """
         set the new\_ fields in the message based on changed file placement.
+        if new_ options are ommitted updaste the rest of the fields in 
+        the message based on their current values.
 
         If you change file placement in a flow callback, for example.
         One would change new_dir and new_file in the message.
@@ -632,8 +634,10 @@ class Message(dict):
         msg['_deleteOnPost'] |= set([
             'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_version'
         ])
-        msg['new_dir'] = new_dir
-        msg['new_file'] = new_file
+        if new_dir:
+            msg['new_dir'] = new_dir
+        if new_file:
+            msg['new_file'] = new_file
 
         relPath = new_dir + '/' + new_file
 
