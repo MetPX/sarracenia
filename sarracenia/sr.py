@@ -1344,8 +1344,8 @@ class sr_GlobalState:
                         print(' remove %s from %s subscribers: %s ' %
                               (qd[1], x, xx))
                         xx.remove(qd[1])
-                        if len(xx) < 1:
-                            print("no more queues, removing exchange %s" % x)
+                        if o.post_broker and len(xx) < 1:
+                            print("No local queues found for exchange %s, attemping to remove it..." % x)
                             qdc = sarracenia.moth.Moth.pubFactory(
                                 o.post_broker, {
                                     'declare': False,
