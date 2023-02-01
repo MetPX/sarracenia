@@ -577,6 +577,7 @@ class Config:
         'msg_filter_wmo2msc_convert': 'filter_wmo2msc_convert',
         'msg_fdelay' : 'fdelay',
         'no_duplicates': 'nodupe_ttl',
+        'on_msg': 'on_message',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',
