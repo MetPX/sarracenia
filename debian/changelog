@@ -1,6 +1,8 @@
 metpx-sr3 (3.00.28) UNRELEASED; urgency=medium
 
-  * new version.
+  * plugin api: sarracenia.Message.updatePaths added current values as defaults
+  * plugin api: flowcb.accept.pathreplace uses improved sets 
+  * plugin api: add_option( improved set support.) added all_values of set.
 
  -- Peter <peter@bsqt.homeip.net>  Fri, 27 Jan 2023 10:48:17 -0500
 
