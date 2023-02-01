@@ -552,13 +552,13 @@ class Message(dict):
 
         if lstat is None: return msg
 
-        if (lstat.st_mode is not None) and  \
-            (o.permCopy and lstat.st_mode):
-            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
-
-        if os_stat.S_ISDIR(lstat.st_mode):
-            msg['fileOp'] = { 'directory': '' }
-            return msg
+        if (lstat.st_mode is not None) :
+            if (o.permCopy and lstat.st_mode):
+                msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+            
+            if os_stat.S_ISDIR(lstat.st_mode):
+                msg['fileOp'] = { 'directory': '' }
+                return msg
 
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
