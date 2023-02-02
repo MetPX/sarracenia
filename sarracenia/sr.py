@@ -497,6 +497,7 @@ class sr_GlobalState:
         os.chdir(dir)
         for c in self.components:
             if os.path.isdir(c):
+                if c not in self.configs: continue
                 os.chdir(c)
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
