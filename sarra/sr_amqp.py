@@ -189,9 +189,9 @@ class HostConnect:
             self.logger.info("exchange %s remains" % exchange)
             return
 
-        # proceed for all others
+        # proceed for all others, but only delete unused exchanges (no queues bound)
         try:
-            self.channel.exchange_delete(exchange)
+            self.channel.exchange_delete(exchange, if_unused=True)
             self.logger.info("deleting exchange %s (%s@%s)" % (exchange, self.user, self.host))
         except Exception as err:
             self.logger.error("could not delete exchange %s (%s@%s): %s" % (exchange, self.user, self.host, err))
@@ -442,7 +442,7 @@ class Publisher:
 
         if self.restore_exchange:
             try:
-                self.channel.exchange_delete(self.restore_exchange)
+                self.channel.exchange_delete(self.restore_exchange, if_unused=True)
             except Exception as err:
                 self.logger.error("09 exchange_delete: {}".format(err))
                 self.logger.debug("Exception details:", exc_info=True)
