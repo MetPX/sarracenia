@@ -589,6 +589,7 @@ class Config:
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
+        'queue' : 'queueName', 
         'queue_name' : 'queueName', 
         'realpath' : 'realpathPost',
         'realpath_filter' : 'realpathFilter',
