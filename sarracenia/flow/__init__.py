@@ -36,8 +36,6 @@ allFileEvents = set(['create', 'delete', 'link', 'mkdir', 'modify','rmdir'])
 default_options = {
     'accelThreshold': 0,
     'acceptUnmatched': True,
-    'attempts': 3,
-    'batch': 100,
     'byteRateMax': None,
     'discard': False,
     'download': False,
