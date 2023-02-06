@@ -1669,19 +1669,22 @@ class Config:
 
             self.queue_filename = queuefile
 
-            while (not hasattr(self, 'queueName')) or (self.queueName is None):
-                if os.path.isfile(queuefile):
-                    f = open(queuefile, 'r')
-                    self.queueName = f.read()
-                    f.close()
-                    #logger.info('FIXME: read queueName %s from queue state file' % self.queueName )
-                    if len(self.queueName) < 1:
-                          #logger.info('FIXME: queue name too short, try again' )
-                          self.queueName=None
-                if hasattr(self,'no') and self.no > 1:
+            queue_file_read=False
+            #while (not hasattr(self, 'queueName')) or (self.queueName is None):
+
+            if hasattr(self,'no') and self.no > 1:
                     time.sleep(randint(1,4))
+
+            while os.path.isfile(queuefile) and not queue_file_read:
+                f = open(queuefile, 'r')
+                self.queueName = f.read()
+                f.close()
+                logger.debug( 'instance read queueName %s from queue state file' % ( self.queueName ) )
+                if len(self.queueName) < 1:
+                      logger.debug('queue name too short, try again' )
+                      self.queueName=None
                 else:
-                    break
+                      queue_file_read=True
 
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
@@ -1691,18 +1694,18 @@ class Config:
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 self.queueName = queueName
-                #logger.info('FIXME: defaulted queueName  %s ' % self.queueName )
+                logger.info('default guessed queueName  %s ' % self.queueName )
 
-                if not os.path.isdir(os.path.dirname(queuefile)):
-                    pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
-                                                                   exist_ok=True)
+            if not os.path.isdir(os.path.dirname(queuefile)):
+                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
 
-                # only lead instance (0-forground, 1-start, or none in the case of 'declare')
-                # should write the state file.
-                if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
-                    f = open(queuefile, 'w')
-                    f.write(self.queueName)
-                    f.close()
+            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+            # should write the state file.
+            if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                f = open(queuefile, 'w')
+                f.write(self.queueName)
+                f.close()
+                logger.debug( f'queue name {self.queueName}' )
 
         if hasattr(self, 'no'):
             if self.statehost:
