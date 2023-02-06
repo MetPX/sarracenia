@@ -1669,23 +1669,55 @@ class Config:
 
             self.queue_filename = queuefile
 
-            queue_file_read=False
             #while (not hasattr(self, 'queueName')) or (self.queueName is None):
+            """
+
+              normal:
+                  if not the lead instance, wait a bit for the queuefile to be written.
+                  look for a queuefile in the state directory, if it is there, read it.
+                  if you can't read the file
+
+              if you are instance 1, or 0 (foreground) and the queuefile is missing, then need
+              to write it.  if queueName is set, use that, if not
+
+              if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)
+              will come out differently every time. So even in the case of a fixed queue name, need to write 
+
+            """
 
             if hasattr(self,'no') and self.no > 1:
-                    time.sleep(randint(1,4))
+                # worker instances need give lead instance time to write the queuefile
+                time.sleep(randint(4,14))
 
-            while os.path.isfile(queuefile) and not queue_file_read:
-                f = open(queuefile, 'r')
-                self.queueName = f.read()
-                f.close()
-                logger.debug( 'instance read queueName %s from queue state file' % ( self.queueName ) )
-                if len(self.queueName) < 1:
-                      logger.debug('queue name too short, try again' )
-                      self.queueName=None
-                else:
-                      queue_file_read=True
+                queue_file_read=False
+                config_read_try=0
+                while not queue_file_read:
+                    if os.path.isfile(queuefile):
+                        f = open(queuefile, 'r')
+                        self.queueName = f.read()
+                        f.close()
+                    else:
+                        self.queueName = ''
 
+                    config_read_try += 1
+                    logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
+                    if len(self.queueName) < 1:
+                          nap=randint(1,4)
+                          logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
+                          time.sleep(nap)
+                          if config_read_try > 5:
+                              logger.critical( f'failed to read queue name from {queuefile}')
+                              sys.exit(2)
+                    else:
+                          queue_file_read=True
+
+            else: # lead instance just tries once...
+
+                if os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    self.queueName = f.read()
+                    f.close()
+                
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
                 queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
@@ -1705,7 +1737,7 @@ class Config:
                 f = open(queuefile, 'w')
                 f.write(self.queueName)
                 f.close()
-                logger.debug( f'queue name {self.queueName}' )
+                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
 
         if hasattr(self, 'no'):
             if self.statehost:
