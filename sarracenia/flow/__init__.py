@@ -1491,11 +1491,12 @@ class Flow:
         else:
             logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']))
 
-            # split the path to the file, and the file
-            pathname, remote_file = os.path.split(msg['relPath'])
+            # split the path to the file and the file
+            # if relPath is just the file remote_path will return empty
+            remote_path, remote_file = os.path.split(msg['relPath'])
             # relPath does not contain a prefix / , add it for cdir
-            cdir = '/' + pathname
-            urlstr = os.path.join(msg['baseUrl'], msg['relPath'])
+            cdir = '/' + remote_path
+            urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
         istr =msg['integrity']  if ('integrity' in msg) else "None"
         fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
