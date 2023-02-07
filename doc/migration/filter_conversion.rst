@@ -2,9 +2,9 @@
  MIGRATION
 ==========
 
--------------------------------------------
+---------------------------------------------
 Sundew filter migration to sarracenia (PXATX)
--------------------------------------------
+---------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -48,8 +48,8 @@ I will present one way that I used to implement a one to one filter.
 There could be other alternatives... but this one worked nicely for me.
 
 Lets go through the steps of making a one to one filter plugin.
-The **sr-sarra** configuration will start similar to an sr_sender one 
-because both requiere the announced products to be local to the server.
+The **sarra** configuration will start similar to an sr_sender one 
+because both require the announced products to be local to the server.
 So typically something like::
 
        # broker is localhost
@@ -60,14 +60,13 @@ So typically something like::
        # queueing local
 
        prefetch   10
-       queue_name q_feeder.${PROGRAM}.${CONFIG}.${HOSTNAME}
 
-       # base_dir 
+       # the root of the tree implicit in baseUrl's.
 
-       base_dir /apps/sarra/public_data
+       baseDir /apps/sarra/public_data
 
        # only the selected product
-       accept_unmatch False
+       acceptUnmatch False
 
 Of course this is only an example. You can narrow down the products
 with more precise subtopic and even different exchanges. And of course,
@@ -78,8 +77,8 @@ have something like::
 
        post_broker   amqp://feeder@localhost/
        post_exchange xpublic
-       post_base_url http://${HOSTNAME}
-       post_base_dir /apps/sarra/public_data
+       post_baseUrl http://${HOSTNAME}
+       post_baseDir /apps/sarra/public_data
 
 
 In between these two sections we need to set the plugin to convert the 
@@ -89,10 +88,7 @@ could look like::
 
        # converting the products
 
-       on_file  None
-       plugin   cvt_topng
-       plugin   on_file_converted
-       on_file  file_log
+       callback convert.png 
 
        # example for directory and product selection
 
@@ -108,43 +104,41 @@ for the http protocol. Why ?  because all the local product will be announced
 as http://hostname and we want to catch what should be an http download and
 turn it into a converting process.::
 
-      class Cvt_Topng(object):
+      from sarracenia.flowcb import FlowCB
 
-            # registering as http 
+      class Cvt_Topng(FlowCB):
 
-            def __init__(self,parent) :
-                self.registered_list = [ 'http' ]
-
-            def registered_as(self) :
-                return self.registered_list
 
 Next, it is very important to give a new name to the converted product.
-If you live the target name as is, **sr-sarra** will match the notice
+If you leave the target name as is, **sarra** will match the notice
 with the local product and will skip this message as an already downloaded
 product. The next function in our class will be::
 
-      def on_message(self,parent):
+      def after_accept(self,worklist):
 
-          fname = parent.msg.new_file
-          fname = fname.replace('.imv6','')
+          for msg in worklist.incoming:
+              fname = msg['new_file']
+              fname = fname.replace('.imv6','')
 
-          parent.msg.new_file = fname + '.png'
+              msg['new_file'] = fname + '.png'
+              msg.updatePaths(self.o)
 
-          return True
 
 Now this new_file is unavailable on the localhost, we can use a **do_download**
-or a **do_get** function to proceed with our conversion. I have implemented
-my one to one filters with a **do_get** and in our case it looks like::
+or a **download** function to proceed with our conversion. I have implemented
+my one to one filters with a **download** and in our case it looks like::
 
-      def do_get(self, parent ):
-          import subprocess
-          self.parent = parent
-          self.logger = parent.logger
+      import logging
+      import subprocess
 
-          ipath = parent.base_dir + '/' + parent.msg.relpath
-          opath = parent.msg.new_dir + '/' + parent.msg.new_file
+      logger = logging.getLogger( __name__ ) 
 
-          self.logger.info("converting %s to %s" % (os.path.basename(ipath),os.path.basename(opath)))
+      def download(self, msg ) -> bool:
+
+          ipath = self.o.base_dir + '/' + msg['relPath']
+          opath = msg['new_dir'] + '/' + msg['new_file']
+
+          logger.info("converting %s to %s" % (os.path.basename(ipath),os.path.basename(opath)))
 
           # here an example of command
 
@@ -166,53 +160,24 @@ task to all one to one filters, I made it a plugin itself and it is called
 task::
 
       # once the file converted, adjust message
+      import os,stat
+      import sarracenia
 
-      def on_file(self, parent ):
-          import os,stat
+      def after_work(self, worklist ):
 
-          if parent.program_name != 'sr_sarra' : return True
+          if self.o.component != 'sarra' : return
 
-          logger  = parent.logger
-          msg     = parent.msg
-          path    = msg.new_dir + '/' + msg.new_file
+          new_ok=[]
+          for msg in worklist.ok:
+              path    = msg['new_dir'] + '/' + msg['new_file']
 
-          lstat   = os.stat(path)
+              lstat   = os.stat(path)
 
-          # adjust part
+              new_message = sarracenia.fromFileData( path, self.o, lstat ) 
+              new_ok.append(new_message)
+          worklist.ok=new_ok
 
-          fsiz    = lstat[stat.ST_SIZE]
-          partstr = '1,%d,1,0,0' % fsiz
-          msg.partstr          = partstr
-          msg.headers['parts'] = msg.partstr
-
-          # adjust time
-
-          if parent.preserve_time or 'mtime' in msg.headers :
-             msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
-             msg.headers['atime'] = timeflt2str(lstat.st_atime)
-
-          # adjust mode
-
-          if parent.preserve_mode or 'mode' in msg.headers:
-             msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
-
-          # adjust checksum
-
-          algo = msg.sumalgo
-          algo.set_path(path)
-          src  = open(path,'rb')
-          while True:
-                chunk = src.read(parent.bufsize)
-                if not chunk : break
-                algo.update(chunk)
-
-          checksum = algo.get_value()
-
-          msg.set_sum(msg.sumflg,checksum)
-          msg.onfly_checksum = checksum
-
-          return True
-
+          
 It is nice to think that, should there be changes in the message, this plugin
 could be modified without having to modify all one to one filters.
 
@@ -223,37 +188,31 @@ I wrote some of the migrated filters and there are some considerations
 to be taken while implementing filters from **sundew**. 
 
 I have tried to make the less use of the **sundew-extension** but when
-requiered for some clients, a filter must change this inforemation too.
+required for some clients, a filter must change this inforemation too.
 In our example, I also have this function::
 
 
-      def correct_extension(self,parent) :
+      def correct_extension(self,msg) :
 
           if  not 'sundew_extension' in parent.msg.headers : return
 
-          ext   = parent.msg.headers['sundew_extension']
+          ext   = msg['sundew_extension']
           parts = ext.split(':')
           ext    = ":".join(parts[:3]) + ':PNG'
 
-          parent.msg.headers['sundew_extension'] = ext
+          msg['sundew_extension'] = ext
 
 And in the code, it is called right after the conversion::
 
          try :
                   outp = subprocess.check_output( cmd, shell=True )
-                  self.correct_extension(parent)
+                  self.correct_extension(msg)
                   return True
          ...
 
 
-It might also be requiered, depending on the products and the clients,
+It might also be required, depending on the products and the clients,
 to add (or update) to the extension a datetime suffix for the new products.
-
-I provide a plugin template and a config template and **on_file_converted**  ::
-
-  sarra/examples/sarra/one_to_one_filter.conf
-  sarra/plugins/one_to_one_filter.py
-  sarra/plugins/on_file_converted.py
 
 
 FINAL REMARKS ON ONE TO ONE FILTER
@@ -263,18 +222,18 @@ Usually a converter, say topng, will add the extension .png to the end product.
 This was not the case in **sundew** where the *whatfn* was kept as is but
 part of the *sundew_extension* was modified to show the new format.
 
-Examining **on_file_converted** you will find an on_message function
-that removes filter extensions from the filename. This was requiered because
+Examining **on_file_converted** you will find an after_accept function
+that removes filter extensions from the filename. This was required because
 old sundew clients needed to receive sarracenia converted products without
-their specific extension name. When this is requiered, the **on_file_converted**
+their specific extension name. When this is required, the **on_file_converted**
  plugin can be added to the sender config. So example, a converted product
-to PNG, in sarra would have a .png extension. Should it be requiered to send
+to PNG, in sarra would have a .png extension. Should it be required to send
 it to a sundew client with option *filename NONE*  without the plugin
 the client would receive  *WHATFN.png:...:...*  with the plugin, it receives
 the correct *WHATFN:...:...*
 
 Note also that the on_file function of the **on_file_converted** plugin
-is restricted to an **sr_sarra** process while the on_message function
+is restricted to an **sr_sarra** process while the after_accept function
 is restricted to an **sr_sender** process.
 
 If part of this document needs to be clarified please let me know
@@ -285,124 +244,60 @@ ONE TO MANY FILTER
 
 I will present one way that I have used to implement a one to many filter.
 Most of what was said earlier in the **one to one filter** still holds.
-The configuration of such an **sr_sarra** process follows the same rules.
-The plugin requires the same http registering. An **on_message** function 
-needs to change the value of **parent.msg.new_file** (the value may not be
+The configuration of such an **sarra** process follows the same rules.
+The plugin requires the same http registering. An **after_accept** function 
+needs to change the value of **msg['new_file']** (the value may not be
 relevant to the filename you will give to the extracted individual files.
 
-I have made this code available in a template **sarra/plugins/one_to_many_filter.py**.
-
-Each file extracted will requiere an individual message to be posted 
-(unfortunately not available in parent). The code used in the plugin for
-that would be like::
-
-      # update message for parsed file
-
-      def update_message(self, path ):
-          import os,stat
-
-          parent  = self.parent
-          logger  = parent.logger
-          msg     = parent.msg
-          lstat   = os.stat(path)
-
-          # adjust part
-
-          fsiz    = lstat[stat.ST_SIZE]
-          partstr = '1,%d,1,0,0' % fsiz
-          msg.partstr          = partstr
-          msg.headers['parts'] = msg.partstr
-
-          # adjust time
-
-          if parent.preserve_time or 'mtime' in msg.headers :
-             msg.headers['mtime'] = timeflt2str(lstat.st_mtime)
-             msg.headers['atime'] = timeflt2str(lstat.st_atime)
-
-          # adjust mode
-
-          if parent.preserve_mode or 'mode' in msg.headers:
-             msg.headers['mode']  = "%o" % ( lstat[stat.ST_MODE] & 0o7777 )
-
-          # adjust checksum
-
-          algo = msg.sumalgo
-          algo.set_path(path)
-          src  = open(path,'rb')
-          while True:
-                chunk = src.read(parent.bufsize)
-                if not chunk : break
-                algo.update(chunk)
-
-          checksum = algo.get_value()
-
-          msg.set_sum(msg.sumflg,checksum)
-          msg.onfly_checksum = checksum
-
-          # adjust topic, notice
-
-          msg.new_file    = os.path.basename(path)
-          msg.new_relpath = path.replace(parent.base_dir,'')
-
-          msg.set_topic(msg.topic_prefix,msg.new_relpath)
-          msg.set_notice(msg.new_baseurl,msg.new_relpath)
+Each file extracted will require an individual message to be posted.
+Use a message constructor, as presented above (**sarracnie.fromFileData()**) 
+to build a new message, and then append that to the list of messages
+being processed.
 
 Many things could be considered in this function (parts?) but for the
-general usage it should be ok.  I used the **do_download** function to
+general usage it should be ok.  I used the **after_work** function to
 do the extraction, and publishing as follow ::
 
-      def do_download(self, parent ):
-          self.parent = parent
-          self.logger = parent.logger
+      def after_work(self, worklist ):
 
-          ipath  = parent.base_dir + '/' + parent.msg.relpath
+          new_ok=[]
+          for msg in worklist.ok:
+              ipath  = self.o.base_dir + '/' + msg['relPath']
 
-          self.logger.info("splitting %s" % os.path.basename(ipath) )
+              logger.info("splitting %s" % os.path.basename(ipath) )
 
-          # HERE IS A FUNCTION THAT EXTRACTS/GENERATES THE FILES
-          # AND RETURNS A LIST CONTAINING THE ABSOLUTE PATH FOR
-          # THE FILES GENERATED
+              # HERE IS A FUNCTION THAT EXTRACTS/GENERATES THE FILES
+              # AND RETURNS A LIST CONTAINING THE ABSOLUTE PATH FOR
+              # THE FILES GENERATED
 
-          opaths = self.FILE_PARSER(ipath)
+              opaths = self.FILE_PARSER(msg, ipath)
 
-          # if it did not work it is an error
+              # if it did not work it is an error
 
-          if not opaths or len(opaths) <= 0 : return False
+              if not opaths or len(opaths) <= 0 : return False
 
-          # publish all parsed files but last
+              # publish all parsed files but last
 
-          for p in opaths[:-1] :
-              self.update_message(p)
+              for p in opaths :
+                  new_msg = sarracenia.fromFileData(p, self.o, lstat(p) )
+                  new_ok.append(new_msg)
 
-              # publishing
+          # replace worklist.ok if you don't wont to republish the inputs.
+          worklist.ok = new_ok
+          # OR could append if you do...
+          # worklist.extend(new_ok)
 
-              ok = parent.__on_post__()
-              if ok and parent.reportback: msg.report_publish(201,'Published')
-
-          # prepare message for last file
-          # and let sarra post it as if it
-          # was a normal downloaded product
-          # from the incoming message
-
-          self.update_message(opaths[-1])
-
-          return True
-
-There is a funny trick in that **do_download** function, I am leaving the last
-publish to the parent. It mimics the usual sarra download functionnality where
-once the product is downloaded, the process will take care of publishing it.
 
 From the template plugin, one should implement the extraction of the files.
-The idea in the template plugin is that the extraction is done in the right
-**parent.msg.new_dir** directory... each file will get its uniq name. All
-generated product absolute filepath are collected in the **opaths** python
-list. This list is returned and the **do_download** function will take care
+Each file will get its uniq name. All generated product absolute filepath 
+are collected in the **opaths** python
+list. This list is returned and the **after_work** function will take care
 of publishing these new products. A snippet of code, just as a reference
 is provided in the template ::
 
       # file parsing here
 
-      def FILE_PARSER(self, ipath ):
+      def FILE_PARSER(self, msg, ipath ):
 
           opaths = []
 
@@ -411,7 +306,7 @@ is provided in the template ::
           # EACH GENERATED FILE SHOULD HAVE A DIFFERENT PATH
           # THAT SHOULD LOOK LIKE
 
-          # opath  = parent.msg.new_dir + '/' + new_extracted_filename
+          # opath  = msg['new_dir'] + '/' + new_extracted_filename
 
           # EACH SUCCESSFULL PATH IS APPENDED TO THE LIST
 
