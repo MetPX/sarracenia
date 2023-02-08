@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 
 Sends metareas Enhanced Group Call (EGC) command to LES12 over telnet given an MSC bulletin file. 
@@ -34,12 +33,17 @@ import logging, telnetlib, sys, os, stat, time
 
 from sarracenia import nowflt
 
+from sarracenia.flowcb import FlowCB
 
-class LESSender(object):
-    def __init__(self, parent):
-        parent.declare_option('file_send_egc_les_telnet')
-        parent.declare_option('file_send_egc_les_timeout')
-        parent.logger.debug('file_send_egc_les init')
+logger = logging.getLogger(__name__)
+
+class Send_egc_les(FlowCB):
+
+    def __init__(self, options):
+        super().__init__(options,logger)
+        options.add_option('file_send_egc_les_telnet','str')
+        options.add_option('file_send_egc_les_timeout', 'duration')
+        logger.debug('hello')
 
     def find_egc(self, HDR, CCCC, logger):
         egc = None
@@ -107,99 +111,97 @@ class LESSender(object):
                 % (HDR, CCCC))
         return egc
 
-    def on_file(self, parent):
-        import logging, telnetlib, sys, os, stat, time
-
-        logger = parent.logger
-
-        # Grabs credentials from credentials.conf that were given in a config option
-        ok, details = parent.credentials.get(
-            parent.file_send_egc_les_telnet[0])
-        if ok:
-            setting = details.url
-            user = setting.username
-            password = setting.password
-            server = setting.hostname
-            port = setting.port
-            logger.debug("file_send_egc_les telnet credentials valid")
-        else:
-            logger.error("file_send_egc_les telnet credentials invalid")
-            return False
-
-        timeout = int(parent.file_send_egc_les_timeout[0])
-
-        if not port:
-            port = 23
-
-        # Read in the bulletin and replace any instances of .S with S, \n with \r\n
-        # and add .S\r\n at the end indicating 'store and submit'
-
-        filepath = parent.msg.new_relpath
-        with open(filepath, 'r') as f:
-            data = f.read()
-        data = data.replace('.S', ' S')
-        bul = data.replace('\n', '\r\n') + '.S\r\n'
-
-        # Find the 2 header components: T1T2A1A2ii CCCC
-        parts = data.split(' ')
-        HDR = parts[0]
-        CCCC = parts[1]
-
-        # Decide which egc it should be transmitted with
-        egc = self.find_egc(HDR, CCCC, logger)
-        if egc == None:
-            return False
-
-        # For FQ of CWAO if 'PAN PAN' in message then increase priority
-        if HDR[:2] == 'FQ' and CCCC == 'CWAO' and 'PAN PAN' in data:
-            egc = egc.replace(' 1 4 ', ' 2 4 ')
-
-        # Transmit the file over telnet
-        try:
-            start = nowflt()
-
-            tn = telnetlib.Telnet(server, port, timeout)
-
-            tn.read_until("username:", timeout)
-            tn.write(user + "\r\n")
-
-            tn.read_until("password:", timeout)
-            tn.write(password + "\r\n")
-
-            tn.read_until(">", timeout)
-            tn.write(egc)
-
-            tn.read_until("Text:", timeout)
-            tn.write(bul)
-
-            tn.write("quit\r\n")
-
-            info = tn.read_all()
-            tn.close()
-
-            nbBytes = os.stat(filepath)[stat.ST_SIZE]
-            end = nowflt()
-            logger.info(
-                "file_send_egc_les: ({0} bytes) file {1} delivered to: {2}, took {3}s"
-                .format(nbBytes, os.path.basename(filepath), setting,
-                        end - start))
-            logger.info("file_send_egc_les: egc used: %s" % egc)
-            logger.info("file_send_egc_les: return message: %s" % info)
-
-            if 'Storing' in info and 'Submitted' in info and 'Reference' in info:
-                os.unlink(filepath)
-                return True
+    def after_work(self, worklist):
+        """
+           if the send works, fine. if not, placed on rejected list to avoid retry (permanent error.)
+        """ 
+        new_ok = []
+        for msg in worklist.ok:
+            # Grabs credentials from credentials.conf that were given in a config option
+            ok, details = self.o.credentials.get(
+                self.o.file_send_egc_les_telnet)
+            if ok:
+                setting = details.url
+                user = setting.username
+                password = setting.password
+                server = setting.hostname
+                port = setting.port
+                logger.debug("file_send_egc_les telnet credentials valid")
             else:
+                logger.error("file_send_egc_les telnet credentials invalid")
+                worklist.rejected.append(msg)
+    
+            timeout = int(self.o.file_send_egc_les_timeout)
+    
+            if not port:
+                port = 23
+    
+            # Read in the bulletin and replace any instances of .S with S, \n with \r\n
+            # and add .S\r\n at the end indicating 'store and submit'
+    
+            filepath = msg['new_relPath']
+            with open(filepath, 'r') as f:
+                data = f.read()
+            data = data.replace('.S', ' S')
+            bul = data.replace('\n', '\r\n') + '.S\r\n'
+    
+            # Find the 2 header components: T1T2A1A2ii CCCC
+            parts = data.split(' ')
+            HDR = parts[0]
+            CCCC = parts[1]
+    
+            # Decide which egc it should be transmitted with
+            egc = self.find_egc(HDR, CCCC, logger)
+            if egc == None:
+                worklist.rejected.append(msg)
+    
+            # For FQ of CWAO if 'PAN PAN' in message then increase priority
+            if HDR[:2] == 'FQ' and CCCC == 'CWAO' and 'PAN PAN' in data:
+                egc = egc.replace(' 1 4 ', ' 2 4 ')
+    
+            # Transmit the file over telnet
+            try:
+                start = nowflt()
+    
+                tn = telnetlib.Telnet(server, port, timeout)
+    
+                tn.read_until("username:", timeout)
+                tn.write(user + "\r\n")
+    
+                tn.read_until("password:", timeout)
+                tn.write(password + "\r\n")
+    
+                tn.read_until(">", timeout)
+                tn.write(egc)
+    
+                tn.read_until("Text:", timeout)
+                tn.write(bul)
+    
+                tn.write("quit\r\n")
+    
+                info = tn.read_all()
+                tn.close()
+    
+                nbBytes = os.stat(filepath)[stat.ST_SIZE]
+                end = nowflt()
+                logger.info(
+                    "file_send_egc_les: ({0} bytes) file {1} delivered to: {2}, took {3}s"
+                    .format(nbBytes, os.path.basename(filepath), setting,
+                            end - start))
+                logger.info("file_send_egc_les: egc used: %s" % egc)
+                logger.info("file_send_egc_les: return message: %s" % info)
+    
+                if 'Storing' in info and 'Submitted' in info and 'Reference' in info:
+                    os.unlink(filepath)
+                    new_ok.append(msg)
+                else:
+                    logger.error(
+                        "file_send_egc_les: error with return info from file: %s" %
+                        filepath)
+                    worklist.rejected.append(msg)
+            except:
                 logger.error(
-                    "file_send_egc_les: error with return info from file: %s" %
-                    filepath)
-                return False
-        except:
-            logger.error(
-                "file_send_egc_les/on_file: error sending over telnet")
-            logger.debug('Exception details: ', exc_info=True)
-            return False
-
-
-lessender = LESSender(self)
-self.on_file = lessender.on_file
+                    "file_send_egc_les/on_file: error sending over telnet")
+                logger.debug('Exception details: ', exc_info=True)
+                worklist.rejected.append(msg)
+        worklist.ok = new_ok

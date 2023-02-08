@@ -26,39 +26,72 @@ logger = logging.getLogger(__name__)
 
 class Check(FlowCB):
 
+    def reset_metrics(self):
+        self.checksum_mismatches=0
+        self.size_mismatches=0
+        self.ok=0
+        self.bad_content=0
+
+    def on_start(self):
+        logger.info("")
+        self.reset_metrics()
+
+    def content_check(self,local_file) -> bool:
+        """
+           return True if content is ok, false otherwise.
+        """
+        logger.info("no content check implemented")
+        return True
+
     def after_work(self, worklist):
 
         for msg in worklist.ok:
-            logger.info("check_file local file %s " % msg['new_file'])
     
+            local_file = os.path.join( msg['new_dir'], msg['new_file'] )
+            logger.info("start local file %s " % local_file )
+
             if 'fileOp' in msg:
                 logger.warning("ignore unordinary files fileOps")
                 if 'directory' in msg['fileOp']:
-                    os.unlink(msg['rmdir'])
+                    os.unlink(local_file)
                 else:
-                    os.unlink(msg['new_file'])
+                    os.unlink(local_file)
                 continue
 
-            logger.info("check_file integrity     %s " % msg['integrity'] )
-            logger.info("check_file filesize   %s " % msg['size'])
+            logger.info("integrity     %s " % msg['integrity'] )
+            logger.info("filesize   %s " % msg['size'])
     
-            lstat = os.stat(msg['new_file'])
+            lstat = os.stat(local_file)
             fsiz = lstat[stat.ST_SIZE]
     
             if fsiz != msg['size']:
-                logger.error( "check_file filesize differ (corrupted ?)  lf %d  msg %d" % (fsiz, msg['size']) )
-                os.unlink(msg['new_file'])
-                return False
+                logger.error( "filesize differ (corrupted ?)  lf %d  msg %d" % (fsiz, msg['size']) )
+                self.size_mismatches+=1
     
             self.o.post_baseUrl = msg['baseUrl']
             self.o.integrity_method = msg['integrity']['method']
-            downloaded_msg = sarracenia.Message.fromFileData( msg['new_file'], self.o, lstat ) 
+            downloaded_msg = sarracenia.Message.fromFileData( local_file, self.o, lstat ) 
          
       
             if downloaded_msg['integrity'] != msg['integrity']:
                 logger.error(
-                    "check_file checksum differ (corrupted ?)  lf %s  msg %s" %
+                    "checksum differ (corrupted ?)  lf %s  msg %s" %
                     (downloaded_msg['integrity'], msg['integrity']))
-    
-            os.unlink(msg['new_file'])
-            logger.info( f"checked out ok {msg['new_file']}" )
+                self.checksum_mismatches+=1
+
+            if self.content_check(local_file):
+                os.unlink(local_file)
+                logger.info( f"checked out ok {local_file}" )
+                self.ok+=1
+            else:
+                self.bad_content+=1
+
+    def metrics_report(self) -> dict:
+        return { 'checked_ok': self.ok, 
+                 'checked_size_mismatches': self.size_mismatches, 
+                 'checked_checksum_mismatches': self.checksum_mismatches,
+                 'checked_bad_content': self.bad_content
+                 }
+
+    def on_housekeeping(self) -> None:
+        self.reset_metrics()
