@@ -1893,6 +1893,7 @@ class sr_config:
                      if 'link' in words1 : i = i + 1
                      if 'modify' in words1 : i = i + 1
                      if 'move'  in words1 : i = i + 1
+                     if 'mkdir'  in words1 : i = i + 1
                      
                      if i < len(words1.split(',')) :
                         self.logger.error("events invalid (%s)" % words1)
