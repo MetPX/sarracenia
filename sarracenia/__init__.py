@@ -491,10 +491,13 @@ class Message(dict):
         msg.updatePaths(o, os.path.dirname(path), os.path.basename(path))
 
         # rename
-        if 'new_path' in msg:
+        if 'new_relPath' in msg:
             post_relPath = msg['new_relPath']
-        else:
+        elif 'relPath' in msg:
             post_relPath = msg['relPath']
+        else:
+            post_relPath = None
+
         newname = post_relPath
 
         # rename path given with no filename
