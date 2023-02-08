@@ -2,9 +2,9 @@
  MIGRATION
 ==========
 
--------------------------------------------
+---------------------------------------------
 Sundew sender migration to sarracenia (PXATX)
--------------------------------------------
+---------------------------------------------
 
 :Manual section: 1
 :Date: @Date@
@@ -207,6 +207,10 @@ sarra-wise available::
 And perhaps adjust the path to be able to call the tools easily::
  
      export PATH=.~/convert/tools:$PATH
+
+NOTE::
+   PAS 2023/02/08 - PAS I could not locate these scripts.
+   hmm...
 
 Ok now, convert that sender... Here I suppose as in the presentation
 that it is accessdepot-iml.conf for simplicity (or remainder)::
