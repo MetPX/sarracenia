@@ -1200,8 +1200,7 @@ posting to a broker. The valid argument values are:
 
 **json:**
 
-  write each message to standard output, one per line in the same json format used for
-  queue save/restore by the python implementation.
+  write each message (json/v03 encoded) to standard output.
 
 **url:**
 
@@ -1434,16 +1433,6 @@ monitor trees, but the trees may have completely different paths than the argume
 given. This option also enforces traversing of symbolic links.
 
 This option is being used to investigate some use cases, and may disappear in future.
-
-reconnect <flag>
-----------------
-
-Active if *-rc|--reconnect* appears in the command line... or
-*reconnect* is set to True in the configuration file used.
-*If there are several notification messages because the file is posted
-by block because the *blocksize* option was set, there is a
-reconnection to the broker everytime a post is to be sent.
-
 
 sendTo <url>
 ---------------

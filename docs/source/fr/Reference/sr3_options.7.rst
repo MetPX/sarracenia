@@ -1415,15 +1415,6 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
-reconnect <flag>
-----------------
-
-Actif si *-rc|--reconnect* apparaît dans la ligne de commande... ou
-*reconnect* est défini a True dans le fichier de configuration utilisé.
-*S’il y a plusieurs messages d'annonce parce que le fichier est publié
-par bloc parce que l’option *blocksize* a été définie, il y a une
-reconnexion au courtier à chaque fois qu’un message d'annonce doit être envoyé.
-
 sendTo <url>
 ---------------
 
