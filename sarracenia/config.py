@@ -89,6 +89,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
+    'post_encoding': None,
     'realpathPost': False,
     'recursive' : True,
     'report': False,
@@ -104,12 +105,12 @@ count_options = [
 ]
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
-    'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
+    'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sourceFromExchange', \
     'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
@@ -139,7 +140,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'integrity', 'logLevel', 
-    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
+    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_encoding', 'post_exchange',
     'post_exchangeSuffix', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
@@ -157,6 +158,7 @@ str_options = [
 """
 convert_to_v3 = {
     'blocksize' : ['continue'],
+    'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
     'integrity' : {
        'n' : [ 'integrity', 'none' ],
@@ -253,10 +255,15 @@ convert_to_v3 = {
 	'post_rate_limit': ['continue'],
         'to': ['continue']
     },
+    'poll_without_vip': [ 'manual_conversion_required' ], 
     'pump' : [ 'continue' ],
+    'pump_flag' : [ 'continue' ],
+    'reconnect': ['continue'],
     'report_daemons': ['continue'],
     'restore' : [ 'continue' ],
+    'retry_mode' : ['continue'],
     'save' : [ 'continue' ],
+    'set_passwords': ['continue'],
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
@@ -688,6 +695,7 @@ class Config:
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
+        self.discard = False
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
@@ -1630,7 +1638,7 @@ class Config:
             if hasattr(self, 'post_exchangeSuffix'):
                 self.post_exchange += '_%s' % self.post_exchangeSuffix
 
-            if hasattr(self, 'post_exchangeSplit'):
+            if hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
                 l = []
                 for i in range(0, int(self.post_exchangeSplit)):
                     y = self.post_exchange + '%02d' % i

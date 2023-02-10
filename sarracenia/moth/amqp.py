@@ -516,7 +516,7 @@ class AMQP(Moth):
         if not exchange:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
-                    if 'exchangeSplit' in self.o:
+                    if ( 'exchangeSplit' in self.o) and self.o['exchangeSplit'] > 1:
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                         #        if that isn't true... then there is something wrong... should we check ?
                         idx = sum(
