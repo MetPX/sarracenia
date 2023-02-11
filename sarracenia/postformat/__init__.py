@@ -5,16 +5,24 @@ import sarracenia
 logger = logging.getLogger(__name__)
 
 
-class Encoding:
+class PostFormat:
     """
-       A class for controlling how Sarracenia messages are sent.
-       internally All messages are represented as python dictionaries with
+       A class for controlling the content of notification messages when received or sent,
+       as opposed to internal represenation in the Sarracenia.
+
+       Internally All messages are represented as python dictionaries with
        fields identical to v03 messages. 
 
-       Encodings convert between message payload protocols and in-memory Sarracenia.Message
+       PostFormats convert between message payload protocols and in-memory Sarracenia.Message
        formats.
 
-       To add new encodings just add sub-classes. they will be discovered at run-time.
+       To add new post formats just add sub-classes. they will be discovered at run-time.
+
+       each subclass implements:
+
+       def mine(payload, headers, content_type) -> bool:
+
+       which returns True of the message is in the given post format.
 
        subclasses have encode and decode routines with different signatures.
 
@@ -24,11 +32,13 @@ class Encoding:
        def export(msg) -> ( body (str), headers (dict), contenty_typ (str) ) :
             opposite of decode, take a v03 message and encode it for sending on the wire.
             returns a tuple to be passed to mqp apis.
+
+       These are used by the Any routines in this class.
     """
 
-    def content_type(encoding_format):
-        for sc in Encoding.__subclasses__():
-            if encoding_format == sc.__name__.lower():
+    def content_type(post_format):
+        for sc in PostFormat.__subclasses__():
+            if post_format == sc.__name__.lower():
                 return sc.content_type() 
         return None
 
@@ -40,7 +50,7 @@ class Encoding:
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
        """
-        for sc in Encoding.__subclasses__():
+        for sc in PostFormat.__subclasses__():
             #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
             if sc.mine(payload, headers, content_type):
                 return sc.importMine(payload, headers, topic, topicPrefix)
@@ -49,18 +59,18 @@ class Encoding:
         pass
 
     @staticmethod
-    def exportAny(msg, encoding_format='v03') -> (str, dict, str):
+    def exportAny(msg, post_format='v03') -> (str, dict, str):
         """
           return a tuple of the encoded message body, a headers dict, and content_type
        """
-        for sc in Encoding.__subclasses__():
-            if encoding_format == sc.__name__.lower():
+        for sc in PostFormat.__subclasses__():
+            if post_format == sc.__name__.lower():
                 return sc.exportMine( msg ) 
 
         return None, None, self.mimetype
 
 # test for v04 first, because v03 may claim all other JSON.
-import sarracenia.encoding.v04
-import sarracenia.encoding.v03
-import sarracenia.encoding.v02
+import sarracenia.postformat.wis
+import sarracenia.postformat.v03
+import sarracenia.postformat.v02
 

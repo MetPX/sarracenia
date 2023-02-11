@@ -30,7 +30,7 @@ import logging
 
 from urllib.parse import unquote
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 
 import time
@@ -121,7 +121,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = PostFormat.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
             if not msg:
                 logger.error('Decode failed, discarding message')
                 return None
@@ -425,8 +425,8 @@ class AMQP(Moth):
 
             logger.warning('lost connection to broker')
             self.close()
-            self.__getSetup(
-            )  # will only return when a connection is successful.
+            time.sleep(1)
+            self.__getSetup()  # will only return when a connection is successful.
 
     def ack(self, m) -> None:
         """
@@ -539,7 +539,7 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body, headers, content_type = Encoding.exportAny( body, version )
+        raw_body, headers, content_type = PostFormat.exportAny( body, version )
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))

@@ -31,7 +31,7 @@ from paho.mqtt.packettypes import PacketTypes
 import paho.mqtt.client
 
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import ssl
 import threading
@@ -427,7 +427,7 @@ class MQTT(Moth):
                                                           '+').split('/')
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
-            message = Encoding.importAny( 
+            message = PostFormat.importAny( 
                 mqttMessage.payload, 
                 None, # headers
                 mqttMessage.properties.ContentType,  
@@ -575,11 +575,11 @@ class MQTT(Moth):
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
 
-        props.ContentType = Encoding.content_type( body['version'] )
+        props.ContentType = PostFormat.content_type( body['version'] )
 
         while True:
             try:
-                raw_body = Encoding.exportAny( body, body['version'] )
+                raw_body = PostFormat.exportAny( body, body['version'] )
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         

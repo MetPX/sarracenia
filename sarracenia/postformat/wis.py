@@ -1,16 +1,23 @@
 import json
 import logging
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 
 logger = logging.getLogger(__name__)
 
 
-class V04(Encoding):
+class Wis(PostFormat):
     """
+
+       WMO Information Service
+
+       WMO - World Meteorological Organization
+
+       a standard in development for exchange of weather data.
+
        A class for controlling the format of messages are sent.
        internally All messages are represented as v03. 
-       encodings implement translations to other protocols for interop.
+       post format implement translations to other protocols for interop.
 
    """
 
@@ -23,7 +30,7 @@ class V04(Encoding):
         """
           return true if the message is in this encoding.
        """
-        if content_type == V04.content_type():
+        if content_type == Wis.content_type():
             return True
         return False
 

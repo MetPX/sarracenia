@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class Sarracenia:
     """
-        Core utilities of Sarracenia.  The main class here is sarracenia.Message.
+        Core utilities of Sarracenia. The main class here is sarracenia.Message.
         a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
         python built-in, but also we have a few major entry points some factoryies:
     
@@ -56,7 +56,7 @@ class Sarracenia:
 
         m = sarracenia.Message.fromFileData( path, options, lstat )
      
-        builds a message from a given existing file, consulting *options*, a parsed
+        builds a notification message from a given existing file, consulting *options*, a parsed
         in memory version of the configuration settings that are applicable
 
         **Options**
@@ -75,7 +75,7 @@ class Sarracenia:
 
         **If you don't have a file**
 
-        If you don't have a local file, then build your message with:
+        If you don't have a local file, then build your notification message with:
     
         m = sarracenia.Message.fromFileInfo( path, options, lstat )
     
@@ -96,13 +96,13 @@ class Sarracenia:
         lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
      
         that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
-        call. However the message returned will lack an integrity checksum field.
+        call. However the notification message returned will lack an integrity checksum field.
         once you get the file, you can add the Integrity field with:
     
         m.__computeIntegrity(path, o):
     
-        In terms of consuming messages, the fields in the dictionary provide metadata
-        for the announced resource. The anounced data could be embedded in the message itself,
+        In terms of consuming notification messages, the fields in the dictionary provide metadata
+        for the announced resource. The anounced data could be embedded in the notification message itself,
         or available by a URL.
     
         Messages are generally gathered from a source such as the Message Queueing Protocol wrapper
@@ -278,7 +278,7 @@ known_report_codes = {
     304:
     "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
-    417: "Expectation Failed: invalid message (corrupt headers)",
+    417: "Expectation Failed: invalid notification message (corrupt headers)",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
@@ -289,9 +289,11 @@ known_report_codes = {
 
 class Message(dict):
     """
-        A message in Sarracenia is stored as a python dictionary, with a few extra management functions.
+        A notification message in Sarracenia is stored as a python dictionary, with a few extra management functions.
 
-        unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
+        The internal representation is very close to the v03 format defined here: https://metpx.github.io/sarracenia/Reference/sr_post.7.html
+
+        Unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
         and hence the need for the copyDict member.
     """
     def __computeIntegrity(msg, path, o):
