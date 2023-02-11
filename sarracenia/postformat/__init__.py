@@ -18,6 +18,9 @@ class PostFormat:
 
        To add new post formats just add sub-classes. they will be discovered at run-time.
 
+       Every message read in will have include the *_format* field, identifying the format
+       of the incoming message.
+
        each subclass implements:
 
        def mine(payload, headers, content_type) -> bool:
@@ -49,6 +52,8 @@ class PostFormat:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
+
+          msg['_format'] will be set to the name of the postformat detected and decoded.
        """
         for sc in PostFormat.__subclasses__():
             #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )

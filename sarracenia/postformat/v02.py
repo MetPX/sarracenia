@@ -41,8 +41,6 @@ class V02(PostFormat):
         msg.copyDict(headers)
     
         msg['subtopic'] = topic.split('.')[len(topicPrefix):]
-        if not '_deleteOnPost' in msg:
-            msg['_deleteOnPost'] = set()
         msg['_deleteOnPost'] |= set(['subtopic'])
     
         try:
@@ -126,7 +124,8 @@ class V02(PostFormat):
         except Exception as ex:
             logger.warning( f"parts field corrupt: {msg['parts']}, ignored: {ex}" )
     
-        msg["version"] = 'v02'
+        msg["_format"] = __name__
+        msg['_deleteOnPost'] |= set(['_format'])
         return msg
 
     @staticmethod

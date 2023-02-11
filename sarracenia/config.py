@@ -89,7 +89,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
-    'post_encoding': None,
+    'post_format': None,
     'realpathPost': False,
     'recursive' : True,
     'report': False,
@@ -140,8 +140,8 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'integrity', 'logLevel', 
-    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_encoding', 'post_exchange',
-    'post_exchangeSuffix', 'queueName', 'sendTo', 'rename',
+    'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
+    'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]

@@ -451,9 +451,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
-                        if ('version' in m) and ( m['version'] != 
-                                                  m['post_version']):
-                            m['version'] = m['post_version']
+                        if ('_format' in m) and ( m['_format'] != 
+                                                  m['post_format']):
+                            m['_format'] = m['post_format']
 
                     self._runCallbacksWorklist('after_work')
 

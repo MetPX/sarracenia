@@ -296,6 +296,10 @@ class Message(dict):
         Unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
         and hence the need for the copyDict member.
     """
+    def __init__(self):
+        self['_deleteOnPost'] = set()
+
+
     def __computeIntegrity(msg, path, o):
         """
            check extended attributes for a cached integrity sum calculation.
@@ -397,7 +401,7 @@ class Message(dict):
 
         if msg is None: return ""
 
-        if msg['version'] == 'v04':
+        if msg['_format'] == 'Wis':
             s = '{ '
             if 'id' in msg:
                 s += f"{{ 'id': '{msg['id']}', 'type':'Feature', "
@@ -411,7 +415,7 @@ class Message(dict):
 
         for k in sorted(msg.keys()):
 
-            if msg['version'] == 'v04' and k in [ 'id', 'type', 'geometry' ]:
+            if msg['_format'] == 'v04' and k in [ 'id', 'type', 'geometry' ]:
                continue
             
             if type(msg[k]) is dict:
@@ -435,7 +439,7 @@ class Message(dict):
 
             s += f" '{k}':'{v}'," 
 
-        if msg['version'] == 'v04':
+        if msg['_format'] == 'Wis':
             s += ' } '
 
         s = s[:-1] + " }"
@@ -473,10 +477,12 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.variableExpansion ?
-        if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
-            msg['version'] = o.post_topicPrefix[0]
+        if hasattr(o,'post_format') :
+            msg['_format'] = o.post_format
+        elif hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03' ]:
+            msg['_format'] = o.post_topicPrefix[0]
         else:
-            msg['version'] = 'v03'
+            msg['_format'] = 'v03'
 
         if hasattr(o, 'post_exchange'):
             msg['exchange'] = o.post_exchange
@@ -484,7 +490,7 @@ class Message(dict):
             msg['exchange'] = o.exchange
 
         msg['local_offset'] = 0
-        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', 'version'])
+        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])
 
         # notice
         msg['pubTime'] = timeflt2str(time.time())
@@ -637,7 +643,7 @@ class Message(dict):
         """
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_version'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
         ])
         if new_dir:
             msg['new_dir'] = new_dir
@@ -656,12 +662,12 @@ class Message(dict):
                 return
 
         if options.post_topicPrefix:
-            msg['post_version'] = options.post_topicPrefix[0]
-        elif options.topicPrefix != msg['version']:
-            logger.warning( f"received message in {msg['version']} format, expected {options.post_topicPrefix} " )
-            msg['post_version'] = options.topicPrefix[0]
+            msg['post_format'] = options.post_topicPrefix[0]
+        elif options.topicPrefix != msg['_format']:
+            logger.warning( f"received message in {msg['_format']} format, expected {options.post_topicPrefix} " )
+            msg['post_format'] = options.topicPrefix[0]
         else:
-            msg['post_version'] = msg['version']
+            msg['post_format'] = msg['_format']
            
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):

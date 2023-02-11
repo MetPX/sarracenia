@@ -575,11 +575,11 @@ class MQTT(Moth):
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
 
-        props.ContentType = PostFormat.content_type( body['version'] )
+        props.ContentType = PostFormat.content_type( body['_format'] )
 
         while True:
             try:
-                raw_body = PostFormat.exportAny( body, body['version'] )
+                raw_body = PostFormat.exportAny( body, body['_format'] )
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         

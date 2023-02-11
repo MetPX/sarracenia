@@ -34,7 +34,8 @@ class V03(PostFormat):
           return the message as a normalized v03 message.
        """
         msg = sarracenia.Message()
-        msg["version"] = 'v03'
+        msg["_format"] = __name__
+        msg['_deleteOnPost'] |= set(['_format'])
         try:
             msg.copyDict(json.loads(body))
         except Exception as ex:
