@@ -393,7 +393,7 @@ class AMQP(Moth):
             return None
 
         while True:
-            if True: #try:
+            try:
                 if not self.connection:
                     self.__getSetup()
 
@@ -402,14 +402,15 @@ class AMQP(Moth):
                     return None
                 else:
                     self.metrics['rxByteCount'] += len(raw_msg.body)
-                    if True: #try: 
+                    try: 
                         msg = self._msgRawToDict(raw_msg)
-                    else: #except Exception as err:
+                    except Exception as err:
                         logger.error("message decode failed. raw message: %s" % raw_msg.body )
                         logger.debug('Exception details: ', exc_info=True)
                         msg = None
                     if msg is None:
                         self.metrics['rxBadCount'] += 1
+                        return None
                     else:
                         self.metrics['rxGoodCount'] += 1
                     if hasattr(self.o, 'fixed_headers'):
@@ -418,7 +419,7 @@ class AMQP(Moth):
 
                     logger.debug("new msg: %s" % msg)
                     return msg
-            else: #except Exception as err:
+            except Exception as err:
                 logger.warning("failed %s: %s" %
                                (self.o['queueName'], err))
                 logger.debug('Exception details: ', exc_info=True)

@@ -726,7 +726,7 @@ class Config:
         self.mirror = False
         self.messageAgeMax = 0
         self.post_exchanges = []
-	#self.post_topicPrefix = None
+	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
         self.randomize = False
