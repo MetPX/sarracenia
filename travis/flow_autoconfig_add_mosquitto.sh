@@ -15,9 +15,9 @@ mkdir -p ~/.config/sr3
 
 sed -i 's/MQP=amqp/MQP=mqtt/' ~/.config/sr3/default.conf
 
+ADMIN_PASSWORD="`grep 'amqp://bunnymaster' ~/.config/sr3/credentials.conf | sed 's+amqp:\/\/bunnymaster:++;s+@localhost/++'`"
+OTHER_PASSWORD="`grep 'amqp://tsource' ~/.config/sr3/credentials.conf | sed 's+amqp:\/\/tsource:++;s+@localhost/++'`"
 
-ADMIN_PASSWORD=$(openssl rand -hex 6)
-OTHER_PASSWORD=$(openssl rand -hex 6)
 cat >> ~/.config/sr3/credentials.conf << EOF
 mqtt://bunnymaster:${ADMIN_PASSWORD}@localhost/
 mqtt://tsource:${OTHER_PASSWORD}@localhost/
