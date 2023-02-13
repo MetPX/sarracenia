@@ -33,12 +33,13 @@ en construire de nouveaux de manière copier/coller, avec de nombreux exemples d
 
 Il existe d’autres façons d’étendre Sarracenia v3 en sous-classant :
 
-* Sarracenia.Transfer pour ajouter plus de protocoles de transfert de données
-* Sarracenia.integrity pour ajouter plus de méthodes de somme de contrôle.
-* Sarracenia.moth pour ajouter la prise en charge de plus de protocoles de messagerie.
-* Sarracenia.flow pour créer de nouveaux flux.
-* Sarracenia.flowcb pour personnaliser les flux.
-* Sarracenia.flowcb.poll pour personnaliser les flux de sondage.
+* Sarracenia.transfer.Transfer pour ajouter plus de protocoles de transfert de données
+* Sarracenia.integrity.Integrity pour ajouter plus de méthodes de somme de contrôle.
+* Sarracenia.moth.Moth pour ajouter la prise en charge de plus de protocoles de messagerie.
+* Sarracenia.flow.Flow pour créer de nouveaux flux.
+* Sarracenia.flowcb.FlowCB pour personnaliser les flux.
+* Sarracenia.flowcb.poll.Poll pour personnaliser les flux de sondage.
+* Sarracenia.flowcb.scheduled.Scheduled pour personnaliser les flux cédulés.
 
 Cela sera discuté après que les rappels auront été traités.
 
@@ -948,7 +949,7 @@ Certains peuvent ne pas vouloir utiliser le langage de Sarracenia et des configu
 Ils peuvent avoir du code existant, à partir duquel ils veulent appeler une sorte de code d’ingestion de données.
 On peut appeler des fonctions liées à sarracenia directement à partir de programmes python existants.
 
-Pour l’instant, il est préférable de consulter le `Jupyter Notebooks <../../jupyter>`_  inclus avec Sarracenia,
+Pour l’instant, il est préférable de consulter le `Tutoriels <../Tutoriels>`_  inclus avec Sarracenia,
 qui ont quelques exemples d’une telle utilisation.
 
 .. avertissement::

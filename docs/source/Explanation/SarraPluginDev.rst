@@ -20,7 +20,7 @@ Readers of this manual should be comfortable with light scripting in Python vers
 While a great deal of v2 compatibility is included in Sarracenia version 3, wholesale
 replacement of the programming interfaces is a big part of what is in Version 3. 
 If working with version 2, Programmers should refer to the version 2 programmer's Guide,
-as the contents here is very different.
+as the two are very different.
 
 Introduction
 ------------
@@ -32,12 +32,13 @@ build new ones in a copy/paste manner, with many samples being available to read
 
 There are other ways to extend Sarracenia v3 by subclassing of:
 
-* Sarracenia.Transfer to add more data transfer protocols 
-* Sarracenia.integrity to add more checksumming methods.
-* Sarracenia.moth to add support for more messaging protocols.
-* Sarracenia.flow to create new flows. 
-* Sarracenia.flowcb to customize flows.
-* Sarracenia.flowcb.poll to customize poll flows.
+* Sarracenia.transfer.Transfer to add more data transfer protocols 
+* Sarracenia.integrity.Integrity to add more checksumming methods.
+* Sarracenia.moth.Moth to add support for more messaging protocols.
+* Sarracenia.flow.Flow to create new flows. 
+* Sarracenia.flowcb.FlowCB to add custom callback routines to flows.
+* Sarracenia.flowcb.poll.Poll to customize poll flows.
+* Sarracenia.flowcb.scheduled.Scheduled to customize scheduled flows.
 
 That will be discussed after callbacks are dealt with.
 
@@ -1012,7 +1013,7 @@ Some may not want to use the Sarracenia and configuration language at all.
 They may have existing code, that they want call some sort of data ingesting code from.
 One can call sarracenia related functions directly from existing python programs.
 
-For now, best to consult the `Jupyter Notebooks <../../jupyter>`_  included with Sarracenia,
+For now, best to consult the `Tutorials <../Tutorials>`_  included with Sarracenia,
 which have some examples of such use.
 
 
