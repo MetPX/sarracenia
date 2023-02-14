@@ -112,6 +112,7 @@ class MQTT(Moth):
 
         super().__init__(broker, options, is_subscriber)
 
+        self.connected=False
         # setting this is wrong and breaks things, was already set in super-class init, doing this here overwites
         #  interpretation of options done in superclass.
         #self.o = options
@@ -270,6 +271,7 @@ class MQTT(Moth):
            Establish a connection to consume messages with.  
         """
         ebo = 1
+        self.connected=False
         while True:
             try:
                 self.new_message_mutex = threading.Lock()
@@ -322,6 +324,7 @@ class MQTT(Moth):
                 self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
                 self.client.loop_start()
+                self.connected=True
                 return
 
             except Exception as err:
@@ -337,6 +340,7 @@ class MQTT(Moth):
            establish a connection to allow publishing. 
         """
         ebo = 1
+        self.connected=False
         while True:
             try:
 
@@ -363,6 +367,7 @@ class MQTT(Moth):
                             (options['broker'].url.hostname, res))
 
                 self.client.loop_start()
+                self.connected=True
                 return
 
             except Exception as err:
@@ -427,9 +432,14 @@ class MQTT(Moth):
                                                           '+').split('/')
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
+            if hasattr( mqttMessage.properties, 'User_Property'):
+                headers = {}
+                [ headers.update({k:v}) for k,v in mqttMessage.properties.User_property ]
+            else:
+                headers=None
             message = PostFormat.importAny( 
                 mqttMessage.payload, 
-                None, # headers
+                headers,
                 mqttMessage.properties.ContentType,  
                 subtopic,
                 self.o['topicPrefix'] )
@@ -532,6 +542,9 @@ class MQTT(Moth):
             logger.error("publishing from a consumer")
             return False
 
+        if not self.connected:
+            self.__putSetup(self.o)
+
         postFormat = body['_format']
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
@@ -579,16 +592,23 @@ class MQTT(Moth):
         props.ContentType = PostFormat.content_type( postFormat )
 
         while True:
-            try:
-                raw_body = PostFormat.exportAny( body, postFormat )
+            if True: #try:
+                raw_body, headers, content_type = PostFormat.exportAny( body, postFormat )
+
+                #if headers:
+                #    for i in headers:
+                #        setattr(props, i, headers[i] )
+
                 if self.o['messageDebugDump']:
-                     logger.info("Message to publish: %s %s" % (topic, raw_body))
+                     logger.info( f"Message to publish: {topic} {type(raw_body)} {raw_body} " )
                         
                 self.metrics['txByteCount'] += len(raw_body)
-                info = self.client.publish(topic=topic,
-                                           payload=raw_body,
-                                           qos=1,
-                                           properties=props)
+                if headers:
+                    info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props,
+                                           user_property=list(map( lambda x :  (x,headers[x]) , headers )))
+                else:
+                    info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
+                   
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:
                     self.pending_messages_mutex.acquire()
                     self.pending_messages.append(info.mid)
@@ -598,12 +618,11 @@ class MQTT(Moth):
                         info.mid, body, topic))
                     return True  #success...
 
-            except Exception as ex:
+            else: #except Exception as ex:
                 logger.error('Exception details: ', exc_info=True)
-
-            self.metrics['txBadCount'] += 1
-            self.close()
-            self.__putSetup(self.o)
+                self.metrics['txBadCount'] += 1
+                self.close()
+            return False
 
     def close(self):
         logger.info('closing')
@@ -617,3 +636,4 @@ class MQTT(Moth):
                     time.sleep(0.1)
                 logger.info('no more pending messages')
             self.client.disconnect()
+        self.connected=False
