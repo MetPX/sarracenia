@@ -532,6 +532,7 @@ class MQTT(Moth):
             logger.error("publishing from a consumer")
             return False
 
+        postFormat = body['_format']
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -575,11 +576,11 @@ class MQTT(Moth):
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
         props.PayloadFormatIndicator = 1  # designates UTF-8
 
-        props.ContentType = PostFormat.content_type( body['_format'] )
+        props.ContentType = PostFormat.content_type( postFormat )
 
         while True:
             try:
-                raw_body = PostFormat.exportAny( body, body['_format'] )
+                raw_body = PostFormat.exportAny( body, postFormat )
                 if self.o['messageDebugDump']:
                      logger.info("Message to publish: %s %s" % (topic, raw_body))
                         
