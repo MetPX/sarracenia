@@ -42,7 +42,6 @@ class Wis(PostFormat):
        """
             msg = sarracenia.Message()
             msg["_format"] = __name__
-            msg['_deleteOnPost'] != set(['_format'])
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:

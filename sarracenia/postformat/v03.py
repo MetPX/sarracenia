@@ -35,7 +35,6 @@ class V03(PostFormat):
        """
         msg = sarracenia.Message()
         msg["_format"] = __name__
-        msg['_deleteOnPost'] |= set(['_format'])
         try:
             msg.copyDict(json.loads(body))
         except Exception as ex:

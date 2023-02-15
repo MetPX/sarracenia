@@ -297,7 +297,8 @@ class Message(dict):
         and hence the need for the copyDict member.
     """
     def __init__(self):
-        self['_deleteOnPost'] = set()
+        self['_format'] = 'v03'
+        self['_deleteOnPost'] = set(['_format'])
 
 
     def __computeIntegrity(msg, path, o):

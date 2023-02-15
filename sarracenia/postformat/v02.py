@@ -38,6 +38,7 @@ class V02(PostFormat):
           return the message as a normalized v03 message.
        """
         msg = sarracenia.Message()
+        msg["_format"] = __name__
         msg.copyDict(headers)
     
         msg['subtopic'] = topic.split('.')[len(topicPrefix):]
@@ -124,8 +125,6 @@ class V02(PostFormat):
         except Exception as ex:
             logger.warning( f"parts field corrupt: {msg['parts']}, ignored: {ex}" )
     
-        msg["_format"] = __name__
-        msg['_deleteOnPost'] |= set(['_format'])
         return msg
 
     @staticmethod
