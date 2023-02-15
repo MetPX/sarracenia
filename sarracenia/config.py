@@ -160,6 +160,8 @@ convert_to_v3 = {
     'blocksize' : ['continue'],
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
+    'from_cluster' : [ 'continue' ],
+    'to_clusters' : [ 'continue' ],
     'integrity' : {
        'n' : [ 'integrity', 'none' ],
        's' : [ 'integrity', 'sha512' ],
