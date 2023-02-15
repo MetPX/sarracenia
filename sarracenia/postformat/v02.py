@@ -32,17 +32,16 @@ class V02(PostFormat):
         return False
 
     @staticmethod
-    def importMine(body, headers, topic, topicPrefix) -> sarracenia.Message:
+    def importMine(body, headers) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
+
+          the topic and topicPrefix should be lists, not protocol specific strings.
        """
         msg = sarracenia.Message()
-        msg["_format"] = __name__
+        msg["_format"] = __name__.split('.')[-1].lower()
         msg.copyDict(headers)
-    
-        msg['subtopic'] = topic.split('.')[len(topicPrefix):]
-        msg['_deleteOnPost'] |= set(['subtopic'])
     
         try:
             pubTime, baseUrl, relPath = body.split(' ')[0:3]
@@ -54,6 +53,7 @@ class V02(PostFormat):
         msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
         msg['relPath'] = relPath
         msg['subtopic'] = relPath.split('/')
+        msg['_deleteOnPost'] |= set(['subtopic'])
 
         for t in ['atime', 'mtime']:
             if t in msg:
@@ -64,15 +64,15 @@ class V02(PostFormat):
         try:
             if 'sum' in msg:
                 sum_algo_map = {
+                    "0": "random",
                     "a": "arbitrary",
                     "d": "md5",
-                    "s": "sha512",
+                    "L": "link",
                     "m": "mkdir",
                     "n": "md5name",
-                    "0": "random",
-                    "L": "link",
                     "r": "rmdir",
                     "R": "remove",
+                    "s": "sha512",
                     "z": "cod"
                 }
                 sm = sum_algo_map[msg["sum"][0]]
@@ -86,7 +86,12 @@ class V02(PostFormat):
                 if 'oldname' in msg:
                     msg['fileOp'] = { 'rename': msg['oldname'] }
                     del msg['oldname']
-                    msg["integrity"] = {"method": sm, "value": sv}
+                    if sm in ['mkdir']:
+                        msg['fileOp']['mkdir'] = ''
+                    elif sm in ['link']:
+                        msg['fileOp']['link'] = msg['link']
+                    else:
+                        msg["integrity"] = {"method": sm, "value": sv}
                 elif sm == 'remove':
                     msg['fileOp'] = { 'remove': '' }
                 elif sm == 'mkdir':

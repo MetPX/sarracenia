@@ -56,7 +56,7 @@ class MQTT(Moth):
        Message Queue Telemetry Transport support.
            talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
-       Concept mapping from AMQP:
+       Sarracenia Concept mapping from AMQP:
 
            Only supports v03 messages since mqtt3.1 has no headers.
 
@@ -427,22 +427,30 @@ class MQTT(Moth):
         """
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
-        subtopic = mqttMessage.topic.replace('%23',
-                                             '#').replace('%2b',
-                                                          '+').split('/')
+        if self.o['messageDebugDump']:
+            logger.info('raw message start')
+            if hasattr(mqttMessage.properties, 'ContentType'): 
+                logger.info( f'Content-type: {mqttMessage.properties.ContentType}')
+            else:
+                logger.warning('message is missing content-type header')
+
+            if hasattr(mqttMessage, 'payload'): 
+                logger.info('payload: type: %s (%d bytes) %s' %
+                             (type(mqttMessage.payload), len(mqttMessage.payload), mqttMessage.payload))
+
+            if hasattr(mqttMessage.properties, 'UserProperty'): 
+                logger.info( f'UserProperty: {mqttMessage.properties.UserProperty} ')
+
+            logger.info( f"topic: {mqttMessage.topic}" )
+
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
-            if hasattr( mqttMessage.properties, 'User_Property'):
+            if hasattr( mqttMessage.properties, 'UserProperty'):
                 headers = {}
-                [ headers.update({k:v}) for k,v in mqttMessage.properties.User_property ]
+                [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
             else:
                 headers=None
-            message = PostFormat.importAny( 
-                mqttMessage.payload, 
-                headers,
-                mqttMessage.properties.ContentType,  
-                subtopic,
-                self.o['topicPrefix'] )
+            message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType)
 
         except Exception as ex:
             logger.error("ignored malformed message: %s" % mqttMessage.payload)
@@ -451,15 +459,9 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
-        if subtopic[0] != self.o['topicPrefix'][0]:
-            message['exchange'] = subtopic[0]
-            message['subtopic'] = subtopic[1 + len(self.o['topicPrefix']):]
-        else:
-            message['subtopic'] = subtopic[len(self.o['topicPrefix']):]
         message['ack_id'] = mqttMessage.mid
         message['local_offset'] = 0
-        message['_deleteOnPost'] = set(
-            ['exchange', 'local_offset', 'ack_id', 'subtopic'])
+        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id' ])
 
         if message.validate():
             self.metrics['rxGoodCount'] += 1
@@ -595,19 +597,17 @@ class MQTT(Moth):
             if True: #try:
                 raw_body, headers, content_type = PostFormat.exportAny( body, postFormat )
 
-                #if headers:
-                #    for i in headers:
-                #        setattr(props, i, headers[i] )
+                if headers:
+                    props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
 
                 if self.o['messageDebugDump']:
-                     logger.info( f"Message to publish: {topic} {type(raw_body)} {raw_body} " )
+                    logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
+                    if hasattr(props, 'UserProperty'): 
+                        logger.info( f"user_property:{props.UserProperty}" )
                         
                 self.metrics['txByteCount'] += len(raw_body)
-                if headers:
-                    info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props,
-                                           user_property=list(map( lambda x :  (x,headers[x]) , headers )))
-                else:
-                    info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
+
+                info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
                    
                 if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:
                     self.pending_messages_mutex.acquire()

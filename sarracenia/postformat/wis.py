@@ -35,13 +35,13 @@ class Wis(PostFormat):
         return False
 
     @staticmethod
-    def importMine(body, headers, topic, topicPrefix) -> sarracenia.Message:
+    def importMine(body, headers) -> sarracenia.Message:
             """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
        """
             msg = sarracenia.Message()
-            msg["_format"] = __name__
+            msg["_format"] = __name__.split('.')[-1].lower()
             try:
                 GeoJSONBody=json.loads(body)
             except Exception as ex:
@@ -72,5 +72,6 @@ class Wis(PostFormat):
             for h in body:
                 if h not in [ 'geometry', 'properties' ]:
                     GeoJSONBody['properties'][h] = body[h]
+            GeoJSONBody['properties']['version'] = 'v04'
             raw_body = json.dumps(GeoJSONBody)
             return raw_body, None, V03.content_type()

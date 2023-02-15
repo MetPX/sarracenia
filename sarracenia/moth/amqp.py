@@ -121,7 +121,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = PostFormat.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = PostFormat.importAny( body, raw_msg.headers, content_type )
             if not msg:
                 logger.error('Decode failed, discarding message')
                 return None
@@ -132,8 +132,7 @@ class AMQP(Moth):
             msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
-            msg['_deleteOnPost'] = set(
-                ['ack_id', 'exchange', 'local_offset', 'subtopic', '_format'])
+            msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
