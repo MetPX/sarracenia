@@ -391,45 +391,44 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
-        while True:
-            try:
-                if not self.connection:
-                    self.__getSetup()
+        try:
+            if not self.connection:
+                self.__getSetup()
 
-                raw_msg = self.channel.basic_get(self.o['queueName'])
-                if (raw_msg is None) and (self.connection.connected):
+            raw_msg = self.channel.basic_get(self.o['queueName'])
+            if (raw_msg is None) and (self.connection.connected):
+                return None
+            else:
+                self.metrics['rxByteCount'] += len(raw_msg.body)
+                try: 
+                    msg = self._msgRawToDict(raw_msg)
+                except Exception as err:
+                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.debug('Exception details: ', exc_info=True)
+                    msg = None
+                if msg is None:
+                    self.metrics['rxBadCount'] += 1
                     return None
                 else:
-                    self.metrics['rxByteCount'] += len(raw_msg.body)
-                    try: 
-                        msg = self._msgRawToDict(raw_msg)
-                    except Exception as err:
-                        logger.error("message decode failed. raw message: %s" % raw_msg.body )
-                        logger.debug('Exception details: ', exc_info=True)
-                        msg = None
-                    if msg is None:
-                        self.metrics['rxBadCount'] += 1
-                        return None
-                    else:
-                        self.metrics['rxGoodCount'] += 1
-                    if hasattr(self.o, 'fixed_headers'):
-                        for k in self.o.fixed_headers:
-                            msg[k] = self.o.fixed_headers[k]
+                    self.metrics['rxGoodCount'] += 1
+                if hasattr(self.o, 'fixed_headers'):
+                    for k in self.o.fixed_headers:
+                        msg[k] = self.o.fixed_headers[k]
 
-                    logger.debug("new msg: %s" % msg)
-                    return msg
-            except Exception as err:
-                logger.warning("failed %s: %s" %
-                               (self.o['queueName'], err))
-                logger.debug('Exception details: ', exc_info=True)
+                logger.debug("new msg: %s" % msg)
+                return msg
+        except Exception as err:
+            logger.warning("failed %s: %s" %
+                           (self.o['queueName'], err))
+            logger.debug('Exception details: ', exc_info=True)
 
-            if not self.o['message_strategy']['stubborn']:
-                return None
-
-            logger.warning('lost connection to broker')
-            self.close()
-            time.sleep(1)
+        if not self.o['message_strategy']['stubborn']:
             return None
+
+        logger.warning('lost connection to broker')
+        self.close()
+        time.sleep(1)
+        return None
 
     def ack(self, m) -> None:
         """

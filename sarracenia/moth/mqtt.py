@@ -593,36 +593,35 @@ class MQTT(Moth):
 
         props.ContentType = PostFormat.content_type( postFormat )
 
-        while True:
-            if True: #try:
-                raw_body, headers, content_type = PostFormat.exportAny( body, postFormat )
+        try:
+            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat )
 
-                if headers:
-                    props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
+            if headers:
+                props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
 
-                if self.o['messageDebugDump']:
-                    logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
-                    if hasattr(props, 'UserProperty'): 
-                        logger.info( f"user_property:{props.UserProperty}" )
-                        
-                self.metrics['txByteCount'] += len(raw_body)
+            if self.o['messageDebugDump']:
+                logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
+                if hasattr(props, 'UserProperty'): 
+                    logger.info( f"user_property:{props.UserProperty}" )
+                    
+            self.metrics['txByteCount'] += len(raw_body)
 
-                info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
-                   
-                if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:
-                    self.pending_messages_mutex.acquire()
-                    self.pending_messages.append(info.mid)
-                    self.metrics['txGoodCount'] += 1
-                    self.pending_messages_mutex.release()
-                    logger.info("published mid={} {} to under: {} ".format(
-                        info.mid, body, topic))
-                    return True  #success...
+            info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
+               
+            if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:
+                self.pending_messages_mutex.acquire()
+                self.pending_messages.append(info.mid)
+                self.metrics['txGoodCount'] += 1
+                self.pending_messages_mutex.release()
+                logger.info("published mid={} {} to under: {} ".format(
+                    info.mid, body, topic))
+                return True  #success...
 
-            else: #except Exception as ex:
-                logger.error('Exception details: ', exc_info=True)
-                self.metrics['txBadCount'] += 1
-                self.close()
-            return False
+        except Exception as ex:
+            logger.error('Exception details: ', exc_info=True)
+            self.metrics['txBadCount'] += 1
+            self.close()
+        return False
 
     def close(self):
         logger.info('closing')
