@@ -88,37 +88,36 @@ class RedisQueue():
 
         logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
 
-        self.queue_name = 'redisqueue_' + name
+        self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.queueName
         self.now = sarracenia.nowflt()
 
         # newer retries
-        #self.queue_name_new = self.queue_name + '.new'
+        self.key_name_new = self.key_name + '.new'
 
         # working file at housekeeping
-        #self.queue_name_housekeeping = self.queue_name + '.hk'
+        self.key_name_hk = self.key_name + '.hk'
 
+        #### REDIS CONFIG
+        #### FIXME NEEDS TO BE PORTED TO SR3 CONFIG
         self.redisurl = os.getenv('SR3_REDISURL', 'redis://localhost:6379/0')
         self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
 
         self.redis = redis.from_url(self.redisurl)
-        #self.redis = redis.Redis(host='redis', port=6379, db=0)
 
         # initialize ages and message counts
 
-        #self.msg_count = 0
-        #self.msg_count_new = 0
 
     def __len__(self) -> int:
-        """Returns the total number of messages in the DiskQueue.
+        """Returns the total number of messages in the RedisQueue.
 
-        Number of messages in the DiskQueue does not necessarily equal the number of messages available to ``get``.
-        Messages in the .new file are counted, but can't be retrieved until
-        :func:`~sarracenia.diskqueue.DiskQueue.on_housekeeping` has been run.
+        Number of messages in the RedisQueue does not necessarily equal the number of messages available to ``get``.
+        Messages in the .new list are counted, but can't be retrieved until
+        :func:`~sarracenia.redisqueue.RedisQueue.on_housekeeping` has been run.
 
         Returns:
-            int: number of messages in the DiskQueue.
+            int: number of messages in the RedisQueue.
         """
-        return self.redis.llen(self.queue_name)
+        return self.redis.llen(self.key_name) + self.redis.llen(self.key_name_new) 
     # ----------- Private Methods -----------
 
     def _in_cache(self, message) -> bool:
@@ -233,7 +232,11 @@ class RedisQueue():
         try:
             msg = jsonpickle.decode(message)
         except ValueError:
-            logger.error("corrupted item in retry list: %s " % message)
+            logger.error("corrupted item in list: %s " % message)
+            logger.debug("Error information: ", exc_info=True)
+            return None
+        except TypeError:
+            logger.error("wrong type item in list: %s " % message)
             logger.debug("Error information: ", exc_info=True)
             return None
 
@@ -241,6 +244,22 @@ class RedisQueue():
 
     def _msgToJSON(self, message):
         return jsonpickle.encode(message)
+
+    def _pop(self, queue):
+        # Default behaviour is same as DiskQueue (pop off the head, push to the tail)
+        #  Specifying a queue_stack_type of LIFO makes it pop the newest items first
+        if self.queue_stack_type == "LIFO":
+            json_msg = self.redis.rpop(queue)
+            logger.debug("rpop from list %s %s", queue, json_msg)
+        else:
+            json_msg = self.redis.lpop(queue)
+            logger.debug("lpop from list %s %s", queue, json_msg)
+
+        if json_msg == None:
+            return None
+
+        return self._msgFromJSON(json_msg)
+
 
     # ----------- Public Methods -----------
 
@@ -250,16 +269,15 @@ class RedisQueue():
         """
 
         for message in message_list:
-            logger.debug("DEBUG add to list %s %s" %
-                        self.queue_name, message)
+            logger.debug("add to list %s %s", self.key_name_new, message)
 
-            self.redis.rpush(self.queue_name, self._msgToJSON(message))
+            self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
     def cleanup(self):
         """_count_msgs
         remove statefiles.
         """
-        #self.redis.delete(self.queue_name)
+        #self.redis.delete(self.key_name)
 
         #self.msg_count = 0
 
@@ -268,7 +286,6 @@ class RedisQueue():
         """
         clean shutdown.
         """
-        self.redis.disconnect()
 
         self.redis = None
         self.msg_count = 0
@@ -283,15 +300,7 @@ class RedisQueue():
         count = 0
         while count < maximum_messages_to_get:
 
-            # Default behaviour is same as DiskQueue (pop off the head, push to the tail)
-            #  This makes it a FIFO queue, meaning really old data gets popped first
-            #  Specifying a queue_stack_type of LIFO makes it pop the newest items first
-            if self.queue_stack_type == "LIFO":
-                json_msg = self.redis.rpop(self.queue_name)
-            else:
-                json_msg = self.redis.lpop(self.queue_name)
-
-            message = self._msgFromJSON(json_msg)
+            message = self._pop(self.key_name)
 
             if not message:
                 break
@@ -308,8 +317,6 @@ class RedisQueue():
 
         return ml
 
-    
-    
     def on_housekeeping(self):
         """
         read rest of queue_file (from current point of unretried ones.)
@@ -326,12 +333,12 @@ class RedisQueue():
         """
         logger.info("%s on_housekeeping" % self.name)
 
-        # finish retry before reshuffling all retries entries
 
-        if os.path.isfile(self.queue_file) and self.queue_fp != None:
+        # finish retry before reshuffling all retries entries
+        if self.redis.llen(self.key_name) > 0:
             logger.info(
                 "have not finished retry list. Resuming retries with %s" %
-                self.queue_file)
+                self.key_name)
             return
 
         self.now = sarracenia.nowflt()
@@ -339,91 +346,77 @@ class RedisQueue():
         N = 0
 
         # put this in try/except in case ctrl-c breaks something
-
         try:
-            self.close()
             try:
-                os.unlink(self.housekeeping_path)
+                self.redis.delete(self.key_name_hk)
             except:
                 pass
-            fp = open(self.housekeeping_path, 'w')
-            fp.close()
 
             i = 0
-            last = None
 
-            fp = self.queue_fp
-            self.housekeeping_fp = open(self.housekeeping_path, 'a')
-
-            logger.debug("FIXME DEBUG has queue %s" %
-                        os.path.isfile(self.queue_file))
+            logger.debug("%s has queue %s",self.key_name, bool(self.redis.llen(self.key_name)))
 
             # remaining of retry to housekeeping
             while True:
-                fp, message = self.msg_get_from_file(fp, self.queue_file)
+
+                message = self._pop(self.key_name)
+
                 if not message: break
                 i = i + 1
                 if not self._needs_requeuing(message): continue
-                self.housekeeping_fp.write(self.msgToJSON(message))
-                N = N + 1
 
-            try:
-                fp.close()
-            except:
-                pass
+                logger.debug("push to %s %s",self.key_name_hk, message)
+                self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
+                N = N + 1
 
             i = 0
             j = N
 
-            fp = None
             # append new to housekeeping.
             while True:
-                fp, message = self.msg_get_from_file(fp, self.new_path)
+
+                message = self._pop(self.key_name_new)
+                
                 if not message: break
                 i = i + 1
-                logger.debug("DEBUG message %s" % message)
+                #logger.debug("DEBUG message %s" % message)
                 if not self._needs_requeuing(message): continue
 
-                #logger.debug("MG DEBUG flush retry to state %s" % message)
-                self.housekeeping_fp.write(self.msgToJSON(message))
+                logger.debug("push to %s %s",self.key_name_hk, message)
+                self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
-            try:
-                fp.close()
-            except:
-                pass
 
             logger.debug("FIXME DEBUG took %d out of the %d retry" %
-                         (N - j, i))
-
-            self.housekeeping_fp.close()
+                        (N - j, i))
 
         except Exception as Err:
             logger.error("something went wrong")
             logger.debug('Exception details: ', exc_info=True)
 
         # no more retry
-
         if N == 0:
             logger.info("No retry in list")
             try:
-                os.unlink(self.housekeeping_path)
+                logger.debug('delete list: %s', self.key_name_hk)
+                self.redis.delete(self.key_name_hk)
             except:
                 pass
 
         # housekeeping file becomes new retry
-
         else:
             logger.info("Number of messages in retry list %d" % N)
-            self.msg_count = N
+
             try:
-                os.rename(self.housekeeping_path, self.queue_file)
+                logger.debug('move list %s to %s', self.key_name_hk, self.key_name)
+                self.redis.lmove(self.key_name_hk, self.key_name)
+
             except:
                 logger.error("Something went wrong with rename")
 
         # cleanup
-        self.msg_count_new = 0
         try:
-            os.unlink(self.new_path)
+            logger.debug('delete list %s', self.key_name_new )
+            self.redis.delete(self.key_name_new)
         except:
             pass
 
