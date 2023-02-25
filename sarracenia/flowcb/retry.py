@@ -24,23 +24,23 @@ logger = logging.getLogger(__name__)
 
 class Retry(FlowCB):
     """
-      overall goal:  
-      *  When file transfers fail, write the messages to disk to be retried later. 
-         There is also a second retry queue for failed posts.
+    overall goal:  
+    * When file transfers fail, write the messages to a queue to be retried later. 
+        There is also a second retry queue for failed posts.
 
-      how it works:
-      * the after_accept checks how many incoming messages we received.
+    how it works:
+    * the after_accept checks how many incoming messages we received.
         If there is a full batch to process, don't try to retry any.
 
-      * if there is room, then fill in the batch with some retry requests.
+    * if there is room, then fill in the batch with some retry requests.
 
-      * when after_work is called, the worklist.failed list of messages
+    * when after_work is called, the worklist.failed list of messages
         is the files where the transfer failed. write those messages to
-        a retry file.
+        a retry queue.
 
-      * the DiskQueue class is used to store the retries, and it handles
+    * the DiskQueue or RedisQueue classes are used to store the retries, and it handles
         expiry on each housekeeping event.
-      
+
     """
     def __init__(self, options) -> None:
 
@@ -48,13 +48,13 @@ class Retry(FlowCB):
 
         super().__init__(options,logger)
 
+        #### REDIS CONFIG
+        #### FIXME NEEDS TO BE PORTED TO SR3 CONFIG
         queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
-
-        logger.debug(options)
 
         if queuedriver == 'redis':
             self.download_retry = RedisQueue(options, 'work_retry')
-            self.post_retry = DiskQueue(options, 'post_retry')
+            self.post_retry = RedisQueue(options, 'post_retry')
 
         else:
             self.download_retry_name = 'work_retry_%02d' % options.no
@@ -70,8 +70,8 @@ class Retry(FlowCB):
 
     def after_accept(self, worklist) -> None:
         """
-          If there are only a few new messages, get some from the download retry queue and put them into
-          `worklist.incoming`.
+        If there are only a few new messages, get some from the download retry queue and put them into
+        `worklist.incoming`.
         """
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
@@ -87,8 +87,8 @@ class Retry(FlowCB):
 
     def after_work(self, worklist) -> None:
         """
-          Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
-          messages, get some from the post retry queue and put them into `worklist.ok`.
+        Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
+        messages, get some from the post retry queue and put them into `worklist.ok`.
         """
         if len(worklist.failed) != 0:
             #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
