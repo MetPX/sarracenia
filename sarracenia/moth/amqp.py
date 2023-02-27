@@ -50,6 +50,7 @@ default_options = {
     'durable': True,
     'exchange': None,
     'exchangeDeclare': True,
+    'expire': None,
     'logLevel': 'info',
     'prefetch': 25,
     'queueName': None,

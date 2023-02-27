@@ -44,12 +44,13 @@ default_options = {
     'auto_ack': True,
     'batch': 25,
     'clean_session': False,
+    'max_inflight_messages': 20000, # https://pypi.org/project/paho-mqtt/ ... says default is 20, raised because of data loss
+    #'max_queued_messages' : 20000,
     'no': 0,
     'prefetch': 25,
-    'qos': 1,
+    #'receiveMaximum': 65535, # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
     'topicPrefix': ['v03']
 }
-
 
 class MQTT(Moth):
     """
@@ -95,9 +96,9 @@ class MQTT(Moth):
 
       There is additionally a vulnerability/inefficiency resulting from async message reception:
            when a new message arrive the loop thread started by the paho library will append
-           it to the received_messages data structure (protected by a mutex.)
-           if the application crashes, the received_messages have not been ack'd to the sender... so it is
-           likely that you will just get them later... could use for a shelf for received_messages,
+           it to the rx_msg data structure (protected by a mutex.)
+           if the application crashes, the rx_msg have not been ack'd to the sender... so it is
+           likely that you will just get them later... could use for a shelf for rx_msg,
            and sync it once in while... probably not worth it.
  
     """
@@ -119,6 +120,13 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
+        if 'qos' in self.o:
+            if type(self.o['qos']) is not int:
+                self.o['qos'] = int(self.o['qos'])
+        else:
+            self.o['qos'] = 1
+
+
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
         logger.setLevel('WARNING')
 
@@ -131,25 +139,42 @@ class MQTT(Moth):
 
         self.proto_version = paho.mqtt.client.MQTTv5
 
+        if 'receiveMaximum' in self.o and type(self.o['receiveMaximum']) is not int:
+            self.o['receiveMaximum'] = min( int( self.o['receiveMaximum'] ), 65535 )
+
+        if 'max_inflight_messages' in self.o and type(self.o['max_inflight_messages']) is not int:
+            self.o['max_inflight_messages'] = int( self.o['max_inflight_messages'] )
+
+        if 'max_queued_messages' in self.o and type(self.o['max_queued_messages']) is not int:
+            self.o['max_queued_messages'] = int( self.o['max_queued_messages'] )
+
         if is_subscriber:
-            # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Receive_Maximum
-            if not 'receiveMaximum' in self.o:
-                self.o['receiveMaximum'] = int(
-                    min(self.o['batch'] + self.o['prefetch'], 65535))
-            self.__getSetup(self.o)
+            self.rx_msg_mutex = threading.Lock()
+            self.rx_msg_mutex.acquire()
+            self.rx_msg_iToApp=0
+            self.rx_msg_iFromBroker=1
+            self.rx_msg_iMax=4
+            self.rx_msg={}
+            self.rx_msg[0]=[]
+            self.rx_msg[1]=[]
+            self.rx_msg[2]=[]
+            self.rx_msg[3]=[]
+            self.rx_msg[4]=[]
+            self.rx_msg_mutex.release()
+            self.__getSetup()
         else:
-            self.__putSetup(self.o)
+            self.__putSetup()
 
         logger.info("note: mqtt support is newish, not very well tested")
 
     def __sub_on_disconnect(client, userdata, rc, properties=None):
         logger.info(paho.mqtt.client.connack_string(rc))
-        if hasattr(userdata, 'pending_messages'):
-            lost = len(userdata.pending_messages)
+        if hasattr(userdata, 'pending_publishes'):
+            lost = len(userdata.pending_publishes)
             if lost > 0:
                 logger.error(
                     'message loss! cannot confirm %d messages were published: mids=%s'
-                    % (lost, userdata.pending_messages))
+                    % (lost, userdata.pending_publishes))
             else:
                 logger.info('clean. no published messages lost.')
 
@@ -175,7 +200,6 @@ class MQTT(Moth):
             logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
             subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                             prefix + subtopic)
-
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             logger.info( "subscribed to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
                 userdata.o['qos'], paho.mqtt.client.error_string(res)) )
@@ -197,17 +221,14 @@ class MQTT(Moth):
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_publish(client, userdata, mid):
-        userdata.pending_messages_mutex.acquire()
 
-        if mid in userdata.pending_messages:
+        if mid in userdata.pending_publishes:
             logger.info('publish complete. mid={}'.format(mid))
-            userdata.pending_messages.remove(mid)
+            # FIXME: worried... not clear if dequeue remove is thread safe.
+            userdata.pending_publishes.remove(mid)
         else:
-            logger.error(
-                'BUG: ack for message we do not know we published. mid={}'.
-                format(mid))
-
-        userdata.pending_messages_mutex.release()
+            userdata.unexpected_publishes.append(mid)
+            logger.info( 'BUG: ack for message we do not know we published. mid={}'.  format(mid))
 
     def __sslClientSetup(self) -> int:
         """
@@ -247,12 +268,11 @@ class MQTT(Moth):
             port = self.broker.url.port
         return port
 
-    def __clientSetup(self, options, cid) -> paho.mqtt.client.Client:
+    def __clientSetup(self, cid) -> paho.mqtt.client.Client:
 
         client = paho.mqtt.client.Client( userdata=self, \
             client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
 
-        #self.client.o = options
         client.connected = False
         client.on_connect = MQTT.__sub_on_connect
         client.on_disconnect = MQTT.__sub_on_disconnect
@@ -260,13 +280,15 @@ class MQTT(Moth):
         client.on_subscribe = MQTT.__sub_on_subscribe
         client.subscribe_in_progress = True
         # defaults to 20... kind of a mix of "batch" and prefetch...
-        client.max_inflight_messages_set(options['batch'] +
-                                         options['prefetch'])
+        if 'max_inflight_messages' in self.o:
+            logger.info( f" {type(self.o['max_inflight_messages'])} " )
+            client.max_inflight_messages_set(self.o['max_inflight_messages'])
+
         client.username_pw_set(self.broker.url.username,
                                unquote(self.broker.url.password))
         return client
 
-    def __getSetup(self, options):
+    def __getSetup(self):
         """
            Establish a connection to consume messages with.  
         """
@@ -274,11 +296,10 @@ class MQTT(Moth):
         self.connected=False
         while True:
             try:
-                self.new_message_mutex = threading.Lock()
 
-                cs = options['clean_session']
-                if ('queueName' in options) and ('no' in options):
-                    cid = options['queueName'] + '%02d' % options['no']
+                cs = self.o['clean_session']
+                if ('queueName' in self.o) and ('no' in self.o):
+                    cid = self.o['queueName']
                 else:
                     #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
                     cid = None
@@ -286,28 +307,24 @@ class MQTT(Moth):
 
                 props = Properties(PacketTypes.CONNECT)
                 props.SessionExpiryInterval = int(self.o['expire'])
-                props.ReceiveMaximum = int(self.o['receiveMaximum'])
+                if 'receiveMaximum' in self.o:
+                    props.ReceiveMaximum = self.o['receiveMaximum']
 
-                if (not ('no' in options)
-                        or options['no'] == 0) and 'instances' in options:
+                if not ('no' in self.o):
                     logger.info('declare sessions for instances')
-                    for i in range(1, options['instances'] + 1):
-                        icid = options['queueName'] + '%02d' % i
-                        decl_client = self.__clientSetup(options, icid)
-                        decl_client.on_connect = MQTT.__mgt_on_connect
-                        decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                           clean_start=False, properties=props )
-                        while not decl_client.is_connected():
-                            decl_client.loop(1)
-                        decl_client.disconnect()
-                        decl_client.loop_stop()
-                        logger.info('instance declaration for %s done' % icid)
+                    icid = self.o['queueName'] 
+                    decl_client = self.__clientSetup(icid)
+                    decl_client.on_connect = MQTT.__mgt_on_connect
+                    decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+                       clean_start=True, properties=props )
+                    while not decl_client.is_connected():
+                        decl_client.loop(1)
+                    decl_client.disconnect()
+                    decl_client.loop_stop()
+                    logger.info('instance declaration for %s done' % icid)
 
-                self.client = self.__clientSetup(options, cid)
+                self.client = self.__clientSetup(cid)
 
-                self.new_message_mutex.acquire()
-                self.client.received_messages = []
-                self.new_message_mutex.release()
 
                 if hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
                     self.client.auto_ack(False)
@@ -323,6 +340,7 @@ class MQTT(Moth):
 
                 self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
                        clean_start=False, properties=props )
+                self.client.enable_logger(logger)
                 self.client.loop_start()
                 self.connected=True
                 return
@@ -335,7 +353,7 @@ class MQTT(Moth):
             if ebo < 60: ebo *= 2
             time.sleep(ebo)
 
-    def __putSetup(self, options):
+    def __putSetup(self):
         """
            establish a connection to allow publishing. 
         """
@@ -343,28 +361,31 @@ class MQTT(Moth):
         self.connected=False
         while True:
             try:
+                self.pending_publishes = collections.deque()
+                self.unexpected_publishes = collections.deque()
 
                 props = Properties(PacketTypes.CONNECT)
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
 
-                self.pending_messages_mutex = threading.Lock()
-                self.pending_messages = collections.deque()
 
                 self.client = paho.mqtt.client.Client(
                     protocol=self.proto_version, userdata=self)
+
+                self.client.enable_logger(logger)
                 self.client.on_connect = MQTT.__pub_on_connect
                 self.client.on_disconnect = MQTT.__pub_on_disconnect
                 self.client.on_publish = MQTT.__pub_on_publish
-                #dunno if this is a good idea.
-                self.client.max_queued_messages_set(options['prefetch'])
+                if 'max_queued_messages' in self.o:
+                    self.client.max_queued_messages_set(self.o['max_queued_messages'])
+
                 self.client.username_pw_set(self.broker.url.username,
                                             unquote(self.broker.url.password))
-                res = self.client.connect(options['broker'].url.hostname,
+                res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
                                           properties=props)
                 logger.info('connecting to %s, res=%s' %
-                            (options['broker'].url.hostname, res))
+                            (self.o['broker'].url.hostname, res))
 
                 self.client.loop_start()
                 self.connected=True
@@ -381,7 +402,6 @@ class MQTT(Moth):
     def __sub_on_message(client, userdata, msg):
         """
           callback to append messages received to new queue.
-          MQTT only supports v03 messages, so always assumed to be JSON encoded.
 
           FIXME: locking here is expensive... would like to group them ... 1st draft.
              could do a rotating set of batch size lists, and that way just change counters.
@@ -390,12 +410,12 @@ class MQTT(Moth):
         """
 
         if userdata.o['messageDebugDump']:
-            logger.info("Message received: %d, %s %s" %
+            logger.info("Message received: id:%d, topic:%s payload:%s" %
                         (msg.mid, msg.topic, msg.payload))
 
-        userdata.new_message_mutex.acquire()
-        client.received_messages.append(msg)
-        userdata.new_message_mutex.release()
+        m = userdata._msgDecode(msg)
+        userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
+        logger.info( f"rx_msg queue len: {len(userdata.rx_msg)}" )
 
     def putCleanUp(self):
         self.client.disconnect()
@@ -404,20 +424,18 @@ class MQTT(Moth):
 
     def getCleanUp(self):
 
-        if (not ('no' in self.o)
-                or self.o['no'] == 0) and 'instances' in self.o:
+        if not ('no' in self.o):
             props = Properties(PacketTypes.CONNECT)
             props.SessionExpiryInterval = 1
             logger.info('cleanup sessions for instances')
-            for i in range(1,self.o['instances']+1):
-                icid= self.o['queueName'] + '%02d' % i 
-                myclient = self.__clientSetup( self.o, icid )
-                myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                   myclean_start=True, properties=props )
-                while not self.client.is_connected():
-                    myclient.loop(0.1)
-                myclient.disconnect()
-                logger.info('instance deletion for %02d done' % i)
+            icid= self.o['queueName']
+            myclient = self.__clientSetup( icid )
+            myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+               clean_start=True, properties=props )
+            while not self.client.is_connected():
+                myclient.loop(0.1)
+            myclient.disconnect()
+            logger.info('instance deletion for %02d done' % i)
 
         self.client.disconnect()
         self.client.loop_stop()
@@ -472,57 +490,63 @@ class MQTT(Moth):
            logger.error('message acknowledged and discarded: %s' % message)
            return None
 
-    def newMessages(self, blocking=False) -> list:
+    def _rotateInputBuffers(self) -> None:
+        """
+           to reduce locking granularity allocate one queue to accepting messages, and a second
+           one to read from. and just swap between them from time to time (kind of double buffering.)
+
+        """
+        if len(self.rx_msg[self.rx_msg_iToApp]) == 0:
+            self.rx_msg_mutex.acquire()
+            self.rx_msg_iToApp = self.rx_msg_iFromBroker
+
+            if self.rx_msg_iFromBroker >= self.rx_msg_iMax:
+                self.rx_msg_iFromBroker=0
+            else:
+                self.rx_msg_iFromBroker+=1
+            time.sleep(0.1)
+            self.rx_msg_mutex.release()
+
+    def newMessages(self) -> list:
         """
            return new messages.
 
            FIXME: hate the locking... too fine grained, especially in on_message... just a 1st shot.
 
         """
-        if blocking:
-            ebo = 0.1
-            while len(self.client.received_messages) == 0:
-                logger.debug('blocked: no messages available')
-                time.sleep(ebo)
-                if ebo < 10:
-                    ebo *= 2
 
-        self.new_message_mutex.acquire()
+        logger.info( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
+        logger.info( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
 
-        if len(self.client.received_messages) > self.o['batch']:
-            mqttml = self.client.received_messages[0:self.o['batch']]
-            self.client.received_messages = self.client.received_messages[
-                self.o['batch']:]
+        if len(self.rx_msg[self.rx_msg_iToApp]) > self.o['batch']:
+            mqttml = self.rx_msg[self.rx_msg_iToApp][0:self.o['batch']]
+            self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][self.o['batch']:]
+        elif len(self.rx_msg[self.rx_msg_iToApp]) > 0:
+            mqttml = self.rx_msg[self.rx_msg_iToApp]
+            self.rx_msg[self.rx_msg_iToApp] = []
         else:
-            mqttml = self.client.received_messages
-            self.client.received_messages = []
+            mqttml = []
 
-        self.new_message_mutex.release()
+        logger.info( f"picked up {len(mqttml)} rx_msg queue after: {len(self.rx_msg[self.rx_msg_iToApp])} ")
 
-        ml = list(filter(None, map(self._msgDecode, mqttml)))
-        return ml
+        self._rotateInputBuffers()
 
-    def getNewMessage(self, blocking=False) -> sarracenia.Message:
+        return mqttml
 
-        if blocking:
-            ebo = 0.1
-            while len(self.client.received_messages) == 0:
-                logger.debug('blocked: no messages available')
-                time.sleep(ebo)
-                if ebo < 10:
-                    ebo *= 2
+    def getNewMessage(self) -> sarracenia.Message:
 
-        self.new_message_mutex.acquire()
+        logger.info( f"lock acquired, received_message len: {len(self.rx_msg)} ")
 
-        if len(self.client.received_messages) > 0:
-            m = self.client.received_messages[0]
-            self.client.received_messages = self.client.received_messages[1:]
+        if len(self.rx_msg) > 0:
+            m = self.rx_msg[self.rx_msg_iToApp][0]
+            self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][1:]
         else:
             m = None
-        self.new_message_mutex.release()
+        logger.info( f"lock released, received_message len: {len(self.rx_msg)} ")
+        self._rotateInputBuffers()
 
         if m:
-            return self._msgDecode(m)
+            return m
         else:
             return None
 
@@ -606,15 +630,19 @@ class MQTT(Moth):
                     
             self.metrics['txByteCount'] += len(raw_body)
 
-            info = self.client.publish(topic=topic, payload=raw_body, qos=1, properties=props)
+            info = self.client.publish(topic=topic, payload=raw_body, qos=self.o['qos'], properties=props)
                
             if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:
-                self.pending_messages_mutex.acquire()
-                self.pending_messages.append(info.mid)
+                if info.mid in self.unexpected_publishes:
+                    self.unexpected_publishes.remove(info.mid)
+                    ack_pending=False
+                else:
+                    self.pending_publishes.append(info.mid)
+                    ack_pending=True
+
                 self.metrics['txGoodCount'] += 1
-                self.pending_messages_mutex.release()
-                logger.info("published mid={} {} to under: {} ".format(
-                    info.mid, body, topic))
+                logger.info("published mid={} ack_pending={} {} to under: {} ".format(
+                    info.mid, ack_pending, body, topic))
                 return True  #success...
 
         except Exception as ex:
@@ -629,10 +657,17 @@ class MQTT(Moth):
             if self.is_subscriber and self.client.subscribe_in_progress:
                 time.sleep(0.1)
 
-            if hasattr(self, 'pending_messages'):
-                while len(self.pending_messages) > 0:
-                    logger.info('waiting for last messages to publish')
-                    time.sleep(0.1)
+            if hasattr(self, 'pending_publishes'):
+                ebo=0.1
+                while  (len(self.pending_publishes)+len(self.unexpected_publishes)) >0:
+                    logger.info( f'waiting {ebo} seconds for last {len(self.pending_publishes)} messages to publish')
+                    if len(self.unexpected_publishes) < 10:
+                        logger.info( f'messages acknowledged before publish?: {self.unexpected_publishes}')
+                    if len(self.pending_publishes) < 10:
+                        logger.info( f'messages awaiting publish: {self.pending_publishes}')
+                    time.sleep(ebo)
+                    if ebo < 64:
+                        ebo *= 2
                 logger.info('no more pending messages')
             self.client.disconnect()
         self.connected=False
