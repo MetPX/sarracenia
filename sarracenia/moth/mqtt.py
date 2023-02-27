@@ -66,7 +66,7 @@ class MQTT(Moth):
            exchange: xpublic,  topic prefix:   v03 subtopic:   /my/favourite/directory
            results in :   xpublic/v03/my/favourite/directory
 
-           AMQP queue -> MQTT group-id (client-id should map to  queue+instance, I think.)
+           AMQP queue -> MQTT group-id (queue maps to queue, client-id should map to  queue+instance, I think.)
 
        deviation from standard: group-id lengths are not checked, neither are client-id's.
            Sarracenia routinely generates such ids with 40 to 50 characters in them.
@@ -101,6 +101,12 @@ class MQTT(Moth):
            likely that you will just get them later... could use for a shelf for rx_msg,
            and sync it once in while... probably not worth it.
  
+
+      References:
+         good discussion of shared subscriptions:
+          https://www.hivemq.com/blog/mqtt5-essentials-part7-shared-subscriptions/#:~:text=Shared%20subscriptions%20are%20an%20MQTT,is%20sent%20to%20that%20topic.
+
+
     """
     def __init__(self, broker, options, is_subscriber):
         """
@@ -149,6 +155,11 @@ class MQTT(Moth):
             self.o['max_queued_messages'] = int( self.o['max_queued_messages'] )
 
         if is_subscriber:
+            self.subscribe_mutex = threading.Lock()
+            self.subscribe_mutex.acquire()
+            self.subscribe_in_progress = 0
+            self.subscribe_mutex.release()
+
             self.rx_msg_mutex = threading.Lock()
             self.rx_msg_mutex.acquire()
             self.rx_msg_iToApp=0
@@ -178,13 +189,9 @@ class MQTT(Moth):
             else:
                 logger.info('clean. no published messages lost.')
 
-    def __mgt_on_connect(client, userdata, flags, rc, properties=None):
-        logger.info("management connection succeeded: rc=%s, flags=%s" %
-                    (paho.mqtt.client.connack_string(rc), flags))
-
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
-        logger.info("rc=%s, flags=%s" %
-                    (paho.mqtt.client.connack_string(rc), flags))
+        logger.info("client=%s rc=%s, flags=%s" %
+                    (client, paho.mqtt.client.connack_string(rc), flags))
 
         if flags['session present'] != 1:
             logger.debug(
@@ -195,24 +202,29 @@ class MQTT(Moth):
             return
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
+        userdata.subscribe_mutex.acquire()
         for binding_tuple in userdata.o['bindings']:
             exchange, prefix, subtopic = binding_tuple
             logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
             subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                             prefix + subtopic)
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
-            logger.info( "subscribed to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
+            userdata.subscribe_in_progress += 1
+            logger.info( "asked to subscribe to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
                 userdata.o['qos'], paho.mqtt.client.error_string(res)) )
+        userdata.subscribe_mutex.release()
 
-        client.subscribe_in_progress = True
 
     def __sub_on_subscribe(client,
                            userdata,
                            mid,
                            granted_qos,
                            properties=None):
-        logger.info("subscribe completed mid={} granted_qos={}".format(
-            mid, list(map(lambda x: x.getName(), granted_qos))))
+        userdata.subscribe_mutex.acquire()
+        logger.info("client: {} subscribe completed mid={} granted_qos={}".format(
+            client._client_id, mid, list(map(lambda x: x.getName(), granted_qos))))
+        userdata.subscribe_in_progress -= 1
+        userdata.subscribe_mutex.release()
 
     def __pub_on_disconnect(client, userdata, rc, properties=None):
         logger.info(paho.mqtt.client.connack_string(rc))
@@ -278,10 +290,8 @@ class MQTT(Moth):
         client.on_disconnect = MQTT.__sub_on_disconnect
         client.on_message = MQTT.__sub_on_message
         client.on_subscribe = MQTT.__sub_on_subscribe
-        client.subscribe_in_progress = True
         # defaults to 20... kind of a mix of "batch" and prefetch...
         if 'max_inflight_messages' in self.o:
-            logger.info( f" {type(self.o['max_inflight_messages'])} " )
             client.max_inflight_messages_set(self.o['max_inflight_messages'])
 
         client.username_pw_set(self.broker.url.username,
@@ -299,32 +309,41 @@ class MQTT(Moth):
 
                 cs = self.o['clean_session']
                 if ('queueName' in self.o) and ('no' in self.o):
-                    cid = self.o['queueName']
+                    cid = self.o['queueName'] + "_i%02d" % self.o['no']
                 else:
                     #cid = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
                     cid = None
                     cs = True
+                    logger.info( f" cid=+{cid}+"  )
 
                 props = Properties(PacketTypes.CONNECT)
                 props.SessionExpiryInterval = int(self.o['expire'])
                 if 'receiveMaximum' in self.o:
                     props.ReceiveMaximum = self.o['receiveMaximum']
 
-                if not ('no' in self.o):
-                    logger.info('declare sessions for instances')
-                    icid = self.o['queueName'] 
-                    decl_client = self.__clientSetup(icid)
-                    decl_client.on_connect = MQTT.__mgt_on_connect
-                    decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                       clean_start=True, properties=props )
-                    while not decl_client.is_connected():
-                        decl_client.loop(1)
-                    decl_client.disconnect()
-                    decl_client.loop_stop()
-                    logger.info('instance declaration for %s done' % icid)
+                logger.info( f"is no around? {self.o['no']} " )
+                if ('no' in self.o) and self.o['no'] > 0:
+                    self.client = self.__clientSetup(cid)
+                else:
+                    if 'instances' in self.o:    
+                        session_mxi=self.o['instances']+1
+                    else:
+                        session_mxi=2
 
-                self.client = self.__clientSetup(cid)
-
+                    for i in range(1,session_mxi ):
+                        icid = self.o['queueName'] + "_i%02d" %  i
+                        logger.info('declare session for instances %s' %icid)
+                        decl_client = self.__clientSetup(icid)
+                        decl_client.on_connect = MQTT.__sub_on_connect
+                        decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+                           clean_start=True, properties=props )
+                        while (not decl_client.is_connected()) or (self.subscribe_in_progress > 0):
+                            logger.info( f"isconnected: {decl_client.is_connected()} subscribe_in_progress: {self.subscribe_in_progress} " )
+                            decl_client.loop(1)
+                        decl_client.disconnect()
+                        decl_client.loop_stop()
+                        logger.info('instance declaration for %s done' % icid)
+                        return
 
                 if hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
                     self.client.auto_ack(False)
@@ -415,7 +434,6 @@ class MQTT(Moth):
 
         m = userdata._msgDecode(msg)
         userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
-        logger.info( f"rx_msg queue len: {len(userdata.rx_msg)}" )
 
     def putCleanUp(self):
         self.client.disconnect()
@@ -427,19 +445,20 @@ class MQTT(Moth):
         if not ('no' in self.o):
             props = Properties(PacketTypes.CONNECT)
             props.SessionExpiryInterval = 1
-            logger.info('cleanup sessions for instances')
-            icid= self.o['queueName']
-            myclient = self.__clientSetup( icid )
-            myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-               clean_start=True, properties=props )
-            while not self.client.is_connected():
-                myclient.loop(0.1)
-            myclient.disconnect()
-            logger.info('instance deletion for %02d done' % i)
+            for i in range(1,self.o['instances']+1):
+                icid= self.o['queueName'] + "_i%02d" % i
+                logger.info('cleanup session %s' % icid )
+                myclient = self.__clientSetup( icid )
+                myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+                   clean_start=True, properties=props )
+                while not self.myclient.is_connected():
+                    myclient.loop(0.1)
+                myclient.disconnect()
+                logger.info('instance deletion for %02d done' % i)
 
-        self.client.disconnect()
-        self.client.loop_stop()
-        pass
+        if hasattr(self, 'client'):
+            self.client.disconnect()
+            self.client.loop_stop()
 
     def _msgDecode(self, mqttMessage) -> sarracenia.Message:
         """
@@ -458,8 +477,6 @@ class MQTT(Moth):
 
             if hasattr(mqttMessage.properties, 'UserProperty'): 
                 logger.info( f'UserProperty: {mqttMessage.properties.UserProperty} ')
-
-            logger.info( f"topic: {mqttMessage.topic}" )
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
@@ -515,8 +532,8 @@ class MQTT(Moth):
 
         """
 
-        logger.info( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
-        logger.info( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
+        #logger.debug( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
+        #logger.debug( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
 
         if len(self.rx_msg[self.rx_msg_iToApp]) > self.o['batch']:
             mqttml = self.rx_msg[self.rx_msg_iToApp][0:self.o['batch']]
@@ -527,7 +544,7 @@ class MQTT(Moth):
         else:
             mqttml = []
 
-        logger.info( f"picked up {len(mqttml)} rx_msg queue after: {len(self.rx_msg[self.rx_msg_iToApp])} ")
+        #logger.debug( f"picked up {len(mqttml)} rx_msg queue after: {len(self.rx_msg[self.rx_msg_iToApp])} ")
 
         self._rotateInputBuffers()
 
@@ -535,14 +552,11 @@ class MQTT(Moth):
 
     def getNewMessage(self) -> sarracenia.Message:
 
-        logger.info( f"lock acquired, received_message len: {len(self.rx_msg)} ")
-
         if len(self.rx_msg) > 0:
             m = self.rx_msg[self.rx_msg_iToApp][0]
             self.rx_msg[self.rx_msg_iToApp] = self.rx_msg[self.rx_msg_iToApp][1:]
         else:
             m = None
-        logger.info( f"lock released, received_message len: {len(self.rx_msg)} ")
         self._rotateInputBuffers()
 
         if m:
@@ -653,8 +667,8 @@ class MQTT(Moth):
 
     def close(self):
         logger.info('closing')
-        if self.client.is_connected():
-            if self.is_subscriber and self.client.subscribe_in_progress:
+        if hasattr(self,'client') and self.client.is_connected():
+            if self.is_subscriber and self.subscribe_in_progress:
                 time.sleep(0.1)
 
             if hasattr(self, 'pending_publishes'):
