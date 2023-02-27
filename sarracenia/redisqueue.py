@@ -314,6 +314,7 @@ class RedisQueue():
                 message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
+            count += 1
 
         return ml
 
