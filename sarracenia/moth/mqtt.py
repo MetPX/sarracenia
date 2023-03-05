@@ -198,7 +198,9 @@ class MQTT(Moth):
                 'no existing session, no recovery of inflight messages from previous connection'
             )
 
+        userdata.connect_in_progress = False
         if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
+            logger.error("failed to establish connection")
             return
 
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
@@ -230,6 +232,7 @@ class MQTT(Moth):
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
+        userdata.connect_in_progress = False
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_publish(client, userdata, mid):
@@ -282,6 +285,8 @@ class MQTT(Moth):
 
     def __clientSetup(self, cid) -> paho.mqtt.client.Client:
 
+        self.connect_in_progress = True
+
         client = paho.mqtt.client.Client( userdata=self, \
             client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
 
@@ -317,7 +322,8 @@ class MQTT(Moth):
                     logger.info( f" cid=+{cid}+"  )
 
                 props = Properties(PacketTypes.CONNECT)
-                props.SessionExpiryInterval = int(self.o['expire'])
+                if 'expire' in self.o and self.o['expire']:
+                    props.SessionExpiryInterval = int(self.o['expire'])
                 if 'receiveMaximum' in self.o:
                     props.ReceiveMaximum = self.o['receiveMaximum']
 
@@ -337,7 +343,7 @@ class MQTT(Moth):
                         decl_client.on_connect = MQTT.__sub_on_connect
                         decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                            clean_start=True, properties=props )
-                        while (not decl_client.is_connected()) or (self.subscribe_in_progress > 0):
+                        while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                             logger.info( f"isconnected: {decl_client.is_connected()} subscribe_in_progress: {self.subscribe_in_progress} " )
                             decl_client.loop(1)
                         decl_client.disconnect()
@@ -400,6 +406,7 @@ class MQTT(Moth):
 
                 self.client.username_pw_set(self.broker.url.username,
                                             unquote(self.broker.url.password))
+                self.connect_in_progress = True
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
                                           properties=props)
@@ -451,7 +458,7 @@ class MQTT(Moth):
                 myclient = self.__clientSetup( icid )
                 myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                    clean_start=True, properties=props )
-                while not self.myclient.is_connected():
+                while self.connect_in_progress:
                     myclient.loop(0.1)
                 myclient.disconnect()
                 logger.info('instance deletion for %02d done' % i)
