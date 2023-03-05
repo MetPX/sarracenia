@@ -1232,6 +1232,7 @@ class Flow:
                 logger.debug('Exception details:', exc_info=True)
 
         if os.path.isdir(path):
+            logger.debug( f"no need to mkdir {path} as it exists" )
             return True
 
         if 'mode' in msg:
