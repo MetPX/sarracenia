@@ -712,6 +712,13 @@ class Flow:
             else:
                 token = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        fopv = msg['fileOp'][f].split('/') 
+                        if len(fopv) > strip:
+                            msg['fileOp'][f] = '/'.join(fopv[split:])
+                            
         # strip using a pattern
 
         elif pstrip:
@@ -723,6 +730,11 @@ class Flow:
             if not filename in relstrip: relstrip = filename
             token = relstrip.split('/')
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = re.sub(pstrip, '', msg['fileOp'][f] )
+                            
         # if flatten... we flatten relative path
         # strip taken into account
 
@@ -730,6 +742,11 @@ class Flow:
             filename = flatten.join(token)
             token[-1] = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
+                            
         if maskFileOption is not None:
             filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
