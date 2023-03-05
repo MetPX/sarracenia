@@ -1219,11 +1219,10 @@ class Flow:
         """
             perform an mkdir.
         """
-        logger.debug("message is to mkdir %s " %
-                     (msg['new_file']))
 
         ok=False
         path = msg['new_dir'] + '/' + msg['new_file']
+        logger.debug( f"message is to mkdir {path}" )
 
         if not os.path.isdir(msg['new_dir']):
             try:
@@ -1233,7 +1232,7 @@ class Flow:
                 logger.debug('Exception details:', exc_info=True)
 
         if os.path.isdir(path):
-            return ok
+            return True
 
         if 'mode' in msg:
             mode=msg['mode']
