@@ -320,7 +320,7 @@ class Sftp(Transfer):
 
     # symlink
     def symlink(self, link, path):
-        logger.debug("%s %s" % (link, path))
+        logger.debug("(in %s), create this file %s as a link to: %s" % (self.getcwd(), path, link) )
         alarm_set(self.o.timeout)
         self.sftp.symlink(link, path)
         alarm_cancel()
