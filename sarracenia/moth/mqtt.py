@@ -176,10 +176,10 @@ class MQTT(Moth):
         else:
             self.__putSetup()
 
-        logger.info("note: mqtt support is newish, not very well tested")
+        logger.warning("note: mqtt support is newish, not very well tested")
 
     def __sub_on_disconnect(client, userdata, rc, properties=None):
-        logger.info(paho.mqtt.client.connack_string(rc))
+        logger.debug(paho.mqtt.client.connack_string(rc))
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
             if lost > 0:
@@ -190,7 +190,7 @@ class MQTT(Moth):
                 logger.info('clean. no published messages lost.')
 
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
-        logger.info("client=%s rc=%s, flags=%s" %
+        logger.debug("client=%s rc=%s, flags=%s" %
                     (client, paho.mqtt.client.connack_string(rc), flags))
 
         if flags['session present'] != 1:
@@ -344,7 +344,6 @@ class MQTT(Moth):
                         decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
                            clean_start=True, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                            logger.info( f"isconnected: {decl_client.is_connected()} subscribe_in_progress: {self.subscribe_in_progress} " )
                             decl_client.loop(1)
                         decl_client.disconnect()
                         decl_client.loop_stop()
