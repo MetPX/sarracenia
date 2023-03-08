@@ -1736,7 +1736,7 @@ class Config:
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 self.queueName = queueName
-                logger.info('default guessed queueName  %s ' % self.queueName )
+                logger.debug('default guessed queueName  %s ' % self.queueName )
 
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
