@@ -994,12 +994,11 @@ class sr_GlobalState:
                 (self.appname, self.bin_dir))
 
         if not os.path.isdir(self.user_config_dir):
-            print('INFO: No %s configuration found. creating an empty one' % self.appname)
+            print( f'INFO: No {self.appname} configuration found. creating an empty one {self.user_config_dir}' )
             os.makedirs(self.user_config_dir)
      
         if not os.path.isdir(self.user_cache_dir):
-            print('INFO: No %s configuration state or log files found. Creating an empty one' %
-                  self.appname)
+            print( f'INFO: No {self.appname} state or log files found. Creating an empty one {self.user_cache_dir}' )
             os.makedirs(self.user_cache_dir)
 
         self.components = [
