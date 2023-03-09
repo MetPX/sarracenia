@@ -994,11 +994,13 @@ class sr_GlobalState:
                 (self.appname, self.bin_dir))
 
         if not os.path.isdir(self.user_config_dir):
-            print('WARNING: No %s configuration found.' % self.appname)
-
+            print('INFO: No %s configuration found. creating an empty one' % self.appname)
+            os.makedirs(self.user_config_dir)
+     
         if not os.path.isdir(self.user_cache_dir):
-            print('WARNING: No %s configuration state or log files found.' %
+            print('INFO: No %s configuration state or log files found. Creating an empty one' %
                   self.appname)
+            os.makedirs(self.user_cache_dir)
 
         self.components = [
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
