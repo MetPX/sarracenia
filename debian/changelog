@@ -1,5 +1,6 @@
-metpx-sr3 (3.00.28) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.28) unstable; urgency=medium
 
+  * apply strip, pstrip, and flattern to paths in fileOp fields (rename & symlink) HPC mirroring.
   * fixed mqtt support (broken since 3.0.15) #506
   * bugfix for deleting exchanges only if unused #382
   * refactor class name "encoding" to postformat. #617
@@ -8,7 +9,6 @@ metpx-sr3 (3.00.28) UNRELEASED; urgency=medium
   * ported last v2 (sundew porting) documentation to sr3
   * bugfix #621 removing double slashes in paths.
   * bugfix... queunames not being chosen properly. (multiple instances using different queues.) 
-  * apply strip, pstrip, and flattern to paths in fileOp fields (rename & symlink) HPC mirroring.
   * plugin api: sarracenia.Message.updatePaths added current values as defaults
   * plugin api: flowcb.accept.pathreplace uses improved sets 
   * plugin api: add_option( improved set support.) added all_values of set.
