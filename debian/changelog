@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.29) UNRELEASED; urgency=medium
+
+  * bugfix #632 create root of config and state directories when missing.
+
+ -- Peter <peter@bsqt.homeip.net>  Thu, 09 Mar 2023 17:57:32 -0500
+
 metpx-sr3 (3.00.28) unstable; urgency=medium
 
   * apply strip, pstrip, and flattern to paths in fileOp fields (rename & symlink) HPC mirroring.
