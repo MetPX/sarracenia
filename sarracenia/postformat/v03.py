@@ -1,16 +1,16 @@
 import json
 import logging
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 
 logger = logging.getLogger(__name__)
 
 
-class V03(Encoding):
+class V03(PostFormat):
     """
        A class for controlling the format of messages are sent.
        internally All messages are represented as v03. 
-       encodings implement translations to other protocols for interop.
+       post format implement translations to other protocols for interop.
 
    """
 
@@ -21,20 +21,20 @@ class V03(Encoding):
     @staticmethod
     def mine(payload, headers, content_type) -> bool:
         """
-          return true if the message is in this encoding.
+          return true if the message is in this post format.
        """
         if content_type == V03.content_type():
             return True
         return False
 
     @staticmethod
-    def importMine(body, headers, topic, topicPrefix) -> sarracenia.Message:
+    def importMine(body, headers) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
        """
         msg = sarracenia.Message()
-        msg["version"] = 'v03'
+        msg["_format"] = __name__.split('.')[-1].lower()
         try:
             msg.copyDict(json.loads(body))
         except Exception as ex:

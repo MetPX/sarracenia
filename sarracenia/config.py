@@ -5,6 +5,13 @@
 """
  Second version configuration parser
 
+
+FIXME: pas 2023/02/05...  missing options from v2:
+
+   max_queue_size
+   outlet
+   pipe
+
 """
 
 import argparse
@@ -59,6 +66,8 @@ import sarracenia.instance
 default_options = {
     'acceptSizeWrong': False,
     'acceptUnmatched': True,
+    'attempts': 3,
+    'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
     'delete': False,
@@ -80,6 +89,7 @@ default_options = {
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
+    'post_format': None,
     'realpathPost': False,
     'recursive' : True,
     'report': False,
@@ -90,17 +100,17 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'exchangeSplit', 'instances', 'no', 'post_exchangeSplit', 'prefetch',
+    'batch', 'count', 'exchangeSplit', 'instances', 'no', 'post_exchangeSplit', 'prefetch',
     'messageCountMax', 'messageRateMax', 'messageRateMin'
 ]
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'cache_stat', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'pump_flag', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
-    'report', 'reset', 'retry_mode', 'retryEmptyBeforeExit', 'save', 'set_passwords', 'sourceFromExchange', \
+    'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
+    'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sourceFromExchange', \
     'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
@@ -117,8 +127,8 @@ list_options = ['path']
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents': sarracenia.flowcb.entry_points + [ 'reject' ],
-    'fileEvents': set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
+    'logEvents' : sarracenia.flowcb.entry_points + [ 'reject' ],
+    'fileEvents' : set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
 #    'fileEvents': sarracenia.flow.allFileEvents
@@ -128,10 +138,10 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
 
 str_options = [
-    'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flowMain', 'header', 'integrity', 'logLevel', 
+    'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
+    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'integrity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'queueName', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
     'nodupe_basis', 'tlsRigour', 'vip'
 ]
@@ -148,6 +158,10 @@ str_options = [
 """
 convert_to_v3 = {
     'blocksize' : ['continue'],
+    'cache_stat' : ['continue'],
+    'cluster_aliases' : [ 'continue' ],
+    'from_cluster' : [ 'continue' ],
+    'to_clusters' : [ 'continue' ],
     'integrity' : {
        'n' : [ 'integrity', 'none' ],
        's' : [ 'integrity', 'sha512' ],
@@ -172,26 +186,26 @@ convert_to_v3 = {
         'post_total_save': ['continue'],
         'post_total_interval': ['continue']
     },
-    'destfn_script': { 'manual_conversion_requited' : [ 'continue' ] },
-    'do_get': { 'manual_conversion_requited' : [ 'continue' ] },
-    'do_poll': { 'manual_conversion_requited' : [ 'continue' ] },
-    'do_put': { 'manual_conversion_requited' : [ 'continue' ] },
-    'do_download': { 'manual_conversion_requited' : [ 'continue' ] },
-    'do_put': { 'manual_conversion_requited' : [ 'continue' ] },
+    'destfn_script': { 'manual_conversion_required' : [ 'continue' ] },
+    'do_get': { 'manual_conversion_required' : [ 'continue' ] },
+    'do_poll': { 'manual_conversion_required' : [ 'continue' ] },
+    'do_put': { 'manual_conversion_required' : [ 'continue' ] },
+    'do_download': { 'manual_conversion_required' : [ 'continue' ] },
+    'do_put': { 'manual_conversion_required' : [ 'continue' ] },
     'do_send': {
        'file_email' : [ 'callback', 'send.email' ],
     },
-    'do_task': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_task': { 'manual_conversion_required' : [ 'continue' ] },
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
-    'do_data': { 'manual_conversion_requited' : [ 'continue' ] },
+    'do_data': { 'manual_conversion_required' : [ 'continue' ] },
     'on_file': {
         'file_age' : [ 'callback', 'work.age' ],
     },
-    'on_heartbeat': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_html_page': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_part': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_line': { 'manual_conversion_requited' : [ 'continue' ] },
+    'on_heartbeat': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_html_page': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_part': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_line': { 'manual_conversion_required' : [ 'continue' ] },
     'on_message': {
         'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
         'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
@@ -224,6 +238,14 @@ convert_to_v3 = {
 	'msg_by_user': ['continue'],
 	'msg_dump': ['continue'],
 	'msg_total': ['continue'],
+    'on_report': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_stop': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_start': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_watch': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_post': {
+        'post_log': ['logEvents', '+after_work']
+    },
+    'parts' : [ 'continue' ],
 	'post_total': ['continue'],
         'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
         'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
@@ -235,15 +257,15 @@ convert_to_v3 = {
 	'post_rate_limit': ['continue'],
         'to': ['continue']
     },
-    'on_post': {
-        'post_log': ['logEvents', '+after_work']
-    },
-    'on_report': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_stop': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_start': { 'manual_conversion_requited' : [ 'continue' ] },
-    'on_watch': { 'manual_conversion_requited' : [ 'continue' ] },
-    'parts' : [ 'continue' ],
+    'poll_without_vip': [ 'manual_conversion_required' ], 
+    'pump' : [ 'continue' ],
+    'pump_flag' : [ 'continue' ],
+    'reconnect': ['continue'],
     'report_daemons': ['continue'],
+    'restore' : [ 'continue' ],
+    'retry_mode' : ['continue'],
+    'save' : [ 'continue' ],
+    'set_passwords': ['continue'],
     'windows_run': [ 'continue' ],
     'xattr_disable': [ 'continue' ]
 }
@@ -529,38 +551,60 @@ class Config:
 
     # Correct name on the right, old name on the left.
     synonyms = {
+        'a': 'action',
         'accel_cp_threshold': 'accelThreshold',
         'accel_scp_threshold': 'accelThreshold',
         'accel_wget_threshold': 'accelThreshold',
         'accept_unmatch': 'acceptUnmatched',
         'accept_unmatched': 'acceptUnmatched',
+        'at': 'attempts', 
+        'b': 'broker',
+        'bd': 'baseDir',
         'basedir': 'baseDir',
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
         'bind_queue': 'queueBind',
         'cache': 'nodupe_ttl',
+        'c': 'include',
+        'cb': 'nodupe_basis',
+        'cache_basis': 'nodupe_basis',
+        'caching': 'nodupe_ttl',
+        'chmod': 'permDefault',
+        'chmod_dir': 'permDirDefault',
+        'chmod_log': 'permLog',
+        'content' : 'inline', 
+        'content_encoding':  'inlineEncoding',
+        'content_max': 'inlineByteMax',
+        'd': 'discard',
         'declare_exchange': 'exchangeDeclare',
         'declare_queue': 'queueDeclare',
+        'default_mode': 'permDefault',
+        'default_dir_mode': 'permDirDefault',
+        'default_log_mode': 'permLog',
+        'destination_timezone': 'timezone', 
         'document_root': 'documentRoot',
-        'caching': 'nodupe_ttl',
-        'cache_basis': 'nodupe_basis',
+        'download-and-discard': 'discard',
         'e' : 'fileEvents',
         'events' : 'fileEvents',
+        'ex': 'exchange',
         'exchange_split': 'exchangeSplit',
         'exchange_suffix': 'exchangeSuffix',
-        'get' : 'accept', 
-        'instance': 'instances',
-        'chmod': 'permDefault',
-        'default_mode': 'permDefault',
-        'chmod_dir': 'permDirDefault',
-        'default_dir_mode': 'permDirDefault',
-        'chmod_log': 'permLog',
-        'default_log_mode': 'permLog',
+        'expiry': 'expire', 
         'file_time_limit' : 'nodupe_fileAgeMax', 
+        'fp' : 'force_polling',
+        'fs' : 'follow_symlinks',
+        'get' : 'accept', 
+        'h' : 'help',
         'heartbeat': 'housekeeping',
         'hb_memory_baseline_file' : 'MemoryBaseLineFile',
         'hb_memory_max' : 'MemoryMax',
         'hb_memory_multiplier' : 'MemoryMultiplier',
+        'imx': 'inlineByteMax',
+        'inl' : 'inline', 
+        'inline_encoding':  'inlineEncoding',
+        'inline_max': 'inlineByteMax',
+        'instance': 'instances',
+        'lock': 'inflight', 
         'log_format': 'logFormat',
         'll': 'logLevel',
         'loglevel': 'logLevel',
@@ -570,13 +614,20 @@ class Config:
         'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
+        'message-ttl': 'message_ttl',
         'msg_replace_new_dir' : 'pathReplace',
         'msg_filter_wmo2msc_replace_dir': 'filter_wmo2msc_replace_dir',
         'msg_filter_wmo2msc_uniquify': 'filter_wmo2msc_uniquify',
         'msg_filter_wmo2msc_tree': 'filter_wmo2msc_treeify',
         'msg_filter_wmo2msc_convert': 'filter_wmo2msc_convert',
         'msg_fdelay' : 'fdelay',
+        'n': 'no_download', 
+        'nd': 'nodupe_ttl',
         'no_duplicates': 'nodupe_ttl',
+        'o' : 'overwrite', 
+        'on_msg': 'on_message',
+        'p' : 'path',
+        'pm' : 'permCopy',
         'post_base_dir': 'post_baseDir',
         'post_basedir': 'post_baseDir',
         'post_base_url': 'post_baseUrl',
@@ -588,12 +639,19 @@ class Config:
         'post_topic_prefix' : 'post_topicPrefix',
         'preserve_mode' : 'permCopy',
         'preserve_time' : 'timeCopy',
+        'pt' : 'timeCopy',
+        'qn': 'queueName',
+        'queue' : 'queueName', 
         'queue_name' : 'queueName', 
         'realpath' : 'realpathPost',
         'realpath_filter' : 'realpathFilter',
         'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
+        'sd' : 'nodupe_ttl',
+        'sdb' : 'nodupe_basis', 
+        'simulate': 'dry_run',
+        'simulation': 'dry_run',
         'source_from_exchange': 'sourceFromExchange', 
         'sum' : 'integrity',  
         'suppress_duplicates' : 'nodupe_ttl',
@@ -639,6 +697,7 @@ class Config:
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
+        self.discard = False
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
@@ -669,7 +728,7 @@ class Config:
         self.mirror = False
         self.messageAgeMax = 0
         self.post_exchanges = []
-	#self.post_topicPrefix = None
+	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
         self.randomize = False
@@ -855,7 +914,7 @@ class Config:
         w = 'with ' if fn or flatten or strip else ''
         return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
-    def add_option(self, option, kind='list', default_value=None):
+    def add_option(self, option, kind='list', default_value=None, all_values=None ):
         """
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
            
@@ -872,6 +931,7 @@ class Config:
                           all v2 plugin options are declared of type list.
 
            * 'set'        a set of string values, each succeeding occurrence is unioned to the total.
+                          if all_values is provided, then constrain set to that.
 
            * 'size'       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
 
@@ -935,6 +995,8 @@ class Config:
                     else:
                         sv=set([v])
             setattr(self, option, sv)
+            if all_values:
+                set_choices[option] = all_values
 
         elif kind == 'size':
             size_options.append(option)
@@ -1329,7 +1391,7 @@ class Config:
                     self.plugins_early.insert(0,v)
             elif k in ['declare']:
                 self._parse_declare(line[1:])
-            elif k in ['feeder']:
+            elif k in ['feeder', 'manager']:
                 self.feeder = urllib.parse.urlparse(line[1])
                 self.declared_users[self.feeder.username] = 'feeder'
             elif k in ['header', 'h']:
@@ -1433,7 +1495,8 @@ class Config:
                     setattr(self, k, set([]))
                     continue
                 if v.lower() in [ 'all' , '+all' ]:
-                    setattr(self,k,set_choices[k])
+                    if k in set_choices:
+                        setattr(self,k,set_choices[k])
                     continue
                 v=v.replace('|',',')
                 if v[0] in ['-','+']:
@@ -1577,7 +1640,7 @@ class Config:
             if hasattr(self, 'post_exchangeSuffix'):
                 self.post_exchange += '_%s' % self.post_exchangeSuffix
 
-            if hasattr(self, 'post_exchangeSplit'):
+            if hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
                 l = []
                 for i in range(0, int(self.post_exchangeSplit)):
                     y = self.post_exchange + '%02d' % i
@@ -1616,20 +1679,55 @@ class Config:
 
             self.queue_filename = queuefile
 
-            while (not hasattr(self, 'queueName')) or (self.queueName is None):
+            #while (not hasattr(self, 'queueName')) or (self.queueName is None):
+            """
+
+              normal:
+                  if not the lead instance, wait a bit for the queuefile to be written.
+                  look for a queuefile in the state directory, if it is there, read it.
+                  if you can't read the file
+
+              if you are instance 1, or 0 (foreground) and the queuefile is missing, then need
+              to write it.  if queueName is set, use that, if not
+
+              if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)
+              will come out differently every time. So even in the case of a fixed queue name, need to write 
+
+            """
+
+            if hasattr(self,'no') and self.no > 1:
+                # worker instances need give lead instance time to write the queuefile
+                time.sleep(randint(4,14))
+
+                queue_file_read=False
+                config_read_try=0
+                while not queue_file_read:
+                    if os.path.isfile(queuefile):
+                        f = open(queuefile, 'r')
+                        self.queueName = f.read()
+                        f.close()
+                    else:
+                        self.queueName = ''
+
+                    config_read_try += 1
+                    logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
+                    if len(self.queueName) < 1:
+                          nap=randint(1,4)
+                          logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
+                          time.sleep(nap)
+                          if config_read_try > 5:
+                              logger.critical( f'failed to read queue name from {queuefile}')
+                              sys.exit(2)
+                    else:
+                          queue_file_read=True
+
+            else: # lead instance just tries once...
+
                 if os.path.isfile(queuefile):
                     f = open(queuefile, 'r')
                     self.queueName = f.read()
                     f.close()
-                    #logger.info('FIXME: read queueName %s from queue state file' % self.queueName )
-                    if len(self.queueName) < 1:
-                          #logger.info('FIXME: queue name too short, try again' )
-                          self.queueName=None
-                if hasattr(self,'no') and self.no > 1:
-                    time.sleep(randint(1,4))
-                else:
-                    break
-
+                
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
                 queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
@@ -1638,18 +1736,18 @@ class Config:
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 self.queueName = queueName
-                #logger.info('FIXME: defaulted queueName  %s ' % self.queueName )
+                logger.debug('default guessed queueName  %s ' % self.queueName )
 
-                if not os.path.isdir(os.path.dirname(queuefile)):
-                    pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True,
-                                                                   exist_ok=True)
+            if not os.path.isdir(os.path.dirname(queuefile)):
+                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
 
-                # only lead instance (0-forground, 1-start, or none in the case of 'declare')
-                # should write the state file.
-                if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
-                    f = open(queuefile, 'w')
-                    f.write(self.queueName)
-                    f.close()
+            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+            # should write the state file.
+            if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                f = open(queuefile, 'w')
+                f.write(self.queueName)
+                f.close()
+                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
 
         if hasattr(self, 'no'):
             if self.statehost:

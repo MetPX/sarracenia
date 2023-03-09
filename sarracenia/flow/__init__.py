@@ -36,8 +36,6 @@ allFileEvents = set(['create', 'delete', 'link', 'mkdir', 'modify','rmdir'])
 default_options = {
     'accelThreshold': 0,
     'acceptUnmatched': True,
-    'attempts': 3,
-    'batch': 100,
     'byteRateMax': None,
     'discard': False,
     'download': False,
@@ -453,9 +451,9 @@ class Flow:
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
-                        if ('version' in m) and ( m['version'] != 
-                                                  m['post_version']):
-                            m['version'] = m['post_version']
+                        if ('_format' in m) and ( m['_format'] != 
+                                                  m['post_format']):
+                            m['_format'] = m['post_format']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -714,6 +712,13 @@ class Flow:
             else:
                 token = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        fopv = msg['fileOp'][f].split('/') 
+                        if len(fopv) > strip:
+                            msg['fileOp'][f] = '/'.join(fopv[split:])
+                            
         # strip using a pattern
 
         elif pstrip:
@@ -725,6 +730,11 @@ class Flow:
             if not filename in relstrip: relstrip = filename
             token = relstrip.split('/')
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = re.sub(pstrip, '', msg['fileOp'][f] )
+                            
         # if flatten... we flatten relative path
         # strip taken into account
 
@@ -732,6 +742,11 @@ class Flow:
             filename = flatten.join(token)
             token[-1] = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
+                            
         if maskFileOption is not None:
             filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
@@ -818,13 +833,21 @@ class Flow:
                         oldname_matched = accepting
                         break
 
-            url = self.o.variableExpansion(m['baseUrl'],
-                                         m) + os.sep + m['relPath']
+            url = self.o.variableExpansion(m['baseUrl'], m)
+            if (m['baseUrl'][-1] == '/') or (m['relPath'][0] == '/'):
+                if (m['baseUrl'][-1] == '/') and (m['relPath'][0] == '/'):
+                    url += m['relPath'][1:]
+                else:
+                    url += m['relPath']
+            else:
+                url += '/' + m['relPath']
+
             if 'sundew_extension' in m and url.count(":") < 1:
                 urlToMatch = url + ':' + m['sundew_extension']
             else:
                 urlToMatch = url
 
+            logger.debug( f" urlToMatch: {urlToMatch} " )
             # apply masks for accept/reject options.
             matched = False
             for mask in self.o.masks:
@@ -1204,11 +1227,10 @@ class Flow:
         """
             perform an mkdir.
         """
-        logger.debug("message is to mkdir %s " %
-                     (msg['new_file']))
 
         ok=False
         path = msg['new_dir'] + '/' + msg['new_file']
+        logger.debug( f"message is to mkdir {path}" )
 
         if not os.path.isdir(msg['new_dir']):
             try:
@@ -1218,7 +1240,8 @@ class Flow:
                 logger.debug('Exception details:', exc_info=True)
 
         if os.path.isdir(path):
-            return ok
+            logger.debug( f"no need to mkdir {path} as it exists" )
+            return True
 
         if 'mode' in msg:
             mode=msg['mode']
@@ -1487,16 +1510,34 @@ class Flow:
             logger.debug("%s_transport download override retPath=%s" % (self.scheme, msg['retPath']))
             remote_file = msg['retPath']
             cdir = '/'
-            urlstr = msg['baseUrl'] + '/' + msg['retPath']
+            if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
+                urlstr = msg['baseUrl'] + msg['relPath']
+            else:
+                urlstr = msg['baseUrl'] + '/' + msg['relPath']
         else:
             logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']))
 
             # split the path to the file and the file
             # if relPath is just the file remote_path will return empty
             remote_path, remote_file = os.path.split(msg['relPath'])
+
+            u = urllib.parse.urlparse(msg['baseUrl']) 
+            if u.path != '/':
+                if remote_path[0] == '/':
+                    remote_path = u.path + remote_path
+                else:
+                    remote_path = u.path + '/' + remote_path
+
             # relPath does not contain a prefix / , add it for cdir
-            cdir = '/' + remote_path
-            urlstr = msg['baseUrl'] + '/' + msg['relPath']
+            if remote_path[0] != '/':
+                 cdir = '/' + remote_path
+            else:
+                 cdir = remote_path
+            if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
+                urlstr = msg['baseUrl'] + msg['relPath']
+            else:
+                urlstr = msg['baseUrl'] + '/' + msg['relPath']
+
 
         istr =msg['integrity']  if ('integrity' in msg) else "None"
         fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
@@ -1583,6 +1624,7 @@ class Flow:
          
             if (not self.o.dry_run) and hasattr(self.proto[self.scheme], 'getcwd'):
                 cwd = self.proto[self.scheme].getcwd()
+                logger.debug( f" from proto getcwd: {cwd} ")
 
             if cwd != cdir:
                 logger.debug("%s_transport remote cd to %s" % (self.scheme, cdir))

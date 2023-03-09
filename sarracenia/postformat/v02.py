@@ -5,16 +5,16 @@ from sarracenia.flowcb import v2wrapper
 
 import logging
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 
 logger = logging.getLogger(__name__)
 
 
-class V02(Encoding):
+class V02(PostFormat):
     """
        A class for controlling the format of messages are sent.
        internally All messages are represented as v03. 
-       encodings implement translations to other protocols for interop.
+       post format implement translations to other protocols for interop.
 
    """
 
@@ -25,25 +25,23 @@ class V02(Encoding):
     @staticmethod
     def mine(payload, headers, content_type) -> bool:
         """
-          return true if the message is in this encoding.
+          return true if the message is in this post format.
        """
         if content_type == V02.content_type() :
             return True
         return False
 
     @staticmethod
-    def importMine(body, headers, topic, topicPrefix) -> sarracenia.Message:
+    def importMine(body, headers) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
+
+          the topic and topicPrefix should be lists, not protocol specific strings.
        """
         msg = sarracenia.Message()
+        msg["_format"] = __name__.split('.')[-1].lower()
         msg.copyDict(headers)
-    
-        msg['subtopic'] = topic.split('.')[len(topicPrefix):]
-        if not '_deleteOnPost' in msg:
-            msg['_deleteOnPost'] = set()
-        msg['_deleteOnPost'] |= set(['subtopic'])
     
         try:
             pubTime, baseUrl, relPath = body.split(' ')[0:3]
@@ -55,6 +53,7 @@ class V02(Encoding):
         msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
         msg['relPath'] = relPath
         msg['subtopic'] = relPath.split('/')
+        msg['_deleteOnPost'] |= set(['subtopic'])
 
         for t in ['atime', 'mtime']:
             if t in msg:
@@ -65,15 +64,15 @@ class V02(Encoding):
         try:
             if 'sum' in msg:
                 sum_algo_map = {
+                    "0": "random",
                     "a": "arbitrary",
                     "d": "md5",
-                    "s": "sha512",
+                    "L": "link",
                     "m": "mkdir",
                     "n": "md5name",
-                    "0": "random",
-                    "L": "link",
                     "r": "rmdir",
                     "R": "remove",
+                    "s": "sha512",
                     "z": "cod"
                 }
                 sm = sum_algo_map[msg["sum"][0]]
@@ -87,7 +86,12 @@ class V02(Encoding):
                 if 'oldname' in msg:
                     msg['fileOp'] = { 'rename': msg['oldname'] }
                     del msg['oldname']
-                    msg["integrity"] = {"method": sm, "value": sv}
+                    if sm in ['mkdir']:
+                        msg['fileOp']['mkdir'] = ''
+                    elif sm in ['link']:
+                        msg['fileOp']['link'] = msg['link']
+                    else:
+                        msg["integrity"] = {"method": sm, "value": sv}
                 elif sm == 'remove':
                     msg['fileOp'] = { 'remove': '' }
                 elif sm == 'mkdir':
@@ -126,7 +130,6 @@ class V02(Encoding):
         except Exception as ex:
             logger.warning( f"parts field corrupt: {msg['parts']}, ignored: {ex}" )
     
-        msg["version"] = 'v02'
         return msg
 
     @staticmethod

@@ -1200,8 +1200,7 @@ posting to a broker. The valid argument values are:
 
 **json:**
 
-  write each message to standard output, one per line in the same json format used for
-  queue save/restore by the python implementation.
+  write each message (json/v03 encoded) to standard output.
 
 **url:**
 
@@ -1403,6 +1402,16 @@ to True in the configuration file used. If there are several notification messag
 file is posted by block (the *blocksize* option was set), the block notification messages 
 are randomized meaning that they will not be posted
 
+realpathAdjust <count> (Experimental) (default: 0)
+--------------------------------------------------
+
+The realpathAdjust option adjusts how much paths are resolved with the C standard realpath 
+library routine. The count indicates how many path elements should be ignored, counting
+from the beginning of the path with positive numbers, or the end with negative ones.
+An adjustment of zero means to apply realpath to the entire path.
+
+Implemented in C, but not python currently. 
+
 realpathFilter <flag> (Experimental)
 ------------------------------------
 
@@ -1412,7 +1421,7 @@ posting.
 
 This option is being used to study some use cases, and may disappear in future.
 
-Implemented in C, but not 3 python currently. 
+Implemented in C, but not python currently. 
 
 
 realpathPost <flag> (Experimental)
@@ -1424,16 +1433,6 @@ monitor trees, but the trees may have completely different paths than the argume
 given. This option also enforces traversing of symbolic links.
 
 This option is being used to investigate some use cases, and may disappear in future.
-
-reconnect <flag>
-----------------
-
-Active if *-rc|--reconnect* appears in the command line... or
-*reconnect* is set to True in the configuration file used.
-*If there are several notification messages because the file is posted
-by block because the *blocksize* option was set, there is a
-reconnection to the broker everytime a post is to be sent.
-
 
 sendTo <url>
 ---------------

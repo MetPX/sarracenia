@@ -124,20 +124,13 @@ subscriber is unavailable for some reason. In many cases, one can simply shutdow
 and delete the queue on the broker. While that solves the broker performance issue, the user
 will not receive the notifications.
 
-To avoid data loss, please consult the 
-`sr_sender(1) manual page *DESTINATION UNAVAILABLE* <../Reference/#sr3.1.rst#destination-unavailable>`_
-section for details of save and restore options. Briefly, when a sender is placed 
-in *save* mode, rather than attempting to send each file, the notification messages written 
-to a disk file. When the remote user is back, one invokes *restore* mode, and 
-the disk file is read back, and the files are sent. In versions >= 2.18, there 
-is logic to automatically save failed transfers for later retry, offloading the
-queue from the broker to the instances' cache storage, so no intervention is 
-needed.
+On the other hand, one can just let leave it alone, and let Sarracenia take care of it using it's
+disk based retry queues. Essentially it will store records related to failed transfers on disk,
+and try them again at reasonable intervals, without getting stuck on any particular item.
 
-In the case of components other than a sender, please consult the QUEUE Save/Restore section
-of the sr_shovel(8) manual page. There is a similar mechanism used to write notification messages queued
-to disk, to avoid them overloading the broker. When the consumer is back in service, the
-*restore_to_queue* option can be used to recover missing notification messages.
+When a destination returns to service, current data is a higher priority, and it will sent
+retry data, that is already late, only when there is room to do soe in the current data feed.
+( https://github.com/MetPX/sarracenia/issues/620 ) 
 
 If one gets to the point where traffic through a queue is excessive (several hundred notification messages
 per second to a single queue), especially if there are many instances sharing the same queue

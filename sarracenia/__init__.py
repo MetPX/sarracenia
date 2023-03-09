@@ -24,7 +24,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.27"
+__version__ = "3.00.28"
 
 from base64 import b64decode, b64encode
 import calendar
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class Sarracenia:
     """
-        Core utilities of Sarracenia.  The main class here is sarracenia.Message.
+        Core utilities of Sarracenia. The main class here is sarracenia.Message.
         a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the 
         python built-in, but also we have a few major entry points some factoryies:
     
@@ -56,7 +56,7 @@ class Sarracenia:
 
         m = sarracenia.Message.fromFileData( path, options, lstat )
      
-        builds a message from a given existing file, consulting *options*, a parsed
+        builds a notification message from a given existing file, consulting *options*, a parsed
         in memory version of the configuration settings that are applicable
 
         **Options**
@@ -75,7 +75,7 @@ class Sarracenia:
 
         **If you don't have a file**
 
-        If you don't have a local file, then build your message with:
+        If you don't have a local file, then build your notification message with:
     
         m = sarracenia.Message.fromFileInfo( path, options, lstat )
     
@@ -96,13 +96,13 @@ class Sarracenia:
         lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
      
         that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
-        call. However the message returned will lack an integrity checksum field.
+        call. However the notification message returned will lack an integrity checksum field.
         once you get the file, you can add the Integrity field with:
     
         m.__computeIntegrity(path, o):
     
-        In terms of consuming messages, the fields in the dictionary provide metadata
-        for the announced resource. The anounced data could be embedded in the message itself,
+        In terms of consuming notification messages, the fields in the dictionary provide metadata
+        for the announced resource. The anounced data could be embedded in the notification message itself,
         or available by a URL.
     
         Messages are generally gathered from a source such as the Message Queueing Protocol wrapper
@@ -278,7 +278,7 @@ known_report_codes = {
     304:
     "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
-    417: "Expectation Failed: invalid message (corrupt headers)",
+    417: "Expectation Failed: invalid notification message (corrupt headers)",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
@@ -289,11 +289,18 @@ known_report_codes = {
 
 class Message(dict):
     """
-        A message in Sarracenia is stored as a python dictionary, with a few extra management functions.
+        A notification message in Sarracenia is stored as a python dictionary, with a few extra management functions.
 
-        unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
+        The internal representation is very close to the v03 format defined here: https://metpx.github.io/sarracenia/Reference/sr_post.7.html
+
+        Unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
         and hence the need for the copyDict member.
     """
+    def __init__(self):
+        self['_format'] = 'v03'
+        self['_deleteOnPost'] = set(['_format'])
+
+
     def __computeIntegrity(msg, path, o):
         """
            check extended attributes for a cached integrity sum calculation.
@@ -395,7 +402,7 @@ class Message(dict):
 
         if msg is None: return ""
 
-        if msg['version'] == 'v04':
+        if msg['_format'] == 'Wis':
             s = '{ '
             if 'id' in msg:
                 s += f"{{ 'id': '{msg['id']}', 'type':'Feature', "
@@ -409,7 +416,7 @@ class Message(dict):
 
         for k in sorted(msg.keys()):
 
-            if msg['version'] == 'v04' and k in [ 'id', 'type', 'geometry' ]:
+            if msg['_format'] == 'v04' and k in [ 'id', 'type', 'geometry' ]:
                continue
             
             if type(msg[k]) is dict:
@@ -433,7 +440,7 @@ class Message(dict):
 
             s += f" '{k}':'{v}'," 
 
-        if msg['version'] == 'v04':
+        if msg['_format'] == 'Wis':
             s += ' } '
 
         s = s[:-1] + " }"
@@ -471,10 +478,12 @@ class Message(dict):
         msg = Message()
 
         #FIXME no variable substitution... o.variableExpansion ?
-        if hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03', 'v04' ]:
-            msg['version'] = o.post_topicPrefix[0]
+        if hasattr(o,'post_format') :
+            msg['_format'] = o.post_format
+        elif hasattr(o,'post_topicPrefix') and o.post_topicPrefix[0] in [ 'v02', 'v03' ]:
+            msg['_format'] = o.post_topicPrefix[0]
         else:
-            msg['version'] = 'v03'
+            msg['_format'] = 'v03'
 
         if hasattr(o, 'post_exchange'):
             msg['exchange'] = o.post_exchange
@@ -482,7 +491,7 @@ class Message(dict):
             msg['exchange'] = o.exchange
 
         msg['local_offset'] = 0
-        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', 'version'])
+        msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])
 
         # notice
         msg['pubTime'] = timeflt2str(time.time())
@@ -491,10 +500,13 @@ class Message(dict):
         msg.updatePaths(o, os.path.dirname(path), os.path.basename(path))
 
         # rename
-        if 'new_path' in msg:
+        if 'new_relPath' in msg:
             post_relPath = msg['new_relPath']
-        else:
+        elif 'relPath' in msg:
             post_relPath = msg['relPath']
+        else:
+            post_relPath = None
+
         newname = post_relPath
 
         # rename path given with no filename
@@ -552,13 +564,13 @@ class Message(dict):
 
         if lstat is None: return msg
 
-        if (lstat.st_mode is not None) and  \
-            (o.permCopy and lstat.st_mode):
-            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
-
-        if os_stat.S_ISDIR(lstat.st_mode):
-            msg['fileOp'] = { 'directory': '' }
-            return msg
+        if (lstat.st_mode is not None) :
+            if (o.permCopy and lstat.st_mode):
+                msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+            
+            if os_stat.S_ISDIR(lstat.st_mode):
+                msg['fileOp'] = { 'directory': '' }
+                return msg
 
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
@@ -616,9 +628,11 @@ class Message(dict):
         msg['report'] = {'code': code, 'message': text}
         msg['_deleteOnPost'] |= set(['report','timeCompleted'])
 
-    def updatePaths(msg, options, new_dir, new_file):
+    def updatePaths(msg, options, new_dir=None, new_file=None):
         """
         set the new\_ fields in the message based on changed file placement.
+        if new_ options are ommitted updaste the rest of the fields in 
+        the message based on their current values.
 
         If you change file placement in a flow callback, for example.
         One would change new_dir and new_file in the message.
@@ -630,10 +644,12 @@ class Message(dict):
         """
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_version'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
         ])
-        msg['new_dir'] = new_dir
-        msg['new_file'] = new_file
+        if new_dir:
+            msg['new_dir'] = new_dir
+        if new_file:
+            msg['new_file'] = new_file
 
         relPath = new_dir + '/' + new_file
 
@@ -647,12 +663,12 @@ class Message(dict):
                 return
 
         if options.post_topicPrefix:
-            msg['post_version'] = options.post_topicPrefix[0]
-        elif options.topicPrefix != msg['version']:
-            logger.warning( f"received message in {msg['version']} format, expected {options.post_topicPrefix} " )
-            msg['post_version'] = options.topicPrefix[0]
+            msg['post_format'] = options.post_topicPrefix[0]
+        elif options.topicPrefix != msg['_format']:
+            logger.warning( f"received message in {msg['_format']} format, expected {options.post_topicPrefix} " )
+            msg['post_format'] = options.topicPrefix[0]
         else:
-            msg['post_version'] = msg['version']
+            msg['post_format'] = msg['_format']
            
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):

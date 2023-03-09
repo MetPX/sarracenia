@@ -147,23 +147,13 @@ cas, on peut simplement fermer l'expéditeur et supprimer la fil d'attente du
 courtier. Bien que cela résout le problème de la performance des courtiers,
 l'utilisateur ne recevra pas les avis.
 
-Pour éviter la perte de données, veuillez consulter la page de manuel
-`sr_sender(1) *DESTINATION INDISPONIBLE* <../Reference/#sr3.1.rst#destination-unavailable>`_
-pour plus de détails sur les options de sauvegarde et de restauration. En bref,
-quand un expéditeur est placé en mode *Enregistrer*, plutôt que de tenter
-d'envoyer chaque fichier, les messages écrits sur un fichier disque. Lorsque
-l'utilisateur distant est de retour, on invoque le mode *restore*, et le
-fichier disque est relu, et les fichiers sont envoyés.  Dans les versions
->= 2.18, il est logique d'enregistrer automatiquement les transferts échoués
-pour les réessayer plus tard, le rechargement de la fil d'attente du courtier
-se fait automatiquement, de sorte qu'aucune intervention n'est nécessaire.
+D'un autre côté, on peut juste le laisser tranquille, et laisser Sarracenia s'en occuper en utilisant son
+files d'attente de relance sur disque. Essentiellement, il stockera les enregistrements liés aux transferts échoués sur le disque,
+et réessayez à intervalles raisonnables, sans rester bloqué sur un élément en particulier.
 
-Dans le cas de composants autres qu'un expéditeur, veuillez consulter la
-section Sauvegarde/Restauration de QUEUE de la page de manuel sr_shovel(8).
-Il existe un mécanisme similaire utilisé pour écrire des messages en file
-d'attente sur le disque, pour éviter qu'ils surchargent le courtier. Lorsque
-le consommateur est de nouveau en service, L'option *restore_to_queue* peut
-être utilisée pour récupérer les messages manquants.
+Lorsqu'une destination revient en service, les données actuelles ont une priorité plus élevée et elles seront envoyées
+réessayez les données, qui sont déjà en retard, uniquement lorsqu'il y a de la place pour le faire dans le flux de données actuel.
+( plus de détails, en anglais: https://github.com/MetPX/sarracenia/issues/620 )
 
 Si l'on arrive au point où le trafic à travers une fil d'attente est excessif
 (plusieurs centaines de messages par seconde à une seule fil d'attente),

@@ -6,6 +6,7 @@
    This also applies to the HPC mirroring case, where one would likely have a setting like
 
    pathReplace site5,site6
+   pathReplaceFields dir     
 
    sample usage:
 
@@ -30,7 +31,8 @@ class Pathreplace(FlowCB):
         super().__init__(options,logger)
 
         self.o.add_option('pathReplace', 'list' )
-
+        all_fields = set(['dir','file','rename','hlink','link'])
+        self.o.add_option( 'pathReplaceFields', 'set', all_fields, all_fields )
 
     def on_start(self):
 
@@ -50,12 +52,15 @@ class Pathreplace(FlowCB):
                 (b, a) = p.split(",")
 
                 # not sure if replacing in the main path is needed... maybe just in fileOp fields?
-                logger.info("replace: %s by %s " % (b, a) )
-                new_new_dir = msg['new_dir'].replace(b, a, 1)
+                logger.info("replace: %s by %s in: %s" % (b, a, self.o.pathReplaceFields) )
 
-                if new_new_dir != msg['new_dir'] :
-                    msg['new_dir'] = new_new_dir
-                else:
+                if 'dir' in self.o.pathReplaceFields:
+                    new_new_dir = msg['new_dir'].replace(b, a, 1)
+
+                    if new_new_dir != msg['new_dir'] :
+                        msg['new_dir'] = new_new_dir
+
+                if 'file' in self.o.pathReplaceFields:
                     msg['new_file'] = msg['new_file'].replace(b, a, 1)
 
                 msg['new_relPath'] = msg['new_dir'] + os.sep + msg['new_file']
@@ -63,11 +68,11 @@ class Pathreplace(FlowCB):
                 # adjust oldname/newname/link  if related to strings to replace
     
                 if 'fileOp' in msg:
-                    if 'rename' in msg['fileOp']:
+                    if 'rename' in msg['fileOp'] and 'rename' in self.o.pathReplaceFields:
                         msg['fileOp']['rename'] = msg['fileOp']['rename'].replace(b, a, 1)
-                    if 'hlink' in msg['fileOp']:
+                    if 'hlink' in msg['fileOp'] and 'hlink' in self.o.pathReplaceFields:
                         msg['fileOp']['hlink'] = msg['fileOp']['hlink'].replace(b, a, 1)
-                    if 'link' in msg['fileOp']:
+                    if 'link' in msg['fileOp'] and 'link' in self.o.pathReplaceFields:
                         msg['fileOp']['link'] = msg['fileOp']['link'].replace(b, a, 1)
     
                 # adjust new_relpath if posting
