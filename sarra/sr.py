@@ -102,7 +102,7 @@ class sr_GlobalState:
             try:
                 os.makedirs(os.path.dirname(lfn), exist_ok=True)
                 dir_not_there=False
-            except Exception as Ex:
+            except Exception as ex:
                 print( 'makedirs %s failed: %s' % ( os.path.dirname(lfn), ex ) )
                 if ex.errno == errno.EEXIST: 
                      dir_not_there=False
