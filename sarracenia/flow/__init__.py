@@ -261,12 +261,12 @@ class Flow:
         """
         for p in self.plugins["metrics_report"]:
             if self.o.logLevel.lower() == 'debug' :
-                plugin_name = p.__qualname__.replace('.metrics_report', '')
-                self.metrics[plugin_name] = p()
+                module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
+                self.metrics[module_name] = p()
             else:
                 try:
-                    plugin_name = p.__qualname__.replace('.metrics_report', '')
-                    self.metrics[plugin_name] = p()
+                    module_name = str(p.__module__).replace('sarracenia.flowcb', '' )
+                    self.metrics[module_name] = p()
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
@@ -485,8 +485,8 @@ class Flow:
             elapsed = now - last_time
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                if (self.o.retryEmptyBeforeExit and "Retry" in self.metrics
-                    and self.metrics['Retry']['msgs_in_post_retry'] > 0):
+                if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
+                    and self.metrics['retry']['msgs_in_post_retry'] > 0):
                     logger.info("Not exiting because there are still messages in the post retry queue.")
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
                     current_sleep = 60

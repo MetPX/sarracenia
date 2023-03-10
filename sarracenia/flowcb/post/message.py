@@ -46,6 +46,12 @@ class Message(FlowCB):
                 worklist.failed.append(m)
         worklist.ok = still_ok
 
+    def metrics_report(self) -> dict:
+        if hasattr(self,'poster') and self.poster:
+            return self.poster.metricsReport()
+        else:
+            return {}
+
     def on_housekeeping(self):
         m = self.poster.metricsReport()
         logger.info(

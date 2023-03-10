@@ -16,7 +16,7 @@ class Message(FlowCB):
     """
        gather messages from a sarracenia.moth message queuing protocol source.
     """
-    def __init__(self, options):
+    def __init__(self, options) -> None:
 
         super().__init__(options,logger)
 
@@ -25,18 +25,24 @@ class Message(FlowCB):
             od.update(self.o.dictify())
             self.consumer = sarracenia.moth.Moth.subFactory(self.o.broker, od)
 
-    def gather(self):
+    def gather(self) -> list:
         """
            return a current list of messages.
         """
         return self.consumer.newMessages()
 
-    def ack(self, mlist):
+    def ack(self, mlist) -> None:
         for m in mlist:
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
             self.consumer.ack(m)
 
-    def on_housekeeping(self):
+    def metrics_report(self) -> dict:
+        if hasattr(self,'consumer') and self.consumer:
+           return self.consumer.metricsReport()
+        else:
+           return {}
+
+    def on_housekeeping(self) -> None:
         m = self.consumer.metricsReport()
         average = (m['rxByteCount'] /
                    m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
@@ -45,6 +51,6 @@ class Message(FlowCB):
            f"average: {naturalSize(average)}" )
         self.consumer.metricsReset()
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         self.consumer.close()
         logger.info('closing')
