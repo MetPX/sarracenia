@@ -265,7 +265,7 @@ class Flow:
                 self.metrics[module_name] = p()
             else:
                 try:
-                    module_name = str(p.__module__).replace('sarracenia.flowcb', '' )
+                    module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                     self.metrics[module_name] = p()
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
