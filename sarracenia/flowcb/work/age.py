@@ -23,4 +23,4 @@ class Age(FlowCB):
             completed = timestr2flt(m['timeCompleted'])
             mtime = timestr2flt(m['mtime'])
             age = completed - mtime
-            logger.info("file %s is %d seconds old" % (m['new_file'], age))
+            logger.info("file %s is %d seconds old" % (m['new_dir']+os.sep+m['new_file'], age))
