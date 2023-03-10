@@ -192,16 +192,17 @@ class instance:
         else:
             hostdir = None
 
-        pidfilename = sarracenia.config.get_pid_filename(
-            hostdir, component, config, cfg_preparse.no)
+        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
+
         if not os.path.isdir(os.path.dirname(pidfilename)):
-            pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True,
-                                                             exist_ok=True)
+            pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
 
         with open(pidfilename, 'w') as pfn:
             pfn.write('%d' % os.getpid())
 
         cfg = sarracenia.config.one_config(component, config)
+
+        cfg.metricsFilename = pidfilename.replace(".pid", ".metrics")
 
         if not hasattr(cfg, 'env_declared'):
             sys.exit(0)

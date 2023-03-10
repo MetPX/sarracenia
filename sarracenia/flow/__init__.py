@@ -501,6 +501,11 @@ class Flow:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
+                metrics=json.dumps(self.metrics)
+
+                with open(self.o.metricsFilename, 'w') as mfn:
+                     mfn.write(metrics+"\n")
+
                 self._runCallbacksTime('on_housekeeping')
                 next_housekeeping = now + self.o.housekeeping
 
