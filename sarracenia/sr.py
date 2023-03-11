@@ -42,7 +42,7 @@ import time
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir
+from sarracenia import user_config_dir, user_cache_dir, naturalSize
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -51,6 +51,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
+empty_metrics={ "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -443,7 +444,7 @@ class sr_GlobalState:
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
-                            if p.suffix in ['.pid', '.qname', '.state']:
+                            if p.suffix in ['.pid', '.qname', '.state', '.metrics']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
                                     t = p.read_text().strip()
@@ -458,10 +459,14 @@ class sr_GlobalState:
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
                                         #print( "%s/%s instance: %s, pid: %s" % ( c, cfg, i, t ) )
-                                        self.states[c][cfg]['instance_pids'][
-                                            i] = int(t)
+                                        self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
+                                elif pathname[-8:] == '.metrics':
+                                    i = int(pathname[-10:-8])
+                                    if not 'instance_metrics' in self.states[c][cfg]:
+                                        self.states[c][cfg]['instance_metrics'] = {}
+                                    self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
                                 elif pathname[-12:] == '.retry.state':
                                     buffer = 2**16
                                     try:
@@ -816,6 +821,16 @@ class sr_GlobalState:
                     continue
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
+
+                if 'instance_metrics' in self.states[c][cfg]:
+                    metrics=copy.deepcopy(empty_metrics)
+                    for i in self.states[c][cfg]['instance_metrics']:
+                        for j in self.states[c][cfg]['instance_metrics'][i]:
+                            for k in self.states[c][cfg]['instance_metrics'][i][j]:
+                                if k in metrics:
+                                    metrics[k] += self.states[c][cfg]['instance_metrics'][i][j][k]
+                    self.states[c][cfg]['metrics'] = metrics
+
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
@@ -1860,10 +1875,10 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-15s %5s %5s %5s %5s" %
-              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry"))
-        print("%-40s %-15s %5s %5s %5s %5s" %
-              ("----------------", "-----", "---", "----", "---", "-----"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s" %
+              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s" %
+              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "-----"))
         configs_running = 0
 
         for c in sorted(self.configs):
@@ -1895,8 +1910,18 @@ class sr_GlobalState:
                 if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
                     cfg_status = "foreground"
 
-                print("%-40s %-15s %5d %5d %5d %5d" %
-                      (f, cfg_status, running, m, expected, retry))
+                line= "%-40s %-15s %5d %5d %5d %5d" % (f, cfg_status, running, m, expected, retry)
+                if 'metrics' in self.states[c][cfg]:
+                    m = self.states[c][cfg]['metrics']
+                    line += " %10s %10s %10s %10s %10s %10s " % ( \
+                            naturalSize(m['rxByteCount']), \
+                            naturalSize(m['rxGoodCount']).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(m["rxBadCount"]).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(m['rxByteCount']), 
+                            naturalSize(m['txGoodCount']).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(m["txBadCount"]).replace("B","m").replace("mytes","msgs"), )
+
+                print(line)
         stray = 0
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
