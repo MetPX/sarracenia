@@ -189,7 +189,7 @@ class sr_GlobalState:
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']),
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']),
                                ensure_ascii=False) + '\n')
 
     def _filter_sr_proc(self, p):
@@ -253,7 +253,7 @@ class sr_GlobalState:
             try:
                 self._filter_sr_proc(
                     proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']))
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
             except:
                 pass # the process went away while iterating. avoid spurious message.
 
@@ -801,7 +801,7 @@ class sr_GlobalState:
             os.makedirs(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
-        self.resources={ 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+        self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
         for c in self.components:
             if not os.path.exists( self.user_cache_dir + os.sep + c ):
                 os.mkdir(self.user_cache_dir + os.sep + c )
@@ -835,7 +835,7 @@ class sr_GlobalState:
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
-                    resource_usage={ 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+                    resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][
                                 i] not in self.procs:
@@ -844,10 +844,12 @@ class sr_GlobalState:
                             observed_instances += 1
                             pid = self.states[c][cfg]['instance_pids'][i]
                             self.procs[ pid ]['claimed'] = True
-                            resource_usage[ 'rss' ] += self.procs[pid]['memory_info'].rss 
-                            self.resources[ 'rss' ] += self.procs[pid]['memory_info'].rss 
-                            resource_usage[ 'vms' ] += self.procs[pid]['memory_info'].vms 
-                            self.resources[ 'vms' ] += self.procs[pid]['memory_info'].vms 
+                            resource_usage[ 'uss' ] += self.procs[pid]['memory_full_info'].uss 
+                            self.resources[ 'uss' ] += self.procs[pid]['memory_full_info'].uss 
+                            resource_usage[ 'rss' ] += self.procs[pid]['memory_full_info'].rss 
+                            self.resources[ 'rss' ] += self.procs[pid]['memory_full_info'].rss 
+                            resource_usage[ 'vms' ] += self.procs[pid]['memory_full_info'].vms 
+                            self.resources[ 'vms' ] += self.procs[pid]['memory_full_info'].vms 
                             resource_usage[ 'user_cpu' ] += self.procs[pid]['cpu_times'].user 
                             self.resources[ 'user_cpu' ] += self.procs[pid]['cpu_times'].user 
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu_times'].system 
@@ -1885,10 +1887,10 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM", "rss", "vms", "user", "system"))
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "-----", "----", "----", "----", "----"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM", "uss", "rss", "vms", "user", "system"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
         configs_running = 0
 
         for c in sorted(self.configs):
@@ -1935,7 +1937,8 @@ class sr_GlobalState:
 
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                      ru = self.states[c][cfg]['resource_usage'] 
-                     line += " %10s %10s %10.2f %10.2f" % (\
+                     line += " %10s %10s %10s %10.2f %10.2f" % (\
+                             naturalSize( ru['uss'] ), \
                              naturalSize( ru['rss'] ), \
                              naturalSize( ru['vms'] ), \
                              ru['user_cpu'],
@@ -1952,8 +1955,9 @@ class sr_GlobalState:
                 print("pid: %s-%s is not a configured instance" %
                       (pid, self.procs[pid]['cmdline']))
 
-        print('      total running configs: %3d ( processes: %d missing: %d stray: %d rss:%s vms:%s user:%.2fs system:%.2fs )' % \
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d uss:%s rss:%s vms:%s user:%.2fs system:%.2fs )' % \
             (configs_running, len(self.procs), len(self.missing), stray, \
+              naturalSize( self.resources['uss'] ), \
               naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
