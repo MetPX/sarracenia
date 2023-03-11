@@ -53,6 +53,9 @@ class Log(FlowCB):
         self.rejectCount = 0
         self.transferCount = 0
 
+    def metrics_report(self):
+        return { 'lagMax': self.lagMax, 'lagTotal':self.lagTotal, 'lagMessageCount':self.msgCount, 'rejectCount':self.rejectCount }
+
     def gather(self):
         if set(['gather']) & self.o.logEvents:
             logger.info('')

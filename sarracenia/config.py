@@ -1757,6 +1757,7 @@ class Config:
             self.pid_filename = get_pid_filename(hostdir, component, cfg,
                                                  self.no)
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
+            self.metricsFilename = self.pid_filename.replace('.pid', '.metrics')
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):

@@ -51,7 +51,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0 }
+empty_metrics={ "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -829,9 +829,15 @@ class sr_GlobalState:
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
                                 if k in metrics:
-                                    metrics[k] += self.states[c][cfg]['instance_metrics'][i][j][k]
-                    self.states[c][cfg]['metrics'] = metrics
+                                    newval = self.states[c][cfg]['instance_metrics'][i][j][k]
+                                    if k in [ "lagMax" ]:
+                                        if newval > metrics[k]:
+                                            metrics[k] = newval
+                                    else:
+                                        metrics[k] += newval
 
+                    self.states[c][cfg]['metrics'] = metrics
+                    
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
@@ -1887,10 +1893,10 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM", "uss", "rss", "vms", "user", "system"))
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "LagMax", "LagAvg", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM", "uss", "rss", "vms", "user", "system"))
+        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("----------------", "-----", "---", "----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
         configs_running = 0
 
         for c in sorted(self.configs):
@@ -1925,7 +1931,12 @@ class sr_GlobalState:
                 line= "%-40s %-15s %5d %5d %5d %5d" % (f, cfg_status, running, m, expected, retry)
                 if 'metrics' in self.states[c][cfg]:
                     m = self.states[c][cfg]['metrics']
-                    line += " %10s %10s %10s %10s %10s %10s" % ( \
+                    if m[ "lagMessageCount" ] > 0:
+                        lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
+                    else:
+                        lagMean = 0
+                    line += " %9.2fs %9.2fs %10s %10s %10s %10s %10s %10s" % ( \
+                            m['lagMax'], lagMean, \
                             naturalSize(m['rxByteCount']), \
                             naturalSize(m['rxGoodCount']).replace("B","m").replace("mytes","msgs"), \
                             naturalSize(m["rxBadCount"]).replace("B","m").replace("mytes","msgs"), \
@@ -1935,7 +1946,7 @@ class sr_GlobalState:
                 else:
                     line += " %10s %10s %10s %10s %10s %10s" % ( "-", "-", "-", "-", "-", "-" )
 
-                if len(self.states[c][cfg]['instance_pids']) >= 0:
+                if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
                      ru = self.states[c][cfg]['resource_usage'] 
                      line += " %10s %10s %10s %10.2f %10.2f" % (\
                              naturalSize( ru['uss'] ), \
