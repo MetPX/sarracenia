@@ -1893,10 +1893,12 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry", "LagMax", "LagAvg", "RxB", "RxM", "ErrM", "txB", "txM", "ErrM", "uss", "rss", "vms", "user", "system"))
-        print("%-40s %-15s %5s %5s %5s %5s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("----------------", "-----", "---", "----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
+        print("%-40s %-9s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("Component/Config", "Processes", "", "Lag", "", "", "Counts", "", "", "", "", "", "Memory", "", "", "CPU Time", ""))
+        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "RxBytes", "RxMsgs", "ErrMsgs", "txBytes", "txMsgs", "ErrM", "uss", "rss", "vms", "user", "system"))
+        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
+              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
         configs_running = 0
 
         for c in sorted(self.configs):
@@ -1928,7 +1930,9 @@ class sr_GlobalState:
                 if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
                     cfg_status = "foreground"
 
-                line= "%-40s %-15s %5d %5d %5d %5d" % (f, cfg_status, running, m, expected, retry)
+                process_status = "%d/%d" % ( running, expected ) 
+                line= "%-40s %-8s %8s %10s" % (f, cfg_status, process_status, retry ) 
+
                 if 'metrics' in self.states[c][cfg]:
                     m = self.states[c][cfg]['metrics']
                     if m[ "lagMessageCount" ] > 0:
