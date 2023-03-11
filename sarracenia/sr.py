@@ -841,7 +841,7 @@ class sr_GlobalState:
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
-                    resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+                    resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][
                                 i] not in self.procs:
@@ -1953,13 +1953,8 @@ class sr_GlobalState:
                 if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
                      ru = self.states[c][cfg]['resource_usage'] 
                      line += " %10s %10s %10s %10.2f %10.2f" % (\
-                             naturalSize( ru['uss'] ), \
-                             naturalSize( ru['rss'] ), \
-                             naturalSize( ru['vms'] ), \
-                             ru['user_cpu'],
-                             ru['system_cpu'] 
-                             #datetime.timedelta(seconds=ru['user_cpu']), \
-                             #datetime.timedelta(seconds=ru['system_cpu']) )
+                             naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] ),  \
+                             ru['user_cpu'], ru['system_cpu'] \
                              )
                 print(line)
         stray = 0

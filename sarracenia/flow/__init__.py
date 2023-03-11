@@ -190,7 +190,7 @@ class Flow:
         self.plugins['load'].extend(self.o.plugins_late)
 
         # metrics - dictionary with names of plugins as the keys
-        self.metrics = {}
+        self.metrics = { "flow": { "stop_requested": False } }
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -308,6 +308,7 @@ class Flow:
         )
         self._runCallbacksTime('please_stop')
         self._stop_requested = True
+        self.metrics["flow"]['stop_requested'] = True
 
 
     def close(self) -> None:
@@ -489,6 +490,8 @@ class Flow:
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
+            self.metrics['flow']['msgRate'] = current_rate
+
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
@@ -501,6 +504,8 @@ class Flow:
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
+            self.metrics['flow']['current_sleep'] = current_sleep
+
             # Run housekeeping based on time, and before stopping to ensure it's run at least once
             if now > next_housekeeping or stopping:
                 logger.info(
@@ -508,6 +513,7 @@ class Flow:
                 )
                 self._runCallbacksTime('on_housekeeping')
                 next_housekeeping = now + self.o.housekeeping
+                self.metrics['flow']['next_housekeeping'] = next_housekeeping
 
             if (self.o.messageRateMin > 0) and (current_rate <
                                                 self.o.messageRateMin):
