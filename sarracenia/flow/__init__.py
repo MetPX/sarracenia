@@ -259,7 +259,17 @@ class Flow:
 
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
-        for p in self.plugins["metrics_report"]:
+        
+        modules=self.plugins["metrics_report"]
+
+        if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
+            for scheme in self.proto:
+                if hasattr(self.proto[scheme], 'metrics_report'):
+                    fn = getattr(self.proto[scheme], 'metrics_report')
+                    if callable(fn):
+                       modules.append( fn )
+
+        for p in modules:
             if self.o.logLevel.lower() == 'debug' :
                 module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                 self.metrics[module_name] = p()
@@ -350,6 +360,7 @@ class Flow:
         had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
+        self.metrics['flow']['last_housekeeping'] = start_time
 
         if self.o.logLevel == 'debug':
             logger.debug("options:")
@@ -512,6 +523,9 @@ class Flow:
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
                 self._runCallbacksTime('on_housekeeping')
+
+                self.metrics['flow']['last_housekeeping'] = now
+
                 next_housekeeping = now + self.o.housekeeping
                 self.metrics['flow']['next_housekeeping'] = next_housekeeping
 

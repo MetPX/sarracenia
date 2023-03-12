@@ -42,7 +42,7 @@ import time
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir, naturalSize
+from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -51,7 +51,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0 }
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -467,6 +467,7 @@ class sr_GlobalState:
                                     if not 'instance_metrics' in self.states[c][cfg]:
                                         self.states[c][cfg]['instance_metrics'] = {}
                                     self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
+                                    self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                 elif pathname[-12:] == '.retry.state':
                                     buffer = 2**16
                                     try:
@@ -796,6 +797,7 @@ class sr_GlobalState:
         """
 
         self._resolve_brokers()
+        now = time.time()
 
         if not os.path.exists( self.user_cache_dir ):
             os.makedirs(self.user_cache_dir)
@@ -824,14 +826,26 @@ class sr_GlobalState:
                     self.configs[c][cfg]['status'] = 'disabled'
 
                 if 'instance_metrics' in self.states[c][cfg]:
+                    if 'housekeeping' in self.configs[c][cfg]:
+                        expiry = now - self.configs[c][cfg]['housekeeping']*1.5
+                    else:
+                        expiry = now - 300
+
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
+                        if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
+                            print( f"metrics for {c}/{cfg}/ instance {i} too old, ignoring." )
+                            continue
+
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
                                     if k in [ "lagMax" ]:
                                         if newval > metrics[k]:
+                                            metrics[k] = newval
+                                    elif k in [ "last_housekeeping" ]:
+                                        if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
                                     else:
                                         metrics[k] += newval
@@ -1839,6 +1853,7 @@ class sr_GlobalState:
         """
         print('\n\nRunning Processes\n\n')
         for pid in self.procs:
+            #print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             print('\t%s: %s' % (pid, self.procs[pid] ))
 
         print('\n\nConfigs\n\n')
@@ -1893,13 +1908,18 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-9s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("Component/Config", "Processes", "", "Lag", "", "", "Counts", "", "", "", "", "", "Memory", "", "", "CPU Time", ""))
-        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "RxBytes", "RxMsgs", "ErrMsgs", "txBytes", "txMsgs", "ErrM", "uss", "rss", "vms", "user", "system"))
-        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" %
-              ("----------------", "-----", "---", "----", "---", "-----", "-------", "-----", "-----", "-------", "-----", "------", "-----", "----", "----", "----", "----"))
+        print("%-40s %-9s %7s %10s %10s %10s %-21s %10s %-43s %28s %10s %10s %10s %10s %10s %10s" %
+               ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "", "Counts (per housekeeping)", "", "", "Memory", "", "", "CPU Time", ""))
+        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
+              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej", "RxBytes", "Accepted", "Rejected", "Invalid", "txBytes", "txMsgs", "txInv", "Since", "uss", "rss", "vms", "user", "system"))
+        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
+              ("----------------", "-----", "---", "---", "------", "------", "----", "--------", "----", "-------", "--------", "--------", "-------", "-------", "------", "----", "-----", "---", "---", "---", "----", "------"))
         configs_running = 0
+        rxCumulativeMessageRate=0
+        rxCumulativeByteRate=0
+        txCumulativeMessageRate=0
+        txCumulativeByteRate=0
+        now = time.time()
 
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
@@ -1939,14 +1959,48 @@ class sr_GlobalState:
                         lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
                     else:
                         lagMean = 0
-                    line += " %9.2fs %9.2fs %10s %10s %10s %10s %10s %10s" % ( \
+                    
+                    if "last_housekeeping" in m and m["last_housekeeping"] > 0:
+                        time_base = now - m[ "last_housekeeping" ] 
+                        byteTotal = 0
+                        if 'rxByteCount' in m:
+                            byteTotal += m["rxByteCount"]
+        
+                        if 'txByteCount' in m:
+                            byteTotal += m["txByteCount"]
+                            txCumulativeByteRate +=  m["txByteCount"]/time_base
+        
+                        byteRate= byteTotal/time_base
+                        msgRate= (m["rxGoodCount"]+m["rxBadCount"])/time_base
+                        rxCumulativeMessageRate += msgRate
+                        rxCumulativeByteRate +=  byteRate
+
+                        txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
+                    else:
+                        time_base = 0
+                        byteTotal=0
+                        byteRate=0
+                        msgRate=0
+
+
+                    if m["rxGoodCount"] > 0:
+                        rejectPercent = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                    else:
+                        rejectPercent = 0
+
+                    line += " %9.2fs %9.2fs %8s/s %8s/s %4.1f%% %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
                             m['lagMax'], lagMean, \
+                            naturalSize(byteRate), \
+                            naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
+                            rejectPercent, \
                             naturalSize(m['rxByteCount']), \
-                            naturalSize(m['rxGoodCount']).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(m["rxBadCount"]).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(m['rxByteCount']), 
-                            naturalSize(m['txGoodCount']).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(m["txBadCount"]).replace("B","m").replace("mytes","msgs"), )
+                            naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["rxBadCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m['txByteCount']), 
+                            naturalSize(m['txGoodCount']).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
+                            time_base )
                 else:
                     line += " %10s %10s %10s %10s %10s %10s" % ( "-", "-", "-", "-", "-", "-" )
 
@@ -1971,6 +2025,11 @@ class sr_GlobalState:
               naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
+        print( '\t\t   received: %8s/s transfer: %8s/s, Sent:  %8s/s' % ( 
+                naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
+                naturalSize(rxCumulativeByteRate),\
+                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg")
+            ))
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
