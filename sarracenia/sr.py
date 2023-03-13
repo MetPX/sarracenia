@@ -834,7 +834,7 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            print( f"metrics for {c}/{cfg}/ instance {i} too old, ignoring." )
+                            #print( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
                             continue
 
                         for j in self.states[c][cfg]['instance_metrics'][i]:
