@@ -742,7 +742,7 @@ class Flow:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         if len(fopv) > strip:
-                            msg['fileOp'][f] = '/'.join(fopv[split:])
+                            msg['fileOp'][f] = '/'.join(fopv[strip:])
                             
         # strip using a pattern
 
