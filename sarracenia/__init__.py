@@ -512,7 +512,7 @@ class Message(dict):
         # rename path given with no filename
 
         if o.rename:
-            msg['retPath'] = msg['new_relPath']
+            msg['retrievePath'] = msg['new_retrievePath']
             newname = o.variableExpansion(o.rename)
             if o.rename[-1] == '/':
                 newname += os.path.basename(path)
@@ -744,10 +744,10 @@ class Message(dict):
             else:
                 return msg['content']['value'].encode('utf-8')
         # case requiring resolution.
-        if 'retPath' in msg:
-            retUrl = msg['baseUrl'] + '/' + msg['retPath']
+        if 'retrievePath' in msg:
+            retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
         else:
-            retUrl = msg['baseUrl'] + '/' + msg['relPath']
+            retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
 
         with urllib.request.urlopen(retUrl) as response:
             return response.read()

@@ -421,7 +421,7 @@ self est le message en cours de traitement. variables les plus utilisées :
   Chemin d’accès relatif à partir de l’URL de base du fichier.
   la concaténation des deux donne l’URL complète.
 
-*msg['retPath']*
+*msg['retrievePath']*
   Pour le supprimer le chemin logique resultant de *baseUrl et relPath*, on peut specifier
   un url pour chercher la ressource distant.
 

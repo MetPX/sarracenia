@@ -105,7 +105,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
               "number"    : "9999", - quel est ce bloc.
           }
           "rename"        - nom pour écrire au fichier localement.
-          "retPath"       - le chemin de récupération relatif peut être concaténé avec <base_url> pour remplacer relPath -
+          "retrievePath"       - le chemin de récupération relatif peut être concaténé avec <base_url> pour remplacer relPath -
                             utilisé pour les cas d’API.
           "topic"         - copie du sujet de l’en-tête AMQP (généralement omis)
           "source"        - l’entité d’origine du message d´annonce.

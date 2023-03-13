@@ -157,8 +157,8 @@ class Https(Transfer):
 
         # open self.http
 
-        if 'retPath' in msg:
-            url = self.sendTo + '/' + msg['retPath']
+        if 'retrievePath' in msg:
+            url = self.sendTo + '/' + msg['retrievePath']
         else:
             u = urllib.parse.urlparse( self.sendTo )
             url = u.scheme + '://' + u.netloc + '/' + urllib.parse.quote(self.path + '/' +

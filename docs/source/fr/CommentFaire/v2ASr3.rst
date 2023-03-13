@@ -287,7 +287,7 @@ En général, les plugins v3:
   msg.pubtime      msg['pubTime']      quand le message a été initialement publié 
   msg.baseurl      msg['baseUrl']      racine de l'arborescence url du fichier annoncé.
   msg.relpath      msg['relPath']      chemin relatif concaténé à baseUrl pour le chemin canonique
-  *no equivalent*  msg['retPath']      chemin opaque pour remplacer le chemin canonique.
+  *no equivalent*  msg['retrievePath']      chemin opaque pour remplacer le chemin canonique.
   msg.notice       pas disponible      calculé à partir d'un autre champ sur l'écriture v2
   msg.new_subtopic msg['new_subtopic'] à éviter en sr3, champ calculé à partir de relPath
   msg.new_dir      msg['new_dir']      nom de répertoire où le fichier sera écrite.
@@ -302,7 +302,7 @@ En général, les plugins v3:
   parent.msg       worklist.incoming   sr3 traite des groupe des messages, pas individuelement
   ================ =================== ===========================================================
 
-* pubTime, baseUrl, relPath, retPath, size, integrity, sont tous des champs de message standard
+* pubTime, baseUrl, relPath, retrievePath, size, integrity, sont tous des champs de message standard
   mieux décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
 
 * si l'on a besoin de stocker par état de message, alors on peut déclarer des champs temporaires dans le message,
@@ -844,7 +844,7 @@ créer une classe flowCallback avec un point d’entrée *download*.
   le message de notification, la suppression des doublons échoue et ca boucle.
 
 * un cas de téléchargement est lorsque retrievalURL n’est pas un téléchargement de fichier normal.
-  Dans v03, il existe des champs retPath pour exactement ce cas. Cette nouvelle fonctionnalité
+  Dans v03, il existe des champs retrievePath pour exactement ce cas. Cette nouvelle fonctionnalité
   peut être utilisé pour éliminer le besoin de plugins de téléchargement.  Exemple:
 
   Dans la v2:
@@ -857,8 +857,8 @@ créer une classe flowCallback avec un point d’entrée *download*.
 
       * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
 
-  Le résultat porté définit le nouveau champ *retPath* (chemin de récupération) au lieu de new_dir et new_file
-  et le traitement normal du champ *retPath* dans le message de notification fera un bon téléchargement, aucun
+  Le résultat porté définit le nouveau champ *retrievePath* (chemin de récupération) au lieu de new_dir et new_file
+  et le traitement normal du champ *retrievePath* dans le message de notification fera un bon téléchargement, aucun
   plugin est requis.
 
 DESTFNSCRIPT

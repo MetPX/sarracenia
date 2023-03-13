@@ -8,7 +8,7 @@ sample url: https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=945
 in an sr_poll configuration file::
 
 	pollUrl http://tidesandcurrents.noaa.gov/api
-        retPathPattern /datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv
+        retrievePathPattern /datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv
 
 	poll_noaa_stn_file [path/to/stn/file]
 	callback noaa_hydrometric
@@ -25,7 +25,7 @@ SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
 Each station on its own line.
 Posts the file on the exchange if the request returns a valid URL. 
 
-in v2, one needed a matching downloader plugin, but in sr3 we can leverage the retPath feature
+in v2, one needed a matching downloader plugin, but in sr3 we can leverage the retrievePath feature
 so that normalk downloader works, so only the poll one needed.
 
 """
@@ -50,7 +50,7 @@ class Noaa_hydrometric(FlowCB):
 
         # these options are only for the poll.
         self.o.add_option(option='poll_noaa_stn_file', kind='str')
-        self.o.add_option( option='retPathPattern', kind='str', \
+        self.o.add_option( option='retrievePathPattern', kind='str', \
               default_value='datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv' )
 
         if self.o.integrity_method.startswith('cod,'):
@@ -87,8 +87,8 @@ class Noaa_hydrometric(FlowCB):
         # Every hour, form the link of water level/temp data to post
         for site in sitecodes:
 
-            retPath = self.o.retPathPattern.format(site, 'water_temperature')
-            url = self.o.pollUrl + retPath
+            retrievePath = self.o.retrievePathPattern.format(site, 'water_temperature')
+            url = self.o.pollUrl + retrievePath
             logger.info(f'polling {site}, polling: {url}')
             # Water temp request
             resp = urllib.request.urlopen(url).getcode()
@@ -98,22 +98,22 @@ class Noaa_hydrometric(FlowCB):
             fname = f'noaa_{mtime}_{site}_WT.csv'
             m = sarracenia.Message.fromFileInfo(fname, self.o)
             m['integrity'] = self.integrity
-            m['retPath'] = retPath
+            m['retrievePath'] = retrievePath
             m['new_file'] = fname
 
             incoming_message_list.append(m)
 
             # Water level request
-            retPath = self.o.retPathPattern.format(
+            retrievePath = self.o.retrievePathPattern.format(
                 site, 'water_level') + '&datum=STND'
-            url = self.o.pollUrl + retPath
+            url = self.o.pollUrl + retrievePath
             resp = urllib.request.urlopen(url).getcode()
             logger.info(f"poll_noaa file posted: {url}")
 
             fname = f'noaa_{mtime}_{site}_WL.csv'
             m = sarracenia.Message.fromFileInfo(fname, self.o)
             m['integrity'] = self.integrity
-            m['retPath'] = retPath
+            m['retrievePath'] = retrievePath
             m['new_file'] = fname
 
             incoming_message_list.append(m)

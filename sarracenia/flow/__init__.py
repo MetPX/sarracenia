@@ -457,8 +457,8 @@ class Flow:
                         if ('new_baseUrl' in m) and (m['baseUrl'] !=
                                                      m['new_baseUrl']):
                             m['baseUrl'] = m['new_baseUrl']
-                        if ('new_retPath' in m) :
-                            m['retPath'] = m['new_retPath']
+                        if ('new_retrievePath' in m) :
+                            m['retrievePath'] = m['new_retrievePath']
                         if ('new_relPath' in m) and (m['relPath'] !=
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
@@ -1531,9 +1531,9 @@ class Flow:
 
         self.o = options
 
-        if 'retPath' in msg:
-            logger.debug("%s_transport download override retPath=%s" % (self.scheme, msg['retPath']))
-            remote_file = msg['retPath']
+        if 'retrievePath' in msg:
+            logger.debug("%s_transport download override retrievePath=%s" % (self.scheme, msg['retrievePath']))
+            remote_file = msg['retrievePath']
             cdir = '/'
             if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
                 urlstr = msg['baseUrl'] + msg['relPath']

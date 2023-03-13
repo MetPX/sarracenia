@@ -112,7 +112,7 @@ The headers are an array of name:value pairs::
           "mtime" : date string - last modification time of a file (optional)
           "mode"  : mode string - permission bits (optional)
           "rename"        - name to write file locally.
-          "retPath"       - relative retrieval path can be catenated to <base_url> to override relPath
+          "retrievePath"       - relative retrieval path can be catenated to <base_url> to override relPath
                             used for API cases.
           "topic"         - copy of topic from AMQP header (usually omitted)
           "source"        - the originating entity of the notification message. 

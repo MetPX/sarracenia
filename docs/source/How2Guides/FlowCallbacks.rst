@@ -376,15 +376,15 @@ Download Renaming
 
 Sometimes the URL used to obtain data from a server isn't the same as the name
 one wants to assign to the downloaded result. This occurs often when polling upstream
-arbitrary web services. For such cases the message format defines the *retPath*, or 
+arbitrary web services. For such cases the message format defines the *retrievePath*, or 
 retrieval path, used as follows:
 
-* msg['retPath'] = https://server/cgi-bin/get?param1=hoho&.... The retrieval URL
+* msg['retrievePath'] = https://server/cgi-bin/get?param1=hoho&.... The retrieval URL
 
 * msg['relPath'] = https://server/relPath/defining/local/placement ... where to download it to.
 
-Standard subscribers will download using *retPath* but assign the download path using *relPath.*
-When forwarding after download, the *retPath* should often be removed (to avoid downstream clients
+Standard subscribers will download using *retrievePath* but assign the download path using *relPath.*
+When forwarding after download, the *retrievePath* should often be removed (to avoid downstream clients
 pulling from the original source instead of the downloaded copy.)
 
 While the above is a preferred way of defining messages where the download will have a different

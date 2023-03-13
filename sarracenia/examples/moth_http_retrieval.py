@@ -32,8 +32,8 @@ while count < 10:
     messages = h.newMessages()
     for m in messages:
         dataUrl = m['baseUrl']
-        if 'retPath' in m:
-            dataUrl += m['retPath']
+        if 'retreivePath' in m:
+            dataUrl += m['retreivePath']
         else:
             dataUrl += m['relPath']
 

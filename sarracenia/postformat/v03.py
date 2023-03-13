@@ -42,6 +42,13 @@ class V03(PostFormat):
             logger.warning( f'body: {body}' )
             logger.debug('Exception details: ', exc_info=True)
             return None
+
+        """ early sr3 versions used retPath, name changed by https://github.com/MetPX/sarracenia/issues/628
+        """
+        if 'retPath' in msg:
+            msg['retrievePath'] = msg['retPath']
+            del msg['retPath']
+
         """
               observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
               bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
