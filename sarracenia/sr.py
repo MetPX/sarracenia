@@ -1909,9 +1909,9 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
         print("%-40s %-9s %7s %10s %10s %10s %-21s %10s %-43s %28s %10s %10s %10s %10s %10s %10s" %
-               ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "", "Counts (per housekeeping)", "", "", "Memory", "", "", "CPU Time", ""))
+               ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "", "Counters (per housekeeping)", "", "", "Memory", "", "", "CPU Time", ""))
         print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
-              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej", "RxBytes", "Accepted", "Rejected", "Invalid", "txBytes", "txMsgs", "txInv", "Since", "uss", "rss", "vms", "user", "system"))
+              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej", "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since", "uss", "rss", "vms", "user", "system"))
         print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
               ("----------------", "-----", "---", "---", "------", "------", "----", "--------", "----", "-------", "--------", "--------", "-------", "-------", "------", "----", "-----", "---", "---", "---", "----", "------"))
         configs_running = 0
