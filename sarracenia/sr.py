@@ -1908,12 +1908,36 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-9s %7s %10s %10s %10s %-21s %10s %-43s %28s %10s %10s %10s %10s %10s %10s" %
-               ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "", "Counters (per housekeeping)", "", "", "Memory", "", "", "CPU Time", ""))
-        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
-              ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej", "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since", "uss", "rss", "vms", "user", "system"))
-        print("%-40s %-8s %8s %10s %10s %10s %10s %10s %5s %10s %10s %10s %10s %10s %10s %8s %10s %10s %10s %10s %10s %10s" %
-              ("----------------", "-----", "---", "---", "------", "------", "----", "--------", "----", "-------", "--------", "--------", "-------", "-------", "------", "----", "-----", "---", "---", "---", "----", "------"))
+
+        line = "%-40s %-9s %7s %10s %10s %10s %-21s %10s " % ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "" )
+
+        if self.options.displayFull:
+            line += "%-40s %-9s %7s " % ("Counters (per housekeeping)", "", "" )
+
+        line += "%s %-21s " % (" ", "Memory" ) 
+
+        if self.options.displayFull:
+            line += "%10s %10s \c" % ( " ", "CPU Time" )
+
+        print(line)
+
+        line      = "%-40s %-8s %8s %10s %10s %10s %10s %10s %5s " % ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej" )
+        underline = "%-40s %-8s %8s %10s %10s %10s %10s %10s %5s " % ("", "-----", "---", "-----", "------", "------", "----", "--------", "----" )
+
+        if self.options.displayFull:
+            line      += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since" )
+            underline += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----" )
+
+        line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
+        underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+
+        if self.options.displayFull:
+            line      += "%10s %10s " % ( "user", "system" )
+            underline += "%10s %10s " % ( "----", "------" )
+
+        print(line)
+        print(underline)
+
         configs_running = 0
         rxCumulativeMessageRate=0
         rxCumulativeByteRate=0
@@ -1988,11 +2012,15 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %9.2fs %9.2fs %8s/s %8s/s %4.1f%% %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                    line += " %9.2fs %9.2fs %8s/s %8s/s %4.1f%% " % ( \
                             m['lagMax'], lagMean, \
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
-                            rejectPercent, \
+                            rejectPercent
+                            )
+
+                    if self.options.displayFull :
+                        line += " %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
                             naturalSize(m['rxByteCount']), \
                             naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
                             naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
@@ -2002,17 +2030,26 @@ class sr_GlobalState:
                             naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
                             time_base )
                 else:
-                    line += " %10s %10s %9s %5s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
-                            ( "-", "-","-","-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %9s %5s %10s" % ( "-", "-", "-", "-", "-" )
+                    if self.options.displayFull:
+                        line += " %10s %10s %10s %10s %10s %10s %10s " % \
+                            ( "-", "-", "-", "-", "-", "-", "-" )
 
                 if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
                     ru = self.states[c][cfg]['resource_usage'] 
-                    line += " %10s %10s %10s %10.2f %10.2f" % (\
-                             naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] ),  \
+
+                    
+                    line += " %10s %10s %10s " % (\
+                             naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
+                             )
+                    if self.options.displayFull:
+                        line += " %10.2f %10.2f" % (\
                              ru['user_cpu'], ru['system_cpu'] \
                              )
                 else:
-                    line += " %10s %10s %10s %10s %10s" % ( "-9", "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %10s" % ( "-", "-", "-" )
+                    if self.options.displayFull:
+                        line += " %10s %10s" % ( "-", "-" )
 
                 print(line)
         stray = 0

@@ -698,6 +698,7 @@ class Config:
         self.debug = False
         self.declared_exchanges = []
         self.discard = False
+        self.displayFull = False
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
         self.v2plugins = {}
@@ -2229,6 +2230,11 @@ class Config:
                             nargs='?',
                             default=self.exchange,
                             help='root of the topic tree to subscribe to')
+
+        parser.add_argument('--full',
+                            action='store_true',
+                            default=self.displayFull,
+                            help='fuller, more verbose display')
         """
         FIXME: header option not implemented in argparsing: should add to the fixed_header dictionary.
           
@@ -2263,6 +2269,7 @@ class Config:
                             help='choose a different checksumming method for the files posted')
         if hasattr(self, 'bindings'):
             parser.set_defaults(bindings=self.bindings)
+
 
         parser.add_argument(
             '--logLevel',
@@ -2363,8 +2370,9 @@ class Config:
         if hasattr(args, 'config') and (args.config is not None):
             args.configurations = [args.config]
 
-        #FIXME need to apply _varsub
-
+        if hasattr(args,'full'):
+            self.displayFull = args.full
+            delattr(args,'full')
 
         self.merge(args)
 
