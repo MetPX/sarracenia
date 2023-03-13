@@ -2002,14 +2002,18 @@ class sr_GlobalState:
                             naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
                             time_base )
                 else:
-                    line += " %10s %10s %10s %10s %10s %10s" % ( "-", "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %9s %5s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                            ( "-", "-","-","-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
 
                 if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
-                     ru = self.states[c][cfg]['resource_usage'] 
-                     line += " %10s %10s %10s %10.2f %10.2f" % (\
+                    ru = self.states[c][cfg]['resource_usage'] 
+                    line += " %10s %10s %10s %10.2f %10.2f" % (\
                              naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] ),  \
                              ru['user_cpu'], ru['system_cpu'] \
                              )
+                else:
+                    line += " %10s %10s %10s %10s %10s" % ( "-9", "-", "-", "-", "-", "-" )
+
                 print(line)
         stray = 0
         for pid in self.procs:
