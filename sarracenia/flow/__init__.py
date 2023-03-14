@@ -190,7 +190,10 @@ class Flow:
         self.plugins['load'].extend(self.o.plugins_late)
 
         # metrics - dictionary with names of plugins as the keys
-        self.metrics = { "flow": { "stop_requested": False } }
+        self.metricsFlowReset()
+
+    def metricsFlowReset(self) -> None:
+        self.metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0 } }
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -260,6 +263,11 @@ class Flow:
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
         
+        if 'transferConnected' in self.metrics['flow'] and self.metrics['flow']['transferConnected']: 
+            now=nowflt()
+            self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+            self.metrics['flow']['transferConnectStart']=now
+
         modules=self.plugins["metricsReport"]
 
         if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
@@ -280,6 +288,7 @@ class Flow:
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+
 
     def has_vip(self):
 
@@ -523,7 +532,7 @@ class Flow:
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
                 self._runCallbacksTime('on_housekeeping')
-
+                self.metricsFlowReset()
                 self.metrics['flow']['last_housekeeping'] = now
 
                 next_housekeeping = now + self.o.housekeeping
@@ -1628,14 +1637,26 @@ class Flow:
             options.sendTo = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or (self.proto[self.scheme] is None):
-                    self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
+                self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
+                self.metrics['flow']['transferConnected'] = True
+                self.metrics['flow']['transferConnectStart'] = time.time() 
 
             if (not self.o.dry_run) and not self.proto[self.scheme].check_is_connected():
+
+                    if self.metrics['flow']['transferConnected']: 
+                         now=nowflt()
+                         self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+                         self.metrics['flow']['transferConnectStart'] = 0
+                         self.metrics['flow']['transferConnected'] = False
+
                     logger.debug("%s_transport download connects" % self.scheme)
                     ok = self.proto[self.scheme].connect()
                     if not ok:
                         self.proto[self.scheme] = None
                         return False
+
+                    self.metrics['flow']['transferConnected'] = True
+                    self.metrics['flow']['transferConnectStart'] = time.time() 
                     logger.debug('connected')
 
             #=================================
@@ -1812,6 +1833,8 @@ class Flow:
                     self.proto[self.scheme].close()
                 except:
                     logger.debug('closing exception details: ', exc_info=True)
+            self.metrics['flow']["transferConnected"] = False
+            self.metrics['flow']['transferConnectedTime'] = time.time() - self.metrics['flow']['transferConnectLast']
             self.cdir = None
             self.proto[self.scheme] = None
         
@@ -1870,16 +1893,26 @@ class Flow:
                    (self.proto[self.scheme] is None) or not self.proto[self.scheme].check_is_connected():
                     logger.debug("%s_transport send connects" % self.scheme)
     
+                    if self.metrics['flow']['transferConnected']: 
+                         now = nowflt()
+                         self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+                         self.metrics['flow']['transferConnectStart'] = 0
+                         self.metrics['flow']['transferConnected'] = False
+
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
     
                     ok = self.proto[self.scheme].connect()
                     if not ok: return False
                     self.cdir = None
+                    self.metrics['flow']['transferConnected'] = True
+                    self.metrics['flow']['transferConnectStart'] = time.time() 
 
             elif not (self.scheme in self.proto) or self.proto[self.scheme] is None:
                 logger.debug("dry_run %s_transport send connects" % self.scheme)
                 self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
                 self.cdir = None
+                self.metrics['flow']['transferConnected'] = True
+                self.metrics['flow']['transferConnectStart'] = time.time() 
 
             #=================================
             # if parts, check that the protol supports it
@@ -2121,6 +2154,11 @@ class Flow:
                     self.proto[self.scheme].close()
                 except:
                     pass
+
+            now = nowflt()
+            self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+            self.metrics['flow']['transferConnectStart']=0
+            self.metrics['flow']['transferConnected']=False
             self.cdir = None
             self.proto[self.scheme] = None
 

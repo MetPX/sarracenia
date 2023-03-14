@@ -51,7 +51,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0 }
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -851,6 +851,9 @@ class sr_GlobalState:
                                             metrics[k] = newval
                                     else:
                                         metrics[k] += newval
+
+                        if 'transferConnectTime' in metrics:
+                            metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
@@ -1926,8 +1929,8 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "msg", "LagMax", "LagAvg", "data", "messages", "%rej" )
-        underline = "%-40s %-5s %5s %5s %4s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "---", "------", "------", "----", "--------", "----" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "msg", "data", "LagMax", "LagAvg", "data", "messages", "%rej" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since" )
@@ -2006,6 +2009,11 @@ class sr_GlobalState:
                         rxCumulativeMessageRate += msgRate
                         rxCumulativeByteRate +=  byteRate
 
+                        if 'transferConnectTime' in m:
+                            byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
+                        else:
+                            byteConnectPercent= 0
+
                         if 'disconnectTime' in m:
                             connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
                         else:
@@ -2023,8 +2031,8 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
-                            connectPercent, m['lagMax'], lagMean, \
+                    line += " %3d%% %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
+                            connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
                             rejectPercent
