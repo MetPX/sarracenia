@@ -273,6 +273,7 @@ class AMQP(Moth):
                                                 topic)
 
                 # Setup Successfully Complete!
+                self.metricsConnect()
                 logger.debug('getSetup ... Done!')
                 return
 
@@ -323,6 +324,7 @@ class AMQP(Moth):
                                     (x, broker_str))
 
                 # Setup Successfully Complete!
+                self.metricsConnect()
                 logger.debug('putSetup ... Done!')
                 return
 
@@ -598,4 +600,5 @@ class AMQP(Moth):
             logger.error("sr_amqp/close 2: {}".format(err))
             logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         # FIXME toclose not useful as we don't close channels anymore
+        self.metricsDisconnect()
         self.connection = None

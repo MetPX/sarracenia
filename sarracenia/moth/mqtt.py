@@ -229,10 +229,12 @@ class MQTT(Moth):
         userdata.subscribe_mutex.release()
 
     def __pub_on_disconnect(client, userdata, rc, properties=None):
+        self.metricsDisonnect()
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
         userdata.connect_in_progress = False
+        self.metricsConnect()
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_publish(client, userdata, mid):

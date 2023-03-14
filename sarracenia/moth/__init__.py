@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import sys
+import time
 import sarracenia
 
 logger = logging.getLogger(__name__)
@@ -245,7 +246,8 @@ class Moth():
         """
 
         self.is_subscriber = is_subscriber
-        self.metrics = {}
+        self.connected=False
+        self.metrics = { 'connected': False }
         self.metricsReset()
 
         if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
@@ -326,10 +328,13 @@ class Moth():
             self.metrics['TxGoodCount'] should be incremented by 1 if a good message is received.
             self.metrics['TxBadCount'] should be incremented by 1 if an invalid message is received (&discarded.)
         """
-        logger.error("putNewMessage unimplemented")
+        logger.error("implementation missing!")
         return False
 
     def metricsReset(self) -> None:
+        self.metrics['disconnectLast'] = 0
+        self.metrics['disconnectTime'] = 0
+        self.metrics['disconnectCount'] = 0
         self.metrics['rxByteCount'] = 0
         self.metrics['rxGoodCount'] = 0
         self.metrics['rxBadCount'] = 0
@@ -338,13 +343,28 @@ class Moth():
         self.metrics['txBadCount'] = 0
 
     def metricsReport(self) -> tuple:
+        if not self.metrics['connected']:
+            down_time = time.time() - self.metrics['disconnectLast']
+            self.metrics['disconnectTime'] += down_time
+
         return self.metrics
 
-    def close(self) -> None:
+    def metricsConnect(self) -> void:
+        self.metrics['connected']=True
+        if self.metrics['disconnectLast'] > 0 :
+            down_time = time.time() - self.metrics['disconnectLast']
+            self.metrics['disconnectTime'] += down_time
+
+    def metricsDisconnect(self) -> None:
         """
            tear down an existing connection.
         """
-        logger.error("close unimplemented")
+        self.metrics['connected']=False
+        self.metrics['disconnectCount'] += 1
+        self.metrics['disconnectLast'] = time.time()
+
+    def close(self) -> None:
+        logger.error("implementation missing!")
 
     def cleanup(self) -> None:
         """
