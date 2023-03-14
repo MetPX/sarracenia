@@ -1909,20 +1909,20 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
 
-        line = "%-40s %-9s %7s %10s %10s %10s %-21s %10s " % ("Component/Config", "Processes", "", "Lag", "", "", "Rates", "" )
+        line = "%-40s %-9s %7s %10s %9s %10s %18s " % ("Component/Config", "Processes", "", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
-            line += "%-40s %-9s %7s " % ("Counters (per housekeeping)", "", "" )
+            line += "%-40s %-9s %33s " % ("Counters (per housekeeping)", "", "" )
 
         line += "%s %-21s " % (" ", "Memory" ) 
 
         if self.options.displayFull:
-            line += "%10s %10s \c" % ( " ", "CPU Time" )
+            line += "%10s %10s " % ( " ", "CPU Time" )
 
         print(line)
 
-        line      = "%-40s %-8s %8s %10s %10s %10s %10s %10s %5s " % ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej" )
-        underline = "%-40s %-8s %8s %10s %10s %10s %10s %10s %5s " % ("", "-----", "---", "-----", "------", "------", "----", "--------", "----" )
+        line      = "%-40s %-8s %5s %5s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej" )
+        underline = "%-40s %-8s %5s %5s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "------", "------", "----", "--------", "----" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since" )
@@ -1975,7 +1975,7 @@ class sr_GlobalState:
                     cfg_status = "foreground"
 
                 process_status = "%d/%d" % ( running, expected ) 
-                line= "%-40s %-8s %8s %10s" % (f, cfg_status, process_status, retry ) 
+                line= "%-40s %-8s %5s %5s" % (f, cfg_status, process_status, retry ) 
 
                 if 'metrics' in self.states[c][cfg]:
                     m = self.states[c][cfg]['metrics']
@@ -2012,7 +2012,7 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %9.2fs %9.2fs %8s/s %8s/s %4.1f%% " % ( \
+                    line += " %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
                             m['lagMax'], lagMean, \
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
@@ -2030,9 +2030,9 @@ class sr_GlobalState:
                             naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
                             time_base )
                 else:
-                    line += " %10s %10s %9s %5s %10s" % ( "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %9s %5s %8s" % ( "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
-                        line += " %10s %10s %10s %10s %10s %10s %10s " % \
+                        line += " %8s %7s %10s %10s %10s %10s %10s " % \
                             ( "-", "-", "-", "-", "-", "-", "-" )
 
                 if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
