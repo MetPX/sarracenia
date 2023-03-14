@@ -349,7 +349,7 @@ class Moth():
 
         return self.metrics
 
-    def metricsConnect(self) -> void:
+    def metricsConnect(self) -> None:
         self.metrics['connected']=True
         if self.metrics['disconnectLast'] > 0 :
             down_time = time.time() - self.metrics['disconnectLast']

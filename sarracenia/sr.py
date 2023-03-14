@@ -51,7 +51,7 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0 }
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -831,6 +831,8 @@ class sr_GlobalState:
                     else:
                         expiry = now - 300
 
+                    # cumulate per instance metrics into overall ones for the configuration.
+
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
@@ -849,6 +851,9 @@ class sr_GlobalState:
                                             metrics[k] = newval
                                     else:
                                         metrics[k] += newval
+
+                        if 'disconnectTime' in metrics:
+                            metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
                     self.states[c][cfg]['metrics'] = metrics
                     
@@ -1909,7 +1914,7 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
 
-        line = "%-40s %-9s %7s %10s %9s %10s %18s " % ("Component/Config", "Processes", "", "Lag", "", "Rates", "" )
+        line = "%-40s %-11s %7s %10s %9s %10s %18s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
             line += "%-40s %-9s %33s " % ("Counters (per housekeeping)", "", "" )
@@ -1921,8 +1926,8 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-8s %5s %5s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "LagMax", "LagAvg", "data", "messages", "%rej" )
-        underline = "%-40s %-8s %5s %5s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "------", "------", "----", "--------", "----" )
+        line      = "%-40s %-5s %5s %5s %4s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "msg", "LagMax", "LagAvg", "data", "messages", "%rej" )
+        underline = "%-40s %-5s %5s %5s %4s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "---", "------", "------", "----", "--------", "----" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since" )
@@ -1970,12 +1975,14 @@ class sr_GlobalState:
 
                 retry = self.states[c][cfg]['retry_queue']
 
-                cfg_status = self.configs[c][cfg]['status']
-                if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
-                    cfg_status = "foreground"
+                cfg_status = self.configs[c][cfg]['status'][0:4]
+                if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
+                    cfg_status = "fore"
+                if cfg_status == "runn" :
+                    cfg_status = "run"
 
                 process_status = "%d/%d" % ( running, expected ) 
-                line= "%-40s %-8s %5s %5s" % (f, cfg_status, process_status, retry ) 
+                line= "%-40s %-5s %5s %5s" % (f, cfg_status, process_status, retry ) 
 
                 if 'metrics' in self.states[c][cfg]:
                     m = self.states[c][cfg]['metrics']
@@ -1999,6 +2006,10 @@ class sr_GlobalState:
                         rxCumulativeMessageRate += msgRate
                         rxCumulativeByteRate +=  byteRate
 
+                        if 'disconnectTime' in m:
+                            connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
+                        else:
+                            connectPercent= -1 
                         txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                     else:
                         time_base = 0
@@ -2012,8 +2023,8 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
-                            m['lagMax'], lagMean, \
+                    line += " %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
+                            connectPercent, m['lagMax'], lagMean, \
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
                             rejectPercent

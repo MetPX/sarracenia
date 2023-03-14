@@ -86,7 +86,7 @@ class Check(FlowCB):
             else:
                 self.bad_content+=1
 
-    def metrics_report(self) -> dict:
+    def metricsReport(self) -> dict:
         return { 'checked_ok': self.ok, 
                  'checked_size_mismatches': self.size_mismatches, 
                  'checked_checksum_mismatches': self.checksum_mismatches,

@@ -27,7 +27,7 @@ class Age(FlowCB):
     def on_start(self) -> None:
         self.reset_metrics()
 
-    def metrics_report(self) -> dict:
+    def metricsReport(self) -> dict:
         if self.metrics['ageCount'] > 0:
             self.metrics['ageMean'] = self.metrics['ageTotal']/self.metrics['ageCount']
         else:

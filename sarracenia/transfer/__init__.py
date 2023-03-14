@@ -383,7 +383,7 @@ class Transfer():
         else:
             return None
 
-    def metrics_report(self):
+    def metricsReport(self):
         return { 'byteRateInstant': self.byteRate }
 
     # throttle

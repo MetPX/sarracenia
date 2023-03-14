@@ -36,7 +36,7 @@ class Message(FlowCB):
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
             self.consumer.ack(m)
 
-    def metrics_report(self) -> dict:
+    def metricsReport(self) -> dict:
         if hasattr(self,'consumer') and self.consumer:
            return self.consumer.metricsReport()
         else:

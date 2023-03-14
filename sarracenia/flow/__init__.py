@@ -255,17 +255,17 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
     def _runCallbackMetrics(self):
-        """Collect metrics from plugins with a ``metrics_report`` entry point.
+        """Collect metrics from plugins with a ``metricsReport`` entry point.
 
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
         
-        modules=self.plugins["metrics_report"]
+        modules=self.plugins["metricsReport"]
 
         if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
             for scheme in self.proto:
-                if hasattr(self.proto[scheme], 'metrics_report'):
-                    fn = getattr(self.proto[scheme], 'metrics_report')
+                if hasattr(self.proto[scheme], 'metricsReport'):
+                    fn = getattr(self.proto[scheme], 'metricsReport')
                     if callable(fn):
                        modules.append( fn )
 
@@ -278,7 +278,7 @@ class Flow:
                     module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
                     self.metrics[module_name] = p()
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
     def has_vip(self):
@@ -730,6 +730,7 @@ class Flow:
 
         if strip > 0:
 
+            logger.debug( f"FIXME! strip={strip}" )
             if strip < len(token):
                 token = token[strip:]
 

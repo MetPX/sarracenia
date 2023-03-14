@@ -46,7 +46,7 @@ class Message(FlowCB):
                 worklist.failed.append(m)
         worklist.ok = still_ok
 
-    def metrics_report(self) -> dict:
+    def metricsReport(self) -> dict:
         if hasattr(self,'poster') and self.poster:
             return self.poster.metricsReport()
         else:
