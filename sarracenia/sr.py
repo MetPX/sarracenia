@@ -1931,12 +1931,12 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s %10s %10s " % ("", "State", "Run", "Retry", "msg", "size", "LagMax", "LagAvg", "size", "messages", "%rej", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----", "------", "------" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "LagMax", "LagAvg", "%rej", "pubsub", "messages", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----", "------", "------" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
-                    ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+                    ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
             underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
                     ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
 
@@ -2051,11 +2051,11 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %3d%% %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% %8s/s %8s/s" % ( \
+                    line += " %3d%% %3d%% %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
                             connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
+                            rejectPercent,\
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
-                            rejectPercent,\
                             naturalSize(transferRxByteRate), \
                             naturalSize(transferTxByteRate) 
                             )
@@ -2111,7 +2111,7 @@ class sr_GlobalState:
               naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        print( '\t\t   messages received: %8s/s (%8s/s), Sent:  %8s/s (%8s/s)' % ( 
+        print( '\t\t   pub/sub received: %8s/s (%8s/s), Sent:  %8s/s (%8s/s)' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
                 naturalSize(rxCumulativeMessageRate),\
                 naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
