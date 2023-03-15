@@ -425,82 +425,156 @@ status
 
 Sample OK status (sr is running)::
 
-  $ sr3 status
-    status: 
-    Component/Config                         State        Run  Miss   Exp Retry
-    ----------------                         -----        ---  ----   --- -----
-    cpost/pelle_dd1_f04                      stopped        0     0     0     0
-    cpost/pelle_dd2_f05                      stopped        0     0     0     0
-    cpost/veille_f34                         partial        0     1     1     0
-    cpump/xvan_f14                           partial        0     1     1     0
-    cpump/xvan_f15                           partial        0     1     1     0
-    poll/f62                                 running        1     0     1     0
-    post/shim_f63                            stopped        0     0     0     0
-    post/t_dd1_f00                           stopped        0     0     0     0
-    post/t_dd2_f00                           stopped        0     0     0     0
-    post/test2_f61                           stopped        0     0     0     0
-    report/tsarra_f20                        running        1     0     1     0
-    sarra/download_f20                       running        1     0     1     0
-    sender/tsource2send_f50                  running        1     0     1     0
-    shovel/rabbitmqtt_f22                    running        1     0     1     0
-    subscribe/amqp_f30                       running        1     0     1     0
-    subscribe/cclean_f91                     running        1     0     1     0
-    subscribe/cdnld_f21                      running        1     0     1     0
-    subscribe/cfile_f44                      running        1     0     1     0
-    subscribe/cp_f61                         running        1     0     1     0
-    subscribe/dd_all                         stopped        0     0     0     0
-    subscribe/ftp_f70                        running        1     0     1     0
-    subscribe/q_f71                          running        1     0     1     0
-    subscribe/rabbitmqtt_f31                 running        1     0     1     0
-    subscribe/u_sftp_f60                     running        1     0     1     0
-    watch/f40                                running        1     0     1     0
-          total running configs:  15 ( processes: 15 missing: 3 stray: 0 )
+    fractal% sr3 status
+    status:
+    Component/Config                         Processes   Connection        Lag                Rates
+                                             State   Run Retry  msg data   LagMax  LagAvg  %rej     pubsub   messages     RxData     TxData
+                                             -----   --- -----  --- ----   ------  ------  ----   --------       ----     ------     ------
+    cpost/veille_f34                         run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%    0.00s    0.00s 84.2%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%    0.00s    0.00s 84.2%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f14                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f15                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    poll/f62                                 run     1/1     0 100%   0%    0.16s    0.05s  0.0%  1.2 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    post/shim_f63                            stop    0/0     0          -          -         -     -          -        -
+    post/test2_f61                           stop    0/0     0 100%   0%    0.00s    0.00s  0.0% 68 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    sarra/download_f20                       run     3/3     0 100%   0%    6.23s    2.93s  0.0% 246 Bytes/s   0 msgs/s 143 Bytes/s  0 Bytes/s
+    sender/tsource2send_f50                  run   10/10     0 100%   0%    3.83s    0.43s  0.0%  3.8 KiB/s   3 msgs/s  0 Bytes/s  1.4 KiB/s
+    shovel/pclean_f90                        run     3/3     0 100%   0%   95.91s   69.99s  0.0%  4.5 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/pclean_f92                        run     3/3     0 100%   0%   96.70s   75.64s  0.0%  1.7 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%    4.00s    0.83s  0.0%  4.9 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd1_f00                         run     3/3     0 100%   0%    9.34s    2.67s 85.4%  2.8 KiB/s  12 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd2_f00                         run     3/3     0 100%   0%    8.89s    2.68s 85.3%  2.8 KiB/s  12 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/amqp_f30                       run     3/3     0 100%  44%   11.00s    5.19s  0.0%  1.2 KiB/s   1 msgs/s  1.3 KiB/s  0 Bytes/s
+    subscribe/cclean_f91                     run     3/3     0 100%   0%    0.00s    0.00s 100.0% 215 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cdnld_f21                      run     3/3     0 100%  44%    8.49s    2.60s  0.0%  1.1 KiB/s   1 msgs/s  1.2 KiB/s  0 Bytes/s
+    subscribe/cfile_f44                      run     3/3     0 100%  33%    2.05s    0.20s  0.0%  1.3 KiB/s   3 msgs/s  1.2 KiB/s  0 Bytes/s
+    subscribe/cp_f61                         run     3/3     0 100%  43%    5.76s    1.58s  0.2% 559 Bytes/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
+    subscribe/ftp_f70                        run     3/3     0 100%  39%    1.14s    0.55s  0.0%  1.2 KiB/s   2 msgs/s  1.7 KiB/s  0 Bytes/s
+    subscribe/q_f71                          run     3/3     0 100%  37%    4.50s    1.09s  0.0%  1.2 KiB/s   3 msgs/s  1.7 KiB/s  0 Bytes/s
+    subscribe/rabbitmqtt_f31                 run     3/3     0 100%   8%    4.20s    1.27s  0.0%  2.5 KiB/s   3 msgs/s  1.0 KiB/s  0 Bytes/s
+    subscribe/u_sftp_f60                     run     3/3     0 100%  41%    4.11s    1.30s  0.0% 558 Bytes/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
+    watch/f40                                run     1/1     0 100%   0%    0.02s    0.01s  0.0%  2.9 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t00_f10                           run     1/1     0 100%   0%    5.98s    3.13s 50.0%  1.2 KiB/s   1 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t01_f10                           run     1/1     0 100%   0%    5.88s    3.45s 50.0% 875 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+          total running configs:  25 ( processes: 64 missing: 0 stray: 0 uss:1.4 GiB rss:2.1 GiB vms:5.4 GiB user:29.28s system:4.54s )
+    		   pub/sub received: 36.8 Kim/s (36.8 KiB/s), Sent:   25 msgs/s (25 Bytes/s)
+    		  data received: 21 Files/s (12.0 KiB/s)  sent:  3 Files/s ( 1.4 KiB/s)
+    fractal%
+    
 
+Full sample::
+
+    fractal% sr3 --full status
+    status:
+    Component/Config                         Processes   Connection        Lag                Rates                                        Counters (per housekeeping)                                                    Data Counters                                           Memory                             CPU Time
+                                             State   Run Retry  msg data   LagMax  LagAvg  %rej     pubsub   messages     RxData     TxData   subBytes   Accepted   Rejected  Malformed   pubBytes    pubMsgs     pubMal     rxData    rxFiles     txData    txFiles    Since       uss        rss        vms       user     system
+                                             -----   --- -----  --- ----   ------  ------  ----   --------       ----     ------     ------    -------   --------   --------  ---------    -------     ------      -----      -----    -------     ------  -------      -----        ---        ---        ---       ----     ------
+    cpost/veille_f34                         run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.3 MiB    6.1 MiB   15.0 MiB        0.00       0.01
+    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%    0.00s    0.00s 82.1%  0 Bytes/s  10 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes   280 msgs   230 msgs     0 msgs    0 Bytes    50 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    3.9 MiB    7.1 MiB   16.9 MiB        0.02       0.00
+    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%    0.00s    0.00s 82.1%  0 Bytes/s  10 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes   280 msgs   230 msgs     0 msgs    0 Bytes    50 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    3.9 MiB    7.1 MiB   16.9 MiB        0.03       0.01
+    cpump/xvan_f14                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     2 msgs     0 msgs     0 msgs    0 Bytes      1 msg     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.9 MiB    4.8 MiB   15.8 MiB        0.00       0.00
+    cpump/xvan_f15                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     4 msgs     0 msgs     0 msgs    0 Bytes     2 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.9 MiB    4.8 MiB   15.8 MiB        0.00       0.00
+    poll/f62                                 run     1/1     0 100%   0%    0.05s    0.03s  0.0%  1.1 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs   154 msgs     0 msgs   31.0 KiB    96 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.08s   31.4 MiB   43.7 MiB  207.2 MiB        0.63       0.04
+    post/shim_f63                            stop    0/0     0          -          -         -     -          -        -        -       -          -          -          -          -          -          -          -          -          -          -    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
+    post/test2_f61                           stop    0/0     0 100%   0%    0.00s    0.00s  0.0%  2.5 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    6.0 KiB    14 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files    2.43s    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
+    sarra/download_f20                       run     3/3     0 100%   4%    9.21s    4.10s  0.0%  2.9 KiB/s   2 msgs/s 653 Bytes/s  0 Bytes/s   41.2 KiB    68 msgs     0 msgs     0 msgs   44.8 KiB    68 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   29.44s   70.4 MiB  108.3 MiB  165.9 MiB        0.63       0.10
+    sender/tsource2send_f50                  run   10/10     0 100%   0%    3.83s    1.19s  0.0%  3.9 KiB/s   4 msgs/s  0 Bytes/s 649 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs   43.8 KiB   124 msgs     0 msgs    0 Bytes    0 Files   18.8 KiB  124 Files   29.61s  233.8 MiB  355.8 MiB  982.4 MiB        2.15       0.26
+    shovel/pclean_f90                        run     3/3     0 100%   0%    0.00s    0.00s  0.0%  2.4 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.51s   70.5 MiB  107.3 MiB  163.5 MiB        0.57       0.08
+    shovel/pclean_f92                        run     3/3     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.31s   69.9 MiB  106.4 MiB  163.2 MiB        0.56       0.06
+    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%    4.00s    1.51s  0.0%  4.8 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs   70.5 KiB   124 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.31s   69.6 MiB  106.0 MiB  163.2 MiB        0.56       0.08
+    shovel/t_dd1_f00                         run     3/3     0 100%   0%    9.34s    3.59s 87.7%  4.3 KiB/s  19 msgs/s  0 Bytes/s  0 Bytes/s   82.0 KiB   578 msgs   507 msgs     0 msgs   43.0 KiB    71 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.16s   70.6 MiB  109.4 MiB  164.1 MiB        0.78       0.10
+    shovel/t_dd2_f00                         run     3/3     0 100%   0%    8.89s    3.47s 87.3%  4.2 KiB/s  19 msgs/s  0 Bytes/s  0 Bytes/s   78.9 KiB   557 msgs   486 msgs     0 msgs   43.0 KiB    71 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.08s   70.6 MiB  109.4 MiB  164.1 MiB        0.78       0.09
+    subscribe/amqp_f30                       run     3/3     0 100%  27%   10.23s    5.04s  0.0%  1.6 KiB/s   2 msgs/s 665 Bytes/s  0 Bytes/s   44.8 KiB    68 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   28.88s   69.5 MiB  106.5 MiB  163.0 MiB        0.61       0.07
+    subscribe/cclean_f91                     run     3/3     0 100%   0%    0.00s    0.00s  0.0%  1.5 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   25.8 KiB    74 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   16.95s   69.5 MiB  105.6 MiB  162.9 MiB        0.64       0.06
+    subscribe/cdnld_f21                      run     3/3     0 100%  29%    8.49s    2.64s  0.0%  1.3 KiB/s   2 msgs/s 361 Bytes/s  0 Bytes/s   37.5 KiB    58 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   10.2 KiB   58 Files    0 Bytes    0 Files   28.92s   70.2 MiB  108.9 MiB  163.7 MiB        0.74       0.10
+    subscribe/cfile_f44                      run     3/3     0 100%  10%    2.05s    0.25s  0.0%  1.4 KiB/s   4 msgs/s 345 Bytes/s  0 Bytes/s   40.0 KiB   117 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    9.8 KiB  117 Files    0 Bytes    0 Files   29.04s   69.2 MiB  105.3 MiB  162.9 MiB        0.59       0.08
+    subscribe/cp_f61                         run     3/3     0 100%  21%    5.76s    2.11s  0.0% 652 Bytes/s   4 msgs/s 664 Bytes/s  0 Bytes/s   18.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB  124 Files    0 Bytes    0 Files   28.95s   69.4 MiB  105.9 MiB  162.9 MiB        0.75       0.07
+    subscribe/ftp_f70                        run     3/3     0 100%   7%    1.05s    0.73s  0.0%  1.0 KiB/s   2 msgs/s 664 Bytes/s  0 Bytes/s   29.0 KiB    68 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   28.93s   69.2 MiB  105.6 MiB  162.9 MiB        0.61       0.07
+    subscribe/q_f71                          run     3/3     0 100%  17%    0.64s    0.43s  0.0%  1.1 KiB/s   3 msgs/s 568 Bytes/s  0 Bytes/s   31.0 KiB    96 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   16.1 KiB   96 Files    0 Bytes    0 Files   29.02s   70.5 MiB  107.0 MiB  452.9 MiB        0.74       0.11
+    subscribe/rabbitmqtt_f31                 run     3/3     0 100%   0%    4.20s    1.82s  0.0%  2.4 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes   56 Files    0 Bytes    0 Files   29.10s   69.8 MiB  106.4 MiB  163.0 MiB        0.62       0.09
+    subscribe/u_sftp_f60                     run     3/3     0 100%  13%    4.11s    1.56s  0.0% 647 Bytes/s   4 msgs/s 658 Bytes/s  0 Bytes/s   18.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB  124 Files    0 Bytes    0 Files   29.19s   69.3 MiB  105.5 MiB  162.9 MiB        0.60       0.05
+    watch/f40                                run     1/1     0 100%   0%    0.01s    0.00s  0.0%  2.4 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs    87 msgs     0 msgs   70.5 KiB   124 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.88s   24.6 MiB   36.7 MiB  271.8 MiB        0.28       0.06
+    winnow/t00_f10                           run     1/1     0 100%   0%    8.65s    4.13s 50.0%  2.4 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   46.1 KiB    76 msgs    38 msgs     0 msgs   23.1 KiB    38 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.85s   23.3 MiB   35.5 MiB   54.4 MiB        0.24       0.02
+    winnow/t01_f10                           run     1/1     0 100%   0%    9.06s    3.45s 50.0%  1.9 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   36.2 KiB    60 msgs    30 msgs     0 msgs   18.1 KiB    30 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.85s   23.2 MiB   35.4 MiB   54.4 MiB        0.22       0.01
+          total running configs:  25 ( processes: 64 missing: 0 stray: 0 uss:1.4 GiB rss:2.1 GiB vms:4.3 GiB user:13.35s system:1.62s )
+    		   pub/sub received: 44.2 Kim/s (44.2 KiB/s), Sent:   35 msgs/s (35 Bytes/s)
+    		  data received: 26 Files/s ( 4.5 KiB/s)  sent:  4 Files/s (649 Bytes/s)
+    fractal%
+    
+    
+
+The first row of output gives categories for the following line:
+
+* Processes: report on the number of instances and, and whether any are missing.
+
+* Connection: indicators of health of connectivity with remote.
+
+* Lag: the degree of delay being experienced, or how old data is by the time downloads are complete.
+
+* Rates: the speed of transfers, various measures.
+
+* Counters: the basis for rate calculations, reset each housekeeping interval.
+
+* Memory: the memory usage of the processes in the configuration.
+
+* Cpu Time: the cpu time usage of the processes in the configuration.
+
+The last three categories will only be listed when the --full option is provided.
+
+The second row of output gives detailed headings within each category:
 
 The configurations are listed on the left. For each configuraion, the state
 will be:
 
-* stopped:  no processes are running.
-* running:  all processes are running. 
-* partial:  some processes are running.
-* disabled: configured not to run.
+* stop:  no processes are running.
+* run:  all processes are running. 
+* part:  some processes are running.
+* disa:  disabled, configured not to run.
 
-The columns to the right give more information, detailing how many processes are Running, and Missing ones.
+The next columns to the right give more information, detailing how many processes are Running, out of the number expected.
+For example, 3/3 means 3 processes or instances found of the 3 expected to be found.
 The Expected entry lists how many processes should be running based on the configuration, and whether it is stopped
-or not.  The contents of the Run and Miss columns should always add up to what is in the Exp column.
+or not.  
 
-The last column is the number of notification messages stored in the local retry queue, indicating what channels are having
-processing difficulties. Here is an example of seeing that a single configuration is running, stopping it, 
-cleaning it out::
+The Retry column is the number of notification messages stored in the local retry queue, indicating what channels are having
+processing difficulties. 
 
-  $ sr3 status
-    status: 
-    Component/Config                         State        Run  Miss   Exp Retry
-    ----------------                         -----        ---  ----   --- -----
-    subscribe/dd_all                         running        5     0     1     0
-          total running configs:   1 ( processes: 5 missing: 0 stray: 0 )
+============= ========================================================================================================
+Heading       Purpose
+------------- --------------------------------------------------------------------------------------------------------
+State         General health/status of a given configuration: stop|run|disa|part
+Run           Number of processes or instances running compared to expected. 3/10 3 processes running of 10 expected.
+Retry         The number of messages in retry queues, indicating problems with transfers.
+msg           The percentage of time connected to a message broker, to subscribe to or publish messages.
+data          The percentrage of time connected to data sources or sinks to transfer data.
+LagMax        The maximum age of messages on receipt (prior to download), so delay upstream.
+LagAvg        The average age of messages on receipt (prior to download), so delay upstream.
+pubsub        The rate of the pub/sub messages being downloaded in bytes/second
+messages      The rate of the pub/sub messages being downloaded in messages/second
+%rej          The percent of downloaded messages rejected (indicator of health of subscription tuning.)
+RxData        The amount of data being downloaded (not messages, but file data.)
+TxData        The amount of data being sent (not messages, but file data.)
+subBytes      Counter of the bytes of pub/sub messages being received.
+Accepted      Counter of number of messages accepted
+Rejected      Counter of number of messages rejected
+Malformed     Counter of messages which were discarded because they could not be understood.
+pubBytes      Counter of bytes of messages being published
+pubMsgs       Counter of messages being published
+pubMal        Counter of message which failed to publish.
+rxData        Counter of bytes of files being downloaded.
+rxFiles       Counter of files being downloaded.
+txData        Counter of bytes of files being sent.
+txFiles       Counter of files being sent.
+Since         How many seconds since the last counter reset (basis for rate calculations.)
+uss           unique set size (memory usage of instances.) Actual physical unique memory used by processes.
+rss           resident set size (memory usage of instances) Actual physical memory used, including shared.
+vms           virtual memory size of all shared and physical and swap allocated together.
+user          user cpu time used
+system        system cpu time used.
+============= ========================================================================================================
 
-  $ sr3 stop subscribe/dd_all
-    Stopping: sending SIGTERM ..... ( 5 ) Done
-    Waiting 1 sec. to check if 5 processes stopped (try: 0)
-    Waiting 2 sec. to check if 3 processes stopped (try: 1)
-    pid: 818881-['/usr/bin/python3', '/usr/lib/python3/dist-packages/sarracenia/instance.py', '--no', '3', 'start'] does not match any configured instance, sending it TERM
-    Waiting 4 sec. to check if 3 processes stopped (try: 2)
-    All stopped after try 2
-    
-  $ sr3 cleanup subscribe/dd_all
-    cleanup: queues to delete: [(ParseResult(scheme='amqps', netloc='anonymous:anonymous@dd.weather.gc.ca', path='/', params='', query='', fragment=''), 'q_anonymous.sr_subscribe.dd_all.47257736.46056854')]
-    removing state file: /home/peter/.cache/sr3/subscribe/dd_all/sr_subscribe.dd_all.anonymous.qname
-    
-  $ sr3 remove subscribe/dd_all
-    2021-01-24 23:57:59,800 [INFO] root remove FIXME remove! ['subscribe/dd_all']
-    2021-01-24 23:57:59,800 [INFO] root remove removing /home/peter/.config/sr3/subscribe/dd_all.conf 
-    
-  $ sr3 status
-    status: 
-    Component/Config                         State        Run  Miss   Exp Retry
-    ----------------                         -----        ---  ----   --- -----
-          total running configs:   0 ( processes: 0 missing: 0 stray: 0 )
+At the bottom of the listing is a cumulation of these values. 
 
 
 Message Gathering
