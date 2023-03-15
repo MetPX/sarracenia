@@ -438,6 +438,7 @@ class DiskQueue():
 
         # no more retry
 
+        self.msg_count = N
         if N == 0:
             logger.info("No retry in list")
             try:
@@ -449,7 +450,6 @@ class DiskQueue():
 
         else:
             logger.info("Number of messages in retry list %d" % N)
-            self.msg_count = N
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
             except:

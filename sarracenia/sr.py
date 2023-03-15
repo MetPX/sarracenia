@@ -54,7 +54,9 @@ logger = logging.getLogger(__name__)
 empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0 }
+        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
+        "msgs_in_post_retry": 0, "msgs_in_download_retry":0
+        }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -443,7 +445,6 @@ class sr_GlobalState:
                                 self.states[c][cfg]['status'] = 'removed'
 
                         self.states[c][cfg]['has_state'] = False
-                        self.states[c][cfg]['retry_queue'] = 0
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
@@ -471,21 +472,6 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'] = {}
                                     self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
                                     self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
-                                elif pathname[-12:] == '.retry.state':
-                                    buffer = 2**16
-                                    try:
-                                        with open(p) as f:
-                                            self.states[c][cfg][
-                                                'retry_queue'] += sum(
-                                                    x.count('\n')
-                                                    for x in iter(
-                                                        partial(
-                                                            f.read, buffer),
-                                                        ''))
-                                    except Exception as ex:
-                                        #print( 'info reading statefile %p gone before it was read: %s' % (p, ex) )
-                                        pass
-
                         os.chdir('..')
                 os.chdir('..')
 
@@ -823,7 +809,6 @@ class sr_GlobalState:
                     self.states[c][cfg]['queueName'] = None
                     self.states[c][cfg]['status'] = 'stopped'
                     self.states[c][cfg]['has_state'] = False
-                    self.states[c][cfg]['retry_queue'] = 0
                     continue
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
@@ -1984,8 +1969,6 @@ class sr_GlobalState:
                     expected = 0
                     m = 0
 
-                retry = self.states[c][cfg]['retry_queue']
-
                 cfg_status = self.configs[c][cfg]['status'][0:4]
                 if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
                     cfg_status = "fore"
@@ -1993,7 +1976,7 @@ class sr_GlobalState:
                     cfg_status = "run"
 
                 process_status = "%d/%d" % ( running, expected ) 
-                line= "%-40s %-5s %5s %5s" % (f, cfg_status, process_status, retry ) 
+                line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
                     m = self.states[c][cfg]['metrics']
@@ -2002,6 +1985,8 @@ class sr_GlobalState:
                     else:
                         lagMean = 0
                     
+                    retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
                         byteTotal = 0
@@ -2051,8 +2036,8 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %3d%% %3d%% %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
-                            connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
+                    line += " %5d %3d%% %3d%% %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
+                            retry, connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
                             rejectPercent,\
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
@@ -2292,8 +2277,6 @@ class sr_GlobalState:
                     sfx += '-i%d/%d' % ( \
                         len(self.states[c][cfg]['instance_pids']) - m, \
                         self.configs[c][cfg]['instances'])
-                if self.states[c][cfg]['retry_queue'] > 0:
-                    sfx += '-r%d' % self.states[c][cfg]['retry_queue']
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
 
             if (len(status['partial']) + len(status['running'])) < 1:
