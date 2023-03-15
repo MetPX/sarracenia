@@ -193,7 +193,9 @@ class Flow:
         self.metricsFlowReset()
 
     def metricsFlowReset(self) -> None:
-        self.metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0 } }
+        self.metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
+              'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
+              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -1383,6 +1385,7 @@ class Flow:
                         self.removeOneFile(msg['fileOp']['rename'])
                         msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # actual rename...
                         ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
@@ -1391,6 +1394,7 @@ class Flow:
                         # if rename fails, recover by falling through to download the data anyways.
                         if ok:
                             self.worklist.ok.append(msg)
+                            self.metrics['flow']['transferRxFiles'] += 1
                             msg.setReport(201, 'renamed')
                             continue
 
@@ -1398,6 +1402,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'rmdired')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1409,6 +1414,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1420,6 +1426,7 @@ class Flow:
                     if self.mkdir(msg):
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # as above...
                         self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
@@ -1429,6 +1436,7 @@ class Flow:
                     if self.link1file(msg):
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # as above...
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
@@ -1788,6 +1796,9 @@ class Flow:
 
                     msg['size'] = len_written
 
+            self.metrics['flow']['transferRxBytes'] += len_written
+            self.metrics['flow']['transferRxFiles'] += 1
+
             if download_algo and not self.o.dry_run:
                 msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
                 msg['data_checksum'] = self.proto[self.scheme].data_checksum
@@ -1972,6 +1983,7 @@ class Flow:
                                 self.proto[self.scheme].rmdir(new_file)
                             else:
                                 self.proto[self.scheme].delete(new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -1981,6 +1993,7 @@ class Flow:
                         logger.debug( f"message is to rename {msg['fileOp']['rename']} to {new_file}" )
                         if not self.o.dry_run:
                             self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -1990,6 +2003,7 @@ class Flow:
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
                             self.proto[self.scheme].mkdir(new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -2012,6 +2026,7 @@ class Flow:
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:
                              self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, symlink not supported" % self.scheme)
                     return False
@@ -2124,6 +2139,9 @@ class Flow:
                     self.proto[self.scheme].put(msg, local_file, new_file)
                 else:
                     len_written = msg['size']
+
+            self.metrics['flow']['transferTxBytes'] += len_written
+            self.metrics['flow']['transferTxFiles'] += 1
 
             # fix permission
 

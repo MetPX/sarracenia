@@ -51,7 +51,10 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0 }
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
+        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
+        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
+        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0 }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -1917,27 +1920,28 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
 
-        line = "%-40s %-11s %7s %10s %9s %10s %18s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+        line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
-            line += "%-40s %-9s %33s " % ("Counters (per housekeeping)", "", "" )
-
-        line += "%s %-21s " % (" ", "Memory" ) 
+            line += "%-40s %17s %33s %40s" % ("Counters (per housekeeping)", "", "Data Counters", "" )
+            line += "%s %-21s " % (" ", "Memory" ) 
 
         if self.options.displayFull:
             line += "%10s %10s " % ( " ", "CPU Time" )
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s " % ("", "State", "Run", "Retry", "msg", "data", "LagMax", "LagAvg", "data", "messages", "%rej" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s %10s %10s " % ("", "State", "Run", "Retry", "msg", "size", "LagMax", "LagAvg", "size", "messages", "%rej", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %10s %10s %5s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----", "------", "------" )
 
         if self.options.displayFull:
-            line      += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "Since" )
-            underline += "%10s %10s %10s %10s %10s %10s %8s %10s " % ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----" )
+            line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                    ( "RxBytes", "Accepted", "Rejected", "Malformed", "txBytes", "txMsgs", "txMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+            underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
+                    ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
 
-        line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
-        underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+            line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
+            underline += "%10s %10s %10s " % ( "---", "---", "---"  )
 
         if self.options.displayFull:
             line      += "%10s %10s " % ( "user", "system" )
@@ -1947,10 +1951,14 @@ class sr_GlobalState:
         print(underline)
 
         configs_running = 0
+        rxCumulativeMessageByteRate=0
         rxCumulativeMessageRate=0
-        rxCumulativeByteRate=0
         txCumulativeMessageRate=0
-        txCumulativeByteRate=0
+        txCumulativeMessageByteRate=0
+        rxCumulativeFileRate=0
+        rxCumulativeDataRate=0
+        txCumulativeFileRate=0
+        txCumulativeDataRate=0
         now = time.time()
 
         for c in sorted(self.configs):
@@ -2002,12 +2010,24 @@ class sr_GlobalState:
         
                         if 'txByteCount' in m:
                             byteTotal += m["txByteCount"]
-                            txCumulativeByteRate +=  m["txByteCount"]/time_base
+                            txCumulativeMessageByteRate +=  m["txByteCount"]/time_base
         
                         byteRate= byteTotal/time_base
                         msgRate= (m["rxGoodCount"]+m["rxBadCount"])/time_base
-                        rxCumulativeMessageRate += msgRate
-                        rxCumulativeByteRate +=  byteRate
+
+                        transferRxByteRate = m['transferRxBytes']/time_base
+                        transferRxFileRate = m['transferRxFiles']/time_base
+                        transferTxByteRate = m['transferTxBytes']/time_base
+                        transferTxFileRate = m['transferTxFiles']/time_base
+
+                        rxCumulativeFileRate += transferRxFileRate
+                        rxCumulativeDataRate += transferRxByteRate
+                        txCumulativeFileRate += transferTxFileRate
+                        txCumulativeDataRate += transferTxByteRate
+                        
+                        rxCumulativeMessageByteRate += msgRate
+                        rxCumulativeMessageRate +=  byteRate
+                        
 
                         if 'transferConnectTime' in m:
                             byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
@@ -2031,15 +2051,17 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %3d%% %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% " % ( \
+                    line += " %3d%% %3d%% %7.2fs %7.2fs %8s/s %8s/s %4.1f%% %8s/s %8s/s" % ( \
                             connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
-                            rejectPercent
+                            rejectPercent,\
+                            naturalSize(transferRxByteRate), \
+                            naturalSize(transferTxByteRate) 
                             )
 
                     if self.options.displayFull :
-                        line += " %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
                             naturalSize(m['rxByteCount']), \
                             naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
                             naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
@@ -2047,21 +2069,25 @@ class sr_GlobalState:
                             naturalSize(m['txByteCount']), 
                             naturalSize(m['txGoodCount']).replace("B","m").replace("myte","msg"), \
                             naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["transferRxBytes"]), \
+                            naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
+                            naturalSize(m["transferTxBytes"]), \
+                            naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
                             time_base )
                 else:
-                    line += " %10s %10s %9s %5s %8s" % ( "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %9s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
-                        line += " %8s %7s %10s %10s %10s %10s %10s " % \
-                            ( "-", "-", "-", "-", "-", "-", "-" )
+                        line += " %8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
+                            ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
 
                 if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
                     ru = self.states[c][cfg]['resource_usage'] 
 
                     
-                    line += " %10s %10s %10s " % (\
+                    if self.options.displayFull:
+                        line += " %10s %10s %10s " % (\
                              naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
                              )
-                    if self.options.displayFull:
                         line += " %10.2f %10.2f" % (\
                              ru['user_cpu'], ru['system_cpu'] \
                              )
@@ -2085,11 +2111,17 @@ class sr_GlobalState:
               naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        print( '\t\t   received: %8s/s transfer: %8s/s, Sent:  %8s/s' % ( 
+        print( '\t\t   messages received: %8s/s (%8s/s), Sent:  %8s/s (%8s/s)' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
-                naturalSize(rxCumulativeByteRate),\
-                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg")
+                naturalSize(rxCumulativeMessageRate),\
+                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
+                naturalSize(txCumulativeMessageRate)
             ))
+        print( '\t\t  data received: %8s/s (%8s/s)  sent: %8s/s (%8s/s) ' % (
+               naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
+               naturalSize(rxCumulativeDataRate),
+               naturalSize( txCumulativeFileRate).replace("B","F").replace("Fyte","File"),
+               naturalSize(txCumulativeDataRate) ) )
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
