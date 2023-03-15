@@ -68,6 +68,7 @@ class Nexrad(FlowCB):
                 'https://www.aviationweather.gov/docs/metar/stations.txt'
         ) as f:
             lines = f.readlines()
+            self.metrics['transferRxBytes'] += len(lines)
             for line in lines:
                 line = line.decode("utf-8", "ignore")
                 if len(line) > 80:
