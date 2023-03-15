@@ -179,6 +179,7 @@ class MQTT(Moth):
         logger.warning("note: mqtt support is newish, not very well tested")
 
     def __sub_on_disconnect(client, userdata, rc, properties=None):
+        userdata.metricsDisconnect()
         logger.debug(paho.mqtt.client.connack_string(rc))
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
@@ -215,6 +216,7 @@ class MQTT(Moth):
             logger.info( "asked to subscribe to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
                 userdata.o['qos'], paho.mqtt.client.error_string(res)) )
         userdata.subscribe_mutex.release()
+        userdata.metricsConnect()
 
 
     def __sub_on_subscribe(client,
@@ -229,12 +231,12 @@ class MQTT(Moth):
         userdata.subscribe_mutex.release()
 
     def __pub_on_disconnect(client, userdata, rc, properties=None):
-        self.metricsDisonnect()
+        userdata.metricsDisconnect()
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_connect(client, userdata, flags, rc, properties=None):
         userdata.connect_in_progress = False
-        self.metricsConnect()
+        userdata.metricsConnect()
         logger.info(paho.mqtt.client.connack_string(rc))
 
     def __pub_on_publish(client, userdata, mid):
@@ -650,7 +652,6 @@ class MQTT(Moth):
                 if hasattr(props, 'UserProperty'): 
                     logger.info( f"user_property:{props.UserProperty}" )
                     
-            self.metrics['txByteCount'] += len(raw_body)
 
             info = self.client.publish(topic=topic, payload=raw_body, qos=self.o['qos'], properties=props)
                
@@ -662,6 +663,7 @@ class MQTT(Moth):
                     self.pending_publishes.append(info.mid)
                     ack_pending=True
 
+                self.metrics['txByteCount'] += len(raw_body)
                 self.metrics['txGoodCount'] += 1
                 logger.info("published mid={} ack_pending={} {} to under: {} ".format(
                     info.mid, ack_pending, body, topic))
