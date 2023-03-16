@@ -194,7 +194,7 @@ class sr_GlobalState:
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']),
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']),
                                ensure_ascii=False) + '\n')
 
     def _filter_sr_proc(self, p):
@@ -222,6 +222,10 @@ class sr_GlobalState:
             return
 
         if p['name'].startswith('sr3_'):
+            p['memory'] = p['memory_info']._asdict()
+            p['cpu'] = p['cpu_times']._asdict()
+            del p['memory_full_info'] 
+            del p['cpu_times']
             self.procs[p['pid']] = p
             if p['name'][3:8] == 'audit':
                 self.procs[p['pid']]['claimed'] = True
@@ -258,7 +262,7 @@ class sr_GlobalState:
             try:
                 self._filter_sr_proc(
                     proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']))
             except:
                 pass # the process went away while iterating. avoid spurious message.
 
@@ -860,16 +864,16 @@ class sr_GlobalState:
                             observed_instances += 1
                             pid = self.states[c][cfg]['instance_pids'][i]
                             self.procs[ pid ]['claimed'] = True
-                            resource_usage[ 'uss' ] += self.procs[pid]['memory_full_info'].uss 
-                            self.resources[ 'uss' ] += self.procs[pid]['memory_full_info'].uss 
-                            resource_usage[ 'rss' ] += self.procs[pid]['memory_full_info'].rss 
-                            self.resources[ 'rss' ] += self.procs[pid]['memory_full_info'].rss 
-                            resource_usage[ 'vms' ] += self.procs[pid]['memory_full_info'].vms 
-                            self.resources[ 'vms' ] += self.procs[pid]['memory_full_info'].vms 
-                            resource_usage[ 'user_cpu' ] += self.procs[pid]['cpu_times'].user 
-                            self.resources[ 'user_cpu' ] += self.procs[pid]['cpu_times'].user 
-                            resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu_times'].system 
-                            self.resources[ 'system_cpu' ] += self.procs[pid]['cpu_times'].system 
+                            #resource_usage[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            #self.resources[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            resource_usage[ 'rss' ] += self.procs[pid]['memory']['rss'] 
+                            self.resources[ 'rss' ] += self.procs[pid]['memory']['rss'] 
+                            resource_usage[ 'vms' ] += self.procs[pid]['memory']['vms'] 
+                            self.resources[ 'vms' ] += self.procs[pid]['memory']['vms'] 
+                            resource_usage[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            self.resources[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
+                            self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
                     if observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
@@ -1847,34 +1851,40 @@ class sr_GlobalState:
 
         :return:
         """
-        print('\n\nRunning Processes\n\n')
+        #print('\n\nRunning Processes\n\n')
         for pid in self.procs:
-            #print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
-            print('\t%s: %s' % (pid, self.procs[pid] ))
+            print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
+            #print('\t%s: %s' % (pid, self.procs[pid] ))
 
-        print('\n\nConfigs\n\n')
+        #print('\n\nConfigs\n\n')
         for c in self.configs:
-            print('\t%s ' % c)
+            print('\t\"%s\": { ' % c)
             for cfg in self.configs[c]:
-                print('\t\t%s : %s' % (cfg, self.configs[c][cfg]))
+                self.configs[c][cfg]['options']={ 'omitted': 'use show' }
+                self.configs[c][cfg]['credentials']=[ 'omitted' ]
+                print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
+            print("\t\t}")
 
-        print('\n\nStates\n\n')
+        #print('\n\nStates\n\n')
         for c in self.states:
-            print('\t%s ' % c)
+            print('\t\"%s\": { ' % c)
             for cfg in self.states[c]:
-                print('\t\t%s : %s' % (cfg, self.states[c][cfg]))
+                print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
+            print( "\t}" )
 
-        print('\n\nBroker Bindings\n\n')
+        #print('\n\nBroker Bindings\n\n')
+
         for h in self.brokers:
-            print("\nhost: %s" % h)
-            print("\nexchanges: ")
+            print("\n\"host\": { \"%s\": { " % h)
+            print("\n\"exchanges\": { ")
             for x in self.brokers[h]['exchanges']:
-                print("\t%s: %s" % (x, self.brokers[h]['exchanges'][x]))
-            print("\nqueues: ")
+                print("\t\"%s\": { %s }," % (x, json.dumps(self.brokers[h]['exchanges'][x])))
+            print("},\n\"queues\": {")
             for q in self.brokers[h]['queues']:
-                print("\t%s: %s" % (q, self.brokers[h]['queues'][q]))
+                print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
+            print( "}},\n" )
 
-        print('\n\nbroker summaries:\n\n')
+        #print('\n\nbroker summaries:\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
@@ -1885,21 +1895,22 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\nbroker: %s  %s' % (h, a))
-            print('\nexchanges: ', end='')
+            print('\n\"broker\": { \"%s\":\"%s\" }' % (h, a))
+            print('\n\"exchanges\": [ ', end='')
             for x in self.exchange_summary[h]:
-                print("%s-%d, " % (x, self.exchange_summary[h][x]), end='')
-            print('')
-            print('\nqueues: ', end='')
+                print("\"%s-%d\", " % (x, self.exchange_summary[h][x]), end='')
+            print(']')
+            print('\n\"queues\": [', end='')
             for q in self.brokers[h]['queues']:
-                print("%s-%d, " % (q, len(self.brokers[h]['queues'][q])),
+                print("\"%s-%d\", " % (q, len(self.brokers[h]['queues'][q])),
                       end='')
-            print('')
+            print(']')
 
-        print('\n\nMissing instances\n\n')
+        print('\n\n\"Missing instances\" : { \n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
-            print('\t\t%s : %s %d' % (c, cfg, i))
+            print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
+        print('\t\t}')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
