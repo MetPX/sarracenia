@@ -222,7 +222,7 @@ class sr_GlobalState:
             return
 
         if p['name'].startswith('sr3_'):
-            p['memory'] = p['memory_info']._asdict()
+            p['memory'] = p['memory_full_info']._asdict()
             p['cpu'] = p['cpu_times']._asdict()
             del p['memory_full_info'] 
             del p['cpu_times']
@@ -262,7 +262,7 @@ class sr_GlobalState:
             try:
                 self._filter_sr_proc(
                     proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']))
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
             except:
                 pass # the process went away while iterating. avoid spurious message.
 
@@ -864,8 +864,8 @@ class sr_GlobalState:
                             observed_instances += 1
                             pid = self.states[c][cfg]['instance_pids'][i]
                             self.procs[ pid ]['claimed'] = True
-                            #resource_usage[ 'uss' ] += self.procs[pid]['memory']['uss'] 
-                            #self.resources[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            resource_usage[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            self.resources[ 'uss' ] += self.procs[pid]['memory']['uss'] 
                             resource_usage[ 'rss' ] += self.procs[pid]['memory']['rss'] 
                             self.resources[ 'rss' ] += self.procs[pid]['memory']['rss'] 
                             resource_usage[ 'vms' ] += self.procs[pid]['memory']['vms'] 
