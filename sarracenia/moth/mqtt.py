@@ -346,7 +346,7 @@ class MQTT(Moth):
                         decl_client = self.__clientSetup(icid)
                         decl_client.on_connect = MQTT.__sub_on_connect
                         decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                           clean_start=True, properties=props )
+                           clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                             decl_client.loop(1)
                         decl_client.disconnect()
@@ -460,7 +460,7 @@ class MQTT(Moth):
                 logger.info('cleanup session %s' % icid )
                 myclient = self.__clientSetup( icid )
                 myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                   clean_start=True, properties=props )
+                   clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
                 myclient.disconnect()
