@@ -53,6 +53,9 @@ class Log(FlowCB):
         self.rejectCount = 0
         self.transferCount = 0
 
+    def metricsReport(self):
+        return { 'lagMax': self.lagMax, 'lagTotal':self.lagTotal, 'lagMessageCount':self.msgCount, 'rejectCount':self.rejectCount }
+
     def gather(self):
         if set(['gather']) & self.o.logEvents:
             logger.info('')
@@ -129,8 +132,12 @@ class Log(FlowCB):
                 else:
                     verb = self.action_verb
 
-                logger.info("%s ok: %s " %
-                            (verb, msg['new_dir'] + '/' + msg['new_file']))
+                if ('new_dir' in msg) and ('new_file' in msg):
+                    logger.info("%s ok: %s " %
+                                (verb, msg['new_dir'] + '/' + msg['new_file']))
+                elif 'relPath' in msg:
+                    logger.info("%s ok: relPath: %s " % (verb, msg['relPath'] ))
+
                 if self.o.logMessageDump:
                     logger.info('message: %s' % msg.dumps())
 

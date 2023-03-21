@@ -1,4 +1,27 @@
-metpx-sr3 (3.00.27) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.29) UNRELEASED; urgency=medium
+
+  * bugfix #632 create root of config and state directories when missing.
+
+ -- Peter <peter@bsqt.homeip.net>  Thu, 09 Mar 2023 17:57:32 -0500
+
+metpx-sr3 (3.00.28) unstable; urgency=medium
+
+  * apply strip, pstrip, and flattern to paths in fileOp fields (rename & symlink) HPC mirroring.
+  * fixed mqtt support (broken since 3.0.15) #506
+  * bugfix for deleting exchanges only if unused #382
+  * refactor class name "encoding" to postformat. #617
+  * finished review of defaults from v2 #405
+  * ported last plugins from v2 #433
+  * ported last v2 (sundew porting) documentation to sr3
+  * bugfix #621 removing double slashes in paths.
+  * bugfix... queunames not being chosen properly. (multiple instances using different queues.) 
+  * plugin api: sarracenia.Message.updatePaths added current values as defaults
+  * plugin api: flowcb.accept.pathreplace uses improved sets 
+  * plugin api: add_option( improved set support.) added all_values of set.
+
+ -- Peter <peter@bsqt.homeip.net>  Fri, 7 Mar 2023 10:48:17 -0500
+
+metpx-sr3 (3.00.27) unstable; urgency=medium
 
   * adding directory creation/deletion events #558
   * re-introducing *recursive* option as a result of #558. to suppress when
@@ -19,7 +42,6 @@ metpx-sr3 (3.00.26) unstable; urgency=medium
 
 metpx-sr3 (3.00.25) unstable; urgency=medium
 
-  [ Peter Silva ]
   * change: default acceptUnmatched is now True everywhere ( #601)
   * change: translation of v2 poll *destination* & *get* to sr3 *path*
   * #433 add interpretation of offsets in strftime date patterns.

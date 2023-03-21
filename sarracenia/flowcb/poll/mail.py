@@ -100,6 +100,7 @@ class Mail(Poll):
             # only retrieves unread mail from inbox, change these values as to your preference
             mailman.select(mailbox='INBOX')
             resp, data = mailman.search(None, '(UNSEEN)')
+            self.metrics['transferRxBytes'] += len(data)
             for index in data[0].split():
                 r, d = mailman.fetch(index, '(RFC822)')
                 msg = d[0][1].decode("utf-8", "ignore") + "\n"
@@ -142,6 +143,7 @@ class Mail(Poll):
             for index in range(numMsgs):
                 msg = ""
                 for line in mailman.retr(index + 1)[1]:
+                    self.metrics['transferRxBytes'] += len(line)
                     msg += line.decode("utf-8", "ignore") + "\n"
                 msg_subject = email.message_from_string(msg).get('Subject')
                 msg_filename = msg_subject + datetime.datetime.now().strftime(

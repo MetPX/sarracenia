@@ -14,7 +14,7 @@ entry_points = [
 
     'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
     'download', 'gather', 'on_housekeeping', 'on_report', 'on_start', 'on_stop',
-    'poll', 'post', 'send', 'please_stop', 'metrics_report',
+    'poll', 'post', 'send', 'please_stop', 'metricsReport',
 
 ]
 
@@ -125,7 +125,7 @@ class FlowCB:
          This replaces built-in download functionality, providing an override.
          for individual file transfers. ideally you set checksums as you download.
             
-    def metrics_report(self) -> dict:
+    def metricsReport(self) -> dict:
 
         Return a dictionary of metrics. Example: number of messages remaining in retry queues.
 

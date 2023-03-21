@@ -36,8 +36,6 @@ allFileEvents = set(['create', 'delete', 'link', 'mkdir', 'modify','rmdir'])
 default_options = {
     'accelThreshold': 0,
     'acceptUnmatched': True,
-    'attempts': 3,
-    'batch': 100,
     'byteRateMax': None,
     'discard': False,
     'download': False,
@@ -192,7 +190,12 @@ class Flow:
         self.plugins['load'].extend(self.o.plugins_late)
 
         # metrics - dictionary with names of plugins as the keys
-        self.metrics = {}
+        self.metricsFlowReset()
+
+    def metricsFlowReset(self) -> None:
+        self.metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
+              'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
+              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
 
     def loadCallbacks(self, plugins_to_load):
 
@@ -257,21 +260,37 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
     def _runCallbackMetrics(self):
-        """Collect metrics from plugins with a ``metrics_report`` entry point.
+        """Collect metrics from plugins with a ``metricsReport`` entry point.
 
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
-        for p in self.plugins["metrics_report"]:
+        
+        if 'transferConnected' in self.metrics['flow'] and self.metrics['flow']['transferConnected']: 
+            now=nowflt()
+            self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+            self.metrics['flow']['transferConnectStart']=now
+
+        modules=self.plugins["metricsReport"]
+
+        if hasattr(self,'proto'): # gets re-spawned every batch, so not a permanent thing...
+            for scheme in self.proto:
+                if hasattr(self.proto[scheme], 'metricsReport'):
+                    fn = getattr(self.proto[scheme], 'metricsReport')
+                    if callable(fn):
+                       modules.append( fn )
+
+        for p in modules:
             if self.o.logLevel.lower() == 'debug' :
-                plugin_name = p.__qualname__.replace('.metrics_report', '')
-                self.metrics[plugin_name] = p()
+                module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
+                self.metrics[module_name] = p()
             else:
                 try:
-                    plugin_name = p.__qualname__.replace('.metrics_report', '')
-                    self.metrics[plugin_name] = p()
+                    module_name = str(p.__module__).replace('sarracenia.flowcb.', '' )
+                    self.metrics[module_name] = p()
                 except Exception as ex:
-                    logger.error( f'flowCallback plugin {p}/metrics_report crashed: {ex}' )
+                    logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+
 
     def has_vip(self):
 
@@ -310,6 +329,7 @@ class Flow:
         )
         self._runCallbacksTime('please_stop')
         self._stop_requested = True
+        self.metrics["flow"]['stop_requested'] = True
 
 
     def close(self) -> None:
@@ -351,6 +371,7 @@ class Flow:
         had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
+        self.metrics['flow']['last_housekeeping'] = start_time
 
         if self.o.logLevel == 'debug':
             logger.debug("options:")
@@ -447,15 +468,15 @@ class Flow:
                         if ('new_baseUrl' in m) and (m['baseUrl'] !=
                                                      m['new_baseUrl']):
                             m['baseUrl'] = m['new_baseUrl']
-                        if ('new_retPath' in m) :
-                            m['retPath'] = m['new_retPath']
+                        if ('new_retrievePath' in m) :
+                            m['retrievePath'] = m['new_retrievePath']
                         if ('new_relPath' in m) and (m['relPath'] !=
                                                      m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
-                        if ('version' in m) and ( m['version'] != 
-                                                  m['post_version']):
-                            m['version'] = m['post_version']
+                        if ('_format' in m) and ( m['_format'] != 
+                                                  m['post_format']):
+                            m['_format'] = m['post_format']
 
                     self._runCallbacksWorklist('after_work')
 
@@ -470,6 +491,11 @@ class Flow:
                     self.report()
 
                     self._runCallbackMetrics()
+
+                    if hasattr(self.o, 'metricsFilename' ):
+                        metrics=json.dumps(self.metrics)
+                        with open(self.o.metricsFilename, 'w') as mfn:
+                             mfn.write(metrics+"\n")
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []
@@ -486,9 +512,11 @@ class Flow:
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
+            self.metrics['flow']['msgRate'] = current_rate
+
             if (last_gather_len == 0) and (self.o.sleep < 0):
-                if (self.o.retryEmptyBeforeExit and "Retry" in self.metrics
-                    and self.metrics['Retry']['msgs_in_post_retry'] > 0):
+                if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
+                    and self.metrics['retry']['msgs_in_post_retry'] > 0):
                     logger.info("Not exiting because there are still messages in the post retry queue.")
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
                     current_sleep = 60
@@ -498,13 +526,19 @@ class Flow:
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
 
+            self.metrics['flow']['current_sleep'] = current_sleep
+
             # Run housekeeping based on time, and before stopping to ensure it's run at least once
             if now > next_housekeeping or stopping:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
                 self._runCallbacksTime('on_housekeeping')
+                self.metricsFlowReset()
+                self.metrics['flow']['last_housekeeping'] = now
+
                 next_housekeeping = now + self.o.housekeeping
+                self.metrics['flow']['next_housekeeping'] = next_housekeeping
 
             if (self.o.messageRateMin > 0) and (current_rate <
                                                 self.o.messageRateMin):
@@ -707,6 +741,7 @@ class Flow:
 
         if strip > 0:
 
+            logger.debug( f"FIXME! strip={strip}" )
             if strip < len(token):
                 token = token[strip:]
 
@@ -714,6 +749,13 @@ class Flow:
             else:
                 token = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        fopv = msg['fileOp'][f].split('/') 
+                        if len(fopv) > strip:
+                            msg['fileOp'][f] = '/'.join(fopv[strip:])
+                            
         # strip using a pattern
 
         elif pstrip:
@@ -725,6 +767,11 @@ class Flow:
             if not filename in relstrip: relstrip = filename
             token = relstrip.split('/')
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = re.sub(pstrip, '', msg['fileOp'][f] )
+                            
         # if flatten... we flatten relative path
         # strip taken into account
 
@@ -732,6 +779,11 @@ class Flow:
             filename = flatten.join(token)
             token[-1] = [filename]
 
+            if 'fileOp' in msg:
+                for f in ['link', 'hlink', 'rename']:
+                    if f in msg['fileOp']:
+                        msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
+                            
         if maskFileOption is not None:
             filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
@@ -818,13 +870,21 @@ class Flow:
                         oldname_matched = accepting
                         break
 
-            url = self.o.variableExpansion(m['baseUrl'],
-                                         m) + os.sep + m['relPath']
+            url = self.o.variableExpansion(m['baseUrl'], m)
+            if (m['baseUrl'][-1] == '/') or (m['relPath'][0] == '/'):
+                if (m['baseUrl'][-1] == '/') and (m['relPath'][0] == '/'):
+                    url += m['relPath'][1:]
+                else:
+                    url += m['relPath']
+            else:
+                url += '/' + m['relPath']
+
             if 'sundew_extension' in m and url.count(":") < 1:
                 urlToMatch = url + ':' + m['sundew_extension']
             else:
                 urlToMatch = url
 
+            logger.debug( f" urlToMatch: {urlToMatch} " )
             # apply masks for accept/reject options.
             matched = False
             for mask in self.o.masks:
@@ -1204,11 +1264,10 @@ class Flow:
         """
             perform an mkdir.
         """
-        logger.debug("message is to mkdir %s " %
-                     (msg['new_file']))
 
         ok=False
         path = msg['new_dir'] + '/' + msg['new_file']
+        logger.debug( f"message is to mkdir {path}" )
 
         if not os.path.isdir(msg['new_dir']):
             try:
@@ -1218,7 +1277,8 @@ class Flow:
                 logger.debug('Exception details:', exc_info=True)
 
         if os.path.isdir(path):
-            return ok
+            logger.debug( f"no need to mkdir {path} as it exists" )
+            return True
 
         if 'mode' in msg:
             mode=msg['mode']
@@ -1325,6 +1385,7 @@ class Flow:
                         self.removeOneFile(msg['fileOp']['rename'])
                         msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # actual rename...
                         ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
@@ -1333,6 +1394,7 @@ class Flow:
                         # if rename fails, recover by falling through to download the data anyways.
                         if ok:
                             self.worklist.ok.append(msg)
+                            self.metrics['flow']['transferRxFiles'] += 1
                             msg.setReport(201, 'renamed')
                             continue
 
@@ -1340,6 +1402,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'rmdired')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1351,6 +1414,7 @@ class Flow:
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1362,6 +1426,7 @@ class Flow:
                     if self.mkdir(msg):
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # as above...
                         self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
@@ -1371,6 +1436,7 @@ class Flow:
                     if self.link1file(msg):
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
+                        self.metrics['flow']['transferRxFiles'] += 1
                     else:
                         # as above...
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
@@ -1483,20 +1549,38 @@ class Flow:
 
         self.o = options
 
-        if 'retPath' in msg:
-            logger.debug("%s_transport download override retPath=%s" % (self.scheme, msg['retPath']))
-            remote_file = msg['retPath']
+        if 'retrievePath' in msg:
+            logger.debug("%s_transport download override retrievePath=%s" % (self.scheme, msg['retrievePath']))
+            remote_file = msg['retrievePath']
             cdir = '/'
-            urlstr = msg['baseUrl'] + '/' + msg['retPath']
+            if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
+                urlstr = msg['baseUrl'] + msg['relPath']
+            else:
+                urlstr = msg['baseUrl'] + '/' + msg['relPath']
         else:
             logger.debug("%s_transport download relPath=%s" % (self.scheme, msg['relPath']))
 
             # split the path to the file and the file
             # if relPath is just the file remote_path will return empty
             remote_path, remote_file = os.path.split(msg['relPath'])
+
+            u = urllib.parse.urlparse(msg['baseUrl']) 
+            if u.path != '/':
+                if remote_path[0] == '/':
+                    remote_path = u.path + remote_path
+                else:
+                    remote_path = u.path + '/' + remote_path
+
             # relPath does not contain a prefix / , add it for cdir
-            cdir = '/' + remote_path
-            urlstr = msg['baseUrl'] + '/' + msg['relPath']
+            if remote_path[0] != '/':
+                 cdir = '/' + remote_path
+            else:
+                 cdir = remote_path
+            if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
+                urlstr = msg['baseUrl'] + msg['relPath']
+            else:
+                urlstr = msg['baseUrl'] + '/' + msg['relPath']
+
 
         istr =msg['integrity']  if ('integrity' in msg) else "None"
         fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
@@ -1561,14 +1645,26 @@ class Flow:
             options.sendTo = msg['baseUrl']
 
             if (not (self.scheme in self.proto)) or (self.proto[self.scheme] is None):
-                    self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
+                self.proto[self.scheme] = sarracenia.transfer.Transfer.factory(self.scheme, self.o)
+                self.metrics['flow']['transferConnected'] = True
+                self.metrics['flow']['transferConnectStart'] = time.time() 
 
             if (not self.o.dry_run) and not self.proto[self.scheme].check_is_connected():
+
+                    if self.metrics['flow']['transferConnected']: 
+                         now=nowflt()
+                         self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+                         self.metrics['flow']['transferConnectStart'] = 0
+                         self.metrics['flow']['transferConnected'] = False
+
                     logger.debug("%s_transport download connects" % self.scheme)
                     ok = self.proto[self.scheme].connect()
                     if not ok:
                         self.proto[self.scheme] = None
                         return False
+
+                    self.metrics['flow']['transferConnected'] = True
+                    self.metrics['flow']['transferConnectStart'] = time.time() 
                     logger.debug('connected')
 
             #=================================
@@ -1583,6 +1679,7 @@ class Flow:
          
             if (not self.o.dry_run) and hasattr(self.proto[self.scheme], 'getcwd'):
                 cwd = self.proto[self.scheme].getcwd()
+                logger.debug( f" from proto getcwd: {cwd} ")
 
             if cwd != cdir:
                 logger.debug("%s_transport remote cd to %s" % (self.scheme, cdir))
@@ -1699,6 +1796,9 @@ class Flow:
 
                     msg['size'] = len_written
 
+            self.metrics['flow']['transferRxBytes'] += len_written
+            self.metrics['flow']['transferRxFiles'] += 1
+
             if download_algo and not self.o.dry_run:
                 msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
                 msg['data_checksum'] = self.proto[self.scheme].data_checksum
@@ -1744,6 +1844,8 @@ class Flow:
                     self.proto[self.scheme].close()
                 except:
                     logger.debug('closing exception details: ', exc_info=True)
+            self.metrics['flow']["transferConnected"] = False
+            self.metrics['flow']['transferConnectedTime'] = time.time() - self.metrics['flow']['transferConnectLast']
             self.cdir = None
             self.proto[self.scheme] = None
         
@@ -1802,16 +1904,26 @@ class Flow:
                    (self.proto[self.scheme] is None) or not self.proto[self.scheme].check_is_connected():
                     logger.debug("%s_transport send connects" % self.scheme)
     
+                    if self.metrics['flow']['transferConnected']: 
+                         now = nowflt()
+                         self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+                         self.metrics['flow']['transferConnectStart'] = 0
+                         self.metrics['flow']['transferConnected'] = False
+
                     self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
     
                     ok = self.proto[self.scheme].connect()
                     if not ok: return False
                     self.cdir = None
+                    self.metrics['flow']['transferConnected'] = True
+                    self.metrics['flow']['transferConnectStart'] = time.time() 
 
             elif not (self.scheme in self.proto) or self.proto[self.scheme] is None:
                 logger.debug("dry_run %s_transport send connects" % self.scheme)
                 self.proto[self.scheme] = sarracenia.transfer.Transfer.factory( self.scheme, options)
                 self.cdir = None
+                self.metrics['flow']['transferConnected'] = True
+                self.metrics['flow']['transferConnectStart'] = time.time() 
 
             #=================================
             # if parts, check that the protol supports it
@@ -1871,6 +1983,7 @@ class Flow:
                                 self.proto[self.scheme].rmdir(new_file)
                             else:
                                 self.proto[self.scheme].delete(new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -1880,6 +1993,7 @@ class Flow:
                         logger.debug( f"message is to rename {msg['fileOp']['rename']} to {new_file}" )
                         if not self.o.dry_run:
                             self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -1889,6 +2003,7 @@ class Flow:
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
                             self.proto[self.scheme].mkdir(new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -1911,6 +2026,7 @@ class Flow:
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:
                              self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        self.metrics['flow']['transferTxFiles'] += 1
                         return True
                     logger.error("%s, symlink not supported" % self.scheme)
                     return False
@@ -2024,6 +2140,9 @@ class Flow:
                 else:
                     len_written = msg['size']
 
+            self.metrics['flow']['transferTxBytes'] += len_written
+            self.metrics['flow']['transferTxFiles'] += 1
+
             # fix permission
 
             if not self.o.dry_run:
@@ -2053,6 +2172,11 @@ class Flow:
                     self.proto[self.scheme].close()
                 except:
                     pass
+
+            now = nowflt()
+            self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
+            self.metrics['flow']['transferConnectStart']=0
+            self.metrics['flow']['transferConnected']=False
             self.cdir = None
             self.proto[self.scheme] = None
 

@@ -146,6 +146,7 @@ class Transfer():
         self.fpos = 0
         self.tbytes = 0
         self.tbegin = nowflt()
+        self.byteRate = 0
 
     def local_read_close(self, src):
         #logger.debug("sr_proto local_read_close")
@@ -251,7 +252,7 @@ class Transfer():
                 alarm_cancel()
                 if not chunk: break
                 if self.sumalgo: self.sumalgo.update(chunk)
-                if self.o.byteRateMax: self.throttle(chunk)
+                self.throttle(chunk)
             return rw_length
 
         # exact length to be transfered
@@ -272,7 +273,7 @@ class Transfer():
             alarm_cancel()
             if not chunk: break
             if self.sumalgo: self.sumalgo.update(chunk)
-            if self.o.byteRateMax: self.throttle(chunk)
+            self.throttle(chunk)
             i = i + 1
 
         # remaining
@@ -286,7 +287,7 @@ class Transfer():
                 dst.write(new_chunk)
             alarm_cancel()
             if self.sumalgo: self.sumalgo.update(chunk)
-            if self.o.byteRateMax: self.throttle(chunk)
+            self.throttle(chunk)
 
         return rw_length
 
@@ -382,19 +383,23 @@ class Transfer():
         else:
             return None
 
+    def metricsReport(self):
+        return { 'byteRateInstant': self.byteRate }
+
     # throttle
     def throttle(self, buf):
-        logger.debug("check")
         self.tbytes = self.tbytes + len(buf)
-        span = self.tbytes / self.o.byteRateMax
         rspan = nowflt() - self.tbegin
-        if span > rspan:
-            stime = span - rspan
-            if stime > 10:
-                logger.info(
-                    f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}"
-                )
-            time.sleep(stime)
+        if rspan > 0:
+            self.byteRate = self.tbytes/rspan
+
+        if hasattr(self.o,'byteRateMax') and self.o.byteRateMax and self.o.byteRateMax > 0:
+            span = self.tbytes / self.o.byteRateMax
+            if span > rspan:
+                stime = span - rspan
+                if stime > 10:
+                    logger.info( f"exceeded byteRateMax: {self.o.byteRateMax} sleeping for {stime:.2f}")
+                time.sleep(stime)
 
     # write_chunk
     def write_chunk(self, chunk):
@@ -402,7 +407,7 @@ class Transfer():
         self.rw_length += len(chunk)
         alarm_cancel()
         if self.sumalgo: self.sumalgo.update(chunk)
-        if self.o.byteRateMax: self.throttle(chunk)
+        self.throttle(chunk)
         if self.o.timeout: alarm_set(self.o.timeout)
 
     # write_chunk_end

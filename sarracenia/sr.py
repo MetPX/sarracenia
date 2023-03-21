@@ -42,7 +42,7 @@ import time
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir
+from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -51,6 +51,12 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
+        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
+        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
+        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
+        "msgs_in_post_retry": 0, "msgs_in_download_retry":0
+        }
 
 def ageoffile(lf):
     """ return number of seconds since a file was modified as a floating point number of seconds.
@@ -188,7 +194,7 @@ class sr_GlobalState:
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time']),
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_info', 'cpu_times']),
                                ensure_ascii=False) + '\n')
 
     def _filter_sr_proc(self, p):
@@ -216,6 +222,10 @@ class sr_GlobalState:
             return
 
         if p['name'].startswith('sr3_'):
+            p['memory'] = p['memory_full_info']._asdict()
+            p['cpu'] = p['cpu_times']._asdict()
+            del p['memory_full_info'] 
+            del p['cpu_times']
             self.procs[p['pid']] = p
             if p['name'][3:8] == 'audit':
                 self.procs[p['pid']]['claimed'] = True
@@ -252,7 +262,7 @@ class sr_GlobalState:
             try:
                 self._filter_sr_proc(
                     proc.as_dict(
-                        ['pid', 'cmdline', 'name', 'username', 'create_time']))
+                        ['pid', 'cmdline', 'name', 'username', 'create_time', 'memory_full_info', 'cpu_times']))
             except:
                 pass # the process went away while iterating. avoid spurious message.
 
@@ -439,11 +449,10 @@ class sr_GlobalState:
                                 self.states[c][cfg]['status'] = 'removed'
 
                         self.states[c][cfg]['has_state'] = False
-                        self.states[c][cfg]['retry_queue'] = 0
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
-                            if p.suffix in ['.pid', '.qname', '.state']:
+                            if p.suffix in ['.pid', '.qname', '.state', '.metrics']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
                                     t = p.read_text().strip()
@@ -458,25 +467,15 @@ class sr_GlobalState:
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
                                         #print( "%s/%s instance: %s, pid: %s" % ( c, cfg, i, t ) )
-                                        self.states[c][cfg]['instance_pids'][
-                                            i] = int(t)
+                                        self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
-                                elif pathname[-12:] == '.retry.state':
-                                    buffer = 2**16
-                                    try:
-                                        with open(p) as f:
-                                            self.states[c][cfg][
-                                                'retry_queue'] += sum(
-                                                    x.count('\n')
-                                                    for x in iter(
-                                                        partial(
-                                                            f.read, buffer),
-                                                        ''))
-                                    except Exception as ex:
-                                        #print( 'info reading statefile %p gone before it was read: %s' % (p, ex) )
-                                        pass
-
+                                elif pathname[-8:] == '.metrics':
+                                    i = int(pathname[-10:-8])
+                                    if not 'instance_metrics' in self.states[c][cfg]:
+                                        self.states[c][cfg]['instance_metrics'] = {}
+                                    self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
+                                    self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                         os.chdir('..')
                 os.chdir('..')
 
@@ -497,6 +496,7 @@ class sr_GlobalState:
         os.chdir(dir)
         for c in self.components:
             if os.path.isdir(c):
+                if c not in self.configs: continue
                 os.chdir(c)
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
@@ -790,11 +790,13 @@ class sr_GlobalState:
         """
 
         self._resolve_brokers()
+        now = time.time()
 
         if not os.path.exists( self.user_cache_dir ):
             os.makedirs(self.user_cache_dir)
 
         # comparing states and configs to find missing instances, and correct state.
+        self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
         for c in self.components:
             if not os.path.exists( self.user_cache_dir + os.sep + c ):
                 os.mkdir(self.user_cache_dir + os.sep + c )
@@ -811,21 +813,67 @@ class sr_GlobalState:
                     self.states[c][cfg]['queueName'] = None
                     self.states[c][cfg]['status'] = 'stopped'
                     self.states[c][cfg]['has_state'] = False
-                    self.states[c][cfg]['retry_queue'] = 0
                     continue
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
+
+                if 'instance_metrics' in self.states[c][cfg]:
+                    if 'housekeeping' in self.configs[c][cfg]:
+                        expiry = now - self.configs[c][cfg]['housekeeping']*1.5
+                    else:
+                        expiry = now - 300
+
+                    # cumulate per instance metrics into overall ones for the configuration.
+
+                    metrics=copy.deepcopy(empty_metrics)
+                    for i in self.states[c][cfg]['instance_metrics']:
+                        if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
+                            #print( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            continue
+
+                        for j in self.states[c][cfg]['instance_metrics'][i]:
+                            for k in self.states[c][cfg]['instance_metrics'][i][j]:
+                                if k in metrics:
+                                    newval = self.states[c][cfg]['instance_metrics'][i][j][k]
+                                    if k in [ "lagMax" ]:
+                                        if newval > metrics[k]:
+                                            metrics[k] = newval
+                                    elif k in [ "last_housekeeping" ]:
+                                        if metrics[k] == 0 or newval < metrics[k] :
+                                            metrics[k] = newval
+                                    else:
+                                        metrics[k] += newval
+
+                        if 'transferConnectTime' in metrics:
+                            metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
+
+                        if 'disconnectTime' in metrics:
+                            metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
+
+                    self.states[c][cfg]['metrics'] = metrics
+                    
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
+                    resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][
                                 i] not in self.procs:
                             self.states[c][cfg]['missing_instances'].append(i)
                         else:
                             observed_instances += 1
-                            self.procs[self.states[c][cfg]['instance_pids']
-                                       [i]]['claimed'] = True
+                            pid = self.states[c][cfg]['instance_pids'][i]
+                            self.procs[ pid ]['claimed'] = True
+                            resource_usage[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            self.resources[ 'uss' ] += self.procs[pid]['memory']['uss'] 
+                            resource_usage[ 'rss' ] += self.procs[pid]['memory']['rss'] 
+                            self.resources[ 'rss' ] += self.procs[pid]['memory']['rss'] 
+                            resource_usage[ 'vms' ] += self.procs[pid]['memory']['vms'] 
+                            self.resources[ 'vms' ] += self.procs[pid]['memory']['vms'] 
+                            resource_usage[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            self.resources[ 'user_cpu' ] += self.procs[pid]['cpu']['user'] 
+                            resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
+                            self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
                     if observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
@@ -844,6 +892,7 @@ class sr_GlobalState:
                         self.configs[c][cfg]['status'] = 'stopped'
                     else:
                         self.configs[c][cfg]['status'] = 'running'
+                    self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
 
         # FIXME: missing check for too many instances.
 
@@ -993,11 +1042,12 @@ class sr_GlobalState:
                 (self.appname, self.bin_dir))
 
         if not os.path.isdir(self.user_config_dir):
-            print('WARNING: No %s configuration found.' % self.appname)
-
+            print( f'INFO: No {self.appname} configuration found. creating an empty one {self.user_config_dir}' )
+            os.makedirs(self.user_config_dir)
+     
         if not os.path.isdir(self.user_cache_dir):
-            print('WARNING: No %s configuration state or log files found.' %
-                  self.appname)
+            print( f'INFO: No {self.appname} state or log files found. Creating an empty one {self.user_cache_dir}' )
+            os.makedirs(self.user_cache_dir)
 
         self.components = [
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
@@ -1344,8 +1394,8 @@ class sr_GlobalState:
                         print(' remove %s from %s subscribers: %s ' %
                               (qd[1], x, xx))
                         xx.remove(qd[1])
-                        if len(xx) < 1:
-                            print("no more queues, removing exchange %s" % x)
+                        if o.post_broker and len(xx) < 1:
+                            print("No local queues found for exchange %s, attemping to remove it..." % x)
                             qdc = sarracenia.moth.Moth.pubFactory(
                                 o.post_broker, {
                                     'declare': False,
@@ -1801,34 +1851,40 @@ class sr_GlobalState:
 
         :return:
         """
-        print('\n\nRunning Processes\n\n')
+        #print('\n\nRunning Processes\n\n')
         for pid in self.procs:
-            print('\t%s: name:%s cmdline:%s' %
-                  (pid, self.procs[pid]['name'], self.procs[pid]['cmdline']))
+            print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
+            #print('\t%s: %s' % (pid, self.procs[pid] ))
 
-        print('\n\nConfigs\n\n')
+        #print('\n\nConfigs\n\n')
         for c in self.configs:
-            print('\t%s ' % c)
+            print('\t\"%s\": { ' % c)
             for cfg in self.configs[c]:
-                print('\t\t%s : %s' % (cfg, self.configs[c][cfg]))
+                self.configs[c][cfg]['options']={ 'omitted': 'use show' }
+                self.configs[c][cfg]['credentials']=[ 'omitted' ]
+                print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
+            print("\t\t}")
 
-        print('\n\nStates\n\n')
+        #print('\n\nStates\n\n')
         for c in self.states:
-            print('\t%s ' % c)
+            print('\t\"%s\": { ' % c)
             for cfg in self.states[c]:
-                print('\t\t%s : %s' % (cfg, self.states[c][cfg]))
+                print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
+            print( "\t}" )
 
-        print('\n\nBroker Bindings\n\n')
+        #print('\n\nBroker Bindings\n\n')
+
         for h in self.brokers:
-            print("\nhost: %s" % h)
-            print("\nexchanges: ")
+            print("\n\"host\": { \"%s\": { " % h)
+            print("\n\"exchanges\": { ")
             for x in self.brokers[h]['exchanges']:
-                print("\t%s: %s" % (x, self.brokers[h]['exchanges'][x]))
-            print("\nqueues: ")
+                print("\t\"%s\": { %s }," % (x, json.dumps(self.brokers[h]['exchanges'][x])))
+            print("},\n\"queues\": {")
             for q in self.brokers[h]['queues']:
-                print("\t%s: %s" % (q, self.brokers[h]['queues'][q]))
+                print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
+            print( "}},\n" )
 
-        print('\n\nbroker summaries:\n\n')
+        #print('\n\nbroker summaries:\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
@@ -1839,30 +1895,67 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\nbroker: %s  %s' % (h, a))
-            print('\nexchanges: ', end='')
+            print('\n\"broker\": { \"%s\":\"%s\" }' % (h, a))
+            print('\n\"exchanges\": [ ', end='')
             for x in self.exchange_summary[h]:
-                print("%s-%d, " % (x, self.exchange_summary[h][x]), end='')
-            print('')
-            print('\nqueues: ', end='')
+                print("\"%s-%d\", " % (x, self.exchange_summary[h][x]), end='')
+            print(']')
+            print('\n\"queues\": [', end='')
             for q in self.brokers[h]['queues']:
-                print("%s-%d, " % (q, len(self.brokers[h]['queues'][q])),
+                print("\"%s-%d\", " % (q, len(self.brokers[h]['queues'][q])),
                       end='')
-            print('')
+            print(']')
 
-        print('\n\nMissing instances\n\n')
+        print('\n\n\"Missing instances\" : { \n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
-            print('\t\t%s : %s %d' % (c, cfg, i))
+            print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
+        print('\t\t}')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
-        print("%-40s %-15s %5s %5s %5s %5s" %
-              ("Component/Config", "State", "Run", "Miss", "Exp", "Retry"))
-        print("%-40s %-15s %5s %5s %5s %5s" %
-              ("----------------", "-----", "---", "----", "---", "-----"))
+
+        line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+
+        if self.options.displayFull:
+            line += "%-40s %17s %33s %40s" % ("Counters (per housekeeping)", "", "Data Counters", "" )
+            line += "%s %-21s " % (" ", "Memory" ) 
+
+        if self.options.displayFull:
+            line += "%10s %10s " % ( " ", "CPU Time" )
+
+        print(line)
+
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "LagMax", "LagAvg", "%rej", "pubsub", "messages", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----", "------", "------" )
+
+        if self.options.displayFull:
+            line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                    ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+            underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
+                    ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
+
+            line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
+            underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+
+        if self.options.displayFull:
+            line      += "%10s %10s " % ( "user", "system" )
+            underline += "%10s %10s " % ( "----", "------" )
+
+        print(line)
+        print(underline)
+
         configs_running = 0
+        rxCumulativeMessageByteRate=0
+        rxCumulativeMessageRate=0
+        txCumulativeMessageRate=0
+        txCumulativeMessageByteRate=0
+        rxCumulativeFileRate=0
+        rxCumulativeDataRate=0
+        txCumulativeFileRate=0
+        txCumulativeDataRate=0
+        now = time.time()
 
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
@@ -1887,14 +1980,119 @@ class sr_GlobalState:
                     expected = 0
                     m = 0
 
-                retry = self.states[c][cfg]['retry_queue']
+                cfg_status = self.configs[c][cfg]['status'][0:4]
+                if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
+                    cfg_status = "fore"
+                if cfg_status == "runn" :
+                    cfg_status = "run"
 
-                cfg_status = self.configs[c][cfg]['status']
-                if cfg_status == "running" and self._cfg_running_foreground(c, cfg):
-                    cfg_status = "foreground"
+                process_status = "%d/%d" % ( running, expected ) 
+                line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
 
-                print("%-40s %-15s %5d %5d %5d %5d" %
-                      (f, cfg_status, running, m, expected, retry))
+                if 'metrics' in self.states[c][cfg]:
+                    m = self.states[c][cfg]['metrics']
+                    if m[ "lagMessageCount" ] > 0:
+                        lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
+                    else:
+                        lagMean = 0
+                    
+                    retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+
+                    if "last_housekeeping" in m and m["last_housekeeping"] > 0:
+                        time_base = now - m[ "last_housekeeping" ] 
+                        byteTotal = 0
+                        if 'rxByteCount' in m:
+                            byteTotal += m["rxByteCount"]
+        
+                        if 'txByteCount' in m:
+                            byteTotal += m["txByteCount"]
+                            txCumulativeMessageByteRate +=  m["txByteCount"]/time_base
+        
+                        byteRate= byteTotal/time_base
+                        msgRate= (m["rxGoodCount"]+m["rxBadCount"])/time_base
+
+                        transferRxByteRate = m['transferRxBytes']/time_base
+                        transferRxFileRate = m['transferRxFiles']/time_base
+                        transferTxByteRate = m['transferTxBytes']/time_base
+                        transferTxFileRate = m['transferTxFiles']/time_base
+
+                        rxCumulativeFileRate += transferRxFileRate
+                        rxCumulativeDataRate += transferRxByteRate
+                        txCumulativeFileRate += transferTxFileRate
+                        txCumulativeDataRate += transferTxByteRate
+                        
+                        rxCumulativeMessageByteRate += msgRate
+                        rxCumulativeMessageRate +=  byteRate
+                        
+
+                        if 'transferConnectTime' in m:
+                            byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
+                        else:
+                            byteConnectPercent= 0
+
+                        if 'disconnectTime' in m:
+                            connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
+                        else:
+                            connectPercent= -1 
+                        txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
+                    else:
+                        time_base = 0
+                        byteTotal=0
+                        byteRate=0
+                        msgRate=0
+
+
+                    if m["rxGoodCount"] > 0:
+                        rejectPercent = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                    else:
+                        rejectPercent = 0
+
+                    line += " %5d %3d%% %3d%% %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
+                            retry, connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
+                            rejectPercent,\
+                            naturalSize(byteRate), \
+                            naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(transferRxByteRate), \
+                            naturalSize(transferTxByteRate) 
+                            )
+
+                    if self.options.displayFull :
+                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                            naturalSize(m['rxByteCount']), \
+                            naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["rxBadCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m['txByteCount']), 
+                            naturalSize(m['txGoodCount']).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
+                            naturalSize(m["transferRxBytes"]), \
+                            naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
+                            naturalSize(m["transferTxBytes"]), \
+                            naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
+                            time_base )
+                else:
+                    line += " %10s %10s %9s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-" )
+                    if self.options.displayFull:
+                        line += " %8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
+                            ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
+
+                if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
+                    ru = self.states[c][cfg]['resource_usage'] 
+
+                    
+                    if self.options.displayFull:
+                        line += " %10s %10s %10s " % (\
+                             naturalSize( ru['uss'] ), naturalSize( ru['rss'] ), naturalSize( ru['vms'] )  \
+                             )
+                        line += " %10.2f %10.2f" % (\
+                             ru['user_cpu'], ru['system_cpu'] \
+                             )
+                else:
+                    line += " %10s %10s %10s" % ( "-", "-", "-" )
+                    if self.options.displayFull:
+                        line += " %10s %10s" % ( "-", "-" )
+
+                print(line)
         stray = 0
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
@@ -1903,8 +2101,23 @@ class sr_GlobalState:
                 print("pid: %s-%s is not a configured instance" %
                       (pid, self.procs[pid]['cmdline']))
 
-        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
-            (configs_running, len(self.procs), len(self.missing), stray))
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d uss:%s rss:%s vms:%s user:%.2fs system:%.2fs )' % \
+            (configs_running, len(self.procs), len(self.missing), stray, \
+              naturalSize( self.resources['uss'] ), \
+              naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
+              self.resources['user_cpu'] , self.resources['system_cpu'] \
+              ))
+        print( '\t\t   pub/sub received: %8s/s (%8s/s), Sent:  %8s/s (%8s/s)' % ( 
+                naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
+                naturalSize(rxCumulativeMessageRate),\
+                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
+                naturalSize(txCumulativeMessageRate)
+            ))
+        print( '\t\t  data received: %8s/s (%8s/s)  sent: %8s/s (%8s/s) ' % (
+               naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
+               naturalSize(rxCumulativeDataRate),
+               naturalSize( txCumulativeFileRate).replace("B","F").replace("Fyte","File"),
+               naturalSize(txCumulativeDataRate) ) )
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
@@ -2075,8 +2288,6 @@ class sr_GlobalState:
                     sfx += '-i%d/%d' % ( \
                         len(self.states[c][cfg]['instance_pids']) - m, \
                         self.configs[c][cfg]['instances'])
-                if self.states[c][cfg]['retry_queue'] > 0:
-                    sfx += '-r%d' % self.states[c][cfg]['retry_queue']
                 status[self.configs[c][cfg]['status']].append(cfg + sfx)
 
             if (len(status['partial']) + len(status['running'])) < 1:

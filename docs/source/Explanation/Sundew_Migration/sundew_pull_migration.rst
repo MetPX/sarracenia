@@ -155,19 +155,16 @@ cat BC_ENV_AQ_WAMR.conf::
 
     # where to get the products
 
-    destination ftp://fakeuser:fakepass@fakehost.gc.ca
+    pollUrl ftp://fakeuser:fakepass@fakehost.gc.ca
 
     #where/how to get the products
-
-
-    directory /pub/outgoing/WAMR/EarthNetworks2/
-    get .*.lsi
+    path /pub/outgoing/WAMR/EarthNetworks2/
 
     # generate key with accept
     accept .*(lsi:pull-BC-ENV_AQ-WAMR:GOV-BC:WAMR:3:ASCII).*
 
-    # ==============================l
     # usually no accept... in sr_poll
+    reject .*
 
 The follows all the original option of the sundew pull as a reference.
 To continue we need to know what product is ingested by that pull::
@@ -203,10 +200,10 @@ The destination put by the script always contain all the credentials.
 So we just edit to keep  protocol://user#host::
 
     change
-    destination ftp://fakeuser:fakepass@fake.host.gc.ca
+    pollUrl ftp://fakeuser:fakepass@fake.host.gc.ca
 
     for
-    destination ftp://fakeuser@fake.host.gc.ca
+    pollUrl ftp://fakeuser@fake.host.gc.ca
 
 
 Starting at comment  *# where to get the products*
@@ -228,11 +225,11 @@ So a cleaned version of the last lines of the *sr_poll* config would be::
 
     # where to get the products
 
-    destination ftp://fakeuser@fake.host.gc.ca
+    pollUrl ftp://fakeuser@fake.host.gc.ca
 
     # product source directories
 
-    directory /pub/outgoing/WAMR/EarthNetworks2/
+    path /pub/outgoing/WAMR/EarthNetworks2/
     accept .*\.lsi
 
 
@@ -285,8 +282,8 @@ cat get_BC_ENV_AQ_WAMR.conf::
 
     post_broker   amqp://feeder@localhost/
     post_exchange xpublic
-    post_base_url http://${HOSTNAME}
-    post_base_dir /apps/sarra/public_data
+    post_baseUrl http://${HOSTNAME}
+    post_baseDir /apps/sarra/public_data
 
 Again we need to adjust to the SOURCE value which is PROVINCIAL::
 

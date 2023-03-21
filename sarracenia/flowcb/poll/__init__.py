@@ -262,7 +262,14 @@ class Poll(FlowCB):
         #        self.pulls[maskDir] = []
         #    self.pulls[maskDir].append(mask)
 
+        self.metricsReset()
         self.on_html_parser_init()
+
+    def metricsReset(self) -> None:
+        self.metrics = { 'transferRxBytes': 0 }
+
+    def metricsReport(self) -> dict:
+        return self.metrics
 
     def cd(self, path):
         try:
@@ -351,6 +358,7 @@ class Poll(FlowCB):
             logger.info( f"len of ls {len(ls)} " )
 
             if type(ls) is bytes:
+                self.metrics["transferRxBytes"] += len(ls)
                 ls = self.on_html_page(ls.decode('utf-8'))
 
             new_ls = {}

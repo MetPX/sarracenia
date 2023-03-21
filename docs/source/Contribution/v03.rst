@@ -634,7 +634,7 @@ so below is the things leftover after refactor:
   'pipe', 'post_total_maxlag', 'exchangeSuffix', 'destination', 'inplace', 
   'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange', 
   'sanity_log_dead', 'report_daemons', 'realpathFilter', 'reconnect', 
-  'post_exchangeSuffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore', 
+  'post_exchangeSuffix', 'save', 'cache_stat', 'declare_queue', 
   'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
   #405
 

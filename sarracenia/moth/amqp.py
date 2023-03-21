@@ -30,7 +30,7 @@ import logging
 
 from urllib.parse import unquote
 import sarracenia
-from sarracenia.encoding import Encoding
+from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 
 import time
@@ -50,6 +50,7 @@ default_options = {
     'durable': True,
     'exchange': None,
     'exchangeDeclare': True,
+    'expire': None,
     'logLevel': 'info',
     'prefetch': 25,
     'queueName': None,
@@ -121,7 +122,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = Encoding.importAny( body, raw_msg.headers, content_type, raw_msg.delivery_info['routing_key'], self.o['topicPrefix'] )
+            msg = PostFormat.importAny( body, raw_msg.headers, content_type )
             if not msg:
                 logger.error('Decode failed, discarding message')
                 return None
@@ -132,8 +133,7 @@ class AMQP(Moth):
             msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
-            msg['_deleteOnPost'] = set(
-                ['ack_id', 'exchange', 'local_offset', 'subtopic', 'version'])
+            msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
                 self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
@@ -273,6 +273,7 @@ class AMQP(Moth):
                                                 topic)
 
                 # Setup Successfully Complete!
+                self.metricsConnect()
                 logger.debug('getSetup ... Done!')
                 return
 
@@ -323,6 +324,7 @@ class AMQP(Moth):
                                     (x, broker_str))
 
                 # Setup Successfully Complete!
+                self.metricsConnect()
                 logger.debug('putSetup ... Done!')
                 return
 
@@ -345,8 +347,12 @@ class AMQP(Moth):
 
         try:
             for x in self.o['exchange']:
-                logger.info("deleting exchange: %s" % x )
-                self.channel.exchange_delete(x)
+                try:
+                    self.channel.exchange_delete(x, if_unused=True)
+                    logger.info("deleted exchange: %s" % x)
+                except amqp.exceptions.PreconditionFailed as err:
+                    err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
+                    logger.warning("failed to delete exchange: %s" % err_msg)
         except Exception as err:
             logger.error("failed on {} with {}".format(
                 self.o['broker'].url.hostname, err))
@@ -388,41 +394,44 @@ class AMQP(Moth):
             logger.error("getting from a publisher")
             return None
 
-        while True:
-            try:
-                raw_msg = self.channel.basic_get(self.o['queueName'])
-                if (raw_msg is None) and (self.connection.connected):
+        try:
+            if not self.connection:
+                self.__getSetup()
+
+            raw_msg = self.channel.basic_get(self.o['queueName'])
+            if (raw_msg is None) and (self.connection.connected):
+                return None
+            else:
+                self.metrics['rxByteCount'] += len(raw_msg.body)
+                try: 
+                    msg = self._msgRawToDict(raw_msg)
+                except Exception as err:
+                    logger.error("message decode failed. raw message: %s" % raw_msg.body )
+                    logger.debug('Exception details: ', exc_info=True)
+                    msg = None
+                if msg is None:
+                    self.metrics['rxBadCount'] += 1
                     return None
                 else:
-                    self.metrics['rxByteCount'] += len(raw_msg.body)
-                    try: 
-                        msg = self._msgRawToDict(raw_msg)
-                    except Exception as err:
-                        logger.error("message decode failed. raw message: %s" % raw_msg.body )
-                        logger.debug('Exception details: ', exc_info=True)
-                        msg = None
-                    if msg is None:
-                        self.metrics['rxBadCount'] += 1
-                    else:
-                        self.metrics['rxGoodCount'] += 1
-                    if hasattr(self.o, 'fixed_headers'):
-                        for k in self.o.fixed_headers:
-                            msg[k] = self.o.fixed_headers[k]
+                    self.metrics['rxGoodCount'] += 1
+                if hasattr(self.o, 'fixed_headers'):
+                    for k in self.o.fixed_headers:
+                        msg[k] = self.o.fixed_headers[k]
 
-                    logger.debug("new msg: %s" % msg)
-                    return msg
-            except Exception as err:
-                logger.warning("failed %s: %s" %
-                               (self.o['queueName'], err))
-                logger.debug('Exception details: ', exc_info=True)
+                logger.debug("new msg: %s" % msg)
+                return msg
+        except Exception as err:
+            logger.warning("failed %s: %s" %
+                           (self.o['queueName'], err))
+            logger.debug('Exception details: ', exc_info=True)
 
-            if not self.o['message_strategy']['stubborn']:
-                return None
+        if not self.o['message_strategy']['stubborn']:
+            return None
 
-            logger.warning('lost connection to broker')
-            self.close()
-            self.__getSetup(
-            )  # will only return when a connection is successful.
+        logger.warning('lost connection to broker')
+        self.close()
+        time.sleep(1)
+        return None
 
     def ack(self, m) -> None:
         """
@@ -487,7 +496,7 @@ class AMQP(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
 
-        version = body['version']
+        version = body['_format']
         topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
@@ -512,7 +521,7 @@ class AMQP(Moth):
         if not exchange:
             if (type(self.o['exchange']) is list):
                 if (len(self.o['exchange']) > 1):
-                    if 'exchangeSplit' in self.o:
+                    if ( 'exchangeSplit' in self.o) and self.o['exchangeSplit'] > 1:
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                         #        if that isn't true... then there is something wrong... should we check ?
                         idx = sum(
@@ -535,7 +544,7 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body, headers, content_type = Encoding.exportAny( body, version )
+        raw_body, headers, content_type = PostFormat.exportAny( body, version )
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
@@ -591,4 +600,5 @@ class AMQP(Moth):
             logger.error("sr_amqp/close 2: {}".format(err))
             logger.debug("sr_amqp/close 2 Exception details:", exc_info=True)
         # FIXME toclose not useful as we don't close channels anymore
+        self.metricsDisconnect()
         self.connection = None
