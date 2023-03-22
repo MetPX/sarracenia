@@ -496,6 +496,10 @@ class Flow:
                         metrics=json.dumps(self.metrics)
                         with open(self.o.metricsFilename, 'w') as mfn:
                              mfn.write(metrics+"\n")
+                        if self.o.logMetrics:
+                            timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+                            with open(self.o.metricsFilename + '.' + timestamp[0:8], 'a') as mfn:
+                                mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []

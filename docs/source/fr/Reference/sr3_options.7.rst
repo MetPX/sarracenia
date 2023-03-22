@@ -1006,6 +1006,12 @@ logLevel ( défaut: info )
 Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
 critical, error, info, warning, debug.
 
+LogMetrics ( default: False )
+-----------------------------
+
+écrire des métriques dans un fichier de quotidien pour la collecte de statistiques. 
+le fichier sera dans le même répertoire que les logs, et aura une suffix avec la date.
+
 logReject ( défaut: False )
 ---------------------------
 
