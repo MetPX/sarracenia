@@ -745,10 +745,6 @@ class Flow:
             if strip < len(token):
                 token = token[strip:]
 
-            # strip too much... keep the filename
-            else:
-                token = [filename]
-
             if 'fileOp' in msg:
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
@@ -777,7 +773,7 @@ class Flow:
 
         if flatten != '/':
             filename = flatten.join(token)
-            token[-1] = [filename]
+            token[-1] = filename
 
             if 'fileOp' in msg:
                 for f in ['link', 'hlink', 'rename']:
@@ -787,7 +783,7 @@ class Flow:
         if maskFileOption is not None:
             filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
-            token[-1] = [filename]
+            token[-1] = filename
 
         # not mirroring
 
