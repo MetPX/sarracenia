@@ -355,8 +355,6 @@ class Poll(FlowCB):
         try:
             ls = self.dest.ls()
 
-            logger.info( f"len of ls {len(ls)} " )
-
             if type(ls) is bytes:
                 self.metrics["transferRxBytes"] += len(ls)
                 ls = self.on_html_page(ls.decode('utf-8'))
