@@ -474,8 +474,11 @@ class sr_GlobalState:
                                     i = int(pathname[-10:-8])
                                     if not 'instance_metrics' in self.states[c][cfg]:
                                         self.states[c][cfg]['instance_metrics'] = {}
-                                    self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
-                                    self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                                    try:
+                                        self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
+                                        self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+                                    except:
+                                        logger.error( f"corrupt metrics file {pathname}: {t}" )
                         os.chdir('..')
                 os.chdir('..')
 
@@ -1955,6 +1958,8 @@ class sr_GlobalState:
         rxCumulativeDataRate=0
         txCumulativeFileRate=0
         txCumulativeDataRate=0
+        transferRxByteRate= 0
+        transferTxByteRate= 0
         now = time.time()
 
         for c in sorted(self.configs):
@@ -2034,13 +2039,15 @@ class sr_GlobalState:
                             connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
                         else:
                             connectPercent= -1 
+
                         txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                     else:
                         time_base = 0
                         byteTotal=0
                         byteRate=0
                         msgRate=0
-
+                        connectPercent=-1
+                        byteConnectPercent= 0
 
                     if m["rxGoodCount"] > 0:
                         rejectPercent = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
