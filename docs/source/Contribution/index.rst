@@ -6,7 +6,6 @@ Contributing to Sarracenia
    :maxdepth: 2
    :caption: Contents:
 
-   Amdahl Applied (philosophy)<Philosophy/Amdahl_Applied.ipynb>
    AMQPprimer
    deltas
    Development
@@ -18,4 +17,5 @@ Contributing to Sarracenia
    Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
    v03
+   Amdahl Applied (philosophy)<Philosophy/Amdahl_Applied.ipynb>
 
