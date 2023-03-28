@@ -1,4 +1,11 @@
-metpx-sr3 (3.00.29) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.30) UNRELEASED; urgency=medium
+
+  * bugfix #638 discard uption not working in sr3
+  * another fix for relative paths in certain case.
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Tue, 28 Mar 2023 10:27:55 -0400
+
+metpx-sr3 (3.00.29) unstable; urgency=medium
 
   * bugfix #632 create root of config and state directories when missing.
   * enhancement #614 adding verbosity & metrics to sr status.
