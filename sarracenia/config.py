@@ -79,6 +79,7 @@ default_options = {
     'inline': False,
     'inlineOnly': False,
     'integrity_method': 'sha512',
+    'logMetrics': False,
     'logStdout': False,
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -107,7 +108,7 @@ count_options = [
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
-    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logStdout', 'logReject', 'restore', \
+    'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
     'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sourceFromExchange', \

@@ -496,6 +496,10 @@ class Flow:
                         metrics=json.dumps(self.metrics)
                         with open(self.o.metricsFilename, 'w') as mfn:
                              mfn.write(metrics+"\n")
+                        if self.o.logMetrics:
+                            timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+                            with open(self.o.metricsFilename + '.' + timestamp[0:8], 'a') as mfn:
+                                mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []
@@ -745,10 +749,6 @@ class Flow:
             if strip < len(token):
                 token = token[strip:]
 
-            # strip too much... keep the filename
-            else:
-                token = [filename]
-
             if 'fileOp' in msg:
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
@@ -777,7 +777,7 @@ class Flow:
 
         if flatten != '/':
             filename = flatten.join(token)
-            token[-1] = [filename]
+            token[-1] = filename
 
             if 'fileOp' in msg:
                 for f in ['link', 'hlink', 'rename']:
@@ -787,7 +787,7 @@ class Flow:
         if maskFileOption is not None:
             filename = self.sundew_getDestInfos(msg, maskFileOption,
                                                        filename)
-            token[-1] = [filename]
+            token[-1] = filename
 
         # not mirroring
 
