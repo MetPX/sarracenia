@@ -134,7 +134,7 @@ class instance:
             logRotateCount = cfg_preparse.logRotateCount
 
         # init logs here. need to know instance number and configuration and component before here.
-        if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
+        if cfg_preparse.action in ['start','run'] and not cfg_preparse.logStdout:
             if cfg_preparse.statehost:
                 hostdir = cfg_preparse.hostdir
             else:
