@@ -161,6 +161,7 @@ convert_to_v3 = {
     'blocksize' : ['continue'],
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
+    'discard' : [ 'delete_destination', 'on' ], 
     'from_cluster' : [ 'continue' ],
     'to_clusters' : [ 'continue' ],
     'integrity' : {

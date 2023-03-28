@@ -118,7 +118,7 @@ class File(Transfer):
 
         remote_path = self.cwd + os.sep + remote_file
 
-        #logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
+        logger.debug( "get %s %s (cwd: %s) %d" % (remote_path,local_file,os.getcwd(), local_offset))
 
         if not os.path.exists(remote_path):
             logger.warning("file to read not found %s" % (remote_path))
