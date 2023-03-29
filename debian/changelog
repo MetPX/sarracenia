@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.30) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.31) unstable; urgency=medium
+
+  * another (final?) fix for ln -sf case (fileOp field transformation.)
+
+ -- Peter <peter@bsqt.homeip.net>  Wed, 29 Mar 2023 00:16:25 -0400
+
+metpx-sr3 (3.00.30) unstable; urgency=medium
 
   * bugfix #638 discard uption not working in sr3
   * another fix for relative paths in certain case.
