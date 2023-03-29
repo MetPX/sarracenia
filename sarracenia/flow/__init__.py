@@ -732,6 +732,7 @@ class Flow:
         else:
             relPath = '%s' % msg['relPath']
             """
+
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
@@ -755,11 +756,21 @@ class Flow:
                 token = token[strip:]
 
             if 'fileOp' in msg:
+                """
+                   files are written with cwd being the directory containing the file written.
+                   when stripping the root of the tree off, the path must be rendered relative to the
+                   directory containing the file: the values are modified to create relative paths.
+                """
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         if len(fopv) > strip:
-                            msg['fileOp'][f] = '/'.join(fopv[strip:])
+                            rest=fopv[strip:]
+                            toclimb=len(rest)-rest.count('..')-1
+                            if toclimb > 0:
+                                msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
+                            else:
+                                msg['fileOp'][f] = '/'.join(rest)
                             
         # strip using a pattern
 
@@ -801,6 +812,8 @@ class Flow:
 
         # uses current dir
 
+        # resolve a current base directory to which the relative path will eventually be added.
+        #  update fileOp fields to replace baseDir.
         #if self.o.currentDir : new_dir = self.o.currentDir
         if maskDir:
             new_dir = self.o.variableExpansion(maskDir, msg)
@@ -821,7 +834,14 @@ class Flow:
                         if f in msg['fileOp']:
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
-        # add relPath
+        elif 'fileOp' in msg and new_dir:
+            u = urllib.parse.urlparse(msg['baseUrl'])
+            for f in ['link', 'hlink', 'rename']:
+                if f in msg['fileOp'] and len(u.path) > 0:
+                    if u.path in msg['fileOp'][f]:
+                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                            
+        # add relPath to the base directory established above.
 
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
