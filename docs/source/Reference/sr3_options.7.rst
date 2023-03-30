@@ -613,7 +613,7 @@ discard <boolean> (default: off)
 --------------------------------
 
 The  **discard**  option,if set to true, deletes the file once downloaded. This option can be
-usefull when debugging or testing a configuration.
+useful when debugging or testing a configuration.
 
 directory <path> (default: .)
 -----------------------------

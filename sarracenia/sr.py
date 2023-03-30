@@ -147,7 +147,7 @@ class sr_GlobalState:
 
             # would like to forward things like --debug...
             for arg in sys.argv[1:-1]:
-                if arg in ['start', 'restart']:
+                if arg in ['start', 'restart', 'run']:
                     break
                 cmd.append(arg)
 
@@ -178,6 +178,7 @@ class sr_GlobalState:
                                  stdin=subprocess.DEVNULL,
                                  stdout=lf,
                                  stderr=subprocess.STDOUT)
+            #print( f"launched: {cmd}" )
         except Exception as ex:
             print("failed to launch: %s >%s >2&1 (reason: %s) " %
                   (' '.join(cmd), lfn, ex))
@@ -1101,6 +1102,17 @@ class sr_GlobalState:
         logging.info("Stopping config...")
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
 
+    def _active_stop_signal(self, signum, stack):
+        logging.info('signal %d received' % signum)
+        logging.info( f"Stopping config... {self.filtered_configurations}")
+        # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
+        self._read_procs()
+        self._find_missing_instances()
+        self._clean_missing_proc_state()
+        self._read_states()
+        self._resolve()
+        self.stop()
+
     def run_command(self, cmd_list):
         sr_path = os.environ.get('SARRA_LIB')
         sc_path = os.environ.get('SARRAC_LIB')
@@ -1695,6 +1707,25 @@ class sr_GlobalState:
 
         print('( %d ) Done' % pcount)
 
+    def run(self):
+        """
+            docker compatible run in foreground.
+            works best with LogStdout on.
+            after doing a start, wait in foreground for children to exit.
+        """
+        self.start()
+        signal.signal(signal.SIGTERM, self._active_stop_signal)
+        try:
+            waitret = os.wait()
+            while waitret is not None:
+                print( f'pid {waitret[0]} just exited, waiting for others.')
+                time.sleep(2)
+                waitret = os.wait()
+        except ChildProcessError:
+            print( f'All done!')
+        except Exception as ex:
+            print( f" wait failed: {ex} " )
+        
     def stop(self):
         """
            stop all of this users sr_ processes. 
@@ -1703,7 +1734,7 @@ class sr_GlobalState:
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
-            print('...already stopped')
+            print('no procs running...already stopped')
             return
 
         print('sending SIGTERM ', end='', flush=True)
@@ -2390,6 +2421,7 @@ class sr_GlobalState:
         return (component in ['post', 'cpost'] and self.configs[component][config]['options'].sleep > 0.1 and
                 hasattr(self.configs[component][config]['options'], 'path'))
 
+
 def main():
     """ Main thread for sr dealing with parsing and action switch
 
@@ -2408,8 +2440,8 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'restart', 'sanity',
-        'setup', 'show', 'status', 'overview', 'stop'
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'overview', 'restart', 'run', 'sanity',
+        'setup', 'show', 'status', 'start', 'stop'
     ]
 
     cfg = sarracenia.config.Config({
@@ -2504,6 +2536,10 @@ def main():
 
     if action == 'show':
         gs.config_show()
+
+    elif action == 'run':
+        print('running:', end='', flush=True)
+        gs.run()
 
     elif action == 'start':
         print('starting:', end='', flush=True)

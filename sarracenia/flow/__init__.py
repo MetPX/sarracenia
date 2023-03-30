@@ -177,6 +177,11 @@ class Flow:
             # prepend...
             self.plugins['load'].append('sarracenia.flowcb.nodupe.NoDupe')
 
+        if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
+            ( hasattr(self.o, 'delete_destination') and self.o.delete_destination )) and \
+            ('sarracenia.flowcb.work.delete.Delete' not in self.plugins_late['load']):
+            self.plugins_late['load'].append('sarracenia.flowcb.work.delete.Delete')
+
         # transport stuff.. for download, get, put, etc...
         self.scheme = None
         self.cdir = None
@@ -727,6 +732,7 @@ class Flow:
         else:
             relPath = '%s' % msg['relPath']
             """
+
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
@@ -750,11 +756,21 @@ class Flow:
                 token = token[strip:]
 
             if 'fileOp' in msg:
+                """
+                   files are written with cwd being the directory containing the file written.
+                   when stripping the root of the tree off, the path must be rendered relative to the
+                   directory containing the file: the values are modified to create relative paths.
+                """
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
                         if len(fopv) > strip:
-                            msg['fileOp'][f] = '/'.join(fopv[strip:])
+                            rest=fopv[strip:]
+                            toclimb=len(rest)-rest.count('..')-1
+                            if toclimb > 0:
+                                msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
+                            else:
+                                msg['fileOp'][f] = '/'.join(rest)
                             
         # strip using a pattern
 
@@ -796,6 +812,8 @@ class Flow:
 
         # uses current dir
 
+        # resolve a current base directory to which the relative path will eventually be added.
+        #  update fileOp fields to replace baseDir.
         #if self.o.currentDir : new_dir = self.o.currentDir
         if maskDir:
             new_dir = self.o.variableExpansion(maskDir, msg)
@@ -816,7 +834,14 @@ class Flow:
                         if f in msg['fileOp']:
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
-        # add relPath
+        elif 'fileOp' in msg and new_dir:
+            u = urllib.parse.urlparse(msg['baseUrl'])
+            for f in ['link', 'hlink', 'rename']:
+                if f in msg['fileOp'] and len(u.path) > 0:
+                    if u.path in msg['fileOp'][f]:
+                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                            
+        # add relPath to the base directory established above.
 
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
@@ -1378,6 +1403,7 @@ class Flow:
                     logger.debug('Exception details:', exc_info=True)
         
             os.chdir(msg['new_dir'])
+            logger.debug( f"chdir {msg['new_dir']}")
 
             if 'fileOp' in msg :
                 if 'rename' in msg['fileOp']:
@@ -1552,7 +1578,7 @@ class Flow:
         if 'retrievePath' in msg:
             logger.debug("%s_transport download override retrievePath=%s" % (self.scheme, msg['retrievePath']))
             remote_file = msg['retrievePath']
-            cdir = '/'
+            cdir = None
             if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
                 urlstr = msg['baseUrl'] + msg['relPath']
             else:
@@ -1565,17 +1591,25 @@ class Flow:
             remote_path, remote_file = os.path.split(msg['relPath'])
 
             u = urllib.parse.urlparse(msg['baseUrl']) 
-            if u.path != '/':
-                if remote_path[0] == '/':
-                    remote_path = u.path + remote_path
-                else:
-                    remote_path = u.path + '/' + remote_path
+            logger.debug( f"baseUrl.path= {u.path} ")
+            if remote_path:
+                if u.path != '/' and remote_path:
+                    if remote_path[0] == '/':
+                        remote_path = u.path + remote_path
+                    else:
+                        remote_path = u.path + '/' + remote_path
 
-            # relPath does not contain a prefix / , add it for cdir
-            if remote_path[0] != '/':
-                 cdir = '/' + remote_path
+                # relPath does not contain a prefix / , add it for cdir
+                if remote_path[0] != '/':
+                    cdir = '/' + remote_path
+                else:
+                    cdir = remote_path
             else:
-                 cdir = remote_path
+                if u.path:
+                    cdir=u.path
+                else:
+                    cdir=None
+
             if msg['relPath'][0] == '/' or msg['baseUrl'][-1] == '/':
                 urlstr = msg['baseUrl'] + msg['relPath']
             else:
@@ -1681,7 +1715,7 @@ class Flow:
                 cwd = self.proto[self.scheme].getcwd()
                 logger.debug( f" from proto getcwd: {cwd} ")
 
-            if cwd != cdir:
+            if cdir and cwd != cdir:
                 logger.debug("%s_transport remote cd to %s" % (self.scheme, cdir))
                 if self.o.dry_run:
                     cwd = cdir
@@ -1845,7 +1879,10 @@ class Flow:
                 except:
                     logger.debug('closing exception details: ', exc_info=True)
             self.metrics['flow']["transferConnected"] = False
-            self.metrics['flow']['transferConnectedTime'] = time.time() - self.metrics['flow']['transferConnectLast']
+            if 'transferConnectLast' in self.metrics['flow']:
+                self.metrics['flow']['transferConnectedTime'] = time.time() - self.metrics['flow']['transferConnectLast']
+            else:
+                self.metrics['flow']['transferConnectedTime'] = 0
             self.cdir = None
             self.proto[self.scheme] = None
         

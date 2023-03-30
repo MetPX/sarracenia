@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 class Delete(FlowCB):
     """
     
-    Plugin flowcp.work.delete.py:
+    callback flowcp.work.delete
+
         delete working files after download.
         options:
     

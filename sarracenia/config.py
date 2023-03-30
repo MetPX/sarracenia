@@ -161,6 +161,7 @@ convert_to_v3 = {
     'blocksize' : ['continue'],
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
+    'discard' : [ 'delete_destination', 'on' ], 
     'from_cluster' : [ 'continue' ],
     'to_clusters' : [ 'continue' ],
     'integrity' : {
@@ -543,7 +544,7 @@ class Config:
 
     actions = [
         'add', 'cleanup', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
-        'enable', 'foreground', 'log', 'list', 'remove', 'restart', 'sanity',
+        'enable', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
         'setup', 'show', 'start', 'stop', 'status', 'overview'
     ]
 
