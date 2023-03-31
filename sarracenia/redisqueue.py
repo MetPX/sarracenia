@@ -88,7 +88,11 @@ class RedisQueue():
 
         logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
 
-        self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.queueName
+        if self.o.queueName == None: 
+            self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.config
+        else:
+            self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.queueName
+
         self.now = sarracenia.nowflt()
 
         # newer retries
