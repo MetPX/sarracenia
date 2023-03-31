@@ -73,7 +73,7 @@ class RedisQueue():
     # ----------- magic Methods ------------
     def __init__(self, options, name):
 
-        logger.debug(" %s __init__" % name)
+        logger.debug(" %s __init__" % (name))
 
         self.o = options
 
@@ -171,14 +171,12 @@ class RedisQueue():
             * False otherwise.   
         """
         if self._in_cache(message):
-            logger.info("discarding duplicate message (in %s cache) %s" %
-                        (self.name, message))
+            logger.info("discarding duplicate message (in %s cache) %s" % (self.name, message))
             return False
 
         # log is info... it is good to log a retry message that expires
         if self._is_expired(message):
-            logger.info("discarding expired message in (%s): %s" %
-                        (self.name, message))
+            logger.info("discarding expired message in (%s): %s" % (self.name, message))
             return False
 
         return True
@@ -232,11 +230,11 @@ class RedisQueue():
         try:
             msg = jsonpickle.decode(message)
         except ValueError:
-            logger.error("corrupted item in list: %s " % message)
+            logger.error("corrupted item in list: %s " % (message))
             logger.debug("Error information: ", exc_info=True)
             return None
         except TypeError:
-            logger.error("wrong type item in list: %s " % message)
+            logger.error("wrong type item in list: %s " % (message))
             logger.debug("Error information: ", exc_info=True)
             return None
 
@@ -250,10 +248,10 @@ class RedisQueue():
         #  Specifying a queue_stack_type of LIFO makes it pop the newest items first
         if self.queue_stack_type == "LIFO":
             json_msg = self.redis.rpop(queue)
-            logger.debug("rpop from list %s %s", queue, json_msg)
+            logger.debug("rpop from list %s %s" % (queue, json_msg))
         else:
             json_msg = self.redis.lpop(queue)
-            logger.debug("lpop from list %s %s", queue, json_msg)
+            logger.debug("lpop from list %s %s" % (queue, json_msg))
 
         if json_msg == None:
             return None
@@ -269,7 +267,7 @@ class RedisQueue():
         """
 
         for message in message_list:
-            logger.debug("add to list %s %s", self.key_name_new, message)
+            logger.debug("add to list %s %s" % (self.key_name_new, message))
 
             self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
@@ -306,7 +304,7 @@ class RedisQueue():
                 break
 
             if self._is_expired(message):
-                logger.warn("message expired %s" % message)
+                logger.warn("message expired %s" % (message))
                 continue
 
             if 'ack_id' in message:
@@ -332,14 +330,12 @@ class RedisQueue():
 
         rename housekeeping to queue for next period.
         """
-        logger.info("%s on_housekeeping" % self.name)
+        logger.info("%s on_housekeeping" % (self.name))
 
 
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
-            logger.info(
-                "have not finished retry list. Resuming retries with %s" %
-                self.key_name)
+            logger.info("have not finished retry list. Resuming retries with %s" % (self.key_name))
             return
 
         self.now = sarracenia.nowflt()
@@ -355,7 +351,7 @@ class RedisQueue():
 
             i = 0
 
-            logger.debug("%s has queue %s",self.key_name, bool(self.redis.llen(self.key_name)))
+            logger.debug("%s has queue %s" % (self.key_name, bool(self.redis.llen(self.key_name))))
 
             # remaining of retry to housekeeping
             while True:
@@ -366,7 +362,7 @@ class RedisQueue():
                 i = i + 1
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("push to %s %s",self.key_name_hk, message)
+                logger.debug("push to %s %s" % (self.key_name_hk, message))
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
@@ -383,12 +379,11 @@ class RedisQueue():
                 #logger.debug("DEBUG message %s" % message)
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("push to %s %s",self.key_name_hk, message)
+                logger.debug("push to %s %s" % (self.key_name_hk, message))
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
-            logger.debug("FIXME DEBUG took %d out of the %d retry" %
-                        (N - j, i))
+            logger.debug("FIXME DEBUG took %d out of the %d retry" % (N - j, i))
 
         except Exception as Err:
             logger.error("something went wrong")
@@ -398,17 +393,17 @@ class RedisQueue():
         if N == 0:
             logger.info("No retry in list")
             try:
-                logger.debug('delete list: %s', self.key_name_hk)
+                logger.debug('delete list: %s' % (self.key_name_hk))
                 self.redis.delete(self.key_name_hk)
             except:
                 pass
 
         # housekeeping file becomes new retry
         else:
-            logger.info("Number of messages in retry list %d" % N)
+            logger.info("Number of messages in retry list %d" % (N))
 
             try:
-                logger.debug('move list %s to %s', self.key_name_hk, self.key_name)
+                logger.debug('move list %s to %s' % (self.key_name_hk, self.key_name))
                 self.redis.lmove(self.key_name_hk, self.key_name)
 
             except:
@@ -416,10 +411,10 @@ class RedisQueue():
 
         # cleanup
         try:
-            logger.debug('delete list %s', self.key_name_new )
+            logger.debug('delete list %s' % (self.key_name_new))
             self.redis.delete(self.key_name_new)
         except:
             pass
 
         elapse = sarracenia.nowflt() - self.now
-        logger.info("on_housekeeping elapse %f" % elapse)
+        logger.info("on_housekeeping elapse %f" % (elapse))
