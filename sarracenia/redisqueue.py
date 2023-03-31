@@ -410,8 +410,10 @@ class RedisQueue():
                 logger.debug('move list %s to %s' % (self.key_name_hk, self.key_name))
                 self.redis.lmove(self.key_name_hk, self.key_name)
 
-            except:
+            except Exception as Err:
                 logger.error("Something went wrong with rename")
+                logger.debug('Exception details: ', exc_info=True)
+
 
         # cleanup
         try:
