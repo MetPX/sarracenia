@@ -281,8 +281,6 @@ class RedisQueue():
         """
         #self.redis.delete(self.key_name)
 
-        #self.msg_count = 0
-
 
     def close(self):
         """
@@ -290,8 +288,6 @@ class RedisQueue():
         """
 
         self.redis = None
-        self.msg_count = 0
-        self.msg_count_new = 0
 
     def get(self, maximum_messages_to_get=1):
         """
