@@ -101,12 +101,13 @@ class RedisQueue():
         # working file at housekeeping
         self.key_name_hk = self.key_name + '.hk'
 
-        #### REDIS CONFIG
-        #### FIXME NEEDS TO BE PORTED TO SR3 CONFIG
-        self.redisurl = os.getenv('SR3_REDISURL', 'redis://localhost:6379/0')
-        self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
+        self.o.add_option( 'redisqueue_serverurl', 'str')
+        self.o.add_option( 'redisqueue_stacktype', 'str', 'FIFO')
+        
+        #self.redisurl = os.getenv('SR3_REDISURL', 'redis://localhost:6379/0')
+        #self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
 
-        self.redis = redis.from_url(self.redisurl)
+        self.redis = redis.from_url(self.o.redisqueue_serverurl)
 
         # initialize ages and message counts
 
@@ -249,8 +250,8 @@ class RedisQueue():
 
     def _pop(self, queue):
         # Default behaviour is same as DiskQueue (pop off the head, push to the tail)
-        #  Specifying a queue_stack_type of LIFO makes it pop the newest items first
-        if self.queue_stack_type == "LIFO":
+        #  Specifying a stacktype of LIFO makes it pop the newest items first
+        if self.o.redisqueue_stacktype == "LIFO":
             json_msg = self.redis.rpop(queue)
             logger.debug("rpop from list %s %s" % (queue, json_msg))
         else:

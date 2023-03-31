@@ -48,14 +48,12 @@ class Retry(FlowCB):
 
         super().__init__(options,logger)
 
-        #### REDIS CONFIG
-        #### FIXME NEEDS TO BE PORTED TO SR3 CONFIG
-        queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
+        self.o.add_option( 'retry_driver', 'str', 'disk')
+        #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
-        if queuedriver == 'redis':
+        if self.o.retry_driver == 'redis':
             self.download_retry = RedisQueue(options, 'work_retry')
             self.post_retry = RedisQueue(options, 'post_retry')
-
         else:
             self.download_retry_name = 'work_retry_%02d' % options.no
             self.download_retry = DiskQueue(options, self.download_retry_name)
