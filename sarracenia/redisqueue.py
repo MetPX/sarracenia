@@ -404,8 +404,8 @@ class RedisQueue():
             logger.info("Number of messages in retry list %d" % (N))
 
             try:
-                logger.debug('move list %s to %s' % (self.key_name_hk, self.key_name))
-                self.redis.lmove(self.key_name_hk, self.key_name)
+                logger.debug('rename list %s to %s' % (self.key_name_hk, self.key_name))
+                self.redis.rename(self.key_name_hk, self.key_name)
 
             except Exception as Err:
                 logger.error("Something went wrong with rename")
