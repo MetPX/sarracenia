@@ -2139,19 +2139,22 @@ class sr_GlobalState:
                 print("pid: %s-%s is not a configured instance" %
                       (pid, self.procs[pid]['cmdline']))
 
-        print('      total running configs: %3d ( processes: %d missing: %d stray: %d uss:%s rss:%s vms:%s user:%.2fs system:%.2fs )' % \
-            (configs_running, len(self.procs), len(self.missing), stray, \
+        print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' %
+            (configs_running, len(self.procs), len(self.missing), stray ) )
+        print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
               naturalSize( self.resources['uss'] ), \
-              naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] ),\
+              naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
+              ))
+        print('                   cpu time: user:%.2fs system:%.2fs ' % ( \
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        print( '\t\t   pub/sub received: %8s/s (%8s/s), Sent:  %8s/s (%8s/s)' % ( 
+        print( '\t   pub/sub received: %-8s/s (%s/s), Sent:  %s/s (%s/s)' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
                 naturalSize(rxCumulativeMessageRate),\
                 naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
                 naturalSize(txCumulativeMessageRate)
             ))
-        print( '\t\t  data received: %8s/s (%8s/s)  sent: %8s/s (%8s/s) ' % (
+        print( '\t      data received: %-8s/s (%s/s)  sent: %s/s (%s/s) ' % (
                naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
                naturalSize(rxCumulativeDataRate),
                naturalSize( txCumulativeFileRate).replace("B","F").replace("Fyte","File"),
