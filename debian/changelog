@@ -1,9 +1,15 @@
+metpx-sr3 (3.00.34) unstable; urgency=medium
+
+  * slight patch (more symlink combined with strip stuff.) 
+  * display changes.
+
+ -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 14:37:09 -0400
+
 metpx-sr3 (3.00.33) unstable; urgency=medium
 
   * published to pypi (copy of 3.00.32) by mistake. deleted. will see if can
     re-publish later... perhaps will have to skip this version.
-  * display changes.
-  * slight patch (more symlink combined with strip stuff.) 
+  * yup... cannot re-publish ... have to increment.
 
  -- Peter <peter@bsqt.homeip.net>  Sun, 02 Apr 2023 10:03:59 -0400
 
