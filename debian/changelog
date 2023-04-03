@@ -1,9 +1,9 @@
 metpx-sr3 (3.00.33) unstable; urgency=medium
 
-  * incrementing away from release.
   * published to pypi (copy of 3.00.32) by mistake. deleted. will see if can
     re-publish later... perhaps will have to skip this version.
-  * slight patch (more symlink stuff.) 
+  * display changes.
+  * slight patch (more symlink combined with strip stuff.) 
 
  -- Peter <peter@bsqt.homeip.net>  Sun, 02 Apr 2023 10:03:59 -0400
 
