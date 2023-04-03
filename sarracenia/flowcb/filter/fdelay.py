@@ -32,8 +32,6 @@ class Fdelay(FlowCB):
         logging.basicConfig(format=self.o.logFormat,
                             level=getattr(logging, self.o.logLevel.upper()))
 
-        logger.debug('hoho! FIXME init')
-
         self.o.add_option('msg_fdelay', 'duration', 60)
         self.o.add_option('fdelay', 'duration', 60)
 
@@ -44,14 +42,11 @@ class Fdelay(FlowCB):
 
     def after_accept(self, worklist):
         # Prepare msg delay test
-        logger.info('FIXME: fdelay? setting: %f ' % self.o.fdelay)
         outgoing = []
         for m in worklist.incoming:
             # Test msg delay
             elapsedtime = nowflt() - timestr2flt(m['pubTime'])
 
-            logger.info('FIXME: message[pubTime]=%s elapsed: %f ' %
-                        (m['pubTime'], elapsedtime))
             if 'fileOp' in m and 'remove' in m['fileOp'] :
                 # 'remove' msg will be removed by itself
                 worklist.rejected.append(m)

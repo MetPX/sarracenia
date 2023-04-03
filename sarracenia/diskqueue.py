@@ -390,7 +390,7 @@ class DiskQueue():
             fp = self.queue_fp
             self.housekeeping_fp = open(self.housekeeping_path, 'a')
 
-            logger.debug("FIXME DEBUG has queue %s" %
+            logger.debug("has queue %s" %
                          os.path.isfile(self.queue_file))
 
             # remaining of retry to housekeeping
@@ -427,7 +427,7 @@ class DiskQueue():
             except:
                 pass
 
-            logger.debug("FIXME DEBUG took %d out of the %d retry" %
+            logger.debug("retrieved %d from the %d retry" %
                          (N - j, i))
 
             self.housekeeping_fp.close()

@@ -337,7 +337,6 @@ class Message(dict):
         else:
             calc_method = o.integrity_method
 
-        logger.debug('FIXME calc_method: %s' % calc_method )
         if calc_method == None:
             return
 
