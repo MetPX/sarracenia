@@ -272,16 +272,16 @@ class RedisQueue():
         """
 
         for message in message_list:
-            logger.debug("add to list %s %s" % (self.key_name_new, message))
+            logger.debug("rpush to list %s %s" % (self.key_name_new, message))
 
             self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
     def cleanup(self):
-        """_count_msgs
+        """
         remove statefiles.
         """
         #self.redis.delete(self.key_name)
-
+        self.redis.delete(self.key_name)
 
     def close(self):
         """
@@ -336,7 +336,7 @@ class RedisQueue():
 
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
-            logger.info("have not finished retry list. Resuming retries with %s" % (self.key_name))
+            logger.info("have not finished retry list; resuming retries from %s" % (self.key_name))
             return
 
         self.now = sarracenia.nowflt()
@@ -346,6 +346,7 @@ class RedisQueue():
         # put this in try/except in case ctrl-c breaks something
         try:
             try:
+                logger.debug('delete list: %s' % (self.key_name_hk))
                 self.redis.delete(self.key_name_hk)
             except:
                 pass
@@ -363,7 +364,7 @@ class RedisQueue():
                 i = i + 1
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("push to %s %s" % (self.key_name_hk, message))
+                logger.debug("remaining of retry - rpush to %s %s" % (self.key_name_hk, message))
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
@@ -380,7 +381,7 @@ class RedisQueue():
                 #logger.debug("DEBUG message %s" % message)
                 if not self._needs_requeuing(message): continue
 
-                logger.debug("push to %s %s" % (self.key_name_hk, message))
+                logger.debug("new to hk - rpush to %s %s" % (self.key_name_hk, message))
                 self.redis.rpush(self.key_name_hk, self._msgToJSON(message))
                 N = N + 1
 
@@ -394,7 +395,7 @@ class RedisQueue():
         if N == 0:
             logger.info("No retry in list")
             try:
-                logger.debug('delete list: %s' % (self.key_name_hk))
+                logger.debug('no more retry - delete list: %s' % (self.key_name_hk))
                 self.redis.delete(self.key_name_hk)
             except:
                 pass
@@ -414,7 +415,7 @@ class RedisQueue():
 
         # cleanup
         try:
-            logger.debug('delete list %s' % (self.key_name_new))
+            logger.debug('cleanup - delete list: %s' % (self.key_name_new))
             self.redis.delete(self.key_name_new)
         except:
             pass
