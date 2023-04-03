@@ -770,7 +770,7 @@ class Flow:
                             strip += 1
                         if len(fopv) > strip:
                             rest=fopv[strip:]
-                            toclimb=len(rest)-rest.count('..')-1
+                            toclimb=len(token)-rest.count('..')-1
                             if toclimb > 0:
                                 msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
                             else:
