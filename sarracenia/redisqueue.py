@@ -26,14 +26,8 @@ class RedisQueue():
     """
     Process Persistent Queue...
 
-    Persist messages to a file so that processing can be attempted again later.
-    For safety reasons, want to be writing to a file ASAP.
-    For performance reasons, all those writes need to be Appends.
-
-    so continuous, but append-only io... with an occasional housekeeping cycle.
-    to resolve them
-
-    not clear if we need multi-task safety... just one task writes to each queue.
+    Persist messages to a Redis List so that processing can be attempted again later.
+    So continuous operation, with an occasional housekeeping cycle to resolve them
 
     retry_ttl how long 
 
@@ -41,33 +35,24 @@ class RedisQueue():
     * a dictionary indexed by some sort of key to prevent duplicate
         messages being stored in it.
 
-    retry_path = ~/.cache/sr3/<component>/<config>/diskqueue_<name>
+    If <queueName> isn't specified
+    key_name = 'sr3queue.<name>.<self.o.component>.<self.o.config>
+    Otherise it's
+    key_name = 'sr3queue.<name>.<self.o.component>.<self.o.queueName>
 
-    with various suffixes:
+    It also gets various suffixes:
 
-    .new -- messages added to the retry list are appended to this file.
+    .new -- messages added to the retry are pushed to this list.
+    .hk  -- temporary list used during on_housekeeping.
 
     whenever a message is added to the retry_cache, it is appended to a 
     cumulative list of entries to add to the retry list.  
 
-    every housekeeping interval, the two files are consolidated.
+    every housekeeping interval, the two lists are consolidated.
 
     note that the *ack_id* of messages retreived from the retry list, is 
     removed. Files must be acked around the time they are placed on the 
     retry_list, as reception from the source should have already been acknowledged.
-
-    FIXME:  would be fun to look at performance of this thing and compare it to
-        python persistent queue.  the differences:
-
-        This class does no locking (presumed single threading.) 
-        could add locks... and they would be coarser grained than stuff in persistentqueue
-        this should be faster than persistent queue, but who knows what magic they did.
-        This class doesn't implement in-memory queue... it is entirely on disk...
-        saves memory, optimal for large queues.  
-        probably good, since retries should be slow...
-
-        not sure what will run better.
-
     """
 
     # ----------- magic Methods ------------
