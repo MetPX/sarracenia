@@ -706,32 +706,6 @@ class Flow:
         """
 
         # relative path by default mirror
-        """
-        # 2023/01/09 PAS I think this if is bogus, commenting out for now, should be deleted later
-        #    I'm not sure though.
-        # pas - I think this code deleting parts of paths in some
-        #   cases is functionally replaced by some parts of 
-        #   sarracenia.Message.updatePaths(), where post_baseUrl, and post_baseDir
-        #   are removed from relPath.
-        #   This if stanza caused issues when the relPath doesn't start with /
-        #    (as per flow tests in C veille producing correct relPaths without initial /
-        #     causing those tests to fail.)
-
-        if type(maskDir) is str:
-            # trying to subtract maskDir if present in relPath...
-            # occurs in polls a lot.
-            if maskDir in msg['relPath']:
-                relPath = '%s' % msg['relPath'].replace(maskDir, '', 1)
-
-            # sometimes the same, just the leading / is missing.
-            elif maskDir[1:] in msg['relPath']:
-                relPath = '%s' % msg['relPath'].replace(maskDir[1:], '', 1)
-            else:
-                relPath = '%s' % msg['relPath']
-        else:
-            relPath = '%s' % msg['relPath']
-            """
-
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
@@ -776,7 +750,6 @@ class Flow:
                                 msg['fileOp'][f] = '/'.join(rest)
                             
         # strip using a pattern
-
         elif pstrip:
 
             #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
