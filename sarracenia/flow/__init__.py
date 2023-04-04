@@ -140,7 +140,6 @@ class Flow:
                 getattr(
                     logging,
                     self.o.settings['sarracenia.flow.Flow']['logLevel'].upper()))
-            logger.warning('FIXME! class specific logLevel Override')
         else:
             logger.setLevel(getattr(logging, self.o.logLevel.upper()))
 
@@ -831,6 +830,18 @@ class Flow:
                 d = self.o.variableExpansion(self.o.post_baseDir, msg)
             else:
                 d = None
+
+            # remove baseDir from relPath if present.
+            token_baseDir = self.o.baseDir.split('/')[1:]
+            remcnt=0
+            if len(token) > len(token_baseDir):
+                for i in range(0,len(token_baseDir)):
+                    if token_baseDir[i] == token[i]:
+                        remcnt+=1
+                    else:
+                        break
+                if remcnt == len(token_baseDir):
+                    token=token[remcnt:] 
 
             if d:
                 if 'fileOp' in msg and len(self.o.baseDir) > 1:

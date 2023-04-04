@@ -425,6 +425,10 @@ needs a localfile, so the local path is built by concatenating::
 
    baseDir + relative path in the baseUrl + relPath
 
+When used for reception, it specifies the root of the tree that upstream files are assumed
+to be from, to be replaced on download by either post_baseDir or the *directory* setting
+in effect.
+
 
 baseUrl_relPath <flag> (default: off)
 -------------------------------------
