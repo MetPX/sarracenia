@@ -444,10 +444,10 @@ class AMQP(Moth):
        
         # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
         if not 'ack_id' in m:
-            #logger.warning( f"FIXME: no ackid present" )
+            #logger.warning( f"no ackid present" )
             return
 
-        #logger.info( f"FIXME acknowledging {m['ack_id']}" )
+        #logger.info( f"acknowledging {m['ack_id']}" )
         ebo = 1
         while True:
             try:

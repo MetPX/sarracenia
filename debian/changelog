@@ -1,3 +1,24 @@
+metpx-sr3 (3.00.34) unstable; urgency=medium
+
+  * slight patch (more symlink combined with strip stuff.) 
+  * display changes.
+
+ -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 14:37:09 -0400
+
+metpx-sr3 (3.00.33) unstable; urgency=medium
+
+  * published to pypi (copy of 3.00.32) by mistake. deleted. will see if can
+    re-publish later... perhaps will have to skip this version.
+  * yup... cannot re-publish ... have to increment.
+
+ -- Peter <peter@bsqt.homeip.net>  Sun, 02 Apr 2023 10:03:59 -0400
+
+metpx-sr3 (3.00.32) unstable; urgency=medium
+
+  * slight patch to updateFieldsAccepted (more symlink stuff.) 
+
+ -- Peter <peter@bsqt.homeip.net>  Fri, 31 Mar 2023 08:50:00 -0400
+
 metpx-sr3 (3.00.31) unstable; urgency=medium
 
   * another (final?) fix for ln -sf case (fileOp field transformation.)

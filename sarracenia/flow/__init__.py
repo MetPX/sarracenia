@@ -692,7 +692,7 @@ class Flow:
     # ==============================================
 
     def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
-                             maskFileOption, mirror, strip, pstrip, flatten) -> None:
+                             maskFileOption, mirror, path_strip_count, pstrip, flatten) -> None:
         """
            Set new message fields according to values when the message is accepted.
            
@@ -749,9 +749,9 @@ class Flow:
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
 
-        if strip > 0:
+        if path_strip_count > 0:
 
-            logger.debug( f"FIXME! strip={strip}" )
+            strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
 
@@ -764,9 +764,13 @@ class Flow:
                 for f in ['link', 'hlink', 'rename']:
                     if f in msg['fileOp']:
                         fopv = msg['fileOp'][f].split('/') 
+                        # an absolute path file posted is relative to '/' (in relPath) but the values in
+                        # the link and rename fields may be absolute, requiring and adjustmeent when stripping
+                        if fopv[0] == '':
+                            strip += 1
                         if len(fopv) > strip:
                             rest=fopv[strip:]
-                            toclimb=len(rest)-rest.count('..')-1
+                            toclimb=len(token)-rest.count('..')-1
                             if toclimb > 0:
                                 msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
                             else:
@@ -829,17 +833,16 @@ class Flow:
                 d = None
 
             if d:
-                if 'fileOp' in msg:
+                if 'fileOp' in msg and len(self.o.baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
-                        if f in msg['fileOp']:
+                        if (f in msg['fileOp']) and msg['fileOp'][f].startswith(self.o.baseDir):
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
             u = urllib.parse.urlparse(msg['baseUrl'])
             for f in ['link', 'hlink', 'rename']:
-                if f in msg['fileOp'] and len(u.path) > 0:
-                    if u.path in msg['fileOp'][f]:
-                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                if (f in msg['fileOp']) and (len(u.path) > 1) and msg['fileOp'][f].startswith(u.path):
+                    msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
                             
         # add relPath to the base directory established above.
 
