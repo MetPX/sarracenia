@@ -15,7 +15,6 @@ from _codecs import decode, encode
 import jsonpickle, sarracenia, sys, time
 import redis, redis_lock
 import re
-import os
 
 import logging
 
@@ -101,17 +100,11 @@ class RedisQueue():
         self.key_name_lasthk = 'sr3.retry_queue' + name + '.' + self.o.component + '.' + self.o.config + ".last_hk"
 
         self.o.add_option( 'redisqueue_serverurl', 'str')
-        #self.o.add_option( 'redisqueue_stacktype', 'str', 'FIFO')
-        
-        #self.redisurl = os.getenv('SR3_REDISURL', 'redis://localhost:6379/0')
-        #self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
 
         self.redis = redis.from_url(self.o.redisqueue_serverurl)
 
         self.redis.set(self.key_name_lasthk, self.now)
-        # disable logging; if aquire() fails to get one, it throws a warning
-        #  which could be misleading when troubleshooting
-        #logging.getLogger("redis_lock.acquire").disabled = True
+
         # The lock will be set with a TTL of 'expire', but will auto renew at expire*2/3
         #  This should allow a crashed/failed/terminated instances' locks to clear out so others can do it
         self.redis_lock = redis_lock.Lock(self.redis, self.key_name_hk, expire=30, auto_renewal=True)
@@ -130,8 +123,9 @@ class RedisQueue():
             int: number of messages in the RedisQueue.
         """
         return self.redis.llen(self.key_name) + self.redis.llen(self.key_name_new) 
-    # ----------- Private Methods -----------
 
+
+    # ----------- Private Methods -----------
     def _in_cache(self, message) -> bool:
         """
         return whether the entry is message is in the cache or not.
@@ -193,50 +187,6 @@ class RedisQueue():
 
         return True
 
-    # def msg_get_from_file(self, fp, path):
-    #     """
-    #         read a message from the state file.
-    #     """
-    #     if fp is None:
-    #         if not os.path.isfile(path): return None, None
-    #         logger.debug("DEBUG %s open read" % path)
-    #         fp = open(path, 'r')
-    #
-    #     line = fp.readline()
-    #     if not line:
-    #         try:
-    #             fp.close()
-    #         except:
-    #             pass
-    #         return None, None
-    #
-    #     msg = self._msgFromJSON(line)
-    #     # a corrupted line : go to the next
-    #     if msg is None: return self.msg_get_from_file(fp, path)
-    #
-    #    return fp, msg
-
-
-    # def _count_msgs(self, file_path) -> int:
-    #     """Count the number of messages (lines) in the queue file. This should be used only when opening an existing
-    #     file, because :func:`~sarracenia.diskqueue.DiskQueue.get` does not remove messages from the file.
-
-    #     Args:
-    #         file_path (str): path to the file to be counted.
-
-    #     Returns:
-    #         int: count of messages in file, -1 if the file could not be read.
-    #     """
-    #     count = -1
-
-    #     if os.path.isfile(file_path):
-    #         count = 0
-    #         with open(file_path, mode='r') as f:
-    #             for line in f:
-    #                 if "{" in line:
-    #                     count +=1
-    #
-    #    return count
 
     def _msgFromJSON(self, message):
         try:
@@ -269,7 +219,6 @@ class RedisQueue():
 
 
     # ----------- Public Methods -----------
-
     def put(self, message_list):
         """
         add messages to the end of the queue.
@@ -277,7 +226,6 @@ class RedisQueue():
 
         for message in message_list:
             logger.debug("rpush to list %s %s" % (self.key_name_new, message))
-
             self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
     def cleanup(self):
@@ -285,6 +233,7 @@ class RedisQueue():
         remove statefiles.
         """
         self.redis_lock.reset()
+        self.redis.delete(self.key_name_lasthk)
         self.redis.delete(self.key_name)
 
     def close(self):
@@ -434,13 +383,6 @@ class RedisQueue():
                 logger.error("Something went wrong with rename")
                 logger.debug('Exception details: ', exc_info=True)
 
-
-        # cleanup
-        # try:
-        #     logger.debug('cleanup - delete list: %s' % (self.key_name_new))
-        #     self.redis.delete(self.key_name_new)
-        # except:
-        #     pass
 
         self.redis.set(self.key_name_lasthk, self.now)
         self.redis_lock.release()
