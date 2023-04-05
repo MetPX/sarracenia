@@ -91,7 +91,7 @@ class RedisQueue():
         self.key_name_lasthk = 'sr3.retry_queue' + name + '.' + self.o.component + '.' + self.o.config + ".last_hk"
 
         self.o.add_option( 'redisqueue_serverurl', 'str')
-        self.o.add_option( 'redisqueue_stacktype', 'str', 'FIFO')
+        #self.o.add_option( 'redisqueue_stacktype', 'str', 'FIFO')
         
         #self.redisurl = os.getenv('SR3_REDISURL', 'redis://localhost:6379/0')
         #self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
@@ -245,20 +245,17 @@ class RedisQueue():
     def _msgToJSON(self, message):
         return jsonpickle.encode(message)
 
-    def _pop(self, queue):
-        # Default behaviour is same as DiskQueue (pop off the head, push to the tail)
-        #  Specifying a stacktype of LIFO makes it pop the newest items first
-        if self.o.redisqueue_stacktype == "LIFO":
-            json_msg = self.redis.rpop(queue)
-            logger.debug("rpop from list %s %s" % (queue, json_msg))
-        else:
-            json_msg = self.redis.lpop(queue)
-            logger.debug("lpop from list %s %s" % (queue, json_msg))
+    def _lpop(self, queue):
 
-        if json_msg == None:
+        raw_msg = self.redis.lpop(queue)
+          
+        if raw_msg == None:
             return None
 
-        return self._msgFromJSON(json_msg)
+        msg = self._msgFromJSON(raw_msg)
+        logger.debug("lpop from list %s %s" % (queue, msg))
+
+        return msg
 
 
     # ----------- Public Methods -----------
@@ -302,11 +299,9 @@ class RedisQueue():
         count = 0
         while count < maximum_messages_to_get:
 
-            message = self._pop(self.key_name)
-
-            if not message:
-                break
-
+            message = self._lpop(self.key_name)
+            if not message: break
+                
             if self._is_expired(message):
                 logger.warn("message expired %s" % (message))
                 continue
@@ -375,9 +370,9 @@ class RedisQueue():
             # remaining of retry to housekeeping
             while True:
 
-                message = self._pop(self.key_name)
-
+                message = self._lpop(self.key_name)
                 if not message: break
+
                 i = i + 1
                 if not self._needs_requeuing(message): continue
 
@@ -391,9 +386,9 @@ class RedisQueue():
             # append new to housekeeping.
             while True:
 
-                message = self._pop(self.key_name_new)
-                
+                message = self._lpop(self.key_name_new)
                 if not message: break
+
                 i = i + 1
                 #logger.debug("DEBUG message %s" % message)
                 if not self._needs_requeuing(message): continue
