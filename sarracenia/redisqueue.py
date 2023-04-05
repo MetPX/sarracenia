@@ -98,6 +98,7 @@ class RedisQueue():
 
         self.redis = redis.from_url(self.o.redisqueue_serverurl)
 
+        self.redis.set(self.key_name_lasthk, self.now)
         # disable logging; if aquire() fails to get one, it throws a warning
         #  which could be misleading when troubleshooting
         #logging.getLogger("redis_lock.acquire").disabled = True
