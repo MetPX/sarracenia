@@ -14,6 +14,7 @@ from _codecs import decode, encode
 
 import jsonpickle, sarracenia, sys, time
 import redis, redis_lock
+import re
 import os
 
 import logging
