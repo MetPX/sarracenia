@@ -86,6 +86,9 @@ class RedisQueue():
         # working file at housekeeping
         self.key_name_hk = self.key_name + '.hk'
 
+        # track last housekeeping to ensure that multiple instances don't try to do it more often than the defined interval
+        self.key_name_lasthk = 'sr3.retry_queue' + name + '.' + self.o.component + '.' + self.o.config + ".last_hk"
+
         self.o.add_option( 'redisqueue_serverurl', 'str')
         self.o.add_option( 'redisqueue_stacktype', 'str', 'FIFO')
         
@@ -318,6 +321,9 @@ class RedisQueue():
         """
         logger.info("%s on_housekeeping" % (self.name))
 
+        if float(self.redis.get(self.key_name_lasthk)) + self.o.housekeeping < time.time():
+            logger.info("Housekeeping ran less than %ds ago; not running " % (self.o.housekeeping))
+            return
 
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
@@ -399,11 +405,12 @@ class RedisQueue():
 
 
         # cleanup
-        try:
-            logger.debug('cleanup - delete list: %s' % (self.key_name_new))
-            self.redis.delete(self.key_name_new)
-        except:
-            pass
+        # try:
+        #     logger.debug('cleanup - delete list: %s' % (self.key_name_new))
+        #     self.redis.delete(self.key_name_new)
+        # except:
+        #     pass
+        self.redis.set(self.key_name_lasthk, self.now)
 
         elapse = sarracenia.nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % (elapse))
