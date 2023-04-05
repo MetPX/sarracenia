@@ -36,9 +36,9 @@ class RedisQueue():
         messages being stored in it.
 
     If <queueName> isn't specified
-    key_name = 'sr3queue.<name>.<self.o.component>.<self.o.config>
+    key_name = 'sr3.retry_queue.<name>.<self.o.component>.<self.o.config>
     Otherise it's
-    key_name = 'sr3queue.<name>.<self.o.component>.<self.o.queueName>
+    key_name = 'sr3.retry_queue.<name>.<self.o.component>.<self.o.queueName>
 
     It also gets various suffixes:
 
@@ -74,9 +74,9 @@ class RedisQueue():
         logger.debug('name=%s logLevel=%s' % (self.name, self.o.logLevel))
 
         if self.o.queueName == None: 
-            self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.config
+            self.key_name = 'sr3.retry_queue.' + name + '.' + self.o.component + '.' + self.o.config
         else:
-            self.key_name = 'sr3queue.' + name + '.' + self.o.component + '.' + self.o.queueName
+            self.key_name = 'sr3.retry_queue' + name + '.' + self.o.component + '.' + self.o.queueName
 
         self.now = sarracenia.nowflt()
 
