@@ -1,6 +1,7 @@
-metpx-sr3 (3.00.35) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.35) unstable; urgency=medium
 
-  * incrementing away from previous release.
+  * bugfix #641 - baseDir it should remove baseDir from directory being
+    written.
 
  -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 17:17:08 -0400
 
