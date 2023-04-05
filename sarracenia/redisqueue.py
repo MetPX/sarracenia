@@ -13,7 +13,8 @@
 from _codecs import decode, encode
 
 import jsonpickle, sarracenia, sys, time
-import redis, os
+import redis, redis_lock
+import os
 
 import logging
 
@@ -96,6 +97,13 @@ class RedisQueue():
         #self.queue_stack_type = os.getenv('SR3_QUEUE_STACK_TYPE', 'FIFO').upper()
 
         self.redis = redis.from_url(self.o.redisqueue_serverurl)
+
+        # disable logging; if aquire() fails to get one, it throws a warning
+        #  which could be misleading when troubleshooting
+        #logging.getLogger("redis_lock.acquire").disabled = True
+        # The lock will be set with a TTL of 'expire', but will auto renew at expire*2/3
+        #  This should allow a crashed/failed/terminated instances' locks to clear out so others can do it
+        self.redis_lock = redis_lock.Lock(self.redis, self.key_name_hk, expire=30, auto_renewal=True)
 
         # initialize ages and message counts
 
@@ -268,13 +276,14 @@ class RedisQueue():
         """
         remove statefiles.
         """
-        #self.redis.delete(self.key_name)
+        self.redis_lock.reset()
         self.redis.delete(self.key_name)
 
     def close(self):
         """
         clean shutdown.
         """
+        self.redis_lock.reset()
 
         self.redis = None
 
@@ -284,6 +293,11 @@ class RedisQueue():
         """
 
         ml = []
+
+        if self.redis_lock.locked():
+            logger.debug("Can't pop because housekeeping lock is active")
+            return ml
+
         count = 0
         while count < maximum_messages_to_get:
 
@@ -324,6 +338,17 @@ class RedisQueue():
         if float(self.redis.get(self.key_name_lasthk)) + self.o.housekeeping < time.time():
             logger.info("Housekeeping ran less than %ds ago; not running " % (self.o.housekeeping))
             return
+
+        # A shared/distributed locking system is required when using Redis
+        #  because only a single instance of a config should ever run the Housekeeping tasks
+        if self.redis_lock.locked():
+            logger.info("Another instance has lock on %s" % (self.key_name_hk))
+            while self.redis_lock.locked():
+                time.sleep(1)
+            return
+
+        self.redis_lock.acquire()
+        logger.info("got redis_lock %s" % (self.key_name_hk))
 
         # finish retry before reshuffling all retries entries
         if self.redis.llen(self.key_name) > 0:
@@ -410,7 +435,10 @@ class RedisQueue():
         #     self.redis.delete(self.key_name_new)
         # except:
         #     pass
+
         self.redis.set(self.key_name_lasthk, self.now)
+        self.redis_lock.release()
+        logger.debug("released redis_lock")
 
         elapse = sarracenia.nowflt() - self.now
         logger.info("on_housekeeping elapse %f" % (elapse))
