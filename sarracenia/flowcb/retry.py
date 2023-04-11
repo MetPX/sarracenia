@@ -63,6 +63,7 @@ class Retry(FlowCB):
         logger.debug('logLevel=%s' % self.o.logLevel)
 
     def cleanup(self) -> None:
+        logger.debug('starting retry cleanup')
         self.download_retry.cleanup()
         self.post_retry.cleanup()
 
