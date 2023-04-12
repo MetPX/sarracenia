@@ -1800,8 +1800,11 @@ class Config:
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
                 logger.debug("defaulting post_baseDir to same as baseDir")
-            elif self.post_baseUrl and ( self.post_baseUrl[0:5] == 'file:' ):
+            elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'file:' ] ):
                 self.post_baseDir = self.post_baseUrl[5:]
+            elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'sftp:' ] ):
+                u = urllib.parse.urlparse(self.post_baseUrl) 
+                self.post_baseDir = u.path
 
 
         if self.messageCountMax > 0:
