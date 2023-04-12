@@ -1,3 +1,10 @@
+metpx-sr3 (3.00.35) unstable; urgency=medium
+
+  * bugfix #641 - baseDir it should remove baseDir from directory being
+    written.
+
+ -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 17:17:08 -0400
+
 metpx-sr3 (3.00.34) unstable; urgency=medium
 
   * slight patch (more symlink combined with strip stuff.) 
