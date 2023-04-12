@@ -53,6 +53,7 @@ class V02(PostFormat):
         msg['baseUrl'] = baseUrl.replace('%20', ' ').replace('%23', '#')
         msg['relPath'] = relPath
         msg['subtopic'] = relPath.split('/')
+        msg['to_clusters'] = 'ALL'
         msg['_deleteOnPost'] |= set(['subtopic'])
 
         for t in ['atime', 'mtime']:
