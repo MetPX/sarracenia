@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.36) UNRELEASED; urgency=medium
+
+  * sr3 status now show wVip for processes waiting for a Vip.
+
+ -- Peter <peter@bsqt.homeip.net>  Thu, 13 Apr 2023 09:48:52 -0400
+
 metpx-sr3 (3.00.35) unstable; urgency=medium
 
   * bugfix #641 - baseDir it should remove baseDir from directory being
