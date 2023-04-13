@@ -1,6 +1,8 @@
 metpx-sr3 (3.00.36) UNRELEASED; urgency=medium
 
-  * sr3 status now show wVip for processes waiting for a Vip.
+  * sr3 status now show wVip for processes waiting for a Vip. #614
+  * add to_clusters header when encoding v02 messages for compatibility
+  * get default post_baseDir from post_baseUrl  #641
 
  -- Peter <peter@bsqt.homeip.net>  Thu, 13 Apr 2023 09:48:52 -0400
 
