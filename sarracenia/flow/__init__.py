@@ -339,6 +339,8 @@ class Flow:
     def close(self) -> None:
 
         self._runCallbacksTime('on_stop')
+        if os.path.exists( self.o.novipFilename ):
+            os.unlink( self.o.novipFilename )
         logger.info(
             f'flow/close completed cleanly pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
@@ -387,6 +389,11 @@ class Flow:
         )
         if not self.has_vip():
            logger.info( f'starting up passive, as do not possess vip {self.o.vip}' )
+           with open( self.o.novipFilename, 'w' ) as f:
+               f.write(str(start_time) + '\n' )
+        else:
+            if os.path.exists( self.o.novipFilename ):
+                os.unlink( self.o.novipFilename )
 
         self._runCallbacksTime(f'on_start')
 
@@ -399,6 +406,7 @@ class Flow:
             if self._stop_requested:
                 if stopping:
                     logger.info('clean stop from run loop')
+
                     self.close()
                     break
                 else:
@@ -432,11 +440,12 @@ class Flow:
                 self._runCallbacksWorklist('after_accept')
 
                 logger.debug(
-                    'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s'
+                        'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
                     % (len(self.worklist.incoming), len(
                         self.worklist.ok), len(self.worklist.directories_ok),
                        len(self.worklist.rejected), len(
-                           self.worklist.failed), self._stop_requested))
+                           self.worklist.failed), self._stop_requested,
+                           self.have_vip))
 
                 self.ack(self.worklist.ok)
                 self.worklist.ok = []
@@ -453,11 +462,15 @@ class Flow:
                 if (self.o.component == 'poll') and not self.have_vip:
                     if had_vip:
                         logger.info("now passive on vip %s" % self.o.vip )
+                        with open( self.o.novipFilename, 'w' ) as f:
+                            f.write(str(nowflt()) + '\n' )
                         had_vip=False
                 else:
                     if not had_vip:
                         logger.info("now active on vip %s" % self.o.vip )
                         had_vip=True
+                        if os.path.exists( self.o.novipFilename ):
+                            os.unlink( self.o.novipFilename )
 
                     # normal processing, when you are active.
                     self.do()

@@ -451,10 +451,12 @@ class sr_GlobalState:
                                 self.states[c][cfg]['status'] = 'removed'
 
                         self.states[c][cfg]['has_state'] = False
+                        self.states[c][cfg]['noVip'] = None
+                        
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
-                            if p.suffix in ['.pid', '.qname', '.state', '.metrics']:
+                            if p.suffix in ['.pid', '.qname', '.state', '.metrics', '.noVip']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
                                     t = p.read_text().strip()
@@ -472,6 +474,8 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
+                                elif pathname[-6:] == '.noVip':
+                                    self.states[c][cfg]['noVip'] = t
                                 elif pathname[-8:] == '.metrics':
                                     i = int(pathname[-10:-8])
                                     if not 'instance_metrics' in self.states[c][cfg]:
@@ -821,7 +825,6 @@ class sr_GlobalState:
                     continue
                 if os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg + os.sep + 'disabled'):
                     self.configs[c][cfg]['status'] = 'disabled'
-
                 if 'instance_metrics' in self.states[c][cfg]:
                     if 'housekeeping' in self.configs[c][cfg]:
                         expiry = now - self.configs[c][cfg]['housekeeping']*1.5
@@ -861,6 +864,7 @@ class sr_GlobalState:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
                     resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
+                    nvip=False
                     for i in self.states[c][cfg]['instance_pids']:
                         if self.states[c][cfg]['instance_pids'][
                                 i] not in self.procs:
@@ -895,6 +899,8 @@ class sr_GlobalState:
                                     self.configs[c][cfg]['status'] = 'stopped'
                     elif observed_instances == 0:
                         self.configs[c][cfg]['status'] = 'stopped'
+                    elif self.states[c][cfg]['noVip']:
+                        self.configs[c][cfg]['status'] = 'waitVip'
                     else:
                         self.configs[c][cfg]['status'] = 'running'
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
@@ -1059,7 +1065,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
-            'disabled', 'include', 'stopped', 'partial', 'running', 'unknown'
+            'disabled', 'include', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
         ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1761,7 +1767,7 @@ class sr_GlobalState:
                 fg_instances.add(f"{c}/{cfg}")
                 continue
 
-            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
@@ -1830,7 +1836,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         print("signal_pid( %s, SIGKILL )" %
@@ -1862,7 +1868,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['running', 'partial']:
+            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
@@ -2022,6 +2028,8 @@ class sr_GlobalState:
                     cfg_status = "fore"
                 if cfg_status == "runn" :
                     cfg_status = "run"
+                elif cfg_status == 'wait':
+                    cfg_status = 'wVip'
 
                 process_status = "%d/%d" % ( running, expected ) 
                 line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 

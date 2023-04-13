@@ -203,6 +203,7 @@ class instance:
         cfg = sarracenia.config.one_config(component, config)
 
         cfg.metricsFilename = pidfilename.replace(".pid", ".metrics")
+        cfg.novipFilename = pidfilename.replace(".pid", ".noVip")
 
         if not hasattr(cfg, 'env_declared'):
             sys.exit(0)

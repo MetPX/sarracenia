@@ -1761,6 +1761,7 @@ class Config:
                                                  self.no)
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
             self.metricsFilename = self.pid_filename.replace('.pid', '.metrics')
+            self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
