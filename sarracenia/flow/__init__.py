@@ -1448,7 +1448,9 @@ class Flow:
                         self.reject(msg, 500, "remove %s failed" % new_path)
                     continue
 
-                elif ('directory' in msg['fileOp']) and ('mkdir' in self.o.fileEvents):
+                # no elif because if rename fails and operation is an mkdir or a symlink..
+                # need to retry as ordinary creation, similar to normal file copy case.
+                if ('directory' in msg['fileOp']) and ('mkdir' in self.o.fileEvents):
                     if self.mkdir(msg):
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
