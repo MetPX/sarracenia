@@ -3,6 +3,11 @@ metpx-sr3 (3.00.36) UNRELEASED; urgency=medium
   * sr3 status now show wVip for processes waiting for a Vip. #614
   * add to_clusters header when encoding v02 messages for compatibility
   * get default post_baseDir from post_baseUrl  #641
+  * redisqueue retry queue implementation based on redis thanks to Greg
+    Linton!
+  * made systemd unit file depend on network-online, rather than just up #645
+  * when failing to rename a symlink, fallback should try to just create it
+    with the new name, same for directories. before it just gave up. 
 
  -- Peter <peter@bsqt.homeip.net>  Thu, 13 Apr 2023 09:48:52 -0400
 

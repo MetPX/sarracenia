@@ -543,7 +543,7 @@ processing difficulties.
 ============= ========================================================================================================
 Heading       Purpose
 ------------- --------------------------------------------------------------------------------------------------------
-State         General health/status of a given configuration: stop|run|disa|part
+State         General health/status of a given configuration: stop|run|disa|part|wVip|fore
 Run           Number of processes or instances running compared to expected. 3/10 3 processes running of 10 expected.
 Retry         The number of messages in retry queues, indicating problems with transfers.
 msg           The percentage of time connected to a message broker, to subscribe to or publish messages.

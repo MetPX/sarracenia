@@ -540,7 +540,7 @@ La colonne Retry indique le nombre de messages de notifications stockés dans la
 ============= ========================================================================================================
 Entête        But
 ------------- --------------------------------------------------------------------------------------------------------
-State         Statut d'une configuration particulière: stop|run|disa|part
+State         Statut d'une configuration particulière: stop|run|disa|part|wVip|fore
 Run           Nombre de processus ou instances en marche en comparaison au nombre attendu. 3/10 3 processes running of 10 expected.
 Retry         Le nombre de messages dans la queue retry, indiquant des problèmes avec le transfert.
 msg           Le pourcentage du temps connecté à un broker pour publier ou s'abonner à des messages.
