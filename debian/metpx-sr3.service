@@ -8,6 +8,7 @@
 [Unit]
 Description=Sarracenia File Copy Service
 After=network-online.target local-fs.target remote-fs.target
+Requires=network-online.target
 
 [Service]
 Type=forking
