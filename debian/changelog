@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.36) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
+
+  * 
+
+ -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
+
+metpx-sr3 (3.00.36) unstable; urgency=medium
 
   * sr3 status now show wVip for processes waiting for a Vip. #614
   * add to_clusters header when encoding v02 messages for compatibility
@@ -8,6 +14,7 @@ metpx-sr3 (3.00.36) UNRELEASED; urgency=medium
   * made systemd unit file depend on network-online, rather than just up #645
   * when failing to rename a symlink, fallback should try to just create it
     with the new name, same for directories. before it just gave up. 
+  * 
 
  -- Peter <peter@bsqt.homeip.net>  Thu, 13 Apr 2023 09:48:52 -0400
 
