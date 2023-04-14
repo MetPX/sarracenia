@@ -14,8 +14,6 @@ import logging
 
 from sarracenia.flowcb import FlowCB
 
-from sarracenia.diskqueue import DiskQueue
-from sarracenia.redisqueue import RedisQueue
 
 # class sarra/retry
 
@@ -52,9 +50,11 @@ class Retry(FlowCB):
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
         if self.o.retry_driver == 'redis':
+            from sarracenia.redisqueue import RedisQueue
             self.download_retry = RedisQueue(options, 'work_retry')
             self.post_retry = RedisQueue(options, 'post_retry')
         else:
+            from sarracenia.diskqueue import DiskQueue
             self.download_retry_name = 'work_retry_%02d' % options.no
             self.download_retry = DiskQueue(options, self.download_retry_name)
             self.post_retry_name = 'post_retry_%03d' % options.no
