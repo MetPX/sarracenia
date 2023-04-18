@@ -88,9 +88,9 @@ class NoDupe(FlowCB):
         self.last_time = self.now
         self.last_count = new_count
 
-    def in_cache(self, key, relpath) -> bool:
-        """  return True if the given key=relpath value is already in the cache,
-                    False otherwise
+    def _not_in_cache(self, key, relpath) -> bool:
+        """  return False if the given key=relpath value is already in the cache,
+                    True otherwise
              side effect: add it to the cache if it isn't there.
         """
         # not found
@@ -162,8 +162,8 @@ class NoDupe(FlowCB):
            derive keys to be looked up in cache of messages already seen.
            then look them up in the cache, 
 
-           return True if msg already in cache,
-                  False if msg is new.
+           return False if message is a dupe.
+                  True if it is new.
         """
 
         key = self.deriveKey(msg)
@@ -177,7 +177,7 @@ class NoDupe(FlowCB):
         msg['_deleteOnPost'] |= set(['noDupe'])
 
         logger.debug("NoDupe calling check( %s, %s )" % (key, path))
-        return self.in_cache(key, path)
+        return self._not_in_cache(key, path)
 
     def after_accept(self, worklist):
         new_incoming = []
