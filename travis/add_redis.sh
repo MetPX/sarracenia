@@ -1,7 +1,7 @@
 #! /bin/bash
 
-apt-get update
-apt-get install redis
+sudo apt-get update
+sudo apt-get install redis
 
 if [[ $(($check_wsl == "init" )) ]]; then
 	sudo service redis-server restart
