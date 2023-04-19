@@ -514,6 +514,10 @@ class sr_GlobalState:
 
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
+
+                        if os.path.exists("disabled"): # double check, if disabled should ignore state.
+                            continue
+
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
@@ -1434,6 +1438,9 @@ class sr_GlobalState:
             cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
             for state_file in os.listdir(cache_dir):
                 if state_file[0] == '.':
+                    continue
+
+                if state_file in [ 'disabled' ]:
                     continue
 
                 asf = cache_dir + os.sep + state_file
