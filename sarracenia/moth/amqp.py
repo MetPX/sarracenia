@@ -234,12 +234,13 @@ class AMQP(Moth):
         signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
 
         while True:
+            
+            if self.please_stop:
+                break
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
-                if self.please_stop:
-                    break
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
