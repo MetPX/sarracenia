@@ -1043,6 +1043,7 @@ class sr_GlobalState:
         self.appname = os.getenv('SR_DEV_APPNAME')
         self.hostname = socket.getfqdn()
         self.hostdir = self.hostname.split('.')[0]
+        self.please_stop=False
         self.users = opt.users
         self.declared_users = opt.declared_users
 
@@ -1100,6 +1101,8 @@ class sr_GlobalState:
 
     def _start_missing(self):
         for instance in self.missing:
+            if self.please_stop:
+                break
             (c, cfg, i) = instance
             if not (c + os.sep + cfg in self.filtered_configurations):
                 continue
@@ -1111,6 +1114,7 @@ class sr_GlobalState:
     def _stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
         logging.info("Stopping config...")
+        self.please_stop=True
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
 
     def _active_stop_signal(self, signum, stack):
@@ -1153,6 +1157,8 @@ class sr_GlobalState:
             logging.error("nothing specified to add")
 
         for l in self.leftovers:
+            if self.please_stop:
+                break
             sp = l.split(os.sep)
             if (len(sp) == 1) or (
                 (len(sp) > 1) and
@@ -1190,6 +1196,8 @@ class sr_GlobalState:
 
         if self.users:
             for h in self.brokers:
+                if self.please_stop:
+                    break
                 if 'admin' in self.brokers[h]:
                     with open(
                             self.user_config_dir + os.sep + 'credentials.conf',
@@ -1214,6 +1222,8 @@ class sr_GlobalState:
 
         # declare exchanges first.
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1235,6 +1245,8 @@ class sr_GlobalState:
         # then declare and bind queues....
         for f in self.filtered_configurations:
             if f == 'audit': continue
+            if self.please_stop:
+                break
 
             (c, cfg) = f.split(os.sep)
 
@@ -1254,6 +1266,8 @@ class sr_GlobalState:
             return
 
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1278,6 +1292,8 @@ class sr_GlobalState:
     def edit(self):
 
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1318,6 +1334,8 @@ class sr_GlobalState:
             return
         # declare exchanges first.
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1334,6 +1352,8 @@ class sr_GlobalState:
     def foreground(self):
 
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1389,6 +1409,8 @@ class sr_GlobalState:
 
         queues_to_delete = []
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
@@ -1410,7 +1432,11 @@ class sr_GlobalState:
                 queues_to_delete.append((o.broker, o.resolved_qname))
 
         for h in self.brokers:
+            if self.please_stop:
+                break
             for qd in queues_to_delete:
+                if self.please_stop:
+                    break
                 if qd[0].url.hostname != h: continue
                 for x in self.brokers[h]['exchanges']:
                     xx = self.brokers[h]['exchanges'][x]
@@ -1435,8 +1461,12 @@ class sr_GlobalState:
 
         self.user_cache_dir
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
             cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
             for state_file in os.listdir(cache_dir):
+                if self.please_stop:
+                    break
                 if state_file[0] == '.':
                     continue
 
@@ -1590,6 +1620,8 @@ class sr_GlobalState:
             return
 
         for f in self.filtered_configurations:
+            if self.please_stop:
+                break
 
             if f == 'audit': continue
             (c, cfg) = f.split(os.sep)

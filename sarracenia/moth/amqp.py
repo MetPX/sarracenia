@@ -32,6 +32,7 @@ from urllib.parse import unquote
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
+import signal
 
 import time
 
@@ -162,6 +163,7 @@ class AMQP(Moth):
         self.o.update(props)
 
         self.first_setup = True
+        self.please_stop = False
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
 
@@ -214,6 +216,10 @@ class AMQP(Moth):
 
         self.channel = self.connection.channel()
 
+    def _amqp_setup_signal_handler(self, signum, stack):
+        logger.info("ok, asked to stop")
+        self.please_stop=True
+
     def __getSetup(self) -> None:
         """
         Setup so we can get messages.
@@ -222,11 +228,18 @@ class AMQP(Moth):
              connect, declare queue, apply bindings.
         """
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
+
         while True:
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
+                if self.please_stop:
+                    break
                 # from sr_consumer.build_connection...
                 self.__connect(self.broker)
 
@@ -275,7 +288,7 @@ class AMQP(Moth):
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('getSetup ... Done!')
-                return
+                break
 
             except Exception as err:
                 logger.error(
@@ -292,13 +305,25 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
     def __putSetup(self) -> None:
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
+
         while True:
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
+                if self.please_stop:
+                    break
                 # from sr_consumer.build_connection...
                 self.__connect(self.o['broker'])
 
@@ -326,11 +351,11 @@ class AMQP(Moth):
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('putSetup ... Done!')
-                return
+                break
 
             except Exception as err:
                 logger.error(
-                    "AMQP putSetup failed to declare exchanges {}@{} on {}: {}"
+                    "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
                     .format(self.o['exchange'], self.o['broker'].url.username,
                             self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
@@ -342,6 +367,12 @@ class AMQP(Moth):
             self.close()
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
+
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
 
     def putCleanUp(self) -> None:
 
