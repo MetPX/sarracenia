@@ -683,7 +683,7 @@ class Message(dict):
 
         msg['new_baseUrl'] = baseUrl_str
 
-        if relPath[0] == '/':
+        if len(relPath) > 0 and relPath[0] == '/':
             relPath = relPath[1:]
 
         msg['new_relPath'] = relPath
