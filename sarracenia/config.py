@@ -1798,14 +1798,14 @@ class Config:
             elif self.documentRoot is not None:
                 self.post_baseDir = os.path.expanduser(self.documentRoot)
                 logger.warning("use post_baseDir instead of documentRoot")
-            elif self.baseDir is not None:
-                self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("defaulting post_baseDir to same as baseDir")
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'file:' ] ):
                 self.post_baseDir = self.post_baseUrl[5:]
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'sftp:' ] ):
                 u = urllib.parse.urlparse(self.post_baseUrl) 
                 self.post_baseDir = u.path
+            elif self.baseDir is not None:
+                self.post_baseDir = os.path.expanduser(self.baseDir)
+                logger.debug("defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
