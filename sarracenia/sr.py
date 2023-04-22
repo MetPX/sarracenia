@@ -38,7 +38,9 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
+import traceback
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
@@ -1114,6 +1116,20 @@ class sr_GlobalState:
     def _stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
         logging.info("Stopping config...")
+
+        # stack trace dump from: https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
+        if self.options.debug:
+            logger.debug("the following stack trace does not mean anything is wrong. When debug is enabled, we print a stack trace to help, even for normal termination")
+
+            id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+            code = []
+            for threadId, stack in sys._current_frames().items():
+                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+                for filename, lineno, name, line in traceback.extract_stack(stack):
+                    code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+                    if line:
+                        code.append("  %s" % (line.strip()))
+            logging.debug('\n'.join(code))
         self.please_stop=True
         # Signal is also sent to subprocesses. Once they exit, subprocess.run returns and sr.py should terminate.
 

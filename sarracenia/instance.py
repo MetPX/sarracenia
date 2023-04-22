@@ -13,7 +13,9 @@ import pathlib
 from sarracenia.moth import Moth
 import signal
 import sys
+import threading
 import time
+import traceback
 
 from sarracenia import user_config_dir
 import sarracenia.config
@@ -47,6 +49,19 @@ class instance:
 
     def stop_signal(self, signum, stack):
         logging.info('signal %d received' % signum)
+
+        # stack trace dump from: https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
+        if self.o.debug:
+            logger.debug("when debug is on, we generate stack trace below to help debugging, but note that nothing has failed")
+            id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+            code = []
+            for threadId, stack in sys._current_frames().items():
+                code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""), threadId))
+                for filename, lineno, name, line in traceback.extract_stack(stack):
+                    code.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+                    if line:
+                        code.append("  %s" % (line.strip()))
+            logging.debug('\n'.join(code))
         self.running_instance.please_stop()
 
     def start(self):
@@ -212,6 +227,7 @@ class instance:
             os.environ[n] = cfg.env[n]
             os.putenv(n, cfg.env[n])
 
+        self.o = cfg
         self.running_instance = Flow.factory(cfg)
 
         self.running_instance.run()
