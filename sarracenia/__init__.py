@@ -681,6 +681,9 @@ class Message(dict):
                     parsed_baseUrl.path):
                 relPath = relPath.replace(parsed_baseUrl.path, '', 1)
 
+        if ('new_dir' not in msg) and options.post_baseDir:
+            msg['new_dir'] = options.post_baseDir
+            
         msg['new_baseUrl'] = baseUrl_str
 
         if len(relPath) > 0 and relPath[0] == '/':

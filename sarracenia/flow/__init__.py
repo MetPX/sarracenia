@@ -1896,8 +1896,7 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug("%s_transport sendTo: %s " %
-                     (self.scheme, self.o.sendTo))
+        logger.debug( f"{self.scheme}_transport sendTo: {self.o.sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
