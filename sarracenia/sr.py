@@ -868,6 +868,7 @@ class sr_GlobalState:
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
                     observed_instances = 0
+                    hung_instances=0
                     resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
                     nvip=False
                     for i in self.states[c][cfg]['instance_pids']:
@@ -889,7 +890,13 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
-                    if observed_instances < int(self.configs[c][cfg]['instances']):
+                        # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
+                        if 'logAge' in self.states[c][cfg] and self.states[c][cfg]['logAge'][i] > 300:
+                            hung_instances += 1
+
+                    if hung_instances > 0:
+                         self.configs[c][cfg]['status'] = 'hung'
+                    elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
                             if self.configs[c][cfg]['status'] != 'disabled':
                                 self.configs[c][cfg]['status'] = 'stopped'
@@ -1071,7 +1078,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
-            'disabled', 'include', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
+            'disabled', 'hung', 'include', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
         ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1821,7 +1828,7 @@ class sr_GlobalState:
                 fg_instances.add(f"{c}/{cfg}")
                 continue
 
-            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
+            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
                 for i in self.states[c][cfg]['instance_pids']:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
@@ -1890,7 +1897,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
+            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         print("signal_pid( %s, SIGKILL )" %
@@ -1922,7 +1929,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['running', 'waitVip', 'partial']:
+            if self.configs[c][cfg]['status'] in [ 'hung', 'running', 'partial', 'waitVip' ]:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
