@@ -641,7 +641,6 @@ class Message(dict):
         msg['post_baseUrl'] defaults to msg['baseUrl']
      
         """
-
         msg['_deleteOnPost'] |= set([
             'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
         ])

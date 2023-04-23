@@ -719,6 +719,7 @@ class Flow:
         """
 
         # relative path by default mirror
+
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
@@ -807,7 +808,10 @@ class Flow:
         if maskDir:
             new_dir = self.o.variableExpansion(maskDir, msg)
         else:
-            new_dir = ''
+            if self.o.post_baseDir:
+                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
+            else:
+                new_dir = ''
 
         if self.o.baseDir:
             if new_dir:
