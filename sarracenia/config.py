@@ -95,7 +95,7 @@ default_options = {
     'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
-    'sanity_log_dead': 300,
+    'sanity_log_dead': 9999,
     'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
@@ -1619,6 +1619,8 @@ class Config:
         else:
             cfg = config
 
+        if self.sanity_log_dead == 9999 :
+            self.sanity_log_dead = 1.5*self.housekeeping
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 
