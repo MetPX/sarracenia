@@ -60,7 +60,7 @@ empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0
         }
 
-def ageoffile(lf):
+def ageOfFile(lf) -> int:
     """ return number of seconds since a file was modified as a floating point number of seconds.
         FIXME: mocked here for now. 
     """
@@ -599,11 +599,8 @@ class sr_GlobalState:
         if not os.path.isdir(dir):
             return
         os.chdir(dir)
+        now = time.time()
         if os.path.isdir('log'):
-            self.logs = {}
-            for c in self.components:
-                self.logs[c] = {}
-
             os.chdir('log')
 
             # FIXME: known issue... specify a log rotation interval < 1 d, it puts an _ between date and TIME.
@@ -627,10 +624,12 @@ class sr_GlobalState:
                                 inum = int(suffix[0])
                             except:
                                 inum = 0
-                            age = ageoffile(lf)
-                            if cfg not in self.logs[c]:
-                                self.logs[c][cfg] = {}
-                            self.logs[c][cfg][inum] = age
+                            age = ageOfFile(lf)
+                            if cfg not in self.states[c]:
+                                self.states[c][cfg] = {}
+                            if 'logAge' not in self.states[c][cfg]:
+                                self.states[c][cfg]['logAge'] = {}
+                            self.states[c][cfg]['logAge'][inum] = now-age
 
     def _read_logs(self):
         self._read_logs_dir(self.user_cache_dir)
@@ -1947,7 +1946,7 @@ class sr_GlobalState:
 
         :return:
         """
-        #print('\n\nRunning Processes\n\n')
+        print('\n\n"Processes" : { \n\n')
         for pid in self.procs:
             print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             #print('\t%s: %s' % (pid, self.procs[pid] ))
@@ -1961,14 +1960,14 @@ class sr_GlobalState:
                 print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
             print("\t\t}")
 
-        #print('\n\nStates\n\n')
+        print('},\n\n"States": { \n\n')
         for c in self.states:
             print('\t\"%s\": { ' % c)
             for cfg in self.states[c]:
                 print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
             print( "\t}" )
 
-        #print('\n\nBroker Bindings\n\n')
+        print('}\n\n"Bindings": { \n\n')
 
         for h in self.brokers:
             print("\n\"host\": { \"%s\": { " % h)
@@ -1980,7 +1979,7 @@ class sr_GlobalState:
                 print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
             print( "}},\n" )
 
-        #print('\n\nbroker summaries:\n\n')
+        print(',\n\"nbroker summaries": {\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
@@ -2002,7 +2001,7 @@ class sr_GlobalState:
                       end='')
             print(']')
 
-        print('\n\n\"Missing instances\" : { \n\n')
+        print('}\n\n\"Missing instances\" : { \n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
             print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
