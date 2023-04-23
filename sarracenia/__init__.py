@@ -647,7 +647,8 @@ class Message(dict):
         ])
         if new_dir:
             msg['new_dir'] = new_dir
-        if new_file:
+
+        if new_file or new_file == '':
             msg['new_file'] = new_file
 
         relPath = new_dir + '/' + new_file
