@@ -39,7 +39,7 @@ class Message(FlowCB):
         still_ok = []
         all_good=True
         for m in worklist.ok:
-            if all_good and self.poster.putNewMessage(m):
+            if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m):
                 still_ok.append(m)
             else:
                 all_good=False

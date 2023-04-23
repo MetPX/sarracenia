@@ -779,7 +779,7 @@ class Config:
         # check url and add credentials if needed from credential file
         ok, cred_details = Config.credentials.get(urlstr)
         if cred_details is None:
-            logging.error("bad credential %s" % urlstr)
+            logging.critical("bad credential %s" % urlstr)
             # Callers expect that a Credential object will be returned
             cred_details = sarracenia.credentials.Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
