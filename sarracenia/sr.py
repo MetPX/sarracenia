@@ -892,7 +892,8 @@ class sr_GlobalState:
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
                             # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
-                            if 'logAge' in self.states[c][cfg] and self.states[c][cfg]['logAge'][i] > 300:
+                            if 'logAge' in self.states[c][cfg] and \
+                                    self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].sanity_log_dead:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
@@ -1738,6 +1739,9 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
+            self._clean_missing_proc_state()
+            self._read_states()
+            self._resolve()
             filtered_missing = []
             for m in self.missing:
                 if m[0] + os.sep + m[1] in self.filtered_configurations:

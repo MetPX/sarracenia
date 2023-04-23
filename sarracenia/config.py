@@ -95,6 +95,7 @@ default_options = {
     'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
+    'sanity_log_dead': 300,
     'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
