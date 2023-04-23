@@ -4,6 +4,8 @@ metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
   * improved behaviour of management cli with disabled configurations. #647
   * able to shutdown properly with when failing to connect to broker #648
   * fix for #651 crash in sr_watch.
+  * bugfix #626 re-implemented sanity_log_dead support in sr sanity
+  * bugfix #647 sr3 sanity sometimes restarting things it should not.
 
  -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
 
