@@ -867,6 +867,7 @@ class sr_GlobalState:
                     
                 if len(self.states[c][cfg]['instance_pids']) >= 0:
                     self.states[c][cfg]['missing_instances'] = []
+                    self.states[c][cfg]['hung_instances'] = []
                     observed_instances = 0
                     hung_instances=0
                     resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
@@ -890,11 +891,12 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
-                        # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
-                        if 'logAge' in self.states[c][cfg] and self.states[c][cfg]['logAge'][i] > 300:
-                            hung_instances += 1
+                            # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
+                            if 'logAge' in self.states[c][cfg] and self.states[c][cfg]['logAge'][i] > 300:
+                                hung_instances += 1
+                                self.states[c][cfg]['hung_instances'].append(i)
 
-                    if hung_instances > 0:
+                    if hung_instances > 0 and (observed_instances > 0):
                          self.configs[c][cfg]['status'] = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
@@ -1708,6 +1710,7 @@ class sr_GlobalState:
         :return:
         """
         pcount = 0
+        kill_hung=[]
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
             component_path = self._find_component_path(c)
@@ -1718,6 +1721,21 @@ class sr_GlobalState:
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
                     pcount += 1
+            if len(self.states[c][cfg]['hung_instances']) > 0:
+                for i in self.states[c][cfg]['hung_instances']:
+                    kill_pid=self.states[c][cfg]['instance_pids'][i]
+                    print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
+                    kill_hung.append(  kill_pid )
+                    pcount += 1
+
+        print('killing hung processes... (no point in SIGTERM if it is hung)')
+        if (len(kill_hung) > 0) and not self.options.dry_run :
+            for pid in kill_hung:
+                signal_pid(pid, signal.SIGKILL)
+            time.sleep(5)
+            self._read_procs()
+            # next step should identify the missing instances and start them up.
+
         if pcount != 0:
             self._find_missing_instances()
             filtered_missing = []
@@ -1727,7 +1745,8 @@ class sr_GlobalState:
 
             print('missing: %s' % filtered_missing)
             print('starting them up...')
-            self._start_missing()
+            if not self.options.dry_run:
+                self._start_missing()
 
             print('killing strays...')
             for pid in self.procs:
@@ -1735,7 +1754,8 @@ class sr_GlobalState:
                     print(
                         "pid: %s-%s does not match any configured instance, sending it TERM"
                         % (pid, self.procs[pid]['cmdline'][0:5]))
-                    signal_pid(pid, signal.SIGTERM)
+                    if not self.options.dry_run:
+                        signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
         for l in sarracenia.extras.keys():
