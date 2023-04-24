@@ -86,7 +86,7 @@ class File(FlowCB):
     also should likely switch from listdir to scandir
     """
     def on_add(self, event, src, dst):
-        #logger.debug("on_add %s %s %s" % ( event, src, dst ) )
+        logger.error("on_add %s %s %s" % ( event, src, dst ) )
         self.new_events['%s %s' % (src, dst)] = (event, src, dst)
 
     def on_created(self, event):
@@ -105,7 +105,8 @@ class File(FlowCB):
 
     def on_modified(self, event):
         # on_modified (for SimpleEventHandler)
-        self.on_add('modify', event.src_path, None)
+        if not event.is_directory:
+            self.on_add('modify', event.src_path, None)
 
     def on_moved(self, event):
         # on_moved (for SimpleEventHandler)
@@ -537,7 +538,7 @@ class File(FlowCB):
 
         if event == 'mkdir' and 'mkdir' in self.o.fileEvents:
             return self.post1file(src, lstat, is_directory=True)
-        elif self.o.create_modify:
+        elif self.o.create_modify: 
             return self.post1file(src, lstat)
         return []
 
