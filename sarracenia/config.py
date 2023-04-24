@@ -1804,7 +1804,7 @@ class Config:
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'file:' ] ):
                 self.post_baseDir = self.post_baseUrl[5:]
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'sftp:' ] ):
-                u = urllib.parse.urlparse(self.post_baseUrl) 
+                u =  sarracenia.baseUrlParse(self.post_baseUrl) 
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
@@ -1962,19 +1962,19 @@ class Config:
             new_dir = new_dir.replace('${BD}', self.baseDir, 1)
 
         while ( '${BUP}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUP}', u.path, 1 )
 
         while ( '${baseUrlPath}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPath}', u.path, 1)
 
         while ( '${BUPL}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1 )
 
         while ( '${baseUrlPathLast}' in new_dir )  and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1 )
 
         while '${PBD}' in new_dir and self.post_baseDir != None:

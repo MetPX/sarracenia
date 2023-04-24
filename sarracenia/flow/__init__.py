@@ -724,7 +724,7 @@ class Flow:
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
-            u = urllib.parse.urlparse(msg['baseUrl'])
+            u = sarracenia.baseUrlParse(msg['baseUrl'])
             relPath = u.path[1:] + '/' + relPath
 
         # FIXME... why the % ? why not just assign it to copy the value?
@@ -841,7 +841,7 @@ class Flow:
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
-            u = urllib.parse.urlparse(msg['baseUrl'])
+            u = sarracenia.baseUrlParse(msg['baseUrl'])
             for f in ['link', 'hlink', 'rename']:
                 if (f in msg['fileOp']) and (len(u.path) > 1) and msg['fileOp'][f].startswith(u.path):
                     msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
@@ -1540,7 +1540,7 @@ class Flow:
                     "failed to write inline content %s, falling through to download"
                     % new_path)
 
-            parsed_url = urllib.parse.urlparse(msg['baseUrl'])
+            parsed_url = sarracenia.baseUrlParse(msg['baseUrl'])
             self.scheme = parsed_url.scheme
 
             i = 1
@@ -1597,7 +1597,7 @@ class Flow:
             # if relPath is just the file remote_path will return empty
             remote_path, remote_file = os.path.split(msg['relPath'])
 
-            u = urllib.parse.urlparse(msg['baseUrl']) 
+            u = sarracenia.baseUrlParse(msg['baseUrl']) 
             logger.debug( f"baseUrl.path= {u.path} ")
             if remote_path:
                 if u.path != '/' and remote_path:

@@ -39,10 +39,25 @@ import sarracenia.filemetadata
 import stat as os_stat
 import sys
 import time
+import types
 import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
+
+def baseUrlParse( url ):
+    upr = urllib.parse.urlparse(url)
+    u = types.SimpleNamespace()
+    u.scheme = upr.scheme
+    u.netlog = upr.netloc
+    u.params = upr.params
+    u.query = upr.query
+    u.fragment = upr.fragment
+    u.path = upr.path
+    if u.scheme in [ 'sftp', 'file' ]:
+        while u.path.startswith('//'):
+            u.path = u.path[1:]
+    return u
 
 
 class Sarracenia:
@@ -672,7 +687,7 @@ class Message(dict):
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
             pbd_str = options.variableExpansion(options.post_baseDir, msg)
-            parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
+            parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
             if relPath.startswith(pbd_str):
                 relPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
