@@ -195,12 +195,6 @@ class Sftp(Transfer):
             sublogger = logging.getLogger('paramiko')
             sublogger.setLevel(logging.CRITICAL)
             self.ssh = paramiko.SSHClient()
-            if self.o.timeout != None:
-                logger.debug("sr_sftp connect setting timeout %f" %
-                             self.o.timeout)
-                ssh_channel = self.ssh.get_channel()
-                ssh_channel.settimeout(self.o.timeout)
-
             # FIXME this should be an option... for security reasons... not forced
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if self.password:
