@@ -171,6 +171,9 @@ class sr_GlobalState:
                 cmd = [component_path, 'start', cfg]
 
         #print("launching +%s+  re-directed to: %s" % (cmd, lfn), flush=True)
+        if self.options.dry_run:
+            print( f"dry_run would launch: {cmd} >{lfn} 2>&1")
+            return
 
         try:
             if self.configs[c][cfg]['options'].logStdout:
@@ -1237,9 +1240,13 @@ class sr_GlobalState:
                                 continue
                             if not u_url.username:
                                 continue
+                            if u_url.hostname != h:
+                                logger.info( f"skipping u_urlstr, {u_url.hostname} not this broker {h}" )
+                                continue
                             if u_url.username in self.default_cfg.declared_users:
-                                #print( 'u_url : user:%s, pw:%s, role: %s' % \
-                                #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username]))
+                                #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
+                                #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username],
+                                #     u_url.netloc, u_url.hostname ))
                                 sarracenia.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
@@ -1262,6 +1269,7 @@ class sr_GlobalState:
                 xdc = sarracenia.moth.Moth.pubFactory(
                     o.post_broker, {
                         'broker': o.post_broker,
+                        'dry_run': self.options.dry_run,
                         'exchange': o.resolved_exchanges,
                         'message_strategy': { 'stubborn':True }
                     })
@@ -1282,6 +1290,7 @@ class sr_GlobalState:
             od = o.dictify()
             if hasattr(o, 'resolved_qname'):
                 od['queueName'] = o.resolved_qname
+                od['dry_run'] = self.options.dry_run
                 qdc = sarracenia.moth.Moth.subFactory(o.broker, od)
                 qdc.close()
 
@@ -1665,9 +1674,12 @@ class sr_GlobalState:
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
 
-            logging.info('removing %s/%s ' % ( c, cfg ))
-            os.unlink(cfgfile)
-            shutil.rmtree(statefile)
+            if self.options.dry_run:
+                logging.info('removing (dry run) %s/%s ' % ( c, cfg ))
+            else:
+                logging.info('removing %s/%s' % ( c, cfg ))
+                os.unlink(cfgfile)
+                shutil.rmtree(statefile)
 
     def maint(self, action):
         """
@@ -1857,12 +1869,18 @@ class sr_GlobalState:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        signal_pid(self.states[c][cfg]['instance_pids'][i],
+                        if self.options.dry_run:
+                            print( f"kill -TERM {self.states[c][cfg]['instance_pids'][i]} # {c}/{cfg}[{i}] " )
+                        else:
+                            signal_pid(self.states[c][cfg]['instance_pids'][i],
                                 signal.SIGTERM)
-                        print('.', end='', flush=True)
+                            print('.', end='', flush=True)
                         pcount += 1
 
         print(' ( %d ) Done' % pcount, flush=True)
+        if self.options.dry_run:
+            print('dry_run assumes everything works the first time')
+            return 0
 
         attempts = 0
         attempts_max = 5
@@ -2623,8 +2641,9 @@ def main():
         gs.remove()
 
     elif action == 'restart':
-        print('restarting: ', end='', flush=True)
+        print('stopping: ', end='', flush=True)
         gs.stop()
+        print('starting: ', end='', flush=True)
         gs.start()
 
     elif action == 'sanity':

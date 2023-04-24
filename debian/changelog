@@ -7,6 +7,10 @@ metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
   * bugfix #626 re-implemented sanity_log_dead support in sr sanity
   * bugfix #647 sr3 sanity sometimes restarting things it should not.
   * as part of #647 added --dry_run support to sr sanity.
+  * replace // at root of sftp: and file: urls (sugar.)
+  * removing some debug messages (too chatty even for debug.)
+  * remove (useless) posts of directory modificaitons 
+  * completing dry_run support for cleanup, remove, declare.
 
  -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
 

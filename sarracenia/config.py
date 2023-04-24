@@ -73,6 +73,7 @@ default_options = {
     'delete': False,
     'documentRoot': None,
     'download': False,
+    'dry_run': False,
     'filename': 'WHATFN',
     'flowMain': None,
     'inflight': None,

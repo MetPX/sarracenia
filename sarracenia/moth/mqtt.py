@@ -40,6 +40,7 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
+
 default_options = {
     'auto_ack': True,
     'batch': 25,
@@ -58,9 +59,6 @@ class MQTT(Moth):
            talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
        Sarracenia Concept mapping from AMQP:
-
-           Only supports v03 messages since mqtt3.1 has no headers.
-
 
            AMQP -> MQTT topic hierarcy mapping: 
            exchange: xpublic,  topic prefix:   v03 subtopic:   /my/favourite/directory
@@ -101,6 +99,8 @@ class MQTT(Moth):
            likely that you will just get them later... could use for a shelf for rx_msg,
            and sync it once in while... probably not worth it.
  
+      Other:
+           missing dry_run support.
 
       References:
          good discussion of shared subscriptions:
@@ -424,7 +424,6 @@ class MQTT(Moth):
                 props = Properties(PacketTypes.CONNECT)
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
-
 
                 self.client = paho.mqtt.client.Client(
                     protocol=self.proto_version, userdata=self)
