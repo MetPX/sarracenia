@@ -1486,6 +1486,7 @@ class sr_GlobalState:
                                 o.post_broker, {
                                     'declare': False,
                                     'exchange': x,
+                                    'dry_run': self.options.dry_run,
                                     'broker': self.brokers[h]['admin'],
                                     'message_strategy': { 'stubborn':True }
                                 })
@@ -1508,8 +1509,11 @@ class sr_GlobalState:
                     continue
 
                 asf = cache_dir + os.sep + state_file
-                print('removing state file: %s' % asf)
-                os.unlink(asf)
+                if self.options.dry_run:
+                    print('removing state file (dry run): %s' % asf)
+                else:
+                    print('removing state file: %s' % asf)
+                    os.unlink(asf)
 
     print_column = 0
 
