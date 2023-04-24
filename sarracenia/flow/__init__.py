@@ -596,6 +596,7 @@ class Flow:
                 else:
                     increment=stime
                 while (stime > 0):
+                    logger.debug( f"sleeping for {increment:.2f}" )
                     time.sleep(increment)
                     if self._stop_requested:
                         break

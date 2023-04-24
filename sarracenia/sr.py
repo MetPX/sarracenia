@@ -619,7 +619,7 @@ class sr_GlobalState:
                     suffix = lff[-1].split('.')
 
                     if len(suffix) > 1:
-                        if suffix[1] == 'log':
+                        if (suffix[1] == 'log') and len(suffix) < 3:
                             try:
                                 inum = int(suffix[0])
                             except:
