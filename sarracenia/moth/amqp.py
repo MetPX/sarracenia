@@ -265,25 +265,33 @@ class AMQP(Moth):
                         if x > 0: args['x-message-ttl'] = x
 
                     #FIXME: conver expire, message_ttl to proper units.
-                    qname, msg_count, consumer_count = self.channel.queue_declare(
-                        self.o['queueName'],
-                        passive=False,
-                        durable=self.o['durable'],
-                        exclusive=False,
-                        auto_delete=self.o['auto_delete'],
-                        nowait=False,
-                        arguments=args)
-                    logger.info('queue declared %s (as: %s) ' %
+                    if self.o['dry_run']:
+                        logger.info('queue declare (dry run) %s (as: %s) ' %
+                                (self.o['queueName'], broker_str))
+                    else:
+                        qname, msg_count, consumer_count = self.channel.queue_declare(
+                            self.o['queueName'],
+                            passive=False,
+                            durable=self.o['durable'],
+                            exclusive=False,
+                            auto_delete=self.o['auto_delete'],
+                            nowait=False,
+                            arguments=args)
+                        logger.info('queue declared %s (as: %s) ' %
                                 (self.o['queueName'], broker_str))
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
                         topic = '.'.join(prefix + subtopic)
-                        logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, exchange, broker_str ) )
-                        if exchange:
-                            self.channel.queue_bind(self.o['queueName'], exchange,
+                        if self.o['dry_run']:
+                            logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
+                                ( self.o['queueName'], topic, exchange, broker_str ) )
+                        else:
+                            logger.info('binding %s with %s to %s (as: %s)' % \
+                                ( self.o['queueName'], topic, exchange, broker_str ) )
+                            if exchange:
+                                self.channel.queue_bind(self.o['queueName'], exchange,
                                                 topic)
 
                 # Setup Successfully Complete!
@@ -341,12 +349,16 @@ class AMQP(Moth):
                     if type(self.o['exchange']) is not list:
                         self.o['exchange'] = [self.o['exchange']]
                     for x in self.o['exchange']:
-                        self.channel.exchange_declare(
-                            x,
-                            'topic',
-                            auto_delete=self.o['auto_delete'],
-                            durable=self.o['durable'])
-                        logger.info('exchange declared: %s (as: %s)' %
+                        if self.o['dry_run']:
+                            logger.info('exchange declare (dry run): %s (as: %s)' %
+                                    (x, broker_str))
+                        else:
+                            self.channel.exchange_declare(
+                                x,
+                                'topic',
+                                auto_delete=self.o['auto_delete'],
+                                durable=self.o['durable'])
+                            logger.info('exchange declared: %s (as: %s)' %
                                     (x, broker_str))
 
                 # Setup Successfully Complete!
@@ -380,8 +392,11 @@ class AMQP(Moth):
         try:
             for x in self.o['exchange']:
                 try:
-                    self.channel.exchange_delete(x, if_unused=True)
-                    logger.info("deleted exchange: %s" % x)
+                    if self.o['dry_run']:
+                        logger.info("deleted exchange (dry run): %s (if unused)" % x)
+                    else:
+                        self.channel.exchange_delete(x, if_unused=True)
+                        logger.info("deleted exchange: %s" % x)
                 except amqp.exceptions.PreconditionFailed as err:
                     err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
                     logger.warning("failed to delete exchange: %s" % err_msg)
@@ -393,8 +408,11 @@ class AMQP(Moth):
     def getCleanUp(self) -> None:
 
         try:
-            logger.info("deleteing queue %s" % self.o['queueName'] )
-            self.channel.queue_delete(self.o['queueName'])
+            if self.o['dry_run']:
+                logger.info("deleteing queue (dry run) %s" % self.o['queueName'] )
+            else:
+                logger.info("deleteing queue %s" % self.o['queueName'] )
+                self.channel.queue_delete(self.o['queueName'])
         except Exception as err:
             logger.error("failed to {} with {}".format(
                 self.o['broker'].url.hostname, err))
