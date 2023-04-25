@@ -1227,6 +1227,7 @@ class sr_GlobalState:
                 if self.please_stop:
                     break
                 if 'admin' in self.brokers[h]:
+                    admin_url = self.brokers[h]['admin'].url
                     with open(
                             self.user_config_dir + os.sep + 'credentials.conf',
                             'r') as config_file:
@@ -1240,8 +1241,9 @@ class sr_GlobalState:
                                 continue
                             if not u_url.username:
                                 continue
+                            if u_url.scheme != admin_url.scheme:
+                                continue
                             if u_url.hostname != h:
-                                logger.info( f"skipping u_urlstr, {u_url.hostname} not this broker {h}" )
                                 continue
                             if u_url.username in self.default_cfg.declared_users:
                                 #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
