@@ -1,18 +1,21 @@
 metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
 
+  * sr3 --dry_run --users declare works.
+  * sr3 --dry_run stop works.
+  * sr3 --dry_run cleanup works
+  * sr3 --dry_run remove works. 
+  * sr3 --dry_run sanity works.  Also sr3 sanity works. #647 
+  * bugfix #626 re-implemented sanity_log_dead support in sr sanity
+  * bugfix #647 sr3 sanity sometimes restarting things it should not.
+  * bugfix: sr3 --users declare would declare users of remote brokers. as
+    local ones
   * Requires network-online (stronger dependency in systemd unit file.)
   * improved behaviour of management cli with disabled configurations. #647
   * able to shutdown properly with when failing to connect to broker #648
   * fix for #651 crash in sr_watch.
-  * bugfix #626 re-implemented sanity_log_dead support in sr sanity
-  * bugfix #647 sr3 sanity sometimes restarting things it should not.
-  * as part of #647 added --dry_run support to sr sanity.
   * replace // at root of sftp: and file: urls (sugar.)
   * removing some debug messages (too chatty even for debug.)
-  * remove (useless) posts of directory modificaitons 
-  * completing dry_run support for cleanup, remove, declare.
-  * bugfix: sr3 --users declare would declare users of remote brokers. as
-    local ones
+  * remove (useless) posts of directory modifications 
   * header option works on messages received, as well as originated ones.
 
  -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
