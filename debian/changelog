@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.38) UNRELEASED; urgency=medium
+
+  * fix #653 invoking c components in the foreground
+
+ -- Peter Silva <peter@blacklab>  Tue, 25 Apr 2023 16:54:51 -0400
+
+metpx-sr3 (3.00.37) unstable; urgency=medium
 
   * sr3 --dry_run --users declare works.
   * sr3 --dry_run stop works.
