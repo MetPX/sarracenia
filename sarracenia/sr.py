@@ -1429,7 +1429,7 @@ class sr_GlobalState:
                     else:
                         cmd = [sys.executable, component_path, 'foreground', cfg]
                 else:  # C components
-                    cmd = [component_path, 'foreground', cfg]
+                    cmd = [component_path, '-a', 'foreground', '-c', cfg]
 
                 self.run_command(cmd)
             else:
