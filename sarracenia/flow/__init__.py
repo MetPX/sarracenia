@@ -2117,13 +2117,11 @@ class Flow:
 
             if inflight == None or (('blocks' in msg) and
                                     (msg['blocks']['method'] != 'inplace')):
-                logger.critical('none!')
                 if not self.o.dry_run:
                     if accelerated:
                         len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
                     else:
                         len_written = self.proto[self.scheme].put( msg, local_file, new_file)
-                logger.critical('none! len_written=%d, block_length=%d ' % ( len_written, block_length) )
             elif (('blocks' in msg)
                   and (msg['blocks']['method'] == 'inplace')):
                 if not self.o.dry_run:

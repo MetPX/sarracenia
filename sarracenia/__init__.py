@@ -553,9 +553,6 @@ class Message(dict):
         if hasattr(o, 'source') and (o.source is not None):
             msg['source'] = o.source
 
-        if hasattr(o, 'fixed_headers'):
-            for k in o.fixed_headers:
-                msg[k] = o.fixed_headers[k]
 
         if o.integrity_method:
             if o.integrity_method.startswith('cod,'):
@@ -656,6 +653,12 @@ class Message(dict):
         msg['post_baseUrl'] defaults to msg['baseUrl']
      
         """
+
+        # the headers option is an override.
+        if hasattr(options, 'fixed_headers'):
+            for k in options.fixed_headers:
+                msg[k] = options.fixed_headers[k]
+
         msg['_deleteOnPost'] |= set([
             'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
         ])

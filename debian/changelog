@@ -11,6 +11,9 @@ metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
   * removing some debug messages (too chatty even for debug.)
   * remove (useless) posts of directory modificaitons 
   * completing dry_run support for cleanup, remove, declare.
+  * bugfix: sr3 --users declare would declare users of remote brokers. as
+    local ones
+  * header option works on messages received, as well as originated ones.
 
  -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
 
