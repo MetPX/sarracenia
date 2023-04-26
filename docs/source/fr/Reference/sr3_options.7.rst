@@ -1100,36 +1100,6 @@ L’option no est seulement utilisée sur la ligne de commande et n’est pas de
 Il s’agit d’une option à utiliser par sr3 lors de la génération (spawning) d’instances pour informer chaque processus
 de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec --no 3
 
-nodupe_ttl <off|on|999[smhdw]>
-------------------------------
-
-Lorsque **nodupe_ttl** est défini à une intervalle de temps
-qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
-c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
-le même nom (y compris l’en-tête des pièces) et la même somme de contrôle. A chaque intervalle de *hearbeat*, un
-processus de nettoyage recherche les fichiers dans la cache qui n’ont pas été consultés pendant **cache** secondes,
-et les supprime, afin de limiter la taille de la cache. De différents paramètres sont approprié pour de différents
-cas d’utilisation.
-
-Un intervalle d'entier brut est en secondes sauf si le suffixe m, h, d ou w est utilisé. Dans ce cas l’intervalle
-est en minutes, heures, jours ou semaines respectivement. Après l’expiration de l’intervalle, le contenu est
-abandonné, de sorte que les doublons séparés par une intervalle suffisamment grande passeront.
-Une valeur de 1d (jour) ou 1w (semaine) est appropriée.  Définir l’option sans spécifier
-un temps correspondra à 300 secondes (ou 5 minutes) comme intervalle d’expiration.
-
-**L’utilisation de la cache est incompatible avec la stratégie de défaut *parts 0***, il faut spécifier une
-stratégie alternative.  Il faut utiliser soit une taille de bloc fixe, ou ne jamais partitionner les fichiers.
-Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition utilisée au fur et à
-mesure qu’un fichier grandit.
-
-**Notez que le stockage de suppression de doublons est local à chaque instance**. Lorsqu’un nombre N d'instances partagent
-une fil d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
-et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
-**Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
-Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
-utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
-une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
-
 
 nodupe_basis <donnes|nom|chemin> (défaut: chemin)
 -------------------------------------------------
@@ -1165,6 +1135,37 @@ nodupe_fileAgeMin
 
 Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
 neufs pour qu'ils puissent être postés.
+
+nodupe_ttl <off|on|999[smhdw]>
+------------------------------
+
+Lorsque **nodupe_ttl** est défini à une intervalle de temps
+qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
+c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
+le même nom (y compris l’en-tête des pièces) et la même somme de contrôle. A chaque intervalle de *hearbeat*, un
+processus de nettoyage recherche les fichiers dans la cache qui n’ont pas été consultés pendant **cache** secondes,
+et les supprime, afin de limiter la taille de la cache. De différents paramètres sont approprié pour de différents
+cas d’utilisation.
+
+Un intervalle d'entier brut est en secondes sauf si le suffixe m, h, d ou w est utilisé. Dans ce cas l’intervalle
+est en minutes, heures, jours ou semaines respectivement. Après l’expiration de l’intervalle, le contenu est
+abandonné, de sorte que les doublons séparés par une intervalle suffisamment grande passeront.
+Une valeur de 1d (jour) ou 1w (semaine) est appropriée.  Définir l’option sans spécifier
+un temps correspondra à 300 secondes (ou 5 minutes) comme intervalle d’expiration.
+
+**L’utilisation de la cache est incompatible avec la stratégie de défaut *parts 0***, il faut spécifier une
+stratégie alternative.  Il faut utiliser soit une taille de bloc fixe, ou ne jamais partitionner les fichiers.
+Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition utilisée au fur et à
+mesure qu’un fichier grandit.
+
+**Notez que le stockage de suppression de doublons est local à chaque instance**. Lorsqu’un nombre N d'instances partagent
+une fil d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
+et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
+**Pour une suppression efficace des doublons avec les instances**, il faut **déployer deux couches d’abonnés**.
+Utiliser une **première couche d’abonnés (shovels)** avec la suppression de doublons éteinte et
+utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
+une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
+
 
 outlet post|json|url (défaut: post)
 -----------------------------------

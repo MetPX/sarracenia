@@ -1120,38 +1120,6 @@ The no option is only used on the command line, and not intended for users.
 It is an option for use by sr3 when spawning instances to inform each process
 which instance it is. e.g instance 3 will be spawned with --no 3 
 
- 
-nodupe_ttl <off|on|999[smhdw]> 
-------------------------------
-
-When **nodupe_ttl** (also **suppress_duplicates*, and **cache** ) is set to a non-zero time 
-interval, each new message is compared against ones received within that interval, to see if 
-it is a duplicate. Duplicates are not processed further. What is a duplicate? A file with 
-the same name (including parts header) and checksum. Every *hearbeat* interval, a cleanup 
-process looks for files in the cache that have not been referenced in **cache** seconds, 
-and deletes them, in order to keep the cache size limited. Different settings are 
-appropriate for different use cases.
-
-A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
-is in minutes, hours, days, or weeks. After the interval expires the contents are
-dropped, so duplicates separated by a large enough interval will get through.
-A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
-a time will result in 300 seconds (or 5 minutes) being the expiry interval.
-
-**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
-alternate strategy.  One must use either a fixed blocksize, or always never partition files.
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.
-
-**Note that the duplicate suppresion store is local to each instance**. When N
-instances share a queue, the first time a posting is received, it could be
-picked by one instance, and if a duplicate one is received it would likely
-be picked up by another instance. **For effective duplicate suppression with instances**,
-one must **deploy two layers of subscribers**. Use
-a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route notification messages by checksum to
-a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
-
-
 nodupe_basis <data|name|path> (default: path)
 ---------------------------------------------
 
@@ -1186,6 +1154,36 @@ nodupe_fileAgeMin
 
 If files are newer than this setting (default: 0), then ignore them, they are too
 old to post. 0 deactivates the setting.
+
+nodupe_ttl <off|on|999[smhdw]> 
+------------------------------
+
+When **nodupe_ttl** (also **suppress_duplicates*, and **cache** ) is set to a non-zero time 
+interval, each new message is compared against ones received within that interval, to see if 
+it is a duplicate. Duplicates are not processed further. What is a duplicate? A file with 
+the same name (including parts header) and checksum. Every *hearbeat* interval, a cleanup 
+process looks for files in the cache that have not been referenced in **cache** seconds, 
+and deletes them, in order to keep the cache size limited. Different settings are 
+appropriate for different use cases.
+
+A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
+is in minutes, hours, days, or weeks. After the interval expires the contents are
+dropped, so duplicates separated by a large enough interval will get through.
+A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
+a time will result in 300 seconds (or 5 minutes) being the expiry interval.
+
+**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
+alternate strategy.  One must use either a fixed blocksize, or always never partition files.
+One must avoid the dynamic algorithm that will change the partition size used as a file grows.
+
+**Note that the duplicate suppresion store is local to each instance**. When N
+instances share a queue, the first time a posting is received, it could be
+picked by one instance, and if a duplicate one is received it would likely
+be picked up by another instance. **For effective duplicate suppression with instances**,
+one must **deploy two layers of subscribers**. Use
+a **first layer of subscribers (shovels)** with duplicate suppression turned
+off and output with *post_exchangeSplit*, which route notification messages by checksum to
+a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
 
 
 outlet post|json|url (default: post)
