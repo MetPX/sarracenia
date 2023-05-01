@@ -72,7 +72,7 @@ import datetime
 dateparser_available=False
 try:
     from dateparser import parse
-    dateparser_available=False
+    dateparser_available=True
 
 except:
    print( 'Warning: dateparser not available')   
