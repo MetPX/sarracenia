@@ -2330,6 +2330,13 @@ class sr_GlobalState:
                             k = 'pollUrl'
                         else:
                             k = 'sendTo'
+                    elif (k == 'get' ) and (component == 'poll'):
+                        k = 'accept'
+                        if not line[1].startswith('.*'):
+                            if line[1][0] == '^':
+                                line[1] = '.*/'+line[1][1:]
+                            else:
+                                line[1] = '.*'+line[1]
                     elif (k == 'broker') and (component == 'poll'):
                         k = 'post_broker'
                     elif (k == 'directory' ) and (component == 'poll'):

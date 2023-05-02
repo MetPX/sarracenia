@@ -597,7 +597,6 @@ class Config:
         'file_time_limit' : 'nodupe_fileAgeMax', 
         'fp' : 'force_polling',
         'fs' : 'follow_symlinks',
-        'get' : 'accept', 
         'h' : 'help',
         'heartbeat': 'housekeeping',
         'hb_memory_baseline_file' : 'MemoryBaseLineFile',
@@ -901,7 +900,7 @@ class Config:
             script=fn[13:]
             self.destfn_scripts.append(script)
 
-        return (arguments[0], self.directory, fn, regex,
+        return (arguments[0], os.path.expanduser(self.directory), fn, regex,
                 option.lower() in ['accept' ], self.mirror, self.strip,
                 self.pstrip, self.flatten)
 
@@ -1568,6 +1567,9 @@ class Config:
 
         if self.debug:
             self.logLevel = 'debug'
+
+        if self.directory:
+            self.directory = os.path.expanduser(self.directory)
 
         # double check to ensure duration options are properly parsed
         for d in duration_options:
