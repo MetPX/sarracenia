@@ -900,7 +900,11 @@ class Config:
             script=fn[13:]
             self.destfn_scripts.append(script)
 
-        return (arguments[0], os.path.expanduser(self.directory), fn, regex,
+        if self.directory:
+           d = os.path.expanduser(self.directory)
+        else:
+           d = self.directory
+        return (arguments[0], d, fn, regex,
                 option.lower() in ['accept' ], self.mirror, self.strip,
                 self.pstrip, self.flatten)
 
