@@ -24,7 +24,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.36"
+__version__ = "3.00.37"
 
 from base64 import b64decode, b64encode
 import calendar
@@ -39,10 +39,25 @@ import sarracenia.filemetadata
 import stat as os_stat
 import sys
 import time
+import types
 import urllib
 import urllib.request
 
 logger = logging.getLogger(__name__)
+
+def baseUrlParse( url ):
+    upr = urllib.parse.urlparse(url)
+    u = types.SimpleNamespace()
+    u.scheme = upr.scheme
+    u.netlog = upr.netloc
+    u.params = upr.params
+    u.query = upr.query
+    u.fragment = upr.fragment
+    u.path = upr.path
+    if u.scheme in [ 'sftp', 'file' ]:
+        while u.path.startswith('//'):
+            u.path = u.path[1:]
+    return u
 
 
 class Sarracenia:
@@ -538,9 +553,6 @@ class Message(dict):
         if hasattr(o, 'source') and (o.source is not None):
             msg['source'] = o.source
 
-        if hasattr(o, 'fixed_headers'):
-            for k in o.fixed_headers:
-                msg[k] = o.fixed_headers[k]
 
         if o.integrity_method:
             if o.integrity_method.startswith('cod,'):
@@ -642,12 +654,18 @@ class Message(dict):
      
         """
 
+        # the headers option is an override.
+        if hasattr(options, 'fixed_headers'):
+            for k in options.fixed_headers:
+                msg[k] = options.fixed_headers[k]
+
         msg['_deleteOnPost'] |= set([
             'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
         ])
         if new_dir:
             msg['new_dir'] = new_dir
-        if new_file:
+
+        if new_file or new_file == '':
             msg['new_file'] = new_file
 
         relPath = new_dir + '/' + new_file
@@ -672,7 +690,7 @@ class Message(dict):
         if hasattr(options, 'post_baseDir') and ( type(options.post_baseDir) is str ) \
             and ( len(options.post_baseDir) > 1):
             pbd_str = options.variableExpansion(options.post_baseDir, msg)
-            parsed_baseUrl = urllib.parse.urlparse(baseUrl_str)
+            parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
             if relPath.startswith(pbd_str):
                 relPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
@@ -681,9 +699,12 @@ class Message(dict):
                     parsed_baseUrl.path):
                 relPath = relPath.replace(parsed_baseUrl.path, '', 1)
 
+        if ('new_dir' not in msg) and options.post_baseDir:
+            msg['new_dir'] = options.post_baseDir
+            
         msg['new_baseUrl'] = baseUrl_str
 
-        if relPath[0] == '/':
+        if len(relPath) > 0 and relPath[0] == '/':
             relPath = relPath[1:]
 
         msg['new_relPath'] = relPath

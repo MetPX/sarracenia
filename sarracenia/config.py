@@ -73,6 +73,7 @@ default_options = {
     'delete': False,
     'documentRoot': None,
     'download': False,
+    'dry_run': False,
     'filename': 'WHATFN',
     'flowMain': None,
     'inflight': None,
@@ -95,6 +96,7 @@ default_options = {
     'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
+    'sanity_log_dead': 9999,
     'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
@@ -779,7 +781,7 @@ class Config:
         # check url and add credentials if needed from credential file
         ok, cred_details = Config.credentials.get(urlstr)
         if cred_details is None:
-            logging.error("bad credential %s" % urlstr)
+            logging.critical("bad credential %s" % urlstr)
             # Callers expect that a Credential object will be returned
             cred_details = sarracenia.credentials.Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
@@ -1618,6 +1620,8 @@ class Config:
         else:
             cfg = config
 
+        if self.sanity_log_dead == 9999 :
+            self.sanity_log_dead = 1.5*self.housekeeping
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 
@@ -1798,14 +1802,14 @@ class Config:
             elif self.documentRoot is not None:
                 self.post_baseDir = os.path.expanduser(self.documentRoot)
                 logger.warning("use post_baseDir instead of documentRoot")
-            elif self.baseDir is not None:
-                self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("defaulting post_baseDir to same as baseDir")
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'file:' ] ):
                 self.post_baseDir = self.post_baseUrl[5:]
             elif self.post_baseUrl and ( self.post_baseUrl[0:5] in [ 'sftp:' ] ):
-                u = urllib.parse.urlparse(self.post_baseUrl) 
+                u =  sarracenia.baseUrlParse(self.post_baseUrl) 
                 self.post_baseDir = u.path
+            elif self.baseDir is not None:
+                self.post_baseDir = os.path.expanduser(self.baseDir)
+                logger.debug("defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
@@ -1959,19 +1963,19 @@ class Config:
             new_dir = new_dir.replace('${BD}', self.baseDir, 1)
 
         while ( '${BUP}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUP}', u.path, 1 )
 
         while ( '${baseUrlPath}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPath}', u.path, 1)
 
         while ( '${BUPL}' in new_dir ) and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${BUPL}', os.path.basename(u.path), 1 )
 
         while ( '${baseUrlPathLast}' in new_dir )  and ( 'baseUrl' in message ):
-            u = urllib.parse.urlparse( message['baseUrl'] )
+            u = sarracenia.baseUrlParse( message['baseUrl'] )
             new_dir = new_dir.replace('${baseUrlPathLast}', os.path.basename(u.path), 1 )
 
         while '${PBD}' in new_dir and self.post_baseDir != None:

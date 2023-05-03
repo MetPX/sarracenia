@@ -596,6 +596,7 @@ class Flow:
                 else:
                     increment=stime
                 while (stime > 0):
+                    logger.debug( f"sleeping for {increment:.2f}" )
                     time.sleep(increment)
                     if self._stop_requested:
                         break
@@ -719,10 +720,11 @@ class Flow:
         """
 
         # relative path by default mirror
+
         relPath = '%s' % msg['relPath']
 
         if self.o.baseUrl_relPath:
-            u = urllib.parse.urlparse(msg['baseUrl'])
+            u = sarracenia.baseUrlParse(msg['baseUrl'])
             relPath = u.path[1:] + '/' + relPath
 
         # FIXME... why the % ? why not just assign it to copy the value?
@@ -807,7 +809,10 @@ class Flow:
         if maskDir:
             new_dir = self.o.variableExpansion(maskDir, msg)
         else:
-            new_dir = ''
+            if self.o.post_baseDir:
+                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
+            else:
+                new_dir = ''
 
         if self.o.baseDir:
             if new_dir:
@@ -836,7 +841,7 @@ class Flow:
                              msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
 
         elif 'fileOp' in msg and new_dir:
-            u = urllib.parse.urlparse(msg['baseUrl'])
+            u = sarracenia.baseUrlParse(msg['baseUrl'])
             for f in ['link', 'hlink', 'rename']:
                 if (f in msg['fileOp']) and (len(u.path) > 1) and msg['fileOp'][f].startswith(u.path):
                     msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
@@ -896,7 +901,7 @@ class Flow:
                         break
 
             url = self.o.variableExpansion(m['baseUrl'], m)
-            if (m['baseUrl'][-1] == '/') or (m['relPath'][0] == '/'):
+            if (m['baseUrl'][-1] == '/') or (len(m['relPath']) > 0 and (m['relPath'][0] == '/')):
                 if (m['baseUrl'][-1] == '/') and (m['relPath'][0] == '/'):
                     url += m['relPath'][1:]
                 else:
@@ -1535,7 +1540,7 @@ class Flow:
                     "failed to write inline content %s, falling through to download"
                     % new_path)
 
-            parsed_url = urllib.parse.urlparse(msg['baseUrl'])
+            parsed_url = sarracenia.baseUrlParse(msg['baseUrl'])
             self.scheme = parsed_url.scheme
 
             i = 1
@@ -1592,7 +1597,7 @@ class Flow:
             # if relPath is just the file remote_path will return empty
             remote_path, remote_file = os.path.split(msg['relPath'])
 
-            u = urllib.parse.urlparse(msg['baseUrl']) 
+            u = sarracenia.baseUrlParse(msg['baseUrl']) 
             logger.debug( f"baseUrl.path= {u.path} ")
             if remote_path:
                 if u.path != '/' and remote_path:
@@ -1896,8 +1901,7 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug("%s_transport sendTo: %s " %
-                     (self.scheme, self.o.sendTo))
+        logger.debug( f"{self.scheme}_transport sendTo: {self.o.sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
@@ -2113,13 +2117,11 @@ class Flow:
 
             if inflight == None or (('blocks' in msg) and
                                     (msg['blocks']['method'] != 'inplace')):
-                logger.critical('none!')
                 if not self.o.dry_run:
                     if accelerated:
                         len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
                     else:
                         len_written = self.proto[self.scheme].put( msg, local_file, new_file)
-                logger.critical('none! len_written=%d, block_length=%d ' % ( len_written, block_length) )
             elif (('blocks' in msg)
                   and (msg['blocks']['method'] == 'inplace')):
                 if not self.o.dry_run:

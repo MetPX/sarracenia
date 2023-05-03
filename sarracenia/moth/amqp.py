@@ -32,6 +32,7 @@ from urllib.parse import unquote
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
+import signal
 
 import time
 
@@ -162,6 +163,7 @@ class AMQP(Moth):
         self.o.update(props)
 
         self.first_setup = True
+        self.please_stop = False
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
 
@@ -214,6 +216,10 @@ class AMQP(Moth):
 
         self.channel = self.connection.channel()
 
+    def _amqp_setup_signal_handler(self, signum, stack):
+        logger.info("ok, asked to stop")
+        self.please_stop=True
+
     def __getSetup(self) -> None:
         """
         Setup so we can get messages.
@@ -222,7 +228,15 @@ class AMQP(Moth):
              connect, declare queue, apply bindings.
         """
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
+
         while True:
+            
+            if self.please_stop:
+                break
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
@@ -251,31 +265,39 @@ class AMQP(Moth):
                         if x > 0: args['x-message-ttl'] = x
 
                     #FIXME: conver expire, message_ttl to proper units.
-                    qname, msg_count, consumer_count = self.channel.queue_declare(
-                        self.o['queueName'],
-                        passive=False,
-                        durable=self.o['durable'],
-                        exclusive=False,
-                        auto_delete=self.o['auto_delete'],
-                        nowait=False,
-                        arguments=args)
-                    logger.info('queue declared %s (as: %s) ' %
+                    if self.o['dry_run']:
+                        logger.info('queue declare (dry run) %s (as: %s) ' %
+                                (self.o['queueName'], broker_str))
+                    else:
+                        qname, msg_count, consumer_count = self.channel.queue_declare(
+                            self.o['queueName'],
+                            passive=False,
+                            durable=self.o['durable'],
+                            exclusive=False,
+                            auto_delete=self.o['auto_delete'],
+                            nowait=False,
+                            arguments=args)
+                        logger.info('queue declared %s (as: %s) ' %
                                 (self.o['queueName'], broker_str))
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
                         exchange, prefix, subtopic = tup
                         topic = '.'.join(prefix + subtopic)
-                        logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, exchange, broker_str ) )
-                        if exchange:
-                            self.channel.queue_bind(self.o['queueName'], exchange,
+                        if self.o['dry_run']:
+                            logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
+                                ( self.o['queueName'], topic, exchange, broker_str ) )
+                        else:
+                            logger.info('binding %s with %s to %s (as: %s)' % \
+                                ( self.o['queueName'], topic, exchange, broker_str ) )
+                            if exchange:
+                                self.channel.queue_bind(self.o['queueName'], exchange,
                                                 topic)
 
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('getSetup ... Done!')
-                return
+                break
 
             except Exception as err:
                 logger.error(
@@ -292,13 +314,25 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
     def __putSetup(self) -> None:
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
+
         while True:
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
+                if self.please_stop:
+                    break
                 # from sr_consumer.build_connection...
                 self.__connect(self.o['broker'])
 
@@ -315,22 +349,26 @@ class AMQP(Moth):
                     if type(self.o['exchange']) is not list:
                         self.o['exchange'] = [self.o['exchange']]
                     for x in self.o['exchange']:
-                        self.channel.exchange_declare(
-                            x,
-                            'topic',
-                            auto_delete=self.o['auto_delete'],
-                            durable=self.o['durable'])
-                        logger.info('exchange declared: %s (as: %s)' %
+                        if self.o['dry_run']:
+                            logger.info('exchange declare (dry run): %s (as: %s)' %
+                                    (x, broker_str))
+                        else:
+                            self.channel.exchange_declare(
+                                x,
+                                'topic',
+                                auto_delete=self.o['auto_delete'],
+                                durable=self.o['durable'])
+                            logger.info('exchange declared: %s (as: %s)' %
                                     (x, broker_str))
 
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('putSetup ... Done!')
-                return
+                break
 
             except Exception as err:
                 logger.error(
-                    "AMQP putSetup failed to declare exchanges {}@{} on {}: {}"
+                    "AMQP putSetup failed to connect or declare exchanges {}@{} on {}: {}"
                     .format(self.o['exchange'], self.o['broker'].url.username,
                             self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
@@ -343,13 +381,22 @@ class AMQP(Moth):
             logger.info("Sleeping {} seconds ...".format(ebo))
             time.sleep(ebo)
 
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
+
     def putCleanUp(self) -> None:
 
         try:
             for x in self.o['exchange']:
                 try:
-                    self.channel.exchange_delete(x, if_unused=True)
-                    logger.info("deleted exchange: %s" % x)
+                    if self.o['dry_run']:
+                        logger.info("deleted exchange (dry run): %s (if unused)" % x)
+                    else:
+                        self.channel.exchange_delete(x, if_unused=True)
+                        logger.info("deleted exchange: %s" % x)
                 except amqp.exceptions.PreconditionFailed as err:
                     err_msg = str(err).replace("Exchange.delete: (406) PRECONDITION_FAILED - exchange ", "")
                     logger.warning("failed to delete exchange: %s" % err_msg)
@@ -361,8 +408,11 @@ class AMQP(Moth):
     def getCleanUp(self) -> None:
 
         try:
-            logger.info("deleteing queue %s" % self.o['queueName'] )
-            self.channel.queue_delete(self.o['queueName'])
+            if self.o['dry_run']:
+                logger.info("deleteing queue (dry run) %s" % self.o['queueName'] )
+            else:
+                logger.info("deleteing queue %s" % self.o['queueName'] )
+                self.channel.queue_delete(self.o['queueName'])
         except Exception as err:
             logger.error("failed to {} with {}".format(
                 self.o['broker'].url.hostname, err))

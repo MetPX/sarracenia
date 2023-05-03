@@ -235,7 +235,7 @@ class Sftp(Transfer):
 
     # credentials...
     def credentials(self):
-        logger.debug("sr_sftp credentials %s" % self.sendTo)
+        #logger.debug("sr_sftp credentials %s" % self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
@@ -254,15 +254,15 @@ class Sftp(Transfer):
 
             if self.port == None: self.port = 22
 
-            logger.debug("h u:p s = %s:%d %s:%s %s" %
-                         (self.host, self.port, self.user, self.password,
-                          self.ssh_keyfile))
+            #logger.debug("h u:p s = %s:%d %s:%s %s" %
+            #             (self.host, self.port, self.user, self.password,
+            #              self.ssh_keyfile))
 
             if self.ssh_config == None: return True
 
             if self.user        == None or \
              ( self.ssh_keyfile == None and self.password == None):
-                logger.debug("check in ssh_config")
+                #logger.debug("check in ssh_config")
                 for key, value in self.ssh_config.lookup(self.host).items():
                     if key == "hostname":
                         self.host = value
@@ -273,9 +273,9 @@ class Sftp(Transfer):
                     elif key == "identityfile":
                         self.ssh_keyfile = os.path.expanduser(value[0])
 
-            logger.debug("h u:p s = %s:%d %s:%s %s" %
-                         (self.host, self.port, self.user, self.password,
-                          self.ssh_keyfile))
+            #logger.debug("h u:p s = %s:%d %s:%s %s" %
+            #             (self.host, self.port, self.user, self.password,
+            #              self.ssh_keyfile))
             return True
 
         except:

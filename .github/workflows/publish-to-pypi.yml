@@ -3,7 +3,7 @@ name: Publish ${package_name} to PyPI / GitHub
 on:
   push:
     branches:
-      - main
+      - none
 
 jobs:
   build-n-publish:

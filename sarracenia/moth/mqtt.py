@@ -40,6 +40,7 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
+
 default_options = {
     'auto_ack': True,
     'batch': 25,
@@ -58,9 +59,6 @@ class MQTT(Moth):
            talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
        Sarracenia Concept mapping from AMQP:
-
-           Only supports v03 messages since mqtt3.1 has no headers.
-
 
            AMQP -> MQTT topic hierarcy mapping: 
            exchange: xpublic,  topic prefix:   v03 subtopic:   /my/favourite/directory
@@ -101,6 +99,8 @@ class MQTT(Moth):
            likely that you will just get them later... could use for a shelf for rx_msg,
            and sync it once in while... probably not worth it.
  
+      Other:
+           missing dry_run support.
 
       References:
          good discussion of shared subscriptions:
@@ -307,13 +307,26 @@ class MQTT(Moth):
                                unquote(self.broker.url.password))
         return client
 
+    def _mqtt_setup_signal_handler(self, signum, stack):
+        logger.info("ok, asked to stop")
+        self.please_stop=True
+
     def __getSetup(self):
         """
            Establish a connection to consume messages with.  
         """
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._mqtt_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._mqtt_setup_signal_handler)
+
         self.connected=False
         while True:
+
+            if self.please_stop:
+                break
+
             try:
 
                 cs = self.o['clean_session']
@@ -352,7 +365,7 @@ class MQTT(Moth):
                         decl_client.disconnect()
                         decl_client.loop_stop()
                         logger.info('instance declaration for %s done' % icid)
-                        return
+                        break
 
                 if hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
                     self.client.auto_ack(False)
@@ -371,7 +384,7 @@ class MQTT(Moth):
                 self.client.enable_logger(logger)
                 self.client.loop_start()
                 self.connected=True
-                return
+                break
 
             except Exception as err:
                 logger.error("failed to {} with {}".format(
@@ -381,13 +394,29 @@ class MQTT(Moth):
             if ebo < 60: ebo *= 2
             time.sleep(ebo)
 
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
+
+
     def __putSetup(self):
         """
            establish a connection to allow publishing. 
         """
         ebo = 1
+        original_sigint = signal.getsignal(signal.SIGINT)
+        original_sigterm = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self._mqtt_setup_signal_handler)
+        signal.signal(signal.SIGTERM, self._mqtt_setup_signal_handler)
+
         self.connected=False
         while True:
+            
+            if self.please_stop:
+                break
+
             try:
                 self.pending_publishes = collections.deque()
                 self.unexpected_publishes = collections.deque()
@@ -395,7 +424,6 @@ class MQTT(Moth):
                 props = Properties(PacketTypes.CONNECT)
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
-
 
                 self.client = paho.mqtt.client.Client(
                     protocol=self.proto_version, userdata=self)
@@ -418,7 +446,7 @@ class MQTT(Moth):
 
                 self.client.loop_start()
                 self.connected=True
-                return
+                break
 
             except Exception as err:
                 logger.error("failed to {} with {}".format(
@@ -427,6 +455,12 @@ class MQTT(Moth):
 
             if ebo < 60: ebo *= 2
             time.sleep(ebo)
+
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.signal(signal.SIGTERM, original_sigterm)
+        if self.please_stop:
+            signal.raise_signal(signal.SIGINT)
+
 
     def __sub_on_message(client, userdata, msg):
         """
