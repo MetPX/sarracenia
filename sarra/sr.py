@@ -513,6 +513,8 @@ class sr_GlobalState:
                 lff = lf.split('_')
                 if len(lff) > 3:
                     c = lff[1]
+                    if c not in self.logs:
+                        continue
                     cfg = '_'.join(lff[2:-1])
                     
                     suffix = lff[-1].split('.')
