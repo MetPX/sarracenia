@@ -2399,7 +2399,7 @@ class sr_GlobalState:
                     #v3_cfg.write('accept .*\n')
                 elif acceptUnmatched_explicit:
                     v3_cfg.write( f"acceptUnmatched {acceptUnmatched_explicit}")
-                elif component == 'subscribe': # accomodate change of default from v2 to sr3
+                elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
         logging.info('wrote conversion from v2 %s to sr3 ' % cfg)
