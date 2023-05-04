@@ -47,7 +47,7 @@ echo -e "..done\n"
 
 echo "Set ownership for certs ..."
 # set ownership of the certs/keys
-sudo chown redis:redis /etc/redis/tls*
+sudo bash -c "chown redis:redis /etc/redis/tls*"
 echo -e "..done\n"
 
 echo "Add TLS options to redis.conf ..."
