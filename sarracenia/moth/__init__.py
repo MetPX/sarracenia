@@ -12,6 +12,7 @@ default_options = {
     'batch': 100,
     'bindings': [],
     'broker': None,
+    'dry_run': False,
     'exchange': 'xpublic',
     'expire': 300,
     'inline': False,

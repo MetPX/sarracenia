@@ -767,7 +767,7 @@ class Message(dict):
         if 'retrievePath' in msg:
             retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
         else:
-            retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
+            retUrl = msg['baseUrl'] + '/' + msg['relPath']
 
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
