@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-import os
+import os, types
 
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
@@ -9,27 +9,31 @@ from sarracenia.flowcb.retry import Retry
 import fakeredis
 
 class Options:
-    retry_driver = ''
+    retry_driver = 'disk'
+    redisqueue_serverurl = ''
+    no = 1
+    retry_ttl = 0
+    batch = 8
+    logLevel = "DEBUG"
+    queueName = "TEST_QUEUE_NAME"
+    component = "sarra"
+    config = "foobar.conf"
+    pid_filename = "NotARealPath"
+    housekeeping = float(0)
     def add_option(self, option, type, default = None):
-        if default != None:
-            self.option = default
+        pass
     pass
 
-class WorkList:
-    failed = []
-    ok = []
-    incoming = []
+
+
+WorkList = types.SimpleNamespace()
+WorkList.ok = []
+WorkList.incoming = []
+WorkList.rejected = []
+WorkList.failed = []
+WorkList.directories_ok = []
 
 BaseOptions = Options()
-BaseOptions.no = 1
-BaseOptions.retry_ttl = 0
-BaseOptions.batch = 8
-BaseOptions.logLevel = "DEBUG"
-BaseOptions.queueName = "TEST_QUEUE_NAME"
-BaseOptions.component = "sarra"
-BaseOptions.config = "foobar.conf"
-BaseOptions.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
-BaseOptions.housekeeping = float(0)
 
 message = {
     "pubTime": "20180118151049.356378078",
@@ -51,6 +55,7 @@ message = {
 
 def test_cleanup(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -71,6 +76,7 @@ def test_cleanup(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_cleanup"
         retry = Retry(BaseOptions)
 
         retry.download_retry.put([message, message, message])
@@ -87,6 +93,7 @@ def test_cleanup(tmp_path):
 
 def test_metricsReport(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -102,6 +109,7 @@ def test_metricsReport(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_metricsReport"
         retry = Retry(BaseOptions)
 
         retry.download_retry.put([message, message, message])
@@ -114,6 +122,7 @@ def test_metricsReport(tmp_path):
 
 def test_after_post(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -128,6 +137,7 @@ def test_after_post(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_post"
         retry = Retry(BaseOptions)
 
         after_post_worklist = WorkList
@@ -137,8 +147,9 @@ def test_after_post(tmp_path):
 
         assert len(retry.post_retry) == 3
 
-def test_after_work__WithWorklistFailed(tmp_path):
+def test_after_work__WLFailed(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -154,6 +165,7 @@ def test_after_work__WithWorklistFailed(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_work__WLFailed"
         retry = Retry(BaseOptions)
 
         after_work_worklist = WorkList
@@ -164,8 +176,9 @@ def test_after_work__WithWorklistFailed(tmp_path):
         assert len(retry.download_retry) == 3
         assert len(after_work_worklist.failed) == 0
 
-def test_after_work__SmallQuantity(tmp_path):
+def test_after_work__SmallQty(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.batch = 2
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
@@ -183,6 +196,7 @@ def test_after_work__SmallQuantity(tmp_path):
         BaseOptions.batch = 2
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_work__SmallQty"
         retry = Retry(BaseOptions)
 
         after_work_worklist = WorkList
@@ -195,6 +209,7 @@ def test_after_work__SmallQuantity(tmp_path):
 
 def test_after_work(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -212,6 +227,7 @@ def test_after_work(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_work"
         retry = Retry(BaseOptions)
 
         after_work_worklist = WorkList
@@ -224,8 +240,9 @@ def test_after_work(tmp_path):
         assert len(retry.download_retry) == 0
         assert len(after_work_worklist.ok) == 4
 
-def test_after_accept__SmallQuantity(tmp_path):
+def test_after_accept__SmallQty(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.batch = 2
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
@@ -243,6 +260,7 @@ def test_after_accept__SmallQuantity(tmp_path):
         BaseOptions.batch = 2
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_accept__SmallQty"
         retry = Retry(BaseOptions)
 
         after_accept_worklist = WorkList
@@ -255,23 +273,26 @@ def test_after_accept__SmallQuantity(tmp_path):
 
 def test_after_accept(tmp_path):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_accept_worklist = WorkList
-    after_accept_worklist.incoming = [message, message, message]
     retry.download_retry.put([message, message, message])
     retry.on_housekeeping()
 
+    after_accept_worklist = WorkList
+    after_accept_worklist.incoming = [message, message, message]
+
     retry.after_accept(after_accept_worklist)
 
-    assert len(retry.download_retry) == 0
+    assert len(retry.download_retry) == 1
     assert len(after_accept_worklist.incoming) == 4
 
     # -- RedisQueue
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_after_accept"
         retry = Retry(BaseOptions)
 
         after_accept_worklist = WorkList
@@ -286,6 +307,7 @@ def test_after_accept(tmp_path):
 
 def test_on_housekeeping(tmp_path, caplog):
     # -- DiskQueue
+    BaseOptions.retry_driver = 'disk'
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
@@ -309,7 +331,12 @@ def test_on_housekeeping(tmp_path, caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions.retry_driver = 'redis'
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.queueName = "test_on_housekeeping"
         retry = Retry(BaseOptions)
+
+        #server_test_on_housekeeping = fakeredis.FakeServer()
+        #retry.download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)
+        #retry.post_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)
 
         retry.download_retry.put([message, message, message])
         retry.post_retry.put([message, message, message])
