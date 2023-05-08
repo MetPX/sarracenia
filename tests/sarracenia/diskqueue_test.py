@@ -3,12 +3,13 @@ import os
 
 from sarracenia.diskqueue import DiskQueue
 
-class Empty:
-    def add_option(self, option, type):
-        pass
+class Options:
+    def add_option(self, option, type, default = None):
+        if default != None:
+            self.option = default
     pass
 
-BaseOptions = Empty()
+BaseOptions = Options()
 BaseOptions.retry_ttl = 0
 BaseOptions.logLevel = "DEBUG"
 BaseOptions.queueName = "TEST_QUEUE_NAME"

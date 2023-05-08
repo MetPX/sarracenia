@@ -7,13 +7,13 @@ import fakeredis
 
 import jsonpickle
 
-class Empty:
-    def add_option(self, option, type):
-        pass
+class Options:
+    def add_option(self, option, type, default = None):
+        if default != None:
+            self.option = default
     pass
 
-BaseOptions = Empty()
-
+BaseOptions = Options()
 BaseOptions.retry_ttl = 0
 BaseOptions.logLevel = "INFO"
 BaseOptions.queueName = "TEST_QUEUE_NAME"
