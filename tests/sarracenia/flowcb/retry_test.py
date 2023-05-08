@@ -51,7 +51,7 @@ message = {
 
 def test_cleanup(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_cleanup" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     retry.download_retry.put([message, message, message])
@@ -87,7 +87,7 @@ def test_cleanup(tmp_path):
 
 def test_metricsReport(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_metricsReport" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     retry.download_retry.put([message, message, message])
@@ -114,7 +114,7 @@ def test_metricsReport(tmp_path):
 
 def test_after_post(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_post" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_post_worklist = WorkList
@@ -139,7 +139,7 @@ def test_after_post(tmp_path):
 
 def test_after_work__WithWorklistFailed(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_work__WithWorklistFailed" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_work_worklist = WorkList
@@ -167,7 +167,7 @@ def test_after_work__WithWorklistFailed(tmp_path):
 def test_after_work__SmallQuantity(tmp_path):
     # -- DiskQueue
     BaseOptions.batch = 2
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_work__SmallQuantity" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_work_worklist = WorkList
@@ -195,7 +195,7 @@ def test_after_work__SmallQuantity(tmp_path):
 
 def test_after_work(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_work" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_work_worklist = WorkList
@@ -227,7 +227,7 @@ def test_after_work(tmp_path):
 def test_after_accept__SmallQuantity(tmp_path):
     # -- DiskQueue
     BaseOptions.batch = 2
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_accept__SmallQuantity" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_accept_worklist = WorkList
@@ -255,7 +255,7 @@ def test_after_accept__SmallQuantity(tmp_path):
 
 def test_after_accept(tmp_path):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_after_accept" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     after_accept_worklist = WorkList
@@ -286,7 +286,7 @@ def test_after_accept(tmp_path):
 
 def test_on_housekeeping(tmp_path, caplog):
     # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.pathsep + "test_on_housekeeping" + os.pathsep + "pidfilename.txt"
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
     retry.download_retry.put([message, message, message])
