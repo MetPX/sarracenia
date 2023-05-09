@@ -1825,7 +1825,8 @@ class Config:
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
 
-        self.path = list(map( os.path.expanduser, self.path ))
+        if (component not in ['poll' ]):
+            self.path = list(map( os.path.expanduser, self.path ))
 
         if self.vip and not sarracenia.extras['vip']['present']:
             logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
