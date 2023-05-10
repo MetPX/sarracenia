@@ -838,7 +838,7 @@ reliable and portable polling method.  The *force_polling* keyword causes
 watch to select the polling method in spite of the availability of a
 normally better one.  
 
-For a detailed discussion, see: `Detecting File Changes <../Explanation/DetectFileHasChanged.html>`_
+For a detailed discussion, see: `Detecting File Changes <../Explanation/DetectFileReady.html>`_
 
 NOTE::
 
