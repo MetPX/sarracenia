@@ -1456,6 +1456,7 @@ class sr_GlobalState:
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     o.broker, {
+                        'dry_run': self.options.dry_run,
                         'echangeDeclare': False,
                         'queueDeclare': False,
                         'queueBind': False,
