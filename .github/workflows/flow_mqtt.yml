@@ -5,7 +5,7 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - none
+      - turned_off_for_now_always_fails
 
   workflow_dispatch:
     inputs:

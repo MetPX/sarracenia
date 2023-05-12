@@ -5,8 +5,7 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - v03_wip
-      - main
+      - turned_off_for_now_always_fails
 
   workflow_dispatch:
     inputs:
