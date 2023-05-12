@@ -53,12 +53,16 @@ class Message(FlowCB):
             return {}
 
     def on_housekeeping(self):
-        m = self.poster.metricsReport()
-        logger.info(
-            f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
-        )
-        self.poster.metricsReset()
+        if hasattr(self,'poster') and self.poster:
+            m = self.poster.metricsReport()
+            logger.info(
+                f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
+            )
+            self.poster.metricsReset()
+        else:
+            logger.info( "no metrics available" )
 
     def on_stop(self):
-        self.poster.close()
+        if hasattr(self,'poster') and self.poster:
+            self.poster.close()
         logger.info('closing')
