@@ -487,8 +487,21 @@ class Flow:
                             m['baseUrl'] = m['new_baseUrl']
                         if ('new_retrievePath' in m) :
                             m['retrievePath'] = m['new_retrievePath']
-                        if ('new_relPath' in m) and (m['relPath'] !=
-                                                     m['new_relPath']):
+
+                        # if new_file does not match relPath, then adjust relPath so it does.
+                        if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
+                            if not 'new_relPath' in m:
+                                if len(m['relPath']) > 1:
+                                    m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
+                                else:
+                                    m['new_relPath'] = m['new_file']
+                            else:
+                                if len(m['new_relPath']) > 1:
+                                    m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
+                                else:
+                                    m['new_relPath'] = m['new_file']
+
+                        if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
                             m['relPath'] = m['new_relPath']
                             m['subtopic'] = m['new_subtopic']
                         if ('_format' in m) and ( m['_format'] != 
