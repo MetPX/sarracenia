@@ -39,6 +39,13 @@ Installation Instructions
 git
 ---
 
+3.0.37
+------
+
+*BUG*: *sr3 cleanup* does not work at all. 
+       https://github.com/MetPX/sarracenia/issues/669
+
+
 3.0.26
 ------
 
