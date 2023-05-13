@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.39) unstable; urgency=medium
+
+  * fix #667 had not been completely merged. adding. 
+
+ -- Peter <peter@bsqt.homeip.net>  Sat, 13 May 2023 09:55:09 -0400
+
 metpx-sr3 (3.00.38) unstable; urgency=medium
 
   * fix #669 regression that sr3 cleanup is broken in 3.00.37
