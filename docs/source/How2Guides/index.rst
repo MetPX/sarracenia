@@ -2,20 +2,20 @@ HOWTOS
 ======
 
 .. toctree::
-   :maxdepth: 2
-   :caption: For Users:
+   :maxdepth: 1
+
+   Subscribing to Data Feeds <subscriber>
+   source
+   Using Flow Callback Plugins <FlowCallbacks>
 
    Admin
    Admin_Rabbit_Addendum
-   docker
+
+   Release Notes (Advice on Upgrades)<UPGRADING>
+
+   v2ToSr3
    Email_Ingesting_With_Sarracenia
    Hydro_Examples
-   Release Notes (Advice on Upgrades)<UPGRADING>
-   source
-   Subscribing to Data Feeds <subscriber>
-   UPGRADING
-   Using Flow Callback Plugins <FlowCallbacks>
-   v2ToSr3
 
 
 # omitted as immature:

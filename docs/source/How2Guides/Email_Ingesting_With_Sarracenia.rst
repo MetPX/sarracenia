@@ -1,6 +1,6 @@
-===============================
-Email Ingesting with Sarracenia
-===============================
+====================================
+Email Ingesting with Sarracenia (v2)
+====================================
 
 Email is an easy way to route data between servers. Using the Post Office Protocol (POP3) and
 Internet Message Access Protocol (IMAP), email files can be disseminated through Sarracenia 
