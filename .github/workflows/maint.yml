@@ -1,0 +1,49 @@
+name: sr_insects test maintenance functions.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+  push:
+    branches:
+      - v03_wip
+      - main
+
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+
+jobs:
+
+  run_sr_insects_tests:
+
+    strategy:
+      # Don't cancel the entire matrix when one job fails
+      fail-fast: false
+      matrix:
+       osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
+
+    runs-on: ${{ matrix.osver }}
+  
+    name: Maintenance test on ${{ matrix.osver }}
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          travis/flow_autoconfig.sh
+          travis/ssh_localhost.sh
+         
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event.inputs.debug_enabled }}
+        #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
+      - name: Add and Remove configs, 
+        run: |
+          cd ${HOME}/sr_insects/static_flow; ./flow_maint_test.sh
