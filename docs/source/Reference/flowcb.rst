@@ -146,15 +146,6 @@ sarracenia.flowcb.accept.save
    :private-members:
    :special-members:
 
-sarracenia.flowcb.scheduled
----------------------------
-
-.. automodule:: sarracenia.flowcb.scheduled
-   :show-inheritance:
-   :members:
-   :private-members:
-   :special-members:
-
 sarracenia.flowcb.accept.speedo
 -------------------------------
 
@@ -411,6 +402,15 @@ sarracenia.flowcb.sample
 ------------------------
 
 .. automodule:: sarracenia.flowcb.sample
+   :show-inheritance:
+   :members:
+   :private-members:
+   :special-members:
+
+sarracenia.flowcb.scheduled
+---------------------------
+
+.. automodule:: sarracenia.flowcb.scheduled
    :show-inheritance:
    :members:
    :private-members:
