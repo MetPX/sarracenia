@@ -891,7 +891,12 @@ class Config:
     def _build_mask(self, option, arguments):
         """ return new entry to be appended to list of masks
        """
-        regex = re.compile(arguments[0])
+        try:
+            regex = re.compile(arguments[0])
+        except:
+            logger.critical( f"invalid regular expression: {arguments[0]}, ignored." )
+            return None
+
         if len(arguments) > 1:
             fn = arguments[1]
         else:
