@@ -53,7 +53,7 @@ message = {
     "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
 }
 
-@pytest.mark.xfail
+@pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 def test_cleanup(tmp_path):
     BaseOptions = Options()
     # -- DiskQueue
