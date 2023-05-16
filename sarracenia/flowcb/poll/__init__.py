@@ -144,10 +144,17 @@ class Poll(FlowCB):
 
     """
     def handle_starttag(self, tag, attrs):
-        for attr in attrs:
-            c, n = attr
-            if c == "href":
-                self.myfname = n.strip().strip('\t')
+        if tag == "table":
+            self.tabular_format=True
+        elif tag == "tr":
+            self.table_column=0
+        elif tag == "td":
+            self.table_column +=1
+        else:
+            for attr in attrs:
+                c, n = attr
+                if c == "href":
+                    self.myfname = n.strip().strip('\t')
 
     def handle_data(self, data):
         """
@@ -163,26 +170,52 @@ class Poll(FlowCB):
                   CsuPWVh_2023.011.22.00.0060_nc                     11-Jan-2023 23:58     47K
 
            this can be overridden by subclassing to deal with new web sites.
+
+           Other web servers put their file indices in a tabular format,  where there is a number
+           of cells per row:
+           <tr><td></td><td href=filename>filename</td><td>yyyy-mm-dd hh:mm</td><td>size</td>
+           This handle_data supports both formats... 
+           the tabular format is provided by a vanilla apache2 on a debian derived system.
+
         """
+        logger.debug( f"handling_data {data} column={self.table_column}" )
 
-        if self.myfname == None: return
-        if self.myfname == data: return
+        if self.tabular_format:
+            if self.table_column == 2:
+                self.myfname=data
+                return
+            elif self.table_column != 3:
+                return 
+            sdate=data.strip()
+        else:
+            if self.myfname == None: return
+            if self.myfname == data: return
 
-        words = data.split()
+            words = data.split()
 
-        if len(words) != 3:
-            self.myfname = None
+            if len(words) != 3:
+                self.myfname = None
+                return
+
+            sdate = words[0] + ' ' + words[1]
+ 
+        if len(sdate) < 10:
             return
 
-        sdate = words[0] + ' ' + words[1]
-        try:
-            t = time.strptime(sdate, '%d-%b-%Y %H:%M')
-        except:
-            t = time.strptime(sdate, '%Y-%m-%d %H:%M')
-        mydate = time.strftime('%b %d %H:%M', t)
-
         entry = paramiko.SFTPAttributes()
-        entry.st_mtime = time.mktime(t)
+
+        t=None
+        for f in [  '%d-%b-%Y %H:%M', '%Y-%m-%d %H:%M' ]:
+            logger.debug( f" try parsing +{sdate}+ using {f}" )
+            try:
+                t = time.strptime(sdate, f)
+                break
+            except Exception as Ex:
+                pass
+
+        if t:
+            mydate = time.strftime('%b %d %H:%M', t)
+            entry.st_mtime = time.mktime(t)
 
         # size is rounded, need a way to be more precise.
         #entry.st_size = file_size_fix(words[-1])
@@ -202,10 +235,12 @@ class Poll(FlowCB):
         """
         self.entries = {}
         self.myfname = None
+        self.tabular_format=False
+        self.table_column=0
 
         self.parser.feed(data)
         self.parser.close()
-
+        
         return self.entries
 
     def on_html_parser_init(self):
@@ -366,6 +401,7 @@ class Poll(FlowCB):
             # apply selection on the list
 
             for f in ls:
+                logger.debug( f"line to parse: {f}" )
                 matched = False
                 line = ls[f]
 

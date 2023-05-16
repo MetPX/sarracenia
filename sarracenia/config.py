@@ -597,7 +597,6 @@ class Config:
         'file_time_limit' : 'nodupe_fileAgeMax', 
         'fp' : 'force_polling',
         'fs' : 'follow_symlinks',
-        'get' : 'accept', 
         'h' : 'help',
         'heartbeat': 'housekeeping',
         'hb_memory_baseline_file' : 'MemoryBaseLineFile',
@@ -901,7 +900,11 @@ class Config:
             script=fn[13:]
             self.destfn_scripts.append(script)
 
-        return (arguments[0], self.directory, fn, regex,
+        if self.directory:
+           d = os.path.expanduser(self.directory)
+        else:
+           d = self.directory
+        return (arguments[0], d, fn, regex,
                 option.lower() in ['accept' ], self.mirror, self.strip,
                 self.pstrip, self.flatten)
 
@@ -1569,6 +1572,9 @@ class Config:
         if self.debug:
             self.logLevel = 'debug'
 
+        if self.directory:
+            self.directory = os.path.expanduser(self.directory)
+
         # double check to ensure duration options are properly parsed
         for d in duration_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
@@ -1819,7 +1825,8 @@ class Config:
                     'overriding batch for consistency with messageCountMax: %d'
                     % self.batch)
 
-        self.path = list(map( os.path.expanduser, self.path ))
+        if (component not in ['poll' ]):
+            self.path = list(map( os.path.expanduser, self.path ))
 
         if self.vip and not sarracenia.extras['vip']['present']:
             logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )

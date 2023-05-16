@@ -19,7 +19,7 @@ jobs:
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc dia python3-paramiko
     - name: Setup python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
     - name: Checkout
       uses: actions/checkout@master
       with:

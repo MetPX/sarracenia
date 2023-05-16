@@ -26,7 +26,7 @@ EOT
     fi
     ssh -o StrictHostKeyChecking=No localhost /bin/true
     ssh_works=$?
-    if [ ${ssh_works} -le 0 ]; then
+    if [ ${ssh_works} -ne 0 ]; then
          echo "ssh to localhost still fails. boo!"
     else
          echo "ssh to localhost fixed by adding keys. Yay!"

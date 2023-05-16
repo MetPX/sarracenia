@@ -24,7 +24,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.37"
+__version__ = "3.00.39"
 
 from base64 import b64decode, b64encode
 import calendar
@@ -767,7 +767,7 @@ class Message(dict):
         if 'retrievePath' in msg:
             retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
         else:
-            retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
+            retUrl = msg['baseUrl'] + '/' + msg['relPath']
 
         with urllib.request.urlopen(retUrl) as response:
             return response.read()

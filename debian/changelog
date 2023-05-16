@@ -1,4 +1,24 @@
-metpx-sr3 (3.00.37) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.39) unstable; urgency=medium
+
+  * fix #667 had not been completely merged. adding. 
+
+ -- Peter <peter@bsqt.homeip.net>  Sat, 13 May 2023 09:55:09 -0400
+
+metpx-sr3 (3.00.38) unstable; urgency=medium
+
+  * fix #669 regression that sr3 cleanup is broken in 3.00.37
+  * fix #667 new_file name not honoured for republish with no transfer
+  * fix #663 should not call expanduser on remote paths
+  * fix #661 regression python api broken by missing 'dry_run' default setting.
+  * fix #656 sr3 convert get verb misinterpreted in polls
+  * fix #658 sr3 convert acceptUnmatch wrong on senders and polls
+  * fix #653 invoking c components in the foreground
+  * fix #665 polling default apache tabular file index 
+  * fix foreground invocation of C components from sr3 did not work.
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Tue, 25 Apr 2023 16:54:51 -0400
+
+metpx-sr3 (3.00.37) unstable; urgency=medium
 
   * sr3 --dry_run --users declare works.
   * sr3 --dry_run stop works.

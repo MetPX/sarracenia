@@ -1429,7 +1429,7 @@ class sr_GlobalState:
                     else:
                         cmd = [sys.executable, component_path, 'foreground', cfg]
                 else:  # C components
-                    cmd = [component_path, 'foreground', cfg]
+                    cmd = [component_path, '-a', 'foreground', '-c', cfg]
 
                 self.run_command(cmd)
             else:
@@ -1456,6 +1456,7 @@ class sr_GlobalState:
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     o.broker, {
+                        'dry_run': self.options.dry_run,
                         'echangeDeclare': False,
                         'queueDeclare': False,
                         'queueBind': False,
@@ -2330,6 +2331,13 @@ class sr_GlobalState:
                             k = 'pollUrl'
                         else:
                             k = 'sendTo'
+                    elif (k == 'get' ) and (component == 'poll'):
+                        k = 'accept'
+                        if not line[1].startswith('.*'):
+                            if line[1][0] == '^':
+                                line[1] = '.*/'+line[1][1:]
+                            else:
+                                line[1] = '.*'+line[1]
                     elif (k == 'broker') and (component == 'poll'):
                         k = 'post_broker'
                     elif (k == 'directory' ) and (component == 'poll'):
@@ -2392,7 +2400,7 @@ class sr_GlobalState:
                     #v3_cfg.write('accept .*\n')
                 elif acceptUnmatched_explicit:
                     v3_cfg.write( f"acceptUnmatched {acceptUnmatched_explicit}")
-                elif component == 'subscribe': # accomodate change of default from v2 to sr3
+                elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
         logging.info('wrote conversion from v2 %s to sr3 ' % cfg)

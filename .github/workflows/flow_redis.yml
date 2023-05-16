@@ -1,4 +1,4 @@
-name: Sr3 sr_insects Flow Tests using MQTT.
+name: Flow Tests (with Redis).
 
 on:
   pull_request:
@@ -23,8 +23,8 @@ jobs:
       # Don't cancel the entire matrix when one job fails
       fail-fast: false
       matrix:
-       which_test: [ static_flow ]
-       osver: [ "ubuntu-22.04" ]
+       which_test: [ static_flow, flakey_broker, dynamic_flow, restart_server ]
+       osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
 
     runs-on: ${{ matrix.osver }}
   
@@ -34,11 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      # https://github.com/marketplace/actions/debugging-with-tmate
+      # 
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
+      #   if: ${{ github.event.inputs.debug_enabled }}
+      #   #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
       - name: Install dependencies
         run: |
           travis/flow_autoconfig.sh
-          travis/flow_autoconfig_add_mosquitto.sh
           travis/ssh_localhost.sh
+          travis/add_redis.sh
          
       - name: Setup ${{ matrix.which_test }} test.
         run: |
@@ -46,18 +54,11 @@ jobs:
           echo hoho
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
 
-      # Enable tmate debugging of manually-triggered workflows if the input option was provided
-      # https://github.com/marketplace/actions/debugging-with-tmate
-      # 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event.inputs.debug_enabled }}
-        #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
 
       - name: Limit ${{ matrix.which_test }} test.
         run: |
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_limit.sh
-          sleep 300
 
       - name: Check results of ${{ matrix.which_test }} test.
         run: |
