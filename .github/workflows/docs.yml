@@ -29,7 +29,7 @@ jobs:
         pip3 install -r requirements.txt
         pip3 install .
     - name: Build and Commit
-      uses: sphinx-notes/pages@v2
+      uses: sphinx-notes/pages@v3
       with:
         documentation_path: ./docs/source
         requirements_path: ./requirements-dev.txt
