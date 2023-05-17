@@ -1,5 +1,5 @@
-Explanation
-===========
+Sundew Migration Guide
+======================
 
 .. toctree::
    :maxdepth: 2
