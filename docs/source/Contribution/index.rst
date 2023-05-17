@@ -17,5 +17,5 @@ Contributing to Sarracenia
    Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
    v03
-   Amdahl Applied (philosophy)<Philosophy/Amdahl_Applied.ipynb>
+   Philosophy<Philosophy/index>
 
