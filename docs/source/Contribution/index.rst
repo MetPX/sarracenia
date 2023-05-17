@@ -3,19 +3,19 @@ Contributing to Sarracenia
 ==========================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    AMQPprimer
-   deltas
    Development
    Documentation
-   Evolution
    man_page_template.rst
    mqtt_issues
+   v03
    on_part_assembly
+   Evolution
    Original (2015) Basic Idea <BasicIdea>
    Original (2015) Design  <Design>
-   v03
+   deltas
    Philosophy<Philosophy/index>
 
