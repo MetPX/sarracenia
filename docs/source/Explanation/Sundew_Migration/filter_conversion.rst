@@ -32,7 +32,7 @@ files into one product all of this into a sarra plugin...
 **sarracenia** supports a lot of possible plugins in all of its programs.
 If we take the simpler form of filter one to one, and we want to translated
 this into a **sarra** process we need to receive the posting of a local product,
- generate a resulting product and post the notification for it. It is easy to
+generate a resulting product and post the notification for it. It is easy to
 see that can be done using an **sr-sarra** process. 
 
 
@@ -222,7 +222,7 @@ Examining **on_file_converted** you will find an after_accept function
 that removes filter extensions from the filename. This was required because
 old sundew clients needed to receive sarracenia converted products without
 their specific extension name. When this is required, the **on_file_converted**
- plugin can be added to the sender config. So example, a converted product
+plugin can be added to the sender config. So example, a converted product
 to PNG, in sarra would have a .png extension. Should it be required to send
 it to a sundew client with option *filename NONE*  without the plugin
 the client would receive  *WHATFN.png:...:...*  with the plugin, it receives

@@ -23,21 +23,23 @@ logger = logging.getLogger(__name__)
 class Retry(FlowCB):
     """
     overall goal:  
+
     * When file transfers fail, write the messages to a queue to be retried later. 
-        There is also a second retry queue for failed posts.
+      There is also a second retry queue for failed posts.
 
     how it works:
+
     * the after_accept checks how many incoming messages we received.
-        If there is a full batch to process, don't try to retry any.
+      If there is a full batch to process, don't try to retry any.
 
     * if there is room, then fill in the batch with some retry requests.
 
     * when after_work is called, the worklist.failed list of messages
-        is the files where the transfer failed. write those messages to
-        a retry queue.
+      is the files where the transfer failed. write those messages to
+      a retry queue.
 
     * the DiskQueue or RedisQueue classes are used to store the retries, and it handles
-        expiry on each housekeeping event.
+      expiry on each housekeeping event.
 
     """
     def __init__(self, options) -> None:

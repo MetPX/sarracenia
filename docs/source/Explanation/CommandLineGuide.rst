@@ -41,7 +41,7 @@ to reduce the size of individual components.  The components are:
  - winnow - copy notification messages, suppressing duplicates.
  
 All of these components accept the same options, with the same effects.
-There is also `sr3_cpump(1) <../Reference/sr3_cpump.1.rst>`_ which is a C version that implements a
+There is also `sr3_cpump(1) <../Reference/sr3_cpump.1.html>`_ which is a C version that implements a
 subset of the options here, but where they are implemented, they have the same effect.
 
 The **sr3** command usually takes two arguments: an action followed by a list
@@ -2187,7 +2187,7 @@ the network separately, and in parallel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 The *outlet* option allows the final output to be other than a post.  
-See `sr3_cpump(1) <sr3_cpump.1.rst>`_ for details.
+See `sr3_cpump(1) <sr3_cpump.1.html>`_ for details.
 
 [-pbd|--post_baseDir <path>] (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
