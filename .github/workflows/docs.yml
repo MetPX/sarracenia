@@ -26,10 +26,10 @@ jobs:
       uses: actions/checkout@master
       with:
         fetch-depth: 0
-    - name: install Sarracenia
-      run: |
-        pip3 install -r requirements.txt
-        pip3 install .
+#    - name: install Sarracenia
+#      run: |
+#        pip3 install -r requirements.txt
+#        pip3 install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v3
       with:
