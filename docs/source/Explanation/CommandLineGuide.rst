@@ -14,7 +14,7 @@ the state of all components. It then makes the change requested.
   **sr3** *options* *action* [ *component/configuration* ... ]
 
 sr3 components are used to publish to and download files from websites or file servers 
-that provide `sr_post(7) <../Reference/sr_post.7.rst>`_ protocol notifications. Such sites 
+that provide `sr_post(7) <../Reference/sr_post.7.html>`_ protocol notifications. Such sites 
 publish notification messages for each file as soon as it is available. Clients connect to a
 *broker* (often the same as the server itself) and subscribe to the notifications.
 The *sr_post* notifications provide true push notices for web-accessible folders (WAF),
@@ -939,7 +939,7 @@ By default, sr_poll sends its post notification message to the broker with defau
 It can be given incomplete if it is well defined in the credentials.conf file.
 
 Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
-Refer to `sr_post(7) <../Reference/sr_post.7.rst>`_ - to understand the complete notification format.
+Refer to `sr_post(7) <../Reference/sr_post.7.html>`_ - to understand the complete notification format.
 
 
 These options set what files the user wants to be notified for and where
@@ -1106,7 +1106,7 @@ check in various directories for some files. When a file is
 present, modified or created in the remote directory, the program will
 notify about the new product. 
 
-The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.rst>`_
+The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.html>`_
 
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *pollUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists

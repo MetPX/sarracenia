@@ -93,7 +93,7 @@ File Detection Strategy Table
 |Alternate    | - Adds delay in every transfer.       |sources.                              |
 |setting      | - Vulnerable to network failures.     |                                      |
 |             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
-|nodupe_\     |                                       |                                      |
+|nodupe\_\    |                                       |                                      |
 |fileAgeMin   |                                       |If a process is re-writing a file     |
 |             |                                       |often, can use mtime to smooth out    |
 |             |                                       |the i/o pattern, by slowing posts.    |

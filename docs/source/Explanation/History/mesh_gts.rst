@@ -167,7 +167,7 @@ In practice, without careful design & implementation, the performance can
 devolve to N**2.
 
 .. [2] Algorithmic complexity expresses how many computer operations are
-  needed to perform a function.  For example, to search through a list of 
+  needed to perform a function. For example, to search through a list of 
   N items sequentially would require a computer to perform N operations, 
   we then say the algorithm if on the order of N, or O(N). If one sorts 
   the list, a binary search takes only log N operations to find a 

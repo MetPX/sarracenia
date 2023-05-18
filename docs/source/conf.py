@@ -16,6 +16,8 @@
 
 # -- Project information -----------------------------------------------------
 
+import os,re
+
 project = 'Sarracenia'
 copyright = '2022, Shared Services Canada, Government of Canada, GPLv2'
 author = 'Data Interchange Team'
