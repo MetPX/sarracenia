@@ -1675,8 +1675,13 @@ class sr_GlobalState:
 
             if ('instance_pids' in self.states[c][cfg]) and len(
                     self.states[c][cfg]['instance_pids']) > 0:
-                logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
-                continue
+                running=0
+                for p in self.states[c][cfg]['instance_pids'] :
+                    if p in self.procs:
+                        running +=1
+                if running > 0:
+                    logging.error("cannot remove %s/%s while it is running! " % ( c, cfg ) )
+                    continue
 
             cfgfile = self.user_config_dir + os.sep + c + os.sep + cfg + '.conf'
             statefile = self.user_cache_dir + os.sep + c + os.sep + cfg
@@ -2007,7 +2012,7 @@ class sr_GlobalState:
             print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             #print('\t%s: %s' % (pid, self.procs[pid] ))
 
-        #print('\n\nConfigs\n\n')
+        print('},\n\n\"Configs\" : {\n\n')
         for c in self.configs:
             print('\t\"%s\": { ' % c)
             for cfg in self.configs[c]:

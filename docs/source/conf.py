@@ -14,17 +14,28 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-from sarracenia import __version__
-
-
 # -- Project information -----------------------------------------------------
 
 project = 'Sarracenia'
 copyright = '2022, Shared Services Canada, Government of Canada, GPLv2'
 author = 'Data Interchange Team'
 
+file_ = '../sarracenia/__init__.py'
+filepath = os.path.join(os.path.abspath('..'), file_)
+
+with open(filepath) as fh:
+    contents = fh.read().strip()
+
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              contents, re.M)
+    if version_match:
+        version = version_match.group(1)
+    else:
+        version = 'UNKNOWN'
+
 # The full version, including alpha/beta/rc tags
-release = __version__
+release = version
+
 
 
 # -- General configuration ---------------------------------------------------
