@@ -1,6 +1,5 @@
 name: Build docs and publish to gh-pages branch and GitHub Pages
-inputs:
-   python_version:3.11
+
 on:
   push:
     branches:
