@@ -15,11 +15,11 @@ jobs:
         sudo update-locale
     - name: Install dependencies
       run: |
-        sudo apt-get update -y && sudo apt-get install -y pandoc dia
+        sudo apt-get update -y && sudo apt-get install -y pandoc
     - name: Setup python
       uses: actions/setup-python@v3
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: install Sarracenia
@@ -29,9 +29,8 @@ jobs:
         which pip3
         which python
         export PATH=${HOME}/.local/bin:${PATH}
-        pip3 install --upgrade pip
         pip3 install -r requirements.txt
-        pip3 install -e .
+        pip3 install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v3
       with:
