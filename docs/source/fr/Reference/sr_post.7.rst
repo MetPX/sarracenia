@@ -286,7 +286,7 @@ les données ont été introduites dans le réseau. Cela est utilisé pour renvo
 au cluster chaque fois que ses produits sont utilisés.
 
 **fileOp { "link": "<valeur du lien symbolique>" }**
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lorsque le fichier à transférer est un lien symbolique, l’en-tête 'fileOp' est créé avec
 le sous-entête "link" pour contenir sa valeur.
@@ -499,7 +499,7 @@ Pour l’implémentation sarracenia, les codes suivants sont définis :
 |   xxx    | Les codes d’état de validation des messages d´annonce et des fichiers dépendent du script  |
 +----------+--------------------------------------------------------------------------------------------+
 
-FIXME: will 3 error codes that are the same cause confusion? ^
+FIXME: will 3 error codes that are the same cause confusion?
 
 Autres champs de rapport
 ~~~~~~~~~~~~~~~~~~~~~~~~

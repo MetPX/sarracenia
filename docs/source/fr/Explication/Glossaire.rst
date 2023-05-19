@@ -29,6 +29,7 @@ cette fois-là, l’application s’appuiera sur des agents de messages standard
 
 Contre-Pression (anglais: Back Pressure)
 ----------------------------------------
+
 Lorsqu’un nœud de pompage de données connaît une latence élevée, il est préférable de ne pas importer plus de données
 à un rythme élevé et aggraver la surcharge. Au lieu de cela, il faut s’abstenir d’accepter des messages
 à partir du nœud afin que ceux en amont maintiennent des files d’attente, et d’autres nœuds moins occupés peuvent prendre
@@ -45,22 +46,26 @@ la bibliothèque python obtiendrait des accusés de réception contrôlés par l
 
 Pompes sans Données (anglais: Dataless Pumps)
 ---------------------------------------------
+
 Il y a des pompes qui n’ont pas de moteur de transport, elles ne font que servir de médiateur
 entre transferts pour d’autres serveurs, en mettant les messages à la disposition des clients et
 de serveurs dans leur zone de réseau.
 
 Transferts sans Données (Dataless Transfers)
 --------------------------------------------
+
 Parfois, les transferts à travers les pompes se font sans utiliser d’espace local sur la pompe.
 
 Latence (anglais: Latency)
--------------------------
+--------------------------
+
 Temps écoulé entre l’insertion des données dans un réseau (l’heure à laquelle le message relatif à un fichier est publié pour la première fois)
 au moment où il est mis à disposition sur un point final.  Nous voulons minimiser la latence dans les transferts,
 et une latence élevée peut indiquer des problèmes de configuration ou de capacité.
 
 MQTT
 ----
+
 Le Message Queue Telemetry Transport (MQTT) version 5 est un deuxième protocole de fil d’attente de messages avec toutes les fonctionnalités
 nécessaire pour soutenir les modèles d’échange de données de sarracenia.
 
@@ -70,11 +75,13 @@ nécessaire pour soutenir les modèles d’échange de données de sarracenia.
 
 Cartes Réseau (anglais: Network Maps)
 -------------------------------------
+
 Chaque pompe doit fournir une carte du réseau pour informer les utilisateurs de la destination connue
 qu’ils devraient faire de la publicité pour envoyer à. *FIXME* non défini jusqu’à présent.
 
 Poste, Notice, Notification, Avis, Annonce
 ------------------------------------------
+
 Il s’agit de messages AMQP créés par post, poll ou watch pour permettre aux utilisateurs
 de savoir qu’un fichier particulier est prêt. Le format de ces messages AMQP est
 décrit par la page de manuel `sr_post(7) <../Reference/sr_post.7.html>`_. Tous ces
@@ -84,6 +91,7 @@ source d’origine de la publication, afin que les messages de rapport puissent 
 
 Pompe
 -----
+
 Une pompe est un hôte exécutant Sarracenia, soit un serveur AMQP rabbitmq, soit un MQTT
 comme mosquitto. Le middleware de mise en fil d’attente des messages s’appelle un *broker*.
 La pompe a des utilisateurs administratifs et gère le courtier MQP
@@ -103,6 +111,7 @@ obtenir les données de cette pompe.
 
 Réseau de Pompage (anglais: Pumping Network)
 --------------------------------------------
+
 Un certain nombre de serveurs d’interconnexion exécutant la stack sarracenia. Chaque stack
 détermine la façon dont il achemine les éléments vers le suivant, de sorte que la taille ou l’étendue entière
 du réseau peut ne pas être connu à ceux qui y mettent des données.
@@ -142,6 +151,7 @@ Les abonnés utilisent `subscribe(1) <../Reference/sr3.1.html#subscribe>`_
 
 Sundew
 ------
+
 `MetPX Sundew <https://github.com/MetPX/Sundew>`_ est l’ancêtre de Sarracenia.
 Il s’agit d’une pompe de données orientée TCP/IP WMO 386 pure. Les fichiers de configuration se ressemblent,
 mais les algorithmes et les concepts de routage sont très différents. MetPX est une push-only
@@ -152,6 +162,7 @@ Plus d’histoire `here <History/Evolution.html>`_
 
 WMO
 ---
+
 L’Organisation météorologique mondiale, est une partie des Nations Unies qui fait de la surveillance, prévision et alerte
 environnementale et de temps de chaque pays en tant que membres. Depuis de nombreuses décennies, il y a
 un échange en temps réel de données météorologiques entre les pays, souvent même en temps de guerre.  Les normes

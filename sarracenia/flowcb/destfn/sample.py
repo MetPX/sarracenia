@@ -1,17 +1,16 @@
-
 """
 
   a destfn plugin script is used by senders or subscribers to do complex file naming.
-  this is an API demonstrator that prefixes the name delivered with 'renamed_'::
+  this is an API demonstrator that prefixes the name delivered with 'renamed\_'::
 
      filename DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
 
-  An alternative method of invocation is to apply it selectively
+  An alternative method of invocation is to apply it selectively::
 
      accept k* DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
 
   As with other flowcb plugins, the import will be done using normal
-  python import mechanism equivalent to:
+  python import mechanism equivalent to::
 
      import sarracenia.flowcb.destfn.sample
 

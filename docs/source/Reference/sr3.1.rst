@@ -135,7 +135,7 @@ called *myflow* would be here:
 The top of the tree has  *~/.config/sarra/default.conf* which contains settings that
 are read as defaults for any component on start up.  In the same
 directory, *~/.config/sarra/credentials.conf* contains credentials (passwords) to
-be used by sarracenia ( `CREDENTIALS`_ for details. )
+be used by sarracenia ( `CREDENTIALS <sr3_credentials.7.html>`_ for details. )
 
 One can also set the XDG_CONFIG_HOME environment variable to override default placement, or
 individual configuration files can be placed in any directory and invoked with the

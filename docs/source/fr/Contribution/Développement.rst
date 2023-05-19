@@ -447,7 +447,7 @@ du test montre les fonctionnalités couvertes.
 | subscribe t_ddx   | copy from data mart to local broker  | lit le data mart public amqps (v02) |
 |                   | posting notification messages to     | comme utilisateur ordinaire.        |
 |                   | local xwinno00 and xwinnow01         |                                     |
-|                   | exchanges.                           | fil d'attente partagé et plusieurs |
+|                   | exchanges.                           | fil d'attente partagé et plusieurs  |
 |                   |                                      | processus                           |
 |                   |                                      | 3 instances téléchargent de chaque q|
 |                   |                                      | poster amqp à un échange local (v02)|
@@ -467,7 +467,7 @@ du test montre les fonctionnalités couvertes.
 | f20               | partir du répertoire local data mart |                                     |
 |                   | (TESTDOCROOT= ~/sarra_devdocroot)    | Télécharger à l’aide de Python      |
 |                   |                                      | intégré                             |
-|                   | Ajouter un en-tête au niveau de la   | fil d'attente partagé et plusieurs |
+|                   | Ajouter un en-tête au niveau de la   | fil d'attente partagé et plusieurs  |
 |                   | couche d'application plus de 255     | processus                           |
 |                   | caractères.                          | 5 instances téléchargent de chaque q|
 |                   |                                      | télécharge avec accel_wget plugin   |
@@ -481,7 +481,7 @@ du test montre les fonctionnalités couvertes.
 | subscribe t       | Télécharge en tant que client à      | lire amqp du courtier local         |
 |                   | partir de localhost au repertoire    | en tant qu'utilisatuer/client       |
 |                   | downloaded_by_sub_t.                 | ordinaire.                          |
-|                   |                                      | fil d'attente partagé et plusieurs |
+|                   |                                      | fil d'attente partagé et plusieurs  |
 |                   |                                      | processus                           |
 |                   |                                      | 5 instances téléchargent de chaque q|
 +-------------------+--------------------------------------+-------------------------------------+

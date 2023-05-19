@@ -29,7 +29,7 @@ applications d'utilisateur normales.
 
 Alors que ce projet a dû souffrir à travers le développement, avec les leçons apprises et les outils
 maintenant disponible, il devrait être simple d’appliquer cette solution à d’autres cas. Le résultat final est
-que l’on ajoute une `Shim Library`_ à l’environnement des utilisateurs (transparent pour les tâches des utilisateurs), et
+que l’on ajoute une `Bibliothèque Shim`_ à l’environnement des utilisateurs (transparent pour les tâches des utilisateurs), et
 puis chaque fois qu’un fichier est écrit, un message AMQP avec les métadonnées du fichier est publié. Un pool de
 démons de transfert sont prêts à transférer les fichiers publiés dans une file d’attente partagée. Le nombre d’abonnés
 est programmable et évolutif, et les techniques et la topologie pour effectuer le transfert sont toutes facilement
@@ -241,7 +241,7 @@ Il existe plusieurs réseaux (40GigE, Infiniband, ainsi que des réseaux de gest
 à utiliser doit également être choisi.  Ensuite, il y a les méthodes de communication (ssh
 sur tcp / ip? BBCP sur TCP/IP ? GPFS sur tcpip? Ipoib? natif-ib?).
 
-.. image:: ../../Explanation/History/HPC_Mirroring_Use_Case/site-store.jpg
+.. image:: ../../../Explanation/History/HPC_Mirroring_Use_Case/site-store.jpg
 
 De nombreuses sources et destinations différentes (ppp, nfs et nœuds de protocole), ainsi que
 de nombreuses méthodes différentes (rcp, scp, bbcp, sscp, cp, dd) ont toutes été testées à des

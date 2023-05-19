@@ -6,6 +6,6 @@ Sarracenia Design Philosophy
    :maxdepth: 1
    :caption: Contents:
 
-   How to run the examples <README.rst>
+   How to run the examples <README.html>
    Amdahl applied <Amdahl_Applied.ipynb>
    CAP Theorem <CAP_Theorem_Applied.ipynb>

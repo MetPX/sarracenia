@@ -5,9 +5,14 @@
   <g id="Background">
     <ellipse style="fill: #ffffff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #000000" cx="221.354" cy="141.35" rx="130.273" ry="103.025"/>
     <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="14.1421" y="120.717">
-      <tspan x="14.1421" y="120.717">sr_post,</tspan>
-      <tspan x="14.1421" y="136.717">sr_watch</tspan>
-      <tspan x="14.1421" y="152.717">sr_sara</tspan>
+      <tspan x="14.1421" y="120.717">post,</tspan>
+      <tspan x="14.1421" y="136.717">poll,</tspan>
+      <tspan x="14.1421" y="152.717">flow</tspan>
+      <tspan x="14.1421" y="168.717">watch</tspan>
+      <tspan x="14.1421" y="184.717"></tspan>
+      <tspan x="14.1421" y="200.717">repost:</tspan>
+      <tspan x="14.1421" y="216.717">sarra, shovel,</tspan>
+      <tspan x="14.1421" y="232.717">subscribe, winnow</tspan>
     </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="26.163" y="51.067">
       <tspan x="26.163" y="51.067"></tspan>
@@ -49,9 +54,9 @@
       <tspan x="149.614" y="154.835"></tspan>
     </text>
     <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="366.194" y="205.404">
-      <tspan x="366.194" y="205.404">sr_subscribe</tspan>
-      <tspan x="366.194" y="221.404">sr_sara</tspan>
-      <tspan x="366.194" y="237.404">sr_log</tspan>
+      <tspan x="366.194" y="205.404">subscribe</tspan>
+      <tspan x="366.194" y="221.404">sarra</tspan>
+      <tspan x="366.194" y="237.404">shovel</tspan>
     </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="366.194" y="126.914">
       <tspan x="366.194" y="126.914">shared queue</tspan>
@@ -115,11 +120,6 @@
     </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="318.612" y="256.304">
       <tspan x="318.612" y="256.304"></tspan>
-    </text>
-    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="14.9099" y="166.502">
-      <tspan x="14.9099" y="166.502">sr_* </tspan>
-      <tspan x="14.9099" y="182.502"></tspan>
-      <tspan x="14.9099" y="198.502">log messages.</tspan>
     </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="55.5686" y="147.764">
       <tspan x="55.5686" y="147.764"></tspan>
@@ -193,9 +193,6 @@
         <tspan x="170.082" y="29.2094">Usage by</tspan>
       </text>
     </g>
-    <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="16.0059" y="181.369">
-      <tspan x="16.0059" y="181.369">can produce</tspan>
-    </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="54.8614" y="187.086">
       <tspan x="54.8614" y="187.086"></tspan>
     </text>
@@ -217,9 +214,9 @@
       <path style="fill: none; stroke-opacity: 1; stroke-width: 2; stroke: #0000ff" d="M 74.8014,133.591 A 605.289,605.289 0 0 1 349.64,215.928"/>
       <polygon style="fill: #0000ff; fill-opacity: 1; stroke-opacity: 1; stroke-width: 2; stroke: #0000ff" fill-rule="evenodd" points="356.088,219.758 344.945,218.834 349.68,215.861 350.142,210.29 "/>
     </g>
-    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="169.028" y="171.755">
-      <tspan x="169.028" y="171.755">post</tspan>
-      <tspan x="169.028" y="187.755">log</tspan>
+    <text font-size="12.8" style="fill: #0000ff; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="164.528" y="182.255">
+      <tspan x="164.528" y="182.255">post</tspan>
+      <tspan x="164.528" y="198.255">report</tspan>
     </text>
     <text font-size="12.8" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="140.916" y="189.099">
       <tspan x="140.916" y="189.099"></tspan>
@@ -247,6 +244,21 @@
     </text>
     <text font-size="12.8" style="fill: #ffa500; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="198.019" y="184.483">
       <tspan x="198.019" y="184.483">messages</tspan>
+    </text>
+    <text font-size="12.7998" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="172.789" y="182.375">
+      <tspan x="172.789" y="182.375"></tspan>
+    </text>
+    <text font-size="12.7998" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="33.2886" y="122.375">
+      <tspan x="33.2886" y="122.375"></tspan>
+    </text>
+    <text font-size="12.7998" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="384.789" y="203.875">
+      <tspan x="384.789" y="203.875"></tspan>
+    </text>
+    <text font-size="12.7998" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="35.2886" y="212.375">
+      <tspan x="35.2886" y="212.375"></tspan>
+    </text>
+    <text font-size="12.7998" style="fill: #000000; fill-opacity: 1; stroke: none;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="31.2886" y="175.375">
+      <tspan x="31.2886" y="175.375"></tspan>
     </text>
   </g>
 </svg>

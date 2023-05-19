@@ -13,6 +13,6 @@ Tutoriel
    Installer
    Mettre_en_place_un_subscriber_distant
    Mettre_en_place_un_subscriber_local
-   hello_world_server
+   hello_world_server.txt
    Windows
 

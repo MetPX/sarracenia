@@ -9,6 +9,7 @@ Config
 
 .. automodule:: sarracenia.config
    :members:
+   :noindex:
 
 Sarracenia
 ----------
@@ -16,6 +17,7 @@ Sarracenia
 .. automodule:: sarracenia
    :members:
    :special-members:
+   :noindex:
 
 Sarracenia.FlowCB
 ------------------
@@ -27,6 +29,7 @@ Callbacks from running Sarracenia.Flows
    :members:
    :private-members:
    :special-members:
+   :noindex:
 
 Sarracenia.Moth
 ----------------
@@ -36,15 +39,18 @@ Sarracenia.Moth
    :members:
    :private-members:
    :special-members:
+   :noindex:
 
 .. automodule:: sarracenia.transfer
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
+   :noindex:
 
 .. automodule:: sarracenia.integrity
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
+   :noindex:

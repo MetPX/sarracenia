@@ -72,7 +72,7 @@ En plus de detail:
  +----------+-------------------------------------------------------------+
  | *gather* | Obtenez de l'information sur une liste initiale de fichiers |
  |          |                                                             |
- |          | A partir: d'une fil d’attente, un répertoire,              |
+ |          | A partir: d'une fil d’attente, un répertoire,               |
  |          | un script de polling.                                       |
  |          |                                                             |
  |          | Sortie: worklist.incoming rempli de messages d'annonce.     |

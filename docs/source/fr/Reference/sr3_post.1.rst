@@ -217,7 +217,7 @@ rename <path>
 Avec l'option *renommer*, l'utilisateur peut suggérer un chemin de destination vers ses fichiers. Si le chemin donné
 se termine par '/', il suggère un chemin de répertoire... Si ce n'est pas le cas, l'option spécifie un changement de nom de fichier.
 
-*sr_post*, et *sr_watch* utilisent un modèle basé sur un fichier basé sur un processus et un cache disque,
+*sr3_post*, et *sr3 watch* utilisent un modèle basé sur un fichier basé sur un processus et un cache disque,
 dont la conception est à filetage unique. La bibliothèque shim est généralement utilisée par de nombreux processus
 à la fois, et aurait des problèmes de conflit de ressources et/ou de corruption avec le cache.
 La bibliothèque shim a donc un cache purement basé sur la mémoire, réglable avec
@@ -255,14 +255,14 @@ sleep *time*
 
   **Cette option n'est disponible que dans l'implémentation c (sr_cpost)**
 
-  Lorsque l'option est définie, elle transforme cpost en sr_watch, *sleep* étant le temps d'attente entre
+  Lorsque l'option est définie, elle transforme cpost en sr3 watch, *sleep* étant le temps d'attente entre
   la génération des événements. Lorsque les fichiers sont écrits fréquemment, il est contre-productif de produire un message pour
   chaque changement, car cela peut produire un flux continu de changements où les transferts ne peuvent pas être effectués assez rapidement
   pour suivre. Dans de telles circonstances, on peut regrouper toutes les modifications apportées à un fichier
   en *sleep*, et produisez un seul message.
 
   REMARQUE::
-      dans sr_cpost, lorsqu'il est combiné avec force_polling (voir `sr_watch(1) <sr3.1.rst#watch>`_ ) l'intervalle de 
+      dans sr_cpost, lorsqu'il est combiné avec force_polling (voir `sr3 watch(1) <sr3.1.html>`_ ) l'intervalle de 
       sommeil ne doit pas être inférieur à environ cinq secondes, car il peut manquer la publication de certains fichiers. 
 
 subtopic <key>

@@ -13,4 +13,3 @@ History
    messages_v02
    messages_v03
    sr3_Announcement
-   talks/SarraIntro/script.txt

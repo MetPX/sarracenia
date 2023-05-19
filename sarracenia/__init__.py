@@ -641,7 +641,7 @@ class Message(dict):
 
     def updatePaths(msg, options, new_dir=None, new_file=None):
         """
-        set the new\_ fields in the message based on changed file placement.
+        set the new\\\_ fields in the message based on changed file placement.
         if new_ options are ommitted updaste the rest of the fields in 
         the message based on their current values.
 

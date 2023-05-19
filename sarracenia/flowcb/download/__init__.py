@@ -29,7 +29,7 @@ download(self,msg):
     for individual file transfers. ideally you set checksums as you download.
             
     looking at self.o.integrity_method to establish download checksum algorithm.
-    might have to allow for cod... say it is checksum_method:
+    might have to allow for cod... say it is checksum_method::
             
          checksum = sarracenia.integrity.Integrity.factory(self.o.checksum_method)
          while downloading:

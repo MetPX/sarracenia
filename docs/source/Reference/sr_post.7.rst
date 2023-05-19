@@ -300,9 +300,11 @@ Additional fields:
 
 **size and blocks**
 ~~~~~~~~~~~~~~~~~~~
+
 .. _parts:
 
-::
+ ::
+
      "size":<sz> , 
                   
      "blocks" : 
@@ -314,13 +316,13 @@ Additional fields:
             "number": <bno>
      }
 
- A header indicating the method and parameters for partitioning applied for the file.
- Partitioning is used to send a single file as a collection of segments, rather than as
- a single entity.  Partitioning is used to accelerate transfers of large data sets by using
- multiple streams, and/or to reduce storage use for extremely large files.
+header indicating the method and parameters for partitioning applied for the file.
+Partitioning is used to send a single file as a collection of segments, rather than as
+a single entity.  Partitioning is used to accelerate transfers of large data sets by using
+multiple streams, and/or to reduce storage use for extremely large files.
 
- When transferring partitioned files, each partition is advertised and potentially transported
- independently across a data pumping network.
+When transferring partitioned files, each partition is advertised and potentially transported
+independently across a data pumping network.
 
  *<method>*
  
@@ -342,8 +344,8 @@ Additional fields:
 
  *<blocksize in bytes>: bsz*
 
- The number of bytes in a block.  When using method 1, the size of the block is the size of the file.  
- Remaining fields only useful for partitioned files.	
+The number of bytes in a block.  When using method 1, the size of the block is the size of the file.  
+Remaining fields only useful for partitioned files.	
 
  *<blocks in total>: blktot*
  the integer total number of blocks in the file (last block may be partial)

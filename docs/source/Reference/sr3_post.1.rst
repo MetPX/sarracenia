@@ -112,7 +112,7 @@ without authentication on dd.weather.gc.ca.
 ARGUMENTS AND OPTIONS
 =====================
 
-Please refer to the `sr3_options(7) <sr3_options(7)>`_ manual page for a detailed description of 
+Please refer to the `sr3_options(7) <sr3_options.7.html>`_ manual page for a detailed description of 
 all settings, and methods of specifying them.
 
 path path1 path2 ... pathN
@@ -264,7 +264,7 @@ sleep *time*
   in *sleep* time, and produce a single post.
 
   NOTE::
-      in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr3.1.rst#watch>`_ ) the sleep 
+      in sr_cpost, when combined with force_polling (see `sr_watch(1) <sr3.1.html#watch>`_ ) the sleep 
       interval should not be less than about five seconds, as it may miss posting some files.
 
    

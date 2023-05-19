@@ -77,7 +77,7 @@ déployées à l'appui du programme Environnement Canada, surtout pour les
 prévisions météorologiques opérationnelles, en place depuis le début des
 travaux jusqu´à janvier 2018.
 
-.. image:: ../../Explanation/History/deployment-2018/E-services_data_volume_pas.png
+.. image:: ../../../Explanation/History/deployment-2018/E-services_data_volume_pas.png
 
 Sarracenia est utilisée de façon opérationnelle pour acquérir environ quatre téraoctets.
 des observations provenant de systèmes automatisés d'observation météorologique, des RADARS météorologiques qui
@@ -160,7 +160,7 @@ est transparent pour les données RADAR, en ce sens que les scans de volume sero
 téléchargé à partir de l'autre concentrateur, et l'autre processeur URP produira le fichier
 produits nécessaires.
 
-.. image:: ../../Explanation/History/deployment-2018/RADAR_DI_LogicFlow_Current.gif
+.. image:: ../../../Explanation/History/deployment-2018/RADAR_DI_LogicFlow_Current.gif
     :scale: 20%
 
 Chaque site a plusieurs serveurs Ninjo. Nous utilisons des serveurs de fichiers
@@ -183,7 +183,7 @@ Tout au long de l'année 2017, les travaux se poursuivaient pour mettre en place
 un miroir à grande vitesse entre les magasins du site du superordinateur pour
 permettre le basculement. Ces travaux sont maintenant dans une phase finale de
 déploiement et devraient être opérationnels d'ici le printemps 2018.
-Pour plus de détails, voir : `HPC Mirroring Use Case (anglais) <../mirroring_use_use_case.rst>`_
+Pour plus de détails, voir : `Cas d´utilisation de miroitage CHP <HPC_mirroring_cas_dutilisation.html>`_
 
 
 
