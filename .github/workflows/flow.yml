@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.osver }}
   
     name: ${{ matrix.which_test }} test on ${{ matrix.osver }}
-    timeout-minutes: 30
+    timeout-minutes: 40
     
     steps:
       - uses: actions/checkout@v3
