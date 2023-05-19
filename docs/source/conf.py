@@ -22,7 +22,10 @@ project = 'Sarracenia'
 copyright = '2022, Shared Services Canada, Government of Canada, GPLv2'
 author = 'Data Interchange Team'
 
-file_ = '../../sarracenia/__init__.py'
+hoho = os.getcwd()
+print( f'current working directory {hoho}' )
+
+file_ = '../sarracenia/__init__.py'
 filepath = os.path.join(os.path.abspath('..'), file_)
 
 with open(filepath) as fh:
