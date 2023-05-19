@@ -6,7 +6,7 @@ Guide De Ligne De Commande
 SR3 - Tout
 ==========
 
-**sr3* est un outil de ligne de commande pour gérer les configurations
+**sr3** est un outil de ligne de commande pour gérer les configurations
 `Sarracenia <https://github.com/MetPX/sarracenia>`_ individuellement ou en groupe. Pour l’utilisateur actuel,
 il lit sur tous les fichiers de configuration, des fichiers d’état et consulte la table de processus pour déterminer
 l’état de tous les composants. Il effectue ensuite la modification demandée.
@@ -14,7 +14,7 @@ l’état de tous les composants. Il effectue ensuite la modification demandée.
   **sr3** *options* *action* [ *composant/configuration* ... ]
 
 Les composants sr3 sont utilisés pour publier et télécharger des fichiers à partir de sites Web ou de serveurs de fichiers
-qui fournissent des `sr3_post(7) <.. Notifications du protocole /Reference/sr3_post.7.rst>`_. Ces sites
+qui fournissent des `sr3_post(7) <../Reference/sr3_post.7.html>`_. Ces sites
 publient des messages pour chaque fichier dès qu’il est disponible. Les clients se connectent à un
 *broker* (souvent le même que le serveur) et s'abonnent aux notifications.
 Les notifications *sr3_post* fournissent de véritables notifications push pour les dossiers accessibles sur le Web (WAF),
@@ -41,7 +41,7 @@ pour réduire la taille des composants individuels.  Les composants sont les sui
  - winnow - copier des messages, en supprimant les doublons.
 
 Tous ces composants acceptent les mêmes options, avec les mêmes effets.
-Il existe également des `sr3_cpump(1). <../Reference/sr3_cpump.1.rst>`_ qui est une version C qui implémente un
+Il existe également des `sr3_cpump(1). <../Reference/sr3_cpump.1.html>`_ qui est une version C qui implémente un
 sous-ensemble des options ici, mais là où elles sont implémentées, elles ont le même effet.
 
 La commande **sr3** prend généralement deux arguments : une action suivie d’une liste
@@ -86,11 +86,11 @@ utilisant simplement <ctrl-c> sur linux. ou utilise d'autres moyens pour tuer le
 Une fois qu’une configuration a été affinée, *start* lance le composant en tant que service d'arrière-plan
 (démon ou flotte de démons dont le numéro est contrôlé par l’option *instances*).
 Si plusieurs configurations et composants doivent être exécutés ensemble, l’ensemble de la flotte
-peut être contrôlé de la même manière à l’aide de la commande `sr3(1). <../Reference/sr3.1.html>'`_.
+peut être contrôlé de la même manière à l’aide de la commande `sr3(1). <../Reference/sr3.1.html>`_.
 
 Pour que les composants roulent tous en meme temps,sur Linux on peut utiliser l'intégration
 `systemd <https://www.freedesktop.org/wiki/Software/systemd/>`_ , comme décrit dans
-`Admin Guide <../How2Guides/Admin.rst>`_ . Sur Windows, il est possible de configurer un service,
+`Admin Guide <../How2Guides/Admin.html>`_ . Sur Windows, il est possible de configurer un service,
 comme décrit dans `Windows user manual <../Tutorials/Windows.html>`_
 
 Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les
@@ -578,9 +578,9 @@ La ceuillette de messages
 
 La plupart des composants Metpx Sarracenia boucle sur la ceuillette et/ou
 réception de messages AMQP. Habituellement, les messages d'intérêt sont
-dans le format d´une *avis* `sr_post(7) <sr_post.7.rst>`_, annonçant la disponibilité
+dans le format d´une *avis* `sr_post(7) <sr_post.7.html>`_, annonçant la disponibilité
 d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
-Il y a également le format *rapport* `sr_report(7) <sr_report.7.rst>`_ qui peuvent
+Il y a également le format *rapport* `sr_report(7) <sr_report.7.html>`_ qui peuvent
 être traités avec les mêmes outils. Les messages AMQP sont publiés avec
 un *exchange* comme destinataire. Sur un courtier (serveur AMQP.) L'exchange
 délivre des messages aux files d'attente. Pour recevoir de messages,
@@ -691,7 +691,7 @@ fois qu'une fil d'attente existe sur le courtier, il doit être lié (*bound*) �
 une échange. Les liaisons (*bindings*) définissent ce que l'on entend par
 les avis que le programme reçoit. La racine du thème
 est fixe, indiquant la version du protocole et le type de l'arborescence.
-(mais les développeurs peuvent l'écraser avec le **topic_prefix*.
+(mais les développeurs peuvent l'écraser avec le **topic_prefix**.
 option.)
 
 Ces options définissent les messages (notifications URL) que le programme reçoit :
@@ -741,7 +741,7 @@ comme suit :
        *                correspond a un seul nom de repertoire
        #                correspond à toute arborescence de répertoires restante
 
-remarque:
+.. Note: 
   Lorsque les répertoires ont des wildcards, ou espaces dans leurs noms, ils
   seront encodé par l'URL ou ( '#' devient %23 ). Lorsque les répertoires ont
   des points dans leur nom, cela changera la hiérarchie des thèmes.
@@ -944,7 +944,7 @@ Par défaut, sr_poll envoie son message de publication au courtier avec l'échan
 Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.
 
 Référez `sr3_post(1) <../Reference/sr3_post.1.html>`_ - pour comprendre l’ensemble du processus de notification.
-Référez `sr3_post(7) <../Reference/sr3_post.7.rst>`_ - pour comprendre le format complet de notification.
+Référez `sr3_post(7) <../Reference/sr3_post.7.html>`_ - pour comprendre le format complet de notification.
 
 Ces options définissent les fichiers pour lesquels l’utilisateur souhaite être averti et où
  il sera placé, et sous quel nom.
@@ -1106,7 +1106,7 @@ vérifier divers répertoires pour certains fichiers. Lorsqu’un fichier est
 présent, modifié, ou créé dans le répertoire distant, le programme
 informe qu'il y a nouveau produit.
 
-Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.rst>`_
+Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
 **poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
 une *pollUrl* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
@@ -1163,7 +1163,7 @@ Pour mettre les fichiers à la disposition des abonnés, **sr3_post** envoie les
 à un serveur AMQP ou MQTT, également appelé broker.
 
 Il existe de nombreuses options pour la détection des modifications dans les répertoires, pour
-une discussion détaillée des options dans Sarracenia, voir `<DetectFileReady.rst>`_
+une discussion détaillée des options dans Sarracenia, voir `<DetectFileReady.html>`_
 
 Cette page de manuel concerne principalement l’implémentation de python,
 mais il y a aussi une implémentation en C, qui fonctionne presque pareille.
@@ -1450,7 +1450,7 @@ WATCH
 -----
 
 Surveille un répertoire et publie des messages lorsque les fichiers dans le répertoire changent.
-Ses arguments sont très similaires à `sr_post <sr_post <sr_post.1.rst>`_.
+Ses arguments sont très similaires à `sr_post <sr_post <sr_post.1.html>`_.
 Dans la suite MetPX-Sarracenia, l'objectif principal est d'afficher la disponibilité et modifications
 de ses dossiers. Les abonnés utilisent *sr_subscribe* pour consommer le message et télécharger les fichiers changés.
 
@@ -1564,7 +1564,7 @@ est ignorée. Si ce n'est pas le cas, le fichier est nouveau, et le **sum** est 
 dans le cache et l'avis est affiché.
 
 **winnow** peut être utilisé pour couper les messages de `sr3_post <../Reference/sr3_post.1.html>`_,
-`sr_poll(1) <sr_poll.1.rst>`_ ou `sr_watch(1) <sr_watch.1.rst>`_ etc..... C'est
+`sr_poll(1) <sr_poll.1.html>`_ ou `sr_watch(1) <sr_watch.1.html>`_ etc..... C'est
 utilisé lorsqu'il y a plusieurs sources de données identiques, de sorte que les
 clients ne téléchargent que le fichier une seule fois, à partir de la première
 source qui les a publié.
@@ -1675,7 +1675,7 @@ sequence #2::
   reject .*\.gif
 
 
-.. remarque::
+.. Note:
    FIXME : est-ce que cela ne correspond qu'aux fichiers se terminant par'gif' ou devrions-nous y ajouter un $ ?
    correspondra-t-il à quelque chose comme.gif2 ? y a-t-il un .* supposé à la fin ?
 
@@ -1735,7 +1735,7 @@ Le fichier log.py inclus dans le package est le suivant::
 C’est une classe python normale, déclarée comme enfant de la classe sarracenia.flowcb.FlowCB.
 Les méthodes (noms de fonction) dans le plugin décrivent quand
 ces routines seront appelées. Pour plus de détails, consultez le
-`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.html>`_
 
 Pour ajouter un traitement spécial des messages, créez un module en python
 et faites-le inclure des points d’entrée.
@@ -1784,7 +1784,7 @@ ressemblerait à ceci ::
   logger.warning("loading")
 
 Pour plus de détails sur la mise en œuvre des prolongations, consultez le
-`Programmer's Guide <../Explanation/SarraPluginDev.rst>`_
+`Programmer's Guide <../Explanation/SarraPluginDev.html>`_
 
 Plugins v2 Obsolètes
 --------------------
@@ -1887,7 +1887,7 @@ Fichiers journal et Suivi
 - permLog ( défaut: 0600 )
    Bits d’autorisation à définir sur les fichiers journaux.
 
-Voir le `Subscriber Guide <../How2Guides/subscriber.rst>` pour une discussion plus détaillée sur les
+Voir le `Subscriber Guide <../How2Guides/subscriber.html>` pour une discussion plus détaillée sur les
 options de journalisations et de techniques.
 
 IDENTIFICATION (CREDENTIALS)
@@ -1952,7 +1952,8 @@ Détails pris en charge ::
 - ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Jeton de porteur pour l’authentification
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement déterminée. Cela peut être remplacé en spécifiant explicitement une méthode de connexion, ce qui peut être nécessaire si un courtier prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement sélectionnée.
 
-Remarque::
+.. Note::
+
  Les informations d’identification SFTP sont facultatives, car sarracenia cherchera dans le répertoire .ssh
  et utilisera les informations d’identification SSH normales qui s’y trouvent.
 
@@ -2062,7 +2063,7 @@ Vous pouvez également exécuter plusieurs abonnements avec différents fichiers
 avoir plusieurs flux de téléchargement dans le même répertoire,
 et ce flux de téléchargement peut également être multi-flux.
 
-.. REMARQUE::
+.. Note::
 
   Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente prennent des ressources sur
   les courtiers, et sont nettoyés de temps en temps.  Une fil d’attente à laquelle on n’accède pas pour
@@ -2106,7 +2107,7 @@ Dans le répertoire ~/.cache/sarra/log::
   Un .sender_configname_$instance.log  est créé en tant que journal du processus $instance.
 
 .. NOTE::
-  Un bug connu dans l’interface de gestion '`sr <sr.8.rst>_` signifie que l’instance doit
+  Un bug connu dans l’interface de gestion '`sr <sr.8.html>_` signifie que l’instance doit
   toujours être dans le fichier .conf (pas un .inc) et doit toujours être un nombre
   (pas une variable substituée ou une autre valeur plus complexe.
 
@@ -2163,7 +2164,7 @@ et en parallèle.  Lorsque les fichiers changent, les transferts sont
 optimisé en n'envoyant que des portions qui ont changé.
 
 L'option *outlet*  permet la sortie finale d'être autre chose qu'un post.
-Voir `sr3_cpump(1) <sr3_cpump.1.rst>`_ pour plus de détails.
+Voir `sr3_cpump(1) <sr3_cpump.1.html>`_ pour plus de détails.
 
 [-pbd|--post_baseDir <path>] (facultatif)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2353,7 +2354,7 @@ def registered_as(self) :
        return ['ftp','ftps']
 
 
-Voir le `Programming Guide <../Explanation/SarraPluginDev.rst>`_ pour plus d’informations sur le développement d’extensions.
+Voir le `Programming Guide <../Explanation/SarraPluginDev.html>`_ pour plus d’informations sur le développement d’extensions.
 
 
 
@@ -2427,7 +2428,7 @@ des mêmes activités manuellement en manipulant les fichiers dans les paramètr
 dans l'annuaire de l'entreprise.  Les fichiers de configuration pour une configuration sr_subscribe.
 appelé *myflow* serait ici :
 
- - linux : ~/.config/sarra/subscribe/myflow.conf (selon : `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst>`_ )
+ - linux : ~/.config/sarra/subscribe/myflow.conf (selon : `XDG Open Directory Specication <https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html>`_ )
 
  - Windows : %AppDir%/science.gc.ca/sarra/myflow.conf, cela pourrait être :
    C:\Users\peter\AppData\Local\science.gc.ca\sarra\sarra\myflow.conf
@@ -2522,12 +2523,12 @@ Les mots-clés possibles sont :
 
 Keyword peut être ajouté à l’option **accept**. Le keyword est une des options **filename**.
 Un message qui correspond au modèle accept regexp aura son remote_file
-appliqué à cette option de mot-clé.  Ce mot-clé a la priorité sur le précédent **nom de fichier**.
+appliqué à cette option de mot-clé. Ce mot-clé a la priorité sur le précédent **nom de fichier**.
 
 Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message est placée
 entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
 Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé **${0}** dans le nom du répertoire...
-le second **{1} $ ** etc.
+le second **{1} $** etc.
 
 Exemple d’utilisation ::
 
@@ -2553,7 +2554,7 @@ Un message sélectionné par le premier *accept* sera remis inaltérée dans le 
 
 Un message sélectionné par le deuxième *accept* sera remis inaltérée dans deuxième répertoire.
 
-Un message sélectionné par le troisième *accept sera renommé « fichier_de_type3 » dans le deuxième répertoire.
+Un message sélectionné par le troisième *accept* sera renommé « fichier_de_type3 » dans le deuxième répertoire.
 
 Un message sélectionné par le quatrième *accept* sera remis inaltérée à un répertoire.
 

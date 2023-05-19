@@ -92,8 +92,7 @@ différents ensembles de paramètres d’options par défaut pour couvrir un cas
 
 
 * `cpump <../Explication/CommandLineGuide.html#cpump>`_ - copier un message d'annonce d'une pompe a une deuxième pompe (une implémentation C d'un shovel.)
-* `flow <../Explication/CommandLineGuide.html#flow>`_ - flux générique, pas de valeurs par défaut, bonne base pour convenir à la construction personnalisée
- les flux
+* `flow <../Explication/CommandLineGuide.html#flow>`_ - flux générique, pas de valeurs par défaut, bonne base pour convenir à la construction personnalisée les flux
 * `poll <../Explication/CommandLineGuide.html#poll>`_ - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages d'annonce pour un traitement.
 * `post|sr3_post|sr_cpost|watch <../Explication/CommandLineGuide.html#post-or-watch>`_ - créer es messages d'annonce pour les fichiers qui doivent être traités.
 * `sarra <../Explication/CommandLineGuide.html#sarra>`_ - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.

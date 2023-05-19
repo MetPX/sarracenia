@@ -1,12 +1,13 @@
 
 Modifications apportées pour créer la v03
-==========================
+=========================================
 
 Le format réel est défini `ici <../../Reference/sr_post.7.html>`_
 Une explication de la motivation des changements est ci-dessous:
 
 Différences par rapport à v02
 -----------------------------
+
 La version 03 est un changement d’encodage, mais la sémantique des champs
 sont inchangés par rapport à la version 02. Les modifications sont limitées à la façon dont les champs
 sont placés dans les messages. Dans v02, les en-têtes AMQP étaient utilisés pour stocker la valeur des

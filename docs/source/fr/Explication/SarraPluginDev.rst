@@ -527,7 +527,7 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 |                     |                                                    |
 |                     | Pour indiquer l’échec du traitement, déplacez :    |
 |                     | worklist.incoming -> worklist.failed               |
-|                     |ira dans la fil d’attente pour réessayer plus tard  |
+|                     | ira dans la fil d’attente pour réessaie plus tard  |
 |                     |                                                    |
 |                     | Exaeples: msg_* dans le répertoire exemples        |
 |                     |                                                    |
@@ -683,7 +683,8 @@ devient::
 Aucun filtrage des fichiers de travail par l’utilisateur n’est requis, et l’ingestion de fichiers partiels est
 complètement évité.
 
-.. REMARQUE::
+.. NOTE::
+
    Dans le cas où un grand nombre d’instances sr_subscribe fonctionnent
    sur la même configuration, il y a une légère probabilité que les notifications
    peuvent se corrompre mutuellement dans le canal nommé.
@@ -843,7 +844,8 @@ de messages.  Un message correspondra à un fichier.
 
 les routines after_accept acceptent une liste de travail comme argument.
 
-.. avertissement::
+.. Note::
+
    **FIXME**: peut-être montrer un moyen de vérifier l’en-tête des pièces
    avec une instruction afin d’agir uniquement sur le message de première partie
    pour les fichiers longs.
@@ -952,7 +954,7 @@ On peut appeler des fonctions liées à sarracenia directement à partir de prog
 Pour l’instant, il est préférable de consulter le `Tutoriels <../Tutoriels>`_  inclus avec Sarracenia,
 qui ont quelques exemples d’une telle utilisation.
 
-.. avertissement::
+.. Note::
     **FIXME**, lien vers amqplib ou liaisons java, et pointeur vers les pages de manuel sr_post et sr_report section 7.
 
 
