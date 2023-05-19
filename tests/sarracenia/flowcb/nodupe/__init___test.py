@@ -55,10 +55,10 @@ def test_deriveKey__fileOp(tmp_path):
     nodupe = NoDupe(BaseOptions)
 
     thismsg = message.copy()
-
     thismsg['fileOp'] = {'link': "SomeKeyValue"}
     assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
 
+    thismsg = message.copy()
     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
@@ -90,3 +90,56 @@ def test_deriveKey__NotKey(tmp_path):
 
     del thismsg['size']
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['mtime']
+
+def test_open__withoutfile(tmp_path):
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    BaseOptions.cfg_run_dir = str(tmp_path)
+    BaseOptions.no = 5
+    nodupe = NoDupe(BaseOptions)
+
+    nodupe.open()
+    assert nodupe.cache_file == str(tmp_path) + os.sep + 'recent_files_005.cache'
+    assert os.path.isfile(nodupe.cache_file) == True
+    assert len(nodupe.cache_dict) == 0
+
+def test_open__withfile(tmp_path):
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    BaseOptions.cfg_run_dir = str(tmp_path)
+    BaseOptions.no = 5
+    nodupe = NoDupe(BaseOptions)
+
+    filepath = str(tmp_path) + os.sep + 'recent_files_005.cache'
+    fp = open(filepath, 'a')
+    fp.flush()
+
+    nodupe.open(cache_file=filepath)
+    assert nodupe.cache_file == str(tmp_path) + os.sep + 'recent_files_005.cache'
+    assert os.path.isfile(nodupe.cache_file) == True
+    assert len(nodupe.cache_dict) == 0
+
+def test_open__withdata(tmp_path):
+    import urllib, time
+    BaseOptions = Options()
+    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+    BaseOptions.cfg_run_dir = str(tmp_path)
+    BaseOptions.no = 5
+    nodupe = NoDupe(BaseOptions)
+    nodupe.o.nodupe_ttl = 100000
+
+    fp = open(str(tmp_path) + os.sep + 'recent_files_005.cache', 'a')
+    fp.write("%s %f %s\n" % ("key1", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file1.txt")))
+    fp.write("%s %f %s\n" % ("key2", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file2.txt")))
+    fp.write("%s %f %s\n" % ("key3", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file3.txt")))
+    fp.write("%s %f %s\n" % ("key4", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file4.txt")))
+    fp.write("%s %f %s\n" % ("key5", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file5.txt")))
+    fp.write("%s %f %s\n" % ("key5", float(time.time() - 1000), urllib.parse.quote("/some/path/to/file6.txt")))
+    fp.write("%s %f %s\n" % ("key6", float(time.time() - 1000000), urllib.parse.quote("/some/path/to/file7.txt")))
+    fp.write("thisisgarbage\n")
+    fp.flush()
+
+    nodupe.open()
+    assert nodupe.cache_file == str(tmp_path) + os.sep + 'recent_files_005.cache'
+    assert os.path.isfile(nodupe.cache_file) == True
+    assert len(nodupe.cache_dict) == 5
