@@ -26,7 +26,7 @@ jobs:
       run: |
         sudo pip install --upgrade pip
         sudo pip install -r requirements.txt
-        sudo pip install -e .
+        pip install -e .
     - name: Build and Commit
       uses: sphinx-notes/pages@v3
       with:
