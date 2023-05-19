@@ -1,5 +1,4 @@
 name: Build docs and publish to gh-pages branch and GitHub Pages
-
 on:
   push:
     branches:
@@ -23,6 +22,10 @@ jobs:
       uses: actions/checkout@master
       with:
         fetch-depth: 0
+    - name: install Sarracenia
+      run: |
+        pip install -r requirements.txt
+        pip install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v3
       with:
