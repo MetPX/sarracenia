@@ -180,21 +180,26 @@ class AMQP(Moth):
         else:  # publisher...
             self.__putSetup()
 
-    def __connect(self, broker) -> None:
+    def __connect(self, broker) -> bool:
         """
           connect to broker. 
-          returns with self.channel set to a new channel.
+          returns True if connected, false otherwise.
+            side effect: self.channel set to a new channel.
 
           Expect caller to handle errors.
         """
-        host = broker.url.hostname
-        if broker.url.port is None:
-            if (broker.url.scheme[-1] == 's'):
-                host += ':5671'
+        if broker.url.hostname:
+            host = broker.url.hostname
+            if broker.url.port is None:
+                if (broker.url.scheme[-1] == 's'):
+                    host += ':5671'
+                else:
+                    host += ':5672'
             else:
-                host += ':5672'
+                host += ':{}'.format(broker.url.port)
         else:
-            host += ':{}'.format(broker.url.port)
+            logger.critical( f"invalid broker specification: {broker} " )
+            return False
 
         # if needed, set the vhost using the broker URL's path
         vhost = self.o['vhost']
@@ -215,6 +220,7 @@ class AMQP(Moth):
             self.connection.connect()
 
         self.channel = self.connection.channel()
+        return True
 
     def _amqp_setup_signal_handler(self, signum, stack):
         logger.info("ok, asked to stop")
@@ -227,6 +233,7 @@ class AMQP(Moth):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
+
         ebo = 1
         original_sigint = signal.getsignal(signal.SIGINT)
         original_sigterm = signal.getsignal(signal.SIGINT)
@@ -238,11 +245,17 @@ class AMQP(Moth):
             if self.please_stop:
                 break
 
+            if 'broker' not in self.o or self.o['broker'] is None:
+                logger.critical( f"no broker given" )
+                break
+
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
                 # from sr_consumer.build_connection...
-                self.__connect(self.broker)
+                if not self.__connect(self.broker):
+                    logger.critical('could not connect')
+                    break
 
                 #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
@@ -320,6 +333,7 @@ class AMQP(Moth):
             signal.raise_signal(signal.SIGINT)
 
     def __putSetup(self) -> None:
+
         ebo = 1
         original_sigint = signal.getsignal(signal.SIGINT)
         original_sigterm = signal.getsignal(signal.SIGINT)
@@ -333,8 +347,14 @@ class AMQP(Moth):
             try:
                 if self.please_stop:
                     break
-                # from sr_consumer.build_connection...
-                self.__connect(self.o['broker'])
+
+                if self.o['broker'] is None:
+                    logger.critical( f"no broker given" )
+                    break
+
+                if not self.__connect(self.o['broker']):
+                    logger.critical('could not connect')
+                    break
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
