@@ -98,7 +98,8 @@ class Credential:
                 s += self.url.username
             #if self.url.password:
             #   s += ':' + self.url.password
-            s += '@' + self.url.hostname
+            if self.url.hostname:
+                s += '@' + self.url.hostname
             if self.url.port:
                 s += ':' + self.url.port
             if self.url.path:
