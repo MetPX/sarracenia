@@ -33,8 +33,6 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-BaseOptions = Options()
-
 message = {
     "pubTime": "20180118151049.356378078",
     "topic": "v02.post.sent_by_tsource2send",
@@ -55,103 +53,84 @@ message = {
 
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 def test_cleanup(tmp_path):
-    BaseOptions = Options()
-    # -- DiskQueue
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    retry = Retry(BaseOptions)
-
-    retry.download_retry.put([message, message, message])
-    retry.post_retry.put([message, message, message])
-
-    assert len(retry.download_retry) == 3
-    assert len(retry.post_retry) == 3
-
-    retry.cleanup()
-
-    #These should both return 0, but with the current DiskQueue, cleanup doesn't work properly.
-    assert len(retry.download_retry) == 0
-    assert len(retry.post_retry) == 0
-
-
-    # -- RedisQueue
+    
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        BaseOptions = Options()
-        BaseOptions.retry_driver = 'redis'
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-        BaseOptions.queueName = "test_cleanup"
-        retry = Retry(BaseOptions)
+        BaseOptions_disk = Options()
+        BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        retry_disk = Retry(BaseOptions_disk)
 
-        retry.download_retry.put([message, message, message])
-        retry.post_retry.put([message, message, message])
 
-        #assert os.path.exists(retry.download_retry.queue_file) == True
-        assert len(retry.download_retry) == 3
-        assert len(retry.post_retry) == 3
+        BaseOptions_redis = Options()
+        BaseOptions_redis.retry_driver = 'redis'
+        BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions_redis.queueName = "test_cleanup"
+        retry_redis = Retry(BaseOptions_redis)
 
-        retry.cleanup()
+        retry_disk.download_retry.put([message, message, message])
+        retry_disk.post_retry.put([message, message, message])
 
-        assert len(retry.download_retry) == 0
-        assert len(retry.post_retry) == 0
+        retry_redis.download_retry.put([message, message, message])
+        retry_redis.post_retry.put([message, message, message])
+
+        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 3
+        assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 3
+    
+        retry_disk.cleanup()
+        retry_redis.cleanup()
+
+        #These should both return 0, but with the current DiskQueue, cleanup doesn't work properly.
+        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
+        assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 0
+
 
 def test_metricsReport(tmp_path):
-    # -- DiskQueue
-    BaseOptions = Options()
-    BaseOptions.retry_driver = 'disk'
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    retry = Retry(BaseOptions)
-
-    retry.download_retry.put([message, message, message])
-    retry.post_retry.put([message, message, message])
-
-    metrics = retry.metricsReport()
-
-    assert metrics['msgs_in_download_retry'] == 3
-    assert metrics['msgs_in_post_retry'] == 3
-
-    # -- RedisQueue
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        BaseOptions = Options()
-        BaseOptions.retry_driver = 'redis'
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-        BaseOptions.queueName = "test_metricsReport"
-        retry = Retry(BaseOptions)
+        BaseOptions_disk = Options()
+        BaseOptions_disk.retry_driver = 'disk'
+        BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        retry_disk = Retry(BaseOptions_disk)
 
-        retry.download_retry.put([message, message, message])
-        retry.post_retry.put([message, message, message])
+        BaseOptions_redis = Options()
+        BaseOptions_redis.retry_driver = 'redis'
+        BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions_redis.queueName = "test_metricsReport"
+        retry_redis = Retry(BaseOptions_redis)
 
-        metrics = retry.metricsReport()
+        retry_disk.download_retry.put([message, message, message])
+        retry_disk.post_retry.put([message, message, message])
 
-        assert metrics['msgs_in_download_retry'] == 3
-        assert metrics['msgs_in_post_retry'] == 3
+        retry_redis.download_retry.put([message, message, message])
+        retry_redis.post_retry.put([message, message, message])
+
+        metrics_disk = retry_disk.metricsReport()
+
+        metrics_redis = retry_redis.metricsReport()
+
+        assert metrics_disk['msgs_in_download_retry'] == metrics_redis['msgs_in_download_retry'] == 3
+        assert metrics_disk['msgs_in_post_retry'] == metrics_redis['msgs_in_post_retry'] == 3
 
 def test_after_post(tmp_path):
-    # -- DiskQueue
-    BaseOptions = Options()
-    BaseOptions.retry_driver = 'disk'
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    retry = Retry(BaseOptions)
-
-    after_post_worklist = WorkList
-    after_post_worklist.failed = [message, message, message]
-
-    retry.after_post(after_post_worklist)
-
-    assert len(retry.post_retry) == 3
-
-    # -- RedisQueue
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        BaseOptions = Options()
-        BaseOptions.retry_driver = 'redis'
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-        BaseOptions.queueName = "test_after_post"
-        retry = Retry(BaseOptions)
+        BaseOptions_disk = Options()
+        BaseOptions_disk.retry_driver = 'disk'
+        BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        retry_disk = Retry(BaseOptions_disk)
 
-        after_post_worklist = WorkList
-        after_post_worklist.failed = [message, message, message]
+        BaseOptions_redis = Options()
+        BaseOptions_redis.retry_driver = 'redis'
+        BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions_redis.queueName = "test_after_post"
+        retry_redis = Retry(BaseOptions_redis)
 
-        retry.after_post(after_post_worklist)
+        after_post_worklist_disk = WorkList
+        after_post_worklist_disk.failed = [message, message, message]
+        retry_disk.after_post(after_post_worklist_disk)
 
-        assert len(retry.post_retry) == 3
+        after_post_worklist_redis = WorkList
+        after_post_worklist_redis.failed = [message, message, message]
+        retry_redis.after_post(after_post_worklist_redis)
+
+        assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 3
 
 def test_after_work__WLFailed(tmp_path):
     # -- DiskQueue
