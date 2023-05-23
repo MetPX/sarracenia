@@ -34,13 +34,13 @@ jobs:
       - name: Test with pytest
         run: |
           pytest tests --junitxml=tests/junit/test-results.xml \
-            --cov-config=tests/.coveragerc --cov=sarracenia --cov-report=html --cov-report=lcov \
+            --cov-config=tests/.coveragerc --cov=sarracenia --cov-report=html --cov-report=lcov --cov-report=xml \
             --html=tests/report.html --self-contained-html
 
       - name: Upload pytest junit results
         uses: actions/upload-artifact@v3
         with:
-          name: pytest-results-${{ matrix.osver }}
+          name: results-junit-${{ matrix.osver }}
           path: tests/junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -48,7 +48,7 @@ jobs:
       - name: Upload pytest HTML report
         uses: actions/upload-artifact@v3
         with:
-          name: code-coverage-${{ matrix.osver }}
+          name: results-report-${{ matrix.osver }}
           path: tests/report.html
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -56,7 +56,7 @@ jobs:
       - name: Upload code coverage report (HTML)
         uses: actions/upload-artifact@v3
         with:
-          name: code-coverage-${{ matrix.osver }}
+          name: coverage-report-${{ matrix.osver }}
           path: tests/coverage/html_report
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -64,7 +64,15 @@ jobs:
       - name: Upload code coverage report (LCOV)
         uses: actions/upload-artifact@v3
         with:
-          name: code-coverage-${{ matrix.osver }}
+          name: coverage-lcov-${{ matrix.osver }}
           path: tests/coverage/coverage.lcov
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
+        
+      - name: Upload code coverage report (XML)
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-xml-${{ matrix.osver }}
+          path: tests/coverage/coverage.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
