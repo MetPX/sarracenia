@@ -679,7 +679,9 @@ class Message(dict):
                 logger.error('missing post_baseUrl setting')
                 return
 
-        if options.post_topicPrefix:
+        if options.post_format:
+            msg['post_format'] = options.post_format
+        elif options.post_topicPrefix:
             msg['post_format'] = options.post_topicPrefix[0]
         elif options.topicPrefix != msg['_format']:
             logger.warning( f"received message in {msg['_format']} format, expected {options.post_topicPrefix} " )
