@@ -73,7 +73,7 @@ class PostFormat:
             if post_format == sc.__name__.lower():
                 return sc.exportMine( msg, topicPrefix ) 
 
-        return None, None, self.mimetype
+        return None, None, None
 
 # test for v04 first, because v03 may claim all other JSON.
 import sarracenia.postformat.wis
