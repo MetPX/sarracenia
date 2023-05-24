@@ -128,6 +128,8 @@ class Message:
             h['parts'] = '%s,%d,%d,%d,%d' % (m, p['size'], p['count'],
                                              p['remainder'], p['number'])
 
+        h['topic'] = [ 'v02', 'post' ] + self.relpath.split('/')[0:-1]
+
         if 'parts' in h:
             self.partstr = h['parts']
         #else:

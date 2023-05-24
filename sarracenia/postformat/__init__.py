@@ -64,13 +64,14 @@ class PostFormat:
         pass
 
     @staticmethod
-    def exportAny(msg, post_format='v03') -> (str, dict, str):
+    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ]) -> (str, dict, str):
         """
           return a tuple of the encoded message body, a headers dict, and content_type
+          and a completed topic as a list as one header.
        """
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.exportMine( msg ) 
+                return sc.exportMine( msg, topicPrefix ) 
 
         return None, None, self.mimetype
 

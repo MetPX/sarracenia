@@ -134,7 +134,7 @@ class V02(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body) -> (str, dict, str):
+    def exportMine(body,topic_prefix) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
