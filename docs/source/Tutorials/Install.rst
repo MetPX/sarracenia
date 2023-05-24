@@ -63,6 +63,18 @@ available in the source repository. For earlier ubuntu versions, install
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
 
+One can create an bulletin ingest configuration::
+
+    mkdir -p ~/.config/sr3/subscribe
+    cat <<EOT >>~/.config/sr3/subscribe/data-ingest.conf
+    broker amqps://hpfx.collab.science.gc.ca
+
+    topicPrefix v02.post
+    subtopic *.WXO-DD.bulletins.alphanumeric.#
+
+    directory /tmp/data-ingest
+    EOT
+
 If an option is not installed, but is needed for a given configuration, then sr3 will
 detect it and complain, and one needs to install the missing support::
 
