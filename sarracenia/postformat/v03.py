@@ -76,9 +76,15 @@ class V03(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body) -> (str, dict, str):
+    def exportMine(body,topic_prefix) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
         raw_body = json.dumps(body)
-        return raw_body, None, V03.content_type()
+
+        if 'relPath' in body:
+            headers = { 'topic': topic_prefix + body['relPath'].split('/')[0:-1]  }
+        else:
+            headers = { 'topic': topic_prefix }
+
+        return raw_body, headers, V03.content_type()

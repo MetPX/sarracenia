@@ -547,16 +547,7 @@ class AMQP(Moth):
         body = copy.deepcopy(body)
 
         version = body['_format']
-        topic = '.'.join(self.o['topicPrefix'] + body['subtopic'])
-        topic = topic.replace('#', '%23')
-        topic = topic.replace('*', '%22')
 
-        if len(topic) >= 255:  # ensure topic is <= 255 characters
-            logger.error("message topic too long, truncating")
-            mxlen = amqp_ss_maxlen
-            while (topic.encode("utf8")[mxlen - 1] & 0xc0 == 0xc0):
-                mxlen -= 1
-            topic = topic.encode("utf8")[0:mxlen].decode("utf8")
 
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
@@ -594,11 +585,26 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body, headers, content_type = PostFormat.exportAny( body, version )
+        raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'] )
+
+        topic = '.'.join(headers['topic'])
+        topic = topic.replace('#', '%23')
+        topic = topic.replace('*', '%22')
+
+        if len(topic) >= 255:  # ensure topic is <= 255 characters
+            logger.error("message topic too long, truncating")
+            mxlen = amqp_ss_maxlen
+            while (topic.encode("utf8")[mxlen - 1] & 0xc0 == 0xc0):
+                mxlen -= 1
+            topic = topic.encode("utf8")[0:mxlen].decode("utf8")
+
         if self.o['messageDebugDump']:
             logger.info('raw message body: version: %s type: %s %s' %
                              (version, type(raw_body),  raw_body))
             logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
+
+        del headers['topic']
+
         if headers :  
             for k in headers:
                 if (type(headers[k]) is str) and (len(headers[k]) >=

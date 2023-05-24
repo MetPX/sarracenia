@@ -630,6 +630,7 @@ class MQTT(Moth):
             self.__putSetup(self.o)
 
         postFormat = body['_format']
+
         if '_deleteOnPost' in body:
             # FIXME: need to delete because building entire JSON object at once.
             # makes this routine alter the message. Ideally, would use incremental
@@ -661,22 +662,23 @@ class MQTT(Moth):
             else:
                 exchange = self.o['exchange']
 
-        # FIXME: might
-        topic = '/'.join([exchange] + self.o['topicPrefix'] + body['subtopic'])
-
-        # url-quote wildcard characters in topics.
-        topic = topic.replace('#', '%23')
-        topic = topic.replace('+', '%2B')
-
-        del body['subtopic']
-        props = Properties(PacketTypes.PUBLISH)
         # https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901111
+        props = Properties(PacketTypes.PUBLISH)
         props.PayloadFormatIndicator = 1  # designates UTF-8
 
         props.ContentType = PostFormat.content_type( postFormat )
 
         try:
-            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat )
+            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'] )
+            # FIXME: might
+            topic = '/'.headers['topic'] 
+
+            # url-quote wildcard characters in topics.
+            topic = topic.replace('#', '%23')
+            topic = topic.replace('+', '%2B')
+
+            del headers['topic']
+            del body['subtopic']
 
             if headers:
                 props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
