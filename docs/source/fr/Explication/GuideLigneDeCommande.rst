@@ -578,11 +578,9 @@ La ceuillette de messages
 
 La plupart des composants Metpx Sarracenia boucle sur la ceuillette et/ou
 réception de messages AMQP. Habituellement, les messages d'intérêt sont
-dans le format d´une *avis* `sr_post(7) <sr_post.7.html>`_, annonçant la disponibilité
+dans le format d´une *avis* `sr_post(7) <../Reference/sr_post.7.html>`_, annonçant la disponibilité
 d'un fichier en publiant l'URL pour l´accéder (ou une partie de celle-ci).
-Il y a également le format *rapport* `sr_report(7) <sr_report.7.html>`_ qui peuvent
-être traités avec les mêmes outils. Les messages AMQP sont publiés avec
-un *exchange* comme destinataire. Sur un courtier (serveur AMQP.) L'exchange
+Les messages AMQP sont publiés avec un *exchange* comme destinataire. Sur un courtier (serveur AMQP.) L'exchange
 délivre des messages aux files d'attente. Pour recevoir de messages,
 on doit fournir les informations d'identification pour se connecter au
 courtier (message AMQP).  Une fois connecté, un consommateur doit créer
@@ -1450,7 +1448,7 @@ WATCH
 -----
 
 Surveille un répertoire et publie des messages lorsque les fichiers dans le répertoire changent.
-Ses arguments sont très similaires à `sr_post <sr_post <sr_post.1.html>`_.
+Ses arguments sont très similaires à `sr_post <sr_post <../Reference/sr_post.1.html>`_.
 Dans la suite MetPX-Sarracenia, l'objectif principal est d'afficher la disponibilité et modifications
 de ses dossiers. Les abonnés utilisent *sr_subscribe* pour consommer le message et télécharger les fichiers changés.
 
@@ -1570,9 +1568,11 @@ clients ne téléchargent que le fichier une seule fois, à partir de la premiè
 source qui les a publié.
 
 **winnow** peut être utilisé pour couper les messages de post, `sr3_post <../Reference/sr3_post.1.html>`_,
-sr3_cpost_, `poll`_ ou `watch`_ etc... C'est utilisé lorsqu'il y a plusieurs sources de
-données identiques, de sorte que les clients ne téléchargent que le fichier une seule fois,
-à partir de la première source qui les a publié.
+`sr3_cpost <../Reference/sr3_cpost.1.html>`_, `sr3_cpump <../Reference/sr3_cpump.1.html>`_, 
+`poll <../Reference/sr3.1.html>`_ ou `watch <../Reference/sr3.1.html>`_ etc... 
+C'est utilisé lorsqu'il y a plusieurs sources de données identiques, de sorte que 
+les clients ne téléchargent que le fichier une seule fois, à partir de la première 
+source qui les a publié.
 
 
 Configurations
@@ -1970,8 +1970,8 @@ qui se produit à chaque intervalle *housekeeping* (la valeur par défaut est de
 les plugins *on_housekeeping* configurés sont exécutés. Par défaut, trois sont présents :
 
 * log - imprime « housekeeping » dans le journal.
- * nodupe - vieillit les anciennes entrées dans le cache de réception, afin de minimiser sa taille.
- * memory - vérifie l’utilisation de la mémoire du processus et redémarre si elle est trop grande.
+* nodupe - vieillit les anciennes entrées dans le cache de réception, afin de minimiser sa taille.
+* memory - vérifie l’utilisation de la mémoire du processus et redémarre si elle est trop grande.
 
 Le journal contiendra des messages des trois plugins à chaque intervalle de housekeeping, et
 si un traitement périodique supplémentaire est nécessaire, l’utilisateur peut configurer d'autres
@@ -1995,11 +1995,11 @@ Les outils sont conçus pour fonctionner bien sans surveillance, et donc lorsque
 essayent de récupérer élégamment.  Il y a des délais d’attente sur toutes les opérations, et en cas de défaillance
 détectée, le problème est noté pour une nouvelle tentative.  Des erreurs peuvent se produire à plusieurs reprises :
 
- * Établir une connexion avec le courtier.
- * perte d’une connexion avec le courtier
- * établir une connexion au serveur de fichiers pour un fichier (à télécharger).
- * perte d’une connexion au serveur.
- * pendant le transfert de données.
+* Établir une connexion avec le courtier.
+* perte d’une connexion avec le courtier
+* établir une connexion au serveur de fichiers pour un fichier (à télécharger).
+* perte d’une connexion au serveur.
+* pendant le transfert de données.
 
 Initialement, les programmes essaient de télécharger (ou d’envoyer) un fichier un nombre de fois fixe (*tentatives*, par défaut: 3).
 Si les trois tentatives de traitement du fichier échouent, le fichier est placé dans "réessayer".
@@ -2438,7 +2438,7 @@ appelé *myflow* serait ici :
 Le sommet de l'arborescence a *~/.config/sarra/default.conf* qui contient les paramètres suivants
 sont lus par défaut pour tout composant au démarrage. Dans le même répertoire,
 *~/.config/sarra/credentials.conf* contient des informations d'identification
-(mots de passe) à utiliser par sarracenia (`CREDENTIALS`_ pour plus de détails. ).
+(mots de passe) à utiliser par sarracenia (`IDENTIFICATION (CREDENTIALS)`_ pour plus de détails. ).
 
 On peut également définir la variable d'environnement XDG_CONFIG_HOME pour remplacer
 le placement par défaut, ou bien Les fichiers de configuration individuels peuvent

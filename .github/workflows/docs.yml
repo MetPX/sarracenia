@@ -8,6 +8,13 @@ jobs:
   gh-pages:
     name: Publish Github Pages
     runs-on: ubuntu-20.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+
     steps:
     - name: Setup locale
       run: |
