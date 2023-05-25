@@ -1,0 +1,5 @@
+Sphinx
+nbsphinx
+jupyter
+docutils
+sphinx-rtd-theme

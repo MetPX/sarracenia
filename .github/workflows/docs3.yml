@@ -1,0 +1,19 @@
+#
+# from: https://github.com/ammaraskar/sphinx-action
+#  - deps go in docs/requirements.txt
+#
+name: "Pull Request Docs Check"
+
+on:
+  push:
+    branches:
+      - v03_issue684
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
