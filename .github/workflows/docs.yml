@@ -28,6 +28,7 @@ jobs:
         fetch-depth: 0
     - name: install Sarracenia
       run: |
+        pip3 install paramiko
         pip3 install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v2
