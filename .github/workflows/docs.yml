@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - v03_issue684
-    paths:
-      - 'docs/**'
 
 jobs:
   gh-pages:
