@@ -48,4 +48,4 @@ while count < 5:
 print(' got %d messages' % count)
 h.cleanup()
 h.close()
-exit( count )
+exit(count)
