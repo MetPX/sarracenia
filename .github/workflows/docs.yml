@@ -4,8 +4,6 @@ on:
     branches:
       - v03_issue684
 
-permissions: write-all
-	
 jobs:
   gh-pages:
     name: Publish Github Pages
@@ -14,8 +12,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     permissions:
-      pages: write
-      id-token: write
+      pages: write-all
+      id-token: write-all
 
     steps:
     - name: Setup locale
