@@ -1066,10 +1066,11 @@ class sr_GlobalState:
 
         if self.appname is None:
             self.appname = 'sr3'
-        else:
-            print(
-                'DEVELOPMENT using alternate application name: %s, bindir=%s' %
-                (self.appname, self.bin_dir))
+        #else:
+        #    print(
+        #        'DEVELOPMENT using alternate application name: %s, bindir=%s' %
+        #        (self.appname, self.bin_dir))
+
 
         if not os.path.isdir(self.user_config_dir):
             print( f'INFO: No {self.appname} configuration found. creating an empty one {self.user_config_dir}' )

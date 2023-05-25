@@ -10,14 +10,25 @@ from sarracenia.config import default_config
 import os
 import time
 import socket
+import sys
+
+"""
+  supply broker argument as a command line argument.
+
+"""
+if len(sys.argv) > 1:
+    broker = sys.argv[1]
+else:
+    broker = 'amqp://tfeed:HungryCat@localhost'
 
 cfg = default_config()
 #cfg.logLevel = 'debug'
-cfg.broker = sarracenia.credentials.Credential(
-    'amqp://tfeed:HungryCat@localhost')
-cfg.exchange = 'xpublic'
+cfg.broker = sarracenia.credentials.Credential( broker )
+cfg.exchange = 'xsarra'
 cfg.post_baseUrl = 'http://host'
 cfg.post_baseDir = '/tmp'
+cfg.topicPrefix = [ 'v03', 'post' ]
+cfg.logLevel = 'debug'
 
 print('cfg: %s' % cfg)
 
