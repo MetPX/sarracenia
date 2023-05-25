@@ -2,7 +2,7 @@ name: Build docs and publish to gh-pages branch and GitHub Pages
 on:
   push:
     branches:
-      - v03_issue684
+      - v03_deactivated
 
 jobs:
   gh-pages:
