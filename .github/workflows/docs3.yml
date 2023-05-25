@@ -7,7 +7,7 @@ name: "Pull Request Docs Check"
 on:
   push:
     branches:
-      - v03_issue684
+      - v03_turnedoff
 
 jobs:
   docs:
