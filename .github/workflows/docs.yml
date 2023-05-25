@@ -4,6 +4,8 @@ on:
     branches:
       - v03_issue684
 
+permissions: write-all
+	
 jobs:
   gh-pages:
     name: Publish Github Pages
