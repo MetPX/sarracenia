@@ -20,15 +20,12 @@ jobs:
         sudo apt install -y pandoc dia python3-paramiko 
         sudo apt install -y python3-sphinx python3-nbsphinx python3-sphinx-rtd-theme
         sudo apt install -y python3-amqp
-    - name: Setup python
-      uses: actions/setup-python@v2
     - name: Checkout
       uses: actions/checkout@master
       with:
         fetch-depth: 0
     - name: install Sarracenia
       run: |
-        pip3 install paramiko
         pip3 install .
     - name: Build and Commit
       uses: sphinx-notes/pages@v2
