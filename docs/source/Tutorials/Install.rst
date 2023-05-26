@@ -63,10 +63,10 @@ available in the source repository. For earlier ubuntu versions, install
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
 
-One can create an bulletin ingest configuration::
+One can create a bulletin ingest configuration::
 
     mkdir -p ~/.config/sr3/subscribe
-    cat <<EOT >>~/.config/sr3/subscribe/data-ingest.conf
+    cat <<EOT >~/.config/sr3/subscribe/data-ingest.conf
     broker amqps://hpfx.collab.science.gc.ca
 
     topicPrefix v02.post
