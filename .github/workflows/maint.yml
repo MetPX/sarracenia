@@ -47,4 +47,5 @@ jobs:
       - name: Add and Remove configs, 
         run: |
           pwd
+          ls
           cd ${HOME}/sr_insects/static_flow; ./flow_maint_test.sh
