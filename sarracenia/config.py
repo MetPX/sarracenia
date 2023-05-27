@@ -664,7 +664,7 @@ class Config:
     }
     credentials = None
 
-    def __init__(self, parent=None) -> 'Configuration':
+    def __init__(self, parent=None) -> 'Config':
         """
           instantiate an empty Configuration
         """
