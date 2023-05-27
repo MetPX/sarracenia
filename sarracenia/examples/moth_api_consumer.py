@@ -13,7 +13,7 @@ import socket
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
 
-broker = sarracenia.credentials.Credential(
+options['broker'] = sarracenia.credentials.Credential(
     'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 # binding tuple:  consists of prefix, exchange, rest.
@@ -32,7 +32,7 @@ options['queueName'] = 'q_anonymous_' + socket.getfqdn(
 
 print('options: %s' % options)
 
-h = sarracenia.moth.Moth.subFactory(broker, options)
+h = sarracenia.moth.Moth.subFactory(options)
 
 count = 0
 while count < 5:
