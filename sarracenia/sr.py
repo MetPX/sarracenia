@@ -322,7 +322,7 @@ class sr_GlobalState:
                         })
                         cfgbody.applyComponentDefaults( c )
                         cfgbody.parse_file(cfg,c)
-                        cfgbody.fill_missing_options(c, cfg)
+                        cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['poll', 'post', 'cpost']:
@@ -2595,7 +2595,7 @@ def main():
     cfg.parse_args()
 
     #FIXME... hmm... so...
-    #cfg.fill_missing_options()
+    #cfg.finalize()
 
     if not hasattr(cfg, 'action'):
         print('USAGE: %s [ -h ] (%s)' % (sys.argv[0], '|'.join(actions)))

@@ -1552,13 +1552,22 @@ class Config:
                     setattr(self, k, v)
                     self.undeclared.append(k)
 
-    def fill_missing_options(self, component, config):
+    def finalize(self, component=None, config=None):
         """ 
+         Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
+         Should be called prior to using a configuration.
+
          There are default options that apply only if they are not overridden... 
        """
 
         self._parse_sum(None)
 
+        if not component and self.component:
+            component = self.component
+            
+        if not config and self.config:
+            config = self.config
+            
         if hasattr(self, 'nodupe_ttl'):
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
@@ -2484,7 +2493,7 @@ def one_config(component, config, isPost=False):
         if not hasattr(cfg,'broker') or (cfg.broker is None):
              cfg.broker = cfg.post_broker
 
-    cfg.fill_missing_options(component, config)
+    cfg.finalize(component, config)
 
     if component in ['post', 'watch']:
         cfg.postpath = list( map( os.path.expanduser, cfg.configurations[1:]))
