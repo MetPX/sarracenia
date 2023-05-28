@@ -529,6 +529,37 @@ class Config:
     """
        The option parser to produce a single configuration.
 
+       it can be instantiated with one of:
+
+       * one_config(component, config, isPost=False) -- read the options  for
+         a given component an configuration,  (all in one call.)
+
+       On the other hand, a configu can be built up from the following constructors:
+
+       * default_config() -- returns an empty configuration, given a config file tree.
+       * no_file_config() -- returns an empty config without any config file tree. 
+
+       Then just add settings manually::
+
+         cfg = no_file_config()
+
+         cfg.broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+         cfg.topicPrefix = [ 'v02', 'post']
+         cfg.component = 'subscribe'
+         cfg.config = 'flow_demo'
+         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
+         cfg.queueName='q_anonymous.subscriber_test2'
+         cfg.download=True
+         cfg.batch=1
+         cfg.messageCountMax=5
+       
+         # set the instance number for the flow class.
+         cfg.no=0
+       
+       # and at the end call finalize
+
+       cfg.finalize()
+
     """
 
     port_required = [ 'on_line', 'on_html_page' ]
