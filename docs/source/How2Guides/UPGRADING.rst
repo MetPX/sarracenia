@@ -39,6 +39,36 @@ Installation Instructions
 git
 ---
 
+3.0.40
+------
+
+*CHANGE*:  Python API breaking changes
+
+    for sarracenia.moth, now specify broker as options['broker'] instead of as
+    a separate parameter:
+
+    before:
+
+    * Moth(broker: url, options: dict, is_subsubscriber: bool) -> Config
+    * pubFactory( broker, options ) -> Config
+    * subFactory( broker, options ) -> Config
+           
+    after:
+     
+    * Moth( options: dict, is_subscribe: bool) -> Config
+    * pubFactory( options ) -> Config
+    * subFactory( options ) -> Config
+           
+    sarracenia.config API:
+
+     now should call **sarracenia.config.finalize()**
+     after having set options  and before being used.
+     This routine reconciles the settings provided and builds
+     some derived ones.
+
+*CHANGE*: 
+
+
 3.0.37
 ------
 

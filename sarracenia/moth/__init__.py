@@ -84,20 +84,31 @@ class Moth():
 
         * subTopic  
 
-        * id   (queue for amqp, id for mqtt)
+        * queueName   (for amqp, used as client-id for mqtt)
 
         this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
         duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials
   
         usage::
 
-           c= Moth( broker, True, '5m', { 'batch':1 } )
+           import sarracenia.moth
+           import sarracenia.credentials
 
-           c.newMessages()
+
+           props = sarracenia.moth.default_options
+           props['broker'] = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+           props['expire'] = 300
+           props['batch'] = 1
+           is_subscriber=True
+
+           c= Moth( props, is_subscriber  )
+
+           messages = c.newMessages()
+
            # if there are new messages from a publisher, return them, otherwise return
            # an empty list []].
              
-           p=Moth( broker, True, '5m', { 'batch':1 }, True )
+           p=Moth( { 'batch':1 }, False )
 
            p.putNewMessage()
 
@@ -175,7 +186,7 @@ class Moth():
 
        *  'broker' : an sr_broker ?
 
-       *  'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
+       *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
        *  'bindings' : [ list of bindings ]
 
