@@ -63,6 +63,17 @@ class Credential:
         bearer_token (str): bearer token for HTTP authentication
         login_method (str): force a specific login method for AMQP (PLAIN,
             AMQPLAIN, EXTERNAL or GSSAPI)
+
+    Usage:
+
+       # build a credential from a url string:
+
+       from sarracenia.credentials import Credential
+
+       broker = Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+
+
+
     """
 
     def __init__(self, urlstr=None):
@@ -120,6 +131,17 @@ class CredentialDB:
 
     Attributes:
         credentials (dict): contains all sarracenia.credentials.Credential objects managed by the CredentialDB.
+
+    Usage:
+       # build a credential via lookup in the normal files: 
+       import CredentialDB from sarracenia.credentials
+
+       credentials = CredentialDB.read( "/the/path/to/the/credentials.conf" )
+
+       # if there are corresponding passwords or modulation of login information look it up.
+       
+       broker = credentials.get( "amqps://hpfx.collab.science.gc.ca" )
+       remote = credentials.get( "sftp://hoho@theserver" )
     """
 
     def __init__(self, Unused_logger=None):
@@ -188,7 +210,7 @@ class CredentialDB:
 
         # resolved from defined credentials
 
-        ok, details = self.resolve(urlstr, url)
+        ok, details = self._resolve(urlstr, url)
         if ok: return True, details
 
         # not found... is it valid ?
@@ -278,7 +300,7 @@ class CredentialDB:
 
         return True
 
-    def parse(self, line):
+    def _parse(self, line):
         """Parse a line of a credentials file, add it to the CredentialDB.
 
         Args:
@@ -370,13 +392,13 @@ class CredentialDB:
                     lines = f.readlines()
 
                 for line in lines:
-                    self.parse(line)
+                    self._parse(line)
         except:
             logger.error("credentials/read path = %s" % path)
             logger.debug('Exception details: ', exc_info=True)
         #logger.debug("Credentials = %s\n" % self.credentials)
 
-    def resolve(self, urlstr, url=None):
+    def _resolve(self, urlstr, url=None):
         """Resolve credentials for AMQP vhost from ones passed as a string, and optionally a urllib.parse.ParseResult
         object, into a sarracenia.credentials.Credential object.
 
