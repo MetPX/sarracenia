@@ -2382,7 +2382,7 @@ class sr_GlobalState:
                                     logger.info("obsolete v2: " + v)
                                     continue
                             else:
-                                logger.error( f"unknown {k} {v}, manual conversion required.")
+                                logger.warning( f"unknown {k} {v}, manual conversion required.")
                                 v3_cfg.write( f"# PROBLEM: unknown {k} {v}, manual conversion required.\n")
                         else:
                             line = convert_to_v3[k]
