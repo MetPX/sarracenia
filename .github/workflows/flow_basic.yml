@@ -1,12 +1,10 @@
-name: sr_insects test maintenance functions.
+name: sr_insects test basic declare/cleanup, and python API
 
 on:
   pull_request:
     types: [opened, edited, reopened]
   push:
-    branches:
-      - v03_wip
-      - main
+
   workflow_dispatch:
 
 jobs:

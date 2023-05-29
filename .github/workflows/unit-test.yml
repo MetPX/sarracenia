@@ -4,8 +4,6 @@ on:
   pull_request:
     types: [opened, edited, reopened]
   push:
-    branches:
-    - v03_wip
 
 jobs:
   build:
