@@ -1,0 +1,9 @@
+pytest>=7.3
+pytest-cov>=4.0
+pytest-bug>=1.2
+pytest-depends>=1.0
+pytest-html>=3.2
+
+python-redis-lock>=4
+fakeredis>=2.11
+fakeredis[lua]>=2.11
