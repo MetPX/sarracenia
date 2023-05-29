@@ -66,7 +66,6 @@ git
      This routine reconciles the settings provided and builds
      some derived ones.
 
-*CHANGE*: 
 
 
 3.0.37

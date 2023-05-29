@@ -38,6 +38,30 @@ Instructions d’installation
 git
 ---
 
+*CHANGEMENT*:  l'interface de programmation (API) python a subit un changement de rupture
+
+    pour la classe sarracenia.moth, il faut maintenant specifier l'options['broker'] au lieu
+    de le fournir commen argument séparé.
+
+    avant:
+
+    * Moth(broker: url, options: dict, is_subsubscriber: bool) -> Config
+    * pubFactory( broker, options ) -> Config
+    * subFactory( broker, options ) -> Config
+
+    après:
+
+    * Moth( options: dict, is_subscribe: bool) -> Config
+    * pubFactory( options ) -> Config
+    * subFactory( options ) -> Config
+
+    sarracenia.config API:
+
+     Il est recommandé d´appeller **sarracenia.config.finalize()**
+     après avoir fourni les options.  Celui-ci interpole et complète
+     les valeurs d´options pou qu´ils soient utilisable par les
+     composantes.  
+
 3.0.26
 ------
 
