@@ -82,6 +82,9 @@ echo "Add redis options to sr3 default config... "
 # Set redis defaults for sr3
 cat >> ~/.config/sr3/default.conf << EOF
 retry_driver redis
-redisqueue_serverurl redis://sr3:${REDIS_SR3_PASSWORD}@localhost:6380/0?ssl_cert_reqs=none&ssl_ca_certs=/etc/redis/tls_ca.crt
+# with TLS:
+#redisqueue_serverurl redis://sr3:${REDIS_SR3_PASSWORD}@localhost:6380/0?ssl_cert_reqs=none&ssl_ca_certs=/etc/redis/tls_ca.crt
+redisqueue_serverurl redis://sr3:${REDIS_SR3_PASSWORD}@localhost:6379/0
+
 EOF
 echo -e "..done\n"
