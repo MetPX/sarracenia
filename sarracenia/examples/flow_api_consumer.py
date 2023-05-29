@@ -21,9 +21,8 @@ cfg.messageCountMax = 5
 # set the instance number for the flow class.
 cfg.no = 0
 
-# set flow class to put working files in ~/.cache/sr3/subscrribe/flow_demo directory.
-cfg.pid_filename = sarracenia.config.get_pid_filename(None, cfg.component,
-                                                      cfg.config, 0)
+# set other settings based on what is provided, for things like state files.
+cfg.finalize()
 
 # accept/reject patterns:
 pattern = ".*"

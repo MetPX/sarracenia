@@ -125,6 +125,7 @@ class MQTT(Moth):
         #self.o = options
         self.o.update(default_options)
         self.o.update(options)
+        self.o['broker'] = broker
 
         if 'qos' in self.o:
             if type(self.o['qos']) is not int:

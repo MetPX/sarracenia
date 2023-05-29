@@ -539,8 +539,7 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
-            if (self.o.messageCountMax > 0) and (total_messages >=
-                                                 self.o.messageCountMax):
+            if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
                 self.please_stop()
 
             current_rate = total_messages / run_time

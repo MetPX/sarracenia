@@ -147,13 +147,13 @@ class AMQP(Moth):
     # length of an AMQP short string (used for headers and many properties)
     amqp_ss_maxlen = 255
 
-    def __init__(self, broker, props, is_subscriber) -> None:
+    def __init__(self, props, is_subscriber) -> None:
         """
            connect to broker, depending on message_strategy stubborness, remain connected.
            
         """
 
-        super().__init__(broker, props, is_subscriber)
+        super().__init__(props, is_subscriber)
 
         logging.basicConfig(
             format=
@@ -253,7 +253,7 @@ class AMQP(Moth):
             # tear the whole thing down, and start over.
             try:
                 # from sr_consumer.build_connection...
-                if not self.__connect(self.broker):
+                if not self.__connect(self.o['broker']):
                     logger.critical('could not connect')
                     break
 
@@ -263,8 +263,8 @@ class AMQP(Moth):
                     self.channel.basic_qos(0, self.o['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
-                broker_str = self.broker.url.geturl().replace(
-                    ':' + self.broker.url.password + '@', '@')
+                broker_str = self.o['broker'].url.geturl().replace(
+                    ':' + self.o['broker'].url.password + '@', '@')
 
                 # from Queue declare
                 if self.o['queueDeclare'] and self.o['queueName']:
@@ -317,7 +317,7 @@ class AMQP(Moth):
                     f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
                 )
                 logger.error("AMQP getSetup failed to {} with {}".format(
-                    self.broker.url.hostname, err))
+                    self.o['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
@@ -358,8 +358,8 @@ class AMQP(Moth):
 
                 # transaction mode... confirms would be better...
                 self.channel.tx_select()
-                broker_str = self.broker.url.geturl().replace(
-                    ':' + self.broker.url.password + '@', '@')
+                broker_str = self.o['broker'].url.geturl().replace(
+                    ':' + self.o['broker'].url.password + '@', '@')
 
                 #logger.debug('putSetup ... 1. connected to {}'.format(broker_str ) )
 

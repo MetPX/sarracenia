@@ -84,20 +84,31 @@ class Moth():
 
         * subTopic  
 
-        * id   (queue for amqp, id for mqtt)
+        * queueName   (for amqp, used as client-id for mqtt)
 
         this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
         duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials
   
         usage::
 
-           c= Moth( broker, True, '5m', { 'batch':1 } )
+           import sarracenia.moth
+           import sarracenia.credentials
 
-           c.newMessages()
+
+           props = sarracenia.moth.default_options
+           props['broker'] = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+           props['expire'] = 300
+           props['batch'] = 1
+           is_subscriber=True
+
+           c= Moth( props, is_subscriber  )
+
+           messages = c.newMessages()
+
            # if there are new messages from a publisher, return them, otherwise return
            # an empty list []].
              
-           p=Moth( broker, True, '5m', { 'batch':1 }, True )
+           p=Moth( { 'batch':1 }, False )
 
            p.putNewMessage()
 
@@ -175,7 +186,7 @@ class Moth():
 
        *  'broker' : an sr_broker ?
 
-       *  'Queue'  : Mandatory, name of a queue. (only in AMQP... hmm...)
+       *  'queueName'  : Mandatory, name of a queue. (only in AMQP... hmm...)
 
        *  'bindings' : [ list of bindings ]
 
@@ -192,53 +203,53 @@ class Moth():
 
     """
     @staticmethod
-    def subFactory(broker, props) -> 'Moth':
+    def subFactory(props) -> 'Moth':
 
-        if not broker :
+        if not props['broker'] :
             logger.error('no broker specified')
             return None
 
-        if not hasattr(broker,'url'):
+        if not hasattr(props['broker'],'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(broker.url.scheme):
+        if not ProtocolPresent(props['broker'].url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
         for sc in Moth.__subclasses__():
-            if (broker.url.scheme == sc.__name__.lower()) or (
-                (broker.url.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.url.scheme[-1] == 's')):
-                return sc(broker, props, True)
+            if (props['broker'].url.scheme == sc.__name__.lower()) or (
+                (props['broker'].url.scheme[0:-1] == sc.__name__.lower()) and
+                (props['broker'].url.scheme[-1] == 's')):
+                return sc(props, True)
         logger.error('broker intialization failure')
         return None
 
     @staticmethod
-    def pubFactory(broker, props) -> 'Moth':
-        if not broker:
+    def pubFactory(props) -> 'Moth':
+        if not props['broker']:
             logger.error('no broker specified')
             return None
 
-        if not hasattr(broker,'url'):
+        if not hasattr(props['broker'],'url'):
             logger.error('invalid broker url')
             return None
 
-        if not ProtocolPresent(broker.url.scheme):
+        if not ProtocolPresent(props['broker'].url.scheme):
            logger.error('unknown broker scheme/protocol specified')
            return None
 
         for sc in Moth.__subclasses__():
-            if (broker.url.scheme == sc.__name__.lower()) or (
-                (broker.url.scheme[0:-1] == sc.__name__.lower()) and
-                (broker.url.scheme[-1] == 's')):
-                return sc(broker, props, False)
+            if (props['broker'].url.scheme == sc.__name__.lower()) or (
+                (props['broker'].url.scheme[0:-1] == sc.__name__.lower()) and
+                (props['broker'].url.scheme[-1] == 's')):
+                return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...
         logger.error('broker intialization failure')
         return None
 
-    def __init__(self, broker, props=None, is_subscriber=True) -> None:
+    def __init__(self, props=None, is_subscriber=True) -> None:
         """
            If is_subscriber=True, then this is a consuming instance.
            expect calls to get* routines.
@@ -263,8 +274,6 @@ class Moth():
 
         if props is not None:
             self.o.update(props)
-
-        self.broker = broker
 
         me = 'sarracenia.moth.Moth'
 

@@ -11,11 +11,11 @@ import socket
 import urllib.request
 import xml.etree.ElementTree as ET
 
-broker = sarracenia.credentials.Credential(
-    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
 options = sarracenia.moth.default_options
 options.update(sarracenia.moth.amqp.default_options)
+options['broker'] = sarracenia.credentials.Credential(
+    'amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 options['topicPrefix'] = ['v02', 'post']
 options['bindings'] = [('xpublic', ['v02', 'post'],
                         ['*', 'WXO-DD', 'observations', 'swob-ml', '#'])]
@@ -24,7 +24,7 @@ options['queueName'] = 'q_anonymous_' + socket.getfqdn(
 
 #print('options: %s' % options)
 
-h = sarracenia.moth.Moth.subFactory(broker, options)
+h = sarracenia.moth.Moth.subFactory(options)
 
 count = 0
 

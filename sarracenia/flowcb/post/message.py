@@ -31,8 +31,7 @@ class Message(FlowCB):
                 props.update({
                     'exchangeSplit': self.o.post_exchangeSplit,
                 })
-            self.poster = sarracenia.moth.Moth.pubFactory(
-                self.o.post_broker, props)
+            self.poster = sarracenia.moth.Moth.pubFactory(props)
 
     def post(self, worklist):
 

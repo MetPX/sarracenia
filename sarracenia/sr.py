@@ -322,7 +322,7 @@ class sr_GlobalState:
                         })
                         cfgbody.applyComponentDefaults( c )
                         cfgbody.parse_file(cfg,c)
-                        cfgbody.fill_missing_options(c, cfg)
+                        cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
                         # ensure there is a known value of instances to run.
                         if c in ['poll', 'post', 'cpost']:
@@ -1270,7 +1270,7 @@ class sr_GlobalState:
                     o,
                     'resolved_exchanges') and o.resolved_exchanges is not None:
                 xdc = sarracenia.moth.Moth.pubFactory(
-                    o.post_broker, {
+                    {
                         'broker': o.post_broker,
                         'dry_run': self.options.dry_run,
                         'exchange': o.resolved_exchanges,
@@ -1292,9 +1292,10 @@ class sr_GlobalState:
             o = self.configs[c][cfg]['options']
             od = o.dictify()
             if hasattr(o, 'resolved_qname'):
+                od['broker'] = o.broker
                 od['queueName'] = o.resolved_qname
                 od['dry_run'] = self.options.dry_run
-                qdc = sarracenia.moth.Moth.subFactory(o.broker, od)
+                qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.close()
 
     def disable(self):
@@ -1456,7 +1457,8 @@ class sr_GlobalState:
             if hasattr(o, 'resolved_qname'):
                 #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
-                    o.broker, {
+                    {
+                        'broker': o.broker,
                         'dry_run': self.options.dry_run,
                         'echangeDeclare': False,
                         'queueDeclare': False,
@@ -1487,7 +1489,8 @@ class sr_GlobalState:
                         if o.post_broker and len(xx) < 1:
                             print("No local queues found for exchange %s, attemping to remove it..." % x)
                             qdc = sarracenia.moth.Moth.pubFactory(
-                                o.post_broker, {
+                                {
+                                    'broker': o.post_broker,
                                     'declare': False,
                                     'exchange': x,
                                     'dry_run': self.options.dry_run,
@@ -2379,7 +2382,7 @@ class sr_GlobalState:
                                     logger.info("obsolete v2: " + v)
                                     continue
                             else:
-                                logger.error( f"unknown {k} {v}, manual conversion required.")
+                                logger.warning( f"unknown {k} {v}, manual conversion required.")
                                 v3_cfg.write( f"# PROBLEM: unknown {k} {v}, manual conversion required.\n")
                         else:
                             line = convert_to_v3[k]
@@ -2592,7 +2595,7 @@ def main():
     cfg.parse_args()
 
     #FIXME... hmm... so...
-    #cfg.fill_missing_options()
+    #cfg.finalize()
 
     if not hasattr(cfg, 'action'):
         print('USAGE: %s [ -h ] (%s)' % (sys.argv[0], '|'.join(actions)))

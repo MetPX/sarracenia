@@ -529,6 +529,37 @@ class Config:
     """
        The option parser to produce a single configuration.
 
+       it can be instantiated with one of:
+
+       * one_config(component, config, isPost=False) -- read the options  for
+         a given component an configuration,  (all in one call.)
+
+       On the other hand, a configu can be built up from the following constructors:
+
+       * default_config() -- returns an empty configuration, given a config file tree.
+       * no_file_config() -- returns an empty config without any config file tree. 
+
+       Then just add settings manually::
+
+         cfg = no_file_config()
+
+         cfg.broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+         cfg.topicPrefix = [ 'v02', 'post']
+         cfg.component = 'subscribe'
+         cfg.config = 'flow_demo'
+         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
+         cfg.queueName='q_anonymous.subscriber_test2'
+         cfg.download=True
+         cfg.batch=1
+         cfg.messageCountMax=5
+       
+         # set the instance number for the flow class.
+         cfg.no=0
+       
+       # and at the end call finalize
+
+       cfg.finalize()
+
     """
 
     port_required = [ 'on_line', 'on_html_page' ]
@@ -664,7 +695,7 @@ class Config:
     }
     credentials = None
 
-    def __init__(self, parent=None) -> 'Configuration':
+    def __init__(self, parent=None) -> 'Config':
         """
           instantiate an empty Configuration
         """
@@ -1557,13 +1588,22 @@ class Config:
                     setattr(self, k, v)
                     self.undeclared.append(k)
 
-    def fill_missing_options(self, component, config):
+    def finalize(self, component=None, config=None):
         """ 
+         Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
+         Should be called prior to using a configuration.
+
          There are default options that apply only if they are not overridden... 
        """
 
         self._parse_sum(None)
 
+        if not component and self.component:
+            component = self.component
+            
+        if not config and self.config:
+            config = self.config
+            
         if hasattr(self, 'nodupe_ttl'):
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
@@ -2489,7 +2529,7 @@ def one_config(component, config, isPost=False):
         if not hasattr(cfg,'broker') or (cfg.broker is None):
              cfg.broker = cfg.post_broker
 
-    cfg.fill_missing_options(component, config)
+    cfg.finalize(component, config)
 
     if component in ['post', 'watch']:
         cfg.postpath = list( map( os.path.expanduser, cfg.configurations[1:]))

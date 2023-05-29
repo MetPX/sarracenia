@@ -33,7 +33,7 @@ cfg.logLevel = 'debug'
 print('cfg: %s' % cfg)
 
 # moth wants a dict as options, rather than sarracenia.config.Config instance.
-posting_engine = sarracenia.moth.Moth.pubFactory(cfg.broker, cfg.dictify())
+posting_engine = sarracenia.moth.Moth.pubFactory(cfg.dictify())
 
 sample_fileName = '/tmp/sample.txt'
 sample_file = open(sample_fileName, 'w')
