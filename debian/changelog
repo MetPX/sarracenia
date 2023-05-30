@@ -1,7 +1,20 @@
 metpx-sr3 (3.00.40) UNRELEASED; urgency=medium
 
-  * incrementing away from release.
-
+  * Github CI/CD flow tests with redis enabled. ( #690 )
+  * Github CI/CD flow tests for python API added to maintenance tests.
+  * progress on #617 changed moth python API so messages calculate own topic.
+    makes it compatible with networks that have different topic schemes,
+    such as WMO WIS. (change in postformat API, and moth calls to it.)
+  * documentation generation had broken (external changes)
+    extensive review and updates.
+  * Unit testing framework introduced #676 
+  * See UPGRADING.rst for details of API changes.
+  * bugfix #681, #661 python API broken (fixed and added to CI/CD above.)
+  * documentation #677 improvement.
+  * bugfix #660 sr3 crash with certain config errors.
+  * another part of #617 post_format should override post_topicPrefix for formatting.
+  * improvements on #506 MQTT functionality.
+  
  -- Peter <peter@bsqt.homeip.net>  Sun, 14 May 2023 11:01:45 -0400
 
 metpx-sr3 (3.00.39) unstable; urgency=medium
