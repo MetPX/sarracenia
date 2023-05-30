@@ -673,7 +673,7 @@ class MQTT(Moth):
         try:
             raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'] )
             # FIXME: might
-            topic = '/'.headers['topic'] 
+            topic = '/'.join(headers['topic']) 
 
             # url-quote wildcard characters in topics.
             topic = topic.replace('#', '%23')
