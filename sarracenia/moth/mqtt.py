@@ -33,6 +33,7 @@ import paho.mqtt.client
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
+import signal
 import ssl
 import threading
 import time
@@ -108,7 +109,7 @@ class MQTT(Moth):
 
 
     """
-    def __init__(self, broker, options, is_subscriber):
+    def __init__(self, options, is_subscriber):
         """
 
           MQTT connection instances...
@@ -117,7 +118,7 @@ class MQTT(Moth):
 
         """
 
-        super().__init__(broker, options, is_subscriber)
+        super().__init__(options, is_subscriber)
 
         self.connected=False
         # setting this is wrong and breaks things, was already set in super-class init, doing this here overwites
@@ -125,7 +126,7 @@ class MQTT(Moth):
         #self.o = options
         self.o.update(default_options)
         self.o.update(options)
-        self.o['broker'] = broker
+
 
         if 'qos' in self.o:
             if type(self.o['qos']) is not int:
@@ -256,7 +257,7 @@ class MQTT(Moth):
           return port number for connection.
       
         """
-        if self.broker.url.scheme[-1] == 's':
+        if self.o['broker'].url.scheme[-1] == 's':
             port = 8883
             logger.info('tlsRigour: %s' % self.o['tlsRigour'])
             self.o['tlsRigour'] = self.o['tlsRigour'].lower()
@@ -284,8 +285,8 @@ class MQTT(Moth):
         else:
             port = 1883
 
-        if self.broker.url.port:
-            port = self.broker.url.port
+        if self.o['broker'].url.port:
+            port = self.o['broker'].url.port
         return port
 
     def __clientSetup(self, cid) -> paho.mqtt.client.Client:
@@ -304,8 +305,8 @@ class MQTT(Moth):
         if 'max_inflight_messages' in self.o:
             client.max_inflight_messages_set(self.o['max_inflight_messages'])
 
-        client.username_pw_set(self.broker.url.username,
-                               unquote(self.broker.url.password))
+        client.username_pw_set(self.o['broker'].url.username,
+                               unquote(self.o['broker'].url.password))
         return client
 
     def _mqtt_setup_signal_handler(self, signum, stack):
@@ -322,6 +323,7 @@ class MQTT(Moth):
         signal.signal(signal.SIGINT, self._mqtt_setup_signal_handler)
         signal.signal(signal.SIGTERM, self._mqtt_setup_signal_handler)
 
+        something_broke = True
         self.connected=False
         while True:
 
@@ -348,6 +350,24 @@ class MQTT(Moth):
                 logger.info( f"is no around? {self.o['no']} " )
                 if ('no' in self.o) and self.o['no'] > 0:
                     self.client = self.__clientSetup(cid)
+                    if hasattr(self, 'client') and hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
+                        self.client.auto_ack(False)
+                        logger.debug(
+                            "Switching off auto_ack for higher reliability via explicit acknowledgements."
+                        )
+                        self.auto_ack = False
+                    else:
+                        logger.warning(
+                            "paho library using auto_ack. may lose data every crash or restart."
+                        )
+                        self.auto_ack = True
+    
+                    self.client.connect_async( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                           clean_start=False, properties=props )
+                    self.client.enable_logger(logger)
+                    self.client.loop_start()
+                    self.connected=True
+                    break
                 else:
                     if 'instances' in self.o:    
                         session_mxi=self.o['instances']+1
@@ -359,37 +379,18 @@ class MQTT(Moth):
                         logger.info('declare session for instances %s' %icid)
                         decl_client = self.__clientSetup(icid)
                         decl_client.on_connect = MQTT.__sub_on_connect
-                        decl_client.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                             decl_client.loop(1)
                         decl_client.disconnect()
                         decl_client.loop_stop()
                         logger.info('instance declaration for %s done' % icid)
-                        break
-
-                if hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
-                    self.client.auto_ack(False)
-                    logger.debug(
-                        "Switching off auto_ack for higher reliability via explicit acknowledgements."
-                    )
-                    self.auto_ack = False
-                else:
-                    logger.warning(
-                        "paho library using auto_ack. may lose data every crash or restart."
-                    )
-                    self.auto_ack = True
-
-                self.client.connect_async( self.broker.url.hostname, port=self.__sslClientSetup(), \
-                       clean_start=False, properties=props )
-                self.client.enable_logger(logger)
-                self.client.loop_start()
-                self.connected=True
-                break
-
+                    break
+                    
             except Exception as err:
                 logger.error("failed to {} with {}".format(
-                    self.broker.url.hostname, err))
+                    self.o['broker'].url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -436,8 +437,8 @@ class MQTT(Moth):
                 if 'max_queued_messages' in self.o:
                     self.client.max_queued_messages_set(self.o['max_queued_messages'])
 
-                self.client.username_pw_set(self.broker.url.username,
-                                            unquote(self.broker.url.password))
+                self.client.username_pw_set(self.o['broker'].url.username,
+                                            unquote(self.o['broker'].url.password))
                 self.connect_in_progress = True
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
@@ -451,7 +452,7 @@ class MQTT(Moth):
 
             except Exception as err:
                 logger.error("failed to {} with {}".format(
-                    self.broker.url.hostname, err))
+                    self.o['broker'].url.hostname, err))
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -494,7 +495,7 @@ class MQTT(Moth):
                 icid= self.o['queueName'] + "_i%02d" % i
                 logger.info('cleanup session %s' % icid )
                 myclient = self.__clientSetup( icid )
-                myclient.connect( self.broker.url.hostname, port=self.__sslClientSetup(), \
+                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
