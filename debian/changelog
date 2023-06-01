@@ -13,8 +13,12 @@ metpx-sr3 (3.00.40) UNRELEASED; urgency=medium
   * documentation #677 improvement.
   * bugfix #660 sr3 crash with certain config errors.
   * another part of #617 post_format should override post_topicPrefix for formatting.
-  * improvements on #506 MQTT functionality.
-  
+  * improvements on #506 MQTT functionality (but still not passing.)
+  * resolved #684 (documentation generation) 
+  * resolved #681 broken python api
+  * resolved #678 messages for (other) certain bad config setting.
+  * resolved #671 crash for certain bad config setting.
+    
  -- Peter <peter@bsqt.homeip.net>  Sun, 14 May 2023 11:01:45 -0400
 
 metpx-sr3 (3.00.39) unstable; urgency=medium
