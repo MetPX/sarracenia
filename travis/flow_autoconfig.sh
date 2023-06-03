@@ -12,6 +12,8 @@ sudo apt -y install python3-setuptools
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
+# in case it was installed as a dependency.
+sudo apt -y remove metpx-sr3
 
 pip3 install -U pip
 pip3 install -e .
