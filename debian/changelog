@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.41) UNRELEASED; urgency=medium
+
+  * move aware from release. 
+
+ -- Peter <peter@bsqt.homeip.net>  Sat, 03 Jun 2023 01:43:49 -0400
+
 metpx-sr3 (3.00.40) unstable; urgency=medium
 
   * resolved #681, #661 python API broken 
