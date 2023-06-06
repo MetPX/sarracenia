@@ -5,7 +5,7 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - turned_off_for_now_always_fails
+      - v03_wip
 
   workflow_dispatch:
     inputs:
@@ -23,7 +23,7 @@ jobs:
       # Don't cancel the entire matrix when one job fails
       fail-fast: false
       matrix:
-       which_test: [ static_flow ]
+       which_test: [ static_flow, dynamic_flow ]
        osver: [ "ubuntu-22.04" ]
 
     runs-on: ${{ matrix.osver }}

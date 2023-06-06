@@ -1,4 +1,4 @@
-# Flow Test Autoconfig
+
 #
 # Script not meant to be run on personal machines (may break some configs)
 # Intended use case is a fresh sys (tested on ubuntu18.04desktop)
@@ -15,8 +15,8 @@ mkdir -p ~/.config/sr3
 
 sed -i 's/MQP=amqp/MQP=mqtt/' ~/.config/sr3/default.conf
 
-ADMIN_PASSWORD="`grep 'amqp://bunnymaster' ~/.config/sr3/credentials.conf | sed 's+amqp:\/\/bunnymaster:++;s+@localhost/++'`"
-OTHER_PASSWORD="`grep 'amqp://tsource' ~/.config/sr3/credentials.conf | sed 's+amqp:\/\/tsource:++;s+@localhost/++'`"
+ADMIN_PASSWORD="`grep -e 'amqp://bunnymaster:.*@localhost' ~/.config/sr3/credentials.conf | head -1 | sed 's+amqp:\/\/bunnymaster:++;s+@localhost.*$++'`"
+OTHER_PASSWORD="`grep -e 'amqp://tsource:.*@localhost' ~/.config/sr3/credentials.conf | head -1 | sed 's+amqp:\/\/tsource:++;s+@localhost.*$++'`"
 
 cat >> ~/.config/sr3/credentials.conf << EOF
 mqtt://bunnymaster:${ADMIN_PASSWORD}@localhost/
@@ -70,6 +70,3 @@ if [[ $(($check_wsl == "init" )) ]]; then
 else
 	sudo systemctl restart mosquitto
 fi
-
-echo "dir: +${PWD}+"
-git clone https://github.com/MetPX/sr_insects
