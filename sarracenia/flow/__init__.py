@@ -178,8 +178,8 @@ class Flow:
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
             ( hasattr(self.o, 'delete_destination') and self.o.delete_destination )) and \
-            ('sarracenia.flowcb.work.delete.Delete' not in self.plugins_late['load']):
-            self.plugins_late['load'].append('sarracenia.flowcb.work.delete.Delete')
+            ('sarracenia.flowcb.work.delete.Delete' not in self.o.plugins_late):
+            self.o.plugins_late.append('sarracenia.flowcb.work.delete.Delete')
 
         # transport stuff.. for download, get, put, etc...
         self.scheme = None
