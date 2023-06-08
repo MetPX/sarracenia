@@ -484,9 +484,13 @@ class Flow:
                     for m in self.worklist.ok:
                         if ('new_baseUrl' in m) and (m['baseUrl'] !=
                                                      m['new_baseUrl']):
+                            m['old_baseUrl'] = m['baseUrl']
+                            m['_deleteOnPost'] |= set(['old_baseUrl'])
                             m['baseUrl'] = m['new_baseUrl']
                         if ('new_retrievePath' in m) :
+                            m['old_retrievePath'] = m['retrievePath']
                             m['retrievePath'] = m['new_retrievePath']
+                            m['_deleteOnPost'] |= set(['old_retrievePath'])
 
                         # if new_file does not match relPath, then adjust relPath so it does.
                         if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
@@ -502,11 +506,18 @@ class Flow:
                                     m['new_relPath'] = m['new_file']
 
                         if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
+                            m['old_relPath'] = m['relPath']
+                            m['_deleteOnPost'] |= set(['old_relPath'])
                             m['relPath'] = m['new_relPath']
+                            m['old_subtopic'] = m['subtopic']
+                            m['_deleteOnPost'] |= set(['old_subtopic'])
                             m['subtopic'] = m['new_subtopic']
-                        if ('_format' in m) and ( m['_format'] != 
-                                                  m['post_format']):
-                            m['_format'] = m['post_format']
+
+                        if '_format' in m:
+                            m['old_format'] = m['_format']
+                            m['_deleteOnPost'] |= set(['old_format'])
+                        m['_format'] = m['post_format']
+                        
 
                     self._runCallbacksWorklist('after_work')
 
