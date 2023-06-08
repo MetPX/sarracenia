@@ -16,11 +16,13 @@ class Options:
         self.logFormat = ""
         self.queueName = "TEST_QUEUE_NAME"
         self.component = "sarra"
+        self.nodupe_redis_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         self.config = "foobar.conf"
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
     def add_option(self, option, type, default = None):
-        setattr(self, option, default)
+        if not hasattr(self, option):
+            setattr(self, option, default)
     pass
 
 def make_message():
@@ -63,8 +65,9 @@ def test__deriveKey(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test__deriveKey.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
+
         nodupe = NoDupe(BaseOptions)
 
         thismsg = make_message()
@@ -96,8 +99,8 @@ def test_on_start(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_on_start.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = NoDupe(BaseOptions)
@@ -110,8 +113,8 @@ def test_on_stop(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_on_stop.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = NoDupe(BaseOptions)
@@ -126,8 +129,8 @@ def test_on_housekeeping(tmp_path, caplog):
         from sarracenia import nowflt
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_on_housekeeping.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = NoDupe(BaseOptions)
@@ -160,8 +163,8 @@ def test__is_new(tmp_path, capsys):
         from sarracenia import nowflt
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test__is_new.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         nodupe = NoDupe(BaseOptions)
@@ -205,8 +208,8 @@ def test_after_accept(tmp_path, capsys):
 
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_after_accept.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
@@ -235,8 +238,8 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_after_accept__WithFileAges.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
@@ -269,8 +272,8 @@ def test_after_accept__InFlight(tmp_path, capsys):
 
         BaseOptions = Options()
         BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.config = "test_after_accept__InFlight.conf"
+        BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 1000

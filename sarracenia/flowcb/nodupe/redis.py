@@ -62,7 +62,7 @@ class NoDupe(FlowCB):
         self._rkey_count = self._rkey_base + ".count"
         self._cache_hit = None
 
-        self._redis = redis.from_url(self.o.redisqueue_serverurl)
+        self._redis = redis.from_url(self.o.nodupe_redis_serverurl)
 
         self._last_expire = nowflt()
 
