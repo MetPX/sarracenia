@@ -124,7 +124,7 @@ duration_options = [
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = ['path']
+list_options = ['path' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]

@@ -127,7 +127,6 @@ class MQTT(Moth):
         self.o.update(default_options)
         self.o.update(options)
 
-
         if 'qos' in self.o:
             if type(self.o['qos']) is not int:
                 self.o['qos'] = int(self.o['qos'])
@@ -629,7 +628,7 @@ class MQTT(Moth):
             return False
 
         if not self.connected:
-            self.__putSetup(self.o)
+            self.__putSetup()
 
         postFormat = body['_format']
 
@@ -685,6 +684,7 @@ class MQTT(Moth):
             if headers:
                 props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
 
+            print( f"hoho {self.o['messageDebugDump']} post_format: {self.o['post_format']}" )
             if self.o['messageDebugDump']:
                 logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
                 if hasattr(props, 'UserProperty'): 
