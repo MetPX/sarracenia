@@ -56,7 +56,7 @@ class NoDupe_Redis(FlowCB):
         logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
 
         self.o.add_option( 'nodupe_redis_serverurl', 'str')
-        self.o.add_option( 'nodupe_redis_keybase', 'str', 'sr3.nodupe.' + self.o.component + '.' + self.o.config) 
+        self.o.add_option( 'nodupe_redis_keybase', 'str', 'sr3.nodupe.' + self.o.component + '.' + self.o.config.replace(".","_")) 
 
         self._rkey_base = self.o.nodupe_redis_keybase
         self._rkey_count = self._rkey_base + ".count"
@@ -73,8 +73,8 @@ class NoDupe_Redis(FlowCB):
     # ----------- Private Methods -----------
     def _hash(self, text) -> str:
         from hashlib import blake2b
-        h = blake2b(key=bytes(self._rkey_base), digest_size=16)
-        h.update(bytes(text))
+        h = blake2b(key=bytes(self._rkey_base, 'utf-8'), digest_size=16)
+        h.update(bytes(text, 'utf-8'))
         return h.hexdigest()
     
     def _deriveKey(self, message) -> str:
@@ -156,21 +156,20 @@ class NoDupe_Redis(FlowCB):
         else:
             logger.debug("adding entry to NoDupe_Redis cache")
             return True
-        
-        return self._in_cache(key, path)
+
     
     # ----------- Public Methods -----------
     def on_housekeeping(self):
 
         logger.info("start")
 
-        count = self._redis.get(self._rkey_count)
+        count = int(self._redis.get(self._rkey_count))
         self.now = nowflt()
 
-        logger.info("was %d, but since %5.2f sec, now saved %d entries" % (self.last_count, self.now - self.last_time, count))
+        logger.info("was %d, but since %5.2f sec, now saved %d entries" % (self._last_count, self.now - self._last_time, count))
 
-        self.last_time = self.now
-        self.last_count = count
+        self._last_time = self.now
+        self._last_count = count
 
     def after_accept(self, worklist):
         new_incoming = []
