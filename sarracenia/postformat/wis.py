@@ -72,7 +72,7 @@ class Wis(PostFormat):
                     msg[literal] = GeoJSONBody[literal]
 
             for h in GeoJSONBody['properties']:
-                if h not in [ 'geometry', 'properties' ]:
+                if h not in [ 'geometry', 'properties', 'pubTime' ]:
                     msg[h] = GeoJSONBody['properties'][h]
             if 'type' in msg:
                 del msg['type']
@@ -96,8 +96,11 @@ class Wis(PostFormat):
 
             """
             for h in body:
-                if h not in [ 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic' ]:
+                if h not in [ 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime' ]:
                     GeoJSONBody['properties'][h] = body[h]
+
+            t=body['pubTime']
+            GeoJSONBody['properties']['pubtime'] = t[0:4]+'-'+t[4:6]+'-'+t[6:11]+':'+t[11:13]+':'+t[12:14]+'.'+t[14:]
 
             if 'geometry' in body:
                 GeoJSONBody['geometry'] = body['geometry']
@@ -105,9 +108,9 @@ class Wis(PostFormat):
             GeoJSONBody['data_id'] =  str(uuid.uuid4())
 
             if 'retrievePath' in body :
-                url = '/'.join( [ body['baseUrl'], body['retrievePath'] ] )
+                url = body['baseUrl'] + body['retrievePath']
             else:
-                url = '/'.join( [ body['baseUrl'], body['relPath'] ] )
+                url = body['baseUrl'] + body['relPath']
 
             GeoJSONBody['links'] = [{
                 'rel': 'canonical',
