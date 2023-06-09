@@ -57,6 +57,9 @@ class Wis(PostFormat):
           return the message as a normalized v03 message.
 
           Since I can't figure out a baseUrl, I can't import any messages. so import is broken for now.
+          for now:  just parse the first url in 'links', assign the host part to baseUrl, and make
+          the path a retrieval one.
+
        """
             msg = sarracenia.Message()
             msg["_format"] = __name__.split('.')[-1].lower()
@@ -83,11 +86,12 @@ class Wis(PostFormat):
             if 'version' in msg and msg['geometry'] == 'v04':
                 del msg['version']
 
-            url = urllib.urlparse( msg['links'][0]['href'] )
+            urlstr = msg['links'][0]['href']
+            url = urllib.urlparse( urlstr )
 
             msg['baseUrl'] = url.scheme + '://' + url.netloc
-            msg['retrievePath' ] = url.path
-            msg['size'] = msg['links'][0]['length']
+            
+            msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
 
             return msg
 
