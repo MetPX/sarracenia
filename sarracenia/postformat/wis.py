@@ -51,7 +51,7 @@ class Wis(PostFormat):
         return False
 
     @staticmethod
-    def xxximportMine(body, headers) -> sarracenia.Message:
+    def importMine(body, headers) -> sarracenia.Message:
             """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -67,15 +67,27 @@ class Wis(PostFormat):
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 
-            for literal in [ 'geometry', 'properties' ]:
-                if literal in GeoJSONBody:
-                    msg[literal] = GeoJSONBody[literal]
+            t=GeoJSONBody['properties']['pubtime']
+            msg['pubTime'] = t[0:4]+t[5:7]+t[8:13]+t[14:16]+t[17:-1]
 
             for h in GeoJSONBody['properties']:
-                if h not in [ 'geometry', 'properties', 'pubTime' ]:
+                if h not in [ 'properties', 'pubbime' ]:
                     msg[h] = GeoJSONBody['properties'][h]
+
             if 'type' in msg:
                 del msg['type']
+
+            if 'geometry' in msg and msg['geometry'] is None:
+                del msg['geometry']
+
+            if 'version' in msg and msg['geometry'] == 'v04':
+                del msg['version']
+
+            url = urllib.urlparse( msg['links'][0]['href'] )
+
+            msg['baseUrl'] = url.scheme + '://' + url.netloc
+            msg['retrievePath' ] = url.path
+            msg['size'] = msg['links'][0]['length']
 
             return msg
 
@@ -100,7 +112,7 @@ class Wis(PostFormat):
                     GeoJSONBody['properties'][h] = body[h]
 
             t=body['pubTime']
-            GeoJSONBody['properties']['pubtime'] = t[0:4]+'-'+t[4:6]+'-'+t[6:11]+':'+t[11:13]+':'+t[12:14]+'.'+t[14:]
+            GeoJSONBody['properties']['pubtime'] = t[0:4]+'-'+t[4:6]+'-'+t[6:11]+':'+t[11:13]+':'+t[13:] + 'Z'
 
             if 'geometry' in body:
                 GeoJSONBody['geometry'] = body['geometry']
@@ -112,12 +124,13 @@ class Wis(PostFormat):
             else:
                 url = body['baseUrl'] + body['relPath']
 
-            GeoJSONBody['links'] = [{
-                'rel': 'canonical',
-                #'type': 'unknown',, mime content-type of data, not available in message.
-                'href': url,
-                'length': body['size']
-            }]
+            if not 'links' in GeoJSONBody:
+                GeoJSONBody['links'] = [{
+                    'rel': 'canonical',
+                    #'type': 'unknown',, mime content-type of data, not available in message.
+                    'href': url,
+                    'length': body['size']
+                }]
 
             raw_body = json.dumps(GeoJSONBody)
             return raw_body, headers, Wis.content_type()
