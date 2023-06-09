@@ -110,8 +110,7 @@ class NoDupe_Redis(FlowCB):
 
     def _is_new(self, message) -> bool :
         """
-        derive keys to be looked up in cache of messages already seen.
-        then look them up in the cache, 
+        Derive keys to be looked up in cache of messages already seen, then look them up in the cache, 
 
         return False if message is a dupe.
                 True if it is new.
@@ -127,15 +126,8 @@ class NoDupe_Redis(FlowCB):
         message['noDupe'] = { 'key': key, 'path': path }
         message['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("NoDupe_Redis calling _in_cache( %s, %s )" % (key, path))
+        logger.debug("proceeding to check ( %s, %s )" % (key, path))
 
-
-        """
-        return True if the given key=relpath value is already in the cache,
-                False otherwise
-            side effect: add it to the cache if it isn't there.
-        """
-        
         self.cache_hit = None
         key_hashed = self._hash(key)
         path_quoted = urllib.parse.quote(path)
@@ -145,28 +137,34 @@ class NoDupe_Redis(FlowCB):
 
         got = self._redis.get(redis_key)
 
-        self._redis.set(redis_key, self.now + "|" + path_quoted, ex=self.o.nodupe_ttl)
-        self._redis.incr(self._rkey_count)
-
+        self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=self.o.nodupe_ttl)
+        
         if got != None:
             logger.debug("entry already in NoDupe_Redis cache: key=%s" % (redis_key) )
             logger.debug("updated time of old NoDupe_Redis entry: relpath=%s" % (path_quoted) )
             self.cache_hit = path_quoted
             return False
         else:
-            logger.debug("adding entry to NoDupe_Redis cache")
+            logger.debug("adding entry to NoDupe_Redis cache; key=%s" % (redis_key) )
+            self._redis.incr(self._rkey_count)
             return True
 
-    
+    def _count(self):
+        count = self._redis.get(self._rkey_count)
+        if count == None:
+            return 0
+        else:
+            return int(count)
+        
     # ----------- Public Methods -----------
     def on_housekeeping(self):
 
         logger.info("start")
 
-        count = int(self._redis.get(self._rkey_count))
+        count = self._count()
         self.now = nowflt()
 
-        logger.info("was %d, but since %5.2f sec, now saved %d entries" % (self._last_count, self.now - self._last_time, count))
+        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, count))
 
         self._last_time = self.now
         self._last_count = count
@@ -212,9 +210,7 @@ class NoDupe_Redis(FlowCB):
                 m.setReport(304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
-        if self.fp:
-            self.fp.flush()
-        logger.debug("items registered in duplicate suppression cache: %d" % (self._redis.get(self._rkey_count)) )
+        logger.debug("items registered in duplicate suppression cache: %d" % (self._count()) )
         worklist.incoming = new_incoming
 
     def on_start(self):
