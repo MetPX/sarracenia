@@ -48,7 +48,7 @@ class PostFormat:
         return self.mimetype
 
     @staticmethod
-    def importAny(payload, headers, content_type ) -> sarracenia.Message:
+    def importAny(payload, headers, content_type, options ) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -57,21 +57,21 @@ class PostFormat:
        """
         for sc in PostFormat.__subclasses__():
             #logger.info( f" sc={sc}, scct={sc.content_type()}, content_type={content_type} " )
-            if sc.mine(payload, headers, content_type):
-                return sc.importMine(payload, headers )
+            if sc.mine(payload, headers, content_type, options ):
+                return sc.importMine(payload, headers, options )
         return None
 
         pass
 
     @staticmethod
-    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ]) -> (str, dict, str):
+    def exportAny(msg, post_format='v03', topicPrefix=[ 'v03' ], options={ 'post_format': 'v03', 'topicPrefix':'v03' } ) -> (str, dict, str):
         """
           return a tuple of the encoded message body, a headers dict, and content_type
           and a completed topic as a list as one header.
        """
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.exportMine( msg, topicPrefix ) 
+                return sc.exportMine( msg, topicPrefix, options ) 
 
         return None, None, None
 

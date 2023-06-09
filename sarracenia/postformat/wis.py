@@ -42,7 +42,7 @@ class Wis(PostFormat):
         return 'application/geo+json'
 
     @staticmethod
-    def mine(payload, headers, content_type) -> bool:
+    def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this encoding.
        """
@@ -51,7 +51,7 @@ class Wis(PostFormat):
         return False
 
     @staticmethod
-    def importMine(body, headers) -> sarracenia.Message:
+    def importMine(body, headers, options) -> sarracenia.Message:
             """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -96,7 +96,7 @@ class Wis(PostFormat):
             return msg
 
     @staticmethod
-    def exportMine(body,topicPrefix) -> (str, dict, str):
+    def exportMine(body, topicPrefix, options) -> (str, dict, str):
             """
            given a v03 (internal) message, produce an encoded version.
        """

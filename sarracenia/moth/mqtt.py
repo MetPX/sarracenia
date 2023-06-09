@@ -530,7 +530,7 @@ class MQTT(Moth):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
             else:
                 headers=None
-            message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType)
+            message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
             logger.error("ignored malformed message: %s" % mqttMessage.payload)
@@ -670,7 +670,7 @@ class MQTT(Moth):
         props.ContentType = PostFormat.content_type( postFormat )
 
         try:
-            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'] )
+            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'], self.o )
             # FIXME: might
             topic = '/'.join(headers['topic']) 
 

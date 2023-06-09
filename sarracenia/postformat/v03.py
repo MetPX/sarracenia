@@ -19,7 +19,7 @@ class V03(PostFormat):
         return 'application/json'
 
     @staticmethod
-    def mine(payload, headers, content_type) -> bool:
+    def mine(payload, headers, content_type, options) -> bool:
         """
           return true if the message is in this post format.
        """
@@ -28,7 +28,7 @@ class V03(PostFormat):
         return False
 
     @staticmethod
-    def importMine(body, headers) -> sarracenia.Message:
+    def importMine(body, headers, options) -> sarracenia.Message:
         """
           given a message in a wire format, with the given properties (or headers) in a dictionary,
           return the message as a normalized v03 message.
@@ -76,7 +76,7 @@ class V03(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body,topic_prefix) -> (str, dict, str):
+    def exportMine(body,topic_prefix,options) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
