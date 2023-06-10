@@ -91,64 +91,6 @@ def test__deriveKey(tmp_path):
     del thismsg['mtime']
     assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
 
-# def test__deriveKey__nodupe_override(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-#     BaseOptions.config = "test__deriveKey__nodupe_override.conf"
-#     nodupe = NoDupe_Redis(BaseOptions)
-
-#     thismsg = make_message()
-
-#     thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
-
-#     assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
-
-# def test__deriveKey__fileOp(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-#     BaseOptions.config = "test__deriveKey__fileOp.conf"
-#     nodupe = NoDupe_Redis(BaseOptions)
-
-#     thismsg = make_message()
-#     thismsg['fileOp'] = {'link': "SomeKeyValue"}
-#     assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
-
-#     thismsg = make_message()
-#     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
-#     assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
-
-# def test__deriveKey__integrity(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-#     BaseOptions.config = "test__deriveKey__integrity.conf"
-#     nodupe = NoDupe_Redis(BaseOptions)
-
-#     thismsg = make_message()
-
-#     thismsg['integrity'] = {'method': "cod"}
-#     assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
-
-#     thismsg['integrity'] = {'method': "method", 'value': "value\n"}
-#     assert nodupe._deriveKey(thismsg) == "method,value"
-
-# def test__deriveKey__NotKey(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-#     BaseOptions.config = "test__deriveKey__NotKey.conf"
-#     nodupe = NoDupe_Redis(BaseOptions)
-
-#     thismsg = make_message()
-
-#     assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
-#     thismsg['size'] = 28234
-#     assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
-#     del thismsg['mtime']
-#     assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
-
 def test_on_start(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -195,7 +137,6 @@ def test_on_housekeeping(tmp_path, caplog):
             ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)], 
             ['key3', '/some/path/to/file3.txt', float(time.time() - 3000)],
         ]
-
         redis_setup(nodupe, cache)
 
         nodupe._last_time = nowflt() - 250
@@ -231,7 +172,6 @@ def test__is_new(tmp_path, capsys):
             ['key2', '/some/path/to/file2b.txt', float(time.time() - 300)], 
             ['key3', '/some/path/to/file3.txt', float(time.time() - 3000)],
         ]
-
         redis_setup(nodupe, cache)
 
         message = make_message()
@@ -279,8 +219,7 @@ def test_after_accept(tmp_path, capsys):
         test_after_accept_worklist.incoming = [message, message, message]
 
         nodupe.after_accept(test_after_accept_worklist)
-        pretty.pprint(nodupe._redis.keys())
-        pretty.pprint(test_after_accept_worklist)
+
         assert len(test_after_accept_worklist.incoming) == 1
         assert len(test_after_accept_worklist.rejected) == 2
         k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath'] + "," + message['mtime']) + ":" + nodupe._hash(message['relPath'])
@@ -317,11 +256,6 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         nodupe.after_accept(test_after_accept__WithFileAges_worklist)
 
-        #pretty.pprint(message)
-        #pretty.pprint(test_after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-        #pretty.pprint(vars(nodupe))
-        #pretty.pprint(test_after_accept__WithFileAges_worklist)
-
         assert len(test_after_accept__WithFileAges_worklist.rejected) == 2
         assert test_after_accept__WithFileAges_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
         assert test_after_accept__WithFileAges_worklist.rejected[1]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
@@ -353,11 +287,6 @@ def test_after_accept__InFlight(tmp_path, capsys):
         test_after_accept__InFlight_worklist.incoming = [message_old, message_new]
 
         nodupe.after_accept(test_after_accept__InFlight_worklist)
-
-        #pretty.pprint(message)
-        #pretty.pprint(test_after_accept__InFlight_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-        #pretty.pprint(vars(nodupe))
-        #pretty.pprint(test_after_accept__InFlight_worklist)
 
         assert len(test_after_accept__InFlight_worklist.rejected) == 1
         assert len(test_after_accept__InFlight_worklist.incoming) == 1

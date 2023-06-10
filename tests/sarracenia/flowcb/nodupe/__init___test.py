@@ -47,7 +47,6 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-
 def test_deriveKey(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
@@ -77,56 +76,6 @@ def test_deriveKey(tmp_path):
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
     del thismsg['mtime']
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
-
-# def test_deriveKey__nodupe_override(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     nodupe = NoDupe(BaseOptions)
-
-#     thismsg = make_message()
-
-#     thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
-
-#     assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
-
-# def test_deriveKey__fileOp(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     nodupe = NoDupe(BaseOptions)
-
-#     thismsg = make_message()
-#     thismsg['fileOp'] = {'link': "SomeKeyValue"}
-#     assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
-
-#     thismsg = make_message()
-#     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
-#     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
-
-# def test_deriveKey__integrity(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     nodupe = NoDupe(BaseOptions)
-
-#     thismsg = make_message()
-
-#     thismsg['integrity'] = {'method': "cod"}
-#     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
-
-#     thismsg['integrity'] = {'method': "method", 'value': "value\n"}
-#     assert nodupe.deriveKey(thismsg) == "method,value"
-
-# def test_deriveKey__NotKey(tmp_path):
-#     BaseOptions = Options()
-#     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     nodupe = NoDupe(BaseOptions)
-
-#     thismsg = make_message()
-
-#     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
-#     thismsg['size'] = 28234
-#     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
-#     del thismsg['mtime']
-#     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
 
 def test_open__WithoutFile(tmp_path):
     BaseOptions = Options()
