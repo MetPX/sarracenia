@@ -62,7 +62,6 @@ class Wis(PostFormat):
           the path a retrieval one.
 
        """
-            logger.warning( f"FIXME Hi!")
             msg = sarracenia.Message()
             msg["_format"] = __name__.split('.')[-1].lower()
             try:

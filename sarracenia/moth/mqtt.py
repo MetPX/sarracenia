@@ -529,7 +529,7 @@ class MQTT(Moth):
                              (type(mqttMessage.payload), len(mqttMessage.payload), mqttMessage.payload))
 
             if hasattr(mqttMessage.properties, 'UserProperty'): 
-                logger.info( f'UserProperty: {mqttMessage.properties.UserProperty} ')
+                logger.info( f"User Property: {mqttMessage.properties.UserProperty} ")
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
@@ -688,12 +688,11 @@ class MQTT(Moth):
 
             if headers:
                 props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
-                logger.critical( f"FIXME HOHO ... props.UserProperty: {props.UserProperty} ... headers: {headers}  " )
 
             if self.o['messageDebugDump']:
                 logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
                 if hasattr(props, 'UserProperty'): 
-                    logger.info( f"user_property:{props.UserProperty}" )
+                    logger.info( f"UserProperty:{props.UserProperty}" )
                     
 
             info = self.client.publish(topic=topic, payload=raw_body, qos=self.o['qos'], properties=props)
