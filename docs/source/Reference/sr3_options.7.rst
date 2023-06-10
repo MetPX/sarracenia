@@ -1346,6 +1346,16 @@ post_on_start
 When starting watch, one can either have the program post all the files in the directories watched
 or not. (not implemented in sr3_cpost)
 
+post_topic <string> 
+---------------------
+
+Explicitly set a posting topic string, overriding the usual
+group of settings. For sarracenia data pumps, this should never be needed,
+as the use of post_exchange, post_topicPrefix, and relpath normally builds the right
+value for topics for both posting and binding.
+
+
+
 post_topicPrefix (default: topicPrefix)
 ---------------------------------------
 
@@ -1736,10 +1746,10 @@ the connection should succeed regardless.
 topic <string> 
 --------------
 
-Explicitly set a subscribing or posting topic string, overriding the usual
-group of settings. For sarracenia data pumps, this should never be needed,
-as the use of exchange, topicPrefix, and subtopic normally builds the right
-value for topics for both posting and binding.
+Explicitly set a subscribing topic string, overriding the value usually
+derived from a group of settings. For sarracenia data pumps, this should never be needed,
+as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
+value.
 
 
 topicPrefix (default: v03)
