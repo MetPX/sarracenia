@@ -134,7 +134,7 @@ class V02(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body,topic_prefix, options) -> (str, dict, str):
+    def exportMine(body, options) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
@@ -147,4 +147,9 @@ class V02(PostFormat):
         ]:
             if h in v2m.headers:
                     del v2m.headers[h]
+
+        if ( 'broker' in options ) and ( 'exchange' in options ) and \
+            options['broker'].url.scheme.startswith('mqtt'):
+            v2m.headers['topic'] = options['exchange'] +  v2m.headers['topic']
+
         return v2m.notice, v2m.headers, V02.content_type()

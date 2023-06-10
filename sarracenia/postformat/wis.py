@@ -2,6 +2,7 @@ import json
 import logging
 import sarracenia
 from sarracenia.postformat import PostFormat
+import urllib
 import uuid
 
 #from pywis_pubsub.publish import create_message
@@ -61,6 +62,7 @@ class Wis(PostFormat):
           the path a retrieval one.
 
        """
+            logger.warning( f"FIXME Hi!")
             msg = sarracenia.Message()
             msg["_format"] = __name__.split('.')[-1].lower()
             try:
@@ -70,33 +72,49 @@ class Wis(PostFormat):
                 logger.debug('Exception details: ', exc_info=True)
                 return None
 
-            t=GeoJSONBody['properties']['pubtime']
-            msg['pubTime'] = t[0:4]+t[5:7]+t[8:13]+t[14:16]+t[17:-1]
+            if 'properties' in GeoJSONBody:
+                if 'pubtime' in GeoJSONBody['properties']: 
+                    t=GeoJSONBody['properties']['pubtime']
+                    msg['pubTime'] = t[0:4]+t[5:7]+t[8:13]+t[14:16]+t[17:-1]
+                else:
+                    logger.error( 'invalid message missing pubtime (WMO mandatory field)' )
+  
+                for h in GeoJSONBody['properties']:
+                    if h not in [ 'pubtime' ]:
+                        msg[h] = GeoJSONBody['properties'][h]
 
-            for h in GeoJSONBody['properties']:
-                if h not in [ 'properties', 'pubbime' ]:
-                    msg[h] = GeoJSONBody['properties'][h]
+            #logger.warning( f" headers: {headers}, msg: {msg}  ... GeoJSONBody: {GeoJSONBody}  ")
+            if not 'type' in GeoJSONBody:
+                logger.warning( 'invalid message missing type (WMO mandatory field)' )
 
-            if 'type' in msg:
-                del msg['type']
+            if 'geometry' in GeoJSONBody :
+                if GeoJSONBody['geometry'] is not None:
+                    msg['geometry'] = GeoJSONBody['geometry']
+            else:
+                logger.warning( 'invalid message missing geometry (WMO mandatory field)' )
 
-            if 'geometry' in msg and msg['geometry'] is None:
-                del msg['geometry']
+            if not ( 'version' in GeoJSONBody and GeoJSONBody['version'] == 'v04' ):
+                logger.warning( 'invalide message missing version (WMO Mandatory field)' )
 
-            if 'version' in msg and msg['geometry'] == 'v04':
-                del msg['version']
-
-            urlstr = msg['links'][0]['href']
-            url = urllib.urlparse( urlstr )
-
-            msg['baseUrl'] = url.scheme + '://' + url.netloc
-            
-            msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
+            if ('data_id' in msg) and ('topic' in headers):
+                msg['relPath'] = headers['topic'] + '/' + msg['data_id']
+            else:
+                logger.warning( 'invalid message missing data_id (WMO mandatory field)' )
+           
+            if 'links' in GeoJSONBody:
+                urlstr = GeoJSONBody['links'][0]['href']
+                url = urllib.parse.urlparse( urlstr )
+                msg['size']  = GeoJSONBody['links'][0]['length']
+                msg['links'] = GeoJSONBody['links']
+                msg['baseUrl'] = url.scheme + '://' + url.netloc
+                msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
+            else:
+                logger.warning( 'message missing version (WMO mandatory field)' )
 
             return msg
 
     @staticmethod
-    def exportMine(body, topicPrefix, options) -> (str, dict, str):
+    def exportMine(body, options) -> (str, dict, str):
             """
            given a v03 (internal) message, produce an encoded version.
        """
@@ -106,7 +124,12 @@ class Wis(PostFormat):
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
 
-            headers = { 'topic' : 'origin/a/wis2/can/eccc-msc/data/core/weather/surface-based-observations/synop'.split('/') }
+            if 'topic' in options:
+                topic=options['topic'].split('/')
+            else:
+                topic= []
+
+            headers = { 'topic' : topic }
             """
                   topicPrefix and body['subtopic'] could be used to build a topic...
 
@@ -121,7 +144,8 @@ class Wis(PostFormat):
             if 'geometry' in body:
                 GeoJSONBody['geometry'] = body['geometry']
 
-            GeoJSONBody['data_id'] =  str(uuid.uuid4())
+            if 'data_id' not in body:
+                GeoJSONBody['properties']['data_id'] =  str(uuid.uuid4())
 
             if 'retrievePath' in body :
                 url = body['baseUrl'] + body['retrievePath']

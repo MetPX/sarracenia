@@ -90,10 +90,14 @@ class Delete(FlowCB):
                     s = os.stat(d)
                     age = time.time() - s.st_mtime
                     if age > self.o.housekeeping:
-                        os.rmdir(d)
-                        self.dirsOfDeletion.remove(d)
-                        self.dirsofDeltion.add(dirname(d))
-                        logger.info( f"deleting {d}")
+                        try:
+                            os.rmdir(d)
+                            self.dirsOfDeletion.remove(d)
+                            self.dirsofDeltion.add(dirname(d))
+                            logger.info( f"deleted {d}")
+                        except Exception as err:
+                            logger.error("could not unlink {}: {}".format(f, err))
+                            logger.debug("Exception details:", exc_info=True)
                     else:
                         logger.info( f"but not for long enough yet.")
 

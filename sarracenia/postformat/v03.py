@@ -76,15 +76,29 @@ class V03(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body,topic_prefix,options) -> (str, dict, str):
+    def exportMine(body,options) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
         raw_body = json.dumps(body)
 
-        if 'relPath' in body:
-            headers = { 'topic': topic_prefix + body['relPath'].split('/')[0:-1]  }
+        topic_separator='.'
+
+        if options['broker'].url.scheme.startswith('mqtt'):
+            if ( 'exchange' in options ) and ( 'topicPrefix' in options ):
+                topic_prefix = options['exchange'] + options['topicPrefix'] 
+            topic_separator='/'
         else:
-            headers = { 'topic': topic_prefix }
+            topic_prefix = options['topicPrefix']
+
+        if 'topic' in options:
+            topic = options['topic'].split(topic_separator)
+        else:
+            if 'relPath' in body:
+                topic = topic_prefix + body['relPath'].split('/')[0:-1]  
+            else:
+                topic = topic_prefix
+
+        headers = { 'topic': topic }
 
         return raw_body, headers, V03.content_type()

@@ -208,10 +208,16 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.subscribe_mutex.acquire()
         for binding_tuple in userdata.o['bindings']:
-            exchange, prefix, subtopic = binding_tuple
-            logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
-            subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
-                            prefix + subtopic)
+
+            if 'topic' in userdata.o:
+                subj=userdata.o['topic']
+            else:
+                exchange, prefix, subtopic = binding_tuple
+                logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
+
+                subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
+                                prefix + subtopic)
+
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( "asked to subscribe to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
@@ -324,6 +330,7 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
+        self.auto_ack = True
         while True:
 
             if self.please_stop:
@@ -347,7 +354,7 @@ class MQTT(Moth):
                     props.ReceiveMaximum = self.o['receiveMaximum']
 
                 logger.info( f"is no around? {self.o['no']} " )
-                if ('no' in self.o) and self.o['no'] > 0:
+                if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                     self.client = self.__clientSetup(cid)
                     if hasattr(self, 'client') and hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
                         self.client.auto_ack(False)
@@ -359,7 +366,6 @@ class MQTT(Moth):
                         logger.warning(
                             "paho library using auto_ack. may lose data every crash or restart."
                         )
-                        self.auto_ack = True
     
                     self.client.connect_async( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
@@ -367,7 +373,7 @@ class MQTT(Moth):
                     self.client.loop_start()
                     self.connected=True
                     break
-                else:
+                else: # either 'declare' or 'foreground'
                     if 'instances' in self.o:    
                         session_mxi=self.o['instances']+1
                     else:
@@ -509,10 +515,12 @@ class MQTT(Moth):
         """
            decode MQTT message (protocol specific thingamabob) into sr3 one (python dictionary)
         """
+        headers = { 'topic' : mqttMessage.topic }
         if self.o['messageDebugDump']:
             logger.info('raw message start')
             if hasattr(mqttMessage.properties, 'ContentType'): 
                 logger.info( f'Content-type: {mqttMessage.properties.ContentType}')
+                headers['content-type'] = mqttMessage.properties.ContentType
             else:
                 logger.warning('message is missing content-type header')
 
@@ -525,11 +533,8 @@ class MQTT(Moth):
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
-            if hasattr( mqttMessage.properties, 'UserProperty'):
-                headers = {}
+            if hasattr( mqttMessage.properties , 'UserProperty'):
                 [ headers.update({k:v}) for k,v in mqttMessage.properties.UserProperty ]
-            else:
-                headers=None
             message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
@@ -548,7 +553,7 @@ class MQTT(Moth):
             return message
         else:
            self.metrics['rxBadCount'] += 1
-           self.client.ack(message['ack_id'])
+           self.ack(message['ack_id'])
            logger.error('message acknowledged and discarded: %s' % message)
            return None
 
@@ -683,8 +688,8 @@ class MQTT(Moth):
 
             if headers:
                 props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
+                logger.critical( f"FIXME HOHO ... props.UserProperty: {props.UserProperty} ... headers: {headers}  " )
 
-            print( f"hoho {self.o['messageDebugDump']} post_format: {self.o['post_format']}" )
             if self.o['messageDebugDump']:
                 logger.info( f"Message to publish: topic: {topic} body type:{type(raw_body)} body:{raw_body}" )
                 if hasattr(props, 'UserProperty'): 

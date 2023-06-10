@@ -71,7 +71,7 @@ class PostFormat:
        """
         for sc in PostFormat.__subclasses__():
             if post_format == sc.__name__.lower():
-                return sc.exportMine( msg, topicPrefix, options ) 
+                return sc.exportMine( msg, options ) 
 
         return None, None, None
 
