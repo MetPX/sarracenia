@@ -104,11 +104,13 @@ class Wis(PostFormat):
                 urlstr = GeoJSONBody['links'][0]['href']
                 url = urllib.parse.urlparse( urlstr )
                 msg['size']  = GeoJSONBody['links'][0]['length']
+                if 'type' in GeoJSONBody['links'][0]:
+                    msg['contentType']  = GeoJSONBody['links'][0]['type']
                 msg['links'] = GeoJSONBody['links']
                 msg['baseUrl'] = url.scheme + '://' + url.netloc
                 msg['retrievePath' ] = urlstr[len(msg['baseUrl']):] 
             else:
-                logger.warning( 'message missing version (WMO mandatory field)' )
+                logger.warning( 'message missing links (WMO mandatory field)' )
 
             return msg
 
@@ -152,12 +154,15 @@ class Wis(PostFormat):
                 url = body['baseUrl'] + body['relPath']
 
             if not 'links' in GeoJSONBody:
+
                 GeoJSONBody['links'] = [{
                     'rel': 'canonical',
                     #'type': 'unknown',, mime content-type of data, not available in message.
                     'href': url,
                     'length': body['size']
                 }]
+                if 'contentType' in body:
+                    GeoJSONBody['links'][0]['type'] = body['contentType']
 
             raw_body = json.dumps(GeoJSONBody)
             return raw_body, headers, Wis.content_type()
