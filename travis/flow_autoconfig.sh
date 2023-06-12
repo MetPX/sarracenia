@@ -7,7 +7,8 @@
 # Install and configure dependencies
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
-sudo apt-get update
+sudo apt update
+sudo apt upgrade
 sudo apt -y install python3-setuptools 
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
