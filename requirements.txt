@@ -2,7 +2,7 @@ appdirs
 humanfriendly
 humanize
 jsonpickle
-magic
+python-magic
 paramiko
 psutil>=5.3.0
 watchdog
