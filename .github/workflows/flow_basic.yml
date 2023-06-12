@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.osver }}
   
     name: Maintenance test on ${{ matrix.osver }}
-    timeout-minutes: 30
+    timeout-minutes: 10
     
     steps:
       - uses: actions/checkout@v3
