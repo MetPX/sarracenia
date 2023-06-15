@@ -67,7 +67,9 @@ class NoDupe(FlowCB):
         self._last_expire = nowflt()
 
         self._last_time = nowflt()
-        self._last_count = 0
+
+        self._redis.set(self._rkey_count, 0, nx=True)
+        self._last_count = self._count()
 
 
     # ----------- Private Methods -----------
@@ -126,7 +128,7 @@ class NoDupe(FlowCB):
         message['noDupe'] = { 'key': key, 'path': path }
         message['_deleteOnPost'] |= set(['noDupe'])
 
-        logger.debug("proceeding to check ( %s, %s )" % (key, path))
+        logger.debug("checking (%s, %s)" % (key, path))
 
         self.cache_hit = None
         key_hashed = self._hash(key)
@@ -137,16 +139,17 @@ class NoDupe(FlowCB):
 
         got = self._redis.get(redis_key)
 
-        self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=self.o.nodupe_ttl)
+        #logger.debug("ttl type =%s" % (type(self.o.nodupe_ttl)) )
+        self._redis.set(redis_key, str(self.now) + "|" + path_quoted, ex=int(self.o.nodupe_ttl))
         
         if got != None:
-            logger.debug("entry already in NoDupe_Redis cache: key=%s" % (redis_key) )
-            logger.debug("updated time of old NoDupe_Redis entry: relpath=%s" % (path_quoted) )
+            logger.debug("entry already in cache: key=%s" % (redis_key) )
+            logger.debug("updated time entry: time=%s" % (str(self.now)) )
             self.cache_hit = path_quoted
             return False
         else:
-            logger.debug("adding entry to NoDupe_Redis cache; key=%s" % (redis_key) )
-            self._redis.incr(self._rkey_count)
+            logger.debug("adding entry to cache; key=%s" % (redis_key) )
+            #self._redis.incr(self._rkey_count)
             return True
 
     def _count(self):
@@ -161,13 +164,14 @@ class NoDupe(FlowCB):
 
         logger.info("start")
 
-        count = self._count()
+        new_count = len(self._redis.keys(self._rkey_base + ":*"))
         self.now = nowflt()
-
-        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, count))
+        
+        logger.info("cache size was %d items %5.2f sec ago, now saved %d entries" % (self._last_count, self.now - self._last_time, new_count))
 
         self._last_time = self.now
-        self._last_count = count
+
+        self._last_count = new_count
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -210,7 +214,7 @@ class NoDupe(FlowCB):
                 m.setReport(304, 'Not modified 1 (cache check)')
                 worklist.rejected.append(m)
 
-        logger.debug("items registered in duplicate suppression cache: %d" % (self._count()) )
+        logger.debug("items registered in duplicate suppression cache: %d" % (len(self._redis.keys(self._rkey_base + ":*"))) )
         worklist.incoming = new_incoming
 
     def on_start(self):
