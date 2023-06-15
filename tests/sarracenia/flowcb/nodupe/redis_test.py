@@ -52,7 +52,7 @@ WorkList.directories_ok = []
 
 def redis_setup(nodupe, vals):
     for val in vals:
-        k = nodupe._rkey_base + ":" + nodupe._hash(val[0]) + ":" + nodupe._hash(val[1])
+        k = nodupe._rkey_base + ":" + nodupe._hash(val[0]) + "." + nodupe._hash(val[1])
         v = str(val[2]) + "|" + str(urllib.parse.quote(val[1]))
         nodupe._redis.set(k, v, ex=nodupe.o.nodupe_ttl)
 
@@ -178,19 +178,19 @@ def test__is_new(tmp_path, capsys):
 
         message = make_message()
 
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath']+","+message['mtime']) + ":" + nodupe._hash(message['relPath'])
+        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath']+","+message['mtime']) + "." + nodupe._hash(message['relPath'])
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 5
 
         message['nodupe_override'] = {"path": message['relPath'].split('/')[-1], "key": message['relPath'].split('/')[-1]}
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['nodupe_override']['key']) + ":" + nodupe._hash(message['nodupe_override']['path'])
+        k = nodupe._rkey_base + ":" + nodupe._hash(message['nodupe_override']['key']) + "." + nodupe._hash(message['nodupe_override']['path'])
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'].split('/')[-1], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 6
 
         message['nodupe_override'] = {"path": '/some/path/to/file1.txt', "key": 'key1'}
-        k = nodupe._rkey_base + ":" + nodupe._hash('key1') + ":" + nodupe._hash('/some/path/to/file1.txt')
+        k = nodupe._rkey_base + ":" + nodupe._hash('key1') + "." + nodupe._hash('/some/path/to/file1.txt')
         assert nodupe._is_new(message) == False
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + '/some/path/to/file1.txt', 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 6
@@ -224,7 +224,7 @@ def test_after_accept(tmp_path, capsys):
 
         assert len(test_after_accept_worklist.incoming) == 1
         assert len(test_after_accept_worklist.rejected) == 2
-        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath'] + "," + message['mtime']) + ":" + nodupe._hash(message['relPath'])
+        k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath'] + "," + message['mtime']) + "." + nodupe._hash(message['relPath'])
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
         assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 1
 
