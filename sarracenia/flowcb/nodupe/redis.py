@@ -135,7 +135,7 @@ class NoDupe(FlowCB):
         path_quoted = urllib.parse.quote(path)
         path_hashed = self._hash(path)
 
-        redis_key = self._rkey_base + ":" + key_hashed + ":" + path_hashed
+        redis_key = self._rkey_base + ":" + key_hashed + "." + path_hashed
 
         got = self._redis.get(redis_key)
 
