@@ -60,62 +60,65 @@ def redis_setup(nodupe, vals):
     nodupe._last_count = len(vals)
 
 def test__deriveKey(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-    BaseOptions.config = "test__deriveKey.conf"
-    nodupe = NoDupe(BaseOptions)
+    with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
+        BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.config = "test__deriveKey.conf"
+        nodupe = NoDupe(BaseOptions)
 
-    thismsg = make_message()
-    thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
-    assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
+        thismsg = make_message()
+        thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
+        assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
 
-    thismsg = make_message()
-    thismsg['fileOp'] = {'link': "SomeKeyValue"}
-    assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
+        thismsg = make_message()
+        thismsg['fileOp'] = {'link': "SomeKeyValue"}
+        assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
 
-    thismsg = make_message()
-    thismsg['fileOp'] = {'directory': "SomeKeyValue"}
-    assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
+        thismsg = make_message()
+        thismsg['fileOp'] = {'directory': "SomeKeyValue"}
+        assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
 
-    thismsg = make_message()
-    thismsg['integrity'] = {'method': "cod"}
-    assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
-    thismsg['integrity'] = {'method': "method", 'value': "value\n"}
-    assert nodupe._deriveKey(thismsg) == "method,value"
+        thismsg = make_message()
+        thismsg['integrity'] = {'method': "cod"}
+        assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
+        thismsg['integrity'] = {'method': "method", 'value': "value\n"}
+        assert nodupe._deriveKey(thismsg) == "method,value"
 
-    thismsg = make_message()
-    assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
-    thismsg['size'] = 28234
-    assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
-    del thismsg['mtime']
-    assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
+        thismsg = make_message()
+        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
+        thismsg['size'] = 28234
+        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
+        del thismsg['mtime']
+        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
 
 def test_on_start(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-    BaseOptions.config = "test_on_start.conf"
-    BaseOptions.cfg_run_dir = str(tmp_path)
-    BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
+        BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.config = "test_on_start.conf"
+        BaseOptions.cfg_run_dir = str(tmp_path)
+        BaseOptions.no = 5
+        nodupe = NoDupe(BaseOptions)
 
-    nodupe.on_start()
+        nodupe.on_start()
 
-    assert True
+        assert True
 
 def test_on_stop(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-    BaseOptions.config = "test_on_stop.conf"
-    BaseOptions.cfg_run_dir = str(tmp_path)
-    BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
+        BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
+        BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        BaseOptions.config = "test_on_stop.conf"
+        BaseOptions.cfg_run_dir = str(tmp_path)
+        BaseOptions.no = 5
+        nodupe = NoDupe(BaseOptions)
 
-    nodupe.on_stop()
+        nodupe.on_stop()
 
-    assert True
+        assert True
 
 def test_on_housekeeping(tmp_path, caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -178,19 +181,19 @@ def test__is_new(tmp_path, capsys):
         k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath']+","+message['mtime']) + ":" + nodupe._hash(message['relPath'])
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
-        assert int(nodupe._redis.get(nodupe._rkey_count)) == 5
+        assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 5
 
         message['nodupe_override'] = {"path": message['relPath'].split('/')[-1], "key": message['relPath'].split('/')[-1]}
         k = nodupe._rkey_base + ":" + nodupe._hash(message['nodupe_override']['key']) + ":" + nodupe._hash(message['nodupe_override']['path'])
         assert nodupe._is_new(message) == True
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'].split('/')[-1], 'utf-8')
-        assert int(nodupe._redis.get(nodupe._rkey_count)) == 6
+        assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 6
 
         message['nodupe_override'] = {"path": '/some/path/to/file1.txt', "key": 'key1'}
         k = nodupe._rkey_base + ":" + nodupe._hash('key1') + ":" + nodupe._hash('/some/path/to/file1.txt')
         assert nodupe._is_new(message) == False
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + '/some/path/to/file1.txt', 'utf-8')
-        assert int(nodupe._redis.get(nodupe._rkey_count)) == 6
+        assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 6
         assert nodupe.cache_hit == '/some/path/to/file1.txt'
 
 
@@ -223,7 +226,7 @@ def test_after_accept(tmp_path, capsys):
         assert len(test_after_accept_worklist.rejected) == 2
         k = nodupe._rkey_base + ":" + nodupe._hash(message['relPath'] + "," + message['mtime']) + ":" + nodupe._hash(message['relPath'])
         assert nodupe._redis.get(k) == bytes(str(nodupe.now) + "|" + message['relPath'], 'utf-8')
-        assert int(nodupe._redis.get(nodupe._rkey_count)) == 1
+        assert len(nodupe._redis.keys(nodupe._rkey_base + ":*")) == 1
 
 @pytest.mark.depends(on=['test__is_new'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
