@@ -6,8 +6,8 @@ import fakeredis, urllib.parse
 
 pretty = pprint.PrettyPrinter(indent=2, width=200)
 
-from sarracenia.flowcb.nodupe.redis import NoDupe_Redis
-from sarracenia.flowcb.nodupe import NoDupe
+from sarracenia.flowcb.nodupe.redis import NoDupe as NoDupe_Redis
+from sarracenia.flowcb.nodupe.disk import NoDupe as NoDupe_Disk
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -64,7 +64,7 @@ def redis_setup(nodupe, vals):
 
 #     BaseOptions_disk = Options()
 #     BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-#     nodupe_disk = NoDupe(BaseOptions_disk)
+#     nodupe_disk = NoDupe_Disk(BaseOptions_disk)
 
 #     BaseOptions_redis = Options()
 #     BaseOptions_redis.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"

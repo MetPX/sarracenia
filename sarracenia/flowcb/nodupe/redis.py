@@ -18,7 +18,7 @@ import redis
 logger = logging.getLogger(__name__)
 
 
-class NoDupe_Redis(FlowCB):
+class NoDupe(FlowCB):
     """
     generalised duplicate suppression for sr3 programs. It is used as a 
     time based buffer that prevents, when activated, identical files (of some kinds) 

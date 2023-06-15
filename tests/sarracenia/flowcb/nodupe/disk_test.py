@@ -3,7 +3,7 @@ import os, types, copy
 
 pretty = pprint.PrettyPrinter(indent=2, width=200)
 
-from sarracenia.flowcb.nodupe import NoDupe
+from sarracenia.flowcb.nodupe.disk import NoDupe
 from sarracenia import Message as SR3Message
 
 class Options:

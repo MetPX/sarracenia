@@ -6,7 +6,7 @@ import fakeredis, urllib.parse
 
 pretty = pprint.PrettyPrinter(indent=2, width=200)
 
-from sarracenia.flowcb.nodupe.redis import NoDupe_Redis
+from sarracenia.flowcb.nodupe.redis import NoDupe
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -64,7 +64,7 @@ def test__deriveKey(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
     BaseOptions.config = "test__deriveKey.conf"
-    nodupe = NoDupe_Redis(BaseOptions)
+    nodupe = NoDupe(BaseOptions)
 
     thismsg = make_message()
     thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
@@ -98,7 +98,7 @@ def test_on_start(tmp_path):
     BaseOptions.config = "test_on_start.conf"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe_Redis(BaseOptions)
+    nodupe = NoDupe(BaseOptions)
 
     nodupe.on_start()
 
@@ -111,13 +111,12 @@ def test_on_stop(tmp_path):
     BaseOptions.config = "test_on_stop.conf"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe_Redis(BaseOptions)
+    nodupe = NoDupe(BaseOptions)
 
     nodupe.on_stop()
 
     assert True
 
-@pytest.mark.depends(on=['test_save'])
 def test_on_housekeeping(tmp_path, caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         import time
@@ -128,7 +127,7 @@ def test_on_housekeeping(tmp_path, caplog):
         BaseOptions.config = "test_on_housekeeping.conf"
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe_Redis(BaseOptions)
+        nodupe = NoDupe(BaseOptions)
         nodupe.o.nodupe_ttl = 900
 
         cache = [
@@ -162,7 +161,7 @@ def test__is_new(tmp_path, capsys):
         BaseOptions.config = "test__is_new.conf"
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe_Redis(BaseOptions)
+        nodupe = NoDupe(BaseOptions)
         nodupe.o.nodupe_ttl = 900
         nodupe.now = nowflt()
 
@@ -208,7 +207,7 @@ def test_after_accept(tmp_path, capsys):
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
-        nodupe = NoDupe_Redis(BaseOptions)
+        nodupe = NoDupe(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
 
         nodupe.now = nowflt()
@@ -239,7 +238,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         BaseOptions.no = 5
         BaseOptions.inflight = 0
 
-        nodupe = NoDupe_Redis(BaseOptions)
+        nodupe = NoDupe(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
         nodupe.o.nodupe_fileAgeMin = 1000
         nodupe.o.nodupe_fileAgeMax = 1000
@@ -273,7 +272,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
         BaseOptions.no = 5
         BaseOptions.inflight = 1000
 
-        nodupe = NoDupe_Redis(BaseOptions)
+        nodupe = NoDupe(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
 
         nodupe.now = nowflt() + 10
