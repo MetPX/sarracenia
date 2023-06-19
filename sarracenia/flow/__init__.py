@@ -6,7 +6,7 @@ import re
 
 # v3 plugin architecture...
 import sarracenia.flowcb
-import sarracenia.integrity
+import sarracenia.identity
 import sarracenia.transfer
 
 import stat
@@ -1053,21 +1053,21 @@ class Flow:
         else:
             data = msg['content']['value'].encode('utf-8')
 
-        if self.o.integrity_method.startswith('cod,'):
-            algo_method = self.o.integrity_method[4:]
-        elif msg['integrity']['method'] == 'cod':
-            algo_method = msg['integrity']['value']
+        if self.o.identity_method.startswith('cod,'):
+            algo_method = self.o.identity_method[4:]
+        elif msg['identity']['method'] == 'cod':
+            algo_method = msg['identity']['value']
         else:
-            algo_method = msg['integrity']['method']
+            algo_method = msg['identity']['method']
 
-        onfly_algo = sarracenia.integrity.Integrity.factory(algo_method)
-        data_algo = sarracenia.integrity.Integrity.factory(algo_method)
+        onfly_algo = sarracenia.identity.Identity.factory(algo_method)
+        data_algo = sarracenia.identity.Identity.factory(algo_method)
         onfly_algo.set_path(path)
         data_algo.set_path(path)
 
         if algo_method == 'arbitrary':
-            onfly_algo.value = msg['integrity']['value']
-            data_algo.value = msg['integrity']['value']
+            onfly_algo.value = msg['identity']['value']
+            data_algo.value = msg['identity']['value']
 
         onfly_algo.update(data)
 
@@ -1127,36 +1127,36 @@ class Flow:
         if sarracenia.filemetadata.supports_extended_attributes:
             try:
                 x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                s = x.get('integrity')
+                s = x.get('identity')
 
                 if s:
                     metadata_cached_mtime = x.get('mtime')
                     if ((metadata_cached_mtime >= msg['mtime'])):
                         # file has not been modified since checksum value was stored.
 
-                        if (( 'integrity' in msg ) and ( 'method' in msg['integrity']  ) and \
-                            ( msg['integrity']['method'] == s['method'] )) or  \
-                            ( s['method'] ==  self.o.integrity_method ) :
+                        if (( 'identity' in msg ) and ( 'method' in msg['identity']  ) and \
+                            ( msg['identity']['method'] == s['method'] )) or  \
+                            ( s['method'] ==  self.o.identity_method ) :
                             # file
                             # cache good.
-                            msg['local_integrity'] = s
-                            msg['_deleteOnPost'] |= set(['local_integrity'])
+                            msg['local_identity'] = s
+                            msg['_deleteOnPost'] |= set(['local_identity'])
                             return
             except:
                 pass
 
-        local_integrity = sarracenia.integrity.Integrity.factory(
-            msg['integrity']['method'])
+        local_identity = sarracenia.identity.Identity.factory(
+            msg['identity']['method'])
 
-        if msg['integrity']['method'] == 'arbitrary':
-            local_integrity.value = msg['integrity']['value']
+        if msg['identity']['method'] == 'arbitrary':
+            local_identity.value = msg['identity']['value']
 
-        local_integrity.update_file(msg['new_path'])
-        msg['local_integrity'] = {
-            'method': msg['integrity']['method'],
-            'value': local_integrity.value
+        local_identity.update_file(msg['new_path'])
+        msg['local_identity'] = {
+            'method': msg['identity']['method'],
+            'value': local_identity.value
         }
-        msg['_deleteOnPost'] |= set(['local_integrity'])
+        msg['_deleteOnPost'] |= set(['local_identity'])
 
     def file_should_be_downloaded(self, msg) -> bool:
         """
@@ -1219,7 +1219,7 @@ class Flow:
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if 'integrity' in msg and msg['integrity']['method'] in ['random', 'cod']:
+        if 'identity' in msg and msg['identity']['method'] in ['random', 'cod']:
             logger.debug("content_match %s sum 0/z never matches" %
                          (msg['new_path']))
             return True
@@ -1229,7 +1229,7 @@ class Flow:
                 "new file not big enough... considered different")
             return True
 
-        if not 'integrity' in msg: 
+        if not 'identity' in msg: 
             # FIXME... should there be a setting to assume them the same? use cases may vary.
             logger.debug( "no checksum available, assuming different" )
             return True
@@ -1243,9 +1243,9 @@ class Flow:
             return True
 
         logger.debug("checksum in message: %s vs. local: %s" %
-                     (msg['integrity'], msg['local_integrity']))
+                     (msg['identity'], msg['local_identity']))
 
-        if msg['local_integrity'] == msg['integrity']:
+        if msg['local_identity'] == msg['identity']:
             self.reject(msg, 304, "same checksum %s " % (msg['new_path']))
             return False
         else:
@@ -1635,10 +1635,10 @@ class Flow:
                 urlstr = msg['baseUrl'] + '/' + msg['relPath']
 
 
-        istr =msg['integrity']  if ('integrity' in msg) else "None"
+        istr =msg['identity']  if ('identity' in msg) else "None"
         fostr = msg['fileOp'] if ('fileOp' in msg ) else "None"
 
-        logger.debug( 'integrity: %s, fileOp: %s' % ( istr, fostr ) ) 
+        logger.debug( 'identity: %s, fileOp: %s' % ( istr, fostr ) ) 
         new_inflight_path = ''
 
         new_dir = msg['new_dir']
@@ -1767,10 +1767,10 @@ class Flow:
             # FIXME  locking for i parts in temporary file ... should stay lock
             # and file_reassemble... take into account the locking
 
-            if self.o.integrity_method.startswith('cod,'):
-                download_algo = self.o.integrity_method[4:]
-            elif 'integrity' in msg:
-                download_algo = msg['integrity']['method']
+            if self.o.identity_method.startswith('cod,'):
+                download_algo = self.o.identity_method[4:]
+            elif 'identity' in msg:
+                download_algo = msg['identity']['method']
             else:
                 download_algo = None
 
@@ -1779,7 +1779,7 @@ class Flow:
 
             if download_algo == 'arbitrary':
                 self.proto[self.scheme].set_sumArbitrary(
-                    msg['integrity']['value'])
+                    msg['identity']['value'])
 
             if (type(options.inflight) == str) \
                 and (options.inflight[0] == '/' or options.inflight[-1] == '/') \
@@ -1856,8 +1856,8 @@ class Flow:
                 msg['onfly_checksum'] = self.proto[self.scheme].get_sumstr()
                 msg['data_checksum'] = self.proto[self.scheme].data_checksum
 
-                if self.o.integrity_method.startswith('cod,') and not accelerated:
-                    msg['integrity'] = msg['onfly_checksum']
+                if self.o.identity_method.startswith('cod,') and not accelerated:
+                    msg['identity'] = msg['onfly_checksum']
 
                 msg['_deleteOnPost'] |= set(['onfly_checksum'])
                 msg['_deleteOnPost'] |= set(['data_checksum'])
@@ -2253,9 +2253,9 @@ class Flow:
 
             # FIXME ... what to do when checksums don't match?
             if 'onfly_checksum' in msg: 
-                x.set( 'integrity', msg['onfly_checksum'] )
-            elif 'integrity' in msg:
-                x.set('integrity', msg['integrity'] )
+                x.set( 'identity', msg['onfly_checksum'] )
+            elif 'identity' in msg:
+                x.set('identity', msg['identity'] )
 
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 x.set('mtime', msg['mtime'])

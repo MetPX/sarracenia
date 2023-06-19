@@ -354,8 +354,8 @@ class Transfer():
 
     def set_sumalgo(self, sumalgo):
         logger.debug("sr_proto set_sumalgo %s" % sumalgo)
-        self.sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
-        self.data_sumalgo = sarracenia.integrity.Integrity.factory(sumalgo)
+        self.sumalgo = sarracenia.identity.Identity.factory(sumalgo)
+        self.data_sumalgo = sarracenia.identity.Identity.factory(sumalgo)
 
     def set_sumArbitrary(self, value):
         self.sumalgo.value = value

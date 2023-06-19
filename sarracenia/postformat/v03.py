@@ -49,6 +49,10 @@ class V03(PostFormat):
             msg['retrievePath'] = msg['retPath']
             del msg['retPath']
 
+        if 'integrity' in msg:
+            msg['identity'] = msg['integrity']
+            del msg['integrity']
+
         """
               observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
               bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.

@@ -57,10 +57,10 @@ import sarracenia.flowcb
 
 from sarracenia.flow.sarra import default_options as sarradefopts
 
-import sarracenia.integrity.arbitrary
+import sarracenia.identity.arbitrary
 
 import sarracenia.moth
-import sarracenia.integrity
+import sarracenia.identity
 import sarracenia.instance
 
 default_options = {
@@ -79,7 +79,7 @@ default_options = {
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
-    'integrity_method': 'sha512',
+    'identity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
     'nodupe_ttl': 0,
@@ -142,7 +142,7 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'integrity', 'logLevel', 
+    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
@@ -166,15 +166,15 @@ convert_to_v3 = {
     'discard' : [ 'delete_destination', 'on' ], 
     'from_cluster' : [ 'continue' ],
     'to_clusters' : [ 'continue' ],
-    'integrity' : {
-       'n' : [ 'integrity', 'none' ],
-       's' : [ 'integrity', 'sha512' ],
-       'd' : [ 'integrity', 'md5' ],
-       'a' : [ 'integrity', 'arbitrary' ],
-       'r' : [ 'integrity', 'random' ],
-       'z,d' : [ 'integrity', 'cod,md5' ],
-       'z,s' : [ 'integrity', 'cod,sha512' ],
-       'z,n' : [ 'integrity', 'none' ]
+    'identity' : {
+       'n' : [ 'identity', 'none' ],
+       's' : [ 'identity', 'sha512' ],
+       'd' : [ 'identity', 'md5' ],
+       'a' : [ 'identity', 'arbitrary' ],
+       'r' : [ 'identity', 'random' ],
+       'z,d' : [ 'identity', 'cod,md5' ],
+       'z,s' : [ 'identity', 'cod,sha512' ],
+       'z,n' : [ 'identity', 'none' ]
     },
     'ls_file_index' : [ 'continue' ],
     'plugin': {
@@ -687,7 +687,7 @@ class Config:
         'simulate': 'dry_run',
         'simulation': 'dry_run',
         'source_from_exchange': 'sourceFromExchange', 
-        'sum' : 'integrity',  
+        'sum' : 'identity',  
         'suppress_duplicates' : 'nodupe_ttl',
         'suppress_duplicates_basis' : 'nodupe_basis', 
         'tls_rigour' : 'tlsRigour', 
@@ -754,7 +754,7 @@ class Config:
         self.inline = False
         self.inlineByteMax = 4096
         self.inlineEncoding = 'guess'
-        self.integrity_arbitrary_value = None
+        self.identity_arbitrary_value = None
         self.logReject = False
         self.logRotateCount = 5
         self.logRotateInterval = 1
@@ -1277,54 +1277,54 @@ class Config:
         #logger.error('FIXME! input value: %s' % value)
 
         if not value:
-            if not self.integrity_method:
+            if not self.identity_method:
                return
-            value = self.integrity_method
+            value = self.identity_method
 
-        if (value in sarracenia.integrity.known_methods) or (
+        if (value in sarracenia.identity.known_methods) or (
                 value[0:4] == 'cod,'):
-            self.integrity_method = value
+            self.identity_method = value
             #logger.error('returning 1: %s' % value)
             return
 
-        #logger.error( f'1 value: {value} self.integrity_method={self.integrity_method}' )
+        #logger.error( f'1 value: {value} self.identity_method={self.identity_method}' )
         if (value[0:2] == 'z,'):
             value = value[2:]
-            self.integrity_method = 'cod,'
+            self.identity_method = 'cod,'
         elif (value[0:2] == 'a,'):
-            self.integrity_method = 'arbitrary' 
-            self.integrity_arbitrary_value = value[2:]
+            self.identity_method = 'arbitrary' 
+            self.identity_arbitrary_value = value[2:]
         else:
-            self.integrity_method = value
-        #logger.error( f'2 value: {value} self.integrity_method={self.integrity_method}' )
+            self.identity_method = value
+        #logger.error( f'2 value: {value} self.identity_method={self.identity_method}' )
 
         if value.lower() in [ 'n', 'none' ]:
-            self.integrity_method = None
+            self.identity_method = None
             #logger.error('returning 1.1: %s' % 'none')
             return 
-        #logger.error( f'3 value: {value} self.integrity_method={self.integrity_method}' )
+        #logger.error( f'3 value: {value} self.identity_method={self.identity_method}' )
 
-        for sc in sarracenia.integrity.Integrity.__subclasses__():
+        for sc in sarracenia.identity.Identity.__subclasses__():
             #logger.error('against 1.8: %s' % sc.__name__.lower() )
             if value == sc.__name__.lower():
                 #logger.error('returning 2: %s' % value )
-                if self.integrity_method == 'cod,':
-                      self.integrity_method += value
+                if self.identity_method == 'cod,':
+                      self.identity_method += value
                 else:
-                      self.integrity_method = value
+                      self.identity_method = value
                 return
             if hasattr(sc, 'registered_as'):
                 #logger.error('against 3: %s' % sc.registered_as() )
 
                 if (sc.registered_as() == value):
-                    if self.integrity_method == 'cod,':
-                          self.integrity_method += sc.__name__.lower()
+                    if self.identity_method == 'cod,':
+                          self.identity_method += sc.__name__.lower()
                     else:
-                          self.integrity_method = sc.__name__.lower()
-                    #logger.error('returning 3: %s' % self.integrity_method)
+                          self.identity_method = sc.__name__.lower()
+                    #logger.error('returning 3: %s' % self.identity_method)
                     return
         # FIXME this is an error return case, how to designate an invalid checksum?
-        self.integrity_method = 'invalid'
+        self.identity_method = 'invalid'
         #logger.error('returning 4: invalid' )
 
     def parse_file(self, cfg, component=None):
@@ -1470,7 +1470,7 @@ class Config:
                     self.plugins_early.insert(0, v)
             elif k in ['set', 'setting', 's']:
                 self._parse_setting(line[1], line[2:])
-            elif k in ['integrity']:
+            elif k in ['identity', 'integrity']:
                 self._parse_sum(v)
             elif k in Config.port_required:
                 logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
@@ -2325,9 +2325,9 @@ class Config:
             type=int,
             help='number of processes to run per configuration')
 
-        parser.add_argument('--integrity_method', '--integrity', '-s', '--sum',
+        parser.add_argument('--identity_method', '--identity', '-s', '--sum',
                             nargs='?',
-                            default=self.integrity_method,
+                            default=self.identity_method,
                             help='choose a different checksumming method for the files posted')
         if hasattr(self, 'bindings'):
             parser.set_defaults(bindings=self.bindings)
