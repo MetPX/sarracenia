@@ -13,11 +13,8 @@ sudo apt -y install python3-setuptools
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
-# in case it was installed as a dependency.
-sudo apt -y remove metpx-sr3
 
 pip3 install -U pip
-pip3 install -e .
 pip3 install pyftpdlib paramiko net-tools
 
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
@@ -31,6 +28,11 @@ for PKG in amqp appdirs dateparser python-magic watchdog netifaces humanize json
         pip3 install ${PKG}
     fi
 done
+
+# in case it was installed as a dependency.
+sudo apt -y remove metpx-sr3
+
+pip3 install -e .
 
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3
