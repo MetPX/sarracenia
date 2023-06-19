@@ -80,7 +80,7 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
+        "appdirs", "humanfriendly", "humanize", "jsonpickle", "python-magic", "paramiko",
         "psutil>=5.3.0", "watchdog"
     ],
     extras_require = {
