@@ -6,7 +6,7 @@ import sys
 from setuptools import find_packages
 from distutils.core import setup
 
-import sarracenia
+#import sarracenia
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -28,6 +28,9 @@ def read(*parts):
     #   https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
     return codecs.open(os.path.join(here, *parts), 'r').read()
 
+metadata = {}
+with open(os.path.join(here, "sarracenia", "_version.py"), "r") as f:
+    exec(f.read(), metadata)
 
 packages = find_packages()
 print("packages = %s" % packages)
@@ -35,7 +38,7 @@ print("packages = %s" % packages)
 setup(
     name='metpx-sr3',
     python_requires='>=3.6',
-    version=sarracenia.__version__,
+    version=metadata["__version__"],
     description='Subscribe, Acquire, and Re-Advertise products.',
     long_description_content_type='text/x-rst',
     long_description=(read('README.rst')+latest_changelog()), 
