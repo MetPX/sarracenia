@@ -1,6 +1,9 @@
 import logging
 import os
 from sarracenia.flowcb import FlowCB
+import time
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,6 +27,15 @@ class Delete(FlowCB):
         logger.debug("initialized")
         self.o.add_option('delete_source', 'flag', True)
         self.o.add_option('delete_destination', 'flag', False)
+        self.dirsOfDeletion=set([])
+
+         # dirs not to be deleted.
+        self.sacredDirs=set([])
+        if hasattr(self.o, 'baseDir'):
+            self.sacredDirs.add(self.o.baseDir)
+        if hasattr(self.o, 'post_baseDir'):
+            self.sacredDirs.add(self.o.post_baseDir)
+
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -50,6 +62,7 @@ class Delete(FlowCB):
                 files_to_delete.append(message['delete_source'])
 
             if self.o.delete_destination:
+                self.dirsOfDeletion |= set(message['new_dir'])
                 files_to_delete.append(
                     "%s/%s" % (message['new_dir'], message['new_file']))
 
@@ -60,3 +73,31 @@ class Delete(FlowCB):
                 except OSError as err:
                     logger.error("could not unlink {}: {}".format(f, err))
                     logger.debug("Exception details:", exc_info=True)
+
+    def on_housekeeping(self):
+
+        dirlist=self.dirsOfDeletion
+
+        logger.info('scan for directories to cleanup')
+        for d in dirlist:
+            if d in self.sacredDirs:
+                self.dirsOfDeletion.remove(d)
+                continue
+            if os.path.isdir(d):
+                l = os.listdir(d)
+                if len(l) == 0: # empty directory
+                    logger.info( f"found {d} is empty.")
+                    s = os.stat(d)
+                    age = time.time() - s.st_mtime
+                    if age > self.o.housekeeping:
+                        try:
+                            os.rmdir(d)
+                            self.dirsOfDeletion.remove(d)
+                            self.dirsofDeltion.add(dirname(d))
+                            logger.info( f"deleted {d}")
+                        except Exception as err:
+                            logger.error("could not unlink {}: {}".format(f, err))
+                            logger.debug("Exception details:", exc_info=True)
+                    else:
+                        logger.info( f"but not for long enough yet.")
+
