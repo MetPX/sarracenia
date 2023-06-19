@@ -24,13 +24,14 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 #
-__version__ = "3.00.41"
+from ._version import __version__
 
 from base64 import b64decode, b64encode
 import calendar
 import datetime
 import importlib.util
 import logging
+import magic
 import os
 import os.path
 import paramiko
@@ -467,8 +468,18 @@ class Message(dict):
             returns a well-formed message, or none.
         """
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
-        if lstat and os_stat.S_ISREG(lstat.st_mode):
-            m.__computeIdentity(path, o)
+        if lstat :
+            if os_stat.S_ISREG(lstat.st_mode):
+                m.__computeIntegrity(path, o)
+                try:
+                    t = magic.from_file(path,mime=True)
+                    m['contentType'] = t
+                except Exception as ex:
+                    logging.info("trying to determine mime-type. Exception details:", exc_info=True)
+            elif os_stat.S_ISDIR(lstat.st_mode):
+                m['contentType'] = 'text/directory' # source: https://www.w3.org/2002/12/cal/rfc2425.html
+            elif os_stat.S_ISLNK(lstat.st_mode):
+                m['contentType'] = 'text/link' # I invented this one, could not find any reference
         return m
 
     @staticmethod

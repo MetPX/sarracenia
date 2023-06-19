@@ -22,15 +22,17 @@ class Message(FlowCB):
         if hasattr(self.o, 'post_broker'):
             props = sarracenia.moth.default_options
             props.update(self.o.dictify())
-            props.update({
-                'broker': self.o.post_broker,
-                'exchange': self.o.post_exchange,
-                'topicPrefix': self.o.post_topicPrefix,
-            })
-            if hasattr(self.o, 'post_exchangeSplit'):
-                props.update({
-                    'exchangeSplit': self.o.post_exchangeSplit,
-                })
+
+            if hasattr(self.o, 'topic' ):
+                del self.o['topic']
+
+            # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
+            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic' ]:
+                post_one='post_'+k
+                if hasattr( self.o, post_one ): 
+                    #props.update({ k: getattr(self.o,post_one) } )
+                    props[ k ] = getattr(self.o,post_one)
+
             self.poster = sarracenia.moth.Moth.pubFactory(props)
 
     def post(self, worklist):

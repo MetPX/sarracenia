@@ -1,4 +1,5 @@
 Sphinx
+magic
 nbsphinx
 jupyter
 docutils

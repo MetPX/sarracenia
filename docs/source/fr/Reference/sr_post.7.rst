@@ -127,6 +127,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
                      "message" :  - message de rapport d’état documenté dans `Report Messages`_
                    }
 
+          "contentType" : "chaine mime-type"  - indique le format des données.
           "type": "Feature"   - utilisé pour la compatibilité geoJSON.
           "geometry" : ... selon la compatibilité GoJSON RFC7946.
 

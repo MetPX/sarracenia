@@ -124,7 +124,7 @@ duration_options = [
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = ['path']
+list_options = ['path' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -144,9 +144,9 @@ str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
-    'nodupe_basis', 'tlsRigour', 'vip'
+    'nodupe_basis', 'tlsRigour', 'topic', 'vip'
 ]
 """
    for backward compatibility, 

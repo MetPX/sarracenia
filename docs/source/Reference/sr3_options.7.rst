@@ -1328,11 +1328,33 @@ will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
 xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
 of the total flow.
 
+post_format <name> (default: v03)
+---------------------------------
+
+Sets the message format for posted messages. the currently included values are:
+
+* v02 ... used by all existing data pumps for most cases.
+* v03 ... default in sr3 JSON format easier to work with.
+* wis ... a experimental geoJSON format in flux for the World Meteorological Organization
+
+When provided, this value overrides whatever can be deduced from the post_topicPrefix.
+
+
 post_on_start
 -------------
 
 When starting watch, one can either have the program post all the files in the directories watched
 or not. (not implemented in sr3_cpost)
+
+post_topic <string> 
+---------------------
+
+Explicitly set a posting topic string, overriding the usual
+group of settings. For sarracenia data pumps, this should never be needed,
+as the use of post_exchange, post_topicPrefix, and relpath normally builds the right
+value for topics for both posting and binding.
+
+
 
 post_topicPrefix (default: topicPrefix)
 ---------------------------------------
@@ -1719,6 +1741,15 @@ levels of compliance with whatever is currently defined as rigourous encryption.
 If a site being connected to, has, for example, and expired certificate, and
 it is nevertheless necessary to use it, then set tlsRigour to *lax* and
 the connection should succeed regardless.
+
+
+topic <string> 
+--------------
+
+Explicitly set a subscribing topic string, overriding the value usually
+derived from a group of settings. For sarracenia data pumps, this should never be needed,
+as the use of *exchange*, *topicPrefix*, and *subtopic* normally builds the right
+value.
 
 
 topicPrefix (default: v03)
