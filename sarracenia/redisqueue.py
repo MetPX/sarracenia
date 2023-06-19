@@ -138,8 +138,8 @@ class RedisQueue():
             sumstr = jsonpickle.encode(message['noDupe']['key'])
         elif 'fileOp' in message:
             sumstr = jsonpickle.encode(message['fileOp'])
-        elif 'integrity' in message:
-            sumstr = jsonpickle.encode(message['integrity'])
+        elif 'identity' in message:
+            sumstr = jsonpickle.encode(message['identity'])
         elif 'pubTime' in message:
             sumstr = jsonpickle.encode(message['pubTime'])
         else:

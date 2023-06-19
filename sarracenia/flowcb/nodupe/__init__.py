@@ -135,12 +135,12 @@ class NoDupe(FlowCB):
             elif 'directory' in msg['fileOp']: 
                 if 'remove' not in msg['fileOp']:
                     key = msg['relPath']
-        elif 'integrity' in msg:
-            if msg['integrity']['method'] in ['cod']:
+        elif 'identity' in msg:
+            if msg['identity']['method'] in ['cod']:
                 # if cod, revert to using the path.
                 key = msg['relPath']
             else:
-                key = msg['integrity']['method'] + ',' + msg['integrity']['value'].replace('\n', '')
+                key = msg['identity']['method'] + ',' + msg['identity']['value'].replace('\n', '')
 
 
         if not key:

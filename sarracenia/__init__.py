@@ -470,7 +470,7 @@ class Message(dict):
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.__computeIntegrity(path, o)
+                m.__computeIdentity(path, o)
                 try:
                     t = magic.from_file(path,mime=True)
                     m['contentType'] = t

@@ -2351,7 +2351,7 @@ class sr_GlobalState:
                         k = 'post_broker'
                     elif (k == 'directory' ) and (component == 'poll'):
                         k = 'path'
-                    elif k == 'integrity':
+                    elif k in [ 'identity', 'integrity' ]:
                         if line[1][0] in sum_algo_v2tov3:
                            method=sum_algo_v2tov3[line[1][0]]
                            if method == 'cod':

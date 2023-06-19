@@ -92,7 +92,7 @@ class V02(PostFormat):
                     elif sm in ['link']:
                         msg['fileOp']['link'] = msg['link']
                     else:
-                        msg["integrity"] = {"method": sm, "value": sv}
+                        msg["identity"] = {"method": sm, "value": sv}
                 elif sm == 'remove':
                     msg['fileOp'] = { 'remove': '' }
                 elif sm == 'mkdir':
@@ -105,7 +105,7 @@ class V02(PostFormat):
                 elif sm == 'md5name':
                     pass
                 else:
-                    msg["integrity"] = {"method": sm, "value": sv}
+                    msg["identity"] = {"method": sm, "value": sv}
     
                 del msg['sum']
         except Exception as ex:
@@ -143,7 +143,7 @@ class V02(PostFormat):
         # v2wrapp
         for h in [
                     'pubTime', 'baseUrl', 'fileOp', 'relPath', 'size', 
-                    'blocks', 'content', 'integrity'
+                    'blocks', 'content', 'identity'
         ]:
             if h in v2m.headers:
                     del v2m.headers[h]

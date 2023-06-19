@@ -58,7 +58,7 @@ class Check(FlowCB):
                     os.unlink(local_file)
                 continue
 
-            logger.info("integrity     %s " % msg['integrity'] )
+            logger.info("identity     %s " % msg['identity'] )
             logger.info("filesize   %s " % msg['size'])
     
             lstat = os.stat(local_file)
@@ -69,14 +69,14 @@ class Check(FlowCB):
                 self.size_mismatches+=1
     
             self.o.post_baseUrl = msg['baseUrl']
-            self.o.integrity_method = msg['integrity']['method']
+            self.o.identity_method = msg['identity']['method']
             downloaded_msg = sarracenia.Message.fromFileData( local_file, self.o, lstat ) 
          
       
-            if downloaded_msg['integrity'] != msg['integrity']:
+            if downloaded_msg['identity'] != msg['identity']:
                 logger.error(
                     "checksum differ (corrupted ?)  lf %s  msg %s" %
-                    (downloaded_msg['integrity'], msg['integrity']))
+                    (downloaded_msg['identity'], msg['identity']))
                 self.checksum_mismatches+=1
 
             if self.content_check(local_file):

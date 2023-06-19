@@ -71,17 +71,17 @@ def test_deriveKey__fileOp(tmp_path):
     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
-def test_deriveKey__integrity(tmp_path):
+def test_deriveKey__identity(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     nodupe = NoDupe(BaseOptions)
 
     thismsg = make_message()
 
-    thismsg['integrity'] = {'method': "cod"}
+    thismsg['identity'] = {'method': "cod"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
-    thismsg['integrity'] = {'method': "method", 'value': "value\n"}
+    thismsg['identity'] = {'method': "method", 'value': "value\n"}
     assert nodupe.deriveKey(thismsg) == "method,value"
 
 def test_deriveKey__NotKey(tmp_path):
