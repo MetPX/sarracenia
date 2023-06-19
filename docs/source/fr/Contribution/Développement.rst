@@ -1373,7 +1373,7 @@ Définir la version
 Ceci est fait pour *démarrer* le développement d’une version.
 
 * git checkout v03_wip
-* Modifier ``sarracenia/__init__.py`` manuellement et définissez le numéro de version.
+* Modifier ``sarracenia/_version.py`` manuellement et définissez le numéro de version.
 * Modifier CHANGES.rst pour ajouter une section pour la version.
 * Exécuter dch pour démarrer le journal des modifications de la version actuelle.
 * git commit -a 
