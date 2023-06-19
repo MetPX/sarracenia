@@ -38,6 +38,16 @@ Instructions d’installation
 git
 ---
 
+*CHANGE*: v03 postformat field renamded: "integrity" is now "identity"
+
+    * current version will read messsages with integrity and map them to identity.
+    * current version will post with "Identity", so older versions will miss them.
+    * https://github.com/MetPX/sarracenia/issues/703
+
+3.0.40
+------
+
+
 *CHANGEMENT*:  l'interface de programmation (API) python a subit un changement de rupture
 
     pour la classe sarracenia.moth, il faut maintenant specifier l'options['broker'] au lieu
