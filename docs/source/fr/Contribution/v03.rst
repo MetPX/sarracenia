@@ -135,11 +135,11 @@ code sr3::
     16 ./flow/winnow.py
    793 ./__init__.py
    226 ./instance.py
-    36 ./integrity/arbitrary.py
-    93 ./integrity/__init__.py
-    24 ./integrity/md5.py
-    17 ./integrity/random.py
-    24 ./integrity/sha512.py
+    36 ./identity/arbitrary.py
+    93 ./identity/__init__.py
+    24 ./identity/md5.py
+    17 ./identity/random.py
+    24 ./identity/sha512.py
     17 ./moth/amq1.py
    585 ./moth/amqp.py
    313 ./moth/__init__.py
@@ -269,7 +269,7 @@ les deux versions, est clair:
 |                          |                           |
 | sr_message.py            |                           |
 +--------------------------+---------------------------+
-| sr_checksum.py           | integrity/                |
+| sr_checksum.py           | identity/                |
 |                          |      __init__.py          |
 | sum/*                    |      *                    |
 +--------------------------+---------------------------+
@@ -863,7 +863,7 @@ Fonctionnalités
 * L’API d’extension est maintenant du python simple sans paramètres magiques. Juste des classes standard, en utilisant un mécanisme
   d’importation standard. Le débogage devrait être beaucoup plus simple maintenant car l’interpréteur fournira de
   bien meilleurs messages d’erreur au démarrage. Les plugins de style v2 sont maintenant appelés *flow callbacks*,
-  et il existe un certain nombre de classes (integrity, moth, transfert, peut-être flux) qui permettent l’extension
+  et il existe un certain nombre de classes (identity, moth, transfert, peut-être flux) qui permettent l’extension
   par une sous-classification simple. Cela devrait faire en sorte que ce soit beaucoup plus facile d’ajouter
   des protocoles supplémentaires pour le transport et les messages, ainsi que des algorithmes de somme de
   contrôle pour les nouveaux types de données.

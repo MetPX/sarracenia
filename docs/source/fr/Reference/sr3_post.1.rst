@@ -286,7 +286,7 @@ nodupe_ttl on|off|999
   utilisé (défini sur une valeur autre que 0) car sinon la taille de bloc variera à mesure que les fichiers grandissent,
   et beaucoup de transfert de données en double en résultera.
 
-integrity <method>[,<value>]
+identity <method>[,<value>]
 ----------------------------
 
 Toutes les publications de fichiers incluent une somme de contrôle. L'option *sum* spécifie comment la calculer.

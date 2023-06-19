@@ -314,8 +314,8 @@ View all configuration settings (the result of all parsing... what the flow comp
      'inlineEncoding': 'guess',
      'inlineOnly': False,
      'instances': 1,
-     'integrity_arbitrary_value': None,
-     'integrity_method': 'sha512',
+     'identity_arbitrary_value': None,
+     'identity_method': 'sha512',
      'logEvents': {'after_work', 'after_accept', 'on_housekeeping'},
      'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
      'logLevel': 'info',
@@ -931,8 +931,8 @@ Polling is doing the same job as a post, except for files on a remote server.
 In the case of a poll, the post will have its url built from the *pollUrl* 
 option, with the product's path (*directory*/"matched file").  There is one 
 post per file.  The file's size is taken from the directory "ls"... but its 
-checksum cannot be determined, so the default integrity method is "cod", asking
-clients to calculate the integrity Checksum On Download.
+checksum cannot be determined, so the default identity method is "cod", asking
+clients to calculate the identity Checksum On Download.
 
 By default, sr_poll sends its post notification message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *post_broker* is mandatory.
@@ -1563,7 +1563,7 @@ WINNOW
 
 the **winnow** component subscribes to file notification messages and reposts them, suppressing redundant 
 ones. How to decide which ones are redundant varies by use case. In the most straight-forward case,
-the messages have **Integrity** header stores a file's fingerprint as described in the `sr_post(7) <../Reference/sr_post.7.html>`_ man page,
+the messages have **Identity** header stores a file's fingerprint as described in the `sr_post(7) <../Reference/sr_post.7.html>`_ man page,
 and header is used exclusively. There are many other use cases, though. discussed in the following section
 on `Duplicate Suppression <DuplicateSuppresion.html>`_
 
@@ -2351,11 +2351,11 @@ the directory will be checked for new files.  Here is part of the Script callbac
             return []
     
      
-Integrity
+Identity
 ---------
 
 One can use the *import* directive to add new checksum algorithms by sub-classing
-sarracenia.integrity.Integrity.
+sarracenia.identity.Identity.
 
 Transfer 
 --------

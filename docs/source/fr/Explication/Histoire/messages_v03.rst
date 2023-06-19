@@ -34,7 +34,7 @@ paires nom-valeur
    * Les champs fixes v02 sont maintenant des clés "pubTime", "baseURL" et "relPath"
      dans l’objet JSON qui est le corps du message.
 
-   * L’en-tête v02 *sum* avec valeur codée hexadécimale, est remplacé par l’en-tête v03 *integrity* avec codage base64.
+   * L’en-tête v02 *sum* avec valeur codée hexadécimale, est remplacé par l’en-tête v03 *identity* avec codage base64.
 
    * L’en-tête v03 *content* permet l’intégration du contenu du fichier.
 

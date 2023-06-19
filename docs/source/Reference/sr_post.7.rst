@@ -67,7 +67,7 @@ The headers are an array of name:value pairs::
 
      one of:
 
-          "integrity"     - for changes in file contents, an integrity checksum.
+          "identity"     - for changes in file contents, an identity checksum.
           {
              "method" : "md5" | "sha512" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
@@ -85,7 +85,7 @@ The headers are an array of name:value pairs::
          nothing... If neither of these is present, then duplication
          suppression will rely on supplied meta data, such as the modification
 	 time, the size, and the publication Time to prevent loops.
-         It is strongly recommended that all data services provide integrity
+         It is strongly recommended that all data services provide identity
          checksums. Failure to do so results in a data service than cannot
          be reliably replicated.
 
@@ -168,8 +168,8 @@ Source Filtering (use of TOPIC_ exchanges)
    are forwarded to the client.  When there are many users interested in only 
    small subsets of data, the savings in traffic are large.
 
-Fingerprint Winnowing (use of the integrity_ header)
-   Each product has an integrity fingerprint and size intended to identify it uniquely, 
+Fingerprint Winnowing (use of the identity_ header)
+   Each product has an identity fingerprint and size intended to identify it uniquely, 
    referred to as a *fingerprint*. If two files have the same fingerprint, they 
    are considered equivalent. In cases where multiple sources of equivalent data are 
    available but downstream consumers would prefer to receive single notification messages
@@ -387,15 +387,15 @@ Remaining fields only useful for partitioned files.
  will have 'rename' and 'link' or 'directory' elements in that case.
 
 
-**integrity**
+**identity**
 ~~~~~~~~~~~~~
 
-The integrity field gives a checksum useful for identifying the contents
+The identity field gives a checksum useful for identifying the contents
 of a file::
  
- "integrity" : { "method" : <method>, "value": <value> } 
+ "identity" : { "method" : <method>, "value": <value> } 
  
-The integrity field is a signature computed to allow receivers to determine 
+The identity field is a signature computed to allow receivers to determine 
 if they have already downloaded the product from elsewhere.
 
    *<method>* - string field indicating the checksum method used.
@@ -555,7 +555,7 @@ EXAMPLE
  AMQP TOPIC: v03.NRDPS.GIF
  MQTT TOPIC: exchange/v03/NRDPS/GIF/
  Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
-    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
+    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "identity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version of protocol
         - post - indicates the type of notification message

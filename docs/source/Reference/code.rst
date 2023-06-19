@@ -159,46 +159,46 @@ sarracenia.instance
    :private-members:
    :special-members:
 
-sarracenia.integrity
+sarracenia.identity
 --------------------
 
-.. automodule:: sarracenia.integrity
+.. automodule:: sarracenia.identity
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.integrity.arbitrary
+sarracenia.identity.arbitrary
 ------------------------------
 
-.. automodule:: sarracenia.integrity.arbitrary
+.. automodule:: sarracenia.identity.arbitrary
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.integrity.sha512
+sarracenia.identity.sha512
 ---------------------------
 
-.. automodule:: sarracenia.integrity.sha512
+.. automodule:: sarracenia.identity.sha512
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.integrity.md5
+sarracenia.identity.md5
 ------------------------
 
-.. automodule:: sarracenia.integrity.md5
+.. automodule:: sarracenia.identity.md5
    :show-inheritance:
    :members:
    :private-members:
    :special-members:
 
-sarracenia.integrity.random
+sarracenia.identity.random
 ---------------------------
 
-.. automodule:: sarracenia.integrity.random
+.. automodule:: sarracenia.identity.random
    :show-inheritance:
    :members:
    :private-members:

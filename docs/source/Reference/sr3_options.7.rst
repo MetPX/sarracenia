@@ -980,13 +980,13 @@ In directory ~/.cache/sarra/log::
   loss of notifications. A queue which is not accessed for a long (implementation dependent)
   period will be destroyed. 
 
-integrity <string>
+identity <string>
 ------------------
 
 All file notification messages include a checksum.  It is placed in the amqp message header will have as an
 entry *sum* with default value 'd,md5_checksum_on_data'.
 The *sum* option tell the program how to calculate the checksum.
-In v3, they are called Integrity methods::
+In v3, they are called Identity methods::
 
          cod,x      - Calculate On Download applying x
          sha512     - do SHA512 on file content  (default)

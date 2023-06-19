@@ -966,13 +966,13 @@ Dans le répertoire ~/.cache/sarra/log:
   perte de notifications. Une fil d’attente qu'on n’accède pas pendant une longue période
   (dépendant de l’implémentation) sera détruite.
 
-integrity <string>
+identity <string>
 ------------------
 
 Tous les postes de fichiers incluent une somme de contrôle. Elle est placée dans l’en-tête du message amqp
 et aura comme entrée *sum* avec la valeur de défaut 'd,md5_checksum_on_data'.
 L’option *sum* indique au programme comment calculer la somme de contrôle.
-Dans la v3, elles sont appelées Integrity methods (méthodes d’intégrité) ::
+Dans la v3, elles sont appelées Identity methods (méthodes d’intégrité) ::
 
          cod,x      - Calculer On Download en appliquant x
          sha512     - faire SHA512 sur le contenu du fichier (défaut)

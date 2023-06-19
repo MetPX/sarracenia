@@ -63,7 +63,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "relPath"       - Le chemin relatif peut être concaténé à <base_url>
 
    un de:
-          "integrity"     - Version WMO du champ de sum v02, en cours de développement.
+          "identity"     - Version WMO du champ de sum v02, en cours de développement.
           {
              "method" : "md5" | "sha512" | "cod" | "arbitrary" | "random" ,
              "value"  : "base64 valeur de somme de contrôle encodée"
@@ -164,7 +164,7 @@ Filtrage des sources (utilisation des échanges `AMQP TOPIC`_)
    sont transmis au client.  Lorsqu’il y a beaucoup d’utilisateurs intéressés par seulement un
    petit sous-ensembles de données, les économies de trafic sont importantes.
 
-Fingerprint Winnowing (utilisation de l'en-tête integrity_)
+Fingerprint Winnowing (utilisation de l'en-tête identity_)
    Chaque produit a une empreinte digitale d’intégrité et une taille destinée à l’identifier de manière unique,
    appelée *fingerprint*. Si deux fichiers ont la même empreinte digitale, ils sont considérés comme équivalents.
    Dans les cas où plusieurs sources de données équivalentes sont disponibles, mais les consommateurs en aval
@@ -374,13 +374,13 @@ Les changements de noms de liens symboliques et répertoires sont representés p
 (répertoire) et "link"  (lien) dans le champs "fileOp" qui contient également un *rename*.
 
 
-**integrity**
+**identity**
 ~~~~~~~~~~~~~
 
 Le champ d’intégrité donne une somme de contrôle qui est utile pour identifier le contenu
 d’un fichier::
 
- "integrity" : { "method" : <méthode>, "value": <valeur> }
+ "identity" : { "method" : <méthode>, "value": <valeur> }
 
 Le champ d’intégrité est une signature calculée pour permettre aux récepteurs de déterminer
 s’ils ont déjà téléchargé le produit ailleurs.
@@ -548,7 +548,7 @@ EXEMPLE
  AMQP TOPIC: v03.NRDPS.GIF
  MQTT TOPIC: exchange/v03/NRDPS/GIF/
  Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
-    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
+    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "identity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version du protocole
         - la version et le type ensemble determine le format des thèmes qui suivent et du corps du message d'annonce.

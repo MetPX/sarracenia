@@ -25,7 +25,7 @@ La supression de doublons::
 Quand un message est à propos d´un message jugé un doublons, on cesse de le traiter.
 
 la clé d´un message d´annonce est préférablement simplement la somme de contrôle 
-du champs *Integrity*. Si la source de données ne fournit pas de champs *Integrity*,
+du champs *Identity*. Si la source de données ne fournit pas de champs *Identity*,
 on se fie sur d´autres champes dans le message: *mtime*, *size*, *pubTime.*
 Le champs *pubTime* étant mandatoire assure qu´un clé peut toujour être généré pour 
 chaque message, mais des fois peut être inefficace.
