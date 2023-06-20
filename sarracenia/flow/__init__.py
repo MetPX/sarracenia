@@ -1951,8 +1951,8 @@ class Flow:
             local_path = '/' + msg['relPath']
 
         # older versions don't include the contentType, so patch it here.
-        if 'contentType' not in msg:
-            m['contentType'] = magic.from_file(new_file,mime=True)
+        if 'contentType' not in msg and not 'fileOp' in msg:
+            msg['contentType'] = magic.from_file(local_path,mime=True)
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
@@ -2074,6 +2074,8 @@ class Flow:
                     return False
 
                 if 'directory' in msg['fileOp'] :
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/directory'
                     if hasattr(self.proto[self.scheme], 'delete'):
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
@@ -2089,6 +2091,8 @@ class Flow:
                 #=================================
 
                 if 'hlink' in msg['fileOp']:
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/link'
                     if hasattr(self.proto[self.scheme], 'link'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['hlink']))
                         if not self.o.dry_run:
@@ -2097,6 +2101,8 @@ class Flow:
                     logger.error("%s, hardlinks not supported" % self.scheme)
                     return False
                 elif 'link' in msg['fileOp']:
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/link'
                     if hasattr(self.proto[self.scheme], 'symlink'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:
