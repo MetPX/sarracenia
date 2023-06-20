@@ -67,7 +67,7 @@ The headers are an array of name:value pairs::
 
      one of:
 
-          "identity"     - for changes in file contents, an identity checksum.
+          "identity"     - for changes in file contents, an identifier for de-duplication purposes.
           {
              "method" : "md5" | "sha512" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
@@ -114,7 +114,7 @@ The headers are an array of name:value pairs::
           "rename"        - name to write file locally.
           "retrievePath"       - relative retrieval path can be catenated to <base_url> to override relPath
                             used for API cases.
-          "topic"         - copy of topic from AMQP header (usually omitted)
+          "topic"         - copy of topic from AMQP header (in the envelope in protocol messages)
           "source"        - the originating entity of the notification message. 
           "from_cluster"  - the originating cluster of a notification message.
           "to_clusters"   - a destination specification.

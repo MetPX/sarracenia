@@ -39,12 +39,11 @@ Installation Instructions
 git
 ---
 
-*CHANGE*: v03 postformat field renamded: "integrity" is now "identity"
+*CHANGE*: v03 postformat field renamed: "integrity" is now "identity"
 
-    * current version will read messsages with integrity and map them to identity.
-    * current version will post with "Identity", so older versions will miss them.
+    * current version will read messsages with *integrity* and map them to *identity*.
+    * current version will post with *identity*, so older versions will miss them.
     * https://github.com/MetPX/sarracenia/issues/703
-
 
 
 3.0.40
