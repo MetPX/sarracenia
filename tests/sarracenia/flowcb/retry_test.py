@@ -54,7 +54,7 @@ message = {
 }
 
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
-@pytest.mark.depends(on=['sarracenia/diskqueue_test.py::test_put__Multi', 'sarracenia/redisqueue_test.py::test_put__Multi'])
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_cleanup(tmp_path):
     
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -86,7 +86,7 @@ def test_cleanup(tmp_path):
         assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 0
 
 
-@pytest.mark.depends(on=['sarracenia/diskqueue_test.py::test_put__Multi', 'sarracenia/redisqueue_test.py::test_put__Multi'])
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_metricsReport(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -111,6 +111,7 @@ def test_metricsReport(tmp_path):
         assert metrics_disk['msgs_in_download_retry'] == metrics_redis['msgs_in_download_retry'] == 3
         assert metrics_disk['msgs_in_post_retry'] == metrics_redis['msgs_in_post_retry'] == 3
 
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_post(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -134,6 +135,7 @@ def test_after_post(tmp_path):
 
         assert len(retry_disk.post_retry) == len(retry_redis.post_retry) == 3
 
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_work__WLFailed(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -158,6 +160,7 @@ def test_after_work__WLFailed(tmp_path):
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 3
         assert len(after_work_worklist_disk.failed) == len(after_work_worklist_redis.failed) == 0
 
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_work__SmallQty(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -185,7 +188,7 @@ def test_after_work__SmallQty(tmp_path):
         assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 3
 
 
-@pytest.mark.depends(on=['test_on_housekeeping', 'sarracenia/diskqueue_test.py::test_put__Multi', 'sarracenia/redisqueue_test.py::test_put__Multi'])
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_work(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -214,7 +217,7 @@ def test_after_work(tmp_path):
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 4
 
-
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept__SmallQty(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -241,7 +244,7 @@ def test_after_accept__SmallQty(tmp_path):
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 3
 
-@pytest.mark.depends(on=['test_on_housekeeping', 'sarracenia/diskqueue_test.py::test_put__Multi', 'sarracenia/redisqueue_test.py::test_put__Multi'])
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
@@ -270,7 +273,7 @@ def test_after_accept(tmp_path):
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
         assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 4
 
-@pytest.mark.depends(on=['sarracenia/diskqueue_test.py::test_put__Multi', 'sarracenia/redisqueue_test.py::test_put__Multi'])
+@pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_on_housekeeping(tmp_path, caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
