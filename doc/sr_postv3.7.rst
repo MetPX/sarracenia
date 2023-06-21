@@ -71,14 +71,14 @@ The headers are an array of name:value pairs::
           "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/timestamp.
           "baseUrl"       - root of the url to download.
           "relPath"       - relative path can be catenated to <base_url>
-          "integrity"     - WMO version of v02 sum field, under development.
+          "identity"     - WMO version of v02 sum field, under development.
           {
              "method" : "md5" | "sha512" | "md5name" | "link" | "remove" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
           }
     one of:
 
-          "integrity"     - for changes in file contents, an integrity checksum.
+          "identity"     - for changes in file contents, an identity checksum.
           {
              "method" : "md5" | "sha512" | "cod" | "random" ,
              "value"  : "base64 encoded checksum value"
@@ -166,8 +166,8 @@ Source Filtering (use of TOPIC_ exchanges)
    are forwarded to the client.  When there are many users interested in only 
    small subsets of data, the savings in traffic are large.
 
-Fingerprint Winnowing (use of the integrity_ header)
-   Each product has an integrity fingerprint and size intended to identify it uniquely, 
+Fingerprint Winnowing (use of the identity_ header)
+   Each product has an identity fingerprint and size intended to identify it uniquely, 
    referred to as a *fingerprint*. If two files have the same fingerprint, they 
    are considered equivalent. In cases where multiple sources of equivalent data are 
    available but downstream consumers would prefer to receive single announcements
@@ -432,12 +432,12 @@ v03::
   for algorithms for which no value makes sense, a random integer is generated to support
   checksum based load balancing.
 
-**integrity**
+**identity**
 ~~~~~~~~~~~~~
 
  Is a v03 version of the sum field made more explicit. For example::
 
-   "sum" : "d,hexsumvalue"    ---> "integrity" : { "method":"md5", "value":"base64sumvalue"  }
+   "sum" : "d,hexsumvalue"    ---> "identity" : { "method":"md5", "value":"base64sumvalue"  }
 
  This is partially supported for now (produce but do not consume.) The change in name
  is also motivated by the intent to use add digital signatures to list of known algorithms.
@@ -584,7 +584,7 @@ EXAMPLE
  AMQP TOPIC: v03.post.NRDPS.GIF
  MQTT TOPIC: exchange/v03/post/NRDPS/GIF/
  Body: { "pubTime": "201506011357.345", "baseUrl": "sftp://afsiext@cmcdataserver", "relPath": "/data/NRPDS/outputs/NRDPS_HiRes_000.gif",
-    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "integrity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
+    "rename": "NRDPS/GIF/", "parts":"p,457,1,0,0", "identity" : { "method":"md5", "value":"<md5sum-base64>" }, "source": "ec_cmc" }
 
         - v03 - version of protocol
         - post - indicates the type of message
@@ -690,7 +690,7 @@ pairs.
    * v02 fixed fields are now  "pubTime", "baseURL", and "relPath" keys
      in the JSON object that is the messge body.
 
-   * v02 *sum* header with hex encoded value, is replaced by v03 *integrity* header with base64 encoding.
+   * v02 *sum* header with hex encoded value, is replaced by v03 *identity* header with base64 encoding.
 
    * v03 *content* header allows file content embedding.
 
