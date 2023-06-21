@@ -4,6 +4,10 @@ from unittest.mock import patch
 
 import os, types
 
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
 
@@ -22,8 +26,8 @@ class Options:
     pid_filename = "NotARealPath"
     housekeeping = float(0)
     def add_option(self, option, type, default = None):
-        pass
-    pass
+        if not hasattr(self, option):
+            setattr(self, option, default)
 
 
 

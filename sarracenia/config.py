@@ -82,6 +82,7 @@ default_options = {
     'integrity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
+    'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
     'path': [],
@@ -124,7 +125,7 @@ duration_options = [
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = ['path']
+list_options = ['path' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -144,9 +145,9 @@ str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'integrity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
-    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
-    'nodupe_basis', 'tlsRigour', 'vip'
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
+    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
+    'nodupe_basis', 'tlsRigour', 'topic', 'vip'
 ]
 """
    for backward compatibility, 

@@ -1,6 +1,7 @@
 import copy
 import importlib
 import logging
+import magic
 import os
 import re
 
@@ -25,6 +26,7 @@ from sys import platform as _platform
 
 from base64 import b64decode, b64encode
 from mimetypes import guess_type
+
 # end v2 subscriber
 
 from sarracenia import nowflt
@@ -173,13 +175,16 @@ class Flow:
 
         # open cache, get masks.
         if self.o.nodupe_ttl > 0:
-            # prepend...
-            self.plugins['load'].append('sarracenia.flowcb.nodupe.NoDupe')
+            if self.o.nodupe_driver.lower() == "redis":
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.NoDupe')
+            else:
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.NoDupe')
+            
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
             ( hasattr(self.o, 'delete_destination') and self.o.delete_destination )) and \
-            ('sarracenia.flowcb.work.delete.Delete' not in self.plugins_late['load']):
-            self.plugins_late['load'].append('sarracenia.flowcb.work.delete.Delete')
+            ('sarracenia.flowcb.work.delete.Delete' not in self.o.plugins_late):
+            self.o.plugins_late.append('sarracenia.flowcb.work.delete.Delete')
 
         # transport stuff.. for download, get, put, etc...
         self.scheme = None
@@ -484,9 +489,13 @@ class Flow:
                     for m in self.worklist.ok:
                         if ('new_baseUrl' in m) and (m['baseUrl'] !=
                                                      m['new_baseUrl']):
+                            m['old_baseUrl'] = m['baseUrl']
+                            m['_deleteOnPost'] |= set(['old_baseUrl'])
                             m['baseUrl'] = m['new_baseUrl']
                         if ('new_retrievePath' in m) :
+                            m['old_retrievePath'] = m['retrievePath']
                             m['retrievePath'] = m['new_retrievePath']
+                            m['_deleteOnPost'] |= set(['old_retrievePath'])
 
                         # if new_file does not match relPath, then adjust relPath so it does.
                         if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
@@ -502,11 +511,18 @@ class Flow:
                                     m['new_relPath'] = m['new_file']
 
                         if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
+                            m['old_relPath'] = m['relPath']
+                            m['_deleteOnPost'] |= set(['old_relPath'])
                             m['relPath'] = m['new_relPath']
+                            m['old_subtopic'] = m['subtopic']
+                            m['_deleteOnPost'] |= set(['old_subtopic'])
                             m['subtopic'] = m['new_subtopic']
-                        if ('_format' in m) and ( m['_format'] != 
-                                                  m['post_format']):
-                            m['_format'] = m['post_format']
+
+                        if '_format' in m:
+                            m['old_format'] = m['_format']
+                            m['_deleteOnPost'] |= set(['old_format'])
+                        m['_format'] = m['post_format']
+                        
 
                     self._runCallbacksWorklist('after_work')
 
@@ -1823,6 +1839,9 @@ class Flow:
                         if os.path.isfile(new_file):
                             os.remove(new_file)
                         os.rename(new_inflight_path, new_file)
+                    # older versions don't include the contentType, so patch it here.
+                    if 'contentType' not in msg:
+                        msg['contentType'] = magic.from_file(new_file,mime=True)
             elif len_written < 0:
                 logger.error("failed to download %s" % new_file)
                 return False
@@ -1933,6 +1952,10 @@ class Flow:
                                                 msg) + '/' + msg['relPath']
         else:
             local_path = '/' + msg['relPath']
+
+        # older versions don't include the contentType, so patch it here.
+        if 'contentType' not in msg and not 'fileOp' in msg:
+            msg['contentType'] = magic.from_file(local_path,mime=True)
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
         local_file = os.path.basename(local_path).replace('\\', '/')
@@ -2054,6 +2077,8 @@ class Flow:
                     return False
 
                 if 'directory' in msg['fileOp'] :
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/directory'
                     if hasattr(self.proto[self.scheme], 'delete'):
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
@@ -2069,6 +2094,8 @@ class Flow:
                 #=================================
 
                 if 'hlink' in msg['fileOp']:
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/link'
                     if hasattr(self.proto[self.scheme], 'link'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['hlink']))
                         if not self.o.dry_run:
@@ -2077,6 +2104,8 @@ class Flow:
                     logger.error("%s, hardlinks not supported" % self.scheme)
                     return False
                 elif 'link' in msg['fileOp']:
+                    if 'contentType' not in msg:
+                        msg['contentType'] = 'text/link'
                     if hasattr(self.proto[self.scheme], 'symlink'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:

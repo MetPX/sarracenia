@@ -123,7 +123,7 @@ class AMQP(Moth):
             else:
                 content_type = None
 
-            msg = PostFormat.importAny( body, raw_msg.headers, content_type )
+            msg = PostFormat.importAny( body, raw_msg.headers, content_type, self.o )
             if not msg:
                 logger.error('Decode failed, discarding message')
                 return None
@@ -605,7 +605,7 @@ class AMQP(Moth):
         else:
             ttl = "0"
 
-        raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'] )
+        raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
 
         topic = '.'.join(headers['topic'])
         topic = topic.replace('#', '%23')

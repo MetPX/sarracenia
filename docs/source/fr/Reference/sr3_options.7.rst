@@ -1312,11 +1312,32 @@ entraînera la publication de messages d'annonce sur cinq échanges nommés : xw
 xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu’un cinquième
 du flux total.
 
+post_format <name> (défaut: v03)
+--------------------------------
+
+Définit le format de message pour les messages publiés. les valeurs actuellement incluses sont :
+
+* v02 ... utilisé par toutes les pompes de données existantes dans la plupart des cas.
+* v03 ... par défaut au format sr3 JSON plus facile à utiliser.
+* wis ... un format expérimental geoJSON en flux pour l'Organisation météorologique mondiale
+
+Lorsqu'elle est fournie, cette valeur remplace tout ce qui peut être déduit de post_topicPrefix.
+
+
 post_on_start
 -------------
 
 Lors du démarrage de watch, on peut soit demander au programme de publier tous les fichiers dans les répertoires
 surveillés, ou pas. (pas implanté en sr3_cpost)
+
+post_topic <chaine>
+-------------------
+
+Définissez explicitement une chaîne de sujet de publication, en remplaçant l'habituel
+groupe de paramètres. Pour les pompes de données Sarracenia, cela ne devrait jamais être nécessaire,
+car l'utilisation de *post_exchange*, *post_topicPrefix* et le *relPath* construit normalement le bon
+valeur pour les sujets à la fois pour la publication et la liaison.
+
 
 post_topicPrefix (défaut: topicPrefix)
 --------------------------------------
@@ -1687,6 +1708,14 @@ niveaux de conformité par rapport à ce qui est couramment défini comme un cry
 Par exemple, si on se connecte à un site et que son certificat est expiré, et
 qu'il est quand même nécessaire de l’utiliser, alors définir tlsRigour a *lax* pourra
 permettre la connexion de réussir.
+
+topic <chaine> 
+--------------
+
+Définissez explicitement une chaîne de sujet d'abonnement ou de publication, en remplaçant la valeur
+dériver à partir de l'habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne 
+devrait jamais être nécessaire, car l'utilisation de l'*exchange*, *topicPrefix* et *subtopic*  
+construit normalement le bon valeur.
 
 topicPrefix (défaut: v03)
 -------------------------

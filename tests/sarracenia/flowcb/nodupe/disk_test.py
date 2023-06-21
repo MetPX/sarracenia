@@ -1,9 +1,11 @@
-import pytest, pprint
+import pytest
 import os, types, copy
 
-pretty = pprint.PrettyPrinter(indent=2, width=200)
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
-from sarracenia.flowcb.nodupe import NoDupe
+from sarracenia.flowcb.nodupe.disk import NoDupe
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -17,7 +19,8 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
     def add_option(self, option, type, default = None):
-        setattr(self, option, default)
+        if not hasattr(self, option):
+            setattr(self, option, default)
     pass
 
 def make_message():
@@ -47,21 +50,14 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-def test_deriveKey__nodupe_override(tmp_path):
+def test_deriveKey(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     nodupe = NoDupe(BaseOptions)
 
     thismsg = make_message()
-
     thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
-
     assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
-
-def test_deriveKey__fileOp(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    nodupe = NoDupe(BaseOptions)
 
     thismsg = make_message()
     thismsg['fileOp'] = {'link': "SomeKeyValue"}
@@ -71,26 +67,13 @@ def test_deriveKey__fileOp(tmp_path):
     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
-def test_deriveKey__integrity(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    nodupe = NoDupe(BaseOptions)
-
     thismsg = make_message()
-
-    thismsg['integrity'] = {'method': "cod"}
+    thismsg['identity'] = {'method': "cod"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
-
-    thismsg['integrity'] = {'method': "method", 'value': "value\n"}
+    thismsg['identity'] = {'method': "method", 'value': "value\n"}
     assert nodupe.deriveKey(thismsg) == "method,value"
 
-def test_deriveKey__NotKey(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    nodupe = NoDupe(BaseOptions)
-
     thismsg = make_message()
-
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
     thismsg['size'] = 28234
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
@@ -555,8 +538,6 @@ def test_after_accept(tmp_path, capsys):
     assert len(after_accept_worklist.incoming) == 1
     assert len(after_accept_worklist.rejected) == 2
     assert nodupe.cache_dict[message['relPath'] + "," + message['mtime']][message['relPath']] == nodupe.now
-    #pretty.pprint(message)
-    #pretty.pprint(nodupe.cache_dict)
 
 @pytest.mark.depends(on=['test_check_message'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
@@ -585,11 +566,6 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
     after_accept_worklist__WithFileAges.incoming = [message_old, message_new]
 
     nodupe.after_accept(after_accept_worklist__WithFileAges)
-
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(after_accept_worklist__WithFileAges)
 
     assert len(after_accept_worklist__WithFileAges.rejected) == 2
     assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
@@ -620,11 +596,6 @@ def test_after_accept__InFlight(tmp_path, capsys):
     test_after_accept__InFlight.incoming = [message_old, message_new]
 
     nodupe.after_accept(test_after_accept__InFlight)
-
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(test_after_accept__InFlight)
 
     assert len(test_after_accept__InFlight.rejected) == 1
     assert len(test_after_accept__InFlight.incoming) == 1

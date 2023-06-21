@@ -1,12 +1,17 @@
 import pytest, jsonpickle
 import os
 
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+
 from sarracenia.diskqueue import DiskQueue
 
 class Options:
     def add_option(self, option, type, default = None):
-        if default != None:
-            self.option = default
+        if not hasattr(self, option):
+            setattr(self, option, default)
+        
     pass
 
 BaseOptions = Options()
