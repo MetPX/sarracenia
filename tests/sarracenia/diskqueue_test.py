@@ -13,20 +13,22 @@ def pretty(*things, **named_things):
 from sarracenia.diskqueue import DiskQueue
 
 class Options:
+    def __init__(self):
+        self.no = 1
+        self.retry_ttl = 0
+        self.logLevel = "DEBUG"
+        self.logFormat = ""
+        self.queueName = "TEST_QUEUE_NAME"
+        self.component = "sarra"
+        self.retry_driver = 'disk'
+        self.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        self.config = "foobar.conf"
+        self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
+        self.housekeeping = float(39)
+        self.batch = 0
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
-        
-    pass
-
-BaseOptions = Options()
-BaseOptions.retry_ttl = 0
-BaseOptions.logLevel = "DEBUG"
-BaseOptions.queueName = "TEST_QUEUE_NAME"
-BaseOptions.component = "sarra"
-BaseOptions.config = "foobar.conf"
-BaseOptions.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
-BaseOptions.housekeeping = float(39)
 
 message = {
     "pubTime": "20180118151049.356378078",
@@ -47,18 +49,21 @@ message = {
 }
 
 def test_msgFromJSON(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
     assert message == download_retry.msgFromJSON(jsonpickle.encode(message))
 
 def test_msgToJSON(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
     assert jsonpickle.encode(message) + '\n' == download_retry.msgToJSON(message)
 
 def test__is_exired__TooSoon(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.retry_ttl = 100000
     download_retry = DiskQueue(BaseOptions, 'work_retry')
@@ -66,6 +71,7 @@ def test__is_exired__TooSoon(tmp_path):
     assert download_retry.is_expired(message) == True
 
 def test__is_exired__TooLate(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.retry_ttl = 1
     download_retry = DiskQueue(BaseOptions, 'work_retry')
@@ -76,6 +82,7 @@ def test__is_exired__TooLate(tmp_path):
     assert download_retry.is_expired(message) == False
 
 def test___len__(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
@@ -91,6 +98,7 @@ def test___len__(tmp_path):
     assert len(download_retry) == 2
 
 def test_in_cache(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
@@ -102,6 +110,7 @@ def test_in_cache(tmp_path):
     assert download_retry.in_cache(message) == True
 
 def test_needs_requeuing(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
@@ -115,6 +124,7 @@ def test_needs_requeuing(tmp_path):
     assert download_retry.needs_requeuing(message) == False
     
 def test_put__Single(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_put__Single')
 
@@ -126,6 +136,7 @@ def test_put__Single(tmp_path):
     assert open(download_retry.new_path, 'r').read() == line
 
 def test_put__Multi(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_put__Multi')
 
@@ -139,6 +150,7 @@ def test_put__Multi(tmp_path):
     assert contents == line + line + line
 
 def test_cleanup(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_cleanup')
 
@@ -155,6 +167,7 @@ def test_cleanup(tmp_path):
     assert download_retry.msg_count == 0
 
 def test_msg_get_from_file__NoLine(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_msg_get_from_file__NoLine')
 
@@ -164,6 +177,7 @@ def test_msg_get_from_file__NoLine(tmp_path):
     assert msg == None
 
 def test_msg_get_from_file(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_msg_get_from_file')
 
@@ -179,6 +193,7 @@ def test_msg_get_from_file(tmp_path):
     assert msg == message
 
 def test_get__Single(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_get__Single')
 
@@ -194,6 +209,7 @@ def test_get__Single(tmp_path):
     assert gotten == [message]
 
 def test_get__Multi(tmp_path):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_get__Multi')
 
@@ -209,6 +225,7 @@ def test_get__Multi(tmp_path):
     assert gotten == [message, message]
 
 def test_on_housekeeping__FinishRetry(tmp_path, caplog):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
 
@@ -226,6 +243,7 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
             assert "have not finished retry list" in record.message
 
 def test_on_housekeeping(tmp_path, caplog):
+    BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_on_housekeeping')
 

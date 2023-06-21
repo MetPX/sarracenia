@@ -19,22 +19,22 @@ from sarracenia.flowcb.retry import Retry
 import fakeredis
 
 class Options:
-    retry_driver = 'disk'
-    redisqueue_serverurl = ''
-    no = 1
-    retry_ttl = 0
-    batch = 8
-    logLevel = "DEBUG"
-    queueName = "TEST_QUEUE_NAME"
-    component = "sarra"
-    config = "foobar.conf"
-    pid_filename = "NotARealPath"
-    housekeeping = float(0)
+    def __init__(self):
+        self.no = 1
+        self.retry_ttl = 0
+        self.logLevel = "DEBUG"
+        self.logFormat = ""
+        self.queueName = "TEST_QUEUE_NAME"
+        self.component = "sarra"
+        self.retry_driver = 'disk'
+        self.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        self.config = "foobar.conf"
+        self.pid_filename = "/tmp/sarracenia/retyqueue_test/pid_filename"
+        self.housekeeping = float(0)
+        self.batch = 8
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
-
-
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
