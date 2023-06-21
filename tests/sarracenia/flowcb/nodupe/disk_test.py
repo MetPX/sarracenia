@@ -67,13 +67,7 @@ def test_deriveKey(tmp_path):
     thismsg['fileOp'] = {'directory': "SomeKeyValue"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
-def test_deriveKey__identity(tmp_path):
-    BaseOptions = Options()
-    BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    nodupe = NoDupe(BaseOptions)
-
     thismsg = make_message()
-
     thismsg['identity'] = {'method': "cod"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
@@ -608,3 +602,4 @@ def test_after_accept__InFlight(tmp_path, capsys):
     assert len(test_after_accept__InFlight.incoming) == 1
     assert test_after_accept__InFlight.incoming[0]['mtime'] == message_old['mtime']
     assert test_after_accept__InFlight.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+
