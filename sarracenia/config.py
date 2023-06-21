@@ -147,7 +147,7 @@ str_options = [
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
-    'nodupe_basis', 'tlsRigour', 'vip'
+    'nodupe_basis', 'tlsRigour', 'topic', 'vip'
 ]
 """
    for backward compatibility, 
