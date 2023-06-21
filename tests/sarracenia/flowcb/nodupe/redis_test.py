@@ -85,9 +85,9 @@ def test__deriveKey(tmp_path):
         assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
 
         thismsg = make_message()
-        thismsg['integrity'] = {'method': "cod"}
+        thismsg['identity'] = {'method': "cod"}
         assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
-        thismsg['integrity'] = {'method': "method", 'value': "value\n"}
+        thismsg['identity'] = {'method': "method", 'value': "value\n"}
         assert nodupe._deriveKey(thismsg) == "method,value"
 
         thismsg = make_message()
