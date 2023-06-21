@@ -218,8 +218,9 @@ class NoDupe(FlowCB):
         worklist.incoming = new_incoming
 
     def on_start(self):
-        pass
+        self._last_count = len(self._redis.keys(self._rkey_base + ":*"))
+        
 
     def on_stop(self):
-        pass
+        self._last_count = None
 
