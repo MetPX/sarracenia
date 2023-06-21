@@ -175,8 +175,11 @@ class Flow:
 
         # open cache, get masks.
         if self.o.nodupe_ttl > 0:
-            # prepend...
-            self.plugins['load'].append('sarracenia.flowcb.nodupe.NoDupe')
+            if self.o.nodupe_driver.lower() == "redis":
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.NoDupe')
+            else:
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.NoDupe')
+            
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
             ( hasattr(self.o, 'delete_destination') and self.o.delete_destination )) and \

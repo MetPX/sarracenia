@@ -1,7 +1,9 @@
-import pytest, pprint
+import pytest
 import os, types, copy
 
-pretty = pprint.PrettyPrinter(indent=2, width=200)
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 from sarracenia.flowcb.nodupe.data import Data
 from sarracenia import Message as SR3Message
@@ -17,7 +19,8 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
     def add_option(self, option, type, default = None):
-        setattr(self, option, default)
+        if not hasattr(self, option):
+            setattr(self, option, default)
     pass
 
 def make_message():
@@ -64,11 +67,6 @@ def test_after_accept(tmp_path, capsys):
     wl_test_after_accept.incoming = [message_with_nodupe, message_without_nodupe]
 
     nodupe.after_accept(wl_test_after_accept)
-
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(wl_test_after_accept)
 
     assert len(wl_test_after_accept.incoming) == 2
     assert wl_test_after_accept.incoming[0]['nodupe_override']['path'] == 'data'

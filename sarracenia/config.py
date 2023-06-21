@@ -82,6 +82,7 @@ default_options = {
     'identity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
+    'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
     'path': [],
@@ -145,7 +146,7 @@ str_options = [
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
-    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl',
+    'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic', 'vip'
 ]
 """
