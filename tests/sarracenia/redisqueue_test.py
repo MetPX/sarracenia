@@ -135,8 +135,6 @@ def test__lpop():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__lpop')
-        #server_test__lpop = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test__lpop)
 
         message = make_message()
 
@@ -149,9 +147,6 @@ def test_put__Single():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_put__Single')
 
-        #server_test_put_single = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_put_single)
-
         message = make_message()
 
         download_retry.put([message])
@@ -163,9 +158,6 @@ def test_put__Multi():
         download_retry = RedisQueue(BaseOptions, 'test_put__Multi')
 
         message = make_message()
-
-        #server_test_put_multi = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_put_multi)
 
         download_retry.put([message, message, message, message])
         assert download_retry.redis.llen(download_retry.key_name_new) == 4
@@ -195,9 +187,6 @@ def test_get__NotLocked_Single():
 
         message = make_message()
 
-        #server_test_get__NotLocked = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
-
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
 
         gotten = download_retry.get()
@@ -212,15 +201,10 @@ def test_get__NotLocked_Multi():
 
         message = make_message()
 
-        #server_test_get__NotLocked = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
-
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
-
-        #with patch(target="redis_lock.Lock.locked", new=lambda foo: False):
 
         gotten = download_retry.get(2)
 
@@ -233,9 +217,6 @@ def test_get__Locked():
         download_retry = RedisQueue(BaseOptions, 'test_get__Locked')
 
         message = make_message()
-
-        #server_test_get__NotLocked = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
 
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
 
@@ -251,9 +232,6 @@ def test_on_housekeeping__TooSoon(caplog):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__TooSoon')
 
-        #server_test_on_housekeeping__TooSoon = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping__TooSoon)
-
         download_retry.redis.set(download_retry.key_name_lasthk, download_retry.now)
         hk_out = download_retry.on_housekeeping()
 
@@ -263,32 +241,6 @@ def test_on_housekeeping__TooSoon(caplog):
             if "Housekeeping ran less than " in record.message:
                 assert "Housekeeping ran less than " in record.message
 
-# @pytest.mark.skip("No need to check if we're locked, per Peter")
-# def test_on_housekeeping__Locked(caplog):
-#     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-#         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__Locked')
-
-#         #server_test_on_housekeeping__Locked = fakeredis.FakeServer()
-#         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping__Locked)
-
-#         #import jsonpickle
-
-#         #download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
-
-#         #with patch(target="redis_lock.Lock.locked", new=lambda foo: True):
-
-#         download_retry.redis.set(download_retry.key_name_lasthk, download_retry.now - download_retry.o.housekeeping - 100)
-#         download_retry.redis_lock.acquire()
-
-#         hk_out = download_retry.on_housekeeping()
-
-#         assert hk_out == None
-
-#         import re
-#         for record in caplog.records:
-#             if "Another instance has lock on" in record.message:
-#                 assert "Another instance has lock on" in record.message
-
 def test_on_housekeeping__FinishRetry(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
@@ -296,9 +248,6 @@ def test_on_housekeeping__FinishRetry(caplog):
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
 
         message = make_message()
-
-        #server_test_on_housekeeping__FinishRetry = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping__FinishRetry)
 
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name, jsonpickle.encode(message))
@@ -324,11 +273,6 @@ def test_on_housekeeping(caplog):
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping')
 
         message = make_message()
-
-        #server_test_on_housekeeping = fakeredis.FakeServer()
-        #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)
-
-        #with patch(target="redis_lock.Lock.locked", new=lambda foo: True):
 
         download_retry.redis.lpush(download_retry.key_name_new, jsonpickle.encode(message))
         download_retry.redis.lpush(download_retry.key_name_new, jsonpickle.encode(message))
