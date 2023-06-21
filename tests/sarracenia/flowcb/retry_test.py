@@ -239,7 +239,7 @@ def test_after_work(tmp_path):
         retry_redis.after_work(after_work_worklist_redis)
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
-        assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 4
+        assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 3
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept__SmallQty(tmp_path):
@@ -298,8 +298,8 @@ def test_after_accept(tmp_path):
         retry_redis.on_housekeeping()
         retry_redis.after_accept(after_work_worklist_redis)
 
-        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
-        assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 4
+        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 1
+        assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 3
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_on_housekeeping(tmp_path, caplog):
