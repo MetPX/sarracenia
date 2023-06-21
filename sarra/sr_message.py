@@ -296,18 +296,23 @@ class sr_message():
                self.baseurl = self.headers[ "baseUrl" ]
                self.relpath = self.headers[ "relPath" ]
                self.notice = "%s %s %s" % ( self.pubtime, self.baseurl, self.relpath )
+
                if "integrity" in self.headers.keys():
-                   if type( self.headers[ "integrity" ] ) is str:
-                       self.headers[ "integrity" ] = json.loads( self.headers[ "integrity" ] )
-                   sa = sum_algo_v3tov2[ self.headers[ "integrity" ][ "method" ] ]
+                   self.headers["identity"] = self.headers["integrity"]
+                   del self.headers["integrity"]
+
+               if "identity" in self.headers.keys():
+                   if type( self.headers[ "identity" ] ) is str:
+                       self.headers[ "identity" ] = json.loads( self.headers[ "identity" ] )
+                   sa = sum_algo_v3tov2[ self.headers[ "identity" ][ "method" ] ]
 
                    # transform sum value
                    if sa in [ '0' ]:
-                       sv = self.headers[ "integrity" ][ "value" ]
+                       sv = self.headers[ "indentity" ][ "value" ]
                    elif sa in [ 'z' ]:
-                       sv = sum_algo_v3tov2[ self.headers[ "integrity" ][ "value" ] ]
+                       sv = sum_algo_v3tov2[ self.headers[ "identity" ][ "value" ] ]
                    else:
-                       sv = encode( decode( self.headers[ "integrity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
+                       sv = encode( decode( self.headers[ "identity" ][ "value" ].encode('utf-8'), "base64" ), 'hex' ).decode('utf-8')
                    # set event.
                    if sa == 'L' :
                        self.event = 'link'
@@ -350,8 +355,8 @@ class sr_message():
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
                    
-               if "integrity" in self.headers.keys():
-                   del self.headers['integrity']
+               if "identity" in self.headers.keys():
+                   del self.headers['identity']
                 
                if 'blocks' in self.headers.keys():
                    parts_map = {'inplace': 'i', 'partitioned': 'p'}
@@ -641,13 +646,13 @@ class sr_message():
         # to same shard. do that by keying on a specific character in the checksum.
         # TODO investigate as this would throw a TypeError if post_exchange_split is None
         if self.post_exchange_split > 0 :
-           if 'integrity' in self.headers : 
-               if self.headers['integrity']['method'] in ['cod','random']:
-                   suffix= "%02d" % ( sum( bytearray(self.headers['integrity']['value'], 'ascii')) % self.post_exchange_split )
+           if 'identity' in self.headers : 
+               if self.headers['identity']['method'] in ['cod','random']:
+                   suffix= "%02d" % ( sum( bytearray(self.headers['identity']['value'], 'ascii')) % self.post_exchange_split )
                    self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
                         ( self.headers['sum']['value'], suffix) )
                else: 
-                   suffix= "%02d" % ( sum( bytearray(self.headers['integrity']['value'],'ascii')) % self.post_exchange_split )
+                   suffix= "%02d" % ( sum( bytearray(self.headers['identity']['value'],'ascii')) % self.post_exchange_split )
                    self.logger.debug( "post_exchange_split set, keying on %s , suffix is %s" % \
                         ( self.headers['sum']['value'], suffix) )
            else:
@@ -672,10 +677,10 @@ class sr_message():
                    sm = sum_algo_map[ sa ]
                    if sm in [ 'random' ] :
                        sv = self.headers["sum"][2:]
-                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
+                       self.headers[ "identity" ] = { "method": sm, "value": sv }
                    elif sm in [ 'cod' ] :
                        sv = sum_algo_map[ self.headers["sum"][2:] ]
-                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
+                       self.headers[ "identity" ] = { "method": sm, "value": sv }
                    elif sm in [ 'link', 'remove' ] :
                        if sa == 'l' :
                            self.headers['fileOp'] = { 'hlink': self.headers['link'] } 
@@ -687,7 +692,7 @@ class sr_message():
                            self.headers['fileOp'] = { 'remove': True } 
                    else:
                        sv = encode( decode( self.headers["sum"][2:], 'hex'), 'base64' ).decode('utf-8').strip()
-                       self.headers[ "integrity" ] = { "method": sm, "value": sv }
+                       self.headers[ "identity" ] = { "method": sm, "value": sv }
 
                if 'oldname' in self.headers.keys():
                    self.headers['fileOp'] = { 'rename' : self.headers['oldname'] }
@@ -713,8 +718,8 @@ class sr_message():
                     ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
-               if 'integrity' in self.headers.keys(): 
-                  del self.headers[ 'integrity' ]
+               if 'identity' in self.headers.keys(): 
+                  del self.headers[ 'identity' ]
                if 'size' in self.headers.keys():
                   del self.headers['size']
                if 'blocks' in self.headers.keys():

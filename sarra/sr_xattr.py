@@ -127,6 +127,10 @@ class sr_xattr:
                 #   unlikely to be a difficulty in real life? but perhaps worthy of an error message.
                 pass
 
+        if 'integrity' in self.x:
+            self.x['identity'] = self.x['integrity']
+            del self.x['integrity']
+
     def __del__(self):
         self.persist()
 
