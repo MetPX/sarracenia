@@ -1,7 +1,9 @@
-import pytest, pprint
+import pytest
 import os, types, copy
 
-pretty = pprint.PrettyPrinter(indent=2, width=200)
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 from sarracenia.flowcb.nodupe.disk import NoDupe
 from sarracenia import Message as SR3Message
@@ -17,7 +19,8 @@ class Options:
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
     def add_option(self, option, type, default = None):
-        setattr(self, option, default)
+        if not hasattr(self, option):
+            setattr(self, option, default)
     pass
 
 def make_message():

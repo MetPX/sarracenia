@@ -1,10 +1,12 @@
-import pytest, pprint
+import pytest
 from unittest.mock import patch
 import os, types, copy
 
 import fakeredis, urllib.parse
 
-pretty = pprint.PrettyPrinter(indent=2, width=200)
+#useful for debugging tests
+#import pprint
+#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 from sarracenia.flowcb.nodupe.redis import NoDupe
 from sarracenia import Message as SR3Message
