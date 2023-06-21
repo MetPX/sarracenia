@@ -124,6 +124,7 @@ The headers are an array of name:value pairs::
               "encoding" : "utf-8" | "base64"  , 
               "value"    " "encoded file content"
           }
+          "contentType" : "string" - MIME-type information referring to the data.
 
           For "v03.report" topic notification messages the following addtional
           headers will be present:
