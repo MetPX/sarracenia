@@ -4,8 +4,13 @@ from unittest.mock import patch
 import os, types
 
 #useful for debugging tests
-#import pprint
-#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+import pprint
+def pretty(*things, **named_things):
+    for t in things:
+        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
+    for k,v in named_things.items():
+        print(str(k) + ":")
+        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
