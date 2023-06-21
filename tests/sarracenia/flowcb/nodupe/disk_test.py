@@ -538,8 +538,6 @@ def test_after_accept(tmp_path, capsys):
     assert len(after_accept_worklist.incoming) == 1
     assert len(after_accept_worklist.rejected) == 2
     assert nodupe.cache_dict[message['relPath'] + "," + message['mtime']][message['relPath']] == nodupe.now
-    #pretty.pprint(message)
-    #pretty.pprint(nodupe.cache_dict)
 
 @pytest.mark.depends(on=['test_check_message'])
 def test_after_accept__WithFileAges(tmp_path, capsys):
@@ -568,11 +566,6 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
     after_accept_worklist__WithFileAges.incoming = [message_old, message_new]
 
     nodupe.after_accept(after_accept_worklist__WithFileAges)
-
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(after_accept_worklist__WithFileAges)
 
     assert len(after_accept_worklist__WithFileAges.rejected) == 2
     assert after_accept_worklist__WithFileAges.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed")
@@ -603,11 +596,6 @@ def test_after_accept__InFlight(tmp_path, capsys):
     test_after_accept__InFlight.incoming = [message_old, message_new]
 
     nodupe.after_accept(test_after_accept__InFlight)
-
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(test_after_accept__InFlight)
 
     assert len(test_after_accept__InFlight.rejected) == 1
     assert len(test_after_accept__InFlight.incoming) == 1

@@ -68,11 +68,6 @@ def test_after_accept(tmp_path, capsys):
 
     nodupe.after_accept(wl_test_after_accept)
 
-    #pretty.pprint(message)
-    #pretty.pprint(after_accept_worklist.rejected[0]['reject'].count(message_old['mtime'] + " too old (nodupe check), oldest allowed"))
-    #pretty.pprint(vars(nodupe))
-    #pretty.pprint(wl_test_after_accept)
-
     assert len(wl_test_after_accept.incoming) == 2
     assert wl_test_after_accept.incoming[0]['nodupe_override']['path'] == 'data'
     assert 'nodupe_override' in wl_test_after_accept.incoming[1]['_deleteOnPost']
