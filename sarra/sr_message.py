@@ -308,7 +308,7 @@ class sr_message():
 
                    # transform sum value
                    if sa in [ '0' ]:
-                       sv = self.headers[ "indentity" ][ "value" ]
+                       sv = self.headers[ "identity" ][ "value" ]
                    elif sa in [ 'z' ]:
                        sv = sum_algo_v3tov2[ self.headers[ "identity" ][ "value" ] ]
                    else:
