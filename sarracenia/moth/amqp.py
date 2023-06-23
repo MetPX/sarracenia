@@ -586,7 +586,7 @@ class AMQP(Moth):
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                         #        if that isn't true... then there is something wrong... should we check ?
                         idx = sum(
-                            bytearray(body['integrity']['value'],
+                            bytearray(body['identity']['value'],
                                       'ascii')) % len(self.o['exchange'])
                         exchange = self.o['exchange'][idx]
                     else:

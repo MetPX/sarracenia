@@ -331,12 +331,12 @@ In general, v3 plugins:
   msg.exchange     msg['exchange']                    the channel on which the message was received.
   msg.logger       logger                             pythonic logging setup describe above.
   msg.parts        msg['size']                        just omit, use sarracenia.Message constructor.
-  msg.sumflg       msg['integrity']                   just omit, use sarracenia.Message constructor.
+  msg.sumflg       msg['identity']                   just omit, use sarracenia.Message constructor.
   msg.sumstr       v2wrapper.sumstrFromMessage(msg)   the literal string for a v2 checksum field.     
   parent.msg       worklist.incoming                  v2 is 1 message at a time, sr3 has lists or messages.
   ================ ================================== ==========================================================
 
-* the pubTime, baseUrl, relPath, retrievePath, size, integrity, are all standard message fields
+* the pubTime, baseUrl, relPath, retrievePath, size, identity, are all standard message fields
   better described in `sr_post(7) <../Reference/sr_post.7.html>`_
 
 * if one needs to store per message state, then one can declare temporary fields in the message,

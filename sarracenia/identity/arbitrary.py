@@ -1,4 +1,4 @@
-from sarracenia.integrity import Integrity
+from sarracenia.identity import Identity
 
 default_value = "None"
 
@@ -7,7 +7,7 @@ def set_default_value(value):
     global default_value
     default_value = value
 
-class Arbitrary(Integrity):
+class Arbitrary(Identity):
     """
       For applications where there is no known way of determining equivalence, allow them to supply
       an arbitrary tag, that can be used to compare products for duplicate suppression purposes.

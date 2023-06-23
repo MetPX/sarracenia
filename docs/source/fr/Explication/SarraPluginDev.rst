@@ -34,7 +34,7 @@ en construire de nouveaux de manière copier/coller, avec de nombreux exemples d
 Il existe d’autres façons d’étendre Sarracenia v3 en sous-classant :
 
 * Sarracenia.transfer.Transfer pour ajouter plus de protocoles de transfert de données
-* Sarracenia.integrity.Integrity pour ajouter plus de méthodes de somme de contrôle.
+* Sarracenia.identity.Identity pour ajouter plus de méthodes de somme de contrôle.
 * Sarracenia.moth.Moth pour ajouter la prise en charge de plus de protocoles de messagerie.
 * Sarracenia.flow.Flow pour créer de nouveaux flux.
 * Sarracenia.flowcb.FlowCB pour personnaliser les flux.
@@ -310,7 +310,7 @@ On peut ajouter des fonctionnalités supplémentaires à Sarracenia en créant d
 
 * sarra.moth - Messages organisés en hiérarchies de thèmes. (existants : rabbitmq-amqp)
 
-* sarra.integrity - algorithmes de somme de contrôle (existants: md5, sha512, arbitraires, aléatoires)
+* sarra.identity - algorithmes de somme de contrôle (existants: md5, sha512, arbitraires, aléatoires)
 
 * sarra.transfer - protocoles de transport supplémentaires (https, ftp, sftp )
 
@@ -430,7 +430,7 @@ self est le message en cours de traitement. variables les plus utilisées :
   symboliques, les changements de nom et les suppressions de fichiers. 
   Contenu décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
 
-*msg['integrity']*
+*msg['identity']*
   La structure de somme de contrôle, un dictionnaire python avec les champs 'méthode' et 'valeur'.
 
 *msg['subtopic'], msg['new_subtopic']*

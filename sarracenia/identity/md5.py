@@ -1,12 +1,12 @@
 from hashlib import md5
 
-from sarracenia.integrity import Integrity
+from sarracenia.identity import Identity
 
 
-class Md5(Integrity):
+class Md5(Identity):
     """
          use the (obsolete) Message Digest 5 (MD5) algorithm, applied on the content
-         of a file, to generate an integrity signature.
+         of a file, to generate an identity signature.
       """
 
     @staticmethod

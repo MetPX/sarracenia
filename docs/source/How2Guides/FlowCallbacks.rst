@@ -424,7 +424,7 @@ It's a good idea to look at the sarracenia source code itself. For example:
   reception of notification messages from message queue protocol flows.
 
 * *sarracenia.flowcb.nodupe.NoDupe* This modules removes duplicates from message
-  flows based on Integrity checksums.
+  flows based on Identity checksums.
 
 * *sarracenia.flowcb.post.message.Message* is a class that implements posting
   notification messages to Message queue protocol flows

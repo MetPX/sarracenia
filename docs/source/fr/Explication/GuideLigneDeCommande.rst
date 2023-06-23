@@ -316,8 +316,8 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'inlineEncoding': 'guess',
      'inlineOnly': False,
      'instances': 1,
-     'integrity_arbitrary_value': None,
-     'integrity_method': 'sha512',
+     'identity_arbitrary_value': None,
+     'identity_method': 'sha512',
      'logEvents': {'after_work', 'after_accept', 'on_housekeeping'},
      'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
      'logLevel': 'info',
@@ -1543,7 +1543,7 @@ WINNOW
 et réenregistre les notifications, en supprimant les notifications redondantes.
 
 La méthode de décider quels messages d´annonce sont redondants varient selon le cas d´usage.
-Normalement, les messages comprenned un champs *Integrity* qui avec une somme de contrôle
+Normalement, les messages comprenned un champs *Identity* qui avec une somme de contrôle
 du ficher, tel que décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
 Il y bien d´autres cas d´usage discutés dans `Supprimer les doublons <SupprimerLesDoublons.html>`_
 
@@ -2333,11 +2333,11 @@ le répertoire sera vérifié pour les nouveaux fichiers.  Voici une partie de l
             return []
     
      
-Integrity
+Identity
 ---------
 
 On peut utiliser la directive *import* pour ajouter de nouveaux algorithmes de somme de contrôle en sous-classant
-sarracenia.integrity.Integrity.
+sarracenia.identity.Identity.
 
 
 Transfer 

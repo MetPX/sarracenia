@@ -34,7 +34,7 @@ pairs.
    * v02 fixed fields are now  "pubTime", "baseURL", and "relPath" keys
      in the JSON object that is the messge body.
 
-   * v02 *sum* header with hex encoded value, is replaced by v03 *integrity* header with base64 encoding.
+   * v02 *sum* header with hex encoded value, is replaced by v03 *identity* header with base64 encoding.
 
    * v03 *content* header allows file content embedding.
 

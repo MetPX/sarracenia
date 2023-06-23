@@ -20,7 +20,7 @@ from random import choice
 import sarracenia
 from sarracenia import *
 from sarracenia.flowcb import FlowCB
-import sarracenia.integrity
+import sarracenia.identity
 
 import stat
 from sys import platform as _platform
@@ -272,7 +272,7 @@ class File(FlowCB):
 
             else:
                 sumflg = self.o.sumflg
-                sumalgo = sarracenia.integrity.Integrity.factory(sumflg)
+                sumalgo = sarracenia.identity.Identity.factory(sumflg)
                 sumalgo.set_path(path)
 
             # compute block stuff
@@ -316,7 +316,7 @@ class File(FlowCB):
 
             # complete  message
 
-            msg['integrity'] = sumstr
+            msg['identity'] = sumstr
             messages.extend(copy.deepcopy(msg))
 
         return messages
@@ -345,7 +345,7 @@ class File(FlowCB):
         # complete  message
 
         msg['parts'] = partstr
-        msg['integrity'] = sumstr
+        msg['identity'] = sumstr
 
         return [msg]
 

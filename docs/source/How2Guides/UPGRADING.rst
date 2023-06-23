@@ -39,6 +39,13 @@ Installation Instructions
 git
 ---
 
+*CHANGE*: v03 postformat field renamed: "integrity" is now "identity"
+
+    * current version will read messsages with *integrity* and map them to *identity*.
+    * current version will post with *identity*, so older versions will miss them.
+    * https://github.com/MetPX/sarracenia/issues/703
+
+
 3.0.40
 ------
 
@@ -125,13 +132,13 @@ git
 *CHANGE*: The "Vendor" string is now "MetPX" instead of "science.gc.ca".
      This affects some file placement particularly on Windows.
 
-*CHANGE*: v03 notification message encoding changed: *Integrity* checksum is now optional.
+*CHANGE*: v03 notification message encoding changed: *Identity* checksum is now optional.
           (details: https://github.com/MetPX/sarracenia/issues/547 )
          *md5sum* is no longer defined, replaced with *none* in sr3.
 
 *CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
      and removals. There is now a 'fileOp' field for these dataless file operations.
-     The *Integrity* sum is now used exclusively for checksums.
+     The *Identity* sum is now used exclusively for checksums.
 
 
 3.0.15
@@ -336,7 +343,7 @@ V2 to Sr3
           queue_name                queueName
           report_back               report
           source_from_exchange      sourceFromExchange
-          sum                       integrity
+          sum                       identity
           suppress_duplicates       nodupe_ttl
           suppress_duplicates_basis nodupe_basis
           topic_prefix              topicPrefix

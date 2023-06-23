@@ -1,9 +1,9 @@
 import random
 
-from sarracenia.integrity import Integrity
+from sarracenia.identity import Identity
 
 
-class Random(Integrity):
+class Random(Identity):
     """
       Trivial minimalist checksumming algorithm, returns random number for any file.
       """

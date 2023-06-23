@@ -53,9 +53,9 @@ class Noaa_hydrometric(FlowCB):
         self.o.add_option( option='retrievePathPattern', kind='str', \
               default_value='datagetter?range=1&station={0:}&product={1:}&units=metric&time_zone=gmt&application=web_services&format=csv' )
 
-        if self.o.integrity_method.startswith('cod,'):
-            m, v = self.o.integrity_method.split(',')
-            self.integrity = {'method': m, 'value': v}
+        if self.o.identity_method.startswith('cod,'):
+            m, v = self.o.identity_method.split(',')
+            self.identity = {'method': m, 'value': v}
 
     def poll(self) -> list:
 
@@ -97,7 +97,7 @@ class Noaa_hydrometric(FlowCB):
 
             fname = f'noaa_{mtime}_{site}_WT.csv'
             m = sarracenia.Message.fromFileInfo(fname, self.o)
-            m['integrity'] = self.integrity
+            m['identity'] = self.identity
             m['retrievePath'] = retrievePath
             m['new_file'] = fname
 
@@ -112,7 +112,7 @@ class Noaa_hydrometric(FlowCB):
 
             fname = f'noaa_{mtime}_{site}_WL.csv'
             m = sarracenia.Message.fromFileInfo(fname, self.o)
-            m['integrity'] = self.integrity
+            m['identity'] = self.identity
             m['retrievePath'] = retrievePath
             m['new_file'] = fname
 

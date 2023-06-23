@@ -137,12 +137,12 @@ sr3 code::
     16 ./flow/winnow.py
    793 ./__init__.py
    226 ./instance.py
-    36 ./integrity/arbitrary.py
-    93 ./integrity/__init__.py
-    33 ./integrity/md5name.py
-    24 ./integrity/md5.py
-    17 ./integrity/random.py
-    24 ./integrity/sha512.py
+    36 ./identity/arbitrary.py
+    93 ./identity/__init__.py
+    33 ./identity/md5name.py
+    24 ./identity/md5.py
+    17 ./identity/random.py
+    24 ./identity/sha512.py
     17 ./moth/amq1.py
    585 ./moth/amqp.py
    313 ./moth/__init__.py
@@ -274,7 +274,7 @@ the two versions, is clear:
 |                          |                           |
 | sr_message.py            |                           |
 +--------------------------+---------------------------+
-| sr_checksum.py           | integrity/                |
+| sr_checksum.py           | identity/                |
 |                          |      __init__.py          |
 | sum/*                    |      *                    |
 +--------------------------+---------------------------+
@@ -395,7 +395,7 @@ Known Problems (Solved in sr3)
   sarra.tmpc.*, sr.py ) using normal imports. likely need to
   refactor how checksum plugin mechanism works then try again.
 
-  totally refactored now. Integrity class is normal, and separate from flowcb.
+  totally refactored now. Identity class is normal, and separate from flowcb.
 
 
 Concrete Plan (Done)
@@ -588,7 +588,7 @@ Items from the TODO list that have been addressed.
   so Plugin becomes a class instantiated in sarra/__init__.py... puts
   plugins and built-in code on a more even level... for example how
   do plugin transfer protocols work?  thinking... This is sort of done
-  now: plugin became flowcb. Integrity is removed from the hierarchy.
+  now: plugin became flowcb. Identity is removed from the hierarchy.
   Class extension is now a separate kind of plugin (via import)
 
 * change default topic_prefix to v03.post done 2021/02
@@ -874,7 +874,7 @@ Features
 
 * The extension API is now vanilla python with no magic settings. just standard classes, using standard import mechanism.
   debugging should be much simpler now as the interpreter will provide much better error messages on startup.
-  The v2 style plugins are now called *flow callbacks*, and there are a number of classes (integrity, moth, 
+  The v2 style plugins are now called *flow callbacks*, and there are a number of classes (identity, moth, 
   transfer, perhaps flow) that permit extension by straightforward sub-classing. This should make it much
   easier to add additional protocols for transport and messages, as well checksum algorithms for new data types.
 
@@ -897,7 +897,7 @@ Features
 * FlowCB plugin entry_points are now based on groups of notification messages, rather than individual ones, allowing people
   to organize concurrent work.
 
-* integrity (checksums) are now plugins.
+* identity (checksums) are now plugins.
 
 * gather (inlet? sources of notification messages) are now plugins.
 
