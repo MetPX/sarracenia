@@ -1,5 +1,6 @@
-metpx-sarracenia (2.22.10p2) UNRELEASED; urgency=medium
+metpx-sarracenia (2.23.06) UNRELEASED; urgency=medium
 
+  * v03 message format change: integrity -> identity
   * bugfix typo in debug print about mkdirs failure
   * dd_subscribe removed.
   * if_unused=True added for exchange deletion (making clenaup much safer) 

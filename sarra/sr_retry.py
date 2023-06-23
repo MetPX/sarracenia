@@ -129,18 +129,18 @@ class sr_retry:
            message.baseurl = headers[ "baseUrl" ]
            message.relpath = headers[ "relPath" ]
            notice  = "%s %s %s" % ( message.pubtime, message.baseurl, message.relpath )
-           if 'integrity' in headers.keys():
+           if 'identity' in headers.keys():
                # v3 has no sum, must add it here
                sum_algo_map = { "a":"arbitrary", "d": "md5", "s": "sha512", "n": "md5name", 
                                 "0": "random", "L": "link", "R": "remove", "z": "cod" }
                sum_algo_map = {v: k for k, v in sum_algo_map.items()}
-               sumstr = sum_algo_map[headers['integrity']['method']]
+               sumstr = sum_algo_map[headers['identity']['method']]
                if sumstr == '0':
-                   sumstr = '{},{}'.format(sumstr, headers['integrity']['value'])
+                   sumstr = '{},{}'.format(sumstr, headers['identity']['value'])
                elif sumstr == 'z':
-                   sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['integrity']['value']])
+                   sumstr = '{},{}'.format(sumstr, sum_algo_map[headers['identity']['value']])
                else:
-                   decoded_value = encode(decode(headers['integrity']['value'].encode('utf-8'), 'base64'),
+                   decoded_value = encode(decode(headers['identity']['value'].encode('utf-8'), 'base64'),
                                           'hex').decode('utf-8').strip()
                    sumstr = '{},{}'.format(sumstr, decoded_value)
                headers['sum'] = sumstr
@@ -151,7 +151,7 @@ class sr_retry:
                else:
                   message.event = 'modify'
 
-               del headers['integrity']
+               del headers['identity']
 
            if 'size' in headers.keys():
                parts_map = {'inplace': 'i', 'partitioned': 'p'}
@@ -246,8 +246,8 @@ class sr_retry:
         relpath = '/'.join(message.body.split()[1:])
         if 'sum' in message.properties['application_headers']:
             sumstr  = message.properties['application_headers']['sum']
-        elif 'integrity' in message.properties['application_headers']:
-            sumstr  = message.properties['application_headers']['integrity']
+        elif 'identity' in message.properties['application_headers']:
+            sumstr  = message.properties['application_headers']['identity']
         elif 'pubTime' in message.properties['application_headers']:
             sumstr  = message.properties['application_headers']['pubTime']
         else:
