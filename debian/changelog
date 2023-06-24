@@ -1,7 +1,9 @@
 metpx-sarracenia (2.23.06) unstable; urgency=medium
 
-  * v03 message format change: integrity -> identity
+  * issue #703 v03 message format change: integrity -> identity
   * bugfix typo in debug print about mkdirs failure
+  * systemd unit now requires network-online
+  * multiple dateparser python detection issues resolved.
   * dd_subscribe removed.
   * if_unused=True added for exchange deletion (making clenaup much safer) 
   * two small decode issues with v03 fileOp in v2 ( internal client issue.)
