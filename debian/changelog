@@ -1,4 +1,4 @@
-metpx-sarracenia (2.23.06) UNRELEASED; urgency=medium
+metpx-sarracenia (2.23.06) unstable; urgency=medium
 
   * v03 message format change: integrity -> identity
   * bugfix typo in debug print about mkdirs failure
@@ -8,7 +8,7 @@ metpx-sarracenia (2.23.06) UNRELEASED; urgency=medium
   * more fixups for v03 format changes.
   * stronger dependency on network-online for startup #645
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 20 Oct 2022 20:09:56 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 24 Jun 2023 18:46:56 -0400
 
 metpx-sarracenia (2.22.10p1) unstable; urgency=medium
 
