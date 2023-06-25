@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.41) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.41) unstable; urgency=medium
 
   * issue #700 nodupe_redis driver (experimental for now)
   * issue #703 v03 message encoding change integrity to identify

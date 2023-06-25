@@ -39,11 +39,16 @@ Installation Instructions
 git
 ---
 
+3.0.41
+------
+
 *CHANGE*: v03 postformat field renamed: "integrity" is now "identity"
 
     * current version will read messsages with *integrity* and map them to *identity*.
     * current version will post with *identity*, so older versions will miss them.
     * https://github.com/MetPX/sarracenia/issues/703
+    * metpx-sr3c >= v3.23.06 
+    * metpx-sarracenia >= v2.23.06
 
 
 3.0.40
