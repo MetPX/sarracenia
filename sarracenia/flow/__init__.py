@@ -1835,13 +1835,6 @@ class Flow:
                 if not self.o.dry_run:
                     if accelerated:
                         self.proto[self.scheme].update_file(new_inflight_path)
-                    if (new_inflight_path != new_file):
-                        if os.path.isfile(new_file):
-                            os.remove(new_file)
-                        os.rename(new_inflight_path, new_file)
-                    # older versions don't include the contentType, so patch it here.
-                    if 'contentType' not in msg:
-                        msg['contentType'] = magic.from_file(new_file,mime=True)
             elif len_written < 0:
                 logger.error("failed to download %s" % new_file)
                 return False
@@ -1865,8 +1858,18 @@ class Flow:
                             'incomplete download only %d of expected %d bytes for %s'
                             % (len_written, block_length, new_inflight_path))
                         return False
+                # when len_written is different than block_length
+                msg['size'] = len_written
 
-                    msg['size'] = len_written
+            # if we haven't returned False by this point, assuming download was successful
+            if (new_inflight_path != new_file):
+                if os.path.isfile(new_file):
+                    os.remove(new_file)
+                os.rename(new_inflight_path, new_file)
+            
+            # older versions don't include the contentType, so patch it here.
+            if 'contentType' not in msg:
+                msg['contentType'] = magic.from_file(new_file,mime=True)
 
             self.metrics['flow']['transferRxBytes'] += len_written
             self.metrics['flow']['transferRxFiles'] += 1
