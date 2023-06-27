@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
+
+  * move away from previous release.
+
+ -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:26:23 -0400
+
 metpx-sr3 (3.00.41) unstable; urgency=medium
 
   * issue #700 nodupe_redis driver (experimental for now)
