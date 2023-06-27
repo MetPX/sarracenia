@@ -1,3 +1,9 @@
+metpx-sarracenia (2.23.07) UNRELEASED; urgency=medium
+
+  * increment away from previous release.
+
+ -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:28:13 -0400
+
 metpx-sarracenia (2.23.06) unstable; urgency=medium
 
   * issue #703 v03 message format change: integrity -> identity
