@@ -33,9 +33,9 @@ default_options = {
 }
 
 def ProtocolPresent(p) -> bool:
-    if ( p in ['amqp', 'amqps' ] ) and sarracenia.extras['amqp']['present']:
+    if ( p[0:4] in ['amqp'] ) and sarracenia.extras['amqp']['present']:
        return True
-    if ( p in ['mqtt', 'mqtts' ] ) and sarracenia.extras['mqtt']['present']:
+    if ( p[0:4] in ['mqtt'] ) and sarracenia.extras['mqtt']['present']:
        return True
     if p in sarracenia.extras:
         logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.extras[p]['modules_needed'])}" )
@@ -218,9 +218,11 @@ class Moth():
            return None
 
         for sc in Moth.__subclasses__():
-            if (props['broker'].url.scheme == sc.__name__.lower()) or (
-                (props['broker'].url.scheme[0:-1] == sc.__name__.lower()) and
-                (props['broker'].url.scheme[-1] == 's')):
+            driver=sc.__name__.lower()
+            scheme=props['broker'].url.scheme
+            if (scheme == driver) or \
+               ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
+               ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, True)
         logger.error('broker intialization failure')
         return None
@@ -240,9 +242,11 @@ class Moth():
            return None
 
         for sc in Moth.__subclasses__():
-            if (props['broker'].url.scheme == sc.__name__.lower()) or (
-                (props['broker'].url.scheme[0:-1] == sc.__name__.lower()) and
-                (props['broker'].url.scheme[-1] == 's')):
+            driver=sc.__name__.lower()
+            scheme=props['broker'].url.scheme
+            if (scheme == driver) or \
+               ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
+               ( (scheme[0:-2] == driver) and (scheme[-2] == 'ws')):
                 return sc(props, False)
 
         # ProtocolPresent test should ensure that we never get here...

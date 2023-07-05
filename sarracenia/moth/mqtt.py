@@ -298,8 +298,15 @@ class MQTT(Moth):
 
         self.connect_in_progress = True
 
-        client = paho.mqtt.client.Client( userdata=self, \
-            client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+           (self.o['broker'].url.scheme[-1] == 'w' ) : 
+            logger.critical("yo! FIXME. I have websockets")
+            client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
+                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        else:
+            logger.critical("yo! FIXME. darnwebnot")
+            client = paho.mqtt.client.Client( userdata=self, \
+                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
 
         client.connected = False
         client.on_connect = MQTT.__sub_on_connect
@@ -432,8 +439,18 @@ class MQTT(Moth):
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
 
-                self.client = paho.mqtt.client.Client(
-                    protocol=self.proto_version, userdata=self)
+                if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+                   (self.o['broker'].url.scheme[-1] == 'w' ) : 
+                    logger.critical("yo! FIXME. I have websockets")
+                    self.client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
+                        protocol=self.proto_version )
+                else:
+                    logger.critical("yo! FIXME. darnwebnot")
+                    self.client = paho.mqtt.client.Client( userdata=self, \
+                        protocol=self.proto_version )
+
+                #self.client = paho.mqtt.client.Client(
+                #    protocol=self.proto_version, userdata=self)
 
                 self.client.enable_logger(logger)
                 self.client.on_connect = MQTT.__pub_on_connect
