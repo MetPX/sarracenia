@@ -261,6 +261,9 @@ def durationToSeconds(str_value, default=None) -> float:
 
     if type(str_value) in [int, float]:
         return str_value
+    
+    if type(str_value) is not str:
+        return 0
 
     if str_value.lower() in [ 'none', 'off', 'false' ]:
         return 0
