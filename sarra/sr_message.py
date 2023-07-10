@@ -330,6 +330,7 @@ class sr_message():
                    sv = md5(bytes(self.relpath,'utf-8')).hexdigest()
                    self.headers[ "sum" ] = sa + ',' + sv
                    self.sumstr = self.headers['sum']
+                   self.event = 'modify'
                    
                if 'fileOp'in self.headers.keys():
                    sv = md5(bytes(self.headers['relPath'],'utf-8')).hexdigest()
