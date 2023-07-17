@@ -1569,7 +1569,8 @@ class Config:
                 setattr(self, k, v)
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                logger.debug('possibly undeclared option: %s' % line )
+                if k not in self.undeclared:
+                    logger.debug('possibly undeclared option: %s' % line )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
