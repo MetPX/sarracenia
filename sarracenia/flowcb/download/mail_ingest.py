@@ -31,7 +31,7 @@ import poplib, imaplib, datetime, logging, email, urllib
 
 import sarracenia
 from sarracenia.flowcb import FlowCB
-import sarracenia.integrity
+import sarracenia.identity
 
 
 logger = logging.getLogger(__name__)
@@ -134,7 +134,7 @@ class Mail_ingest(FlowCB):
                                 if msgid == msg['new_file']:                                        
                                     logger.info("download_email_ingest downloaded file: %s" % msg['new_dir']+'/'+msg['new_file'])
                                     
-                                    sumalgo = sarracenia.integrity.Integrity.factory(self.o.integrity_method)
+                                    sumalgo = sarracenia.identity.Identity.factory(self.o.identity_method)
                                     sumalgo.set_path(path)
                                     with open(msg['new_dir']+'/'+msg['new_file'], 'w') as f:
                                         sumalgo.update(email_message)
@@ -142,7 +142,7 @@ class Mail_ingest(FlowCB):
                                         f.close()
                                 
                                     message['size'] = len(bytes(email_message,'utf8'))
-                                    message['integrity'] = { 'method': self.o.integrity_method, 'value': sumalgo.value }
+                                    message['identity'] = { 'method': self.o.identity_method, 'value': sumalgo.value }
                                     if self.o.delete :
                                         mailman.dele(index+1)
                                     found=True

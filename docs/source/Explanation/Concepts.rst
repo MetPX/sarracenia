@@ -63,7 +63,7 @@ In more detail:
 
 The main components of the python implementation of Sarracenia all implement the same algorithm described above. 
 The algorithm has various points where custom processing can be inserted (using flowCallbacks), 
-or deriving classes from flow, integrity, or transfer classes.
+or deriving classes from flow, identity, or transfer classes.
 
 The components just have different default settings:
 

@@ -1,13 +1,13 @@
 from hashlib import sha512
 
-from sarracenia.integrity import Integrity
+from sarracenia.identity import Identity
 
 # ===================================
 # checksum_s class
 # ===================================
 
 
-class Sha512(Integrity):
+class Sha512(Identity):
     """
       The SHA512 algorithm to checksum the entire file, which is called 's'.
       """

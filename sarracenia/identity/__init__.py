@@ -32,7 +32,7 @@ from base64 import b64encode
 logger = logging.getLogger(__name__)
 
 
-class Integrity:
+class Identity:
     """
         A class for algorithms to get a fingerprint for a file being announced.
         Appropriate fingerprinting algorithms vary according to file type.
@@ -41,7 +41,7 @@ class Integrity:
       
         def registered_as(self):
             return a one letter string identifying the algorithm (mostly for v2.)
-            in v3, the registration comes from the integrity sub-class name in lower case.
+            in v3, the registration comes from the identity sub-class name in lower case.
     
         def set_path(self,path):
             start a checksum for the given path... initialize.
@@ -52,7 +52,7 @@ class Integrity:
     @staticmethod
     def factory(method='sha512'):
 
-        for sc in Integrity.__subclasses__():
+        for sc in Identity.__subclasses__():
             if method == sc.__name__.lower():
                 return sc()
         return None
@@ -79,11 +79,11 @@ class Integrity:
         return b64encode(self.filehash.digest()).decode('utf-8')
 
 
-import sarracenia.integrity.arbitrary
-import sarracenia.integrity.md5
-import sarracenia.integrity.random
-import sarracenia.integrity.sha512
+import sarracenia.identity.arbitrary
+import sarracenia.identity.md5
+import sarracenia.identity.random
+import sarracenia.identity.sha512
 
 known_methods = []
-for sc in Integrity.__subclasses__():
+for sc in Identity.__subclasses__():
     known_methods.append(sc.__name__.lower())

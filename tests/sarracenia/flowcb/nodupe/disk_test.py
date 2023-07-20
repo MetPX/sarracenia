@@ -75,6 +75,7 @@ def test_deriveKey(tmp_path):
     thismsg = make_message()
     thismsg['identity'] = {'method': "cod"}
     assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
+
     thismsg['identity'] = {'method': "method", 'value': "value\n"}
     assert nodupe.deriveKey(thismsg) == "method,value"
 
@@ -606,3 +607,4 @@ def test_after_accept__InFlight(tmp_path, capsys):
     assert len(test_after_accept__InFlight.incoming) == 1
     assert test_after_accept__InFlight.incoming[0]['mtime'] == message_old['mtime']
     assert test_after_accept__InFlight.rejected[0]['reject'].count(message_new['mtime'] + " too new (nodupe check), newest allowed")
+

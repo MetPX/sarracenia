@@ -291,7 +291,7 @@ The requirements for a store and forward system:
 - TCP/IP connectivity,
 - real-time data transmission,
 - per destination queueing to allow asynchrony (clients that operate at different speeds or have transient issues),
-- application level integrity guarantees.
+- application level identity guarantees.
 
 In addition, the ability to tune subscriptions, according to the client's
 interest will further optimize traffic. 

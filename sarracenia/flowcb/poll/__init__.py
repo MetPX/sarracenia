@@ -107,7 +107,7 @@ class Poll(FlowCB):
       * chmod - used to identify the minimum permissions to accept for a file to
         be included in a polling result.
 
-      * integrity_method - parameter for how to build integrity checksum for messages.
+      * identity_method - parameter for how to build identity checksum for messages.
         as these are usually remote files, the default is typically "cod" (calculate on download)
 
       * rename - parameter used to to put in messages built to specify the rename field contents.
@@ -485,8 +485,8 @@ class Poll(FlowCB):
                     if not self.o.follow_symlinks:
                         try: 
                             ok['fileOp'] = { 'link': os.readlink(path) } 
-                            if 'Integrity' in msg:
-                                 del ok['Integrity']
+                            if 'Identity' in msg:
+                                 del ok['Identity']
                         except:
                             logger.error("cannot read link %s message dropped" % path)
                             logger.debug('Exception details: ', exc_info=True)
@@ -523,14 +523,14 @@ class Poll(FlowCB):
                     logger.debug('Exception details: ', exc_info=True)
                     return None
 
-        if self.o.integrity_method and (',' in self.o.integrity_method):
-            m, v = self.o.integrity_method.split(',')
-            msg['integrity'] = {'method': m, 'value': v}
+        if self.o.identity_method and (',' in self.o.identity_method):
+            m, v = self.o.identity_method.split(',')
+            msg['identity'] = {'method': m, 'value': v}
 
         # If there is a file operation, and it isn't a rename, then some fields are irrelevant/wrong.
         if 'fileOp' in msg and 'rename' not in msg['fileOp']: 
-            if 'Integrity' in msg:
-                del msg['Integrity']
+            if 'Identity' in msg:
+                del msg['Indentity']
             if 'size' in msg:
                 del msg['size']
 

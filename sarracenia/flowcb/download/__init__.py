@@ -28,10 +28,10 @@ download(self,msg):
     This replaces built-in download functionality, providing an override.
     for individual file transfers. ideally you set checksums as you download.
             
-    looking at self.o.integrity_method to establish download checksum algorithm.
+    looking at self.o.identity_method to establish download checksum algorithm.
     might have to allow for cod... say it is checksum_method::
             
-         checksum = sarracenia.integrity.Integrity.factory(self.o.checksum_method)
+         checksum = sarracenia.identity.Identity.factory(self.o.checksum_method)
          while downloading:
              checksum.update(chunk)
 
@@ -42,7 +42,7 @@ download(self,msg):
     it is imperative, to avoid looping, to apply the actual checksum of the
     data to the message:
 
-         msg['integrity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
+         msg['identity'] =  { 'method': checksum_method, 'value': checksum.get_sumstr() }
    
     return Boolean success indicator.  if False, download  will be attempted again and/or
     appended to retry queue.

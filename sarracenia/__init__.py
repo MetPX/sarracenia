@@ -112,10 +112,10 @@ class Sarracenia:
         lstat.longname= 'lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile'
      
         that you can then provide as an *lstat* argument to the above *fromFileInfo()* 
-        call. However the notification message returned will lack an integrity checksum field.
-        once you get the file, you can add the Integrity field with:
+        call. However the notification message returned will lack an identity checksum field.
+        once you get the file, you can add the Identity field with:
     
-        m.__computeIntegrity(path, o):
+        m.__computeIdentity(path, o):
     
         In terms of consuming notification messages, the fields in the dictionary provide metadata
         for the announced resource. The anounced data could be embedded in the notification message itself,
@@ -261,6 +261,9 @@ def durationToSeconds(str_value, default=None) -> float:
 
     if type(str_value) in [int, float]:
         return str_value
+    
+    if type(str_value) is not str:
+        return 0
 
     if str_value.lower() in [ 'none', 'off', 'false' ]:
         return 0
@@ -317,9 +320,9 @@ class Message(dict):
         self['_deleteOnPost'] = set(['_format'])
 
 
-    def __computeIntegrity(msg, path, o):
+    def __computeIdentity(msg, path, o):
         """
-           check extended attributes for a cached integrity sum calculation.
+           check extended attributes for a cached identity sum calculation.
            if extended attributes are present, and 
            * the file mtime is not too new, and 
            * the cached sum us using the same method
@@ -327,9 +330,9 @@ class Message(dict):
 
            otherwise, calculate a checksum. 
            set the file's extended attributes for the new value.
-           the method of checksum calculation is from options.integrity_method.
+           the method of checksum calculation is from options.identity.
            
-           sets the message 'integrity' field if appropriate.
+           sets the message 'identity' field if appropriate.
         """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
@@ -338,20 +341,20 @@ class Message(dict):
                 'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
             ]
             calc_method = choice(methods)
-        elif 'integrity' in xattr.x and 'mtime' in xattr.x:
+        elif 'identity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= msg['mtime']:
                 logger.debug("mtime remembered by xattr")
-                fxainteg = xattr.get('integrity')
-                if fxainteg['method'] == o.integrity_method: 
-                     msg['integrity'] = fxainteg
+                fxainteg = xattr.get('identity')
+                if fxainteg['method'] == o.identity_method: 
+                     msg['identity'] = fxainteg
                      return
                 logger.debug("xattr different method than on disk")
-                calc_method = o.integrity_method
+                calc_method = o.identity
             else:
                 logger.debug("xattr sum too old")
-                calc_method = o.integrity_method
+                calc_method = o.identity_method
         else:
-            calc_method = o.integrity_method
+            calc_method = o.identity_method
 
         if calc_method == None:
             return
@@ -368,10 +371,10 @@ class Message(dict):
         elif calc_method == 'arbitrary':
             sumstr = {
                 'method': 'arbitrary',
-                'value': o.integrity_arbitrary_value
+                'value': o.identity_arbitrary_value
             }
         else:
-            sumalgo = sarracenia.integrity.Integrity.factory(calc_method)
+            sumalgo = sarracenia.identity.Identity.factory(calc_method)
             sumalgo.set_path(path)
 
             # compute checksum
@@ -391,8 +394,8 @@ class Message(dict):
             checksum = sumalgo.value
             sumstr = {'method': calc_method, 'value': checksum}
 
-        msg['integrity'] = sumstr
-        xattr.set('integrity', sumstr)
+        msg['identity'] = sumstr
+        xattr.set('identity', sumstr)
         xattr.persist()
 
     def copyDict(msg, d):
@@ -470,7 +473,7 @@ class Message(dict):
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.__computeIntegrity(path, o)
+                m.__computeIdentity(path, o)
                 try:
                     t = magic.from_file(path,mime=True)
                     m['contentType'] = t
@@ -565,24 +568,24 @@ class Message(dict):
             msg['source'] = o.source
 
 
-        if o.integrity_method:
-            if o.integrity_method.startswith('cod,'):
-                msg['integrity'] = {
+        if o.identity_method:
+            if o.identity_method.startswith('cod,'):
+                msg['identity'] = {
                     'method': 'cod',
-                    'value': o.integrity_method[4:]
+                    'value': o.identity_method[4:]
                 }
-            elif o.integrity_method in ['random']:
-                algo = sarracenia.integrity.Integrity.factory(o.integrity_method)
+            elif o.identity_method in ['random']:
+                algo = sarracenia.identity.Indentiy.factory(o.identity_method)
                 algo.set_path(post_relPath)
-                msg['integrity'] = {
-                    'method': o.integrity_method,
+                msg['identity'] = {
+                    'method': o.identity_method,
                     'value': algo.value
                 }
         else:
-            if 'integrity' in msg:
-                   del msg['integrity']
+            if 'identity' in msg:
+                   del msg['identity']
  
-        # for md5name/aka None aka omit integrity... should just fall through.
+        # for md5name/aka None aka omit identity... should just fall through.
 
         if lstat is None: return msg
 

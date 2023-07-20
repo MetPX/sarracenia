@@ -36,22 +36,22 @@ def sumstrFromMessage( msg ) -> str:
    accepts a v3 message as argument msg. returns the corresponding sum string for a v2 'sum' header.
     """
 
-    if 'integrity' in msg:
-        if msg['integrity']['method'] in sum_algo_v3tov2:
-           sa = sum_algo_v3tov2[msg["integrity"]["method"]]
+    if 'identity' in msg:
+        if msg['identity']['method'] in sum_algo_v3tov2:
+           sa = sum_algo_v3tov2[msg["identity"]["method"]]
         else: # FIXME ... 1st md5name case... default when unknown...
-           logger.error('integrity method unknown to v2: %s, replacing with md5name' % msg['integrity']['method'] )
+           logger.error('identity method unknown to v2: %s, replacing with md5name' % msg['identity']['method'] )
            sa = 'n'
            sv = md5(bytes(os.path.basename(msg['relPath']),'utf-8')).hexdigest()
 
         # transform sum value
         if sa in ['0', 'a']:
-            sv = msg["integrity"]["value"]
+            sv = msg["identity"]["value"]
         elif sa in ['z']:
-            sv = sum_algo_v3tov2[msg["integrity"]["value"]]
+            sv = sum_algo_v3tov2[msg["identity"]["value"]]
         else:
             sv = encode(
-                decode(msg["integrity"]["value"].encode('utf-8'), "base64"),
+                decode(msg["identity"]["value"].encode('utf-8'), "base64"),
                 'hex').decode('utf-8')
         sumstr = sa + ',' + sv
     else:

@@ -298,11 +298,11 @@ En général, les plugins v3:
   msg.exchange     msg['exchange']     le canal sur lequel le message à été reçu.
   msg.logger       logger              les journeaux fonctionnent ¨normalement" pour python
   msg.parts        msg['size']         oublie ca, utilise une constructeur de sarracenia.Message
-  msg.sumflg       msg['integrity']    oublie ca, utilise une constructeur de sarracenia.Message
+  msg.sumflg       msg['identity']    oublie ca, utilise une constructeur de sarracenia.Message
   parent.msg       worklist.incoming   sr3 traite des groupe des messages, pas individuelement
   ================ =================== ===========================================================
 
-* pubTime, baseUrl, relPath, retrievePath, size, integrity, sont tous des champs de message standard
+* pubTime, baseUrl, relPath, retrievePath, size, identity, sont tous des champs de message standard
   mieux décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
 
 * si l'on a besoin de stocker par état de message, alors on peut déclarer des champs temporaires dans le message,

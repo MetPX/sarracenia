@@ -48,7 +48,7 @@ Sarracenia.Moth
    :special-members:
    :noindex:
 
-.. automodule:: sarracenia.integrity
+.. automodule:: sarracenia.identity
    :show-inheritance:
    :members:
    :private-members:

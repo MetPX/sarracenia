@@ -38,6 +38,16 @@ Instructions d’installation
 git
 ---
 
+*CHANGE*: v03 postformat field renamded: "integrity" is now "identity"
+
+    * current version will read messsages with integrity and map them to identity.
+    * current version will post with "Identity", so older versions will miss them.
+    * https://github.com/MetPX/sarracenia/issues/703
+
+3.0.40
+------
+
+
 *CHANGEMENT*:  l'interface de programmation (API) python a subit un changement de rupture
 
     pour la classe sarracenia.moth, il faut maintenant specifier l'options['broker'] au lieu
@@ -99,12 +109,12 @@ dans le cas de conversion à partir de v2.)
 *CHANGEMENT*: La chaine de charactères "Vendor" est changé de "science.gc.ca" à "MetPX". 
      Ce changement modifie le placement des fichiers sur la platteforme *Windows*.
 
-*CHANGEMENT*: l´encodage des messages d´annonce v03 est changé: *Integrity* est rendu optionnel.
+*CHANGEMENT*: l´encodage des messages d´annonce v03 est changé: *Identity* est rendu optionnel.
 
 *CHANGEMENT*: l'encodage des messages d'annonce v03 est changé: le champs *fileOp* est rajouté
      pour séparer les operations sur des fichiers qui ne comprennent pas des transmissions
      de données: créations de liens symboliques, renommage de fichier, suppression de fichiers.
-     Le champs *Integrity* est maintenant dédié au sommes de contrôle pour les données.
+     Le champs *Identity* est maintenant dédié au sommes de contrôle pour les données.
 
 
 
@@ -259,7 +269,7 @@ V2 to Sr3
           queue_name                queueName
           report_back               report
           source_from_exchange      sourceFromExchange
-          sum                       integrity
+          sum                       identity
           suppress_duplicates       nodupe_ttl
           suppress_duplicates_basis nodupe_basis
           topic_prefix              topicPrefix

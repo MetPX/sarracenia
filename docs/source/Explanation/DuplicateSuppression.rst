@@ -23,8 +23,8 @@ Duplicate suppression must:
 
 Duplicates are dropped to avoid further processing.
 
-A notification message key is preferably derived from the *Integrity* field of the notification
-message. If the producer does not provide an integrity checksum, algorithms may fall
+A notification message key is preferably derived from the *Identity* field of the notification
+message. If the producer does not provide an identity checksum, algorithms may fall
 back on other metadata: *mtime*, *size*, *pubTime.* Since pubTime is a mandatory
 field, a key can always be derived, but it's effectiveness in a particular use case
 is not assured. (the sarracenia.flowcb.nodupe.NoDupe.deriveKey(self,msg) helper routine 
@@ -47,7 +47,7 @@ Standard (path and data oriented)
 **method**: when products have the same key and path, they are duplicates.
 
 Two routes can receive the same product, with the same relative path. In normal processing,
-the products should be identical, and *Integrity* checksums for it should be the same,
+the products should be identical, and *Identity* checksums for it should be the same,
 
 
 
@@ -94,7 +94,7 @@ or::
 Override the standard duplicate suppression key generation to use only the file name.
 
 When multiple sources produce a product, but the result is not binary identical, and no
-appropriate Integrity method is available, then then one needs a different approach.
+appropriate Identity method is available, then then one needs a different approach.
 Since the two sources are not, generally, synchronized, 
 
 URP

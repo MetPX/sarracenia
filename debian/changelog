@@ -1,6 +1,19 @@
-metpx-sr3 (3.00.41) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
 
-  * move aware from release. 
+  * move away from previous release.
+
+ -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:26:23 -0400
+
+metpx-sr3 (3.00.41) unstable; urgency=medium
+
+  * issue #700 nodupe_redis driver (experimental for now)
+  * issue #703 v03 message encoding change integrity to identify
+  * issue #699 v03 message encoding adding contentType
+  * issue #698 WIS format encoding support added (experimental)
+  * issue #695 fix for broken discard option.
+  * issue #704 improved how version is stored for installation dependency
+    management.
+  * issue #697 nodupe unit tests created.
 
  -- Peter <peter@bsqt.homeip.net>  Sat, 03 Jun 2023 01:43:49 -0400
 

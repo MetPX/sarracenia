@@ -290,11 +290,11 @@ nodupe_ttl on|off|999
   used ( set to a value other than 0 ) as otherwise blocksize will vary as files grow,
   and much duplicate data transfer will result.
 
-integrity <method>[,<value>]
+identity <method>[,<value>]
 ----------------------------
 
 All file notification messages include a checksum. The *sum* option specifies how to calculate the it.
-It is a comma separated string. Valid Integrity methods are ::
+It is a comma separated string. Valid Identity methods are ::
 
          cod,x      - Calculate On Download applying x
          sha512     - do SHA512 on file content  (default)

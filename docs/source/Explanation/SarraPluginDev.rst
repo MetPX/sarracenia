@@ -33,7 +33,7 @@ build new ones in a copy/paste manner, with many samples being available to read
 There are other ways to extend Sarracenia v3 by subclassing of:
 
 * Sarracenia.transfer.Transfer to add more data transfer protocols 
-* Sarracenia.integrity.Integrity to add more checksumming methods.
+* Sarracenia.identity.Identity to add more checksumming methods.
 * Sarracenia.moth.Moth to add support for more messaging protocols.
 * Sarracenia.flow.Flow to create new flows. 
 * Sarracenia.flowcb.FlowCB to add custom callback routines to flows.
@@ -341,7 +341,7 @@ One can add additional functionality to Sarracenia by creating subclassing.
 
 * sarra.moth - Messages Organized into Topic Hierarchies. (existing ones: rabbitmq-amqp)
 
-* sarra.integrity - checksum algorithms ( existing ones: md5, sha512, arbitrary, random )
+* sarra.identity - checksum algorithms ( existing ones: md5, sha512, arbitrary, random )
 
 * sarra.transfer - additional transport protocols  (https, ftp, sftp )
 
@@ -457,7 +457,7 @@ self is the notification message being processed. variables variables most used:
   for non data download file operations, such as creation of symbolic links, file renames and removals.
   content described in `sr_post(7) <../Reference/sr_post.7.html>`_
 
-*msg['integrity']*
+*msg['identity']*
   The checksum structure, a python dictionary with 'method' and 'value' fields.
 
 *msg['subtopic'], msg['new_subtopic']*
@@ -475,7 +475,7 @@ self is the notification message being processed. variables variables most used:
   For example, all of the *new_* fields are in the *_deleteOnPost* by default.
 
 *msg['onfly_checksum'], msg['data_checksum']*
-   the value of an *Integrity* checksum field calculated as data is downloaded.
+   the value of an *Identity* checksum field calculated as data is downloaded.
    In the case where data is modified while downloading, the *onfly_checksum*
    is to verify that the upstream data was correctly received, while the
    *data_checksum* is calculated for downstream consumers.
@@ -932,7 +932,7 @@ Examples of things that would be fun to do with plugins:
 
 - add additional message protocols (sub-classing Moth)
 
-- additional checksums, subclassing Integrity. For example, to get GOES DCP
+- additional checksums, subclassing Identity. For example, to get GOES DCP
   data from sources such as USGS Sioux Falls, the reports have a trailer
   that shows some antenna statistics from the reception site.  So if one
   receives GOES DCP from Wallops, for example, the trailer will be different

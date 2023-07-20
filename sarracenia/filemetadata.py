@@ -126,6 +126,11 @@ class FileMetadata:
             except:
                 self.x = {}
 
+        if 'integrity' in self.x: # id transition.
+            self.x['identity'] = self.x['integrity']
+            del self.x['integrity']
+
+         
     def __del__(self):
         self.persist()
 
