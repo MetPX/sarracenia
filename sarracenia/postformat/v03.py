@@ -86,23 +86,6 @@ class V03(PostFormat):
        """
         raw_body = json.dumps(body)
 
-        topic_separator='.'
-
-        if options['broker'].url.scheme.startswith('mqtt'):
-            if ( 'exchange' in options ) and ( 'topicPrefix' in options ):
-                topic_prefix = options['exchange'] + options['topicPrefix'] 
-            topic_separator='/'
-        else:
-            topic_prefix = options['topicPrefix']
-
-        if 'topic' in options:
-            topic = options['topic'].split(topic_separator)
-        else:
-            if 'relPath' in body:
-                topic = topic_prefix + body['relPath'].split('/')[0:-1]  
-            else:
-                topic = topic_prefix
-
-        headers = { 'topic': topic }
+        headers = { 'topic': PostFormat.topicDerive(body,options) }
 
         return raw_body, headers, V03.content_type()

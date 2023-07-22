@@ -59,6 +59,8 @@ class MQTT(Moth):
        Message Queue Telemetry Transport support.
            talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
+       -  broker url schemes:  mqtt, mqtts, mqttw, mqttws
+
        Sarracenia Concept mapping from AMQP:
 
            AMQP -> MQTT topic hierarcy mapping: 
@@ -372,9 +374,15 @@ class MQTT(Moth):
                             "paho library using auto_ack. may lose data every crash or restart."
                         )
     
-                    self.client.connect_async( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                    self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                     self.client.enable_logger(logger)
+                    while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
+                         self.client.loop()
+                         time.sleep(0.1)
+                         if self.please_stop:
+                              break
+                         logger.info("waiting for subscription to be set up.")
                     self.client.loop_start()
                     self.connected=True
                     break
@@ -460,18 +468,21 @@ class MQTT(Moth):
                 self.connect_in_progress = True
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
-                                          properties=props)
+                                         properties=props)
                 logger.info('connecting to %s, res=%s' % (self.o['broker'].url.hostname, res))
 
                 self.client.loop_start()
 
                 while self.connect_in_progress:
                      time.sleep(0.1)
+                     if self.please_stop:
+                          break
                      logger.info( f"waiting for connection to {self.o['broker']}")
                      self.client.loop()
 
-                self.connected=True
-                break
+                if not self.connect_in_progress:
+                    self.connected=True
+                    break
 
             except Exception as err:
                 logger.error("failed to {} with {}".format(
@@ -522,6 +533,8 @@ class MQTT(Moth):
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
+                    if self.please_stop:
+                       break
                 myclient.disconnect()
                 logger.info('instance deletion for %02d done' % i)
 
@@ -696,8 +709,9 @@ class MQTT(Moth):
         props.ContentType = PostFormat.content_type( postFormat )
 
         try:
-            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'], self.o )
+            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, self.o['topicPrefix'], self.o )
             # FIXME: might
+            logger.critical( f" headers:{headers} format: {postFormat}, pfx: {self.o['topicPrefix']} " )
             topic = '/'.join(headers['topic']) 
 
             # url-quote wildcard characters in topics.

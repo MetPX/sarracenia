@@ -75,6 +75,38 @@ class PostFormat:
 
         return None, None, None
 
+    def topicDerive(msg, options ) -> list:
+        """
+           Sarracenia standard topic derivation.
+
+           https://metpx.github.io/sarracenia/Explanation/Concepts.html#amqp-v09-rabbitmq-settings
+        """
+
+        if options['broker'].url.scheme.startswith('mqtt'):
+            if ( 'exchange' in options ) and ( 'topicPrefix' in options ):
+                if 'exchangeSplit' in options and options['exchangeSplit'] > 1:
+                    idx = sum( bytearray(msg['identity']['value'], 'ascii')) % len(options['exchange'])
+                    exchange = options['exchange'][idx]
+                else:
+                    exchange = options['exchange'][0]
+            topic_prefix = [exchange] + options['topicPrefix']
+            topic_separator='/'
+        else:
+            topic_prefix = options['topicPrefix']
+            topic_separator='.'
+
+        if 'topic' in options:
+            topic = options['topic'].split(topic_separator)
+        else:
+            if 'relPath' in msg: 
+                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+            else:
+                topic = topic_prefix
+
+        return topic
+
+   
+
 # test for v04 first, because v03 may claim all other JSON.
 import sarracenia.postformat.wis
 import sarracenia.postformat.v03
