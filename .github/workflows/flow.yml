@@ -50,11 +50,13 @@ jobs:
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       # https://github.com/marketplace/actions/debugging-with-tmate
+      # 2023/07/22 PAS, removed because when manually invoking test it always enables in spite
+      # of the github box not being checked, so cannot invoke the tests manually.
       # 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event.inputs.debug_enabled }}
-        #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      #- name: Setup tmate session
+      #  uses: mxschmitt/action-tmate@v3
+      #  if: ${{ github.event.inputs.debug_enabled }}
+      #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
       - name: Limit ${{ matrix.which_test }} test.
         run: |
