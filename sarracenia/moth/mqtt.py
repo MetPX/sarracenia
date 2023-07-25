@@ -323,7 +323,7 @@ class MQTT(Moth):
         logger.info("ok, asked to stop")
         self.please_stop=True
 
-    def __getSetup(self):
+    def getSetup(self):
         """
            Establish a connection to consume messages with.  
         """
@@ -419,7 +419,7 @@ class MQTT(Moth):
 
 
 
-    def __putSetup(self):
+    def putSetup(self):
         """
            establish a connection to allow publishing. 
         """
@@ -613,6 +613,8 @@ class MQTT(Moth):
 
         #logger.debug( f"rx_msg queue before: indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
         #logger.debug( f"rx_msg queue before: {len(self.rx_msg[self.rx_msg_iToApp])} indices: {self.rx_msg_iToApp} {self.rx_msg_iFromBroker} " )
+        if not self.connected:
+            self.getSetup()
 
         if len(self.rx_msg[self.rx_msg_iToApp]) > self.o['batch']:
             mqttml = self.rx_msg[self.rx_msg_iToApp][0:self.o['batch']]
@@ -630,6 +632,9 @@ class MQTT(Moth):
         return mqttml
 
     def getNewMessage(self) -> sarracenia.Message:
+
+        if not self.connected:
+            self.getSetup()
 
         if len(self.rx_msg) > 0:
             m = self.rx_msg[self.rx_msg_iToApp][0]
@@ -662,7 +667,7 @@ class MQTT(Moth):
             return False
 
         if not self.connected:
-            self.__putSetup()
+            self.putSetup()
 
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
