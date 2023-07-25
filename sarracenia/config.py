@@ -991,6 +991,11 @@ class Config:
         # Retreive the 'new' option & enforce the correct type.
         v = getattr(self, option)
 
+        if kind not in [ 'list', 'set' ] and type(v) == list:
+            v=v[-1]
+            logger.warning( f"multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+
+
         if kind == 'count':
             count_options.append(option)
             if type(v) is not int:

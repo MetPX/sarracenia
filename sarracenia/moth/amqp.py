@@ -174,11 +174,7 @@ class AMQP(Moth):
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel(self.o['logLevel'].upper())
 
-        if self.is_subscriber:  #build_consumer
-            self.__getSetup()
-            return
-        else:  # publisher...
-            self.__putSetup()
+        self.connection = None
 
     def __connect(self, broker) -> bool:
         """
@@ -226,7 +222,7 @@ class AMQP(Moth):
         logger.info("ok, asked to stop")
         self.please_stop=True
 
-    def __getSetup(self) -> None:
+    def getSetup(self) -> None:
         """
         Setup so we can get messages.
 
@@ -332,7 +328,7 @@ class AMQP(Moth):
         if self.please_stop:
             signal.raise_signal(signal.SIGINT)
 
-    def __putSetup(self) -> None:
+    def putSetup(self) -> None:
 
         ebo = 1
         original_sigint = signal.getsignal(signal.SIGINT)
@@ -466,7 +462,7 @@ class AMQP(Moth):
 
         try:
             if not self.connection:
-                self.__getSetup()
+                self.getSetup()
 
             raw_msg = self.channel.basic_get(self.o['queueName'])
             if (raw_msg is None) and (self.connection.connected):
@@ -533,7 +529,7 @@ class AMQP(Moth):
 
                 # Cleanly close partially broken connection and restablish
                 self.close()
-                self.__getSetup()
+                self.getSetup()
 
             if ebo < 60: ebo *= 2
 
@@ -554,10 +550,10 @@ class AMQP(Moth):
             return False
 
         # Check connection and channel status, try to reconnect if not connected
-        if (self.connection is None) or (not self.connection.connected) or (not self.channel.is_open):
+        if (not self.connection) or (not self.connection.connected) or (not self.channel.is_open):
             try:
                 self.close()
-                self.__putSetup()
+                self.putSetup()
             except Exception as err:
                 logger.warning(f"failed, connection was closed/broken and could not be re-opened {exchange}: {err}")
                 logger.debug('Exception details: ', exc_info=True)

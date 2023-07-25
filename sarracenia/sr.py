@@ -1276,6 +1276,7 @@ class sr_GlobalState:
                         'exchange': o.resolved_exchanges,
                         'message_strategy': { 'stubborn':True }
                     })
+                xdc.putSetup()
                 xdc.close()
 
         # then declare and bind queues....
@@ -1296,6 +1297,7 @@ class sr_GlobalState:
                 od['queueName'] = o.resolved_qname
                 od['dry_run'] = self.options.dry_run
                 qdc = sarracenia.moth.Moth.subFactory(od)
+                qdc.getSetup()
                 qdc.close()
 
     def disable(self):
@@ -1649,8 +1651,13 @@ class sr_GlobalState:
                 continue
 
             o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            flow = sarracenia.flow.Flow.factory(o)
+            flow.loadCallbacks()
             print('\nConfig of %s/%s: ' % (c, cfg))
-            o.dump()
+            flow.o.dump()
+            del flow
 
     def remove(self):
 
