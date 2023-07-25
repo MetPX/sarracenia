@@ -175,10 +175,8 @@ class MQTT(Moth):
             self.rx_msg[3]=[]
             self.rx_msg[4]=[]
             self.rx_msg_mutex.release()
-            self.__getSetup()
-        else:
-            self.__putSetup()
 
+      
         logger.warning("note: mqtt support is newish, not very well tested")
 
     def __sub_on_disconnect(client, userdata, rc, properties=None):

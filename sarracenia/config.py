@@ -1705,7 +1705,9 @@ class Config:
             if hasattr(self, 'post_exchangeSuffix'):
                 self.post_exchange += '_%s' % self.post_exchangeSuffix
 
-            if hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
+            if hasattr(self,'post_exchange') and (type(self.post_exchange) is list ):
+                pass
+            elif hasattr(self, 'post_exchangeSplit') and self.post_exchangeSplit > 1:
                 l = []
                 for i in range(0, int(self.post_exchangeSplit)):
                     y = self.post_exchange + '%02d' % i

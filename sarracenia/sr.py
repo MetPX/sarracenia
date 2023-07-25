@@ -1653,11 +1653,16 @@ class sr_GlobalState:
             o = self.configs[c][cfg]['options']
             o.no=0
             o.finalize()
-            flow = sarracenia.flow.Flow.factory(o)
-            flow.loadCallbacks()
-            print('\nConfig of %s/%s: ' % (c, cfg))
-            flow.o.dump()
-            del flow
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                print('\nConfig of %s/%s: (with callbacks)' % (c, cfg))
+                flow.o.dump()
+                del flow
+                flow=None
+            else:
+                print('\nConfig of %s/%s: ' % (c, cfg))
+                o.dump()
 
     def remove(self):
 
