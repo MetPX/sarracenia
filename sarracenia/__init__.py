@@ -35,6 +35,7 @@ import magic
 import os
 import os.path
 import paramiko
+import random
 import re
 import sarracenia.filemetadata
 import stat as os_stat
@@ -340,7 +341,7 @@ class Message(dict):
             methods = [
                 'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
             ]
-            calc_method = choice(methods)
+            calc_method = random.choice(methods)
         elif 'identity' in xattr.x and 'mtime' in xattr.x:
             if xattr.get('mtime') >= msg['mtime']:
                 logger.debug("mtime remembered by xattr")
@@ -575,7 +576,7 @@ class Message(dict):
                     'value': o.identity_method[4:]
                 }
             elif o.identity_method in ['random']:
-                algo = sarracenia.identity.Indentiy.factory(o.identity_method)
+                algo = sarracenia.identity.Identity.factory(o.identity_method)
                 algo.set_path(post_relPath)
                 msg['identity'] = {
                     'method': o.identity_method,
