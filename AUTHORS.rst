@@ -5,7 +5,6 @@ Peter Silva <peter.silva@canada.ca>
   wrote none of the code in v2, except most (all?) plugins included with package.
   added the 'plugin' model to v2. Main blame for sr3.
   
-
 Reid Sunderland 
   Added SASL authentication and vhost support.
   Extensive work getting flow tests working with sr3.
@@ -14,6 +13,10 @@ Reid Sunderland
 
 André Leblanc
   Amserver, am_sender
+
+Greg Linton 
+  Redis drivers for retry and nodupe plugins.
+  added unit testing framework for sr3, and many test clases.
 
 Cléa Aumont 
   refactoring of FTP processing to fix timezone support.
@@ -31,30 +34,31 @@ Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
   Retired now...
   none of the code since sr3, but a lot was copy/pasted.
 
-Jun Hu <jun.hu3@canada.ca>
+Jun Hu 
   Documentation Diagrams, lead on some deployments (head tester!)
   plugin work.
 
-Noureddine Habili <Noureddine.Habili@canada.ca>
+Noureddine Habili 
   lead on other deployments ( project lead on Sarrasemina )
   plugin work.
 
-Benoit Lapointe <Benoit.Lapointe@canada.ca>
+Benoit Lapointe 
   Improving testing frameworks/ Design documentation / code hygiene.
-  Some MQTT interop work. 
+  testing work was limited to v2, does not apply to sr3.
+  Some early MQTT interop work. 
 
-Khosrow Ebrahimpour <khosrow@ChangedJobs.ca> (no long involved.)
+Khosrow Ebrahimpour 
   Packaging & Process (Debian, Launchpad, some pypi, the vagrant self-test)
   originally proposed migration to github.
 
-Daluma Sen <Daluma.Sen@canada.ca>
+Daluma Sen 
   some work on sr_watch, and worked on sr_post as well for caching.
 
-Murray Rennie <Murray.Rennie@canada.ca>
+Murray Rennie 
   sr_winnow, worked on that with Michel.
   lots of work on plugins and LDM bridge for UNIDATA and NOAAPORT ingest.
 
-Dominic.Racette <Dominic.Racette@canada.ca>
+Dominic.Racette 
   actually a client, not really an author, but participation was crucial.
   for five years of patient testing in a very large deployment scenario.
 
