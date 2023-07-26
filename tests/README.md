@@ -55,12 +55,15 @@ If you want to run this in VSCode, and have it do all the things nicely, you'll 
 - [GitLens — Git supercharged](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)  
   Not strictly required, but *very* strongly recommended as it makes VS Code's git features fully functional
 
-Beyond that, changing a few options in your settings file will make it all work; thusly:
+Beyond that, changing a few things in your VS Code configs will make it all work.
+
+In `settings.json`, to get all the reports and coverage when running tests, and allow you to run individual tests even if they have dependencies:
 ```json
 {
     "python.testing.pytestArgs": [
         "tests", "-v", 
         "--cov-config=tests/.coveragerc", "--cov=sarracenia", "--cov-report=xml", "--cov-report=html",
+        "--html=tests/report.html", "--self-contained-html",
         "--failed-dependency-action=run", "--missing-dependency-action=run"
     ],
     "python.testing.unittestEnabled": false,
@@ -68,6 +71,28 @@ Beyond that, changing a few options in your settings file will make it all work;
     "coverage-gutters.coverageBaseDir": "tests/coverage",
 }
 ```
+
+
+In `launch.json` (per [documentation](https://code.visualstudio.com/docs/python/testing#_debug-tests)), to enable full debugging support in your tests:
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
+            "justMyCode": false, 
+            "env": {"PYTEST_ADDOPTS": "--no-cov"}
+          }
+    ]
+}
+```
+
+**NOTE:** Don't just squash whatever you have in `settings.json`, or `launch.json`, but use some common sense to merge what's above into your existing files.
 
 ## Docker
 You can also run the exact same tests from within a Docker container if you want to avoid having to (re)-provision clean installs.
