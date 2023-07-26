@@ -1,3 +1,20 @@
+
+###############################################################################
+#                                  NOTES
+#
+# This file isn't used, but serves as an example of how one might use 
+#  the pytest-steps package to break down comparative tests into 
+#  driver-specific steps
+#
+# This works well, except it doesn't help us validate that drivers 
+#  do/return the same things, so it was abandoned. It is kept purely as a
+#  reference to how this *could* be done in other cases
+#
+# To use it, one would just have to install the `pytest-steps` package, 
+#  and ideally add it to the tests/requirements.txt file so that the
+#  Unit Test pipeline works properly
+###############################################################################
+
 import pytest
 from pytest_steps import test_steps
 from unittest.mock import patch
