@@ -2,7 +2,7 @@ import pytest
 from pytest_steps import test_steps
 from unittest.mock import patch
 
-import os, types
+import os, types, copy
 
 #useful for debugging tests
 import pprint
@@ -179,7 +179,7 @@ def after_post__disk(tmp_path):
 
     message = make_message()
 
-    after_post_worklist = WorkList
+    after_post_worklist = copy.deepcopy(WorkList)
     after_post_worklist.failed = [message, message, message]
 
     retry.after_post(after_post_worklist)
@@ -197,7 +197,7 @@ def after_post__redis():
 
         message = make_message()
 
-        after_post_worklist = WorkList
+        after_post_worklist = copy.deepcopy(WorkList)
         after_post_worklist.failed = [message, message, message]
 
         retry.after_post(after_post_worklist)
@@ -222,7 +222,7 @@ def after_work__WLFailed__disk(tmp_path):
 
     message = make_message()
 
-    after_work_worklist = WorkList
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.failed = [message, message, message]
 
     retry.after_work(after_work_worklist)
@@ -241,7 +241,7 @@ def after_work__WLFailed__redis():
 
         message = make_message()
 
-        after_work_worklist = WorkList
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.failed = [message, message, message]
 
         retry.after_work(after_work_worklist)
@@ -269,7 +269,7 @@ def after_work__SmallQty__disk(tmp_path):
 
     message = make_message()
 
-    after_work_worklist = WorkList
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.ok = [message, message, message]
 
     retry.after_work(after_work_worklist)
@@ -289,7 +289,7 @@ def after_work__SmallQty__redis():
 
         message = make_message()
 
-        after_work_worklist = WorkList
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.ok = [message, message, message]
 
         retry.after_work(after_work_worklist)
@@ -315,7 +315,7 @@ def after_work__disk(tmp_path):
 
     message = make_message()
 
-    after_work_worklist = WorkList
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.ok = [message, message, message]
     retry.post_retry.put([message, message, message])
     retry.on_housekeeping()
@@ -336,7 +336,7 @@ def after_work__redis():
 
         message = make_message()
 
-        after_work_worklist = WorkList
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.ok = [message, message, message]
         retry.post_retry.put([message, message, message])
         retry.on_housekeeping()
@@ -365,7 +365,7 @@ def after_accept__SmallQty__disk(tmp_path):
 
     message = make_message()
 
-    after_accept_worklist = WorkList
+    after_accept_worklist = copy.deepcopy(WorkList)
     after_accept_worklist.incoming = [message, message, message]
 
     retry.after_accept(after_accept_worklist)
@@ -385,7 +385,7 @@ def after_accept__SmallQty__redis():
 
         message = make_message()
 
-        after_accept_worklist = WorkList
+        after_accept_worklist = copy.deepcopy(WorkList)
         after_accept_worklist.incoming = [message, message, message]
 
         retry.after_accept(after_accept_worklist)
@@ -415,7 +415,7 @@ def after_accept__disk(tmp_path):
     retry.download_retry.put([message, message, message])
     retry.on_housekeeping()
 
-    after_accept_worklist = WorkList
+    after_accept_worklist = copy.deepcopy(WorkList)
     after_accept_worklist.incoming = [message, message, message]
 
     retry.after_accept(after_accept_worklist)
@@ -434,7 +434,7 @@ def after_accept__redis():
 
         message = make_message()
 
-        after_accept_worklist = WorkList
+        after_accept_worklist = copy.deepcopy(WorkList)
         after_accept_worklist.incoming = [message, message, message]
         retry.download_retry.put([message, message, message])
         retry.on_housekeeping()
