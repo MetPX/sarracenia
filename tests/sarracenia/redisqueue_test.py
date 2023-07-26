@@ -315,9 +315,13 @@ def test_on_housekeeping__FinishRetry(caplog):
 
         assert hk_out == None
 
+        log_found_notFinished = False
+
         for record in caplog.records:
             if "have not finished retry list" in record.message:
-                assert "have not finished retry list" in record.message
+                log_found_notFinished = True
+    
+        assert log_found_notFinished == True
 
 def test_on_housekeeping(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -343,9 +347,13 @@ def test_on_housekeeping(caplog):
         assert hk_out == None
         assert download_retry.redis.exists(download_retry.key_name_hk) == False
 
-        import re
+        log_found_LockReleased = log_found_Elapsed = False
+
         for record in caplog.records:
             if "released redis_lock" in record.message:
-                assert "released redis_lock" in record.message
+                log_found_LockReleased = True
             if "on_housekeeping elapse" in record.message:
-                assert "on_housekeeping elapse" in record.message
+                log_found_Elapsed = True
+
+        assert log_found_LockReleased == True
+        assert log_found_Elapsed == True
