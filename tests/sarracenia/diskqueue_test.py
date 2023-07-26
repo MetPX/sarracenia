@@ -261,9 +261,13 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
 
     assert hk_out == None
 
+    log_found_notFinished = False
+
     for record in caplog.records:
         if "have not finished retry list" in record.message:
-            assert "have not finished retry list" in record.message
+            log_found_notFinished = True
+    
+    assert log_found_notFinished == True
 
 def test_on_housekeeping(tmp_path, caplog):
     BaseOptions = Options()
@@ -283,10 +287,16 @@ def test_on_housekeeping(tmp_path, caplog):
     assert os.path.exists(download_retry.queue_file) == True
     assert os.path.exists(download_retry.new_path) == False
 
+    log_found_HasQueue = log_found_NumMessages = log_found_Elapsed = False
+
     for record in caplog.records:
         if "has queue" in record.message:
-            assert "has queue" in record.message
+            log_found_HasQueue = True
         if "Number of messages in retry list" in record.message:
-            assert "Number of messages in retry list" in record.message
+            log_found_NumMessages = True
         if "on_housekeeping elapse" in record.message:
-            assert "on_housekeeping elapse" in record.message
+            log_found_Elapsed = True
+            
+    assert log_found_HasQueue == True
+    assert log_found_NumMessages == True
+    assert log_found_Elapsed == True
