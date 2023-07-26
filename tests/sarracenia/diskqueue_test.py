@@ -96,11 +96,6 @@ def test___len__(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
-    # fp = open(download_retry.queue_file, 'a')
-    # fp_new = open(download_retry.new_path, 'a')
-    # fp_hk = open(download_retry.housekeeping_path, 'a')
-    
-    # fp_new.write(download_retry.msgToJSON(message))
     download_retry.msg_count += 1
     assert len(download_retry) == 1
 
@@ -296,7 +291,7 @@ def test_on_housekeeping(tmp_path, caplog):
             log_found_NumMessages = True
         if "on_housekeeping elapse" in record.message:
             log_found_Elapsed = True
-            
+
     assert log_found_HasQueue == True
     assert log_found_NumMessages == True
     assert log_found_Elapsed == True
