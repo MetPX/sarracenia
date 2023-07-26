@@ -17,19 +17,22 @@ import fakeredis
 import jsonpickle
 
 class Options:
+    def __init__(self):
+        self.no = 1
+        self.retry_ttl = 0
+        self.logLevel = "DEBUG"
+        self.logFormat = ""
+        self.queueName = "TEST_QUEUE_NAME"
+        self.component = "sarra"
+        self.retry_driver = 'disk'
+        self.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        self.config = "foobar.conf"
+        self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
+        self.housekeeping = float(39)
+        self.batch = 0
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
-    pass
-
-BaseOptions = Options()
-BaseOptions.retry_ttl = 0
-BaseOptions.logLevel = "INFO"
-BaseOptions.queueName = "TEST_QUEUE_NAME"
-BaseOptions.component = "sarra"
-BaseOptions.config = "foobar.conf"
-BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
-BaseOptions.housekeeping = float(39)
 
 message = {
     "pubTime": "20180118151049.356378078",
@@ -51,6 +54,7 @@ message = {
 
 def test___len__():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test___len__')
         download_retry.redis.lpush(download_retry.key_name, "first")
         assert len(download_retry) == 1
@@ -61,6 +65,7 @@ def test___len__():
 
 def test__in_cache():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__in_cache')
 
         download_retry.retry_cache = {}
@@ -71,6 +76,7 @@ def test__in_cache():
 
 def test__is_exired__TooSoon():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         BaseOptions.retry_ttl = 100000
         download_retry = RedisQueue(BaseOptions, 'test__is_exired__TooSoon')
 
@@ -78,6 +84,7 @@ def test__is_exired__TooSoon():
 
 def test__is_exired__TooLate():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         BaseOptions.retry_ttl = 1
         download_retry = RedisQueue(BaseOptions, 'test__is_exired__TooLate')
 
@@ -88,6 +95,7 @@ def test__is_exired__TooLate():
 
 def test__needs_requeuing():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__needs_requeuing')
 
         download_retry.retry_cache = {}
@@ -99,18 +107,21 @@ def test__needs_requeuing():
 
 def test__msgFromJSON():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__msgFromJSON')
 
         assert message == download_retry._msgFromJSON(jsonpickle.encode(message))
 
 def test__msgToJSON():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__msgToJSON')
 
         assert jsonpickle.encode(message) == download_retry._msgToJSON(message)
 
 def test__lpop():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__lpop')
         #server_test__lpop = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test__lpop)
@@ -121,6 +132,7 @@ def test__lpop():
     
 def test_put__Single():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_put__Single')
 
         #server_test_put_single = fakeredis.FakeServer()
@@ -131,6 +143,7 @@ def test_put__Single():
 
 def test_put__Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_put__Multi')
 
         #server_test_put_multi = fakeredis.FakeServer()
@@ -141,7 +154,7 @@ def test_put__Multi():
 
 def test_cleanup():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-        
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_cleanup')
 
         #This test fails unless you explicity tell it to use a different server than the rest of the tests
@@ -165,7 +178,7 @@ def test_cleanup():
 
 def test_get__NotLocked_Single():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__NotLocked_Single')
 
         #server_test_get__NotLocked = fakeredis.FakeServer()
@@ -180,7 +193,7 @@ def test_get__NotLocked_Single():
 
 def test_get__NotLocked_Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__NotLocked_Multi')
 
         #server_test_get__NotLocked = fakeredis.FakeServer()
@@ -200,7 +213,7 @@ def test_get__NotLocked_Multi():
 
 def test_get__Locked():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
-
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__Locked')
 
         #server_test_get__NotLocked = fakeredis.FakeServer()
@@ -217,6 +230,7 @@ def test_get__Locked():
 
 def test_on_housekeeping__TooSoon(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__TooSoon')
 
         #server_test_on_housekeeping__TooSoon = fakeredis.FakeServer()
@@ -259,6 +273,7 @@ def test_on_housekeeping__TooSoon(caplog):
 
 def test_on_housekeeping__FinishRetry(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         BaseOptions.queueName = "test_on_housekeeping__FinishRetry"
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
 
@@ -280,6 +295,7 @@ def test_on_housekeeping__FinishRetry(caplog):
 
 def test_on_housekeeping(caplog):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
+        BaseOptions = Options()
         BaseOptions.queueName = "test_on_housekeeping"
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping')
 
