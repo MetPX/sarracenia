@@ -1,35 +1,58 @@
+
+###############################################################################
+#                                  NOTES
+#
+# This file isn't used, but serves as an example of how one might use 
+#  the pytest-steps package to break down comparative tests into 
+#  driver-specific steps
+#
+# This works well, except it doesn't help us validate that drivers 
+#  do/return the same things, so it was abandoned. It is kept purely as a
+#  reference to how this *could* be done in other cases
+#
+# To use it, one would just have to install the `pytest-steps` package, 
+#  and ideally add it to the tests/requirements.txt file so that the
+#  Unit Test pipeline works properly
+###############################################################################
+
 import pytest
 from pytest_steps import test_steps
 from unittest.mock import patch
 
-import os, types
+import os, types, copy
 
 #useful for debugging tests
-#import pprint
-#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+import pprint
+def pretty(*things, **named_things):
+    for t in things:
+        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
+    for k,v in named_things.items():
+        print(str(k) + ":")
+        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
+from sarracenia import Message as SR3Message
 
 import fakeredis
 
 class Options:
-    retry_driver = 'disk'
-    redisqueue_serverurl = ''
-    no = 1
-    retry_ttl = 0
-    batch = 8
-    logLevel = "DEBUG"
-    queueName = "TEST_QUEUE_NAME"
-    component = "sarra"
-    config = "foobar.conf"
-    pid_filename = "NotARealPath"
-    housekeeping = float(0)
+    def __init__(self):
+        self.no = 1
+        self.retry_ttl = 0
+        self.logLevel = "DEBUG"
+        self.logFormat = ""
+        self.queueName = "TEST_QUEUE_NAME"
+        self.component = "sarra"
+        self.retry_driver = 'disk'
+        self.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        self.config = "foobar.conf"
+        self.pid_filename = "/tmp/sarracenia/retyqueue_test/pid_filename"
+        self.housekeeping = float(0)
+        self.batch = 8
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
-
-
 
 WorkList = types.SimpleNamespace()
 WorkList.ok = []
@@ -38,23 +61,25 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-message = {
-    "pubTime": "20180118151049.356378078",
-    "topic": "v02.post.sent_by_tsource2send",
-    "headers": {
-        "atime": "20180118151049.356378078", 
-        "from_cluster": "localhost",
-        "mode": "644",
-        "mtime": "20180118151048",
-        "parts": "1,69,1,0,0",
-        "source": "tsource",
-        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-        "to_clusters": "localhost"
-    },
-    "baseUrl": "https://NotARealURL",
-    "relPath": "ThisIsAPath/To/A/File.txt",
-    "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
-}
+def make_message():
+    m = SR3Message()
+    m["pubTime"] = "20180118151049.356378078"
+    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["mtime"] = "20180118151048"
+    m["headers"] = {
+            "atime": "20180118151049.356378078", 
+            "from_cluster": "localhost",
+            "mode": "644",
+            "parts": "1,69,1,0,0",
+            "source": "tsource",
+            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+            "to_clusters": "localhost"
+        }
+    m["baseUrl"] =  "https://NotARealURL"
+    m["relPath"] = "ThisIsAPath/To/A/File.txt"
+    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
+    m["_deleteOnPost"] = set()
+    return m
 
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 @test_steps('disk', 'redis')
@@ -70,6 +95,8 @@ def cleanup__disk(tmp_path):
     # -- DiskQueue
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
+
+    message = make_message()
 
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
@@ -91,6 +118,8 @@ def cleanup__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_cleanup"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         retry.download_retry.put([message, message, message])
         retry.post_retry.put([message, message, message])
@@ -120,6 +149,8 @@ def metricsReport__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
 
@@ -136,6 +167,8 @@ def metricsReport__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_metricsReport"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         retry.download_retry.put([message, message, message])
         retry.post_retry.put([message, message, message])
@@ -161,7 +194,9 @@ def after_post__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_post_worklist = WorkList
+    message = make_message()
+
+    after_post_worklist = copy.deepcopy(WorkList)
     after_post_worklist.failed = [message, message, message]
 
     retry.after_post(after_post_worklist)
@@ -177,7 +212,9 @@ def after_post__redis():
         BaseOptions.queueName = "test_after_post"
         retry = Retry(BaseOptions)
 
-        after_post_worklist = WorkList
+        message = make_message()
+
+        after_post_worklist = copy.deepcopy(WorkList)
         after_post_worklist.failed = [message, message, message]
 
         retry.after_post(after_post_worklist)
@@ -200,7 +237,9 @@ def after_work__WLFailed__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_work_worklist = WorkList
+    message = make_message()
+
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.failed = [message, message, message]
 
     retry.after_work(after_work_worklist)
@@ -217,7 +256,9 @@ def after_work__WLFailed__redis():
         BaseOptions.queueName = "test_after_work__WLFailed"
         retry = Retry(BaseOptions)
 
-        after_work_worklist = WorkList
+        message = make_message()
+
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.failed = [message, message, message]
 
         retry.after_work(after_work_worklist)
@@ -243,7 +284,9 @@ def after_work__SmallQty__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_work_worklist = WorkList
+    message = make_message()
+
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.ok = [message, message, message]
 
     retry.after_work(after_work_worklist)
@@ -261,7 +304,9 @@ def after_work__SmallQty__redis():
         BaseOptions.queueName = "test_after_work__SmallQty"
         retry = Retry(BaseOptions)
 
-        after_work_worklist = WorkList
+        message = make_message()
+
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.ok = [message, message, message]
 
         retry.after_work(after_work_worklist)
@@ -285,7 +330,9 @@ def after_work__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_work_worklist = WorkList
+    message = make_message()
+
+    after_work_worklist = copy.deepcopy(WorkList)
     after_work_worklist.ok = [message, message, message]
     retry.post_retry.put([message, message, message])
     retry.on_housekeeping()
@@ -304,7 +351,9 @@ def after_work__redis():
         BaseOptions.queueName = "test_after_work"
         retry = Retry(BaseOptions)
 
-        after_work_worklist = WorkList
+        message = make_message()
+
+        after_work_worklist = copy.deepcopy(WorkList)
         after_work_worklist.ok = [message, message, message]
         retry.post_retry.put([message, message, message])
         retry.on_housekeeping()
@@ -331,7 +380,9 @@ def after_accept__SmallQty__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
-    after_accept_worklist = WorkList
+    message = make_message()
+
+    after_accept_worklist = copy.deepcopy(WorkList)
     after_accept_worklist.incoming = [message, message, message]
 
     retry.after_accept(after_accept_worklist)
@@ -349,7 +400,9 @@ def after_accept__SmallQty__redis():
         BaseOptions.queueName = "test_after_accept__SmallQty"
         retry = Retry(BaseOptions)
 
-        after_accept_worklist = WorkList
+        message = make_message()
+
+        after_accept_worklist = copy.deepcopy(WorkList)
         after_accept_worklist.incoming = [message, message, message]
 
         retry.after_accept(after_accept_worklist)
@@ -374,10 +427,12 @@ def after_accept__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.on_housekeeping()
 
-    after_accept_worklist = WorkList
+    after_accept_worklist = copy.deepcopy(WorkList)
     after_accept_worklist.incoming = [message, message, message]
 
     retry.after_accept(after_accept_worklist)
@@ -394,7 +449,9 @@ def after_accept__redis():
         BaseOptions.queueName = "test_after_accept"
         retry = Retry(BaseOptions)
 
-        after_accept_worklist = WorkList
+        message = make_message()
+
+        after_accept_worklist = copy.deepcopy(WorkList)
         after_accept_worklist.incoming = [message, message, message]
         retry.download_retry.put([message, message, message])
         retry.on_housekeeping()
@@ -420,6 +477,8 @@ def on_housekeeping__disk(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
 
@@ -442,6 +501,8 @@ def on_housekeeping__redis(caplog):
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_on_housekeeping"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         #server_test_on_housekeeping = fakeredis.FakeServer()
         #retry.download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)
