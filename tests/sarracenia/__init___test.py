@@ -163,69 +163,72 @@ class Test_Message():
         msg._Message__computeIdentity(path3, options)
         assert 'identity' not in msg
 
-        # Set 4 - with identity/mtime xattrs
-        path4 = str(tmp_path) + os.sep + "file4.txt"
+        # Set 4 - abitrary method
+        path4 = str(tmp_path) + os.sep + "file6.txt"
         open(path4, 'a').close()
-        msg_time = sarracenia.nowstr()
-        import xattr
-        xattr.setxattr(path4, b'user.sr_identity', b'{"method": "sha512", "value": "xattr_identity_value"}')
-        xattr.setxattr(path4, b'user.sr_mtime', bytes(msg_time, 'utf-8'))
-        options = sarracenia.config.default_config()
-        msg = sarracenia.Message()
-        msg['mtime'] = msg_time
-        msg['size'] = 0
-        msg._Message__computeIdentity(path4, options)
-        assert msg['identity']['value'] == 'xattr_identity_value'
-
-        # Set 5 - with identity/mtime xattrs *and* old mtime
-        path5 = str(tmp_path) + os.sep + "file5.txt"
-        open(path5, 'a').close()
-        xattr_mtime = sarracenia.timeflt2str(sarracenia.nowflt() - 1000)
-        import xattr
-        xattr.setxattr(path5, b'user.sr_identity', b'xattr_identity_value')
-        xattr.setxattr(path5, b'user.sr_mtime', bytes(xattr_mtime, 'utf-8'))
-        options = sarracenia.config.default_config()
-        msg = sarracenia.Message()
-        msg['mtime'] = sarracenia.nowstr()
-        msg['size'] = 0
-        msg._Message__computeIdentity(path5, options)
-        assert msg['identity']['method'] == options.identity_method
-        assert xattr.getxattr(path5, b'user.sr_mtime').decode('utf-8') == msg['mtime']
-        # Set 5a - Cover cases where the identity on disk is different than what's configured
-        options.identity = 'md5name'
-        options.identity_method = 'md5name'
-        msg._Message__computeIdentity(path5, options)
-        found_log_set5 = False
-        for record in caplog.records:
-            if "xattr different method than on disk" in record.message:
-                found_log_set5 = True
-        assert found_log_set5 == True
-
-        # Set 6 - abitrary method
-        path6 = str(tmp_path) + os.sep + "file6.txt"
-        open(path6, 'a').close()
         options = sarracenia.config.default_config()
         options.identity_method = 'arbitrary'
         options.identity_arbitrary_value = "identity_arbitrary_value"
         msg = sarracenia.Message()
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
-        msg._Message__computeIdentity(path6, options)
+        msg._Message__computeIdentity(path4, options)
         assert msg['identity']['value'] == 'identity_arbitrary_value'
 
-        # Set 6a - random 
+        # Set 4a - random 
         options.identity = 'random'
         options.identity_method = 'random'
         del(msg['identity'])
-        msg._Message__computeIdentity(path6, options)
+        msg._Message__computeIdentity(path4, options)
         assert msg['identity']['method'] == 'random'
 
-        # Set 6b - 'cod,*' method
+        # Set 4b - 'cod,*' method
         options.identity = 'cod,testname'
         options.identity_method = 'cod,testname'
         del(msg['identity'])
-        msg._Message__computeIdentity(path6, options)
+        msg._Message__computeIdentity(path4, options)
         assert msg['identity'] == 'cod,testname'
+
+        try:
+            import xattr
+
+            # Set 5 - with identity/mtime xattrs *and* old mtime
+            path5 = str(tmp_path) + os.sep + "file5.txt"
+            open(path5, 'a').close()
+            xattr_mtime = sarracenia.timeflt2str(sarracenia.nowflt() - 1000)
+            xattr.setxattr(path5, b'user.sr_identity', b'xattr_identity_value')
+            xattr.setxattr(path5, b'user.sr_mtime', bytes(xattr_mtime, 'utf-8'))
+            options = sarracenia.config.default_config()
+            msg = sarracenia.Message()
+            msg['mtime'] = sarracenia.nowstr()
+            msg['size'] = 0
+            msg._Message__computeIdentity(path5, options)
+            assert msg['identity']['method'] == options.identity_method
+            assert xattr.getxattr(path5, b'user.sr_mtime').decode('utf-8') == msg['mtime']
+            # Set 5a - Cover cases where the identity on disk is different than what's configured
+            options.identity = 'md5name'
+            options.identity_method = 'md5name'
+            msg._Message__computeIdentity(path5, options)
+            found_log_set5 = False
+            for record in caplog.records:
+                if "xattr different method than on disk" in record.message:
+                    found_log_set5 = True
+            assert found_log_set5 == True
+
+            # Set 6 - with identity/mtime xattrs
+            path6 = str(tmp_path) + os.sep + "file4.txt"
+            open(path6, 'a').close()
+            msg_time = sarracenia.nowstr()
+            xattr.setxattr(path6, b'user.sr_identity', b'{"method": "sha512", "value": "xattr_identity_value"}')
+            xattr.setxattr(path6, b'user.sr_mtime', bytes(msg_time, 'utf-8'))
+            options = sarracenia.config.default_config()
+            msg = sarracenia.Message()
+            msg['mtime'] = msg_time
+            msg['size'] = 0
+            msg._Message__computeIdentity(path6, options)
+            assert msg['identity']['value'] == 'xattr_identity_value'
+        except:
+            pass
 
 
     @pytest.mark.depends(on=['test_fromFileInfo'])
