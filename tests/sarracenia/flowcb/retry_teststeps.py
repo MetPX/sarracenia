@@ -15,6 +15,7 @@ def pretty(*things, **named_things):
 
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
+from sarracenia import Message as SR3Message
 
 import fakeredis
 
@@ -43,23 +44,25 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-message = {
-    "pubTime": "20180118151049.356378078",
-    "topic": "v02.post.sent_by_tsource2send",
-    "headers": {
-        "atime": "20180118151049.356378078", 
-        "from_cluster": "localhost",
-        "mode": "644",
-        "mtime": "20180118151048",
-        "parts": "1,69,1,0,0",
-        "source": "tsource",
-        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-        "to_clusters": "localhost"
-    },
-    "baseUrl": "https://NotARealURL",
-    "relPath": "ThisIsAPath/To/A/File.txt",
-    "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
-}
+def make_message():
+    m = SR3Message()
+    m["pubTime"] = "20180118151049.356378078"
+    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["mtime"] = "20180118151048"
+    m["headers"] = {
+            "atime": "20180118151049.356378078", 
+            "from_cluster": "localhost",
+            "mode": "644",
+            "parts": "1,69,1,0,0",
+            "source": "tsource",
+            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+            "to_clusters": "localhost"
+        }
+    m["baseUrl"] =  "https://NotARealURL"
+    m["relPath"] = "ThisIsAPath/To/A/File.txt"
+    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
+    m["_deleteOnPost"] = set()
+    return m
 
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 @test_steps('disk', 'redis')
@@ -75,6 +78,8 @@ def cleanup__disk(tmp_path):
     # -- DiskQueue
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
+
+    message = make_message()
 
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
@@ -96,6 +101,8 @@ def cleanup__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_cleanup"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         retry.download_retry.put([message, message, message])
         retry.post_retry.put([message, message, message])
@@ -125,6 +132,8 @@ def metricsReport__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
 
@@ -141,6 +150,8 @@ def metricsReport__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_metricsReport"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         retry.download_retry.put([message, message, message])
         retry.post_retry.put([message, message, message])
@@ -166,6 +177,8 @@ def after_post__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     after_post_worklist = WorkList
     after_post_worklist.failed = [message, message, message]
 
@@ -181,6 +194,8 @@ def after_post__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_post"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_post_worklist = WorkList
         after_post_worklist.failed = [message, message, message]
@@ -205,6 +220,8 @@ def after_work__WLFailed__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     after_work_worklist = WorkList
     after_work_worklist.failed = [message, message, message]
 
@@ -221,6 +238,8 @@ def after_work__WLFailed__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_work__WLFailed"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_work_worklist = WorkList
         after_work_worklist.failed = [message, message, message]
@@ -248,6 +267,8 @@ def after_work__SmallQty__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     after_work_worklist = WorkList
     after_work_worklist.ok = [message, message, message]
 
@@ -265,6 +286,8 @@ def after_work__SmallQty__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_work__SmallQty"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_work_worklist = WorkList
         after_work_worklist.ok = [message, message, message]
@@ -290,6 +313,8 @@ def after_work__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     after_work_worklist = WorkList
     after_work_worklist.ok = [message, message, message]
     retry.post_retry.put([message, message, message])
@@ -308,6 +333,8 @@ def after_work__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_work"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_work_worklist = WorkList
         after_work_worklist.ok = [message, message, message]
@@ -336,6 +363,8 @@ def after_accept__SmallQty__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     after_accept_worklist = WorkList
     after_accept_worklist.incoming = [message, message, message]
 
@@ -353,6 +382,8 @@ def after_accept__SmallQty__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_accept__SmallQty"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_accept_worklist = WorkList
         after_accept_worklist.incoming = [message, message, message]
@@ -379,6 +410,8 @@ def after_accept__disk(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.on_housekeeping()
 
@@ -398,6 +431,8 @@ def after_accept__redis():
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_after_accept"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         after_accept_worklist = WorkList
         after_accept_worklist.incoming = [message, message, message]
@@ -425,6 +460,8 @@ def on_housekeeping__disk(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     retry = Retry(BaseOptions)
 
+    message = make_message()
+
     retry.download_retry.put([message, message, message])
     retry.post_retry.put([message, message, message])
 
@@ -447,6 +484,8 @@ def on_housekeeping__redis(caplog):
         BaseOptions.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions.queueName = "test_on_housekeeping"
         retry = Retry(BaseOptions)
+
+        message = make_message()
 
         #server_test_on_housekeeping = fakeredis.FakeServer()
         #retry.download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)

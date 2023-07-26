@@ -11,6 +11,7 @@ def pretty(*things, **named_things):
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 from sarracenia.redisqueue import RedisQueue
+from sarracenia import Message as SR3Message
 
 import fakeredis
 
@@ -34,23 +35,25 @@ class Options:
         if not hasattr(self, option):
             setattr(self, option, default)
 
-message = {
-    "pubTime": "20180118151049.356378078",
-    "topic": "v02.post.sent_by_tsource2send",
-    "headers": {
-        "atime": "20180118151049.356378078", 
-        "from_cluster": "localhost",
-        "mode": "644",
-        "mtime": "20180118151048",
-        "parts": "1,69,1,0,0",
-        "source": "tsource",
-        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-        "to_clusters": "localhost"
-    },
-    "baseUrl": "https://NotARealURL",
-    "relPath": "ThisIsAPath/To/A/File.txt",
-    "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
-}
+def make_message():
+    m = SR3Message()
+    m["pubTime"] = "20180118151049.356378078"
+    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["mtime"] = "20180118151048"
+    m["headers"] = {
+            "atime": "20180118151049.356378078", 
+            "from_cluster": "localhost",
+            "mode": "644",
+            "parts": "1,69,1,0,0",
+            "source": "tsource",
+            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+            "to_clusters": "localhost"
+        }
+    m["baseUrl"] =  "https://NotARealURL"
+    m["relPath"] = "ThisIsAPath/To/A/File.txt"
+    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
+    m["_deleteOnPost"] = set()
+    return m
 
 def test___len__():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -68,6 +71,7 @@ def test__in_cache():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__in_cache')
 
+        message = make_message()
         download_retry.retry_cache = {}
 
         assert download_retry._in_cache(message) == False
@@ -80,6 +84,8 @@ def test__is_exired__TooSoon():
         BaseOptions.retry_ttl = 100000
         download_retry = RedisQueue(BaseOptions, 'test__is_exired__TooSoon')
 
+        message = make_message()
+
         assert download_retry._is_expired(message) == True
 
 def test__is_exired__TooLate():
@@ -89,6 +95,7 @@ def test__is_exired__TooLate():
         download_retry = RedisQueue(BaseOptions, 'test__is_exired__TooLate')
 
         import sarracenia
+        message = make_message()
         message["pubTime"] = sarracenia.nowstr()
 
         assert download_retry._is_expired(message) == False
@@ -98,6 +105,7 @@ def test__needs_requeuing():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__needs_requeuing')
 
+        message = make_message()
         download_retry.retry_cache = {}
 
         assert download_retry._needs_requeuing(message) == True
@@ -110,12 +118,16 @@ def test__msgFromJSON():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__msgFromJSON')
 
+        message = make_message()
+
         assert message == download_retry._msgFromJSON(jsonpickle.encode(message))
 
 def test__msgToJSON():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test__msgToJSON')
+
+        message = make_message()
 
         assert jsonpickle.encode(message) == download_retry._msgToJSON(message)
 
@@ -125,6 +137,8 @@ def test__lpop():
         download_retry = RedisQueue(BaseOptions, 'test__lpop')
         #server_test__lpop = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test__lpop)
+
+        message = make_message()
 
         download_retry.put([message])
         assert download_retry.redis.llen(download_retry.key_name_new) == 1 
@@ -138,6 +152,8 @@ def test_put__Single():
         #server_test_put_single = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_put_single)
 
+        message = make_message()
+
         download_retry.put([message])
         assert download_retry.redis.llen(download_retry.key_name_new) == 1
 
@@ -145,6 +161,8 @@ def test_put__Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_put__Multi')
+
+        message = make_message()
 
         #server_test_put_multi = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_put_multi)
@@ -181,6 +199,8 @@ def test_get__NotLocked_Single():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__NotLocked_Single')
 
+        message = make_message()
+
         #server_test_get__NotLocked = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
 
@@ -195,6 +215,8 @@ def test_get__NotLocked_Multi():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__NotLocked_Multi')
+
+        message = make_message()
 
         #server_test_get__NotLocked = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
@@ -215,6 +237,8 @@ def test_get__Locked():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_get__Locked')
+
+        message = make_message()
 
         #server_test_get__NotLocked = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_get__NotLocked)
@@ -277,6 +301,8 @@ def test_on_housekeeping__FinishRetry(caplog):
         BaseOptions.queueName = "test_on_housekeeping__FinishRetry"
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
 
+        message = make_message()
+
         #server_test_on_housekeeping__FinishRetry = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping__FinishRetry)
 
@@ -298,6 +324,8 @@ def test_on_housekeeping(caplog):
         BaseOptions = Options()
         BaseOptions.queueName = "test_on_housekeeping"
         download_retry = RedisQueue(BaseOptions, 'test_on_housekeeping')
+
+        message = make_message()
 
         #server_test_on_housekeeping = fakeredis.FakeServer()
         #download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_on_housekeeping)

@@ -11,6 +11,7 @@ def pretty(*things, **named_things):
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 from sarracenia.diskqueue import DiskQueue
+from sarracenia import Message as SR3Message
 
 class Options:
     def __init__(self):
@@ -30,28 +31,32 @@ class Options:
         if not hasattr(self, option):
             setattr(self, option, default)
 
-message = {
-    "pubTime": "20180118151049.356378078",
-    "topic": "v02.post.sent_by_tsource2send",
-    "headers": {
-        "atime": "20180118151049.356378078", 
-        "from_cluster": "localhost",
-        "mode": "644",
-        "mtime": "20180118151048",
-        "parts": "1,69,1,0,0",
-        "source": "tsource",
-        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-        "to_clusters": "localhost"
-    },
-    "baseUrl": "https://NotARealURL",
-    "relPath": "ThisIsAPath/To/A/File.txt",
-    "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
-}
+def make_message():
+    m = SR3Message()
+    m["pubTime"] = "20180118151049.356378078"
+    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["mtime"] = "20180118151048"
+    m["headers"] = {
+            "atime": "20180118151049.356378078", 
+            "from_cluster": "localhost",
+            "mode": "644",
+            "parts": "1,69,1,0,0",
+            "source": "tsource",
+            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+            "to_clusters": "localhost"
+        }
+    m["baseUrl"] =  "https://NotARealURL"
+    m["relPath"] = "ThisIsAPath/To/A/File.txt"
+    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
+    m["_deleteOnPost"] = set()
+    return m
 
 def test_msgFromJSON(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
+
+    message = make_message()
 
     assert message == download_retry.msgFromJSON(jsonpickle.encode(message))
 
@@ -60,6 +65,8 @@ def test_msgToJSON(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
+    message = make_message()
+
     assert jsonpickle.encode(message) + '\n' == download_retry.msgToJSON(message)
 
 def test__is_exired__TooSoon(tmp_path):
@@ -67,6 +74,8 @@ def test__is_exired__TooSoon(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.retry_ttl = 100000
     download_retry = DiskQueue(BaseOptions, 'work_retry')
+
+    message = make_message()
 
     assert download_retry.is_expired(message) == True
 
@@ -77,6 +86,7 @@ def test__is_exired__TooLate(tmp_path):
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
     import sarracenia
+    message = make_message()
     message["pubTime"] = sarracenia.nowstr()
 
     assert download_retry.is_expired(message) == False
@@ -102,6 +112,7 @@ def test_in_cache(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
+    message = make_message()
     download_retry.retry_cache = {}
 
     assert download_retry.in_cache(message) == False
@@ -114,6 +125,7 @@ def test_needs_requeuing(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'work_retry')
 
+    message = make_message()
     download_retry.retry_cache = {}
 
     assert download_retry.needs_requeuing(message) == True
@@ -128,6 +140,7 @@ def test_put__Single(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_put__Single')
 
+    message = make_message()
     download_retry.put([message])
     assert download_retry.msg_count_new == 1
 
@@ -140,6 +153,7 @@ def test_put__Multi(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_put__Multi')
 
+    message = make_message()
     download_retry.put([message, message, message])
     assert download_retry.msg_count_new == 3
 
@@ -154,6 +168,7 @@ def test_cleanup(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_cleanup')
 
+    message = make_message()
     fp = open(download_retry.queue_file, 'a')
     fp.write(jsonpickle.encode(message) + '\n')
     download_retry.msg_count = 1
@@ -181,6 +196,8 @@ def test_msg_get_from_file(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_msg_get_from_file')
 
+    message = make_message()
+
     fp = open(download_retry.queue_file, 'a')
     fp.write(jsonpickle.encode(message) + '\n')
     fp.flush()
@@ -196,6 +213,8 @@ def test_get__Single(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_get__Single')
+
+    message = make_message()
 
     fp = open(download_retry.queue_file, 'a')
     line = jsonpickle.encode(message) + '\n'
@@ -213,6 +232,8 @@ def test_get__Multi(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_get__Multi')
 
+    message = make_message()
+
     fp = open(download_retry.queue_file, 'a')
     line = jsonpickle.encode(message) + '\n'
     fp.write(line + line)
@@ -228,6 +249,8 @@ def test_on_housekeeping__FinishRetry(tmp_path, caplog):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_on_housekeeping__FinishRetry')
+
+    message = make_message()
 
     download_retry.queue_fp = open(download_retry.queue_file, 'a')
     line = jsonpickle.encode(message) + '\n'
@@ -246,6 +269,8 @@ def test_on_housekeeping(tmp_path, caplog):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     download_retry = DiskQueue(BaseOptions, 'test_on_housekeeping')
+
+    message = make_message()
 
     download_retry.new_fp = open(download_retry.new_path, 'a')
     line = jsonpickle.encode(message) + '\n'
