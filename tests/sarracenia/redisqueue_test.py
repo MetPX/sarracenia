@@ -175,24 +175,18 @@ def test_cleanup():
         BaseOptions = Options()
         download_retry = RedisQueue(BaseOptions, 'test_cleanup')
 
-        #This test fails unless you explicity tell it to use a different server than the rest of the tests
-        # I don't know why that is, as setting the name above should ensure keyspace uniqueness among all tests
-        server_test_cleanup = fakeredis.FakeServer()
-        download_retry.redis = fakeredis.FakeStrictRedis(server=server_test_cleanup)
-
-        download_retry.redis.lpush(download_retry.key_name_lasthk, "data")
+        download_retry.redis.set(download_retry.key_name_lasthk, "data")
         download_retry.redis.lpush(download_retry.key_name_new, "data")
         download_retry.redis.lpush(download_retry.key_name_hk, "data")
         download_retry.redis.lpush(download_retry.key_name, "data")
 
-        #download_retry.redis_lock.acquire()
-        #download_retry.redis.lpush("lock:" + download_retry.key_name, "data")
-
-        assert len(download_retry.redis.keys()) == 4
+        assert len(download_retry.redis.keys(download_retry.key_name + "*")) == 3
+        assert len(download_retry.redis.keys(download_retry.key_name_lasthk)) == 1
 
         download_retry.cleanup()
 
-        assert len(download_retry.redis.keys()) == 0
+        assert len(download_retry.redis.keys(download_retry.key_name + "*")) == 0
+        assert len(download_retry.redis.keys(download_retry.key_name_lasthk)) == 0
 
 def test_get__NotLocked_Single():
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
