@@ -133,28 +133,35 @@ Installation locale
 
 Il existe de nombreuses façons d’installer des paquets python sur un ordinateur. Différents développeurs
 préféreront différentes méthodes, et toutes les méthodes doivent être testées avant chaque version.
+Avant d´installer le paquet il faut généralement une librarie pour communiquer avec le courtier
+de messages (généralement rabbitmq/AMQP, mais ca peut être MQTT également)
 
 * **Wheel** Lorsque les gens utilisent différents systèmes d’exploitation (non-Ubuntu, non-Debian),
   les gens installent des wheel, généralement qui ont été téléchargées sur pypi.python.org.  D’un
   autre côté, c’est un peu pénible / bruyant de télécharger chaque version de développement, donc
   nous ne téléchargeons que des versions, donc les tests de wheel se font en construisant des roues
   locales. Besoin de construire une nouvelle wheel chaque fois qu’un changement est apporté.
+  *pip install amqp* sera également nécessaire pour le support rabbitmq.
 
 * **pip install (pas -e)** tirerait une wheel vers le bas de pypi.python.org. Généralement pas utilisé
   pendant le développement de Sarracenia lui-même.
+  *pip install amqp* sera également nécessaire pour le support rabbitmq.
 
 * **pip install -e** ... vous permet de modifier le code source du package installé, idéal pour les
   problèmes de débogage, car il permet des modifications en direct de l’application sans avoir à passer
   par la construction et l’installation d’un nouveau package.
+  *pip install amqp* sera également nécessaire pour le support rabbitmq.
 
 * **apt install** installer le paquet Debian à partir de dépôts, de la même manière que pip install (pas -e),
   normalement les instantanés de développement ne sont pas téléchargés vers des dépôts, donc bien que ce soit
   la manière normale pour les utilisateurs de serveurs Ubuntu, il n’est pas disponible pendant le développement
   du paquet lui-même.
+  *apt install python3-amqp* sera également nécessaire pour le support rabbitmq.
 
 * **dpkg -i** construit un paquet Debian pour l’installation locale. C’est ainsi que les packages sont testés
   avant d’être téléchargés vers des référentiels.  Il peut également être utilisé pour soutenir le développement
   (il faut exécuter dpkg -i pour chaque changement de paquet).
+  *apt install python3-amqp* sera également nécessaire pour le support rabbitmq.
 
 Le test sr_insects appelle la version de metpx-sarracenia installée sur le système,
 et non ce qui est dans l’arbre de développement.  Il est nécessaire d’installer le paquet sur

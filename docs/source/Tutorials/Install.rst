@@ -51,6 +51,7 @@ On Ubuntu 22.04 and derivatives::
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt update
   sudo apt install metpx-sr3  # main python package.
+  sudo apt install python3-magic # optional support putting file type content-type message headers.
   sudo apt install metpx-sr3c # optional C client.
   sudo apt install python3-amqp  # optionally support rabbitmq brokers
   sudo apt install python3-paho-mqtt  # optionally support MQTT brokers
@@ -139,6 +140,7 @@ For example, on fedora 28 mandatories::
 Optional ones::
 
   $ sudo dnf install python3-amqp      # optionally support rabbitmq brokers
+  $ sudo dnf install python3-magic      # optionally support content-type header in messages.
   $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
   $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
 
@@ -173,6 +175,10 @@ It is straightforward to do that just the essentials::
 one could also add the extras::
 
   $ pip install metpx-sr3[amqp,mqtt,vip]  
+
+for all the extras, there is a shortcut::
+
+  $ pip install metpx-sr3[all]  
 
 and to upgrade after the initial installation::
 
