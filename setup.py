@@ -83,13 +83,17 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "appdirs", "humanfriendly", "humanize", "jsonpickle", "python-magic", "paramiko",
+        "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
         "psutil>=5.3.0", "watchdog"
     ],
     extras_require = {
        'amqp' : [ "amqp" ],
+       'filetypes': [ "python-magic" ], 
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'vip': [ 'netifaces' ],
        'redis': [ 'redis' ]
     }) 
+    extras_require['all'] = list(itertools.chain.from_iterable(extras_require.values()))
+
+
