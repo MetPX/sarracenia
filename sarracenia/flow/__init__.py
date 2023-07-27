@@ -198,6 +198,8 @@ class Flow:
 
         self.plugins['load'].extend(self.o.plugins_late)
 
+        self.plugins['load'].extend(self.o.destfn_scripts)
+
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
 
@@ -206,7 +208,10 @@ class Flow:
               'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
               'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
 
-    def loadCallbacks(self, plugins_to_load):
+    def loadCallbacks(self, plugins_to_load=None):
+
+        if not plugins_to_load:
+            plugins_to_load=self.plugins['load']
 
         for m in self.o.imports:
             try:
@@ -369,7 +374,7 @@ class Flow:
           check if stop_requested once in a while, but never return otherwise.
         """
 
-        if not self.loadCallbacks(self.plugins['load']+self.o.destfn_scripts):
+        if not self.loadCallbacks(self.plugins['load']):
            return
 
         logger.debug( f"working directory: {os.getpid()}" )
