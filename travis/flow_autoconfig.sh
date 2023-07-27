@@ -9,7 +9,7 @@ sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
 sudo apt update
 sudo apt upgrade
-sudo apt -y install python3-setuptools 
+sudo apt -y install python3-setuptools python3-magic
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
@@ -20,7 +20,7 @@ pip3 install pyftpdlib paramiko net-tools
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
 # If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
 # See issue #407, #445.
-for PKG in amqp appdirs dateparser python-magic watchdog netifaces humanize jsonpickle paho-mqtt psutil xattr ; do
+for PKG in amqp appdirs dateparser watchdog netifaces humanize jsonpickle paho-mqtt psutil xattr ; do
     PKG_INSTALLED="`pip3 list | grep ${PKG}`"
     if [ "$?" == "0" ] ; then
         echo "$PKG is already installed"
