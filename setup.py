@@ -1,4 +1,5 @@
 import codecs
+import itertools
 import os
 import re
 import sys
@@ -34,6 +35,16 @@ with open(os.path.join(here, "sarracenia", "_version.py"), "r") as f:
 
 packages = find_packages()
 print("packages = %s" % packages)
+
+extras = {
+       'amqp' : [ "amqp" ],
+       'filetypes': [ "python-magic" ], 
+       'ftppoll' : ['dateparser' ],
+       'mqtt': [ 'paho.mqtt>=1.5.1' ],
+       'vip': [ 'netifaces' ],
+       'redis': [ 'redis' ]
+    } 
+extras['all'] = list(itertools.chain.from_iterable(extras.values()))
 
 setup(
     name='metpx-sr3',
@@ -86,14 +97,8 @@ setup(
         "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
         "psutil>=5.3.0", "watchdog"
     ],
-    extras_require = {
-       'amqp' : [ "amqp" ],
-       'filetypes': [ "python-magic" ], 
-       'ftppoll' : ['dateparser' ],
-       'mqtt': [ 'paho.mqtt>=1.5.1' ],
-       'vip': [ 'netifaces' ],
-       'redis': [ 'redis' ]
-    }) 
-    extras_require['all'] = list(itertools.chain.from_iterable(extras_require.values()))
+    extras_require = extras
+    )
+
 
 
