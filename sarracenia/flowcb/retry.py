@@ -64,11 +64,6 @@ class Retry(FlowCB):
 
         logger.debug('logLevel=%s' % self.o.logLevel)
 
-    def cleanup(self) -> None:
-        logger.debug('starting retry cleanup')
-        self.download_retry.cleanup()
-        self.post_retry.cleanup()
-
     def after_accept(self, worklist) -> None:
         """
         If there are only a few new messages, get some from the download retry queue and put them into
@@ -120,6 +115,11 @@ class Retry(FlowCB):
             dict: containing metrics: ``{'msgs_in_download_retry': (int), 'msgs_in_post_retry': (int)}``
         """
         return {'msgs_in_download_retry': len(self.download_retry), 'msgs_in_post_retry': len(self.post_retry)}
+
+    def on_cleanup(self) -> None:
+        logger.debug('starting retry cleanup')
+        self.download_retry.cleanup()
+        self.post_retry.cleanup()
 
     def on_housekeeping(self) -> None:
         logger.info("on_housekeeping")
