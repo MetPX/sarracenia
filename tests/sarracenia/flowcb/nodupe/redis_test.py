@@ -5,8 +5,13 @@ import os, types, copy
 import fakeredis, urllib.parse
 
 #useful for debugging tests
-#import pprint
-#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+import pprint
+def pretty(*things, **named_things):
+    for t in things:
+        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
+    for k,v in named_things.items():
+        print(str(k) + ":")
+        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 from sarracenia.flowcb.nodupe.redis import NoDupe
 from sarracenia import Message as SR3Message

@@ -1,29 +1,37 @@
 import pytest
 from unittest.mock import patch
 
-import os, types
+import os, types, copy
 
 #useful for debugging tests
-#import pprint
-#pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
+import pprint
+def pretty(*things, **named_things):
+    for t in things:
+        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
+    for k,v in named_things.items():
+        print(str(k) + ":")
+        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 #from sarracenia.flowcb import FlowCB
 from sarracenia.flowcb.retry import Retry
+from sarracenia import Message as SR3Message
 
 import fakeredis
 
 class Options:
-    retry_driver = 'disk'
-    redisqueue_serverurl = ''
-    no = 1
-    retry_ttl = 0
-    batch = 8
-    logLevel = "DEBUG"
-    queueName = "TEST_QUEUE_NAME"
-    component = "sarra"
-    config = "foobar.conf"
-    pid_filename = "NotARealPath"
-    housekeeping = float(0)
+    def __init__(self):
+        self.no = 1
+        self.retry_ttl = 0
+        self.logLevel = "DEBUG"
+        self.logFormat = ""
+        self.queueName = "TEST_QUEUE_NAME"
+        self.component = "sarra"
+        self.retry_driver = 'disk'
+        self.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
+        self.config = "foobar.conf"
+        self.pid_filename = "/tmp/sarracenia/retyqueue_test/pid_filename"
+        self.housekeeping = float(0)
+        self.batch = 0
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
@@ -35,23 +43,26 @@ WorkList.rejected = []
 WorkList.failed = []
 WorkList.directories_ok = []
 
-message = {
-    "pubTime": "20180118151049.356378078",
-    "topic": "v02.post.sent_by_tsource2send",
-    "headers": {
-        "atime": "20180118151049.356378078", 
-        "from_cluster": "localhost",
-        "mode": "644",
-        "mtime": "20180118151048",
-        "parts": "1,69,1,0,0",
-        "source": "tsource",
-        "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
-        "to_clusters": "localhost"
-    },
-    "baseUrl": "https://NotARealURL",
-    "relPath": "ThisIsAPath/To/A/File.txt",
-    "notice": "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
-}
+def make_message():
+    m = SR3Message()
+    m["pubTime"] = "20180118151049.356378078"
+    m["topic"] = "v02.post.sent_by_tsource2send"
+    m["mtime"] = "20180118151048"
+    m["headers"] = {
+            "atime": "20180118151049.356378078", 
+            "from_cluster": "localhost",
+            "mode": "644",
+            "parts": "1,69,1,0,0",
+            "source": "tsource",
+            "sum": "d,c35f14e247931c3185d5dc69c5cd543e",
+            "to_clusters": "localhost"
+        }
+    m["baseUrl"] =  "https://NotARealURL"
+    m["relPath"] = "ThisIsAPath/To/A/File.txt"
+    m["notice"] = "20180118151050.45 ftp://anonymous@localhost:2121 /sent_by_tsource2send/SXAK50_KWAL_181510___58785"
+    m["_deleteOnPost"] = set()
+    return m
+
 
 @pytest.mark.bug("DiskQueue.py doesn't cleanup properly")
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
@@ -59,6 +70,7 @@ def test_cleanup(tmp_path):
     
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
         BaseOptions_disk = Options()
+        BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
 
@@ -68,6 +80,8 @@ def test_cleanup(tmp_path):
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_cleanup"
         retry_redis = Retry(BaseOptions_redis)
+
+        message = make_message()
 
         retry_disk.download_retry.put([message, message, message])
         retry_disk.post_retry.put([message, message, message])
@@ -100,6 +114,8 @@ def test_metricsReport(tmp_path):
         BaseOptions_redis.queueName = "test_metricsReport"
         retry_redis = Retry(BaseOptions_redis)
 
+        message = make_message()
+
         retry_disk.download_retry.put([message, message, message])
         retry_disk.post_retry.put([message, message, message])
         metrics_disk = retry_disk.metricsReport()
@@ -125,11 +141,13 @@ def test_after_post(tmp_path):
         BaseOptions_redis.queueName = "test_after_post"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_post_worklist_disk = WorkList
+        message = make_message()
+
+        after_post_worklist_disk = copy.deepcopy(WorkList)
         after_post_worklist_disk.failed = [message, message, message]
         retry_disk.after_post(after_post_worklist_disk)
 
-        after_post_worklist_redis = WorkList
+        after_post_worklist_redis = copy.deepcopy(WorkList)
         after_post_worklist_redis.failed = [message, message, message]
         retry_redis.after_post(after_post_worklist_redis)
 
@@ -149,11 +167,13 @@ def test_after_work__WLFailed(tmp_path):
         BaseOptions_redis.queueName = "test_after_work__WLFailed"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_work_worklist_disk = WorkList
+        message = make_message()
+
+        after_work_worklist_disk = copy.deepcopy(WorkList)
         after_work_worklist_disk.failed = [message, message, message]
         retry_disk.after_work(after_work_worklist_disk)
 
-        after_work_worklist_redis = WorkList
+        after_work_worklist_redis = copy.deepcopy(WorkList)
         after_work_worklist_redis.failed = [message, message, message]
         retry_redis.after_work(after_work_worklist_redis)
 
@@ -176,11 +196,13 @@ def test_after_work__SmallQty(tmp_path):
         BaseOptions_redis.queueName = "test_after_work__SmallQty"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_work_worklist_disk = WorkList
+        message = make_message()
+
+        after_work_worklist_disk = copy.deepcopy(WorkList)
         after_work_worklist_disk.ok = [message, message, message]
         retry_disk.after_work(after_work_worklist_disk)
 
-        after_work_worklist_redis = WorkList
+        after_work_worklist_redis = copy.deepcopy(WorkList)
         after_work_worklist_redis.ok = [message, message, message]
         retry_redis.after_work(after_work_worklist_redis)
 
@@ -202,20 +224,22 @@ def test_after_work(tmp_path):
         BaseOptions_redis.queueName = "test_after_work"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_work_worklist_disk = WorkList
+        message = make_message()
+
+        after_work_worklist_disk = copy.deepcopy(WorkList)
         after_work_worklist_disk.ok = [message, message, message]
         retry_disk.post_retry.put([message, message, message])
         retry_disk.on_housekeeping()
         retry_disk.after_work(after_work_worklist_disk)
 
-        after_work_worklist_redis = WorkList
+        after_work_worklist_redis = copy.deepcopy(WorkList)
         after_work_worklist_redis.ok = [message, message, message]
         retry_redis.post_retry.put([message, message, message])
         retry_redis.on_housekeeping()
         retry_redis.after_work(after_work_worklist_redis)
 
         assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
-        assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 4
+        assert len(after_work_worklist_disk.ok) == len(after_work_worklist_redis.ok) == 3
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_after_accept__SmallQty(tmp_path):
@@ -233,11 +257,13 @@ def test_after_accept__SmallQty(tmp_path):
         BaseOptions_redis.queueName = "test_after_accept__SmallQty"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_work_worklist_disk = WorkList
+        message = make_message()
+
+        after_work_worklist_disk = copy.deepcopy(WorkList)
         after_work_worklist_disk.incoming = [message, message, message]
         retry_disk.after_accept(after_work_worklist_disk)
 
-        after_work_worklist_redis = WorkList
+        after_work_worklist_redis = copy.deepcopy(WorkList)
         after_work_worklist_redis.incoming = [message, message, message]
         retry_redis.after_accept(after_work_worklist_redis)
 
@@ -258,20 +284,22 @@ def test_after_accept(tmp_path):
         BaseOptions_redis.queueName = "test_after_accept"
         retry_redis = Retry(BaseOptions_redis)
 
-        after_work_worklist_disk = WorkList
+        message = make_message()
+
+        after_work_worklist_disk = copy.deepcopy(WorkList)
         after_work_worklist_disk.incoming = [message, message, message]
         retry_disk.download_retry.put([message, message, message])
         retry_disk.on_housekeeping()
         retry_disk.after_accept(after_work_worklist_disk)
 
-        after_work_worklist_redis = WorkList
+        after_work_worklist_redis = copy.deepcopy(WorkList)
         after_work_worklist_redis.incoming = [message, message, message]
         retry_redis.download_retry.put([message, message, message])
         retry_redis.on_housekeeping()
         retry_redis.after_accept(after_work_worklist_redis)
 
-        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 0
-        assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 4
+        assert len(retry_disk.download_retry) == len(retry_redis.download_retry) == 1
+        assert len(after_work_worklist_disk.incoming) == len(after_work_worklist_redis.incoming) == 3
 
 @pytest.mark.depends(on=['sarracenia/diskqueue_test.py', 'sarracenia/redisqueue_test.py'])
 def test_on_housekeeping(tmp_path, caplog):
@@ -286,6 +314,8 @@ def test_on_housekeeping(tmp_path, caplog):
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_on_housekeeping"
         retry_redis = Retry(BaseOptions_redis)
+
+        message = make_message()
 
         retry_disk.download_retry.put([message, message, message])
         retry_disk.post_retry.put([message, message, message])

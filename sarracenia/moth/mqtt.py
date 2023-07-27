@@ -672,6 +672,9 @@ class MQTT(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
 
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(body)
+
         postFormat = body['_format']
 
         if '_deleteOnPost' in body:
@@ -714,6 +717,7 @@ class MQTT(Moth):
         try:
             raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, self.o['topicPrefix'], self.o )
             # FIXME: might
+            logger.critical( f" headers:{headers} format: {postFormat}, pfx: {self.o['topicPrefix']} " )
             topic = '/'.join(headers['topic']) 
 
             # url-quote wildcard characters in topics.
