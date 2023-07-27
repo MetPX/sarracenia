@@ -13,8 +13,8 @@ import sys
 entry_points = [
 
     'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
-    'download', 'gather', 'on_housekeeping', 'on_report', 'on_start', 'on_stop',
-    'poll', 'post', 'send', 'please_stop', 'metricsReport',
+    'download', 'gather', 'metricsReport', 'on_cleanup', 'on_declare', 'on_housekeeping', 'on_report', 
+    'on_sanity', 'on_start', 'on_stop', 'please_stop', 'poll', 'post', 'send', 
 
 ]
 
@@ -128,6 +128,14 @@ class FlowCB:
     def metricsReport(self) -> dict:
 
         Return a dictionary of metrics. Example: number of messages remaining in retry queues.
+
+    def on_cleanup(self) -> None::
+        allow plugins to perform additional work after broker resources are eliminated.
+        local state files are still present when this runs.
+
+    def on_declare(self) -> None::
+        local state files are still already present when this runs.
+        allow plugins to perform additional work besides broker resource setup.
 
     def on_housekeeping(self) -> None::
 

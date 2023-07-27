@@ -165,6 +165,12 @@ class Log(FlowCB):
             logger.info("lag: average: %.2f, maximum: %.2f " %
                         (self.lagTotal / self.msgCount, self.lagMax))
 
+    def on_cleanup(self):
+        logger.info("hello")
+    
+    def on_declare(self):
+        logger.info("hello")
+    
     def on_stop(self):
         if set(['on_stop']) & self.o.logEvents:
             self.stats()

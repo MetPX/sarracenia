@@ -1300,6 +1300,28 @@ class sr_GlobalState:
                 qdc.getSetup()
                 qdc.close()
 
+        # run on_declare plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_declare')
+                del flow
+                flow=None
+        
+
     def disable(self):
         if len(self.filtered_configurations) == 0:
             logging.error('%s configuration not found', self.leftovers)
@@ -1469,6 +1491,7 @@ class sr_GlobalState:
                         'queueName': o.resolved_qname,
                         'message_strategy': { 'stubborn':True }
                     })
+                qdc.getSetup()
                 qdc.getCleanUp()
                 qdc.close()
                 queues_to_delete.append((o.broker, o.resolved_qname))
@@ -1500,10 +1523,31 @@ class sr_GlobalState:
                                     'message_strategy': { 'stubborn':True }
                                 })
                             if qdc:
+                                qdc.putSetup()
                                 qdc.putCleanUp()
                                 qdc.close()
 
-        self.user_cache_dir
+        # run on_cleanup plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_cleanup')
+                del flow
+                flow=None
+        
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
@@ -1806,6 +1850,27 @@ class sr_GlobalState:
             if not sarracenia.extras[l]['present']:
                 print( f"notice: python module {l} is missing: {sarracenia.extras[l]['lament']}" )
 
+        # run on_sanity plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_sanity')
+                del flow
+                flow=None
+        
     def start(self):
         """ Starting all components
 

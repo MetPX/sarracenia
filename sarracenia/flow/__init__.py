@@ -262,7 +262,7 @@ class Flow:
                         logger.error( f'flowCallback plugin {p}/{entry_point} crashed: {ex}' )
                         logger.debug( "details:", exc_info=True )
 
-    def _runCallbacksTime(self, entry_point):
+    def runCallbacksTime(self, entry_point):
         for p in self.plugins[entry_point]:
             if self.o.logLevel.lower() == 'debug' :
                 p()
@@ -341,14 +341,14 @@ class Flow:
         logger.info(
             f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
         )
-        self._runCallbacksTime('please_stop')
+        self.runCallbacksTime('please_stop')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
 
     def close(self) -> None:
 
-        self._runCallbacksTime('on_stop')
+        self.runCallbacksTime('on_stop')
         if os.path.exists( self.o.novipFilename ):
             os.unlink( self.o.novipFilename )
         logger.info(
@@ -405,7 +405,7 @@ class Flow:
             if os.path.exists( self.o.novipFilename ):
                 os.unlink( self.o.novipFilename )
 
-        self._runCallbacksTime(f'on_start')
+        self.runCallbacksTime(f'on_start')
 
         spamming = True
         last_gather_len = 0
@@ -587,7 +587,7 @@ class Flow:
                 logger.info(
                     f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
                 )
-                self._runCallbacksTime('on_housekeeping')
+                self.runCallbacksTime('on_housekeeping')
                 self.metricsFlowReset()
                 self.metrics['flow']['last_housekeeping'] = now
 
