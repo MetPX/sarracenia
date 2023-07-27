@@ -641,14 +641,26 @@ class AMQP(Moth):
         if headers:
             self.metrics['txByteCount'] += len(''.join(str(headers)))
 
+        # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
+        try:
+            if self.o['timeout']:
+                pub_timeout = int(self.o['timeout'])
+            else:
+                pub_timeout = None
+        except Exception as err:
+            logger.debug('Set pub_timeout to None. Exception details: ', exc_info=True)
+            pub_timeout = None
+
         body=raw_body
         ebo = 1
         try:
-            self.channel.basic_publish(AMQP_Message, exchange, topic)
+            logger.debug("trying to publish body: {} headers: {} to {} under: {} ".format(
+                          body, headers, exchange, topic))
+            self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
+            # Issue #732: tx_commit can get stuck forever
             self.channel.tx_commit()
-            logger.debug(
-                "published body: {} headers: {} to {} under: {} ".format(
-                    body, headers, exchange, topic))
+            logger.debug("published body: {} headers: {} to {} under: {} ".format(
+                          body, headers, exchange, topic))
             self.metrics['txGoodCount'] += 1
             return True  # no failure == success :-)
 
