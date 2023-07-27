@@ -868,7 +868,7 @@ class sr_GlobalState:
 
                     self.states[c][cfg]['metrics'] = metrics
                     
-                if len(self.states[c][cfg]['instance_pids']) >= 0:
+                if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0):
                     self.states[c][cfg]['missing_instances'] = []
                     self.states[c][cfg]['hung_instances'] = []
                     observed_instances = 0
@@ -2242,7 +2242,7 @@ class sr_GlobalState:
                         line += " %8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
                             ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
 
-                if (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
+                if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0) and ('resource_usage' in self.states[c][cfg]):
                     ru = self.states[c][cfg]['resource_usage'] 
 
                     
