@@ -59,6 +59,8 @@ class MQTT(Moth):
        Message Queue Telemetry Transport support.
            talks to an MQTT broker.  Tested with mosquitto. requires MQTTv5
 
+       -  broker url schemes:  mqtt, mqtts, mqttw, mqttws
+
        Sarracenia Concept mapping from AMQP:
 
            AMQP -> MQTT topic hierarcy mapping: 
@@ -143,7 +145,7 @@ class MQTT(Moth):
 
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel(self.o['logLevel'].upper())
-
+        
         self.proto_version = paho.mqtt.client.MQTTv5
 
         if 'receiveMaximum' in self.o and type(self.o['receiveMaximum']) is not int:
@@ -298,8 +300,13 @@ class MQTT(Moth):
 
         self.connect_in_progress = True
 
-        client = paho.mqtt.client.Client( userdata=self, \
-            client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+           (self.o['broker'].url.scheme[-1] == 'w' ) : 
+            client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
+                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        else:
+            client = paho.mqtt.client.Client( userdata=self, \
+                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
 
         client.connected = False
         client.on_connect = MQTT.__sub_on_connect
@@ -367,9 +374,15 @@ class MQTT(Moth):
                             "paho library using auto_ack. may lose data every crash or restart."
                         )
     
-                    self.client.connect_async( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                    self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                     self.client.enable_logger(logger)
+                    while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
+                         self.client.loop()
+                         time.sleep(0.1)
+                         if self.please_stop:
+                              break
+                         logger.info("waiting for subscription to be set up.")
                     self.client.loop_start()
                     self.connected=True
                     break
@@ -432,8 +445,16 @@ class MQTT(Moth):
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
 
-                self.client = paho.mqtt.client.Client(
-                    protocol=self.proto_version, userdata=self)
+                if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+                   (self.o['broker'].url.scheme[-1] == 'w' ) : 
+                    self.client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
+                        protocol=self.proto_version )
+                else:
+                    self.client = paho.mqtt.client.Client( userdata=self, \
+                        protocol=self.proto_version )
+
+                #self.client = paho.mqtt.client.Client(
+                #    protocol=self.proto_version, userdata=self)
 
                 self.client.enable_logger(logger)
                 self.client.on_connect = MQTT.__pub_on_connect
@@ -447,13 +468,21 @@ class MQTT(Moth):
                 self.connect_in_progress = True
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
-                                          properties=props)
-                logger.info('connecting to %s, res=%s' %
-                            (self.o['broker'].url.hostname, res))
+                                         properties=props)
+                logger.info('connecting to %s, res=%s' % (self.o['broker'].url.hostname, res))
 
                 self.client.loop_start()
-                self.connected=True
-                break
+
+                while self.connect_in_progress:
+                     time.sleep(0.1)
+                     if self.please_stop:
+                          break
+                     logger.info( f"waiting for connection to {self.o['broker']}")
+                     self.client.loop()
+
+                if not self.connect_in_progress:
+                    self.connected=True
+                    break
 
             except Exception as err:
                 logger.error("failed to {} with {}".format(
@@ -504,6 +533,8 @@ class MQTT(Moth):
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
+                    if self.please_stop:
+                       break
                 myclient.disconnect()
                 logger.info('instance deletion for %02d done' % i)
 
@@ -635,6 +666,9 @@ class MQTT(Moth):
         if not self.connected:
             self.__putSetup()
 
+        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
+        body = copy.deepcopy(body)
+
         postFormat = body['_format']
 
         if '_deleteOnPost' in body:
@@ -675,8 +709,9 @@ class MQTT(Moth):
         props.ContentType = PostFormat.content_type( postFormat )
 
         try:
-            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, [exchange]+self.o['topicPrefix'], self.o )
+            raw_body, headers, content_type = PostFormat.exportAny( body, postFormat, self.o['topicPrefix'], self.o )
             # FIXME: might
+            logger.critical( f" headers:{headers} format: {postFormat}, pfx: {self.o['topicPrefix']} " )
             topic = '/'.join(headers['topic']) 
 
             # url-quote wildcard characters in topics.
@@ -710,6 +745,7 @@ class MQTT(Moth):
                 logger.info("published mid={} ack_pending={} {} to under: {} ".format(
                     info.mid, ack_pending, body, topic))
                 return True  #success...
+            logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} ")
 
         except Exception as ex:
             logger.error('Exception details: ', exc_info=True)

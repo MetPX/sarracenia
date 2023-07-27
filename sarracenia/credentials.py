@@ -112,7 +112,7 @@ class Credential:
             if self.url.hostname:
                 s += '@' + self.url.hostname
             if self.url.port:
-                s += ':' + self.url.port
+                s += ':' + str(self.url.port)
             if self.url.path:
                 s += self.url.path
 
