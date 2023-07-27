@@ -31,7 +31,6 @@ import calendar
 import datetime
 import importlib.util
 import logging
-import magic
 import os
 import os.path
 import paramiko
@@ -475,11 +474,15 @@ class Message(dict):
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
                 m.__computeIdentity(path, o)
-                try:
-                    t = magic.from_file(path,mime=True)
-                    m['contentType'] = t
-                except Exception as ex:
-                    logging.info("trying to determine mime-type. Exception details:", exc_info=True)
+                if extras['filetypes']['present']:
+                    try:
+                        t = magic.from_file(path,mime=True)
+                        m['contentType'] = t
+                    except Exception as ex:
+                        logging.info("trying to determine mime-type. Exception details:", exc_info=True)
+                #else:
+                #    m['contentType'] = 'application/octet-stream' # https://www.rfc-editor.org/rfc/rfc2046.txt (default when clueless)
+                # I think setting a bad value is worse than none, so just omitting.
             elif os_stat.S_ISDIR(lstat.st_mode):
                 m['contentType'] = 'text/directory' # source: https://www.w3.org/2002/12/cal/rfc2425.html
             elif os_stat.S_ISLNK(lstat.st_mode):
@@ -804,6 +807,7 @@ class Message(dict):
   
   amqp - ability to communicate with AMQP (rabbitmq) brokers
   mqtt - ability to communicate with MQTT brokers
+  filetypes - ability to
   ftppoll - ability to poll FTP servers
   vip  - enable vip (Virtual IP) settings to implement singleton processing
          for high availability support.
@@ -816,6 +820,7 @@ extras = {
    'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 'lament' : 'will not be able to poll with ftp' },
    'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 'lament': 'humans will have to read larger, uglier numbers' },
    'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 'lament': 'will not be able to connect to mqtt brokers' },
+   'filetypes' : { 'modules_needed': ['magic'], 'present': False, 'lament': 'will not be able to set content headers' },
    'vip'  : { 'modules_needed': ['netifaces'] , 'present': False, 'lament': 'will not be able to use the vip option for high availability clustering' },
    'watch'  : { 'modules_needed': ['watchdog'] , 'present': False, 'lament': 'cannot watch directories' }
 }
@@ -836,6 +841,9 @@ for x in extras:
            extras[x]['present']=False
 
 # Some sort of graceful fallback, or good messaging for when dependencies are missing.
+
+if extras['filetypes']['present']:
+   import magic
 
 if extras['mqtt']['present']:
    import paho.mqtt.client

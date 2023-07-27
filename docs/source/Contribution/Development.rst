@@ -137,16 +137,18 @@ Local Installation
 
 There are many different ways to install python packages on a computer. Different developers
 will prefer different methods, and all the methods need to be tested prior to each release.
+Sarracenia can work with either mqtt or amqp (most mature and stable) message passing libraries.
+Install one of those first. in these examples, we use amqp.
 
 * **Wheel** when people are running different operating systems (non-ubuntu, non-debian) people will be installing wheels, typically that have been uploaded to pypi.python.org.  On the other hand, it is a bit of a pain/noise to upload every development version, so we only upload releases, so testing of wheels is done by building local wheels. Need to build a new wheel every time a change is made.
 
-* **pip install (not -e)** would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
+* **pip install metpx-sr3[amqp]** would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
+  one could also pull in all possible dependencies with **pip install metpx-sr3[all]**
+* **pip install -e .[amqp] ... lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.
 
-* **pip install -e** ... lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.
+* **apt install metpx-sr3** install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself. Also need **apt install python3-amqp**
 
-* **apt install** install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself.
-
-* **dpkg -i** builds a debian package for local installation. This is how packages are tested prior to upload to repositories.  It can also be used to support development (have to run dpkg -i for each package change.)
+* **dpkg -i** builds a debian package for local installation. This is how packages are tested prior to upload to repositories.  It can also be used to support development (have to run dpkg -i for each package change.) also need **apt install python3-amqp**
 
 The sr_insects tests invokes the version of metpx-sarracenia that is installed on the system,
 and not what is in the development tree.  It is necessary to install the package on 
@@ -998,7 +1000,7 @@ to identify more issues. sample run to 100,000 entries::
   maximum of the shovels is: 100008
   
 
-While it is runnig one can run flow_check.sh at any time::
+While it is running one can run flow_check.sh at any time::
 
   NB retries for sr_subscribe t_f30 0
   NB retries for sr_sender 18

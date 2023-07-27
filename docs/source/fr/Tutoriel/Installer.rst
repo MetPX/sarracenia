@@ -48,12 +48,13 @@ Sur Ubuntu 22.04 et dérivés du même::
 
   sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
   sudo apt update
-  sudo apt install metpx-sr3  # main python package.
-  sudo apt install metpx-sr3c # optional C client.
-  sudo apt install python3-amqp  # optionally support rabbitmq brokers
-  sudo apt install python3-paho-mqtt  # optionally support MQTT brokers
-  sudo apt install python3-netifaces # optionally support the vip directive (HA failover.)
-  sudo apt install python3-dateparser python3-pytz # optionally support ftp polling.
+  sudo apt install metpx-sr3  # pacquet principale.
+  sudo apt install metpx-sr3c # client binaire (en C) .
+  sudo apt install python3-amqp  # support optionnel pour les courtiers AMWP (rabbitmq)
+  sudo apt install python3-magic  # support optionnel pour les entêtes "content-type" dans les messages
+  sudo apt install python3-paho-mqtt  # support optionnel pour les courtiers MQTT 
+  sudo apt install python3-netifaces # support optionnel pour les vip (haut-disponibilité)
+  sudo apt install python3-dateparser python3-pytz # support optionnel pour les sondages ftp. 
 
 Si les paquets ne sont pas disponibles, on peut les remplacer en utilisant python install package (pip)
 Actuellement, seuls les paquets Debian incluent des pages de manuel. Les guides sont seulement
@@ -127,6 +128,7 @@ Par exemple, sur fedora 28 obligatoirement::
 Facultatifs::
 
   $ sudo dnf install python3-amqp   # optionally support rabbitmq brokers
+  $ sudo dnf install python3-magic   # optionally support content-type headers in files.
   $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
   $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
 
@@ -160,6 +162,10 @@ Il est simple de le faire juste l’essentiel::
 on pourrait aussi ajouter les extras::
 
   $ pip install metpx-sr3[amqp,mqtt,vip]  
+
+Si veut avoir tous les extras::
+
+  $ pip install metpx-sr3[all]  
 
 et à mettre à niveau après l’installation initiale::
 

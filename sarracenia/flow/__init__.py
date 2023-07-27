@@ -1,7 +1,6 @@
 import copy
 import importlib
 import logging
-import magic
 import os
 import re
 
@@ -57,6 +56,9 @@ default_options = {
     'topicPrefix': ['v03'],
     'vip': None
 }
+
+if sarracenia.extras['filetypes']['present']:
+    import magic
 
 if sarracenia.extras['vip']['present']:
     import netifaces
@@ -1873,7 +1875,7 @@ class Flow:
                 os.rename(new_inflight_path, new_file)
             
             # older versions don't include the contentType, so patch it here.
-            if 'contentType' not in msg:
+            if sarracenia.extras['filetypes']['present'] and 'contentType' not in msg:
                 msg['contentType'] = magic.from_file(new_file,mime=True)
 
             self.metrics['flow']['transferRxBytes'] += len_written
@@ -1962,7 +1964,8 @@ class Flow:
             local_path = '/' + msg['relPath']
 
         # older versions don't include the contentType, so patch it here.
-        if 'contentType' not in msg and not 'fileOp' in msg:
+        if sarracenia.extras['filetypes']['present'] and \
+           ('contentType' not in msg) and (not 'fileOp' in msg):
             msg['contentType'] = magic.from_file(local_path,mime=True)
 
         local_dir = os.path.dirname(local_path).replace('\\', '/')
