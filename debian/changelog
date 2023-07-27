@@ -1,6 +1,17 @@
 metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
 
-  * move away from previous release.
+  * PR #735, issue #721 *filetype* becomes extra feature.
+  * issue #720 bug about plugin option being specified twice causing parser
+    crash.
+  * PR #733, fixes #643 on_cleanup entry points in flowcb now functional.
+  * issue #415 MQTT/websocket support added. other fixes for MQTT.
+  * issue #724 sr3 cli crashes when state files in a bad state.
+  * issue #730, #731 many additions to unit testing.
+  * issue #719 complain about each undeclared options only once.
+  * issue #712 crash when plugin declares a duration option without default
+    value.
+  * issue #709 fixes for cases when downloaded file size different from
+    expected.
 
  -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:26:23 -0400
 
