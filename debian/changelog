@@ -7,6 +7,7 @@ metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
   * issue #415 MQTT/websocket support added. other fixes for MQTT.
   * issue #724 sr3 cli crashes when state files in a bad state.
   * issue #730, #731 many additions to unit testing.
+  * issue #727 bugfixes found during unit test development.
   * issue #719 complain about each undeclared options only once.
   * issue #712 crash when plugin declares a duration option without default
     value.
