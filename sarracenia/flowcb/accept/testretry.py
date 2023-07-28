@@ -48,7 +48,7 @@ class TestRetry(FlowCB):
             elif random.randint(0, 2):
 
                 # if sarra or subscribe break download
-                if self.o.component != 'sr_sender':
+                if self.o.component != 'sender':
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(
                         sefl.sendTo)
@@ -60,9 +60,7 @@ class TestRetry(FlowCB):
                     logger.debug("making it bad 2")
                     self.o.sleep_connect_try_interval_max = 1.0
                     self.o.sendTo = self.msg_baseUrl_bad
-                    self.o.credentials.parse(self.msg_baseUrl_bad)
-                    ok, self.o.details = self.o.credentials.get(
-                        self.msg_baseUrl_bad)
+                    self.o.credentials._parse(self.msg_baseUrl_bad)
 
             logger.debug("return from msg_test_retry")
             # TODO not sure where to add to new_incoming. as of now not appending to new_incoming or worklist.rejected
