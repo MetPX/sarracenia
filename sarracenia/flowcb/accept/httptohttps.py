@@ -24,8 +24,8 @@ class HttpToHttps(FlowCB):
             if not 'http:' in message['baseUrl']:
                 new_incoming.append(message)
                 continue
-            baseUrl = message['baseUrl'].replace('http:', 'https:')
-            message['set_notice'](baseUrl, message['relPath'])
+            message['baseUrl'] = message['baseUrl'].replace('http:', 'https:')
+            message['set_notice'] = '%s %s %s' % (message['pubTime'], message['baseUrl'], message['relPath'])
             new_incoming.append(message)
 
         worklist.incoming = new_incoming
