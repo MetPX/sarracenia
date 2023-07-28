@@ -45,6 +45,6 @@ def test_after_accept():
     httptohttps.after_accept(worklist)
     assert len(worklist.incoming) == 3
     assert worklist.incoming[0]['baseUrl'] == 'https://NotAReal.url'
-    assert worklist.incoming[0]['baseUrl'] == message_http['relPath']
+    assert worklist.incoming[0]['set_notice'] == ' '.join([message_http['pubTime'], 'https://NotAReal.url', message_http['relPath']])
     assert worklist.incoming[2]['baseUrl'] == 'sftp://NotAReal.url'
-    #assert 'set_notice' not in worklist.incoming[2]
+    assert 'set_notice' not in worklist.incoming[2]
