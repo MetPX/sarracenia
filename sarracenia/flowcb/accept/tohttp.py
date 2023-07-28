@@ -29,7 +29,8 @@ class ToHttp(FlowCB):
         for message in worklist.incoming:
             logger.debug("msg_2http input: urlstr: %s" % message['urlstr'])
             message['urlstr'] = self.o.hurlre.sub(message['savedurl'], message['urlstr'])
-            message['url'] = urllib.parse.urlparse(message['urlstr'])
+            #message['url'] = urllib.parse.urlparse(message['urlstr'])
             message['set_notice'] = '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
+            #message['set_notice_url'](message['url'])
             logger.debug("msg_2http baseDir=%s " % (self.o.baseDir))
             logger.info("msg_2http output: urlstr: %s" % message['urlstr'])
