@@ -815,14 +815,34 @@ class Message(dict):
 
 """
 extras = { 
-   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 'lament' : 'will not be able to connect to rabbitmq brokers' },
-   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 'lament' : 'will assume linux file placement under home dir' },
-   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 'lament' : 'will not be able to poll with ftp' },
-   'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 'lament': 'humans will have to read larger, uglier numbers' },
-   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 'lament': 'will not be able to connect to mqtt brokers' },
-   'filetypes' : { 'modules_needed': ['magic'], 'present': False, 'lament': 'will not be able to set content headers' },
-   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False, 'lament': 'will not be able to use the vip option for high availability clustering' },
-   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False, 'lament': 'cannot watch directories' }
+        'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 
+            'lament' : 'cannot connect to rabbitmq brokers', 
+            'rejoice' : 'can connect to rabbitmq brokers' },
+   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 
+           'lament' : 'assume linux file placement under home dir', 
+           'rejoice': 'place configuration and state files appropriately for platform (windows/mac/linux)', },
+   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 
+       'lament' : 'not able to poll with ftp' ,
+       'rejoice' : 'able to poll with ftp' },
+   'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 
+           'lament': 'humans will have to read larger, uglier numbers',
+           'rejoice': 'humans numbers that are easier to read.' },
+   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 
+           'lament': 'cannot connect to mqtt brokers' ,
+           'rejoice': 'can connect to mqtt brokers' },
+   'filetypes' : { 'modules_needed': ['magic'], 'present': False, 
+           'lament': 'will not be able to set content headers' ,
+           'rejoice': 'able to set content headers' },
+   'redis' : { 'modules_needed': [ 'redis', 'redis_lock' ],
+        'lament': 'cannot use redis implementations of retry and nodupe',
+        'rejoice': 'can use redis implementations of retry and nodupe'
+        },
+   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False, 
+           'lament': 'will not be able to use the vip option for high availability clustering' ,
+           'rejoice': 'able to use the vip option for high availability clustering' },
+   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False, 
+           'lament': 'cannot watch directories' ,
+           'rejoice': 'watch directories' }
 }
 
 for x in extras:
@@ -840,7 +860,6 @@ for x in extras:
            logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
            extras[x]['present']=False
 
-# Some sort of graceful fallback, or good messaging for when dependencies are missing.
 
 if extras['filetypes']['present']:
    import magic

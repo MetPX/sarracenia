@@ -188,8 +188,10 @@ and to upgrade after the initial installation::
 
 NOTE:: 
 
-  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
+  * On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
+  * on Windows, in order to get the filetype feature working, one will need to manually *pip install python-magic-bin*
+    see here for details: https://pypi.org/project/python-magic/
 
 System Startup and Shutdown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

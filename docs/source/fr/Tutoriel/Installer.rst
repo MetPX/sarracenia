@@ -173,9 +173,12 @@ et à mettre à niveau après l’installation initiale::
 
 * Pour installer à l’échelle du serveur sur un serveur Linux, préfixez avec *sudo*
 
-REMARQUE::
+NOTE::
 
-  Sur de nombreux systèmes sur lesquels pythons 2 et 3 sont installés, vous devrez peut-être spécifier pip3 plutôt que pip.
+  * Sur de nombreux systèmes sur lesquels pythons 2 et 3 sont installés, vous devrez peut-être spécifier pip3 plutôt que pip.
+
+  * En Windows, pour que la fonction de type de fichier fonctionne, il faut manuellement *pip install python-magic-bin*
+    Pour plus de détails : https://pypi.org/project/python-magic/
 
 Démarrage et arrêt du système
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

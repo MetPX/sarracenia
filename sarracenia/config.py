@@ -578,7 +578,7 @@ class Config:
 
     actions = [
         'add', 'cleanup', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
-        'enable', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
+        'enable', 'extras', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
         'setup', 'show', 'start', 'stop', 'status', 'overview'
     ]
 

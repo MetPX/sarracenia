@@ -1411,6 +1411,50 @@ class sr_GlobalState:
                     os.remove(state_file_cfg_disabled)
                     logging.info(c + '/' + cfg)
 
+    def extras(self):
+
+        # run on_declare plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_extras')
+                del flow
+                flow=None
+
+        extras_present=[]
+        extras_absent=[]
+        for x in sarracenia.extras.keys():
+            if x == 'all':
+                continue
+            if sarracenia.extras[x]['present']:
+                print( f"INSTALLED: {x:10} {sarracenia.extras[x]['rejoice']}" )
+            else:
+                if 'Needed' in sarracenia.extras[x]:
+                     word1="MISSING"
+                else:
+                     word1="Absent"
+
+                print( f"{word1}: {x:10}: {sarracenia.extras[x]['lament']}")
+                
+                print( f"\tpython import missing: {sarracenia.extras[x]['modules_needed']}" )
+
+        if not (sarracenia.extras['amqp']['present'] or sarracenia.extras['mqtt']['present'] ):
+            print( "ERROR: need at least one of: amqp or mqtt" )
+
+
     def foreground(self):
 
         for f in self.filtered_configurations:
@@ -2153,6 +2197,7 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
 
+
         line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
@@ -2499,6 +2544,7 @@ class sr_GlobalState:
         """
         bad = 0
 
+
         print('%-10s %-10s %-6s %3s %s' %
               ('Component', 'State', 'Good?', 'Qty',
                'Configurations-i(r/e)-r(Retry)'))
@@ -2655,7 +2701,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'overview', 'restart', 'run', 'sanity',
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'extras', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -2724,6 +2770,9 @@ def main():
 
     if action == 'enable':
         gs.enable()
+
+    if action == 'extras':
+        gs.extras()
 
     if action == 'foreground':
         gs.foreground()
