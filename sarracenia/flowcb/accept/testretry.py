@@ -42,7 +42,10 @@ class TestRetry(FlowCB):
                 self.o.sendTo = self.sendTo
                 ok, self.o.details = self.o.credentials.get(self.sendTo)
 
-                message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_good, message['relPath'])
+
+                message['baseUrl'] = self.msg_baseUrl_good
+                # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                #message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_good, message['relPath'])
 
             # original message :  50% chance of breakage
             elif random.randint(0, 2):
@@ -52,7 +55,9 @@ class TestRetry(FlowCB):
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(self.sendTo)
 
-                    message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_bad, message['relPath'])
+                    message['baseUrl'] = self.msg_baseUrl_bad
+                    # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                    #message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_bad, message['relPath'])
 
                 # if sender break destination
                 else:
