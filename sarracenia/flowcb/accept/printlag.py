@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 class PrintLag(FlowCB):
+    def __init__(self, options):
+        super().__init__(options, logger)
 
     def after_accept(self, worklsit):
         for message in worklsit.incoming:
