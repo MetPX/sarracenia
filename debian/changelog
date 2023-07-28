@@ -13,6 +13,7 @@ metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
     value.
   * issue #709 fixes for cases when downloaded file size different from
     expected.
+  * can now install all optional extras with pip install metpx-sr3[all]
 
  -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:26:23 -0400
 
