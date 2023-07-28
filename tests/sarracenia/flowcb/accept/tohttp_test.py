@@ -33,16 +33,15 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
-
-def test_after_accept():
-    #Set x - When random is True, with a message having isRetry
+def test___init__():
+    #Set 1 - If neither o.baseDir, or o.toHttpRoot are set it throws an error
     options = sarracenia.config.default_config()
-    worklist = make_worklist()
-    worklist.incoming = [make_message()]
     with pytest.raises(TypeError):
         tohttp = ToHttp(options)
 
-    #Set x - When random is True, with a message having isRetry
+
+def test_after_accept():
+    #Set 1 - using o.baseDir
     options = sarracenia.config.default_config()
     options.baseDir = "/fake/path"
     worklist = make_worklist()
@@ -54,7 +53,7 @@ def test_after_accept():
     assert worklist.incoming[0]['urlstr'] == '/new/fake/path'
     assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
 
-    #Set x - When random is True, with a message having isRetry
+    #Set 2 - using o.toHttpRoot
     options = sarracenia.config.default_config()
     options.toHttpRoot = ["/fake/path"]
     message = make_message()
