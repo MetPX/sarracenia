@@ -19,13 +19,7 @@ logger = logging.getLogger(__name__)
 class HttpToHttps(FlowCB):
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
             if not 'http:' in message['baseUrl']:
-                new_incoming.append(message)
                 continue
             message['baseUrl'] = message['baseUrl'].replace('http:', 'https:')
-            message['set_notice'] = '%s %s %s' % (message['pubTime'], message['baseUrl'], message['relPath'])
-            new_incoming.append(message)
-
-        worklist.incoming = new_incoming

@@ -28,8 +28,8 @@ class WmoTypeSuffix(FlowCB):
 
     def find_type(self, TT):
         if TT[0] in ['G']: return '.grid'
-        if TT[0] in ['I']: return '.bufr'
         if TT in ['IX']: return '.hdf'
+        if TT[0] in ['I']: return '.bufr'
         if TT[0] in ['K']: return '.crex'
         if TT in ['LT']: return '.iwxxm'
         if TT[0] in ['L']: return '.grib'
