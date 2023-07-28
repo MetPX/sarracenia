@@ -14,7 +14,7 @@ from sarracenia.flowcb.accept.tohttp import ToHttp
 from sarracenia import Message as SR3Message
 import sarracenia.config
 
-def make_message(isRetry = False):
+def make_message():
     m = SR3Message()
     m['baseUrl'] = 'http://NotAReal.url'
     m['relPath'] = 'a/rel/Path/file.txt'
@@ -46,23 +46,25 @@ def test_after_accept():
     options = sarracenia.config.default_config()
     options.baseDir = "/fake/path"
     worklist = make_worklist()
-    worklist.incoming = [make_message()]
+    message = make_message()
+    worklist.incoming = [message]
     tohttp = ToHttp(options)
     tohttp.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert worklist.incoming[0]['urlstr'] == '/new/fake/path'
-    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (worklist.incoming[0]['pubTime'], 'file:', worklist.incoming[0]['relPath'])
+    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
 
     #Set x - When random is True, with a message having isRetry
     options = sarracenia.config.default_config()
     options.toHttpRoot = ["/fake/path"]
+    message = make_message()
     worklist = make_worklist()
-    worklist.incoming = [make_message()]
+    worklist.incoming = [message]
     tohttp = ToHttp(options)
     tohttp.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert worklist.incoming[0]['urlstr'] == '/new/fake/path'
-    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (worklist.incoming[0]['pubTime'], 'file:', worklist.incoming[0]['relPath'])
+    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
 
 
 
