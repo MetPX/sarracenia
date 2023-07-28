@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class TestRetry(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
-        sefl.sendTo = None
+        self.sendTo = None
         self.msg_baseUrl_good = None
         self.details_bad = None
         self.msg_baseUrl_bad = 'sftp://ruser:rpass@retryhost'
@@ -28,8 +28,8 @@ class TestRetry(FlowCB):
         for message in worklist.incoming:
             logger.debug("testretry")
 
-            if sefl.sendTo == None:
-                sefl.sendTo = self.o.sendTo
+            if self.sendTo == None:
+                self.sendTo = self.o.sendTo
             if self.msg_baseUrl_good == None:
                 self.msg_baseUrl_good = message['baseUrl']
 
@@ -39,8 +39,8 @@ class TestRetry(FlowCB):
             # 2022-06-10: isRetry was removed. Maybe can check if the message has msg_baseUrl_bad?
             #             see issues #466 and #527.
             if 'isRetry' in message and message['isRetry']:
-                self.o.sendTo = sefl.sendTo
-                ok, self.o.details = self.o.credentials.get(sefl.sendTo)
+                self.o.sendTo = self.sendTo
+                ok, self.o.details = self.o.credentials.get(self.sendTo)
 
                 message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_good, message['relPath'])
 

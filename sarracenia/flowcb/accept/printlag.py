@@ -31,8 +31,8 @@ class PrintLag(FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
 
-    def after_accept(self, worklsit):
-        for message in worklsit.incoming:
+    def after_accept(self, worklist):
+        for message in worklist.incoming:
             then = timestr2flt(message['pubTime'])
             now = nowflt()
 
