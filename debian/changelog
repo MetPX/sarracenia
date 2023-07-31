@@ -1,4 +1,4 @@
-metpx-sarracenia (2.23.07) UNRELEASED; urgency=medium
+metpx-sarracenia (2.23.07) unstable; urgency=medium
 
   * fix for crash #715 (leftover from v03 format change.)
 
