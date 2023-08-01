@@ -51,7 +51,7 @@ def test_after_accept():
     tohttp.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert worklist.incoming[0]['urlstr'] == '/new/fake/path'
-    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
+    assert worklist.incoming[0]['baseUrl'] == 'file:'
 
     #Set 2 - using o.toHttpRoot
     options = sarracenia.config.default_config()
@@ -63,7 +63,7 @@ def test_after_accept():
     tohttp.after_accept(worklist)
     assert len(worklist.incoming) == 1
     assert worklist.incoming[0]['urlstr'] == '/new/fake/path'
-    assert worklist.incoming[0]['set_notice'] == '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
+    assert worklist.incoming[0]['relPath'] == message['relPath']
 
 
 
