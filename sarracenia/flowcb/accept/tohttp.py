@@ -27,10 +27,35 @@ class ToHttp(FlowCB):
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            logger.debug("msg_2http input: urlstr: %s" % message['urlstr'])
+            logger.debug("ToHttp input: urlstr: %s" % message['urlstr'])
             message['urlstr'] = self.o.hurlre.sub(message['savedurl'], message['urlstr'])
-            #message['url'] = urllib.parse.urlparse(message['urlstr'])
-            message['set_notice'] = '%s %s %s' % (message['pubTime'], 'file:', message['relPath'])
+            url = urllib.parse.urlparse(message['urlstr'])
+
             #message['set_notice_url'](message['url'])
-            logger.debug("msg_2http baseDir=%s " % (self.o.baseDir))
-            logger.info("msg_2http output: urlstr: %s" % message['urlstr'])
+            # Updated to remove call to message.set_notice_url
+            #This is more complex than the fixes in testretry, and httptohttps because 
+            # it here we're calling the set_notice_url method, which had more logic
+            baseUrl = ''
+            relPath = url.path.strip('/').replace(' ', '%20').replace('#', '%23')
+
+            if url.scheme == 'file':
+                #self.notice = '%s %s %s' % (self.pubtime, 'file:', '/'+notice_path)
+                baseUrl = 'file:'
+                relPath = '/' + relPath
+            else:
+                
+                static_part = url.geturl().replace(url.path, '') + '/'
+
+                if url.scheme == 'http':
+                    baseUrl = static_part
+                    relPath = relPath
+
+                elif url.scheme[-3:] == 'ftp':
+                    if url.path[:2] == '//':
+                        relPath = '/' + relPath
+
+            message['baseUrl'] = baseUrl
+            message['relPath'] = relPath
+
+            logger.debug("ToHttp config.baseDir=%s" % (self.o.baseDir))
+            logger.info("ToHttp message output: urlstr=%s, baseUrl=%s, relPath=%s" % (message['urlstr'], message['baseUrl'], message['relPath']))
