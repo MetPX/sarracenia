@@ -12,9 +12,6 @@ import pprint
 pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 
-logger = logging.getLogger('sarracenia')
-logger.setLevel('DEBUG')
-
 def test_registered_as():
     hash = sarracenia.identity.random.Random()
     assert hash.registered_as() == '0'
@@ -26,7 +23,7 @@ def test_set_path(tmp_path):
     assert True
 
 @pytest.mark.depends(on=['test_set_path'])
-def test_prop__value(tmp_path, mocker):
+def test___Property_value(tmp_path, mocker):
     path1 = str(tmp_path) + os.sep + "file1.txt"
     hash = sarracenia.identity.random.Random()
     hash.set_path(path1)
