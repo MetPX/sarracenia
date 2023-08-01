@@ -95,10 +95,14 @@ setup(
     ],
     install_requires=[
         "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
-        "psutil>=5.3.0", "watchdog"
+        "psutil>=5.3.0", "watchdog",
+        'xattr ; sys_platform!="win32"', 'python-magic; sys_platform!="win32"',
+        'python-magic-bin; sys_platform=="win32"'
+
     ],
     extras_require = extras
     )
+
 
 
 
