@@ -26,7 +26,7 @@ class TestRetry(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            logger.debug("testretry")
+            logger.debug("testretry after_accept")
 
             if self.sendTo == None:
                 self.sendTo = self.o.sendTo
@@ -42,10 +42,10 @@ class TestRetry(FlowCB):
                 self.o.sendTo = self.sendTo
                 ok, self.o.details = self.o.credentials.get(self.sendTo)
 
-
+                ## # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                ## #message['set_notice'](self.msg_baseUrl_good, message['relPath'], message['pubTime'])
+                # Fixed missing message.set_notice method; now just set baseUrl
                 message['baseUrl'] = self.msg_baseUrl_good
-                # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                #message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_good, message['relPath'])
 
             # original message :  50% chance of breakage
             elif random.randint(0, 2):
@@ -55,9 +55,10 @@ class TestRetry(FlowCB):
                     logger.debug("making it bad 1")
                     ok, self.o.details = self.o.credentials.get(self.sendTo)
 
+                    ## # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
+                    ## #message['set_notice'](self.msg_baseUrl_bad, message['relpath'], message['pubTime'])
+                    # Fixed missing message.set_notice method; now just set baseUrl
                     message['baseUrl'] = self.msg_baseUrl_bad
-                    # FIXME dont see 'set_notice' as an entry in the message dictionary, could cause an error
-                    #message['set_notice'] = '%s %s %s' % (message['pubTime'], self.msg_baseUrl_bad, message['relPath'])
 
                 # if sender break destination
                 else:
@@ -67,6 +68,6 @@ class TestRetry(FlowCB):
                     self.o.credentials._parse(self.msg_baseUrl_bad)
                     ok, self.o.details = self.o.credentials.get(self.msg_baseUrl_bad)
 
-            logger.debug("return from msg_test_retry")
+            logger.debug("return from testretry after_accept")
             # TODO not sure where to add to new_incoming. as of now not appending to new_incoming or worklist.rejected
         worklist.incoming = new_incoming
