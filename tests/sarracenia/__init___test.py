@@ -363,7 +363,6 @@ class Test_Message():
         assert msg['new_file'] == new_file
 
         #Test set 2
-        pretty(options.post_format)
         options = sarracenia.config.default_config()
         options.post_baseUrl = 'https://post_baseurl.com'
         options.fixed_headers = {'fixed_headers__Key1': 'fixed_headers__Val1'}
