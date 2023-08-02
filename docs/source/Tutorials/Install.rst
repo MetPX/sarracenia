@@ -174,7 +174,7 @@ It is straightforward to do that just the essentials::
 
 one could also add the extras::
 
-  $ pip install metpx-sr3[amqp,mqtt,vip]  
+  $ pip install metpx-sr3[amqp,mqtt,vip,ftppoll,filetype]
 
 for all the extras, there is a shortcut::
 
