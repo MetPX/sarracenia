@@ -19,8 +19,10 @@ import urllib.request
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
-
 class DownloadBaseUrl(FlowCB):
+
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
