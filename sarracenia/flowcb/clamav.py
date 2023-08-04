@@ -25,8 +25,8 @@ from sarracenia.flowcb import FlowCB
 # Support for features inventory mechanism.
 #
 features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
-        'lament' : 'cannot use clamd to av scan files trasnferred',
-        'rejoice' : 'can use clamd to av scan files trasnferred' }
+        'lament' : 'cannot use clamd to av scan files transferred',
+        'rejoice' : 'can use clamd to av scan files transferred' }
 
 try:
     import pyclamd
