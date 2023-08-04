@@ -1435,7 +1435,7 @@ class sr_GlobalState:
                 flow=None
 
         features_present=[]
-        print( f"\n{'Status:':10} {'feature:':10} {'Modules:':20} {'Description:'} ")
+        print( f"\n{'Status:':10} {'feature:':10} {'python imports:':20} {'Description:'} ")
         features_absent=[]
         for x in sarracenia.features.keys():
             if x == 'all':
@@ -1451,9 +1451,6 @@ class sr_GlobalState:
                 desc=sarracenia.features[x]['lament']
 
             print( f"{word1:10} {x:10} {','.join(sarracenia.features[x]['modules_needed']):20} {desc}" )
-            #    print( f"{word1:10} {x:10} {sarracenia.features[x]['lament']}")
-                
-            #    print( f"\tpython import missing: {sarracenia.features[x]['modules_needed']}" )
 
         if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
             print( "ERROR: need at least one of: amqp or mqtt" )
