@@ -228,7 +228,7 @@ class RedisQueue():
             logger.debug("rpush to list %s %s" % (self.key_name_new, message))
             self.redis.rpush(self.key_name_new, self._msgToJSON(message))
 
-    def on_cleanup(self):
+    def cleanup(self):
         """
         remove statefiles.
         """
