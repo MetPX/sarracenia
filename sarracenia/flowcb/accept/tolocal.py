@@ -11,19 +11,19 @@ Example:
 
     flowcb sarracenia.flowcb.accept.tolocal.ToLocal   # converts web URL to file URL
 
-               http://localhost/ --> file://var/www/html/
-               url is now file://var/www/html/<date>/<src>/input/file.txt
-               m.savedurl = http://localhost/
+            http://localhost/ --> file://var/www/html/
+            url is now file://var/www/html/<date>/<src>/input/file.txt
+            m.savedurl = http://localhost/
 
     flowcb sarracenia.flowcb.accept.<some converter that works on local files.>
 
-               A new file is created in another directory.
-               url is now file://var/www/<date>/<src>/output/file.txt
+            A new file is created in another directory.
+            url is now file://var/www/<date>/<src>/output/file.txt
 
     flowcb sarracenia.flowcb.accept.tohttp.ToHttp     # turns the file URL back into a web one.
 
-               file://var/www/html/ --> http:///localhost/
-               url is now:   http://localhost/<date>/<src>/output/file.txt
+            file://var/www/html/ --> http:///localhost/
+            url is now:   http://localhost/<date>/<src>/output/file.txt
 
 
     The regular expression used to find the web url matches either http or https
@@ -70,11 +70,8 @@ class ToLocal(FlowCB):
             #  to worklist.rejected or worklist.failed at some point?
             logger.error("input: urlstr: %s" % message['urlstr'])
 
-            message['savedurl'] = self.o.lurlre.match(
-                message['urlstr']).group(1)
-            message['urlstr'] = 'file:/%s' % self.o.lurlre.sub(
-                self.o.ldocroot + '/', message['urlstr'])
+            message['savedurl'] = self.o.lurlre.match(message['urlstr']).group(1)
+            message['urlstr'] = 'file:/%s' % self.o.lurlre.sub(self.o.ldocroot + '/', message['urlstr'])
 
             logger.error("doc_root=%s " % (self.o.baseDir))
-            logger.error("output: urlstr: %s saved url: %s" %
-                         (message['urlstr'], message['savedurl']))
+            logger.error("output: urlstr: %s saved url: %s" % (message['urlstr'], message['savedurl']))
