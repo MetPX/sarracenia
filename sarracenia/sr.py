@@ -1411,7 +1411,7 @@ class sr_GlobalState:
                     os.remove(state_file_cfg_disabled)
                     logging.info(c + '/' + cfg)
 
-    def extras(self):
+    def features(self):
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
@@ -1430,28 +1430,28 @@ class sr_GlobalState:
             if c not in [ 'cpost', 'cpump' ]:
                 flow = sarracenia.flow.Flow.factory(o)
                 flow.loadCallbacks()
-                flow.runCallbacksTime('on_extras')
+                flow.runCallbacksTime('on_features')
                 del flow
                 flow=None
 
-        extras_present=[]
-        extras_absent=[]
-        for x in sarracenia.extras.keys():
+        features_present=[]
+        features_absent=[]
+        for x in sarracenia.features.keys():
             if x == 'all':
                 continue
-            if sarracenia.extras[x]['present']:
-                print( f"INSTALLED: {x:10} {sarracenia.extras[x]['rejoice']}" )
+            if sarracenia.features[x]['present']:
+                print( f"INSTALLED: {x:10} {sarracenia.features[x]['rejoice']}" )
             else:
-                if 'Needed' in sarracenia.extras[x]:
+                if 'Needed' in sarracenia.features[x]:
                      word1="MISSING"
                 else:
                      word1="Absent"
 
-                print( f"{word1}: {x:10}: {sarracenia.extras[x]['lament']}")
+                print( f"{word1}: {x:10}: {sarracenia.features[x]['lament']}")
                 
-                print( f"\tpython import missing: {sarracenia.extras[x]['modules_needed']}" )
+                print( f"\tpython import missing: {sarracenia.features[x]['modules_needed']}" )
 
-        if not (sarracenia.extras['amqp']['present'] or sarracenia.extras['mqtt']['present'] ):
+        if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
             print( "ERROR: need at least one of: amqp or mqtt" )
 
 
@@ -1890,9 +1890,9 @@ class sr_GlobalState:
                         signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
-        for l in sarracenia.extras.keys():
-            if not sarracenia.extras[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.extras[l]['lament']}" )
+        for l in sarracenia.features.keys():
+            if not sarracenia.features[l]['present']:
+                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
@@ -2701,7 +2701,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'extras', 'log', 'overview', 'restart', 'run', 'sanity',
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -2771,8 +2771,8 @@ def main():
     if action == 'enable':
         gs.enable()
 
-    if action == 'extras':
-        gs.extras()
+    if action == 'features':
+        gs.features()
 
     if action == 'foreground':
         gs.foreground()

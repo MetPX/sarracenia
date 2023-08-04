@@ -33,12 +33,12 @@ default_options = {
 }
 
 def ProtocolPresent(p) -> bool:
-    if ( p[0:4] in ['amqp'] ) and sarracenia.extras['amqp']['present']:
+    if ( p[0:4] in ['amqp'] ) and sarracenia.features['amqp']['present']:
        return True
-    if ( p[0:4] in ['mqtt'] ) and sarracenia.extras['mqtt']['present']:
+    if ( p[0:4] in ['mqtt'] ) and sarracenia.features['mqtt']['present']:
        return True
-    if p in sarracenia.extras:
-        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.extras[p]['modules_needed'])}" )
+    if p in sarracenia.features:
+        logger.critical( f"support for {p} missing, please install python packages: {' '.join(sarracenia.features[p]['modules_needed'])}" )
     else:
         logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
 
@@ -390,8 +390,8 @@ class Moth():
         else:
             self.putCleanUp()
 
-if sarracenia.extras['amqp']['present']:
+if sarracenia.features['amqp']['present']:
     import sarracenia.moth.amqp
 
-if sarracenia.extras['mqtt']['present']:
+if sarracenia.features['mqtt']['present']:
     import sarracenia.moth.mqtt

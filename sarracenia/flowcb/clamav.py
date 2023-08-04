@@ -17,22 +17,22 @@ import os
 import stat
 import time
 
-from sarracenia import nowflt,extras
+from sarracenia import nowflt,features
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
 #
-# Support for extras inventory mechanism.
+# Support for features inventory mechanism.
 #
-extras['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
+features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
         'lament' : 'cannot use clamd to av scan files trasnferred',
         'rejoice' : 'can use clamd to av scan files trasnferred' }
 
 try:
     import pyclamd
-    extras['clamd']['present'] = True
+    features['clamd']['present'] = True
 except:
-    extras['clamd']['present'] = False
+    features['clamd']['present'] = False
 
 
 
@@ -58,7 +58,7 @@ class Clamav(FlowCB):
         self.metric_scanned = 0
         self.metric_hits = 0
        
-        if sarracenia.extras['pyclamd']['present']:
+        if sarracenia.features['pyclamd']['present']:
             import pyclamd
             self.av = pyclamd.ClamdAgnostic()
             print("clam_scan on_part plugin initialized")

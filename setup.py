@@ -36,7 +36,7 @@ with open(os.path.join(here, "sarracenia", "_version.py"), "r") as f:
 packages = find_packages()
 print("packages = %s" % packages)
 
-extras = {
+features = {
        'amqp' : [ "amqp" ],
        'filetypes': [ "python-magic" ], 
        'ftppoll' : ['dateparser' ],
@@ -44,7 +44,7 @@ extras = {
        'vip': [ 'netifaces' ],
        'redis': [ 'redis' ]
     } 
-extras['all'] = list(itertools.chain.from_iterable(extras.values()))
+features['all'] = list(itertools.chain.from_iterable(features.values()))
 
 setup(
     name='metpx-sr3',
@@ -100,7 +100,7 @@ setup(
         'python-magic-bin; sys_platform=="win32"'
 
     ],
-    extras_require = extras
+    extras_requires = features
     )
 
 

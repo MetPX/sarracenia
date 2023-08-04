@@ -16,7 +16,7 @@ import paramiko
 
 import sarracenia
 
-if sarracenia.extras['ftppoll']['present']:
+if sarracenia.features['ftppoll']['present']:
     import dateparser
     import pytz
 
@@ -316,7 +316,7 @@ class Poll(FlowCB):
 
     def filedate(self, line):
 
-        if not sarracenia.extras['ftppoll']['present']:
+        if not sarracenia.features['ftppoll']['present']:
            logger.error('need dateparser library to deal with polling of ftp servers, no date parsed')
            return 0
 

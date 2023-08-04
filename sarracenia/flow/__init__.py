@@ -57,10 +57,10 @@ default_options = {
     'vip': None
 }
 
-if sarracenia.extras['filetypes']['present']:
+if sarracenia.features['filetypes']['present']:
     import magic
 
-if sarracenia.extras['vip']['present']:
+if sarracenia.features['vip']['present']:
     import netifaces
 
 
@@ -310,7 +310,7 @@ class Flow:
 
     def has_vip(self):
 
-        if not sarracenia.extras['vip']['present']: return True
+        if not sarracenia.features['vip']['present']: return True
 
         # no vip given... standalone always has vip.
         if self.o.vip == None:
@@ -1875,7 +1875,7 @@ class Flow:
                 os.rename(new_inflight_path, new_file)
             
             # older versions don't include the contentType, so patch it here.
-            if sarracenia.extras['filetypes']['present'] and 'contentType' not in msg:
+            if sarracenia.features['filetypes']['present'] and 'contentType' not in msg:
                 msg['contentType'] = magic.from_file(new_file,mime=True)
 
             self.metrics['flow']['transferRxBytes'] += len_written
@@ -1964,7 +1964,7 @@ class Flow:
             local_path = '/' + msg['relPath']
 
         # older versions don't include the contentType, so patch it here.
-        if sarracenia.extras['filetypes']['present'] and \
+        if sarracenia.features['filetypes']['present'] and \
            ('contentType' not in msg) and (not 'fileOp' in msg):
             msg['contentType'] = magic.from_file(local_path,mime=True)
 

@@ -474,7 +474,7 @@ class Message(dict):
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
                 m.__computeIdentity(path, o)
-                if extras['filetypes']['present']:
+                if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)
                         m['contentType'] = t
@@ -796,11 +796,11 @@ class Message(dict):
   Extra Feature Scanning and Enablement.
 
   checking for extra dependencies, not "hard" dependencies ("requires")
-  listed as extras in setup.py and omitted entirely from debian packaging.
+  listed as features in setup.py and omitted entirely from debian packaging.
   this allows installation with fewer dependencies ahead of time, and then
   provide some messaging to users when they "need" an optional dependency.
  
-  optional extras can be enabled using pip install metpx-sr3[extra]
+  optional features can be enabled using pip install metpx-sr3[extra]
   where extra is one of the features listed below. Alternatively,
   one can just install the modules that are needed and the functionality
   will be enabled after a component restart.
@@ -814,7 +814,7 @@ class Message(dict):
   watch - monitor files or directories for changes.
 
 """
-extras = { 
+features = { 
         'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 
             'lament' : 'cannot connect to rabbitmq brokers', 
             'rejoice' : 'can connect to rabbitmq brokers' },
@@ -845,33 +845,33 @@ extras = {
            'rejoice': 'watch directories' }
 }
 
-for x in extras:
+for x in features:
    
-   extras[x]['present']=True
-   for y in  extras[x]['modules_needed']:
+   features[x]['present']=True
+   for y in  features[x]['modules_needed']:
        try:
            if importlib.util.find_spec( y ):
                #logger.debug( f'found feature {y}, enabled') 
                pass
            else:
                logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-               extras[x]['present']=False
+               features[x]['present']=False
        except:
            logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-           extras[x]['present']=False
+           features[x]['present']=False
 
 
-if extras['filetypes']['present']:
+if features['filetypes']['present']:
    import magic
 
-if extras['mqtt']['present']:
+if features['mqtt']['present']:
    import paho.mqtt.client
    if not hasattr( paho.mqtt.client, 'MQTTv5' ):
        # without v5 support, mqtt is not useful.
-       extras['mqtt']['present'] = False
+       features['mqtt']['present'] = False
 
 # if humanize is not present, compensate...
-if extras['humanize']['present']:
+if features['humanize']['present']:
     import humanize
 
     def naturalSize( num ):
@@ -889,7 +889,7 @@ else:
        return "%g" % dur
 
 
-if extras['appdirs']['present']:
+if features['appdirs']['present']:
     import appdirs
 
     def site_config_dir( app, author ):
