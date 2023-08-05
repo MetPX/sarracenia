@@ -100,7 +100,7 @@ setup(
         'python-magic-bin; sys_platform=="win32"'
 
     ],
-    extras_requires = features
+    extras_require = features
     )
 
 
