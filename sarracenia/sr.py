@@ -1455,6 +1455,9 @@ class sr_GlobalState:
         if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
             print( "ERROR: need at least one of: amqp or mqtt" )
 
+        print( f"\n state dir: {self.user_cache_dir} " )
+        print( f" config dir: {self.user_config_dir} " )
+
 
     def foreground(self):
 
