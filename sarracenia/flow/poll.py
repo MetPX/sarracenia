@@ -7,6 +7,7 @@
 import logging
 import sarracenia
 from sarracenia.flow import Flow
+from sarracenia.featuredetection import features
 import sys
 
 
@@ -66,9 +67,9 @@ class Poll(Flow):
         self.plugins['load'].insert(0,
                                     'sarracenia.flowcb.post.message.Message')
 
-        if not sarracenia.features['ftppoll']['present']:
+        if not features['ftppoll']['present']:
             if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
-                logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(sarracenia.features['ftppoll']['modules_needed'])}" )
+                logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(features['ftppoll']['modules_needed'])}" )
                 sys.exit(1)
 
     def do(self):

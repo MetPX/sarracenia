@@ -3,6 +3,8 @@ import json
 import logging
 import sys
 import time
+from sarracenia.featuredetection import features
+
 import sarracenia
 
 logger = logging.getLogger(__name__)
@@ -390,8 +392,8 @@ class Moth():
         else:
             self.putCleanUp()
 
-if sarracenia.features['amqp']['present']:
+if features['amqp']['present']:
     import sarracenia.moth.amqp
 
-if sarracenia.features['mqtt']['present']:
+if features['mqtt']['present']:
     import sarracenia.moth.mqtt

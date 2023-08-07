@@ -17,7 +17,8 @@ import os
 import stat
 import time
 
-from sarracenia import nowflt,features
+from sarracenia import nowflt
+from sarracenia.featuredetection import features
 import sarracenia
 from sarracenia.flowcb import FlowCB
 

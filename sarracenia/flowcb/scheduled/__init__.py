@@ -3,6 +3,7 @@ import paramiko
 import re
 
 import sarracenia
+from sarracenia.filemetadata import FmdStat
 from sarracenia.flowcb import FlowCB
 
 import time
@@ -78,7 +79,7 @@ class Scheduled(FlowCB):
         gathered_messages = []
 
         for relPath in self.o.path:
-            st = paramiko.SFTPAttributes()
+            st = FmdStat()
             m = sarracenia.Message.fromFileInfo(relPath, self.o, st)
             gathered_messages.append(m)
 
