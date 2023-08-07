@@ -31,6 +31,36 @@ Pour une utilisation opérationnelle, un accès administratif peut être nécess
 et l’intégration avec systemd. Quelle que soit la façon dont il est installé, du traitement
 périodique (sur Linux généralement connu sous le nom de *cron jobs*) peut également avoir besoin d’être configuré.
 
+Des fois, Sarracenia peut être partiellement installé. Pour voir un inventaire des modules de Sarracenia
+qui sont disponible, on peut se servir de *sr3 features*::
+
+    fractal% sr3 features
+
+    Status:    feature:   python imports:      Description:
+    Installed  amqp       amqp                 can connect to rabbitmq brokers
+    Installed  appdirs    appdirs              place configuration and state files appropriately for platform (windows/mac/linux)
+    Installed  filetypes  magic                able to set content headers
+    Installed  ftppoll    dateparser,pytz      able to poll with ftp
+    Installed  humanize   humanize             humans numbers that are easier to read.
+    Absent     mqtt       paho.mqtt.client     cannot connect to mqtt brokers
+    Installed  redis      redis,redis_lock     can use redis implementations of retry and nodupe
+    Installed  sftp       paramiko             can use sftp or ssh based services
+    Installed  vip        netifaces            able to use the vip option for high availability clustering
+    Installed  watch      watchdog             watch directories
+    Installed  xattr      xattr                on linux, will store file metadata in extended attributes
+    MISSING    clamd      pyclamd              cannot use clamd to av scan files transferred
+
+     state dir: /home/peter/.cache/sr3
+     config dir: /home/peter/.config/sr3
+
+    fractal%
+
+le sens de chaque *feature* est expliqué (en anglais) et le modules python nécessaire pour 
+permettre cette fonctionalité sont indiqué dans la troisième colonne.
+
+Dans l´exemple on peut voir que pyclamd manque à l´appel, tandis que *paramiko* nécessaire
+pour la fonctionallité SFTP est disponible.
+
 Installation Client
 -------------------
 
@@ -39,6 +69,13 @@ ils sont disponibles, les paquets debian sont recommandés. Ceux-ci peuvent êtr
 référentiel launchpad. Si vous ne pouvez pas utiliser les paquets Debian, envisagez les paquets pip
 avialable de PyPI. Dans les deux cas, les autres paquets python (ou dépendances) nécessaires
 seront installé automatiquement par le gestionnaire de paquets.
+
+Notez que dans certains cas, le système d'exploitation ne fournit pas tous les
+fonctionnalité pour toutes les fonctionnalités, de sorte que l'on peut compléter avec des packages pip, qui
+peut être installé à l'échelle du système, dans l'environnement d'un utilisateur ou même dans
+venv. Tant que *sr3 features* signale la fonctionnalité comme disponible, elle
+être utilisé.
+
 
 
 Ubuntu/Debian (apt/dpkg) **Recommandé**
@@ -51,6 +88,7 @@ Sur Ubuntu 22.04 et dérivés du même::
   sudo apt install metpx-sr3  # pacquet principale.
   sudo apt install metpx-sr3c # client binaire (en C) .
   sudo apt install python3-amqp  # support optionnel pour les courtiers AMWP (rabbitmq)
+  sudo apt install python3-paramiko  # support optionnel pour SFTP/SSH 
   sudo apt install python3-magic  # support optionnel pour les entêtes "content-type" dans les messages
   sudo apt install python3-paho-mqtt  # support optionnel pour les courtiers MQTT 
   sudo apt install python3-netifaces # support optionnel pour les vip (haut-disponibilité)
@@ -123,14 +161,14 @@ Par exemple, sur fedora 28 obligatoirement::
   $ sudo dnf install python3-humanize
   $ sudo dnf install python3-psutil
   $ sudo dnf install python3-watchdog
-  $ sudo dnf install python3-paramiko  
 
 Facultatifs::
 
-  $ sudo dnf install python3-amqp   # optionally support rabbitmq brokers
-  $ sudo dnf install python3-magic   # optionally support content-type headers in files.
-  $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
-  $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
+  $ sudo dnf install python3-paramiko  # support pour SFTP/SSH
+  $ sudo dnf install python3-amqp   # support pour les messages AMQP (couriers rabbitmq)
+  $ sudo dnf install python3-magic   # support optionnel pour le champs ¨content-type¨  
+  $ sudo dnf install python3-netifaces # support optionnel pour l´optio vip
+  $ sudo dnf install python3-paho-mqtt # support optionnel pour les courtiers MQTT 
 
   $ sudo dnf install python3-setuptools # needed to build rpm package.
 

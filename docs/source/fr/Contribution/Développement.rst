@@ -1500,11 +1500,26 @@ Création d’un programme d’installation Windows
 On peut également construire un programme d’installation Windows avec cela
 `script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
 Il doit être exécuté à partir d’un système d’exploitation Linux (de préférence Ubuntu 18)
-dans le répertoire racine de git de Sarracenia. Ensuite, à partir du shell, exécutez ::
+dans le répertoire racine de git de Sarracenia. 
+
+déterminer la version de python::
+
+    fractal% python -V
+    Python 3.10.12
+    fractal%
+
+
+C'est donc python 3.10. Une seule version mineure aura le package intégré nécessaire
+par pynsist pour construire l'exécutable. On valide chez::
+
+   https://www.python.org/downloads/windows/
+
+afin to confirmer que la version avec un binaire *embedded* pour 3.10 et le 3.10.11
+Ensuite, à partir du shell, exécutez ::
 
  sudo apt install nsis
  pip3 install pynsist wheel
- ./generate-win-installer.sh 2>&1 > log.txt
+ ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
 Le paquet final doit être placé dans le répertoire build/nsis.
 
