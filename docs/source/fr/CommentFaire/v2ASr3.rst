@@ -42,7 +42,7 @@ et sont plus flexibles et puissants que le mécanisme de v2.
  * Les classes v3 peuvent être sous-classées pour ajouter des fonctionnalités de base, comme un nouveau message
    de notification ou un protocole de transport de fichier.
 
-.. astuce::
+.. note::
   Il existe également quelques vidéos pas à pas sur Youtube montrant des ports simples v2 -> v3:
    - `Sender (10 min) <https://www.youtube.com/watch?v=rUazjoGzPac>`_
    - `Poll (20 min) <https://www.youtube.com/watch?v=P20M9ojn_Zw>`_
@@ -69,7 +69,7 @@ En bref, le point d’entrée sr3 est utilisé pour démarrer / arrêter / éval
 Dans sr3, on peut également utiliser des spécifications de style de globbing de fichier pour demander qu'une commande
 soit invoqué sur un groupe de configurations, alors que dans la v2, on ne pouvait fonctionner que sur une à la fois.
 
-.. caution::
+.. note::
   **sr3_post** est une exception à ce changement parce qu'il fonctionne comme sr_post de la v2, étant
   un outil d’affichage interactif.
 
@@ -186,13 +186,13 @@ En général, les plugins v3:
   Quoi qu’il en soit, une partie python naïve du fichier échouerait invariablement sans qu’une sorte de
   harnais de test ne soit enroulée autour d’elle.
 
-  .. Astuce:: Dans la v3, supprimez ces lignes (généralement situées au bas du fichier)
+  .. Note:: Dans la v3, supprimez ces lignes (généralement situées au bas du fichier)
 
   Dans la v2, il y avait des problèmes étranges avec les importations, ce qui a entraîné la mise en place
   d'importer des instructions à l’intérieur des fonctions. Ce problème est résolu dans la v3, vous pouvez
   vérifier votre syntaxe d’importation en faisant *import X* dans n’importe quel interpréteur python.
 
-  .. Astuce:: Placez les importations nécessaires au début du fichier, comme tout autre module python
+  .. Note:: Placez les importations nécessaires au début du fichier, comme tout autre module python
            **et supprimez les importations situées dans les fonctions lors du portage**.
 
 * **Les plugins v3 peuvent être utilisés par les programmeurs d’applications.** Les plugins ne sont pas
@@ -222,7 +222,7 @@ En général, les plugins v3:
   Lors du portage des plugins v2 -> v3 : *logger.x* remplace *parent.logger.x*.
   Parfois, il y a aussi self.logger x... je ne sais pas pourquoi... ne demandez pas.
   
-  .. Astuce:: Dans vi, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage::
+  .. Note:: Dans vi, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage::
   
              :%s/parent.logger/logger/g
 
@@ -242,7 +242,7 @@ En général, les plugins v3:
        super().__init__(options,logger)
        self.o.add_option('OptionName', Type, DefaultValue)
        
-  .. Astuce:: Dans VI, vous pouvez utiliser le remplacement global::
+  .. Note:: Dans VI, vous pouvez utiliser le remplacement global::
   
              :%s/parent/self.o/g
 
@@ -298,7 +298,7 @@ En général, les plugins v3:
   msg.exchange     msg['exchange']     le canal sur lequel le message à été reçu.
   msg.logger       logger              les journeaux fonctionnent ¨normalement" pour python
   msg.parts        msg['size']         oublie ca, utilise une constructeur de sarracenia.Message
-  msg.sumflg       msg['identity']    oublie ca, utilise une constructeur de sarracenia.Message
+  msg.sumflg       msg['identity']     oublie ca, utilise une constructeur de sarracenia.Message
   parent.msg       worklist.incoming   sr3 traite des groupe des messages, pas individuelement
   ================ =================== ===========================================================
 
@@ -643,7 +643,7 @@ exemples:
  * flowcb/poll/airnow.py
 
 on_html_page -> sous-classement de flowcb/poll
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Voici un plugin v2 nsa_mls_nrt.py:
 
@@ -945,7 +945,7 @@ Exemple de débogage des fonctions destfn sr3 ::
 
 
 v3 seulement: post,gather
-------------------------
+-------------------------
 
 Le polling/posting est en fait effectuée dans des classes de rappel de flux (flowcb).
 Le statut de sortie n’a pas d’importance, toutes ces routines seront appelées dans l’ordre.

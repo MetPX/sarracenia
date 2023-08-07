@@ -1445,13 +1445,25 @@ Building a Windows Installer
 One can also build a Windows installer with that 
 `script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
 It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
+find the python version in use::
+
+    fractal% python -V
+    Python 3.10.12
+    fractal%
+
+So this is python 3.10.  Only a single minor version will have the embedded package needed
+by pynsist to build the executable, so look at::
+
+    https://www.python.org/downloads/windows/
+
+Then go look on python.org, for the "right" version (for 3.10, it is 3.10.11 )
 Then, from the shell, run::
 
  sudo apt install nsis
  pip3 install pynsist wheel
- ./generate-win-installer.sh 2>&1 > log.txt
+ ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
-The final package should be placed in build/nsis directory.
+The final package will be generated into build/nsis directory.
 
 
 Daily Builds

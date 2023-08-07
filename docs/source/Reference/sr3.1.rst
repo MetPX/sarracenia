@@ -66,6 +66,7 @@ The type of action to take. One of:
  - disable:       mark a configuration as ineligible to run.
  - edit:          modify an existing configuration.
  - enable:        mark a configuration as eligible to run.
+ - features:      what parts of sr3 are working?
  - foreground: run a single instance in the foreground logging to stderr
  - list:          list all the configurations available.
  - list plugins:  list all the plugins available.
