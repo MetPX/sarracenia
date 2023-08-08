@@ -38,6 +38,14 @@ import os
 import psutil
 from sarracenia.flowcb import FlowCB
 from sarracenia import naturalSize, naturalTime
+from sarracenia.featuredetection import features
+
+if features['process']['present']:
+    import psutil
+else:
+    logger.error("missing psutil class cannot monitor process memory usage")
+
+
 import sys
 
 logger = logging.getLogger(__name__)
@@ -57,7 +65,11 @@ class Resources(FlowCB):
         self.msgCount = 0
 
     def on_housekeeping(self):
-        mem = psutil.Process().memory_info().vms
+        if features['process']['present']:
+            mem = psutil.Process().memory_info().vms
+        else:
+            mem = 0
+
         ost = os.times()
         logger.info(
             f"Current Memory cpu_times: user={ost.user} system={ost.system}")

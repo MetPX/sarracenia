@@ -30,7 +30,6 @@ import os
 import os.path
 import pathlib
 import platform
-import psutil
 import random
 import re
 import shutil
@@ -48,6 +47,9 @@ from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, tim
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
+
+if sarracenia.features['process']['present']:
+   import psutil
 
 import urllib.parse
 
@@ -198,6 +200,10 @@ class sr_GlobalState:
             f.seek(0, 0)
             f.truncate()
             f.write(getpass.getuser() + '\n')
+
+            if not features['process']['present']:
+                return
+
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
@@ -265,6 +271,8 @@ class sr_GlobalState:
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\' + self.me
         self.auditors = 0
+        if not features['process']['present']:
+            return
         for proc in psutil.process_iter():
             try:
                 self._filter_sr_proc(

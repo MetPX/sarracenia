@@ -47,6 +47,7 @@
 
 import importlib
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -59,21 +60,27 @@ features = {
            'lament' : 'assume linux file placement under home dir', 
            'rejoice': 'place configuration and state files appropriately for platform (windows/mac/linux)', },
    'filetypes' : { 'modules_needed': ['magic'], 'present': False, 
-           'lament': 'will not be able to set content headers' ,
+           'lament': '(pip package python-magic, on windows python-magic-bin) will not be able to set content headers' ,
            'rejoice': 'able to set content headers' },
    'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 
        'lament' : 'not able to poll with ftp' ,
        'rejoice' : 'able to poll with ftp' },
-   'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 
+   'humanize' : { 'modules_needed': ['humanize', 'humanfriendly' ], 'present': False, 
            'lament': 'humans will have to read larger, uglier numbers',
            'rejoice': 'humans numbers that are easier to read.' },
    'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 
            'lament': 'cannot connect to mqtt brokers' ,
            'rejoice': 'can connect to mqtt brokers' },
+   'process' : { 'modules_needed': ['psutil'], 'present': False,
+        'lament': 'cannot monitor running processes, sr3 CLI basically does not work.',
+        'rejoice': 'can monitor, start, stop processes:  Sr3 CLI should basically work' },
    'redis' : { 'modules_needed': [ 'redis', 'redis_lock' ],
         'lament': 'cannot use redis implementations of retry and nodupe',
         'rejoice': 'can use redis implementations of retry and nodupe'
         },
+   'retry': { 'modules_needed': ['jsonpickle'], 'present': False,
+           'lament': 'unable to use local queues on the side (disk or redis) to retry messages later',
+           'rejoice': 'can write messages to local queues to retry failed publishes/sends/downloads'},
    'sftp' : { 'modules_needed': [ 'paramiko' ],
         'lament': 'cannot use or access sftp/ssh based services',
         'rejoice': 'can use sftp or ssh based services'
@@ -85,10 +92,13 @@ features = {
            'lament': 'cannot watch directories' ,
            'rejoice': 'watch directories' },
    'xattr'  : { 'modules_needed': ['xattr'] , 'present': False, 
-           'lament': '(only on Linux) to store additional file metadata in extended attributes' ,
-           'rejoice': 'on linux, will store file metadata in extended attributes' }
+           'lament': 'unable to store additional file metadata in extended attributes' ,
+           'rejoice': 'will store file metadata in extended attributes' }
 }
 
+if sys.platform == 'win32':
+   features['xattr']['modules_needed'] = ['ctypes']
+   
 for x in features:
    
    features[x]['present']=True
