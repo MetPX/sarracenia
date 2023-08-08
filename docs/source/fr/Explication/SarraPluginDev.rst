@@ -7,9 +7,6 @@
 Travailler avec des plugins
 ---------------------------
 
-Enregistrement de révision
---------------------------
-
 :version: |release|
 :date: |today|
 
@@ -77,9 +74,6 @@ La structure de données de liste de travail est un ensemble de listes de messag
   * worklist.failed : messages pour lesquels le traitement a été tenté, mais qui a échoué.
 
 La liste de travail est transmise aux plugins *after_accept* et *after_work* comme détaillé dans la section suivante.
-
-
-~~~~~~~~~~~~~~~~~~~~
 
 Tous les composants (post, subscribe, sarra, sender, shovel, watch, winnow)
 partagent du code substantiel et ne diffèrent que par les paramètres de défaut.  L’algorithme de flux est :
@@ -849,12 +843,8 @@ les routines after_accept acceptent une liste de travail comme argument.
 
 
 
-Le Dépendance Python dans les Callbacks
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Some callbacks need to use other python modules.  While normal imports
-are fine, one can integrate them better for sr3 users by supporting
-the *features* mechism
+Ajout de Dépendance Python dans les Callbacks
+---------------------------------------------
 
 Certains *callback* doivent utiliser d'autres modules Python. Alors que les 
 importations normales sont bien, on peut mieux les intégrer pour les 
@@ -873,11 +863,6 @@ utilisateurs sr3 en prenant en se servant du mécanisme *features* ::
         features['clamd']['present'] = True
     except:
         features['clamd']['present'] = False
-
-This lets users know which *features* are available in their installetion
-so when they run *sr3 features* it provides an easily understood list of missing
-libraries
-
 
 Cela permet aux utilisateurs de savoir quelles *features* sont disponibles dans leur installation.
 Lorsqu'ils exécutent *sr3 features*, sr3 fournit une liste facile à comprendre des éléments manquants::
