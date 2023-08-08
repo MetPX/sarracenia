@@ -375,13 +375,15 @@ class MQTT(Moth):
                     self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                     self.client.enable_logger(logger)
+                    self.client.loop_start()
+                    ebo=1
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                         self.client.loop()
-                         time.sleep(0.1)
+                         time.sleep(0.1*ebo)
                          if self.please_stop:
                               break
-                         logger.info("waiting for subscription to be set up.")
-                    self.client.loop_start()
+                         if ebo < 512 :
+                            ebo *= 2
+                         logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
                     self.connected=True
                     break
                 else: # either 'declare' or 'foreground'
@@ -471,12 +473,15 @@ class MQTT(Moth):
 
                 self.client.loop_start()
 
+                ebo=1
                 while self.connect_in_progress:
-                     time.sleep(0.1)
+                     time.sleep(0.1*ebo)
                      if self.please_stop:
                           break
-                     logger.info( f"waiting for connection to {self.o['broker']}")
-                     self.client.loop()
+                     if ebo < 512:
+                          ebo *= 2
+                     logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
+                    
 
                 if not self.connect_in_progress:
                     self.connected=True
