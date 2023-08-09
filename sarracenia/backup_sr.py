@@ -2088,11 +2088,6 @@ class sr_GlobalState:
 
         :return:
         """
-        #for index in self.configs:
-         #  print(index)
-        #exit()
-
-
         print('{\n')
         print('\n\n"Processes" : { \n\n')
         procs_length = len(self.procs)
@@ -2112,9 +2107,8 @@ class sr_GlobalState:
                 cLength = len(self.configs[c])
                 if cLength-1 > indexC:
                    print(',')
-            if configLength-1 > indexConfig :
-               if c != "report":
-                  print(',' )
+            if configLength-1 > indexConfig and indexConfig >1:
+               print(',')
 
         print('},\n\n"States": { \n\n')
         for c in self.states:
