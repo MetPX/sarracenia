@@ -522,7 +522,7 @@ class Flow:
                             m['_deleteOnPost'] |= set(['old_relPath'])
                             m['relPath'] = m['new_relPath']
                             m['old_subtopic'] = m['subtopic']
-                            m['_deleteOnPost'] |= set(['old_subtopic'])
+                            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
                             m['subtopic'] = m['new_subtopic']
 
                         if '_format' in m:

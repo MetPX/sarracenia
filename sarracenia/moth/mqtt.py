@@ -378,12 +378,12 @@ class MQTT(Moth):
                     self.client.loop_start()
                     ebo=1
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
+                         logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
                          time.sleep(0.1*ebo)
                          if self.please_stop:
                               break
                          if ebo < 512 :
                             ebo *= 2
-                         logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
                     self.connected=True
                     break
                 else: # either 'declare' or 'foreground'
@@ -475,12 +475,12 @@ class MQTT(Moth):
 
                 ebo=1
                 while self.connect_in_progress:
+                     logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
                      time.sleep(0.1*ebo)
                      if self.please_stop:
                           break
                      if ebo < 512:
                           ebo *= 2
-                     logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
                     
 
                 if not self.connect_in_progress:
@@ -677,9 +677,6 @@ class MQTT(Moth):
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
         body = copy.deepcopy(body)
 
-        # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(body)
-
         postFormat = body['_format']
 
         if '_deleteOnPost' in body:
@@ -688,7 +685,6 @@ class MQTT(Moth):
             # method to build json and _deleteOnPost would be a guide of what to skip.
             # library for that is jsonfile, but not present in repos so far.
             for k in body['_deleteOnPost']:
-                if k == 'subtopic': continue
                 if k in body:
                     del body[k]
             del body['_deleteOnPost']
@@ -728,7 +724,6 @@ class MQTT(Moth):
             topic = topic.replace('+', '%2B')
 
             del headers['topic']
-            del body['subtopic']
 
             if headers:
                 props.UserProperty=list(map( lambda x :  (x,headers[x]) , headers ))
