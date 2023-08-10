@@ -2088,19 +2088,33 @@ class sr_GlobalState:
 
         :return:
         """
+        #for index in self.configs:
+         #  print(index)
+        #exit()
+
+
+        print('{\n')
         print('\n\n"Processes" : { \n\n')
-        for pid in self.procs:
-            print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
-            #print('\t%s: %s' % (pid, self.procs[pid] ))
+        procs_length = len(self.procs)
+        for index,pid in enumerate(self.procs):
+            print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
+            if procs_length-1 > index:
+                print(',')
 
         print('},\n\n\"Configs\" : {\n\n')
-        for c in self.configs:
+        configLength = len(self.configs)
+        for indexConfig,c in enumerate(self.configs):
             print('\t\"%s\": { ' % c)
-            for cfg in self.configs[c]:
+            for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
-            print("\t\t}")
+                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])))
+                cLength = len(self.configs[c])
+                if cLength-1 > indexC:
+                   print(',')
+            if configLength-1 > indexConfig :
+               if c != "report":
+                  print(',' )
 
         print('},\n\n"States": { \n\n')
         for c in self.states:
@@ -2147,7 +2161,7 @@ class sr_GlobalState:
         for instance in self.missing:
             (c, cfg, i) = instance
             print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
-        print('\t\t}')
+        print('\t\t}\n}')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
