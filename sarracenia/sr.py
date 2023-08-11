@@ -2117,25 +2117,36 @@ class sr_GlobalState:
                   print(',' )
 
         print('},\n\n"States": { \n\n')
-        for c in self.states:
+        lengthSelfStates = len(self.states)
+        for indexSelfStates,c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
-            for cfg in self.states[c]:
-                print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
+            lengthC = len(self.states[c])
+            for indexC,cfg in enumerate(self.states[c]):
+                print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
+                if lengthC -1 > indexC:
+                   print(',')
             print( "\t}" )
-
-        print('}\n\n"Bindings": { \n\n')
+            if lengthSelfStates -1 > indexSelfStates:
+                print(',')
+        print('},\n\n"Bindings": { \n\n')
 
         for h in self.brokers:
             print("\n\"host\": { \"%s\": { " % h)
             print("\n\"exchanges\": { ")
-            for x in self.brokers[h]['exchanges']:
-                print("\t\"%s\": { %s }," % (x, json.dumps(self.brokers[h]['exchanges'][x])))
+            lengthExchange = len(self.brokers[h]['exchanges'])
+            for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
+                print("\t\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])))
+                if lengthExchange -1 > indexExchange:
+                   print(',')
             print("},\n\"queues\": {")
-            for q in self.brokers[h]['queues']:
-                print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
+                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]))
+                if lengthBrokersQueues -1 > indexBrokerQueues:
+                   print(',')
             print( "}},\n" )
 
-        print(',\n\"nbroker summaries": {\n\n')
+        print('\n\"nbroker summaries": {\n\n')
         for h in self.brokers:
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
@@ -2146,15 +2157,20 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\n\"broker\": { \"%s\":\"%s\" }' % (h, a))
+            print('\n\"broker\": { \"%s\":\"%s\" },' % (h, a))
             print('\n\"exchanges\": [ ', end='')
-            for x in self.exchange_summary[h]:
-                print("\"%s-%d\", " % (x, self.exchange_summary[h][x]), end='')
+            lengthExchangeSummary  = len(self.exchange_summary[h])
+            for indexSummary,x in enumerate(self.exchange_summary[h]):
+                print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
+                if lengthExchangeSummary -1 > indexSummary:
+                   print(',')
             print(']')
-            print('\n\"queues\": [', end='')
-            for q in self.brokers[h]['queues']:
-                print("\"%s-%d\", " % (q, len(self.brokers[h]['queues'][q])),
-                      end='')
+            print('\n,"queues\": [', end="")
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
+                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end='')
+                if lengthBrokersQueues -1 > indexBrokersSummary:
+                   print(',')
             print(']')
 
         print('}\n\n\"Missing instances\" : { \n\n')
