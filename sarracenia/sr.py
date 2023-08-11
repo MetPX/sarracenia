@@ -2147,7 +2147,8 @@ class sr_GlobalState:
             print( "}},\n" )
 
         print('\n\"nbroker summaries": {\n\n')
-        for h in self.brokers:
+        lengthSelfBroker = len(self.brokers)
+        for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
                 admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
@@ -2172,8 +2173,10 @@ class sr_GlobalState:
                 if lengthBrokersQueues -1 > indexBrokersSummary:
                    print(',')
             print(']')
+            if lengthSelfBroker -1 > indexSelfBroker:
+               print(',')
 
-        print('}\n\n\"Missing instances\" : { \n\n')
+        print('},\n\n\"Missing instances\" : { \n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
             print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
