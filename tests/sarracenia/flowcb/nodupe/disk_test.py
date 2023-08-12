@@ -10,7 +10,7 @@ def pretty(*things, **named_things):
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.nodupe.disk import NoDupe
+from sarracenia.flowcb.nodupe.disk import Disk
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -58,7 +58,7 @@ WorkList.directories_ok = []
 def test_deriveKey(tmp_path):
     BaseOptions = Options()
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     thismsg = make_message()
     thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
@@ -74,7 +74,7 @@ def test_deriveKey(tmp_path):
 
     thismsg = make_message()
     thismsg['identity'] = {'method': "cod"}
-    assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
+    assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
 
     thismsg['identity'] = {'method': "method", 'value': "value\n"}
     assert nodupe.deriveKey(thismsg) == "method,value"
@@ -91,7 +91,7 @@ def test_open__WithoutFile(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.open()
     assert nodupe.cache_file == str(tmp_path) + os.sep + 'recent_files_005.cache'
@@ -103,7 +103,7 @@ def test_open__WithFile(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     filepath = str(tmp_path) + os.sep + 'recent_files_005.cache'
     fp = open(filepath, 'a')
@@ -120,7 +120,7 @@ def test_open__WithData(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     fp = open(str(tmp_path) + os.sep + 'recent_files_005.cache', 'a')
@@ -154,7 +154,7 @@ def test_on_start(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_start()
 
@@ -169,7 +169,7 @@ def test_on_stop(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_stop()
 
@@ -182,7 +182,7 @@ def test_close(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_start()
 
@@ -197,7 +197,7 @@ def test_close__ErrorThrown(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_start()
 
@@ -223,7 +223,7 @@ def test_close__Unlink(tmp_path):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_start()
 
@@ -240,7 +240,7 @@ def test_close__Unlink_ErrorThrown(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
 
     nodupe.on_start()
 
@@ -268,7 +268,7 @@ def test_clean(tmp_path, capsys):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.cache_dict = {
@@ -292,7 +292,7 @@ def test_clean__Persist_DelPath(tmp_path, capsys):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -322,7 +322,7 @@ def test_save(tmp_path, capsys):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -351,7 +351,7 @@ def test_save__Unlink_Error(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -388,7 +388,7 @@ def test_save__Open_Error(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -422,7 +422,7 @@ def test_on_housekeeping(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -457,7 +457,7 @@ def test__not_in_cache(tmp_path, caplog):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -495,7 +495,7 @@ def test_check_message(tmp_path, capsys):
     BaseOptions.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -528,7 +528,7 @@ def test_after_accept(tmp_path, capsys):
     BaseOptions.cfg_run_dir = str(tmp_path)
     BaseOptions.no = 5
     BaseOptions.inflight = 0
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
@@ -555,7 +555,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
     BaseOptions.no = 5
     BaseOptions.inflight = 0
 
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
     nodupe.o.nodupe_fileAgeMin = 1000
     nodupe.o.nodupe_fileAgeMax = 1000
@@ -587,7 +587,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
     BaseOptions.no = 5
     BaseOptions.inflight = 1000
 
-    nodupe = NoDupe(BaseOptions)
+    nodupe = Disk(BaseOptions)
     nodupe.o.nodupe_ttl = 100000
 
     nodupe.open()
