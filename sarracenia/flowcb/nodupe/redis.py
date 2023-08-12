@@ -11,14 +11,14 @@ import logging
 
 from sarracenia import nowflt, timestr2flt, timeflt2str
 
-from sarracenia.flowcb import FlowCB
+from sarracenia.flowcb.nodupe import NoDupe
 
 import redis
 
 logger = logging.getLogger(__name__)
 
 
-class NoDupe(FlowCB):
+class Redis(NoDupe):
     """
     generalised duplicate suppression for sr3 programs. It is used as a 
     time based buffer that prevents, when activated, identical files (of some kinds) 
@@ -79,37 +79,6 @@ class NoDupe(FlowCB):
         h.update(bytes(text, 'utf-8'))
         return h.hexdigest()
     
-    def _deriveKey(self, message) -> str:
-
-        key = None
-        if ('nodupe_override' in message) and ('key' in message['nodupe_override']):
-            key = message['nodupe_override']['key']
-        elif 'fileOp' in message :
-            if 'link' in message['fileOp']:
-                key = message['fileOp']['link']
-            elif 'directory' in message['fileOp'] and 'remove' not in message['fileOp']:
-                key = message['relPath']
-        elif 'identity' in message:
-            if message['identity']['method'] in ['cod']:
-                # if cod, revert to using the path.
-                key = message['relPath']
-            else:
-                key = message['identity']['method'] + ',' + message['identity']['value'].replace('\n', '')
-
-        if not key:
-            if 'mtime' in message:
-                message_time = message['mtime']
-            else:
-                message_time = message['pubTime']
-
-            if 'size' in message:
-                key = f"{message['relPath']},{message_time},{message['size']}"
-            else:
-                key = f"{message['relPath']},{message_time}"
-
-        return key
-    
-
     def _is_new(self, message) -> bool :
         """
         Derive keys to be looked up in cache of messages already seen, then look them up in the cache, 
@@ -118,7 +87,7 @@ class NoDupe(FlowCB):
                 True if it is new.
         """
 
-        key = self._deriveKey(message)
+        key = self.deriveKey(message)
 
         if ('nodupe_override' in message) and ('path' in message['nodupe_override']):
             path = message['nodupe_override']['path']
