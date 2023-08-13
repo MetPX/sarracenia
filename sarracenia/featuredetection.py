@@ -97,7 +97,9 @@ features = {
 }
 
 if sys.platform == 'win32':
-   features['xattr']['modules_needed'] = ['ctypes']
+    features['ctypes'] = { 'modules_needed':['ctypes'], 'present':False, 
+           'lament': 'unable to store additional file metadata in extended attributes' ,
+           'rejoice': 'will store file metadata in extended attributes' }
    
 for x in features:
    
