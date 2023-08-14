@@ -376,6 +376,7 @@ def file_truncate(options, msg):
             fp.close()
 
         msg['subtopic'] = msg['relPath'].split(os.sep)[1:-1]
+        msg['_deleteOnPost'] |= set(['subtopic'])
         #msg.set_topic(options.post_topicPrefix,msg.target_relpath)
 
     except:

@@ -742,7 +742,7 @@ class Message(dict):
                 msg[k] = options.fixed_headers[k]
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'subtopic', 'post_format'
         ])
         if new_dir:
             msg['new_dir'] = new_dir

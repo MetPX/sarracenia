@@ -35,6 +35,8 @@ class V03(PostFormat):
        """
         msg = sarracenia.Message()
         msg["_format"] = __name__.split('.')[-1].lower()
+
+
         try:
             msg.copyDict(json.loads(body))
         except Exception as ex:
