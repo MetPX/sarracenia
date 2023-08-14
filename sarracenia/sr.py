@@ -2108,7 +2108,7 @@ class sr_GlobalState:
             for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])))
+                print('\t\t\"%s\" : %s} ' % (cfg, json.dumps(self.configs[c][cfg])))
                 cLength = len(self.configs[c])
                 if cLength-1 > indexC:
                    print(',')
@@ -2749,7 +2749,6 @@ def main():
         gs.disable()
 
     if action == 'dump':
-        print('dumping: ', end='', flush=True)
         gs.dump()
 
     if action == 'edit':
