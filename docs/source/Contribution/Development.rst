@@ -1445,13 +1445,25 @@ Building a Windows Installer
 One can also build a Windows installer with that 
 `script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
 It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
+find the python version in use::
+
+    fractal% python -V
+    Python 3.10.12
+    fractal%
+
+So this is python 3.10.  Only a single minor version will have the embedded package needed
+by pynsist to build the executable, so look at::
+
+    https://www.python.org/downloads/windows/
+
+Then go look on python.org, for the "right" version (for 3.10, it is 3.10.11 )
 Then, from the shell, run::
 
  sudo apt install nsis
  pip3 install pynsist wheel
- ./generate-win-installer.sh 2>&1 > log.txt
+ ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
-The final package should be placed in build/nsis directory.
+The final package will be generated into build/nsis directory.
 
 
 Daily Builds
@@ -1605,14 +1617,13 @@ Working with a non-packaged version:
 
 notes::
 
-    python3 setup.py build
-    python3 setup.py install
+    pip install -e .
 
 
 Windows
 ~~~~~~~
 
-Install winpython from github.io version 3.4 or higher.  Then use pip to install from PyPI.
+Install winpython from github.io version 3.5 or higher.  Then use pip to install from PyPI.
 
 
 
@@ -1630,4 +1641,41 @@ sr_report(7) notification messages should be emitted to indicate final dispositi
 any notifications or report messages (don't report report messages, it becomes an infinite loop!)
 For debugging and other information, the local log file is used.  For example, sr_shovel does
 not emit any sr_report(7) messages, because no data is transferred, only messages.
+
+
+Adding a New Dependency
+-----------------------
+
+Dependency Management is a complicated topic, because python has many different installation methods into disparate environments, and Sarracenia is multi-platform.  Standard python practice for dependencies is to make
+them *required* by listing them in requirements.txt or setup.py, and require all users to install them.
+In most python applications, if a dependency is missing, it just crashes with a import failure message
+of some kind.
+
+In Sr3, we have found that there are many different environments being deployed into where satisfying
+dependencies can be more trouble than they are worth, so each of the dependencies in setup.py are also
+dealt with in sarracenia/featuredetection, and the feature detection code allows the application to 
+keep working, just without the functionality provided by the missing module. This is called *degradation*
+or *degraded mode*. The idea being to help the user do as much as they can, in the environment they have,
+while telling them what is missing, and what would ideally be added.
+
+for a full discussion see:
+
+`Managing Dependencies (Discussion) <https://github.com/MetPX/sarracenia/issues/741>`
+
+Short version:
+
+In addition to requirements.dev/setup.py, if you need to add a new library that isn't part of 
+*batteries included*, typically provided by a separate os or pip package, then you want to 
+provide for the package to still work in the event that the package is not available (albeit 
+without the function you are adding) and to add support for explaining what's missing using 
+the sarracenia/featuredetection.py module.
+
+In that module is a *features* data structure, where you add an entry explaining the import 
+needed, and the functionality it brings to Sr3. You also add if feature['x']['present'] guards
+in the code where you are using the feature, in order to allow the code to degrade elegantly.
+
+If the dependency is added in a plugin, then there is also a method for that described here:
+
+`Plugin Developer Guide <../Explanation/SarraPluginDev.html#callbacks-that-need-python-modules>`
+
 

@@ -105,15 +105,15 @@ def test_nowflt():
     assert time.time() - sarracenia.nowflt() < 0.001
 
 # def test_naturalSize():
-#     if sarracenia.extras['humanize']['present'] == True:
+#     if sarracenia.features['humanize']['present'] == True:
 #         assert sarracenia.naturalSize(1024) == '1.0 KiB'
-#     elif sarracenia.extras['humanize']['present'] == False:
+#     elif sarracenia.features['humanize']['present'] == False:
 #         assert sarracenia.naturalSize(1024) == '1024'
 
 # def test_naturalTime():
-#     if sarracenia.extras['humanize']['present'] == True:
+#     if sarracenia.features['humanize']['present'] == True:
 #         assert sarracenia.naturalTime(1024) == '17 minutes ago'
-#     elif sarracenia.extras['humanize']['present'] == False:
+#     elif sarracenia.features['humanize']['present'] == False:
 #         assert sarracenia.naturalTime(1024) == '1024'
 
 @pytest.fixture

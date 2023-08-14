@@ -320,7 +320,7 @@ In general, v3 plugins:
   msg.pubtime      msg['pubTime']                     when the message was originally published (standard field)
   msg.baseurl      msg['baseUrl']                     root of the url tree of posted file (standard field)
   msg.relpath      msg['relPath']                     relative path concatenated to baseUrl for canonical path
-  *no equivalent*  msg['retrievePath']                     opaque retrieval path to override canonical one.
+  *no equivalent*  msg['retrievePath']                opaque retrieval path to override canonical one.
   msg.notice       no equivalent                      calculated from other field on v2 write
   msg.new_subtopic msg['new_subtopic']                avoid in sr3... calculated from relPath
   msg.new_dir      msg['new_dir']                     name of the directory where files will be written
@@ -331,7 +331,7 @@ In general, v3 plugins:
   msg.exchange     msg['exchange']                    the channel on which the message was received.
   msg.logger       logger                             pythonic logging setup describe above.
   msg.parts        msg['size']                        just omit, use sarracenia.Message constructor.
-  msg.sumflg       msg['identity']                   just omit, use sarracenia.Message constructor.
+  msg.sumflg       msg['identity']                    just omit, use sarracenia.Message constructor.
   msg.sumstr       v2wrapper.sumstrFromMessage(msg)   the literal string for a v2 checksum field.     
   parent.msg       worklist.incoming                  v2 is 1 message at a time, sr3 has lists or messages.
   ================ ================================== ==========================================================

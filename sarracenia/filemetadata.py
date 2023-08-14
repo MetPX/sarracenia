@@ -28,11 +28,35 @@
 #
 #
 
-try:
+from sarracenia.featuredetection import features
+
+if features['sftp']['present']:
+    import paramiko
+
+    FmdStat = paramiko.SFTPAttributes
+
+else:
+    class FmdStat(object):
+        def __init__(self):
+            """
+            (PAS: copied from paramiko)
+            Create a new (empty) SFTPAttributes object.  All fields will be empty.
+            """
+            self._flags = 0
+            self.st_size = None
+            self.st_uid = None
+            self.st_gid = None
+            self.st_mode = None
+            self.st_atime = None
+            self.st_mtime = None
+            self.attr = {}
+
+
+if features['xattr']['present']:
     import xattr
     supports_extended_attributes = True
 
-except:
+else:
     supports_extended_attributes = False
 
 import sys

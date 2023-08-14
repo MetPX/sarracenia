@@ -654,6 +654,62 @@ The destfn routine takes the notification message as an argument and should retu
 the new file name as a string.
 
 
+Callbacks that need Python Modules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some callbacks need to use other python modules.  While normal imports
+are fine, one can integrate them better for sr3 users by supporting
+the *features* mechism::
+
+    from sarracenia.featuredetection import features
+    #
+    # Support for features inventory mechanism.
+    #
+    features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
+            'lament' : 'cannot use clamd to av scan files transferred',
+            'rejoice' : 'can use clamd to av scan files transferred' }
+
+    try:
+        import pyclamd
+        features['clamd']['present'] = True
+    except:
+        features['clamd']['present'] = False
+
+This lets users know which *features* are available in their installetion
+so when they run *sr3 features* it provides an easily understood list of missing
+libraries::
+
+    fractal% sr3 features
+    2023-08-07 13:18:09,219 1993037 [INFO] sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'dcpflow', 'log', 'post.message', 'clamav']
+    2023-08-07 13:18:09,224 1993037 [INFO] dcpflow __init__ really I mean hi
+    2023-08-07 13:18:09,224 1993037 [WARNING] sarracenia.config add_option multiple declarations of lrgs_download_redundancy=['Yes', 'on'] choosing last one: on
+    2023-08-07 13:18:09,225 1993037 [INFO] dcpflow __init__  lrgs_download_redundancy is True
+    2023-08-07 13:18:09,225 1993037 [INFO] sarracenia.flowcb.log __init__ flow initialized with: {'post', 'on_housekeeping', 'after_work', 'after_accept', 'after_post'}
+    2023-08-07 13:18:09,226 1993037 [CRITICAL] sarracenia.flow loadCallbacks flowCallback plugin clamav did not load: 'pyclamd'
+    
+    Status:    feature:   python imports:      Description:
+    Installed  amqp       amqp                 can connect to rabbitmq brokers
+    Installed  appdirs    appdirs              place configuration and state files appropriately for platform (windows/mac/linux)
+    Installed  filetypes  magic                able to set content headers
+    Installed  ftppoll    dateparser,pytz      able to poll with ftp
+    Installed  humanize   humanize             humans numbers that are easier to read.
+    Absent     mqtt       paho.mqtt.client     cannot connect to mqtt brokers
+    Installed  redis      redis,redis_lock     can use redis implementations of retry and nodupe
+    Installed  sftp       paramiko             can use sftp or ssh based services
+    Installed  vip        netifaces            able to use the vip option for high availability clustering
+    Installed  watch      watchdog             watch directories
+    Installed  xattr      xattr                on linux, will store file metadata in extended attributes
+    MISSING    clamd      pyclamd              cannot use clamd to av scan files transferred
+    
+     state dir: /home/peter/.cache/sr3
+     config dir: /home/peter/.config/sr3
+    
+    fractal%
+    
+You can see that that clamd feature is disabled because the pyclamd python library is not installed.
+
+
+
 
 Flow Callback Poll Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

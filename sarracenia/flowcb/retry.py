@@ -13,6 +13,7 @@ from sarracenia import nowflt, timestr2flt
 import logging
 
 from sarracenia.flowcb import FlowCB
+from sarracenia.featuredetection import features
 
 
 # class sarra/retry
@@ -48,6 +49,10 @@ class Retry(FlowCB):
 
         super().__init__(options,logger)
 
+        if not features['retry']['present'] :
+            logger.critical( f"missing retry pre-requsites, module disabled")
+            return
+
         self.o.add_option( 'retry_driver', 'str', 'disk')
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
@@ -69,6 +74,8 @@ class Retry(FlowCB):
         If there are only a few new messages, get some from the download retry queue and put them into
         `worklist.incoming`.
         """
+        if not features['retry']['present'] :
+            return
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
         #logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
@@ -86,6 +93,9 @@ class Retry(FlowCB):
         Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
         messages, get some from the post retry queue and put them into `worklist.ok`.
         """
+        if not features['retry']['present'] :
+            return
+
         if len(worklist.failed) != 0:
             #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
             self.download_retry.put(worklist.failed)
@@ -105,6 +115,9 @@ class Retry(FlowCB):
         """
         Messages in `worklist.failed` should be put in the post retry queue.
         """
+        if not features['retry']['present'] :
+            return
+
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
 

@@ -30,7 +30,6 @@ import os
 import os.path
 import pathlib
 import platform
-import psutil
 import random
 import re
 import shutil
@@ -48,6 +47,9 @@ from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, tim
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
+
+if sarracenia.features['process']['present']:
+   import psutil
 
 import urllib.parse
 
@@ -198,6 +200,10 @@ class sr_GlobalState:
             f.seek(0, 0)
             f.truncate()
             f.write(getpass.getuser() + '\n')
+
+            if not features['process']['present']:
+                return
+
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
@@ -265,6 +271,8 @@ class sr_GlobalState:
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\' + self.me
         self.auditors = 0
+        if not features['process']['present']:
+            return
         for proc in psutil.process_iter():
             try:
                 self._filter_sr_proc(
@@ -1411,6 +1419,54 @@ class sr_GlobalState:
                     os.remove(state_file_cfg_disabled)
                     logging.info(c + '/' + cfg)
 
+    def features(self):
+
+        # run on_declare plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_features')
+                del flow
+                flow=None
+
+        features_present=[]
+        print( f"\n{'Status:':10} {'feature:':10} {'python imports:':20} {'Description:'} ")
+        features_absent=[]
+        for x in sarracenia.features.keys():
+            if x == 'all':
+                continue
+            if sarracenia.features[x]['present']:
+                word1="Installed"
+                desc=sarracenia.features[x]['rejoice']
+            else:
+                if 'Needed' in sarracenia.features[x]:
+                     word1="MISSING"
+                else:
+                     word1="Absent"
+                desc=sarracenia.features[x]['lament']
+
+            print( f"{word1:10} {x:10} {','.join(sarracenia.features[x]['modules_needed']):20} {desc}" )
+
+        if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
+            print( "ERROR: need at least one of: amqp or mqtt" )
+
+        print( f"\n state dir: {self.user_cache_dir} " )
+        print( f" config dir: {self.user_config_dir} " )
+
+
     def foreground(self):
 
         for f in self.filtered_configurations:
@@ -1846,9 +1902,9 @@ class sr_GlobalState:
                         signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
-        for l in sarracenia.extras.keys():
-            if not sarracenia.extras[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.extras[l]['lament']}" )
+        for l in sarracenia.features.keys():
+            if not sarracenia.features[l]['present']:
+                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
@@ -2152,6 +2208,7 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
+
 
         line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
@@ -2499,6 +2556,7 @@ class sr_GlobalState:
         """
         bad = 0
 
+
         print('%-10s %-10s %-6s %3s %s' %
               ('Component', 'State', 'Good?', 'Qty',
                'Configurations-i(r/e)-r(Retry)'))
@@ -2655,7 +2713,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'overview', 'restart', 'run', 'sanity',
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -2724,6 +2782,9 @@ def main():
 
     if action == 'enable':
         gs.enable()
+
+    if action == 'features':
+        gs.features()
 
     if action == 'foreground':
         gs.foreground()
