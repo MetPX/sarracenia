@@ -357,7 +357,7 @@ class Test_Message():
         msg = sarracenia.Message()
         msg.updatePaths(options, new_dir, new_file)
         assert msg['_deleteOnPost'] == set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format', '_format'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format', '_format', 'subtopic'
         ])
         assert msg['new_dir'] == new_dir
         assert msg['new_file'] == new_file
