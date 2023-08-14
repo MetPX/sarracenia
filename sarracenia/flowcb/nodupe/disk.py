@@ -11,12 +11,12 @@ import logging
 
 from sarracenia import nowflt, timestr2flt, timeflt2str
 
-from sarracenia.flowcb import FlowCB
+from sarracenia.flowcb.nodupe import NoDupe
 
 logger = logging.getLogger(__name__)
 
 
-class NoDupe(FlowCB):
+class Disk(NoDupe):
     """
        generalised duplicate suppression for sr3 programs. It is used as a 
        time based buffer that prevents, when activated, identical files (of some kinds) 
@@ -123,39 +123,6 @@ class NoDupe(FlowCB):
             logger.debug( f"added relpath={relpath}")
 
         return True
-
-    def deriveKey(self, msg) -> str:
-
-        key=None
-        if ('nodupe_override' in msg) and ('key' in msg['nodupe_override']):
-            key = msg['nodupe_override']['key']
-        elif 'fileOp' in msg :
-            if 'link' in msg['fileOp']:
-                key = msg['fileOp']['link']
-            elif 'directory' in msg['fileOp']: 
-                if 'remove' not in msg['fileOp']:
-                    key = msg['relPath']
-        elif 'identity' in msg:
-            if msg['identity']['method'] in ['cod']:
-                # if cod, revert to using the path.
-                key = msg['relPath']
-            else:
-                key = msg['identity']['method'] + ',' + msg['identity']['value'].replace('\n', '')
-
-
-        if not key:
-            if 'mtime' in msg:
-                t = msg['mtime']
-            else:
-                t = msg['pubTime']
-            if 'size' in msg:
-                key = f"{msg['relPath']},{t},{msg['size']}"
-            else:
-                key = f"{msg['relPath']},{t}"
-
-        return key
-
-
 
     def check_message(self, msg) -> bool :
         """
