@@ -2150,23 +2150,22 @@ class sr_GlobalState:
             print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             if procs_length-1 > index:
                 print(',')
-
-        print('},\n\n\"Configs\" : {\n\n')
+ 
+        print('\n\n,"Configs\" : {\n\n')
         configLength = len(self.configs)
         for indexConfig,c in enumerate(self.configs):
+            lengthSelfConfigC = len(self.configs[c])
             for indexC,cfg in enumerate(self.configs[c]):
                 print('\t\"%s\": { ' % c)
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])))
-                cLength = len(self.configs[c])
-                #if cLength-1 > indexC:
-                   #print(',')
-            if configLength-1 > indexConfig :
-               if c != "report":
-                  print(',' )
-
-        print('\n\n},States": { \n\n')
+                print('\t\t\"%s\" : %s }' % (cfg, json.dumps(self.configs[c][cfg])))
+                if lengthSelfConfigC-1 > indexC:
+                   print(',')
+            if configLength-1 > indexConfig and lengthSelfConfigC != 0:
+               print(',')
+        
+        print('\n\n},"States": { \n\n')
         lengthSelfStates = len(self.states)
         for indexSelfStates,c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
