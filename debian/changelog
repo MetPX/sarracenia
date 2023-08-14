@@ -6,6 +6,9 @@ metpx-sr3 (3.00.43) UNRELEASED; urgency=medium
 
 metpx-sr3 (3.00.42) unstable; urgency=medium
 
+  * issue #747 mqtt passing more tests (but restart_server still fails.)
+  * issue #745 bad poll cod key choice, refactored nodupe.
+  * issue #738 new: *sr3 features* action to inventory dependencies obviously.
   * PR #735, issue #721 *filetype* becomes extra feature.
   * issue #720 bug about plugin option being specified twice causing parser
     crash.
