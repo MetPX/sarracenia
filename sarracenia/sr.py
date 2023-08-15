@@ -2083,7 +2083,7 @@ class sr_GlobalState:
                     print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
-    def dump(self):
+    def dump(self): 
         """ Printing all running processes, configs, states
         :return:
         """
@@ -2094,7 +2094,7 @@ class sr_GlobalState:
             print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             if procs_length-1 > index:
                 print(',')
- 
+        print('}') 
         print('\n\n,"Configs\" : {\n\n')
         configLength = len(self.configs)
         for indexConfig,c in enumerate(self.configs):
@@ -2121,9 +2121,11 @@ class sr_GlobalState:
             print( "\t}" )
             if lengthSelfStates -1 > indexSelfStates:
                 print(',')
-        print('},\n\n"Bindings": { \n\n')
+        print('},')
 
-        for h in self.brokers:
+        print('\n\n"Bindings": { \n\n')
+        lengthSelfBrokers = len(self.brokers)
+        for indexSelfBrokers,h in enumerate(self.brokers):
             print("\n\"host\": { \"%s\": { " % h)
             print("\n\"exchanges\": { ")
             lengthExchange = len(self.brokers[h]['exchanges'])
@@ -2131,15 +2133,19 @@ class sr_GlobalState:
                 print("\t\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])))
                 if lengthExchange -1 > indexExchange:
                    print(',')
-            print("},\n\"queues\": {")
+            print("}},\n\"queues\": {")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
             for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
                 print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]))
                 if lengthBrokersQueues -1 > indexBrokerQueues:
                    print(',')
-            print( "}},\n" )
-
-        print('\n\"nbroker summaries": {\n\n')
+            print( " \n}\n}\n")
+            if lengthSelfBrokers - 1 > indexSelfBrokers:
+               print(',') 
+        print('}')
+        
+        print(',')
+        print('\n"nbroker summaries": {\n\n')
         lengthSelfBroker = len(self.brokers)
         for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
@@ -2168,8 +2174,8 @@ class sr_GlobalState:
             print(']')
             if lengthSelfBroker -1 > indexSelfBroker:
                print(',')
-
-        print('},\n\n\"Missing instances\" : { \n\n')
+        print('}')
+        print(',\n\n\"Missing instances\" : { \n\n')
         for instance in self.missing:
             (c, cfg, i) = instance
             print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
