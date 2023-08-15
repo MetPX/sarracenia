@@ -26,6 +26,69 @@ Keep this window alive until you are done with Sarracenia. Closing it or typing 
 
 From a Windows Powershell session:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If sr3 is not found at the command line, even after a *pip install metpx-sr3*, then it may be because
+pip does not get the entry points added to the Power Shell Path and you may need to do that manually::
+
+    PS C:\Users\SilvaP2> sr3
+    sr3 : The term 'sr3' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the
+    spelling of the name, or if a path was included, verify that the path is correct and try again.
+    At line:1 char:1
+    + sr3
+    + ~~~
+        + CategoryInfo          : ObjectNotFound: (sr3:String) [], CommandNotFoundException
+        + FullyQualifiedErrorId : CommandNotFoundException
+    
+    PS C:\Users\SilvaP2>
+
+One can validate that the metpx-sr3 package is installed with *pip list* ... it should be in the list.
+then look where the entry point scripts are located::
+
+    PS C:\Users\SilvaP2> pip show -f metpx-sr3
+    Name: metpx-sr3
+    Version: 3.0.42
+    Summary: Subscribe, Acquire, and Re-Advertise products.
+    Home-page: https://github.com/MetPX/sarracenia
+    Author: Shared Services Canada, Supercomputing, Data Interchange
+    Author-email: Peter.Silva@canada.ca
+    License: GPLv2
+    Location: c:\users\silvap2\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages
+    Editable project location: C:\Users\SilvaP2\Sarracenia\sr3
+    Requires: appdirs, humanfriendly, humanize, jsonpickle, paramiko, psutil, python-magic-bin, watchdog
+    Required-by:
+    Files:
+      ..\Scripts\sr3.exe
+      ..\Scripts\sr3_post.exe
+      ..\Scripts\sr3_tailf.exe
+      __editable__.metpx_sr3-3.0.42.pth
+      __editable___metpx_sr3_3_0_42_finder.py
+      __pycache__\__editable___metpx_sr3_3_0_42_finder.cpython-310.pyc
+      metpx_sr3-3.0.42.dist-info\AUTHORS.rst
+      metpx_sr3-3.0.42.dist-info\INSTALLER
+      metpx_sr3-3.0.42.dist-info\LICENSE.txt
+      metpx_sr3-3.0.42.dist-info\METADATA
+      metpx_sr3-3.0.42.dist-info\RECORD
+      metpx_sr3-3.0.42.dist-info\REQUESTED
+      metpx_sr3-3.0.42.dist-info\WHEEL
+      metpx_sr3-3.0.42.dist-info\direct_url.json
+      metpx_sr3-3.0.42.dist-info\entry_points.txt
+      metpx_sr3-3.0.42.dist-info\top_level.txt
+    PS C:\Users\SilvaP2>
+
+From this we learn that the program files are in::
+
+    c:\users\silvap2\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\site-packages\Scripts
+
+So can add that Scripts directory to the powershell Profile. (On my laptop, it is 
+in Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 ::
+
+     $env:Path += ';c:\users\silvap2\appdata\local\packages\pythonsoftwarefoundation.python.3.10_qbz5n2kfra8p0\localcache\local-packages\python310\Scripts'
+     $env:EDITOR = 'code.cmd'
+
+The first line sets the Path so that sr3 entry points will be found.  The (optional) second line, sets 
+the EDITOR variable, so that the *sr3 edit* command will open the configuration files in VSCode.
+One must launch a new Powershell for the settings to take effect.
+
 Launch a Powershell |powershell| session and type this command at the prompt::
 
  sr3 restart
