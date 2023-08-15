@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.43) UNRELEASED; urgency=medium
+
+  * incrementing away from release.
+
+ -- Peter Silva <peter@blacklab>  Tue, 15 Aug 2023 14:32:56 -0400
+
 metpx-sr3 (3.00.42) unstable; urgency=medium
 
   * PR #735, issue #721 *filetype* becomes extra feature.
