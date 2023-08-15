@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.42) unstable; urgency=medium
 
   * PR #735, issue #721 *filetype* becomes extra feature.
   * issue #720 bug about plugin option being specified twice causing parser
