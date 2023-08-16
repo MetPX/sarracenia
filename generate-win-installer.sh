@@ -41,7 +41,10 @@ cd pynsist_pkgs/
 # Ensure to download only windows binaries
 pip3 download amqp --only-binary=:all: --platform win_amd64
 pip3 download appdirs --only-binary=:all: --platform win_amd64
+pip3 download dateparser --only-binary=:all: --platform win_amd64
 pip3 download humanfriendly --only-binary=:all: --platform win_amd64
+pip3 download humanize --only-binary=:all: --platform win_amd64
+pip3 download jsonpickle --only-binary=:all: --platform win_amd64
 
 # these are often missing... means vip will be disabled.
 #pip3 download netifaces --only-binary=:all: --platform win_amd64
@@ -62,7 +65,6 @@ pip3 wheel paho-mqtt
 
 # No binary available, thats why they are not fetched by pip (to be tested later) 
 # look in win_installer.cfg.tem fo additional deps.
-pip3 download humanize --only-binary=:all: --platform win_amd64
 #pip3 download pycparser --only-binary=:all: --platform win_amd64
 #pip3 download pathtools --only-binary=:all: --platform win_amd64
 pip3 download watchdog --only-binary=:all: --platform win_amd64
