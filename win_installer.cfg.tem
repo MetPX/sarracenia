@@ -29,6 +29,7 @@ packages=
     dateutil
     humanfriendly
     humanize
+    jsonpickle
     pathtools
     pycparser
     watchdog
