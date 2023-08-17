@@ -2231,14 +2231,14 @@ class sr_GlobalState:
             if lengthSelfBroker -1 > indexSelfBroker:
                print(',')
         print('}')
-        print(',\n\n\"Missing instances\" : { \n\n')
+        print(',\n\n\"Missing instances\" : [\n\n')
         lengthMissing = len(self.missing)
         for indexMissing,instance in enumerate(self.missing):
             (c, cfg, i) = instance
-            print('\t\t\"%s\" : \"%s %d\"' % (c, cfg, i))
+            print('\t\t\"%s/%s_%d\"' % (c, cfg, i))
             if lengthMissing - 1 > indexMissing:
                print(',')
-        print('\t\t}\n}')
+        print('\t\t] \n}')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
