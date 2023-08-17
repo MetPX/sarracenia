@@ -2160,7 +2160,7 @@ class sr_GlobalState:
             for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])))
+                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])),end="")
                 if lengthSelfConfigC-1 > indexC:
                    print(',')
             print('}',end="")
@@ -2183,28 +2183,28 @@ class sr_GlobalState:
 
         print('\n\n"Bindings": { \n\n')
         lengthSelfBrokers = len(self.brokers)
+        print("\n\"host\":{\n\t", end="")
         for indexSelfBrokers,h in enumerate(self.brokers):
-            print("\n\"host\": { \"%s\": { " % h)
-            print("\n\"exchanges\": { ")
+            print("\"%s\": { \n" % h)
+            print("\n\t\t\"exchanges\": { ", end="")
             lengthExchange = len(self.brokers[h]['exchanges'])
             for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
-                print("\t\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])))
+                print("\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])), end="")
                 if lengthExchange -1 > indexExchange:
                    print(',')
-            print("}},\n\"queues\": {")
+            print("},\n\t\t\"queues\": {")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
             for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
-                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]))
+                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]), end="")
                 if lengthBrokersQueues -1 > indexBrokerQueues:
                    print(',')
-            print( " \n}\n}\n")
+            print( " \n}\n}",end="")
             if lengthSelfBrokers - 1 > indexSelfBrokers:
                print(',') 
-        print('}')
-        
-        print(',')
-        print('\n"nbroker summaries": {\n\n')
+
+        print('}\n},\n"nbroker summaries": {\n\n')
         lengthSelfBroker = len(self.brokers)
+        print('\n\"broker\": {')
         for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
@@ -2215,29 +2215,28 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\n\"broker\": { \"%s\":\"%s\" },' % (h, a))
+            print('\"%s\":\"%s\"{' % (h, a))
             print('\n\"exchanges\": [ ', end='')
             lengthExchangeSummary  = len(self.exchange_summary[h])
             for indexSummary,x in enumerate(self.exchange_summary[h]):
                 print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
                 if lengthExchangeSummary -1 > indexSummary:
                    print(',')
-            print(']')
-            print('\n,"queues\": [', end="")
+            print('],"queues\": [', end="")
             lengthBrokersQueues = len(self.brokers[h]['queues'])
             for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
-                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end='')
+                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end="")
                 if lengthBrokersQueues -1 > indexBrokersSummary:
                    print(',')
-            print(']')
+            print(']\n}', end="")
             if lengthSelfBroker -1 > indexSelfBroker:
                print(',')
-        print('}')
-        print(',\n\n\"Missing instances\" : [\n\n')
+
+        print('},\n\n\"Missing instances\" : [\n\n')
         lengthMissing = len(self.missing)
         for indexMissing,instance in enumerate(self.missing):
             (c, cfg, i) = instance
-            print('\t\t\"%s/%s_%d\"' % (c, cfg, i))
+            print('\t\t\"%s/%s_%d\"' % (c, cfg, i),end="")
             if lengthMissing - 1 > indexMissing:
                print(',')
         print('\t\t] \n}')
