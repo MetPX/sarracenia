@@ -2147,7 +2147,7 @@ class sr_GlobalState:
         print('\n\n"Processes" : { \n\n')
         procs_length = len(self.procs)
         for index,pid in enumerate(self.procs):
-            print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
+            print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4)), end='')
             if procs_length-1 > index:
                 print(',')
         print('},') 
