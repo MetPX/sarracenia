@@ -2215,8 +2215,9 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\"%s\":\"%s\"{' % (h, a))
-            print('\n\"exchanges\": [ ', end='')
+            print('\"%s\":{' % (h))
+            
+            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' %(a), end='')
             lengthExchangeSummary  = len(self.exchange_summary[h])
             for indexSummary,x in enumerate(self.exchange_summary[h]):
                 print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
@@ -2231,8 +2232,7 @@ class sr_GlobalState:
             print(']\n}', end="")
             if lengthSelfBroker -1 > indexSelfBroker:
                print(',')
-
-        print('},\n\n\"Missing instances\" : [\n\n')
+        print('}\n},\n\n\"Missing instances\" : [\n\n')
         lengthMissing = len(self.missing)
         for indexMissing,instance in enumerate(self.missing):
             (c, cfg, i) = instance
