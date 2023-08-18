@@ -1,7 +1,9 @@
-metpx-sr3 (3.00.43) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.43) unstable; urgency=medium
 
   * issue #634 sr3 dump is now pure JSON (Thanks Mohammed!)
   * issue #748 sr3 foreground on windows will not start.
+  * windows self-extracting executable is now usable.
+    (dependency fixes)
 
  -- Peter Silva <peter@blacklab>  Tue, 15 Aug 2023 14:32:56 -0400
 
