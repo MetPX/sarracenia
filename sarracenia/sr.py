@@ -2150,9 +2150,9 @@ class sr_GlobalState:
             print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
             if procs_length-1 > index:
                 print(',')
-        print('}') 
+        print('},') 
 
-        print('\n\n,"Configs\" : {\n\n')
+        print('\n\n"Configs\" : {\n\n')
         configLength = len(self.configs)
         for indexConfig,c in enumerate(self.configs):
             lengthSelfConfigC = len(self.configs[c])
@@ -2167,7 +2167,7 @@ class sr_GlobalState:
             if configLength-1 > indexConfig or configLength == 0:
                print(',')
 
-        print('\n\n},"States": { \n\n')
+        print('},\n\n"States": { \n\n')
         lengthSelfStates = len(self.states)
         for indexSelfStates,c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
@@ -2176,7 +2176,7 @@ class sr_GlobalState:
                 print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
                 if lengthC -1 > indexC:
                    print(',')
-            print( "\t}" )
+            print( "\t}", end="")
             if lengthSelfStates -1 > indexSelfStates:
                 print(',')
         print('},')
@@ -2239,7 +2239,7 @@ class sr_GlobalState:
             print('\t\t\"%s/%s_%d\"' % (c, cfg, i),end="")
             if lengthMissing - 1 > indexMissing:
                print(',')
-        print('\t\t] \n}')
+        print('] }')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
