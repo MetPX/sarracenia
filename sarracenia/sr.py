@@ -1500,10 +1500,7 @@ class sr_GlobalState:
                     component_path = os.path.dirname(
                         component_path) + os.sep + 'instance.py'
                     cmd = [sys.executable, component_path, '--no', "0"]
-                    if sys.argv[0].find('python') >= 0:
-                        cmd.extend(sys.argv[2:])
-                    else:
-                        cmd.extend(sys.argv[1:])
+                    cmd.extend(sys.argv[1:])
 
                 elif c[0] != 'c':  # python components
                     if cfg is None:
