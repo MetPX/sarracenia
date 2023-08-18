@@ -2139,46 +2139,76 @@ class sr_GlobalState:
                     print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
-    def dump(self):
+    def dump(self): 
         """ Printing all running processes, configs, states
-
         :return:
         """
+        print('{\n')
         print('\n\n"Processes" : { \n\n')
-        for pid in self.procs:
-            print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
-            #print('\t%s: %s' % (pid, self.procs[pid] ))
 
-        print('},\n\n\"Configs\" : {\n\n')
-        for c in self.configs:
+        #procs_length = len(self.procs)
+        #for index,pid in enumerate(self.procs):
+        #    print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4)), end='')
+        #    if procs_length-1 > index:
+        #        print(',')
+
+        print(','.join( map( lambda pid: f'"{pid}": {json.dumps(self.procs[pid], sort_keys=True, indent=1)}' , self.procs.keys() ) ))
+        print('},') 
+
+        print('\n\n"Configs\" : {\n\n')
+        configLength = len(self.configs)
+        for indexConfig,c in enumerate(self.configs):
+            lengthSelfConfigC = len(self.configs[c])
             print('\t\"%s\": { ' % c)
-            for cfg in self.configs[c]:
+            for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
-            print("\t\t}")
+                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])),end="")
+                if lengthSelfConfigC-1 > indexC:
+                   print(',')
+            print('}',end="")
+            if configLength-1 > indexConfig or configLength == 0:
+               print(',')
 
         print('},\n\n"States": { \n\n')
-        for c in self.states:
+        lengthSelfStates = len(self.states)
+        for indexSelfStates,c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
-            for cfg in self.states[c]:
-                print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
-            print( "\t}" )
+            lengthC = len(self.states[c])
+            for indexC,cfg in enumerate(self.states[c]):
+                print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
+                if lengthC -1 > indexC:
+                   print(',')
+            print( "\t}", end="")
+            if lengthSelfStates -1 > indexSelfStates:
+                print(',')
+        print('},')
 
-        print('}\n\n"Bindings": { \n\n')
+        print('\n\n"Bindings": { \n\n')
+        lengthSelfBrokers = len(self.brokers)
+        print("\n\"host\":{\n\t", end="")
+        for indexSelfBrokers,h in enumerate(self.brokers):
+            print("\"%s\": { \n" % h)
+            print("\n\t\t\"exchanges\": { ", end="")
+            lengthExchange = len(self.brokers[h]['exchanges'])
+            for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
+                print("\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])), end="")
+                if lengthExchange -1 > indexExchange:
+                   print(',')
+            print("},\n\t\t\"queues\": {")
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
+                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]), end="")
+                if lengthBrokersQueues -1 > indexBrokerQueues:
+                   print(',')
+            print( " \n}\n}",end="")
+            if lengthSelfBrokers - 1 > indexSelfBrokers:
+               print(',') 
 
-        for h in self.brokers:
-            print("\n\"host\": { \"%s\": { " % h)
-            print("\n\"exchanges\": { ")
-            for x in self.brokers[h]['exchanges']:
-                print("\t\"%s\": { %s }," % (x, json.dumps(self.brokers[h]['exchanges'][x])))
-            print("},\n\"queues\": {")
-            for q in self.brokers[h]['queues']:
-                print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
-            print( "}},\n" )
-
-        print(',\n\"nbroker summaries": {\n\n')
-        for h in self.brokers:
+        print('}\n},\n"nbroker summaries": {\n\n')
+        lengthSelfBroker = len(self.brokers)
+        print('\n\"broker\": {')
+        for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
                 admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
@@ -2188,22 +2218,31 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\n\"broker\": { \"%s\":\"%s\" }' % (h, a))
-            print('\n\"exchanges\": [ ', end='')
-            for x in self.exchange_summary[h]:
-                print("\"%s-%d\", " % (x, self.exchange_summary[h][x]), end='')
-            print(']')
-            print('\n\"queues\": [', end='')
-            for q in self.brokers[h]['queues']:
-                print("\"%s-%d\", " % (q, len(self.brokers[h]['queues'][q])),
-                      end='')
-            print(']')
-
-        print('}\n\n\"Missing instances\" : { \n\n')
-        for instance in self.missing:
+            print('\"%s\":{' % (h))
+            
+            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' %(a), end='')
+            lengthExchangeSummary  = len(self.exchange_summary[h])
+            for indexSummary,x in enumerate(self.exchange_summary[h]):
+                print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
+                if lengthExchangeSummary -1 > indexSummary:
+                   print(',')
+            print('],"queues\": [', end="")
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
+                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end="")
+                if lengthBrokersQueues -1 > indexBrokersSummary:
+                   print(',')
+            print(']\n}', end="")
+            if lengthSelfBroker -1 > indexSelfBroker:
+               print(',')
+        print('}\n},\n\n\"Missing instances\" : [\n\n')
+        lengthMissing = len(self.missing)
+        for indexMissing,instance in enumerate(self.missing):
             (c, cfg, i) = instance
-            print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
-        print('\t\t}')
+            print('\t\t\"%s/%s_%d\"' % (c, cfg, i),end="")
+            if lengthMissing - 1 > indexMissing:
+               print(',')
+        print('] }')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
@@ -2774,7 +2813,6 @@ def main():
         gs.disable()
 
     if action == 'dump':
-        print('dumping: ', end='', flush=True)
         gs.dump()
 
     if action == 'edit':
