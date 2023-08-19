@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.44) UNRELEASED; urgency=medium
+
+  * 
+
+ -- Peter <peter@bsqt.homeip.net>  Sat, 19 Aug 2023 00:44:33 -0400
+
 metpx-sr3 (3.00.43) unstable; urgency=medium
 
   * issue #634 sr3 dump is now pure JSON (Thanks Mohammed!)
