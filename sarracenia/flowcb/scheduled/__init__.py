@@ -34,29 +34,15 @@ class Scheduled(FlowCB):
     Scheduled_interval takes precedence over the others, making it
     easier to specify an interval for testing/debugging purposes.
     
-    currently: when using scheduled_hour, only one minute can be given within the hour.
-    if only using scheduled_minute, then repeated values are fine.
-    
     use in code (for subclassing):
    
     from sarracenia.scheduled import Scheduled 
 
     class hoho(Scheduled):
-         in the routine...
-            self.wait_until_next()  # comment out for just every hour.
-
-            if self.stop_requested:
-                return []
-
-            # this code works if only invoked at scheduled times...
-    
-    
-    would there be a more pythonic way of doing this?
-    
-        https://schedule.readthedocs.io/en/stable/
-    
-    would probably be dead easy to do multiple minute within hour,
-    just haven't thought about it. opportunity for improvement.
+         replace the gather() routine...
+         keep the top lines "until time to run"
+         replace whatever is below.
+         will only run when it should.
 
     """
 
