@@ -85,6 +85,9 @@ class Scheduled(FlowCB):
         self.o.add_option( 'scheduled_hour', 'list', [] )
         self.o.add_option( 'scheduled_minute', 'list', [] )
         
+        self.housekeeping_needed=False
+        self.interrupted=None
+
         sched_hours = sum([ x.split(',') for x in self.o.scheduled_hour],[])
         self.hours = list(map( lambda x: int(x), sched_hours ))
         self.hours.sort()
@@ -103,7 +106,7 @@ class Scheduled(FlowCB):
         # for next expected post
         self.wait_until_next()
 
-        if self.stop_requested:
+        if self.stop_requested or self.housekeeping_needed:
             return []
 
         logger.info('time to run')
@@ -118,22 +121,52 @@ class Scheduled(FlowCB):
 
         return gathered_messages
 
+    def on_housekeeping(self):
+
+        self.housekeeping_needed = False
+
+
     def wait_seconds(self,sleepfor):
         """
            sleep for the given number of seconds, like time.sleep() but broken into
-           shorter naps to be able to honour stop_requested.
+           shorter naps to be able to honour stop_requested, or when housekeeping is needed.
+           
         """
 
+        housekeeping=datetime.timedelta(seconds=self.o.housekeeping)
         nap=datetime.timedelta(seconds=10)
+
+        if self.interrupted:
+            sleepfor = self.interrupted
+            now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
+
+            # update sleep remaining based on how long other processing took.
+            interruption_duration= now-self.interrupted_when
+            sleepfor -= interruption_duration
+
         if sleepfor < nap:
             nap=sleepfor
     
+        sleptfor=datetime.timedelta(seconds=0)
+
         while sleepfor > datetime.timedelta(seconds=0):
             time.sleep(nap.total_seconds())
             if self.stop_requested:
-                break
-            sleepfor -= nap
+                return
 
+            # how long is left to sleep.
+            sleepfor -= nap
+            self.interrupted=sleepfor
+            self.interrupted_when = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
+
+            sleptfor += nap
+            if sleptfor > housekeeping:
+                self.housekeeping_needed=True
+                return
+
+        # got to the end of the interval...
+        self.interrupted=None
+       
     def wait_until( self, appointment ):
 
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
@@ -167,8 +200,11 @@ class Scheduled(FlowCB):
                 next_appointment=self.appointments[0]
 
             self.wait_until(next_appointment)
-            self.appointments.remove(next_appointment)
-            logger.info( f"ok {len(self.appointments)} appointments left today" )
+            if self.interrupted:
+                logger.info( f"sleep interrupted, returning for housekeeping." )
+            else:
+                self.appointments.remove(next_appointment)
+                logger.info( f"ok {len(self.appointments)} appointments left today" )
 
 
 if __name__ == '__main__':
