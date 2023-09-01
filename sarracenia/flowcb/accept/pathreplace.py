@@ -1,19 +1,19 @@
 """
-   Adjust file paths, modifies the paths in file operation fileds, for file renaming,
-   removal or links, or to give files different names on download.
+    Adjust file paths, modifies the paths in file operation fileds, for file renaming,
+    removal or links, or to give files different names on download.
 
-   where files from a 'before' directory, are sent by an sr_sender to a 'after' directory.
-   This also applies to the HPC mirroring case, where one would likely have a setting like
+    where files from a 'before' directory, are sent by an sr_sender to a 'after' directory.
+    This also applies to the HPC mirroring case, where one would likely have a setting like
 
-   pathReplace site5,site6
-   pathReplaceFields dir     
+    pathReplace site5,site6
+    pathReplaceFields dir
 
-   sample usage:
+    sample usage:
 
-   pathReplace before,after
+    pathReplace before,after
 
-   flowcb accept.pathreplace
- 
+    flowcb accept.pathreplace
+
 """
 
 import logging
@@ -44,7 +44,7 @@ class Pathreplace(FlowCB):
 
     def after_accept(self, worklist):
 
-        if not hasattr(self.o, 'pathReplace'):
+        if self.o.pathReplace == [None]:
             return
 
         for msg in worklist.incoming:
@@ -75,9 +75,7 @@ class Pathreplace(FlowCB):
                     if 'link' in msg['fileOp'] and 'link' in self.o.pathReplaceFields:
                         msg['fileOp']['link'] = msg['fileOp']['link'].replace(b, a, 1)
     
-                # adjust new_relpath if posting
-                if not self.o.post_broker: return True
-    
+                ## adjust new_relpath if posting    
                 if self.o.post_baseDir:
                     msg['new_relPath'] = msg['new_relPath'].replace(self.o.post_baseDir, '',1)
 
