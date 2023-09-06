@@ -18,18 +18,22 @@ logger = logging.getLogger(__name__)
 class ToHttp(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
-        if hasattr(self.o, 'baseDir'):
-            self.o.ldocroot = self.o.baseDir
-        if hasattr(self.o, 'toHttpRoot'):
-            self.o.ldocroot = self.o.toHttpRoot[0]
 
-        self.o.hurlre = re.compile('file:/' + self.o.ldocroot)
+        self._ldocroot = None
+        
+        #self.o.add_option('baseDir', 'str')
+        if self.o.baseDir:
+            self._ldocroot = self.o.baseDir
+
+        self.o.add_option('toHttpRoot', 'str')
+        if self.o.toHttpRoot:
+            self._ldocroot = self.o.toHttpRoot
+
+        #self.o.hurlre = re.compile('file:/' + self.o.ldocroot)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            logger.debug("ToHttp input: urlstr: %s" % message['urlstr'])
-            message['urlstr'] = self.o.hurlre.sub(message['savedurl'], message['urlstr'])
-            url = urllib.parse.urlparse(message['urlstr'])
+            logger.info("ToHttp message input: baseUrl=%s, relPath=%s" % (message['baseUrl'], message['relPath']))
 
             #message['set_notice_url'](message['url'])
             # Updated to remove call to message.set_notice_url
@@ -54,8 +58,5 @@ class ToHttp(FlowCB):
                     if url.path[:2] == '//':
                         relPath = '/' + relPath
 
-            message['baseUrl'] = baseUrl
-            message['relPath'] = relPath
-
-            logger.debug("ToHttp config.baseDir=%s" % (self.o.baseDir))
-            logger.info("ToHttp message output: urlstr=%s, baseUrl=%s, relPath=%s" % (message['urlstr'], message['baseUrl'], message['relPath']))
+            logger.debug("ToHttp config; baseDir=%s, toHttpRoot" % (self.o.baseDir, self.o.toHttpRoot))
+            logger.info("ToHttp message output: baseUrl=%s, relPath=%s" % (message['baseUrl'], message['relPath']))

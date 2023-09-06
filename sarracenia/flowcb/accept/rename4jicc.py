@@ -25,11 +25,8 @@ class Rename4Jicc(FlowCB):
         super().__init__(options, logger)
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
-
             if not 'ccstn.dat' in message['new_file']:
-                new_incoming.append(message)
                 continue
 
             # build new name
