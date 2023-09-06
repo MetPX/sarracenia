@@ -35,28 +35,15 @@ class ToHttp(FlowCB):
         for message in worklist.incoming:
             logger.info("ToHttp message input: baseUrl=%s, relPath=%s" % (message['baseUrl'], message['relPath']))
 
-            #message['set_notice_url'](message['url'])
-            # Updated to remove call to message.set_notice_url
-            #This is more complex than the fixes in testretry, and httptohttps because 
-            # it here we're calling the set_notice_url method, which had more logic
-            baseUrl = ''
-            relPath = url.path.strip('/').replace(' ', '%20').replace('#', '%23')
+            url = urllib.parse.urlparse(message['baseUrl'])
 
-            if url.scheme == 'file':
-                #self.notice = '%s %s %s' % (self.pubtime, 'file:', '/'+notice_path)
-                baseUrl = 'file:'
-                relPath = '/' + relPath
-            else:
-                
-                static_part = url.geturl().replace(url.path, '') + '/'
+            new_baseUrl = 'http://'
+            if self._ldocroot != None:
+                new_baseUrl += self._ldocroot
+            
+            new_baseUrl += url.path.replace('///', '//')
 
-                if url.scheme == 'http':
-                    baseUrl = static_part
-                    relPath = relPath
-
-                elif url.scheme[-3:] == 'ftp':
-                    if url.path[:2] == '//':
-                        relPath = '/' + relPath
+            message['baseUrl'] = new_baseUrl
 
             logger.debug("ToHttp config; baseDir=%s, toHttpRoot" % (self.o.baseDir, self.o.toHttpRoot))
             logger.info("ToHttp message output: baseUrl=%s, relPath=%s" % (message['baseUrl'], message['relPath']))
