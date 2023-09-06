@@ -36,7 +36,7 @@ class ToClusters(FlowCB):
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            if message['headers']['to_clusters'] in self.o.msgToClusters:
+            if message['to_clusters'] in self.o.msgToClusters:
                 new_incoming.append(message)
             else:
                 worklist.rejected.append(message)

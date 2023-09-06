@@ -39,14 +39,11 @@ class PostOverride(FlowCB):
             if hasattr(self.o, 'postOverride') and self.o.postOverride != [None]:
                 for o in self.o.postOverride:
                     (osetting, ovalue) = o.split()
-                    logger.debug('postOverride applying: header:%s value:%s' % (osetting, ovalue))
-                    message['headers'][osetting] = ovalue
-                    new_incoming.append(copy.deepcopy(message))
+                    logger.debug('postOverride applying key:%s value:%s' % (osetting, ovalue))
+                    message[osetting] = ovalue
 
             if hasattr(self.o, 'postOverrideDel'):
                 for od in self.o.postOverrideDel:
-                    if od in message['headers']:
-                        logger.debug('postOverride deleting: header:%s ' % od)
-                        del message['headers'][od]
-                        new_incoming.append(copy.deepcopy(message))
-        worklist.incoming = new_incoming
+                    if od in message:
+                        logger.debug('postOverride deleting key:%s ' % od)
+                        del message[od]
