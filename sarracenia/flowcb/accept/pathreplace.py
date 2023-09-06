@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 class Pathreplace(FlowCB):
     def __init__(self, options):
-
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
         self.o.add_option('pathReplace', 'list' )
+
         all_fields = set(['dir','file','rename','hlink','link'])
         self.o.add_option( 'pathReplaceFields', 'set', all_fields, all_fields )
 
@@ -43,7 +43,6 @@ class Pathreplace(FlowCB):
         logger.debug("pathReplace is %s " % self.o.pathReplace )
 
     def after_accept(self, worklist):
-
         if self.o.pathReplace == [None]:
             return
 

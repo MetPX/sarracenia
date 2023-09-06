@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 class Rename4Jicc(FlowCB):
     def __init__(self, options):
-
         super().__init__(options, logger)
 
     def after_accept(self, worklist):

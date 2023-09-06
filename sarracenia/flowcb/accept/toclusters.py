@@ -30,8 +30,7 @@ class ToClusters(FlowCB):
             logger.info("msgToClusters setting mandatory")
             return
 
-        logger.info("msgToClusters valid destinations: %s " %
-                    self.o.msgToClusters)
+        logger.info("msgToClusters valid destinations: %s " % self.o.msgToClusters)
 
     def after_accept(self, worklist):
         new_incoming = []

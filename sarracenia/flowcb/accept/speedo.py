@@ -14,9 +14,6 @@ Usage:
     msg_speedo_maxlag y
 """
 
-import os, stat, time
-import calendar
-import datetime
 
 from sarracenia import timestr2flt, nowflt, naturalSize, naturalTime
 import logging
