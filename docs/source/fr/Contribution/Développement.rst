@@ -1500,11 +1500,26 @@ Création d’un programme d’installation Windows
 On peut également construire un programme d’installation Windows avec cela
 `script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
 Il doit être exécuté à partir d’un système d’exploitation Linux (de préférence Ubuntu 18)
-dans le répertoire racine de git de Sarracenia. Ensuite, à partir du shell, exécutez ::
+dans le répertoire racine de git de Sarracenia. 
+
+déterminer la version de python::
+
+    fractal% python -V
+    Python 3.10.12
+    fractal%
+
+
+C'est donc python 3.10. Une seule version mineure aura le package intégré nécessaire
+par pynsist pour construire l'exécutable. On valide chez::
+
+   https://www.python.org/downloads/windows/
+
+afin to confirmer que la version avec un binaire *embedded* pour 3.10 et le 3.10.11
+Ensuite, à partir du shell, exécutez ::
 
  sudo apt install nsis
  pip3 install pynsist wheel
- ./generate-win-installer.sh 2>&1 > log.txt
+ ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
 Le paquet final doit être placé dans le répertoire build/nsis.
 
@@ -1689,3 +1704,55 @@ données elles-mêmes, et non des notifications ou des messages de rapport (ne s
 de rapport, cela devient une boucle infinie!) Pour le débogage et d’autres informations, le fichier
 journal local est utilisé.  Par exemple, sr_shovel n’émet aucun message sr_report(7), car aucune
 donnée n’est transférée, seulement des messages.
+
+
+Adding a New Dependency
+-----------------------
+
+Dependency Management is a complicated topic, because python has many different installation methods into disparate environments, and Sarracenia is multi-platform.  Standard python practice for dependencies is to make
+them *required* by listing them in requirements.txt or setup.py, and require all users to install them.
+In most python applications, if a dependency is missing, it just crashes with a import failure message
+of some kind.
+
+In Sr3, we have found that there are many different environments being deployed into where satisfying
+dependencies can be more trouble than they are worth, so each of the dependencies in setup.py are also
+dealt with in sarracenia/featuredetection, and the feature detection code allows the application to
+keep working, just without the functionality provided by the missing module. This is called *degradation*
+or *degraded mode*. The idea being to help the user do as much as they can, in the environment they have,
+while telling them what is missing, and what would ideally be added.
+  
+La gestion des dépendances est un sujet compliqué, car python a de nombreuses méthodes d'installation 
+différentes dans des environnements disparates, et Sarracenia est multi-plateforme. La pratique standard 
+de python pour les dépendances consiste à faire les *nécessaires* en les listant dans requirements.txt 
+ou setup.py, et demandez à tous les utilisateurs de les installer.  Dans la plupart des applications 
+python, si une dépendance est manquante, elle se bloque simplement avec un message d'échec d'importation
+de quelques sortes.
+
+Dans Sr3, nous avons constaté qu'il existe de nombreux environnements différents déployés dans lesquels
+les dépendances peuvent être plus gênantes qu'elles n'en valent la peine, donc chacune des dépendances 
+dans setup.py est également traité dans sarracenia/featuredetection, et le code de détection de 
+fonctionnalité permet à l'application de continuer à travailler, juste sans la fonctionnalité fournie 
+par le module manquant. C'est ce qu'on appelle la *dégradation* ou *mode dégradé*. L'idée étant 
+d'aider l'utilisateur à faire le maximum, dans l'environnement dont il dispose, tout en leur disant
+ce qui manque, et ce qu'il faudrait idéalement ajouter.
+
+pleine discussion (en anglais seulement): 
+
+`Managing Dependencies (Discussion) <https://github.com/MetPX/sarracenia/issues/741>`_
+
+version courte:
+
+En plus de requirements.dev/setup.py, si vous devez ajouter une nouvelle bibliothèque qui ne fait pas partie de
+*piles incluses*, généralement fournies par un package os ou pip séparé, alors vous voulez
+prévoir que sr3 fonctionne toujours dans le cas où le package n'est pas disponible (bien que
+sans la fonction que vous ajoutez) et pour ajouter un support pour expliquer ce qui manque en utilisant
+le module sarracenia/featuredetection.py.
+
+Dans ce module se trouve une structure de données *features*, où vous ajoutez une entrée expliquant 
+l'importation nécessaire et les fonctionnalités qu'il apporte à Sr3. Vous ajoutez également les 
+protections if feature['x']['present'] dans le code où vous utilisez la fonctionnalité, afin de 
+permettre au code de se dégrader avec élégance.
+
+Si la dépendance est ajoutée dans un plugin, alors il y a aussi une méthode pour celle décrite ici :
+
+`Guide de Programmeur<../Explication/SarraPluginDev.html#ajout-de-dependance-python-dans-les-callbacks>`_

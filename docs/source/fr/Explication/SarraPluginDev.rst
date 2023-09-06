@@ -7,9 +7,6 @@
 Travailler avec des plugins
 ---------------------------
 
-Enregistrement de révision
---------------------------
-
 :version: |release|
 :date: |today|
 
@@ -42,9 +39,6 @@ Il existe d’autres façons d’étendre Sarracenia v3 en sous-classant :
 * Sarracenia.flowcb.scheduled.Scheduled pour personnaliser les flux cédulés.
 
 Cela sera discuté après que les rappels auront été traités.
-
-Introduction
-------------
 
 Une pompe de données Sarracenia est un serveur Web avec des notifications pour les abonnés à
 savoir, rapidement, quand de nouvelles données sont arrivées. Pour savoir quelles données sont déjà
@@ -80,9 +74,6 @@ La structure de données de liste de travail est un ensemble de listes de messag
   * worklist.failed : messages pour lesquels le traitement a été tenté, mais qui a échoué.
 
 La liste de travail est transmise aux plugins *after_accept* et *after_work* comme détaillé dans la section suivante.
-
-
-~~~~~~~~~~~~~~~~~~~~
 
 Tous les composants (post, subscribe, sarra, sender, shovel, watch, winnow)
 partagent du code substantiel et ne diffèrent que par les paramètres de défaut.  L’algorithme de flux est :
@@ -849,6 +840,61 @@ les routines after_accept acceptent une liste de travail comme argument.
    **FIXME**: peut-être montrer un moyen de vérifier l’en-tête des pièces
    avec une instruction afin d’agir uniquement sur le message de première partie
    pour les fichiers longs.
+
+
+
+Ajout de Dépendance Python dans les Callbacks
+---------------------------------------------
+
+Certains *callback* doivent utiliser d'autres modules Python. Alors que les 
+importations normales sont bien, on peut mieux les intégrer pour les 
+utilisateurs sr3 en prenant en se servant du mécanisme *features* ::
+
+    from sarracenia.featuredetection import features
+    #
+    # Support for features inventory mechanism.
+    #
+    features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
+            'lament' : 'cannot use clamd to av scan files transferred',
+            'rejoice' : 'can use clamd to av scan files transferred' }
+
+    try:
+        import pyclamd
+        features['clamd']['present'] = True
+    except:
+        features['clamd']['present'] = False
+
+Cela permet aux utilisateurs de savoir quelles *features* sont disponibles dans leur installation.
+Lorsqu'ils exécutent *sr3 features*, sr3 fournit une liste facile à comprendre des éléments manquants::
+
+    fractal% sr3 features
+    2023-08-07 13:18:09,219 1993037 [INFO] sarracenia.flow loadCallbacks flowCallback plugins to load: ['sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'dcpflow', 'log', 'post.message', 'clamav']
+    2023-08-07 13:18:09,224 1993037 [INFO] dcpflow __init__ really I mean hi
+    2023-08-07 13:18:09,224 1993037 [WARNING] sarracenia.config add_option multiple declarations of lrgs_download_redundancy=['Yes', 'on'] choosing last one: on
+    2023-08-07 13:18:09,225 1993037 [INFO] dcpflow __init__  lrgs_download_redundancy is True
+    2023-08-07 13:18:09,225 1993037 [INFO] sarracenia.flowcb.log __init__ flow initialized with: {'post', 'on_housekeeping', 'after_work', 'after_accept', 'after_post'}
+    2023-08-07 13:18:09,226 1993037 [CRITICAL] sarracenia.flow loadCallbacks flowCallback plugin clamav did not load: 'pyclamd'
+
+    Status:    feature:   python imports:      Description:
+    Installed  amqp       amqp                 can connect to rabbitmq brokers
+    Installed  appdirs    appdirs              place configuration and state files appropriately for platform (windows/mac/linux)
+    Installed  filetypes  magic                able to set content headers
+    Installed  ftppoll    dateparser,pytz      able to poll with ftp
+    Installed  humanize   humanize             humans numbers that are easier to read.
+    Absent     mqtt       paho.mqtt.client     cannot connect to mqtt brokers
+    Installed  redis      redis,redis_lock     can use redis implementations of retry and nodupe
+    Installed  sftp       paramiko             can use sftp or ssh based services
+    Installed  vip        netifaces            able to use the vip option for high availability clustering
+    Installed  watch      watchdog             watch directories
+    Installed  xattr      xattr                on linux, will store file metadata in extended attributes
+    MISSING    clamd      pyclamd              cannot use clamd to av scan files transferred
+
+     state dir: /home/peter/.cache/sr3
+     config dir: /home/peter/.config/sr3
+
+On peut voir que le module Python *pyclamed* nécessary pour que le *callback* fonctionne n´est pas
+installé.
+
 
 Idées d’extension
 -----------------

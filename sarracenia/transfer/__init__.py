@@ -36,6 +36,7 @@ import urllib.parse
 
 #from sarracenia.sr_xattr import *
 from sarracenia import nowflt, timestr2flt
+from sarracenia.featuredetection import features
 
 logger = logging.getLogger(__name__)
 
@@ -428,5 +429,7 @@ class Transfer():
 import sarracenia.transfer.file
 import sarracenia.transfer.ftp
 import sarracenia.transfer.https
-import sarracenia.transfer.sftp
+
+if features['sftp']['present']:
+    import sarracenia.transfer.sftp
 

@@ -1,5 +1,17 @@
-metpx-sr3 (3.00.42) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.43) unstable; urgency=medium
 
+  * issue #634 sr3 dump is now pure JSON (Thanks Mohammed!)
+  * issue #748 sr3 foreground on windows will not start.
+  * windows self-extracting executable is now usable.
+    (dependency fixes)
+
+ -- Peter Silva <peter@blacklab>  Tue, 15 Aug 2023 14:32:56 -0400
+
+metpx-sr3 (3.00.42) unstable; urgency=medium
+
+  * issue #747 mqtt passing more tests (but restart_server still fails.)
+  * issue #745 bad poll cod key choice, refactored nodupe.
+  * issue #738 new: *sr3 features* action to inventory dependencies obviously.
   * PR #735, issue #721 *filetype* becomes extra feature.
   * issue #720 bug about plugin option being specified twice causing parser
     crash.

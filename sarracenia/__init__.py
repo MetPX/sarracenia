@@ -26,6 +26,7 @@
 #
 from ._version import __version__
 
+
 from base64 import b64decode, b64encode
 import calendar
 import datetime
@@ -33,10 +34,9 @@ import importlib.util
 import logging
 import os
 import os.path
-import paramiko
 import random
 import re
-import sarracenia.filemetadata
+from sarracenia.featuredetection import features
 import stat as os_stat
 import sys
 import time
@@ -60,6 +60,65 @@ def baseUrlParse( url ):
             u.path = u.path[1:]
     return u
 
+
+if features['filetypes']['present']:
+   import magic
+
+if features['mqtt']['present']:
+   import paho.mqtt.client
+   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
+       # without v5 support, mqtt is not useful.
+       features['mqtt']['present'] = False
+
+# if humanize is not present, compensate...
+if features['humanize']['present']:
+    import humanize
+
+    def naturalSize( num ):
+        return humanize.naturalsize(num,binary=True)
+
+    def naturalTime( dur ):
+        return humanize.naturaltime(dur)
+
+else:
+  
+    def naturalSize( num ):
+       return "%g" % num
+
+    def naturalTime( dur ):
+       return "%g" % dur
+
+
+if features['appdirs']['present']:
+    import appdirs
+
+    def site_config_dir( app, author ):
+        return appdirs.site_config_dir( app, author )
+
+    def user_config_dir( app, author ):
+        return appdirs.user_config_dir( app, author )
+
+    def user_cache_dir( app, author ):
+        return appdirs.user_cache_dir( app, author )
+else:
+    # if appdirs is missing, pretend we're on Linux.
+    import pathlib
+
+    def site_config_dir( app, author ):
+        return '/etc/xdg/xdg-ubuntu-xorg/%s' % app
+
+    def user_config_dir( app, author ):
+        return str(pathlib.Path.home()) + '/.config/%s' % app
+ 
+    def user_cache_dir( app, author ):
+        return str(pathlib.Path.home()) + '/.cache/%s' % app
+
+"""
+ end of extra feature scan. 
+
+"""
+
+import sarracenia.filemetadata
 
 class Sarracenia:
     """
@@ -96,12 +155,15 @@ class Sarracenia:
         m = sarracenia.Message.fromFileInfo( path, options, lstat )
     
         where you can make up the lstat values to fill in some fields in the message.
-        You can make a fake lstat structure to provide these values using paramiko.SFTPAttributes 
+        You can make a fake lstat structure to provide these values using sarracenia.filemetadata
+        class which is either an alias for paramiko.SFTPAttributes 
+        ( https://docs.paramiko.org/en/latest/api/sftp.html#paramiko.sftp_attr.SFTPAttributes )
+        if paramiko is installed, or a simple emulation if not.
     
     
-        import paramiko
+        from  sarracenia.filemetadata import FmdStat
     
-        lstat = paramiko.SFTPAttributes()
+        lstat = FmdStat()
         lstat.st_mtime= utcinteger second count in UTC (numeric version of a Sarracenia timestamp.)
         lstat.st_atime=
         lstat.st_mode=0o644
@@ -169,7 +231,7 @@ class TimeConversions:
     pass
 
 
-def stat( path ) -> paramiko.SFTPAttributes:
+def stat( path ) -> sarracenia.filemetadata.FmdStat:
     """
        os.stat call replacement which improves on it by returning
        and SFTPAttributes structure, in place of the OS stat one,
@@ -181,17 +243,19 @@ def stat( path ) -> paramiko.SFTPAttributes:
     """
     native_stat = os.stat( path )
     
-    sa = paramiko.SFTPAttributes()
+    sa = sarracenia.filemetadata.FmdStat()
     sa.st_mode = native_stat.st_mode
     sa.st_ino = native_stat.st_ino
-    sa.st_dev  = native_stat.st_dev 
-    sa.st_nlink  = native_stat.st_nlink 
-    sa.st_uid  = native_stat.st_uid 
-    sa.st_gid  = native_stat.st_gid 
-    sa.st_size  = native_stat.st_size 
+    sa.st_dev  = native_stat.st_dev
+    # st_nlink does not exist in paramiko.SFTPAttributes()
+    #  FmdStat comes from that type.
+    #sa.st_nlink  = native_stat.st_nlink
+    sa.st_uid  = native_stat.st_uid
+    sa.st_gid  = native_stat.st_gid
+    sa.st_size  = native_stat.st_size
 
-    sa.st_mtime = os.path.getmtime(path)    
-    sa.st_atime = os.path.getctime(path)    
+    sa.st_mtime = os.path.getmtime(path)
+    sa.st_atime = os.path.getctime(path)
     sa.st_ctime = native_stat.st_atime
     return sa
 
@@ -474,7 +538,7 @@ class Message(dict):
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
                 m.__computeIdentity(path, o)
-                if extras['filetypes']['present']:
+                if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)
                         m['contentType'] = t
@@ -678,7 +742,7 @@ class Message(dict):
                 msg[k] = options.fixed_headers[k]
 
         msg['_deleteOnPost'] |= set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'subtopic', 'post_format'
         ])
         if new_dir:
             msg['new_dir'] = new_dir
@@ -792,105 +856,3 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
-"""
-  Extra Feature Scanning and Enablement.
-
-  checking for extra dependencies, not "hard" dependencies ("requires")
-  listed as extras in setup.py and omitted entirely from debian packaging.
-  this allows installation with fewer dependencies ahead of time, and then
-  provide some messaging to users when they "need" an optional dependency.
- 
-  optional extras can be enabled using pip install metpx-sr3[extra]
-  where extra is one of the features listed below. Alternatively,
-  one can just install the modules that are needed and the functionality
-  will be enabled after a component restart.
-  
-  amqp - ability to communicate with AMQP (rabbitmq) brokers
-  mqtt - ability to communicate with MQTT brokers
-  filetypes - ability to
-  ftppoll - ability to poll FTP servers
-  vip  - enable vip (Virtual IP) settings to implement singleton processing
-         for high availability support.
-  watch - monitor files or directories for changes.
-
-"""
-extras = { 
-   'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 'lament' : 'will not be able to connect to rabbitmq brokers' },
-   'appdirs' : { 'modules_needed': [ 'appdirs' ], 'present': False, 'lament' : 'will assume linux file placement under home dir' },
-   'ftppoll' : { 'modules_needed': ['dateparser', 'pytz'], 'present': False, 'lament' : 'will not be able to poll with ftp' },
-   'humanize' : { 'modules_needed': ['humanize' ], 'present': False, 'lament': 'humans will have to read larger, uglier numbers' },
-   'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 'lament': 'will not be able to connect to mqtt brokers' },
-   'filetypes' : { 'modules_needed': ['magic'], 'present': False, 'lament': 'will not be able to set content headers' },
-   'vip'  : { 'modules_needed': ['netifaces'] , 'present': False, 'lament': 'will not be able to use the vip option for high availability clustering' },
-   'watch'  : { 'modules_needed': ['watchdog'] , 'present': False, 'lament': 'cannot watch directories' }
-}
-
-for x in extras:
-   
-   extras[x]['present']=True
-   for y in  extras[x]['modules_needed']:
-       try:
-           if importlib.util.find_spec( y ):
-               #logger.debug( f'found feature {y}, enabled') 
-               pass
-           else:
-               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-               extras[x]['present']=False
-       except:
-           logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-           extras[x]['present']=False
-
-# Some sort of graceful fallback, or good messaging for when dependencies are missing.
-
-if extras['filetypes']['present']:
-   import magic
-
-if extras['mqtt']['present']:
-   import paho.mqtt.client
-   if not hasattr( paho.mqtt.client, 'MQTTv5' ):
-       # without v5 support, mqtt is not useful.
-       extras['mqtt']['present'] = False
-
-# if humanize is not present, compensate...
-if extras['humanize']['present']:
-    import humanize
-
-    def naturalSize( num ):
-        return humanize.naturalsize(num,binary=True)
-
-    def naturalTime( dur ):
-        return humanize.naturaltime(dur)
-
-else:
-  
-    def naturalSize( num ):
-       return "%g" % num
-
-    def naturalTime( dur ):
-       return "%g" % dur
-
-
-if extras['appdirs']['present']:
-    import appdirs
-
-    def site_config_dir( app, author ):
-        return appdirs.site_config_dir( app, author )
-
-    def user_config_dir( app, author ):
-        return appdirs.user_config_dir( app, author )
-
-    def user_cache_dir( app, author ):
-        return appdirs.user_cache_dir( app, author )
-else:
-    # if appdirs is missing, pretend we're on Linux.
-    import pathlib
-
-    def site_config_dir( app, author ):
-        return '/etc/xdg/xdg-ubuntu-xorg/%s' % app
-
-    def user_config_dir( app, author ):
-        return str(pathlib.Path.home()) + '/.config/%s' % app
- 
-    def user_cache_dir( app, author ):
-        return str(pathlib.Path.home()) + '/.cache/%s' % app
- 

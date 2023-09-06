@@ -13,7 +13,7 @@ def pretty(*things, **named_things):
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.nodupe.redis import NoDupe
+from sarracenia.flowcb.nodupe.redis import Redis
 from sarracenia import Message as SR3Message
 
 class Options:
@@ -75,32 +75,32 @@ def test__deriveKey(tmp_path):
         BaseOptions.config = "test__deriveKey.conf"
         BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
 
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
 
         thismsg = make_message()
         thismsg['nodupe_override'] = {'key': "SomeKeyValue"}
-        assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
+        assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
 
         thismsg = make_message()
         thismsg['fileOp'] = {'link': "SomeKeyValue"}
-        assert nodupe._deriveKey(thismsg) == "SomeKeyValue"
+        assert nodupe.deriveKey(thismsg) == "SomeKeyValue"
 
         thismsg = make_message()
         thismsg['fileOp'] = {'directory': "SomeKeyValue"}
-        assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"]
 
         thismsg = make_message()
         thismsg['identity'] = {'method': "cod"}
-        assert nodupe._deriveKey(thismsg) == thismsg["relPath"]
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
         thismsg['identity'] = {'method': "method", 'value': "value\n"}
-        assert nodupe._deriveKey(thismsg) == "method,value"
+        assert nodupe.deriveKey(thismsg) == "method,value"
 
         thismsg = make_message()
-        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"]
         thismsg['size'] = 28234
-        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg["mtime"] + ",28234" 
         del thismsg['mtime']
-        assert nodupe._deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
+        assert nodupe.deriveKey(thismsg) == thismsg["relPath"] + "," + thismsg['pubTime'] + ",28234" 
 
 def test_on_start(tmp_path):
     with patch(target="redis.from_url", new=fakeredis.FakeStrictRedis.from_url, ):
@@ -110,7 +110,7 @@ def test_on_start(tmp_path):
         BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
 
         nodupe.on_start()
 
@@ -124,7 +124,7 @@ def test_on_stop(tmp_path):
         BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
 
         nodupe.on_stop()
 
@@ -140,7 +140,7 @@ def test_on_housekeeping(tmp_path, caplog):
         BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 900
 
         cache = [
@@ -174,7 +174,7 @@ def test__is_new(tmp_path, capsys):
         BaseOptions.nodupe_redis_keybase = "redis_test__" + BaseOptions.config.split(".")[0] 
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 900
         nodupe.now = nowflt()
 
@@ -220,7 +220,7 @@ def test_after_accept(tmp_path, capsys):
         BaseOptions.cfg_run_dir = str(tmp_path)
         BaseOptions.no = 5
         BaseOptions.inflight = 0
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
 
         nodupe.now = nowflt()
@@ -251,7 +251,7 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         BaseOptions.no = 5
         BaseOptions.inflight = 0
 
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
         nodupe.o.nodupe_fileAgeMin = 1000
         nodupe.o.nodupe_fileAgeMax = 1000
@@ -285,7 +285,7 @@ def test_after_accept__InFlight(tmp_path, capsys):
         BaseOptions.no = 5
         BaseOptions.inflight = 1000
 
-        nodupe = NoDupe(BaseOptions)
+        nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
 
         nodupe.now = nowflt() + 10

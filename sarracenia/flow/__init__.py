@@ -28,6 +28,8 @@ from mimetypes import guess_type
 
 # end v2 subscriber
 
+from sarracenia.featuredetection import features
+
 from sarracenia import nowflt
 
 logger = logging.getLogger(__name__)
@@ -57,10 +59,10 @@ default_options = {
     'vip': None
 }
 
-if sarracenia.extras['filetypes']['present']:
+if features['filetypes']['present']:
     import magic
 
-if sarracenia.extras['vip']['present']:
+if features['vip']['present']:
     import netifaces
 
 
@@ -178,9 +180,9 @@ class Flow:
         # open cache, get masks.
         if self.o.nodupe_ttl > 0:
             if self.o.nodupe_driver.lower() == "redis":
-                self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.NoDupe')
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.redis.Redis')
             else:
-                self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.NoDupe')
+                self.plugins['load'].append('sarracenia.flowcb.nodupe.disk.Disk')
             
 
         if (( hasattr(self.o, 'delete_source') and self.o.delete_source ) or \
@@ -310,7 +312,7 @@ class Flow:
 
     def has_vip(self):
 
-        if not sarracenia.extras['vip']['present']: return True
+        if not features['vip']['present']: return True
 
         # no vip given... standalone always has vip.
         if self.o.vip == None:
@@ -522,7 +524,7 @@ class Flow:
                             m['_deleteOnPost'] |= set(['old_relPath'])
                             m['relPath'] = m['new_relPath']
                             m['old_subtopic'] = m['subtopic']
-                            m['_deleteOnPost'] |= set(['old_subtopic'])
+                            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
                             m['subtopic'] = m['new_subtopic']
 
                         if '_format' in m:
@@ -1875,7 +1877,7 @@ class Flow:
                 os.rename(new_inflight_path, new_file)
             
             # older versions don't include the contentType, so patch it here.
-            if sarracenia.extras['filetypes']['present'] and 'contentType' not in msg:
+            if features['filetypes']['present'] and 'contentType' not in msg:
                 msg['contentType'] = magic.from_file(new_file,mime=True)
 
             self.metrics['flow']['transferRxBytes'] += len_written
@@ -1964,7 +1966,7 @@ class Flow:
             local_path = '/' + msg['relPath']
 
         # older versions don't include the contentType, so patch it here.
-        if sarracenia.extras['filetypes']['present'] and \
+        if features['filetypes']['present'] and \
            ('contentType' not in msg) and (not 'fileOp' in msg):
             msg['contentType'] = magic.from_file(local_path,mime=True)
 

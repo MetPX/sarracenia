@@ -51,6 +51,7 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
 
 import sarracenia
 from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user_cache_dir
+from sarracenia.featuredetection import features
 import sarracenia.credentials
 import sarracenia.flow
 import sarracenia.flowcb
@@ -578,7 +579,7 @@ class Config:
 
     actions = [
         'add', 'cleanup', 'convert', 'devsnap', 'declare', 'disable', 'dump', 'edit',
-        'enable', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
+        'enable', 'features', 'foreground', 'log', 'list', 'remove', 'restart', 'run', 'sanity',
         'setup', 'show', 'start', 'stop', 'status', 'overview'
     ]
 
@@ -1882,8 +1883,8 @@ class Config:
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
 
-        if self.vip and not sarracenia.extras['vip']['present']:
-            logger.critical( f"vip feature requested, but library: {' '.join(sarracenia.extras['vip']['modules_needed'])} " )
+        if self.vip and not features['vip']['present']:
+            logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
 
     def check_undeclared_options(self):
@@ -2454,7 +2455,7 @@ def default_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    if sarracenia.extras['amqp']['present']:
+    if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
 
@@ -2475,7 +2476,7 @@ def no_file_config():
     cfg.currentDir = None
     cfg.override(default_options)
     cfg.override(sarracenia.moth.default_options)
-    if sarracenia.extras['amqp']['present']:
+    if features['amqp']['present']:
         cfg.override(sarracenia.moth.amqp.default_options)
     cfg.override(sarracenia.flow.default_options)
     cfg.cfg_run_dir = '.'

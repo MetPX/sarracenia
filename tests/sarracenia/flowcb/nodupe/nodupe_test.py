@@ -13,8 +13,8 @@ def pretty(*things, **named_things):
         print(str(k) + ":")
         pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
-from sarracenia.flowcb.nodupe.redis import NoDupe as NoDupe_Redis
-from sarracenia.flowcb.nodupe.disk import NoDupe as NoDupe_Disk
+from sarracenia.flowcb.nodupe.redis import Redis as NoDupe_Redis
+from sarracenia.flowcb.nodupe.disk import Disk as NoDupe_Disk
 from sarracenia import Message as SR3Message
 
 class Options:

@@ -1,6 +1,6 @@
 
-Contributing to Sarracenia
-==========================
+Contributing 
+============
 
 .. toctree::
    :maxdepth: 1

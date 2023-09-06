@@ -19,15 +19,17 @@ from random import choice
 
 import sarracenia
 from sarracenia import *
+from sarracenia.featuredetection import features
 from sarracenia.flowcb import FlowCB
 import sarracenia.identity
+
 
 import stat
 from sys import platform as _platform
 import sys
 import time
 
-if sarracenia.extras['watch']['present']:
+if features['watch']['present']:
     from watchdog.observers import Observer
     from watchdog.observers.polling import PollingObserver
     from watchdog.events import PatternMatchingEventHandler
@@ -35,7 +37,7 @@ if sarracenia.extras['watch']['present']:
 logger = logging.getLogger(__name__)
 
 
-if sarracenia.extras['watch']['present']:
+if features['watch']['present']:
     class SimpleEventHandler(PatternMatchingEventHandler):
         def __init__(self, parent):
             self.on_created = parent.on_created
@@ -118,7 +120,7 @@ class File(FlowCB):
 
         super().__init__(options,logger)
 
-        if not sarracenia.extras['watch']['present']:
+        if not features['watch']['present']:
             logger.critical("watchdog module must be installed to watch directories")
             
         logger.debug("%s used to be overwrite_defaults" % self.o.component)
@@ -687,7 +689,7 @@ class File(FlowCB):
     def watch_dir(self, sld):
         logger.debug("watch_dir %s" % sld)
 
-        if not sarracenia.extras['watch']['present']:
+        if not features['watch']['present']:
             logger.critical("sr_watch needs the python watchdog library to be installed.")
             return []
 
@@ -769,7 +771,7 @@ class File(FlowCB):
             logger.debug("postpath = %s" % d)
 
             if self.o.sleep > 0:
-                if sarracenia.extras['watch']['present']:
+                if features['watch']['present']:
                     messages.extend(self.watch_dir(d))
                 else:
                     logger.critical("python watchdog package missing! Cannot watch directory")

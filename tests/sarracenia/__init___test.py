@@ -105,15 +105,15 @@ def test_nowflt():
     assert time.time() - sarracenia.nowflt() < 0.001
 
 # def test_naturalSize():
-#     if sarracenia.extras['humanize']['present'] == True:
+#     if sarracenia.features['humanize']['present'] == True:
 #         assert sarracenia.naturalSize(1024) == '1.0 KiB'
-#     elif sarracenia.extras['humanize']['present'] == False:
+#     elif sarracenia.features['humanize']['present'] == False:
 #         assert sarracenia.naturalSize(1024) == '1024'
 
 # def test_naturalTime():
-#     if sarracenia.extras['humanize']['present'] == True:
+#     if sarracenia.features['humanize']['present'] == True:
 #         assert sarracenia.naturalTime(1024) == '17 minutes ago'
-#     elif sarracenia.extras['humanize']['present'] == False:
+#     elif sarracenia.features['humanize']['present'] == False:
 #         assert sarracenia.naturalTime(1024) == '1024'
 
 @pytest.fixture
@@ -357,7 +357,7 @@ class Test_Message():
         msg = sarracenia.Message()
         msg.updatePaths(options, new_dir, new_file)
         assert msg['_deleteOnPost'] == set([
-            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format', '_format'
+            'new_dir', 'new_file', 'new_relPath', 'new_baseUrl', 'new_subtopic', 'post_format', '_format', 'subtopic'
         ])
         assert msg['new_dir'] == new_dir
         assert msg['new_file'] == new_file

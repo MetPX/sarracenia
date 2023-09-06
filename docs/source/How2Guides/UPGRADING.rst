@@ -164,13 +164,15 @@ git
 
   with pip installation, one can include all the extras via::
 
-      pip install metpx-sr3[amqp,mqtt,ftppoll,vip]
+      pip install metpx-sr3[all]
 
   with Linux packages, install the corresponding native packages to activate the corresponding features
 
   on Ubuntu, respectively::
 
       apt install python3-amqp 
+      apt install python3-magic 
+      apt install python3-paramiko 
       apt install python3-paho-mqtt 
       apt install python3-dateparser python3-tz
       apt install python3-netifaces

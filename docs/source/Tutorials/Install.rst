@@ -30,6 +30,38 @@ For operational use, administrative access may be needed for package installatio
 and integration with systemd. Regardless of how it is installed, some periodic
 processing (on linux usually known as *cron jobs*) may also need to be configured.
 
+Some environments provide sarracenia, but the installation can be incomplete, in
+that, some environments do not provide for libraries that sarracenia depends on.
+To know what features your installation has, use the *features* command::
+
+    fractal% sr3 features
+    
+    Status:    feature:   python imports:      Description:
+    Installed  amqp       amqp                 can connect to rabbitmq brokers
+    Installed  appdirs    appdirs              place configuration and state files appropriately for platform (windows/mac/linux)
+    Installed  filetypes  magic                able to set content headers
+    Installed  ftppoll    dateparser,pytz      able to poll with ftp
+    Installed  humanize   humanize             humans numbers that are easier to read.
+    Absent     mqtt       paho.mqtt.client     cannot connect to mqtt brokers
+    Installed  redis      redis,redis_lock     can use redis implementations of retry and nodupe
+    Installed  sftp       paramiko             can use sftp or ssh based services
+    Installed  vip        netifaces            able to use the vip option for high availability clustering
+    Installed  watch      watchdog             watch directories
+    Installed  xattr      xattr                on linux, will store file metadata in extended attributes
+    MISSING    clamd      pyclamd              cannot use clamd to av scan files transferred
+    
+     state dir: /home/peter/.cache/sr3
+     config dir: /home/peter/.config/sr3
+    
+    fractal%
+    
+Each feature is explained, and the status is indicated. Note that plugins
+can also declare the extra libraries they need. Each feature depends on the python imports
+listed in the third column. Making those libraries available to the python environment
+will activate the given feature.
+
+For example, if "paramiko" is installed, support for SFTP polls and transfers will start
+working.
 
 
 Client Installation
@@ -41,6 +73,11 @@ launchpad repository. If you cannot use debian packages, then consider pip packa
 avialable from PyPI. In both cases, the other python packages (or dependencies) needed
 will be installed by the package manager automatically.
 
+Note that in some cases, the operating system does not provide all the required
+functionality for all features, so one can complement with pip packages, which
+can be installed system-wide, within a user's environment or even within 
+venv.  as long as *sr3 features* reports the feature as available, it will
+be used.
 
 
 Ubuntu/Debian (apt/dpkg) **Recommended**
@@ -53,6 +90,7 @@ On Ubuntu 22.04 and derivatives::
   sudo apt install metpx-sr3  # main python package.
   sudo apt install python3-magic # optional support putting file type content-type message headers.
   sudo apt install metpx-sr3c # optional C client.
+  sudo apt install python3-paramiko  # support SFTP (polls and transfers.)
   sudo apt install python3-amqp  # optionally support rabbitmq brokers
   sudo apt install python3-paho-mqtt  # optionally support MQTT brokers
   sudo apt install python3-netifaces # optionally support the vip directive (HA failover.)
@@ -174,7 +212,7 @@ It is straightforward to do that just the essentials::
 
 one could also add the extras::
 
-  $ pip install metpx-sr3[amqp,mqtt,vip]  
+  $ pip install metpx-sr3[amqp,mqtt,vip,ftppoll,filetype]
 
 for all the extras, there is a shortcut::
 
@@ -188,8 +226,10 @@ and to upgrade after the initial installation::
 
 NOTE:: 
 
-  On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
+  * On many systems where both pythons 2 and 3 are installed, you may need to specify pip3 rather than pip.
 
+  * on Windows, in order to get the filetype feature working, one will need to manually *pip install python-magic-bin*
+    see here for details: https://pypi.org/project/python-magic/
 
 System Startup and Shutdown
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

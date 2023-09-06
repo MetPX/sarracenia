@@ -30,7 +30,6 @@ import os
 import os.path
 import pathlib
 import platform
-import psutil
 import random
 import re
 import shutil
@@ -48,6 +47,9 @@ from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, tim
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
+
+if sarracenia.features['process']['present']:
+   import psutil
 
 import urllib.parse
 
@@ -198,6 +200,10 @@ class sr_GlobalState:
             f.seek(0, 0)
             f.truncate()
             f.write(getpass.getuser() + '\n')
+
+            if not features['process']['present']:
+                return
+
             for proc in psutil.process_iter():
                 f.write(
                     json.dumps(proc.as_dict(
@@ -265,6 +271,8 @@ class sr_GlobalState:
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\' + self.me
         self.auditors = 0
+        if not features['process']['present']:
+            return
         for proc in psutil.process_iter():
             try:
                 self._filter_sr_proc(
@@ -1411,6 +1419,54 @@ class sr_GlobalState:
                     os.remove(state_file_cfg_disabled)
                     logging.info(c + '/' + cfg)
 
+    def features(self):
+
+        # run on_declare plugins.
+        for f in self.filtered_configurations:
+            if f == 'audit': continue
+            if self.please_stop:
+                break
+
+            (c, cfg) = f.split(os.sep)
+
+            if not 'options' in self.configs[c][cfg]:
+                continue
+
+            o = self.configs[c][cfg]['options']
+            o.no=0
+            o.finalize()
+            if c not in [ 'cpost', 'cpump' ]:
+                flow = sarracenia.flow.Flow.factory(o)
+                flow.loadCallbacks()
+                flow.runCallbacksTime('on_features')
+                del flow
+                flow=None
+
+        features_present=[]
+        print( f"\n{'Status:':10} {'feature:':10} {'python imports:':20} {'Description:'} ")
+        features_absent=[]
+        for x in sarracenia.features.keys():
+            if x == 'all':
+                continue
+            if sarracenia.features[x]['present']:
+                word1="Installed"
+                desc=sarracenia.features[x]['rejoice']
+            else:
+                if 'Needed' in sarracenia.features[x]:
+                     word1="MISSING"
+                else:
+                     word1="Absent"
+                desc=sarracenia.features[x]['lament']
+
+            print( f"{word1:10} {x:10} {','.join(sarracenia.features[x]['modules_needed']):20} {desc}" )
+
+        if not (sarracenia.features['amqp']['present'] or sarracenia.features['mqtt']['present'] ):
+            print( "ERROR: need at least one of: amqp or mqtt" )
+
+        print( f"\n state dir: {self.user_cache_dir} " )
+        print( f" config dir: {self.user_config_dir} " )
+
+
     def foreground(self):
 
         for f in self.filtered_configurations:
@@ -1444,10 +1500,7 @@ class sr_GlobalState:
                     component_path = os.path.dirname(
                         component_path) + os.sep + 'instance.py'
                     cmd = [sys.executable, component_path, '--no', "0"]
-                    if sys.argv[0].find('python') >= 0:
-                        cmd.extend(sys.argv[2:])
-                    else:
-                        cmd.extend(sys.argv[1:])
+                    cmd.extend(sys.argv[1:])
 
                 elif c[0] != 'c':  # python components
                     if cfg is None:
@@ -1846,9 +1899,9 @@ class sr_GlobalState:
                         signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
-        for l in sarracenia.extras.keys():
-            if not sarracenia.extras[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.extras[l]['lament']}" )
+        for l in sarracenia.features.keys():
+            if not sarracenia.features[l]['present']:
+                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
@@ -2083,46 +2136,76 @@ class sr_GlobalState:
                     print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
-    def dump(self):
+    def dump(self): 
         """ Printing all running processes, configs, states
-
         :return:
         """
+        print('{\n')
         print('\n\n"Processes" : { \n\n')
-        for pid in self.procs:
-            print('\t%s: %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4) ))
-            #print('\t%s: %s' % (pid, self.procs[pid] ))
 
-        print('},\n\n\"Configs\" : {\n\n')
-        for c in self.configs:
+        #procs_length = len(self.procs)
+        #for index,pid in enumerate(self.procs):
+        #    print('\t\"%s\": %s' % (pid, json.dumps(self.procs[pid], sort_keys=True, indent=4)), end='')
+        #    if procs_length-1 > index:
+        #        print(',')
+
+        print(','.join( map( lambda pid: f'"{pid}": {json.dumps(self.procs[pid], sort_keys=True, indent=1)}' , self.procs.keys() ) ))
+        print('},') 
+
+        print('\n\n"Configs\" : {\n\n')
+        configLength = len(self.configs)
+        for indexConfig,c in enumerate(self.configs):
+            lengthSelfConfigC = len(self.configs[c])
             print('\t\"%s\": { ' % c)
-            for cfg in self.configs[c]:
+            for indexC,cfg in enumerate(self.configs[c]):
                 self.configs[c][cfg]['options']={ 'omitted': 'use show' }
                 self.configs[c][cfg]['credentials']=[ 'omitted' ]
-                print('\t\t\"%s\" : { %s }, ' % (cfg, json.dumps(self.configs[c][cfg])))
-            print("\t\t}")
+                print('\t\t\"%s\" : %s ' % (cfg, json.dumps(self.configs[c][cfg])),end="")
+                if lengthSelfConfigC-1 > indexC:
+                   print(',')
+            print('}',end="")
+            if configLength-1 > indexConfig or configLength == 0:
+               print(',')
 
         print('},\n\n"States": { \n\n')
-        for c in self.states:
+        lengthSelfStates = len(self.states)
+        for indexSelfStates,c in enumerate(self.states):
             print('\t\"%s\": { ' % c)
-            for cfg in self.states[c]:
-                print('\t\t\"%s\" : { %s },' % (cfg, json.dumps(self.states[c][cfg])))
-            print( "\t}" )
+            lengthC = len(self.states[c])
+            for indexC,cfg in enumerate(self.states[c]):
+                print('\t\t\"%s\" :  %s ' % (cfg, json.dumps(self.states[c][cfg])))
+                if lengthC -1 > indexC:
+                   print(',')
+            print( "\t}", end="")
+            if lengthSelfStates -1 > indexSelfStates:
+                print(',')
+        print('},')
 
-        print('}\n\n"Bindings": { \n\n')
+        print('\n\n"Bindings": { \n\n')
+        lengthSelfBrokers = len(self.brokers)
+        print("\n\"host\":{\n\t", end="")
+        for indexSelfBrokers,h in enumerate(self.brokers):
+            print("\"%s\": { \n" % h)
+            print("\n\t\t\"exchanges\": { ", end="")
+            lengthExchange = len(self.brokers[h]['exchanges'])
+            for indexExchange,x in enumerate(self.brokers[h]['exchanges']):
+                print("\"%s\":  %s " % (x, json.dumps(self.brokers[h]['exchanges'][x])), end="")
+                if lengthExchange -1 > indexExchange:
+                   print(',')
+            print("},\n\t\t\"queues\": {")
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokerQueues,q in enumerate(self.brokers[h]['queues']):
+                print("\t\"%s\":  \"%s\" " % (q, self.brokers[h]['queues'][q]), end="")
+                if lengthBrokersQueues -1 > indexBrokerQueues:
+                   print(',')
+            print( " \n}\n}",end="")
+            if lengthSelfBrokers - 1 > indexSelfBrokers:
+               print(',') 
 
-        for h in self.brokers:
-            print("\n\"host\": { \"%s\": { " % h)
-            print("\n\"exchanges\": { ")
-            for x in self.brokers[h]['exchanges']:
-                print("\t\"%s\": { %s }," % (x, json.dumps(self.brokers[h]['exchanges'][x])))
-            print("},\n\"queues\": {")
-            for q in self.brokers[h]['queues']:
-                print("\t\"%s\": { %s }, " % (q, self.brokers[h]['queues'][q]))
-            print( "}},\n" )
-
-        print(',\n\"nbroker summaries": {\n\n')
-        for h in self.brokers:
+        print('}\n},\n"nbroker summaries": {\n\n')
+        lengthSelfBroker = len(self.brokers)
+        print('\n\"broker\": {')
+        for indexSelfBroker,h in enumerate(self.brokers):
             if 'admin' in self.brokers[h]:
                 admin_url = self.brokers[h]['admin'].url
                 admin_urlstr = "%s://%s@%s" % ( admin_url.scheme, \
@@ -2132,26 +2215,36 @@ class sr_GlobalState:
                 a = 'admin: %s' % admin_urlstr
             else:
                 a = 'admin: none'
-            print('\n\"broker\": { \"%s\":\"%s\" }' % (h, a))
-            print('\n\"exchanges\": [ ', end='')
-            for x in self.exchange_summary[h]:
-                print("\"%s-%d\", " % (x, self.exchange_summary[h][x]), end='')
-            print(']')
-            print('\n\"queues\": [', end='')
-            for q in self.brokers[h]['queues']:
-                print("\"%s-%d\", " % (q, len(self.brokers[h]['queues'][q])),
-                      end='')
-            print(']')
-
-        print('}\n\n\"Missing instances\" : { \n\n')
-        for instance in self.missing:
+            print('\"%s\":{' % (h))
+            
+            print('\n\"URL\": \"%s\",\n\"exchanges\": [ ' %(a), end='')
+            lengthExchangeSummary  = len(self.exchange_summary[h])
+            for indexSummary,x in enumerate(self.exchange_summary[h]):
+                print("\"%s-%d\" " % (x, self.exchange_summary[h][x]), end='')
+                if lengthExchangeSummary -1 > indexSummary:
+                   print(',')
+            print('],"queues\": [', end="")
+            lengthBrokersQueues = len(self.brokers[h]['queues'])
+            for indexBrokersSummary,q in enumerate(self.brokers[h]['queues']):
+                print("\"%s-%d\" " % (q, len(self.brokers[h]["queues"][q])),end="")
+                if lengthBrokersQueues -1 > indexBrokersSummary:
+                   print(',')
+            print(']\n}', end="")
+            if lengthSelfBroker -1 > indexSelfBroker:
+               print(',')
+        print('}\n},\n\n\"Missing instances\" : [\n\n')
+        lengthMissing = len(self.missing)
+        for indexMissing,instance in enumerate(self.missing):
             (c, cfg, i) = instance
-            print('\t\t\"%s\" : \"%s %d\",' % (c, cfg, i))
-        print('\t\t}')
+            print('\t\t\"%s/%s_%d\"' % (c, cfg, i),end="")
+            if lengthMissing - 1 > indexMissing:
+               print(',')
+        print('] }')
 
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
+
 
         line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
@@ -2499,6 +2592,7 @@ class sr_GlobalState:
         """
         bad = 0
 
+
         print('%-10s %-10s %-6s %3s %s' %
               ('Component', 'State', 'Good?', 'Qty',
                'Configurations-i(r/e)-r(Retry)'))
@@ -2655,7 +2749,7 @@ def main():
             logger.setLevel(logging.INFO)
 
     actions = [
-        'convert', 'declare', 'devsnap', 'dump', 'edit', 'log', 'overview', 'restart', 'run', 'sanity',
+        'convert', 'declare', 'devsnap', 'dump', 'edit', 'features', 'log', 'overview', 'restart', 'run', 'sanity',
         'setup', 'show', 'status', 'start', 'stop'
     ]
 
@@ -2716,7 +2810,6 @@ def main():
         gs.disable()
 
     if action == 'dump':
-        print('dumping: ', end='', flush=True)
         gs.dump()
 
     if action == 'edit':
@@ -2724,6 +2817,9 @@ def main():
 
     if action == 'enable':
         gs.enable()
+
+    if action == 'features':
+        gs.features()
 
     if action == 'foreground':
         gs.foreground()
