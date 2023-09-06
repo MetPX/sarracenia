@@ -26,7 +26,10 @@ logger = logging.getLogger(__name__)
 class ToClusters(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
-        if not hasattr(self.o, 'msgToClusters'):
+
+        self.o.add_option('msgToClusters', 'list')
+
+        if self.o.msgToClusters == [None]:
             logger.info("msgToClusters setting mandatory")
             return
 

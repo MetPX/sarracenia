@@ -29,20 +29,22 @@ class PostOverride(FlowCB):
         super().__init__(options,logger)
         self.o.add_option('postOverride', 'list')
         self.o.add_option('postOverrideDel', 'list')
-        if hasattr(self.o, 'postOverride'):
+
+        if self.o.postOverride != [None]:
             logger.info('postOverride settings: %s' % self.o.postOverride)
+        if self.o.postOverrideDel != [None]:
+            logger.info('postOverrideDel settings: %s' % self.o.postOverrideDel)
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
-
-            if hasattr(self.o, 'postOverride') and self.o.postOverride != [None]:
+            
+            if self.o.postOverride != [None]:
                 for o in self.o.postOverride:
                     (osetting, ovalue) = o.split()
                     logger.debug('postOverride applying key:%s value:%s' % (osetting, ovalue))
                     message[osetting] = ovalue
 
-            if hasattr(self.o, 'postOverrideDel'):
+            if self.o.postOverrideDel != [None]:
                 for od in self.o.postOverrideDel:
                     if od in message:
                         logger.debug('postOverride deleting key:%s ' % od)

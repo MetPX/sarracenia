@@ -35,8 +35,7 @@ class Pathreplace(FlowCB):
         self.o.add_option( 'pathReplaceFields', 'set', all_fields, all_fields )
 
     def on_start(self):
-
-        if not hasattr(self.o, 'pathReplace'):
+        if self.o.pathReplace == [None]:
             logger.error("pathReplace setting mandatory")
             return
 
