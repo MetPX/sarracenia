@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 class RenameWhatFn(FlowCB):
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:

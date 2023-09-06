@@ -30,6 +30,8 @@ from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
 class Dateappend(FlowCB):
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
 
