@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 class RenameWhatFn(FlowCB):
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
@@ -35,5 +37,4 @@ class RenameWhatFn(FlowCB):
             # join mets les ':' entre les parts... donc ajout de ':' au debut
             extra = ':' + ':'.join(parts[1:])
             message['new_file'] = message['new_file'].replace(extra, '')
-            message['headers']['rename'] = message['headers'][
-                'rename'].replace(extra, '')
+            message['rename'] = message['rename'].replace(extra, '')

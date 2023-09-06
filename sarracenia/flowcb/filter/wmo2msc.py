@@ -316,7 +316,9 @@ class Wmo2msc(FlowCB):
             logger.debug('filter_wmo2msc relPath %s' % relPath)
 
             message['set_topic'](self.o.topic_prefix, relPath)
-            message['set_notice'](baseUrl, relPath)
+            #message['set_notice'](baseUrl, relPath)
+            message['baseUrl'] = baseUrl
+            message['relPath'] = relPath
             new_incoming.append(message)
         worklist.incoming = new_incoming
 

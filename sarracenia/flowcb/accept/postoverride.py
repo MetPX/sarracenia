@@ -18,7 +18,7 @@ Usage:
 """
 
 import logging
-import sys, os, os.path, time, stat
+import copy
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
@@ -27,27 +27,25 @@ logger = logging.getLogger(__name__)
 class PostOverride(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
-        self.o.add_option('postOverride', 'str')
-        self.o.add_option('postOverrideDel', 'str')
-        if hasattr(self.o, 'postOverride'):
+        self.o.add_option('postOverride', 'list')
+        self.o.add_option('postOverrideDel', 'list')
+
+        if self.o.postOverride != [None]:
             logger.info('postOverride settings: %s' % self.o.postOverride)
+        if self.o.postOverrideDel != [None]:
+            logger.info('postOverrideDel settings: %s' % self.o.postOverrideDel)
 
     def after_accept(self, worklist):
-        new_incoming = []
         for message in worklist.incoming:
-
-            if hasattr(self.o, 'postOverride'):
+            
+            if self.o.postOverride != [None]:
                 for o in self.o.postOverride:
                     (osetting, ovalue) = o.split()
-                    logger.debug('postOverride applying: header:%s value:%s' %
-                                 (osetting, ovalue))
-                    message['headers'][osetting] = ovalue
-                    new_incoming.append(message)
+                    logger.debug('postOverride applying key:%s value:%s' % (osetting, ovalue))
+                    message[osetting] = ovalue
 
-            if hasattr(self.o, 'postOverrideDel'):
+            if self.o.postOverrideDel != [None]:
                 for od in self.o.postOverrideDel:
-                    if od in message['headers']:
-                        logger.debug('postOverride deleting: header:%s ' % od)
-                        del message['headers'][od]
-                        new_incoming.append(message)
-        worklist.incoming = new_incoming
+                    if od in message:
+                        logger.debug('postOverride deleting key:%s ' % od)
+                        del message[od]

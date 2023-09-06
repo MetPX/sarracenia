@@ -14,16 +14,17 @@ Usage:
 
 """
 import logging
-import sys, os, os.path, time, stat
+import time
 from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-
 class RenameDMF(FlowCB):
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
             datestr = time.strftime(':%Y%m%d%H%M%S', time.localtime())
             message['new_file'] += datestr
-            message['headers']['rename'] += datestr
+            message['rename'] += datestr

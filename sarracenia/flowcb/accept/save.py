@@ -19,7 +19,7 @@ Usage:
     msgSaveFile x
 """
 
-import json
+import jsonpickle
 import logging
 from sarracenia.flowcb import FlowCB
 
@@ -28,23 +28,18 @@ logger = logging.getLogger('__name__')
 
 class Save(FlowCB):
     def __init__(self, options):
-        super().__init__(options,logger)
+        super().__init__(options, logger)
 
-        if not hasattr(self.o, "msgSaveFile"):
-            logger.error(
-                "msg_save: setting msg_save_path setting is mandatory")
+        self.o.add_option('msgSaveFile', 'str')
+        if not self.o.msgSaveFile:
+            logger.error("msg_save: setting msgSaveFile setting is mandatory")
+            return
 
-        self.o.msgSaveFile = open(self.o.msgSaveFile + self.o.save_path[-10:],
-                                  "a")
+        self.msgSaveFile = open(self.o.msgSaveFile, "a")
         logger.debug("msg_save initialized")
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            self.o.msgSaveFile.write(
-                json.dumps([
-                    message['topic'], message['headers'], message['notice']
-                ]) + '\n')
-            self.o.msgSaveFile.flush()
-            logger.info(
-                "msg_save saving msg with topic:%s (aborting further processing)"
-                % message['topic'])
+            self.msgSaveFile.write(jsonpickle.encode(message) + '\n')
+            self.msgSaveFile.flush()
+            logger.info("msg_save saving msg with topic:%s (aborting further processing)" % message['topic'])

@@ -26,17 +26,19 @@ logger = logging.getLogger(__name__)
 class ToClusters(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
-        if not hasattr(self.o, 'msgToClusters'):
+
+        self.o.add_option('msgToClusters', 'list')
+
+        if self.o.msgToClusters == [None]:
             logger.info("msgToClusters setting mandatory")
             return
 
-        logger.info("msgToClusters valid destinations: %s " %
-                    self.o.msgToClusters)
+        logger.info("msgToClusters valid destinations: %s " % self.o.msgToClusters)
 
     def after_accept(self, worklist):
         new_incoming = []
         for message in worklist.incoming:
-            if message['headers']['to_clusters'] in self.o.msgToClusters:
+            if message['to_clusters'] in self.o.msgToClusters:
                 new_incoming.append(message)
             else:
                 worklist.rejected.append(message)

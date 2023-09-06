@@ -20,20 +20,19 @@ import time
 from sarracenia.flowcb import FlowCB
 logger = logging.getLogger(__name__)
 
-
 class Rename4Jicc(FlowCB):
+    def __init__(self, options):
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-
             if not 'ccstn.dat' in message['new_file']:
-                new_incoming.append(message)
                 continue
+
             # build new name
             local_file = message['new_file']
             datestr = time.strftime('%Y%m%d%H%M', time.localtime())
-            local_file = local_file.replace('ccstn.dat',
-                                            'jicc.' + datestr + '.ccstn.dat')
+            local_file = local_file.replace('ccstn.dat', 'jicc.' + datestr + '.ccstn.dat')
 
             # set in message (and headers for logging)
             message['new_file'] = local_file

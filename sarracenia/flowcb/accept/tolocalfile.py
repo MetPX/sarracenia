@@ -49,12 +49,12 @@ Example:
     flowcb sarracenia.flowcb.accept.giftopng.GifToPng
     After the tolocalfile this script could perform something like::
 
-       # build the absolute path of the png product
-       new_path = message['relPath'].replace('GIF','PNG')
-       new_path[-4:] = '.png'
+        # build the absolute path of the png product
+        new_path = message['relPath'].replace('GIF','PNG')
+        new_path[-4:] = '.png'
 
-       # proceed to the conversion gif2png
-       ok = self.gif2png(gifpath=message.relPath,pngpath=new_path)
+        # proceed to the conversion gif2png
+        ok = self.gif2png(gifpath=message.relPath,pngpath=new_path)
 
     change the message to announce the new png product::
     
@@ -71,7 +71,6 @@ Usage:
     flowcb sarracenia.flowcb.accept.tolocalfile.ToLocalFile
 
 """
-import json
 import logging
 from sarracenia.flowcb import FlowCB
 
@@ -79,6 +78,8 @@ logger = logging.getLogger('__name__')
 
 
 class ToLocalFile(FlowCB):
+    def __init__(self, options):
+        super().__init__(options,logger)
 
     def after_accept(self, worklist):
         new_incoming = []
@@ -91,8 +92,7 @@ class ToLocalFile(FlowCB):
             message['saved_relPath'] = message['relPath']
             message['baseUrl'] = 'file:'
 
-            if self.o.baseDir and not message['relPath'].startswith(
-                    self.o.baseDir):
+            if self.o.baseDir and not message['relPath'].startswith(self.o.baseDir):
                 message['relPath'] = self.o.baseDir + '/' + message['relPath']
                 message['relPath'].replace('//', '/')
                 new_incoming.append(message)

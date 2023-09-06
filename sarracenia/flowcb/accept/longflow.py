@@ -18,8 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class LongFlow(FlowCB):
+    def __init__(self, options):
+        super().__init__(options, logger)
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            logger.info('setting toolong header')
-            message['headers']['toolong'] = '1234567890ßñç' * 26
+            logger.info('setting toolong message key')
+            message['toolong'] = '1234567890ßñç' * 26
