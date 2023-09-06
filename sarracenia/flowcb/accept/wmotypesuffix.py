@@ -28,7 +28,7 @@ class WmoTypeSuffix(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
 
-    def find_type(self, TT):
+    def __find_type(self, TT):
         if TT[0] in ['G']: return '.grid'
         if TT in ['IX']: return '.hdf'
         if TT[0] in ['I']: return '.bufr'
@@ -43,7 +43,7 @@ class WmoTypeSuffix(FlowCB):
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
-            type_suffix = self.find_type(message['new_file'][0:2])
+            type_suffix = self.__find_type(message['new_file'][0:2])
             # FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
             if type_suffix == 'UNKNOWN':
                 continue
