@@ -38,4 +38,4 @@ def test_after_accept():
 
     longflow.after_accept(worklist)
     assert len(worklist.incoming) == 2
-    assert len(worklist.incoming[0]['headers']['toolong']) == len('1234567890ßñç' * 26)
+    assert len(worklist.incoming[0]['toolong']) == len('1234567890ßñç' * 26)

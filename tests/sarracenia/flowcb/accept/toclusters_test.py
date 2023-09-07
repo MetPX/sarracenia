@@ -17,7 +17,7 @@ import sarracenia.config
 def make_message(tocluster):
     m = SR3Message()
     #['to_clusters']
-    m['headers'] = {'to_clusters': tocluster}
+    m['to_clusters'] = tocluster
 
     return m
 
@@ -36,6 +36,7 @@ def test___init__(caplog):
     toclusters = ToClusters(options)
     assert "msgToClusters setting mandatory" in caplog.messages
 
+@pytest.mark.depends(on=['test___init__'])
 def test_after_accept(caplog):
 
     options = sarracenia.config.default_config()

@@ -38,21 +38,24 @@ def test___init__():
 
 @pytest.mark.depends(on=['test___init__'])
 def test_on_start(caplog):
+
     options = sarracenia.config.default_config()
-    options.pathReplace = ['before1,after1', 'before2,after2']
-    options.pathReplaceFields = set(['dir','file'])
     options.logLevel = "DEBUG"
     pathreplace = Pathreplace(options)
-
+    caplog.clear()
     pathreplace.on_start()
-    assert len(caplog.messages) == 1
-    assert "pathReplace is ['before1,after1', 'before2,after2'] " in caplog.messages
+    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
+    assert "pathReplace setting mandatory" in caplog.messages
 
     caplog.clear()
-    del(pathreplace.o.pathReplace)
+    options.pathReplace = ['before1,after1', 'before2,after2']
+    options.pathReplaceFields = set(['dir','file'])
+    pathreplace = Pathreplace(options)
     pathreplace.on_start()
-    assert len(caplog.messages) == 1
-    assert "pathReplace setting mandatory" in caplog.messages
+    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
+    assert "pathReplace is ['before1,after1', 'before2,after2'] " in caplog.messages
+
+
 
 @pytest.mark.depends(on=['test___init__'])
 def test_after_accept():

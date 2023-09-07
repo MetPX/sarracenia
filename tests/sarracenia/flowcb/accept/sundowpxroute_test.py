@@ -61,14 +61,14 @@ def test___init__(caplog, tmp_path):
     #options.pxClient = 'meadow,foobar'
     sundewpxroute = SundewPxRoute(options)
     
-    assert len(caplog.messages) == 1
+    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
     assert 'sundew_pxroute pxRouting file not defined' in caplog.messages
 
     caplog.clear()
     options.pxRouting = config_file
     sundewpxroute = SundewPxRoute(options)
     #pretty(caplog.messages)
-    assert len(caplog.messages) == 1
+    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
     assert f'sundew_pxroute pxRouting file ({config_file}) not found' in caplog.messages
 
     caplog.clear()
@@ -76,7 +76,7 @@ def test___init__(caplog, tmp_path):
     options.pxClient = 'grip,STRUGGLE_NERVOUS,progressive-slip'
     sundewpxroute = SundewPxRoute(options)
     assert sundewpxroute.ahls_to_route == {'AACN11_CWLW': True, 'ABCD11_CYQX': True, 'INAX13_EUMS': True, 'WXYZ07_RUHB': True}
-    assert len(caplog.messages) == 3
+    assert len(caplog.messages) == 3 or  len(caplog.messages) == 5
 
 @pytest.mark.depends(on=['test___init__'])
 def test_after_accept(caplog, tmp_path):

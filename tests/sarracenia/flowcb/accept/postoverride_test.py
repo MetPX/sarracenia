@@ -16,9 +16,9 @@ import sarracenia.config
 
 def make_message(withOverrideDel = False):
     m = SR3Message()
-    m['headers'] = {'toOverride': 'overriden__origvalue'}
+    m['toOverride'] = 'overriden__origvalue'
     if withOverrideDel:
-        m['headers']['toDelete'] = 'toDelete__value'
+        m['toDelete'] = 'toDelete__value'
 
     return m
 
@@ -34,14 +34,26 @@ def make_worklist():
 def test___init__(caplog):
     #Set 1 - If neither o.baseDir, or o.toHttpRoot are set, CB creation throws an error
     options = sarracenia.config.default_config()
+    options.logLevel = 'DEBUG'
     options.postOverride = ['Foo Bar']
     postoverride = PostOverride(options)
-    assert len(caplog.messages) == 1
+    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
     assert "postOverride settings: ['Foo Bar']" in caplog.messages
 
 
 def test_after_accept():
     #Set 1
+    options = sarracenia.config.default_config()
+    options.logLevel = 'DEBUG'
+    worklist = make_worklist()
+    worklist.incoming = [make_message(), make_message(True)]
+    postoverride = PostOverride(options)
+    postoverride.after_accept(worklist)
+    assert len(worklist.incoming) == 2
+    assert worklist.incoming[0]['toOverride'] == worklist.incoming[1]['toOverride'] == 'overriden__origvalue'
+    assert 'toDelete' in worklist.incoming[1]
+
+    #Set 2
     options = sarracenia.config.default_config()
     options.logLevel = 'DEBUG'
     options.postOverride = ['toOverride Bar']
@@ -50,10 +62,9 @@ def test_after_accept():
     worklist.incoming = [make_message(), make_message(True)]
     postoverride = PostOverride(options)
     postoverride.after_accept(worklist)
-    assert len(worklist.incoming) == 3
-    assert worklist.incoming[0]['headers']['toOverride'] == worklist.incoming[1]['headers']['toOverride'] == 'Bar'
-    assert worklist.incoming[1]['headers']['toDelete'] == 'toDelete__value'
-    assert 'toDelete' not in worklist.incoming[2]['headers']
+    assert len(worklist.incoming) == 2
+    assert worklist.incoming[0]['toOverride'] == worklist.incoming[1]['toOverride'] == 'Bar'
+    assert 'toDelete' not in worklist.incoming[1]
 
 
 

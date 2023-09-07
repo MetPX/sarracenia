@@ -41,12 +41,12 @@ def make_worklist():
         ('E_', '.bin'),   ('P_', '.bin'),  ('Q_', '.bin'),  ('R_', '.bin'),
         ('__', '.txt'),
     ])
-def test_find_type(input,extension):
+def test___find_type(input,extension):
     wmotypesuffix = WmoTypeSuffix(sarracenia.config.default_config())
-    assert wmotypesuffix.find_type(input) == extension
+    assert wmotypesuffix._WmoTypeSuffix__find_type(input) == extension
 
 
-@pytest.mark.depends(on=['test_find_type'])
+@pytest.mark.depends(on=['test___find_type'])
 def test_after_accept():
     #Set x
     wmotypesuffix = WmoTypeSuffix(sarracenia.config.default_config())

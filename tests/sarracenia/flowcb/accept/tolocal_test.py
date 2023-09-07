@@ -34,17 +34,17 @@ def test___init__():
     #Set 1 - If neither o.baseDir, or o.toHttpRoot are set it throws an error
     options = sarracenia.config.default_config()
     tolocal = ToLocal(options)
-    assert tolocal.o.ldocroot == None
+    assert tolocal._ldocroot == None
 
-    options.toLocalRoot = ['/var/www/html']
+    options.toLocalRoot = '/var/www/html'
     tolocal = ToLocal(options)
-    assert tolocal.o.ldocroot == '/var/www/html'
+    assert tolocal._ldocroot == '/var/www/html'
 
-    options.toLocalUrl = ['/var/www/html']
+    options.toLocalUrl = '/var/www/html'
     tolocal = ToLocal(options)
-    assert tolocal.o.lurlre.pattern == '/var/www/html'
+    assert tolocal._lurlre.pattern == '/var/www/html'
 
-
+@pytest.mark.depends(on=['test___init__'])
 def test_after_accept():
     #Set 1 - using o.baseDir
     options = sarracenia.config.default_config()

@@ -33,9 +33,16 @@ def make_worklist():
     WorkList.directories_ok = []
     return WorkList
 
+def test___init__():
+    options = sarracenia.config.default_config()
+    options.logLevel = 'DEBUG'
+    #options.pxClient = 'meadow,foobar'
+    testretry = TestRetry(options)
+    assert testretry.sendTo == testretry.msg_baseUrl_good == testretry.details_bad== None
 
+@pytest.mark.depends(on=['test___init__'])
 def test_after_accept(caplog, mocker):
-    #Set x - When random is True, with a message having isRetry
+    #Set 1 - When random is True, with a message having isRetry
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'http://options.sendTo.url'
@@ -46,10 +53,10 @@ def test_after_accept(caplog, mocker):
     testretry = TestRetry(options)
     testretry.after_accept(worklist)
     assert len(worklist.incoming) == 0
-    assert "return from msg_test_retry" in caplog.messages
+    assert "return from testretry after_accept" in caplog.messages
 
 
-    #Set x - When random is True, with a message having isRetry
+    #Set 2 - When random is True, with a message having isRetry
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'http://options.sendTo.url'
@@ -66,7 +73,7 @@ def test_after_accept(caplog, mocker):
     assert options.details.url.netloc == 'testretry.sendTo.url'
 
 
-    #Set x - When random is False, there's nothing that gets retried
+    #Set 3 - When random is False, there's nothing that gets retried
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'https://TestUsername:TestPassword@options.sendTo.url/Path/File.txt'
@@ -79,13 +86,13 @@ def test_after_accept(caplog, mocker):
     mocker.patch('random.randint', return_value=1)
     testretry.after_accept(worklist)
     assert len(worklist.incoming) == 0
-    assert testretry.msg_baseUrl_good == message['baseUrl']
+    assert testretry.msg_baseUrl_bad == message['baseUrl']
     assert testretry.sendTo == options.sendTo
     assert options.details.url.username == 'TestUsername'
     assert "making it bad 1" in caplog.messages
 
 
-    #Set x - When random is True, without a message having isRetry, and component is watch
+    #Set 4 - When random is True, without a message having isRetry, and component is watch
     caplog.clear()
     options = sarracenia.config.default_config()
     options.sendTo = 'https://TestUsername:TestPassword@options.sendTo.url/Path/File.txt'
