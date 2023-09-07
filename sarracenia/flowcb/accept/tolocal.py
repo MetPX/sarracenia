@@ -54,7 +54,9 @@ class ToLocal(FlowCB):
     def __init__(self, options):
         super().__init__(options,logger)
 
-        if hasattr(self.o, 'baseDir'):
+        self._ldocroot = None
+
+        if self.o.baseDir:
             self._ldocroot = self.o.baseDir
 
         self.o.add_option('toLocalRoot', 'str')

@@ -44,9 +44,9 @@ class WmoTypeSuffix(FlowCB):
     def after_accept(self, worklist):
         for message in worklist.incoming:
             type_suffix = self.__find_type(message['new_file'][0:2])
-            # FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
-            if type_suffix == 'UNKNOWN':
-                continue
+            ## FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
+            #if type_suffix == 'UNKNOWN':
+            #    continue
 
             # file name already has suffix
             if message['new_file'][-len(type_suffix):] == type_suffix:

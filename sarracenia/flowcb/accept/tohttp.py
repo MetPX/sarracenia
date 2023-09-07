@@ -37,13 +37,13 @@ class ToHttp(FlowCB):
 
             url = urllib.parse.urlparse(message['baseUrl'])
 
-            new_baseUrl = 'http://'
+            new_baseUrl = 'http://' + url.netloc
             if self._ldocroot != None:
                 new_baseUrl += self._ldocroot
             
-            new_baseUrl += url.path.replace('///', '//')
+            new_baseUrl += url.path
 
-            message['baseUrl'] = new_baseUrl
+            message['baseUrl'] = new_baseUrl.replace('///', '//')
 
-            logger.debug("ToHttp config; baseDir=%s, toHttpRoot" % (self.o.baseDir, self.o.toHttpRoot))
+            logger.debug("ToHttp config; baseDir=%s, toHttpRoot=%s" % (self.o.baseDir, self.o.toHttpRoot))
             logger.info("ToHttp message output: baseUrl=%s, relPath=%s" % (message['baseUrl'], message['relPath']))
