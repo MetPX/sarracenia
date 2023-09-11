@@ -45,7 +45,6 @@
 
 """
 
-import importlib
 import logging
 import sys
 
@@ -106,12 +105,13 @@ for x in features:
    features[x]['present']=True
    for y in  features[x]['modules_needed']:
        try:
-           if importlib.util.find_spec( y ):
-               logger.debug( f'found feature {y}, enabled') 
-               pass
-           else:
-               logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
-               features[x]['present']=False
+           # used to use importlib, but that only tested if the module itself was installed.
+           # https://github.com/MetPX/sarracenia/issues/753
+           # It turns out that import can fail because of transitive deps, a package is installed,
+           # but something that it depends on is missing, so it's clearer to just try an import.
+
+           exec( f"import {y}" )
+           logger.debug( f'found feature {y}, which should help to enable {x}')
        except:
            logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
            features[x]['present']=False
