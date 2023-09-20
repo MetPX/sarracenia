@@ -65,7 +65,7 @@ class Scheduled(FlowCB):
         logger.info( f"for {when}: {json.dumps(list(map( lambda x: str(x), self.appointments))) } ")
 
 
-    def __init__(self,options):
+    def __init__(self,options,logger=logger):
         super().__init__(options,logger)
         self.o.add_option( 'scheduled_interval', 'duration', 0 )
         self.o.add_option( 'scheduled_hour', 'list', [] )
