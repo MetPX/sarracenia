@@ -162,8 +162,7 @@ if __name__ == '__main__':
 
     options = sarracenia.config.default_config()
     flow = sarracenia.flow.Flow(options)
-    flow.o.scheduled_hour= [ '1','3','5',' 7',' 9',' 13','21','23']
-    flow.o.scheduled_minute= [ '1,3,5',' 7',' 9',' 13',' 15',' 51','53' ]
+    flow.o.scheduled_interval= 5
     flow.o.pollUrl = "https://kiwis.opg.com"
     flow.o.directory = "/tmp/wiski"
     logging.basicConfig(level=logging.DEBUG)
