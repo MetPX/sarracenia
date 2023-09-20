@@ -4,6 +4,7 @@ import base64
 
 import datetime
 import os
+import sys
 import time
 
 from datetime import date
@@ -142,7 +143,14 @@ class Wiski(Scheduled):
         then = now - self.ts_length
 
         for station_id in k.get_station_list().station_id:
-            fname = f"{self.o.directory}/ts_{station_id}_{str(then).replace(' ','h')}_{str(now).replace(' ','h')}.csv" 
+
+            # writing files on windows is quite painful, so many illegal characters.
+            if sys.platform.startswith( "win" ):
+                fname = f"{self.o.directory}{os.sep}ts_{station_id}__{str(now).replace(' ','h')}.csv" 
+                fname = fname[0:3]+fname[3:].replace(':','_').replace('.','_',1).replace('+','_').replace('-','_')
+            else:
+                fname = f"{self.o.directory}{os.sep}ts_{station_id}_{str(then).replace(' ','h')}_{str(now).replace(' ','h')}.csv" 
+
             f=open(fname,'w')
             logger.warning( f"station_ids: {station_id} writing to: {fname}" )
             for ts_id in k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id:
@@ -164,7 +172,10 @@ if __name__ == '__main__':
     flow = sarracenia.flow.Flow(options)
     flow.o.scheduled_interval= 5
     flow.o.pollUrl = "https://kiwis.opg.com"
-    flow.o.directory = "/tmp/wiski"
+    if sys.platform.startswith( "win" ):
+        flow.o.directory = "C:\\temp\wiski"
+    else:
+        flow.o.directory = "/tmp/wiski"
     logging.basicConfig(level=logging.DEBUG)
 
     me = Wiski(flow.o)
