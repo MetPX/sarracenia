@@ -166,7 +166,7 @@ class Scheduled(FlowCB):
     def wait_until_next( self ):
 
         if self.o.scheduled_interval > 0:
-            self.wait_seconds(self.o.scheduled_interval)
+            self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
         if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
