@@ -38,7 +38,7 @@ class Wiski(Scheduled):
        scheduled_minute -- a list of minutes (0-59) to poll. 
        scheduled_interval  -- just a time interval between polls.
 
-       2023/09 plugin by Peter Silva, based on original proof of concept work by Mohamed Rehouma.
+       2023/09 plugin by Peter Silva, based on original tidbits by Mohamed Rehouma.
     """
 
     def __init__(self,options):
@@ -56,6 +56,8 @@ class Wiski(Scheduled):
 
         # assert: now self.details.url.username/password are set.
         self.basic_auth = "Basic " + base64.b64encode(f"{self.details.url.username}:{self.details.url.password}".encode()).decode()
+        logger.error( f"FIXME: basic_auth: {self.basic_auth} " )
+
         if self.details.url.port:
             self.main_url = self.details.url.scheme + "://" + self.details.url.hostname + ":" + self.details.url.port + "/KiWIS/KiWIS"
         else:
@@ -86,8 +88,8 @@ class Wiski(Scheduled):
         token_url = self.main_url + "/KiWebPortal/rest/auth/oidcServer/token"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + self.basic_auth,
-            "Host": "kiwis.opg.com",
+            "Authorization": self.basic_auth,
+            "Host": self.main_url,
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
         }
@@ -102,10 +104,11 @@ class Wiski(Scheduled):
         if str_response_status == 201:
             submit_tokenization_request = token_array[3]
         else:
+            logger.error( f"tokenization_request status: {str_response_text}" )
             submit_tokenization_request = "Error"
         
         return submit_tokenization_request
-    
+
     def gather(self): # placeholder
         
         
@@ -117,6 +120,7 @@ class Wiski(Scheduled):
             return messages
         
         while (1):
+            self.token = self.submit_tokenization_request()
             authenticated_url = "https://kiwis.opg.com/KiWIS/KiWIS"
             headers = {
                 "Authorization" : f"Bearer {self.token}",
@@ -129,15 +133,12 @@ class Wiski(Scheduled):
 
             if response.status_code == 200:
                 break
-            elif str_response_status == 403:
-                # Call the function and save in variable
-                logger.info( f"permission denied" )
-                self.token = self.submit_tokenization_request()
             else:
                 logger.info("request failed. Status code: " + response.status_code)
                 logger.info("response: " + response.text)
         
-        k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS')
+        kheaders= { "Authorization" : f"Bearer {self.token}" }
+        k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS', headers=kheaders )
 
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         then = now - self.ts_length
@@ -151,14 +152,14 @@ class Wiski(Scheduled):
             else:
                 fname = f"{self.o.directory}{os.sep}ts_{station_id}_{str(then).replace(' ','h')}_{str(now).replace(' ','h')}.csv" 
 
-            f=open(fname,'w')
+            #f=open(fname,'w')
             logger.warning( f"station_ids: {station_id} writing to: {fname}" )
-            for ts_id in k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id:
+            #for ts_id in k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id:
                 #print(k.get_timeseries_values(ts_id = ts_id, to = date(2023,1,31), **{'from': date(2023,1,1)}))
                 #print(k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}))
-                (k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then})).to_csv(f)
-            f.close() 
-            messages.append( sarracenia.Message.fromFileData( fname, self.o, os.stat(fname) ) )
+            #    (k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then})).to_csv(f)
+            #f.close() 
+            #messages.append( sarracenia.Message.fromFileData( fname, self.o, os.stat(fname) ) )
     
         return messages
 
