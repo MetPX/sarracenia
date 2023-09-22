@@ -10,8 +10,6 @@ import time
 from datetime import date
 from kiwis_pie import KIWIS
 
-import pandas as pd
-
 import sarracenia
 
 from sarracenia.flowcb.scheduled import Scheduled
@@ -56,13 +54,13 @@ class Wiski(Scheduled):
 
         # assert: now self.details.url.username/password are set.
         self.basic_auth = "Basic " + base64.b64encode(f"{self.details.url.username}:{self.details.url.password}".encode()).decode()
-        logger.error( f"FIXME: basic_auth: {self.basic_auth} " )
 
         if self.details.url.port:
             self.main_url = self.details.url.scheme + "://" + self.details.url.hostname + ":" + self.details.url.port + "/KiWIS/KiWIS"
         else:
             self.main_url = self.details.url.scheme + "://" + self.details.url.hostname + "/KiWIS/KiWIS"
 
+        self.host = self.details.url.hostname
         self.token = None
         #self.token = self.submit_tokenization_request()
 
@@ -85,11 +83,11 @@ class Wiski(Scheduled):
         body_string = "grant_type=client_credentials&scope=empty"
         
         # Request Token using HTTP POST request
-        token_url = self.main_url + "/KiWebPortal/rest/auth/oidcServer/token"
+        token_url = "https://" + self.host + "/KiWebPortal/rest/auth/oidcServer/token"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": self.basic_auth,
-            "Host": self.main_url,
+            "Host": self.host,
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
         }
@@ -139,6 +137,7 @@ class Wiski(Scheduled):
         
         kheaders= { "Authorization" : f"Bearer {self.token}" }
         k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS', headers=kheaders )
+        #k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS' )
 
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         then = now - self.ts_length
@@ -153,11 +152,16 @@ class Wiski(Scheduled):
                 fname = f"{self.o.directory}{os.sep}ts_{station_id}_{str(then).replace(' ','h')}_{str(now).replace(' ','h')}.csv" 
 
             #f=open(fname,'w')
-            logger.warning( f"station_ids: {station_id} writing to: {fname}" )
+            logger.info( f"for station_id {station_id} writing to: {fname}" )
             #for ts_id in k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id:
                 #print(k.get_timeseries_values(ts_id = ts_id, to = date(2023,1,31), **{'from': date(2023,1,1)}))
                 #print(k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}))
-            #    (k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then})).to_csv(f)
+                #ts=(k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}))
+            #   print( "ts: {ts} " )
+            #    if len(ts) > 0:
+            #        ts.to_csv(f)
+            #    else:
+            #        logger.info("no data to write to {f}")
             #f.close() 
             #messages.append( sarracenia.Message.fromFileData( fname, self.o, os.stat(fname) ) )
     
