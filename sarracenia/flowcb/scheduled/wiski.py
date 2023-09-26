@@ -119,7 +119,7 @@ class Wiski(Scheduled):
         
         while (1):
             self.token = self.submit_tokenization_request()
-            authenticated_url = "https://kiwis.opg.com/KiWIS/KiWIS"
+            authenticated_url = self.main_url
             headers = {
                 "Authorization" : f"Bearer {self.token}",
                 "Content-Type" : "application/json"
@@ -136,34 +136,40 @@ class Wiski(Scheduled):
                 logger.info("response: " + response.text)
         
         kheaders= { "Authorization" : f"Bearer {self.token}" }
-        k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS', headers=kheaders )
-        #k = KIWIS('https://kiwis.opg.com/KiWIS/KiWIS' )
+        k = KIWIS(self.main_url, headers=kheaders )
 
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         then = now - self.ts_length
 
+        logger.info( f"stations: {k.get_station_list().station_id} " )
         for station_id in k.get_station_list().station_id:
 
             # writing files on windows is quite painful, so many illegal characters.
             if sys.platform.startswith( "win" ):
-                fname = f"{self.o.directory}{os.sep}ts_{station_id}__{str(now).replace(' ','h')}.csv" 
+                fname = f"{self.o.directory}{os.sep}ts_{station_id}__{str(now).replace(' ','T')}.csv" 
                 fname = fname[0:3]+fname[3:].replace(':','_').replace('.','_',1).replace('+','_').replace('-','_')
             else:
-                fname = f"{self.o.directory}{os.sep}ts_{station_id}_{str(then).replace(' ','h')}_{str(now).replace(' ','h')}.csv" 
+                fname = f"{self.o.directory}{os.sep}ts_{station_id}_{str(then).replace(' ','T')}_{str(now).replace(' ','h')}.csv" 
 
             #f=open(fname,'w')
-            logger.info( f"for station_id {station_id} writing to: {fname}" )
-            #for ts_id in k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id:
-                #print(k.get_timeseries_values(ts_id = ts_id, to = date(2023,1,31), **{'from': date(2023,1,1)}))
-                #print(k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}))
-                #ts=(k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then}))
-            #   print( "ts: {ts} " )
+            #logger.info( f"for station_id {station_id} to be written to: {fname}" )
+            timeseries = k.get_timeseries_list(station_id = station_id, ts_name =self.o.wiski_ts_name, parametertype_name = self.o.wiski_ts_parameterTypeName ).ts_id
+            logger.info( f"looping over the timeseries: {timeseries}" )
+            for ts_id in timeseries:
+                logger.info( f"within timeseries: {ts_id}" )
+                ts=k.get_timeseries_values(ts_id = ts_id, datasource=0, to = date(2023,1,31), **{'from': date(2023,1,1)})
+                logger.error( f"hoho, len of time series: {ts} - {len(ts)} " )
+                #ts=k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then})
+            #    ts=k.get_timeseries_values(ts_id = ts_id, to = now, **{'from': then})
+            #    logger.warning( "ts: {ts} " )
             #    if len(ts) > 0:
             #        ts.to_csv(f)
             #    else:
             #        logger.info("no data to write to {f}")
+                logger.info('end of loop')
             #f.close() 
             #messages.append( sarracenia.Message.fromFileData( fname, self.o, os.stat(fname) ) )
+            logger.info( f'end of station {station_id}')
     
         return messages
 
