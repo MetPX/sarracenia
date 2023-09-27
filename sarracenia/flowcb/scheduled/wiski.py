@@ -113,10 +113,10 @@ class Wiski(Scheduled):
 
         self.wait_until_next()
 
-        if self.stop_requested:
-            return messages
-        
         while (1):
+            if self.stop_requested:
+                return messages
+        
             self.token = self.submit_tokenization_request()
             authenticated_url = self.main_url
             headers = {
@@ -131,8 +131,7 @@ class Wiski(Scheduled):
             if response.status_code == 200:
                 break
             else:
-                logger.info("request failed. Status code: " + response.status_code)
-                logger.info("response: " + response.text)
+                logger.info( f"request failed. Status code: {response.status_code}: {response.text}" )
         
         k = KIWIS(self.main_url, headers=headers )
 
@@ -142,6 +141,9 @@ class Wiski(Scheduled):
         logger.info( f"stations: {k.get_station_list().station_id} " )
 
         for station_id in k.get_station_list().station_id:
+
+            if self.stop_requested:
+                return messages
 
             timeseries = k.get_timeseries_list(station_id = station_id ).ts_id
             #logger.info( f"looping over the timeseries: {timeseries}" )
