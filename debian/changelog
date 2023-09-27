@@ -1,10 +1,9 @@
 metpx-sr3 (3.00.44) UNRELEASED; urgency=medium
 
+  * fix #760 'source' missing sometimes when needed.
   * fix #753 failed magic import improved detection.
   * fix #752 scheduled plugins not working.
   * improved #757 unit tests for all flowcb plugins.
-  * 
-  * 
 
  -- Peter <peter@bsqt.homeip.net>  Sat, 19 Aug 2023 00:44:33 -0400
 
