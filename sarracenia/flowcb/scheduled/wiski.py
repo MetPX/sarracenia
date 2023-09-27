@@ -38,8 +38,9 @@ class Wiski(Scheduled):
     """
       
        Plugin to Poll a WISKIS server that uses  ( https://www.kisters.net/wiski )
+       Uses the kiwis_pie ( https://github.com/amacd31/kiwis_pie ) to do that.
 
-       In the credentials.conf file, have an entry like:
+       In the credentials.conf file, need an authentication  entry like:
 
        https://user:password@theserver.com
 
@@ -47,6 +48,11 @@ class Wiski(Scheduled):
 
        pollUrl https://theserver.com
 
+       wiski polling parametrization (these are defined by and passed to kiwis_pie):
+
+       wiski_ts_length -- how long a timeseries to request (default is 24 hours)
+       wiski_ts_name   -- name of the timeseries (not used currently.)
+       wiski_ts_parameterTypeName -- Air Temperature.
 
        inherits the following settings from Scheduled (interval overrides the other two.)
 
