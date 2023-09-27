@@ -8,13 +8,31 @@ import sys
 import time
 
 from datetime import date
-from kiwis_pie import KIWIS
 
 import sarracenia
-
 from sarracenia.flowcb.scheduled import Scheduled
 
+#
+# Support for features inventory mechanism.
+#
+from sarracenia.featuredetection import features
+
+features['wiski'] = { 'modules_needed': [ 'kiwis_pie' ], 'Needed': True,
+        'lament' : 'cannot poll sites that provide data using WISKI API' ,
+        'rejoice' : 'can poll sites that provide data with WISKI API' }
+
+try:
+    from kiwis_pie import KIWIS
+    sarracenia.features['wiski']['present'] = True
+except:
+    sarracenia.features['wiski']['present'] = False
+
+
+
 logger = logging.getLogger(__name__)
+
+
+
 
 class Wiski(Scheduled):
     """
