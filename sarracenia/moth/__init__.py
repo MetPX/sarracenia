@@ -293,7 +293,7 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message) -> None:
+    def ack(self, message: sarracenia.Message ) -> None:
         """
           tell broker that a given message has been received.
 
@@ -334,7 +334,7 @@ class Moth():
         logger.error("NewMessages unimplemented")
         return []
 
-    def putNewMessage(self, message, content_type='application/json') -> bool:
+    def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json') -> bool:
         """
            publish a message as set up to the given topic.
 

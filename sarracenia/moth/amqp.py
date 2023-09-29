@@ -499,7 +499,7 @@ class AMQP(Moth):
         time.sleep(1)
         return None
 
-    def ack(self, m) -> None:
+    def ack(self, m: sarracenia.Message) -> None:
         """
            do what you need to acknowledge that processing of a message is done.
         """
@@ -538,9 +538,9 @@ class AMQP(Moth):
             time.sleep(ebo)
 
     def putNewMessage(self,
-                      body,
-                      content_type='application/json',
-                      exchange=None) -> bool:
+                      message: sarracenia.Message,
+                      content_type: str = 'application/json',
+                      exchange: str = None ) -> bool:
         """
         put a new message out, to the configured exchange by default.
         """
@@ -560,7 +560,7 @@ class AMQP(Moth):
                 return False
 
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(body)
+        body = copy.deepcopy(message)
 
         version = body['_format']
 

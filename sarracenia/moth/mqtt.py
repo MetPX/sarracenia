@@ -653,7 +653,7 @@ class MQTT(Moth):
         else:
             return None
 
-    def ack(self, m) -> None:
+    def ack(self, m: sarracenia.Message ) -> None:
         if (not self.auto_ack) and ('ack_id' in m):
             logger.info('mid=%d' % m['ack_id'])
             self.client.ack(m['ack_id'])
@@ -661,9 +661,9 @@ class MQTT(Moth):
             m['_deleteOnPost'].remove('ack_id')
 
     def putNewMessage(self,
-                      body,
-                      content_type='application/json',
-                      exchange=None) -> bool:
+                      message: sarracenia.Message,
+                      content_type: str ='application/json',
+                      exchange: str = None ) -> bool:
         """
           publish a message.
         """
@@ -675,7 +675,7 @@ class MQTT(Moth):
             self.putSetup()
 
         # The caller probably doesn't expect the message to get modified by this method, so use a copy of the message
-        body = copy.deepcopy(body)
+        body = copy.deepcopy(message)
 
         postFormat = body['_format']
 
