@@ -738,6 +738,10 @@ de la séparation par des deux-points dans les fichiers, le défaut dans Sarrace
 
 Les mots-clés possibles sont :
 
+**None**
+ - Aucune modification du nom de fichier (enlever toute interprétation de style Sundew)
+   N.B. différent de NONE décrit plus loin.
+
 **WHATFN**
  - la première partie du nom de fichier Sundew (chaîne de caractères avant le premier : )
 
