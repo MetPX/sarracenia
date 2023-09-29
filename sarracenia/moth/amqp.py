@@ -603,6 +603,7 @@ class AMQP(Moth):
 
         raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
 
+        logger.info( f" topic is {headers['topic']}" )
         topic = '.'.join(headers['topic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')

@@ -14,8 +14,8 @@ entry_points = [
 
     'ack', 'after_accept', 'after_post', 'after_work', 'destfn', 'do_poll', 
     'download', 'gather', 'metricsReport', 'on_cleanup', 'on_declare', 'on_features',
-    'on_housekeeping', 'on_report', 'on_sanity', 'on_start', 'on_stop', 
-    'please_stop', 'poll', 'post', 'send', 
+    'on_housekeeping', 'on_sanity', 'on_start', 'on_stop', 
+    'please_stop', 'poll', 'post', 'report', 'send', 
 
 ]
 
