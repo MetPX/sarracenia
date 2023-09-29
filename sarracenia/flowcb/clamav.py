@@ -18,13 +18,14 @@ import stat
 import time
 
 from sarracenia import nowflt
-from sarracenia.featuredetection import features
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
 #
 # Support for features inventory mechanism.
 #
+from sarracenia.featuredetection import features
+
 features['clamd'] = { 'modules_needed': [ 'pyclamd' ], 'Needed': True,
         'lament' : 'cannot use clamd to av scan files transferred',
         'rejoice' : 'can use clamd to av scan files transferred' }

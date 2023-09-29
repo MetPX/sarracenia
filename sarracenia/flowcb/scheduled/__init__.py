@@ -65,7 +65,7 @@ class Scheduled(FlowCB):
         logger.info( f"for {when}: {json.dumps(list(map( lambda x: str(x), self.appointments))) } ")
 
 
-    def __init__(self,options):
+    def __init__(self,options,logger=logger):
         super().__init__(options,logger)
         self.o.add_option( 'scheduled_interval', 'duration', 0 )
         self.o.add_option( 'scheduled_hour', 'list', [] )
@@ -166,7 +166,7 @@ class Scheduled(FlowCB):
     def wait_until_next( self ):
 
         if self.o.scheduled_interval > 0:
-            self.wait_seconds(self.o.scheduled_interval)
+            self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
         if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):

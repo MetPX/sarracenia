@@ -2501,6 +2501,9 @@ of colon separation in files, the default in Sarracenia is WHATFN
 
 The possible keywords are :
 
+**None**
+ - no Sundew-style filename processing. Leave the filename alone.
+   (Not the same as NONE, described below.)
 
 **WHATFN**
  - the first part of the Sundew filename (string before first :)
