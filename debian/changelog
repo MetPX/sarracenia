@@ -4,6 +4,7 @@ metpx-sr3 (3.00.44) UNRELEASED; urgency=medium
   * fix #753 failed magic import improved detection.
   * fix #752 scheduled plugins not working.
   * improved #757 unit tests for all flowcb plugins.
+  * fix #758 initial support for WISKI at Ontario Power Generation.
 
  -- Peter <peter@bsqt.homeip.net>  Sat, 19 Aug 2023 00:44:33 -0400
 
