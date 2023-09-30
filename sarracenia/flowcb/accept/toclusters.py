@@ -29,7 +29,7 @@ class ToClusters(FlowCB):
 
         self.o.add_option('msgToClusters', 'list')
 
-        if self.o.msgToClusters == [None]:
+        if self.o.msgToClusters == None:
             logger.info("msgToClusters setting mandatory")
             return
 

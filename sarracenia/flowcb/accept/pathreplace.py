@@ -35,14 +35,14 @@ class Pathreplace(FlowCB):
         self.o.add_option( 'pathReplaceFields', 'set', all_fields, all_fields )
 
     def on_start(self):
-        if self.o.pathReplace == [None]:
+        if self.o.pathReplace == None:
             logger.error("pathReplace setting mandatory")
             return
 
         logger.debug("pathReplace is %s " % self.o.pathReplace )
 
     def after_accept(self, worklist):
-        if self.o.pathReplace == [None]:
+        if self.o.pathReplace == None:
             return
 
         for msg in worklist.incoming:

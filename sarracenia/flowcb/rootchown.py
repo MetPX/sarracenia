@@ -41,7 +41,7 @@ class Rootchown(FlowCB):
     def on_start(self):
 
         if not hasattr(self.o, "rootChownMappingFile"):
-            self.o.mapping_file = [None]
+            self.o.mapping_file = None
             return True
 
         mf_path = self.o.mapping_file[0]

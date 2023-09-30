@@ -206,7 +206,7 @@ class TimeConversions:
 
      * beginning of epoch is platform dependent, and conversion to actual date is fraught (leap seconds, etc...)
 
-     * Entire SR\_* formats are text, no floats are sent over the protocol 
+     * Entire SR_* formats are text, no floats are sent over the protocol 
        (avoids byte order issues, null byte / encoding issues, and enhances readability.) 
 
      * str format: YYYYMMDDHHMMSS.msec goal of this representation is that a naive 
@@ -722,8 +722,8 @@ class Message(dict):
 
     def updatePaths(msg, options, new_dir=None, new_file=None):
         """
-        set the new\\\_ fields in the message based on changed file placement.
-        if new_ options are ommitted updaste the rest of the fields in 
+        set the new_* fields in the message based on changed file placement.
+        if new_* options are ommitted updaste the rest of the fields in 
         the message based on their current values.
 
         If you change file placement in a flow callback, for example.
