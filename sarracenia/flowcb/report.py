@@ -99,7 +99,7 @@ class Report(FlowCB):
         if 'content' in m:
             del m['content']
 
-        m['_deleteOnPost'] = m['_deleteOnPost'].difference(set(['report','timeCompleted']))
+        m['_deleteOnPost'] = m['_deleteOnPost'].difference(set(['report']))
 
         self.poster.putNewMessage(m)
 

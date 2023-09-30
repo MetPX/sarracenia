@@ -25,7 +25,7 @@ Cléa Aumont
   how about issues: #447, #438, #435, #433, #433, #381, #378, #366, #350
 
 Cody Au 
-  fixes #413, #387,  #348. working on sr process management.
+  fixes #413, #387, #348. working on sr process management.
 
 Michel Grenier <michel.grenier@IamRetiredNow.ca> (Retired)
   dd_subscribe, sr_subscribe, sr_sarra, sr_post, 

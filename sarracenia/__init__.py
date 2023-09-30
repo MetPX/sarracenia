@@ -717,9 +717,8 @@ class Message(dict):
             logger.warning('overriding initial report: %d: %s' %
                            (msg['report']['code'], msg['report']['message']))
 
-        msg['timeCompleted'] = nowstr()
-        msg['report'] = {'code': code, 'message': text}
-        msg['_deleteOnPost'] |= set(['report','timeCompleted'])
+        msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
+        msg['_deleteOnPost'] |= set(['report'])
 
     def updatePaths(msg, options, new_dir=None, new_file=None):
         """
