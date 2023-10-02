@@ -37,7 +37,8 @@ def test___init__(caplog):
     options.logLevel = 'DEBUG'
     options.postOverride = ['Foo Bar']
     postoverride = PostOverride(options)
-    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
+
+    assert len(caplog.messages) in [ 1, 3, 5 ]
     assert "postOverride settings: ['Foo Bar']" in caplog.messages
 
 

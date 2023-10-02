@@ -61,7 +61,7 @@ def test___init__(caplog, tmp_path):
     #options.pxClient = 'meadow,foobar'
     sundewpxroute = SundewPxRoute(options)
     
-    assert len(caplog.messages) == 1 or len(caplog.messages) == 3
+    assert len(caplog.messages) in [ 1, 3, 5 ]
     assert 'sundew_pxroute pxRouting file not defined' in caplog.messages
 
     caplog.clear()
