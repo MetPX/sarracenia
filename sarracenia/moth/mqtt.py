@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 default_options = {
-    'auto_ack': True,
+    'manuel_ack': False,
     'batch': 25,
     'clean_session': False,
     'max_inflight_messages': 20000, # https://pypi.org/project/paho-mqtt/ ... says default is 20, raised because of data loss
@@ -335,7 +335,7 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
-        self.auto_ack = True
+        self.manual_ack = False
         while True:
 
             if self.please_stop:
@@ -361,15 +361,15 @@ class MQTT(Moth):
                 logger.info( f"is no around? {self.o['no']} " )
                 if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                     self.client = self.__clientSetup(cid)
-                    if hasattr(self, 'client') and hasattr(self.client, 'auto_ack'):  # FIXME breaking this...
-                        self.client.auto_ack(False)
+                    if hasattr(self, 'client') and hasattr(self.client, 'manual_ack'):  # FIXME breaking this...
+                        self.client.manual_ack(True)
                         logger.debug(
-                            "Switching off auto_ack for higher reliability via explicit acknowledgements."
+                            "Switching on manual_acks for higher reliability via explicit acknowledgements."
                         )
-                        self.auto_ack = False
+                        self.manual_ack = True
                     else:
                         logger.warning(
-                            "paho library using auto_ack. may lose data every crash or restart."
+                            "paho library automatically acknowledges receipt. may lose data every crash or restart."
                         )
     
                     self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
@@ -551,7 +551,7 @@ class MQTT(Moth):
         """
         headers = { 'topic' : mqttMessage.topic }
         if self.o['messageDebugDump']:
-            logger.info('raw message start')
+            logger.info( f"raw message start topic={mqttMessage.topic}, qos={mqttMessage.qos}, mid={mqttMessage.mid}")
             if hasattr(mqttMessage.properties, 'ContentType'): 
                 logger.info( f'Content-type: {mqttMessage.properties.ContentType}')
                 headers['content-type'] = mqttMessage.properties.ContentType
@@ -579,15 +579,16 @@ class MQTT(Moth):
             return None
 
         message['ack_id'] = mqttMessage.mid
+        message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
-        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id' ])
+        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
 
         if message.validate():
             self.metrics['rxGoodCount'] += 1
             return message
         else:
            self.metrics['rxBadCount'] += 1
-           self.ack(message['ack_id'])
+           self.ack(message)
            logger.error('message acknowledged and discarded: %s' % message)
            return None
 
@@ -653,10 +654,10 @@ class MQTT(Moth):
         else:
             return None
 
-    def ack(self, m) -> None:
-        if (not self.auto_ack) and ('ack_id' in m):
+    def ack(self, m: sarracenia.Message ) -> None:
+        if self.manual_ack and ('ack_id' in m):
             logger.info('mid=%d' % m['ack_id'])
-            self.client.ack(m['ack_id'])
+            self.client.ack( m['ack_id'], m['qos'] )
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
 
