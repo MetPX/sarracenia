@@ -178,7 +178,7 @@ class Sarracenia:
         call. However the notification message returned will lack an identity checksum field.
         once you get the file, you can add the Identity field with:
     
-        m.__computeIdentity(path, o):
+        m.computeIdentity(path, o):
     
         In terms of consuming notification messages, the fields in the dictionary provide metadata
         for the announced resource. The anounced data could be embedded in the notification message itself,
@@ -390,7 +390,7 @@ class Message(dict):
         self['_deleteOnPost'] = set(['_format'])
 
 
-    def __computeIdentity(msg, path, o):
+    def computeIdentity(msg, path, o, offset=0):
         """
            check extended attributes for a cached identity sum calculation.
            if extended attributes are present, and 
@@ -453,7 +453,11 @@ class Message(dict):
 
                 fp = open(path, 'rb')
                 i = 0
-                while i < msg['size']:
+
+                if offset:
+                    fp.lseek( offset )
+
+                while i < offset+msg['size']:
                     buf = fp.read(o.bufsize)
                     if not buf: break
                     sumalgo.update(buf)
@@ -543,7 +547,7 @@ class Message(dict):
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.__computeIdentity(path, o)
+                m.computeIdentity(path, o)
                 if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)

@@ -184,7 +184,6 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
-    'blocksize' : ['continue'],
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
     'discard' : [ 'delete_destination', 'on' ], 

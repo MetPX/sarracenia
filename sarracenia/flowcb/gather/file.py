@@ -133,7 +133,7 @@ class File(FlowCB):
         self.new_events = OrderedDict()
         self.left_events = OrderedDict()
 
-        self.o.blocksize = 200 * 1024 * 1024
+        #self.o.blocksize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
@@ -162,7 +162,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file(self, path, lstat, key=None, value=None):
-        #logger.debug("post_file %s" % path)
+        logger.debug("start  %s" % path)
 
         # check if it is a part file
         if path.endswith('.' + self.o.part_ext):
@@ -180,8 +180,8 @@ class File(FlowCB):
 
         # if we should send the file in parts
 
-        #if blksz > 0 and blksz < fsiz:
-        #    return self.post_file_in_parts(path, lstat)
+        if blksz > 0 and blksz < fsiz:
+            return self.post_file_in_parts(path, lstat)
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
@@ -238,6 +238,7 @@ class File(FlowCB):
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
+        logger.debug( f"initial msg:{msg}" )
         # check the value of blocksize
 
         fsiz = lstat.st_size
@@ -249,33 +250,20 @@ class File(FlowCB):
         remainder = fsiz % chunksize
         if remainder > 0: block_count = block_count + 1
 
-        # default sumstr
+        logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
 
-        sumstr = self.o.sumflg
-
-        # loop on chunks
+        # loop on blocks
 
         blocks = list(range(0, block_count))
-        if self.randomize:
+        if self.o.randomize:
             random.shuffle(blocks)
             #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
             logger.info('Sending partitions in the following order: ' +
                         str(blocks))
 
         messages = []
+        logger.debug( "f blocks:{blocks} " )
         for i in blocks:
-
-            # setting sumalgo for that part
-
-            sumflg = self.o.sumflg
-
-            if sumflg[:2] == 'z,' and len(sumflg) > 2:
-                sumstr = sumflg
-
-            else:
-                sumflg = self.o.sumflg
-                sumalgo = sarracenia.identity.Identity.factory(sumflg)
-                sumalgo.set_path(path)
 
             # compute block stuff
 
@@ -288,38 +276,21 @@ class File(FlowCB):
             if last and remainder > 0:
                 length = remainder
 
+            msg['size']=length
+
             # set partstr
 
-            partstr = {
+            msg['blocks'] = {
                 'method': 'inplace',
                 'size': chunksize,
                 'count': block_count,
                 'remainder': remainder,
                 'number': current_block
             }
-            # compute checksum if needed
 
-            if not self.sumflg in ['random', 'cod']:
-                bufsize = self.o.bufsize
-                if length < bufsize: bufsize = length
+            msg.computeIdentity(path, self.o, offset=chunksize*block_count )
 
-                fp = open(path, 'rb')
-                if offset != 0: fp.seek(offset, 0)
-                t = 0
-                while t < length:
-                    buf = fp.read(bufsize)
-                    if not buf: break
-                    sumalgo.update(buf)
-                    t += len(buf)
-                fp.close()
-
-                checksum = sumalgo.value
-                sumstr = {'method': sumflg, 'value': checksum}
-
-            # complete  message
-
-            msg['identity'] = sumstr
-            messages.extend(copy.deepcopy(msg))
+            messages.append(copy.deepcopy(msg))
 
         return messages
 
