@@ -136,7 +136,7 @@ class Test_Message():
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
         #msg['mtime'] = sarracenia.timeflt2str(sarracenia.timestr2flt(msg['mtime']) + 1000)
-        msg._Message__computeIdentity(path1, options)
+        msg.computeIdentity(path1, options)
         assert msg['identity']['method'] == options.identity_method
 
         # Set 2
@@ -148,7 +148,7 @@ class Test_Message():
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
         mocker.patch('random.choice', return_value=None)
-        msg._Message__computeIdentity(path2, options)
+        msg.computeIdentity(path2, options)
         assert 'identity' not in msg
 
         # Set 3 - tests random, and algorithm == None
@@ -160,7 +160,7 @@ class Test_Message():
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
         mocker.patch('random.choice', return_value=None)
-        msg._Message__computeIdentity(path3, options)
+        msg.computeIdentity(path3, options)
         assert 'identity' not in msg
 
         # Set 4 - abitrary method
@@ -172,21 +172,21 @@ class Test_Message():
         msg = sarracenia.Message()
         msg['mtime'] = sarracenia.nowstr()
         msg['size'] = 0
-        msg._Message__computeIdentity(path4, options)
+        msg.computeIdentity(path4, options)
         assert msg['identity']['value'] == 'identity_arbitrary_value'
 
         # Set 4a - random 
         options.identity = 'random'
         options.identity_method = 'random'
         del(msg['identity'])
-        msg._Message__computeIdentity(path4, options)
+        msg.computeIdentity(path4, options)
         assert msg['identity']['method'] == 'random'
 
         # Set 4b - 'cod,*' method
         options.identity = 'cod,testname'
         options.identity_method = 'cod,testname'
         del(msg['identity'])
-        msg._Message__computeIdentity(path4, options)
+        msg.computeIdentity(path4, options)
         assert msg['identity'] == 'cod,testname'
 
         try:
@@ -202,13 +202,13 @@ class Test_Message():
             msg = sarracenia.Message()
             msg['mtime'] = sarracenia.nowstr()
             msg['size'] = 0
-            msg._Message__computeIdentity(path5, options)
+            msg.computeIdentity(path5, options)
             assert msg['identity']['method'] == options.identity_method
             assert xattr.getxattr(path5, b'user.sr_mtime').decode('utf-8') == msg['mtime']
             # Set 5a - Cover cases where the identity on disk is different than what's configured
             options.identity = 'md5name'
             options.identity_method = 'md5name'
-            msg._Message__computeIdentity(path5, options)
+            msg.computeIdentity(path5, options)
             found_log_set5 = False
             for record in caplog.records:
                 if "xattr different method than on disk" in record.message:
@@ -225,7 +225,7 @@ class Test_Message():
             msg = sarracenia.Message()
             msg['mtime'] = msg_time
             msg['size'] = 0
-            msg._Message__computeIdentity(path6, options)
+            msg.computeIdentity(path6, options)
             assert msg['identity']['value'] == 'xattr_identity_value'
         except:
             pass
