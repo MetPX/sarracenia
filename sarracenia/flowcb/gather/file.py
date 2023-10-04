@@ -262,17 +262,15 @@ class File(FlowCB):
                         str(blocks))
 
         messages = []
-        logger.debug( "f blocks:{blocks} " )
-        for i in blocks:
+        logger.debug( f" blocks:{blocks} " )
+        for current_block in blocks:
 
             # compute block stuff
-
-            current_block = i
-
             offset = current_block * chunksize
             length = chunksize
 
             last = current_block == block_count - 1
+
             if last and remainder > 0:
                 length = remainder
 
@@ -288,7 +286,9 @@ class File(FlowCB):
                 'number': current_block
             }
 
-            msg.computeIdentity(path, self.o, offset=chunksize*block_count )
+            msg.computeIdentity(path, self.o, offset=offset )
+
+            logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
 
             messages.append(copy.deepcopy(msg))
 

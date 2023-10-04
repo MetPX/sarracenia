@@ -404,26 +404,30 @@ class Message(dict):
            
            sets the message 'identity' field if appropriate.
         """
+        logger.critical( f"hello ")
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
-        if o.randomize:
-            methods = [
-                'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
-            ]
-            calc_method = random.choice(methods)
-        elif 'identity' in xattr.x and 'mtime' in xattr.x:
-            if xattr.get('mtime') >= msg['mtime']:
-                logger.debug("mtime remembered by xattr")
-                fxainteg = xattr.get('identity')
-                if fxainteg['method'] == o.identity_method: 
-                     msg['identity'] = fxainteg
-                     return
-                logger.debug("xattr different method than on disk")
-                calc_method = o.identity_method
+        if not 'blocks' in msg:
+            if o.randomize:
+                methods = [
+                    'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
+                ]
+                calc_method = random.choice(methods)
+            elif 'identity' in xattr.x and 'mtime' in xattr.x:
+                if xattr.get('mtime') >= msg['mtime']:
+                    logger.debug("mtime remembered by xattr")
+                    fxainteg = xattr.get('identity')
+                    if fxainteg['method'] == o.identity_method: 
+                         msg['identity'] = fxainteg
+                         return
+                    logger.debug("xattr different method than on disk")
+                    calc_method = o.identity
+                else:
+                    logger.debug("xattr sum too old")
+                    calc_method = o.identity_method
             else:
-                logger.debug("xattr sum too old")
                 calc_method = o.identity_method
-        else:
+        else: 
             calc_method = o.identity_method
 
         if calc_method == None:
@@ -431,7 +435,7 @@ class Message(dict):
 
         xattr.set('mtime', msg['mtime'])
 
-        #logger.debug("sum set by compute_sumstr")
+        logger.debug("mtime persisted, calc_method: {calc_method}")
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
@@ -454,8 +458,9 @@ class Message(dict):
                 fp = open(path, 'rb')
                 i = 0
 
+                logger.critical( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
                 if offset:
-                    fp.lseek( offset )
+                    fp.seek( offset )
 
                 while i < offset+msg['size']:
                     buf = fp.read(o.bufsize)

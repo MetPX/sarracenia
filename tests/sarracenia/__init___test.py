@@ -127,7 +127,7 @@ def message():
 
 class Test_Message():
 
-    def test___computeIdentity(self, tmp_path, mocker, caplog):
+    def test_computeIdentity(self, tmp_path, mocker, caplog):
         # Set 1
         path1 = str(tmp_path) + os.sep + "file1.txt"
         open(path1, 'a').close()
