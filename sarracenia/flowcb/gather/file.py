@@ -261,8 +261,13 @@ class File(FlowCB):
             logger.info('Sending partitions in the following order: ' +
                         str(blocks))
 
-        messages = []
+        msg['blocks'] = {
+            'method': 'inplace',
+            'size': chunksize,
+            'manifest': {}
+        }
         logger.debug( f" blocks:{blocks} " )
+
         for current_block in blocks:
 
             # compute block stuff
@@ -277,16 +282,17 @@ class File(FlowCB):
             msg['size']=length
 
             # set partstr
-
-            msg['blocks'] = {
-                'method': 'inplace',
-                'size': chunksize,
-                'count': block_count,
-                'remainder': remainder,
-                'number': current_block
-            }
-
             msg.computeIdentity(path, self.o, offset=offset )
+            msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
+
+
+
+        messages = []
+        for current_block in blocks:
+
+            msg['blocks']['number'] = current_block
+            msg['size'] = msg['blocks']['manifest'][current_block]['size']
+            msg['identity']['value'] = msg['blocks']['manifest'][current_block]['identity']
 
             logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
 
