@@ -1856,7 +1856,7 @@ class Flow:
 
             remote_offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                remote_offset = msg['offset']
+                remote_offset = msg['blocks']['size']*msg['blocks']['number']
 
             if 'size' in msg:
                 block_length = msg['size']
