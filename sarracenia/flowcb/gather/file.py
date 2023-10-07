@@ -285,7 +285,10 @@ class File(FlowCB):
             msg.computeIdentity(path, self.o, offset=offset )
             msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
-
+        
+        x = sarracenia.filemetadata.FileMetadata( path )
+        x.set('blocks', msg['blocks'])
+        x.persist()
 
         messages = []
         for current_block in blocks:
@@ -294,7 +297,7 @@ class File(FlowCB):
             msg['size'] = msg['blocks']['manifest'][current_block]['size']
             msg['identity']['value'] = msg['blocks']['manifest'][current_block]['identity']
 
-            logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
+            #logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
 
             messages.append(copy.deepcopy(msg))
 

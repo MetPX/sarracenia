@@ -404,7 +404,6 @@ class Message(dict):
            
            sets the message 'identity' field if appropriate.
         """
-        logger.critical( f"hello ")
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
         if not 'blocks' in msg:
@@ -447,7 +446,7 @@ class Message(dict):
                 'method': 'arbitrary',
                 'value': o.identity_arbitrary_value
             }
-        else:
+        else: # a "normal" calculation method, liks sha512, or md5
             sumalgo = sarracenia.identity.Identity.factory(calc_method)
             sumalgo.set_path(path)
 
@@ -600,6 +599,10 @@ class Message(dict):
             msg['exchange'] = o.post_exchange
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
+
+        if hasattr(o, 'blocksize' ):
+           if o.blocksize > 1:
+               msg['blocks'] = { 'method': 'inplace', 'size': o.blocksize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])

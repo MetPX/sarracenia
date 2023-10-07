@@ -1223,6 +1223,10 @@ class Flow:
                             # cache good.
                             msg['local_identity'] = s
                             msg['_deleteOnPost'] |= set(['local_identity'])
+                            b = x.get('blocks')
+                            if b:
+                                msg['local_blocks'] = b
+                                msg['_deleteOnPost'] |= set(['local_blocks'])
                             return
             except:
                 pass
@@ -2389,24 +2393,28 @@ class Flow:
         """
            after a file has been written, restore permissions and ownership if necessary.
         """
-        #logger.debug("sr_transport set_local_file_attributes %s" % local_file)
+        logger.debug("%s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        if (not 'blocks' in msg):
-            x = sarracenia.filemetadata.FileMetadata(local_file)
+        x = sarracenia.filemetadata.FileMetadata(local_file)
 
-            # FIXME ... what to do when checksums don't match?
-            if 'onfly_checksum' in msg: 
-                x.set( 'identity', msg['onfly_checksum'] )
-            elif 'identity' in msg:
-                x.set('identity', msg['identity'] )
+        logger.error("hoho!")
+        if 'blocks' in msg:
+            x.set('blocks', msg['blocks'] )
 
-            if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
-                x.set('mtime', msg['mtime'])
-            else:
-                x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
-            x.persist()
+        # FIXME ... what to do when checksums don't match?
+        if 'onfly_checksum' in msg: 
+            x.set( 'identity', msg['onfly_checksum'] )
+        elif 'identity' in msg:
+            x.set('identity', msg['identity'] )
+
+        if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
+            x.set('mtime', msg['mtime'])
+        else:
+            x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
+
+        x.persist()
 
         mode = 0
         if self.o.permCopy and 'mode' in msg:
