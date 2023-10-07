@@ -115,16 +115,14 @@ class V02(PostFormat):
             if 'parts' in msg:
                 (style, chunksz, block_count, remainder,
                  current_block) = msg['parts'].split(',')
-                if style in ['i', 'p']:
-                    msg['blocks'] = {}
-                    msg['blocks']['method'] = {
-                        'i': 'inplace',
-                        'p': 'partitioned'
-                    }[style]
-                    msg['blocks']['size'] = int(chunksz)
-                    msg['blocks']['count'] = int(block_count)
-                    msg['blocks']['remainder'] = int(remainder)
-                    msg['blocks']['number'] = int(current_block)
+                if style in ['i', 'p']: # FIXME: v2 partitioning scheme kind of broken/dead code here.
+                    logger.error( "v2 partitioned transfers not supported in sr3: guaranteed corruption" )
+                    #msg['blocks'] = {}
+                    #msg['blocks']['method'] = { 'i': 'inplace', 'p': 'partitioned' }[style]
+                    #msg['blocks']['size'] = int(chunksz)
+                    #msg['blocks']['count'] = int(block_count)
+                    #msg['blocks']['remainder'] = int(remainder)
+                    #msg['blocks']['number'] = int(current_block)
                 else:
                     msg['size'] = int(chunksz)
                 del msg['parts']

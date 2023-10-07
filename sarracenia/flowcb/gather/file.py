@@ -264,6 +264,7 @@ class File(FlowCB):
         msg['blocks'] = {
             'method': 'inplace',
             'size': chunksize,
+            'number': -1,
             'manifest': {}
         }
         logger.debug( f" blocks:{blocks} " )

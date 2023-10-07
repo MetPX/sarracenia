@@ -59,8 +59,7 @@ class V03(PostFormat):
               observed Sarracenia v2.20.08p1 and earlier have 'parts' header in v03 messages.
               bug, or implementation did not keep up. Applying Postel's Robustness principle: normalizing messages.
             """
-        if ('parts' in msg
-            ):  # bug in v2 code makes v03 messages with parts header.
+        if 'parts' in msg :  # bug in v2 code makes v03 messages with parts header.
             (m, s, c, r, n) = msg['parts'].split(',')
             if m == '1':
                 msg['size'] = int(s)
@@ -79,6 +78,18 @@ class V03(PostFormat):
         elif ('size' in msg):
             if (type(msg['size']) is str):
                 msg['size'] = int(msg['size'])
+
+        if 'blocks' in msg :
+            if 'manifest' in msg['blocks']:
+               bToDel=[]
+               new_manifest={}
+               for b in msg['blocks']['manifest']:  # when writing... json conversion numeric keys become strings...
+                   if type(b) is str:
+                      new_manifest[int(b)] = msg['blocks']['manifest'][b]
+                   else:
+                      new_manifest[b] = msg['blocks']['manifest'][b]
+
+               msg['blocks']['manifest'] = new_manifest
         return msg
 
     @staticmethod
