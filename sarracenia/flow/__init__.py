@@ -1777,7 +1777,6 @@ class Flow:
                 blkno = msg['blocks']['number']
                 blksz = sarracenia.naturalSize(msg['blocks']['manifest'][blkno]['size']).replace(' ','_')
                 new_file += f"§block_{blkno:04d}_{blksz}_§"
-                blkno = msg['blocks']['method'] = 'separate'
                 msg['new_file'] = new_file
 
         if options.inflight == None:
@@ -1878,14 +1877,16 @@ class Flow:
             remote_offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
                 remote_offset = msg['blocks']['size']*msg['blocks']['number']
-
+                
+            exactLength=False
             if 'size' in msg:
                 block_length = msg['size']
                 str_range = ''
-                if ('blocks' in msg) and (
-                        msg['blocks']['method'] == 'inplace'):
-                    block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
+                if ('blocks' in msg):
+                    exactLength=True
+                    if msg['blocks']['method'] == 'inplace':
+                        block_length = msg['blocks']['size']
+                        str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
                                                  block_length - 1)
             else:
                 block_length = 0
@@ -1939,15 +1940,18 @@ class Flow:
             if not self.o.dry_run:
                 if accelerated:
                     len_written = self.proto[self.scheme].getAccelerated(
-                        msg, remote_file, new_inflight_path, block_length)
+                        msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
                     #FIXME: no onfly_checksum calculation during download.
                 else:
                     self.proto[self.scheme].set_path(new_inflight_path)
                     len_written = self.proto[self.scheme].get(
                         msg, remote_file, new_inflight_path, remote_offset,
-                        msg['local_offset'], block_length)
+                        msg['local_offset'], block_length, exactLength)
             else:
                 len_written = block_length
+
+            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
+                msg['blocks']['method'] = 'separate'
 
             if (len_written == block_length):
                 if not self.o.dry_run:

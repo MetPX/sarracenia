@@ -1,5 +1,6 @@
 Sphinx
 python-magic
+rangehttpserver
 paramiko
 nbsphinx
 jupyter

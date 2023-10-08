@@ -266,7 +266,7 @@ class Ftp(Transfer):
             local_file,
             remote_offset=0,
             local_offset=0,
-            length=0):
+            length=0, exactLength=False):
         logger.debug("sr_ftp get %s %s %d" %
                      (remote_file, local_file, local_offset))
 
@@ -290,7 +290,7 @@ class Ftp(Transfer):
 
         return rw_length
 
-    def getAccelerated(self, msg, remote_file, local_file, length=0):
+    def getAccelerated(self, msg, remote_file, local_file, length=0, remote_offset=0, exactLength=False):
 
         base_url = msg['baseUrl']
         if base_url[-1] == '/':

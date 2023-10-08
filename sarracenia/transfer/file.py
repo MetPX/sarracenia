@@ -114,7 +114,7 @@ class File(Transfer):
             local_file,
             remote_offset=0,
             local_offset=0,
-            length=0):
+            length=0, exactLength=False):
 
         remote_path = self.cwd + os.sep + remote_file
 
@@ -138,7 +138,7 @@ class File(Transfer):
 
         return rw_length
 
-    def getAccelerated(self, msg, remote_file, local_file, length=0):
+    def getAccelerated(self, msg, remote_file, local_file, length=0, remote_offset=0, exactLength=False):
 
         base_url = msg['baseUrl'].replace('file:', '')
         if base_url[-1] == '/':

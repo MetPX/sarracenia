@@ -151,7 +151,7 @@ class Https(Transfer):
             local_file,
             remote_offset=0,
             local_offset=0,
-            length=0):
+            length=0, exactLength=False):
         logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
         logger.debug("sr_http self.path %s" % self.path)
 
@@ -170,18 +170,25 @@ class Https(Transfer):
         # read from self.http write to local_file
 
         rw_length = self.read_writelocal(remote_file, self.http, local_file,
-                                         local_offset, length)
+                                         local_offset, length, exactLength)
 
         return rw_length
 
-    def getAccelerated(self, msg, remote_file, local_file, length):
+    def getAccelerated(self, msg, remote_file, local_file, length, remote_offset=0, exactLength=False ):
 
         arg1 = msg['baseUrl'] + '/' + msg['relPath']
         arg1 = arg1.replace(' ', '\\ ')
         arg2 = local_file
 
+        if exactLength:
+            range=f"--header=Range: bytes={remote_offset}-{length-1}"
+        else:
+            range=""
+
         cmd = self.o.accelWgetCommand.replace('%s', arg1)
+
         cmd = cmd.replace('%d', arg2).split()
+        cmd = [cmd[0]] + [range] + cmd[1:]
         logger.info("accel_wget: %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
         p.wait()
