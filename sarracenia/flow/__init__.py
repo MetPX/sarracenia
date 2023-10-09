@@ -1224,17 +1224,8 @@ class Flow:
                             msg['local_identity'] = s
                             msg['_deleteOnPost'] |= set(['local_identity'])
                             b = x.get('blocks')
-                            if b:
-                                if 'manifest' in b:
-                                    m={}
-                                    for db in b['manifest']:
-                                        if type(db) is str:
-                                            m[int(db)] = b[db]
-                                        else:
-                                            m[db] = b[db]
-                                    b['manifest'] = m
-                                msg['local_blocks'] = b
-                                msg['_deleteOnPost'] |= set(['local_blocks'])
+                            msg['local_blocks'] = b
+                            msg['_deleteOnPost'] |= set(['local_blocks'])
                             return
             except:
                 pass
@@ -1775,8 +1766,9 @@ class Flow:
             if msg['blocks']['method'] in [ 'inplace' ]: # download only a specific block from a file, not the whole thing.
                 logger.info( f"splitting into individual block downloads" )
                 blkno = msg['blocks']['number']
-                blksz = sarracenia.naturalSize(msg['blocks']['manifest'][blkno]['size']).replace(' ','_')
-                new_file += f"§block_{blkno:04d}_{blksz}_§"
+                blksz_l = sarracenia.naturalSize(msg['blocks']['manifest'][blkno]['size']).split()
+                blksz = blksz_l[0]+blksz_l[1][0].lower()
+                new_file += f"§block_{blkno:04d},{blksz}_§"
                 msg['new_file'] = new_file
 
         if options.inflight == None:

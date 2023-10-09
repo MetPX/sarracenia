@@ -125,8 +125,17 @@ class Message:
             else:
                 m = 'p'
             p = h['blocks']
-            h['parts'] = '%s,%d,%d,%d,%d' % (m, p['size'], p['count'],
-                                             p['remainder'], p['number'])
+            if 'number' in p:
+                remainder = p['manifest'][p['number']]['size']
+                number = p['number']
+            else:
+                number=0
+                if 'manifest' in p:
+                    remainder = p['manifest'][len(p['manifest'])-1]['size']
+                else:       
+                    remainder = 0
+            h['parts'] = '%s,%d,%d,%d,%d' % (m, p['size'], len(p['manifest']),
+                                             remainder, number)
 
         h['topic'] = [ 'v02', 'post' ] + self.relpath.split('/')[0:-1]
 
