@@ -110,6 +110,8 @@ class Reassemble(FlowCB):
 
             #determine root file name.
             part_file=m['new_dir'] + os.sep + m['new_file']
+
+            # FIXME: could add code here to deal with inflight != none make root_file the inflight file.
             root_file=m['new_dir'] + os.sep + os.path.basename(rp[0:rp.find("§block_")])
             lock_file=root_file + '.flufl_lock'
                 
@@ -206,6 +208,8 @@ class Reassemble(FlowCB):
                 # do not re-post the message if it's only part that has been received.
                 worklist.rejected.append(m)
             else:
+                # FIXME: for inflight.  now rename the file to the real name.
+
                 m['relPath'] = rp[0:rp.find("§block_")]
                 m['new_file'] = m['new_file'][0:m['new_file'].find("§block_")]
                 m['blocks']['method'] = 'inplace'
