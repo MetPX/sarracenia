@@ -180,14 +180,11 @@ class FileMetadata:
         """
         if name in self.x.keys():
             if name == 'blocks':
-                m={}
-                for k in ['manifest', 'wanted' ]:
+                for k in ['manifest', 'waiting' ]:
+                    m={}
                     if k in self.x['blocks']:
                         for db in self.x['blocks'][k]: # when json'd for writing, numeric indices are stringified.
-                            if type(db) is str:
-                                m[int(db)] = self.x['blocks'][k][db]
-                            else:
-                                m[db] = b[db]
+                            m[db if type(db) is int else int(db)] = self.x['blocks'][k][db]
                         self.x['blocks'][k] = m
             return self.x[name]
         return None

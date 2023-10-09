@@ -126,8 +126,8 @@ class Reassemble(FlowCB):
                 rf=open(root_file,'w+b')
 
             old_stat = os.stat(root_file)
-            logger.info( f" stat of {root_file} is: {old_stat}" )
 
+            old_blocks=None
             with sarracenia.filemetadata.FileMetadata(root_file) as xrfa:
                 old_blocks = xrfa.get( 'blocks' )
 
@@ -136,9 +136,6 @@ class Reassemble(FlowCB):
                 old_sz=0
                 for b in old_blocks['manifest']:
                     old_sz += old_blocks['manifest'][b]['size']
-
-                if old_sz != old_stat.st_size :
-                    logger.warning( f"manifest says file is {old_sz}, but file system says: {old_stat.st_size}" )
             else:
                 old_sz = old_stat.st_size
 
@@ -149,12 +146,14 @@ class Reassemble(FlowCB):
 
             # update old_blocks to reflect receipt of this block.
             if old_blocks and 'manifest' in old_blocks:
-                logger.info( f" old block manifest: {old_blocks['manifest']}" )
+                logger.info( f" read old block manifest from attributes: {old_blocks['manifest']}" )
+                logger.info( f" also show waiting: {old_blocks['waiting']}" )
                 found=False
                 sz=0
                 # add
                 old_blocks['manifest'][blkno] = m['blocks']['manifest'][blkno] 
             else:
+                logger.info( f"creating new block manifest for root_file " )
                 old_blocks = { 'method': 'separate', 'size': m['blocks']['size'], 'number': blkno }
                 old_blocks['waiting'] = m['blocks']['manifest'].copy()
                 old_blocks['manifest'] = { blkno: m['blocks']['manifest'][blkno] }
@@ -173,7 +172,7 @@ class Reassemble(FlowCB):
                 offset += thisblk
                 i+=1
             
-            logger.info( f" new block manifest: {m['blocks']['manifest']}" )
+            logger.info( f" disk manifest is: {old_blocks['manifest']}" )
             byteCount = m['blocks']['manifest'][blkno]['size']
 
             logger.info( f" blocks: adding block {blkno} by seeking to: {offset} to write {byteCount} bytes in {root_file}" )
@@ -194,11 +193,13 @@ class Reassemble(FlowCB):
 
             rf.close()
             pf.close()
+
             # assert: block data is now in main file, so delete block
-            #os.unlink(part_file)
+            os.unlink(part_file)
 
             with sarracenia.filemetadata.FileMetadata(root_file) as xrfab:
                 xrfab.set('mtime',m['mtime'])
+                logger.info( f" about to persist...waiting: {old_blocks['waiting']} ")
                 xrfab.set('blocks',old_blocks)
 
             if len( old_blocks['waiting'] ) > 0 :
@@ -206,6 +207,7 @@ class Reassemble(FlowCB):
                 worklist.rejected.append(m)
             else:
                 m['relPath'] = rp[0:rp.find("§block_")]
+                m['new_file'] = m['new_file'][0:m['new_file'].find("§block_")]
                 m['blocks']['method'] = 'inplace'
                 del m['blocks']['number']
                 m['size'] = new_sz

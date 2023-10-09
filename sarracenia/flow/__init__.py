@@ -1867,28 +1867,28 @@ class Flow:
                     self.proto[self.scheme].cd(cdir)
 
             remote_offset = 0
-            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                remote_offset = msg['blocks']['size']*msg['blocks']['number']
-                
             exactLength=False
-            if 'size' in msg:
+            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
+                blkno=msg['blocks']['number']
+                remote_offset=0
+                exactLength=True
+                while blkno > 0:
+                    blkno -= 1
+                    remote_offset += msg['blocks']['manifest'][blkno]['size']
+
+                block_length=msg['blocks']['manifest'][msg['blocks']['number']]['size']
+                logger.info( f"offset calculation:  start={remote_offset} count={block_length}" )
+
+            elif 'size' in msg:
                 block_length = msg['size']
-                str_range = ''
-                if ('blocks' in msg):
-                    exactLength=True
-                    if msg['blocks']['method'] == 'inplace':
-                        block_length = msg['blocks']['size']
-                        str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
-                                                 block_length - 1)
             else:
                 block_length = 0
-                str_range = ''
 
             #download file
 
             logger.debug(
-                'Beginning fetch of %s %s into %s %d-%d' %
-                (urlstr, str_range, new_inflight_path, msg['local_offset'],
+                'Beginning fetch of %s %d-%d into %s %d-%d' %
+                (urlstr, remote_offset, block_length-1, new_inflight_path, msg['local_offset'],
                  msg['local_offset'] + block_length - 1))
 
             # FIXME  locking for i parts in temporary file ... should stay lock
@@ -2127,7 +2127,7 @@ class Flow:
                 self.metrics['flow']['transferConnectStart'] = time.time() 
 
             #=================================
-            # if parts, check that the protol supports it
+            # if parts, check that the protocol supports it
             #=================================
 
             if not self.o.dry_run and not hasattr(self.proto[self.scheme],
