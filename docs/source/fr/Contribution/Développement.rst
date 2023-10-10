@@ -1377,12 +1377,15 @@ La première version alpha en janvier 2016 serait versionnée comme suit : ``met
 Définir la version
 ~~~~~~~~~~~~~~~~~~
 
-Ceci est fait pour *démarrer* le développement d’une version.
+Ceci est fait pour *démarrer* le développement d’une version. D´habitude, on fais cela immédiatement
+après que la version précedente a été relachée.
 
 * git checkout v03_wip
 * Modifier ``sarracenia/_version.py`` manuellement et définissez le numéro de version.
 * Modifier CHANGES.rst pour ajouter une section pour la version.
 * Exécuter dch pour démarrer le journal des modifications de la version actuelle.
+  * assurer que UNRELEASED soit l'étiquette de status au lieu de *unstable* (peut-être automatiquement
+    faite par dch) 
 * git commit -a 
 * git push
 
@@ -1390,6 +1393,18 @@ Si le développement se poursuit et que le temps passe sans que la libération n
 la version doit être définie à nouveau (ou écrasée).  Par exemple, un cycle développement commence
 en août, la version principale sera 3.19.08b1... mais si le développement
 continue en septembre, il faut utiliser cette procédure pour changer la version à 3.19.09b1.
+
+Durant le dévéloppement, une paquet devrait être UNRELEASED. Lors de faire un release,
+on change l´étiquette pour *unstable*, suivant les habitudes de Debian. En debian:
+
+* unstable ... un logiciel qui change souvent (des mises-à-jour fréquents)
+* testing ... un logiciel dont la version et gélé pour inclusion futur dans une version stable de Debian.
+* stable ... un version de logiciel gélé, mise à part des rustines de sécurité.
+
+Metpx-sr3 est encore trop dynamique pour qualifier comme un logiciel *stable* selon
+la conventions de Debian, On n´a pas de version qui reste en utilisation durant plusieurs
+années pour l´instant.
+
 
 Releasing
 ~~~~~~~~~

@@ -1344,12 +1344,14 @@ The first alpha release in January 2016 would be versioned as ``metpx-sarracenia
 Set the Version
 ~~~~~~~~~~~~~~~
 
-This is done to *start* development on a version.
+This is done to *start* development on a version. It should be done on v03_wip
+after every release.
 
 * git checkout v03_wip
 * Edit ``sarracenia/_version.py`` manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
+  * change *unstable* to *UNRELEASED* (maybe done automatically by dch.)
 * git commit -a 
 * git push
 
@@ -1358,7 +1360,18 @@ the version needs to be set to again (or overwritten).  For example, a developme
 cycle begins in August, the version in main will be 3.19.08b1... but if development
 continues into September, one should use this procedure the change the version to 3.19.09b1.
 
+note on Debian terminology:
 
+* unstable ... new software brought into the OS stablization tree.
+* testing ... software considered stable enough to be included in the next "stable" release.
+* stable ... part of a stable Debian release: frozen software that will not be patched except
+  for security issues.
+
+for Metpx-Sr3, we have not yet approached the longevity of versions implied by Debian *stable*.
+The labels don't refer to how stable the software itself is, merely to how often the software
+changes (increments versions.)  More info: `https://en.wikipedia.org/wiki/Debian_version_history`_
+so when performing releases, the changelog is changed from UNRELEASED to unstable, and
+back to UNRELEASED when working between releases, as per Debian custom.
 
 Releasing
 ~~~~~~~~~
@@ -1503,6 +1516,8 @@ However, the steps below are a summary of what the script does:
 
 **Note:** The GPG keys associated with the launchpad account must be configured
 in order to do the last two steps.
+
+
 
 Backporting a Dependency
 ++++++++++++++++++++++++

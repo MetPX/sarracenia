@@ -39,7 +39,7 @@ Mises en garde :
 
 * temps réel météorologique (secondes à minutes.) pas en temps réel électronique (microsecondes)
 
-* Ce nouveau site web est pour la version 3 actuellement en développement dans la branche v03_wip. Les utilisateurs de la version stable 2 devraient plutôt aller sur https://github.com/MetPX/sarracenia/tree/v2_stable .
+* Les utilisateurs de l´ancien version 2 devraient plutôt aller sur https://github.com/MetPX/sarracenia/tree/v2_stable .
 
 
 
