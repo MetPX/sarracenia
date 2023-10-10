@@ -432,7 +432,8 @@ class Message(dict):
         if calc_method == None:
             return
 
-        xattr.set('mtime', msg['mtime'])
+        if 'mtime' in msg:
+            xattr.set('mtime', msg['mtime'])
 
         logger.debug("mtime persisted, calc_method: {calc_method}")
 
@@ -457,7 +458,7 @@ class Message(dict):
                 fp = open(path, 'rb')
                 i = 0
 
-                logger.critical( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
+                #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
                 if offset:
                     fp.seek( offset )
 
@@ -600,9 +601,9 @@ class Message(dict):
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
-        if hasattr(o, 'blocksize' ):
+        if hasattr(o, 'blocksize') and lstat and (lstat.st_size > o.blocksize) :
            if o.blocksize > 1:
-               msg['blocks'] = { 'method': 'inplace', 'size': o.blocksize, 'manifest': {}  }
+               msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])

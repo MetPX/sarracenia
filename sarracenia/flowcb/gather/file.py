@@ -162,7 +162,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file(self, path, lstat, key=None, value=None):
-        logger.debug("start  %s" % path)
+        #logger.debug("start  %s" % path)
 
         # check if it is a part file
         if path.endswith('.' + self.o.part_ext):
@@ -180,7 +180,7 @@ class File(FlowCB):
 
         # if we should send the file in parts
 
-        if blksz > 0 and blksz < fsiz:
+        if (blksz > 0 and blksz < fsiz) and os.path.isfile(path):
             return self.post_file_in_parts(path, lstat)
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
@@ -234,7 +234,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file_in_parts(self, path, lstat):
-        #logger.debug("post_file_in_parts %s" % path )
+        #logger.info("start %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
@@ -250,7 +250,7 @@ class File(FlowCB):
         remainder = fsiz % chunksize
         if remainder > 0: block_count = block_count + 1
 
-        logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
+        #logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
 
         # loop on blocks
 

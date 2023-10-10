@@ -1764,9 +1764,11 @@ class Flow:
         if 'blocks' in msg: 
             logger.error( f" blocks active, manifest is: {msg['blocks']} " )
             if msg['blocks']['method'] in [ 'inplace' ]: # download only a specific block from a file, not the whole thing.
-                logger.info( f"splitting into individual block downloads" )
+                logger.info( f"splitting into individual block downloads blocks: {msg['blocks']}" )
+
                 blkno = msg['blocks']['number']
-                blksz_l = sarracenia.naturalSize(msg['blocks']['manifest'][blkno]['size']).split()
+                
+                blksz_l = sarracenia.naturalSize(msg['blocks']['size']).split()
                 blksz = blksz_l[0]+blksz_l[1][0].lower()
                 new_file += f"§block_{blkno:04d},{blksz}_§"
                 msg['new_file'] = new_file
