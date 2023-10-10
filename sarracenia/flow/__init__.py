@@ -2414,7 +2414,6 @@ class Flow:
         # cache it here, along with the mtime.
         x = sarracenia.filemetadata.FileMetadata(local_file)
 
-        logger.error("hoho!")
         if 'blocks' in msg:
             x.set('blocks', msg['blocks'] )
 
