@@ -1,13 +1,16 @@
-metpx-sr3 (3.00.44) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.44) unstable; urgency=medium
 
   * fix #760 'source' missing sometimes when needed.
   * fix #753 failed magic import improved detection.
   * fix #752 scheduled plugins not working.
   * improved #757 unit tests for all flowcb plugins.
-  * fix #758 initial support for WISKI at Ontario Power Generation.
+  * fix #758 initial support for WISKI at Ontario Power
+    Generation. (EXPERIMENTAL)
   * work on #732 improved publish timeouts #761
+  * issue #762 re-enable reporting (EXPERIMENTAL) 
+  * update MQTT code for PR https://github.com/eclipse/paho.mqtt.python/pull/753
 
- -- Peter <peter@bsqt.homeip.net>  Sat, 19 Aug 2023 00:44:33 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Sat, 19 Aug 2023 00:44:33 -0400
 
 metpx-sr3 (3.00.43) unstable; urgency=medium
 
@@ -16,7 +19,7 @@ metpx-sr3 (3.00.43) unstable; urgency=medium
   * windows self-extracting executable is now usable.
     (dependency fixes)
 
- -- Peter Silva <peter@blacklab>  Tue, 15 Aug 2023 14:32:56 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Tue, 15 Aug 2023 14:32:56 -0400
 
 metpx-sr3 (3.00.42) unstable; urgency=medium
 
@@ -38,7 +41,7 @@ metpx-sr3 (3.00.42) unstable; urgency=medium
     expected.
   * can now install all optional extras with pip install metpx-sr3[all]
 
- -- Peter Silva <peter@blacklab>  Tue, 27 Jun 2023 14:26:23 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Tue, 27 Jun 2023 14:26:23 -0400
 
 metpx-sr3 (3.00.41) unstable; urgency=medium
 
@@ -51,7 +54,7 @@ metpx-sr3 (3.00.41) unstable; urgency=medium
     management.
   * issue #697 nodupe unit tests created.
 
- -- Peter <peter@bsqt.homeip.net>  Sat, 03 Jun 2023 01:43:49 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Sat, 03 Jun 2023 01:43:49 -0400
 
 metpx-sr3 (3.00.40) unstable; urgency=medium
 
@@ -73,13 +76,13 @@ metpx-sr3 (3.00.40) unstable; urgency=medium
   * resolved #678 messages for (other) certain bad config setting.
   * resolved #671 crash for certain bad config setting.
     
- -- Peter <peter@bsqt.homeip.net>  Sun, 14 May 2023 11:01:45 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Sun, 14 May 2023 11:01:45 -0400
 
 metpx-sr3 (3.00.39) unstable; urgency=medium
 
   * fix #667 had not been completely merged. adding. 
 
- -- Peter <peter@bsqt.homeip.net>  Sat, 13 May 2023 09:55:09 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Sat, 13 May 2023 09:55:09 -0400
 
 metpx-sr3 (3.00.38) unstable; urgency=medium
 
@@ -93,7 +96,7 @@ metpx-sr3 (3.00.38) unstable; urgency=medium
   * fix #665 polling default apache tabular file index 
   * fix foreground invocation of C components from sr3 did not work.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 25 Apr 2023 16:54:51 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Tue, 25 Apr 2023 16:54:51 -0400
 
 metpx-sr3 (3.00.37) unstable; urgency=medium
 
@@ -115,7 +118,7 @@ metpx-sr3 (3.00.37) unstable; urgency=medium
   * remove (useless) posts of directory modifications 
   * header option works on messages received, as well as originated ones.
 
- -- Peter <peter@bsqt.homeip.net>  Fri, 14 Apr 2023 11:43:28 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Fri, 14 Apr 2023 11:43:28 -0400
 
 metpx-sr3 (3.00.36) unstable; urgency=medium
 
@@ -129,21 +132,21 @@ metpx-sr3 (3.00.36) unstable; urgency=medium
     with the new name, same for directories. before it just gave up. 
   * 
 
- -- Peter <peter@bsqt.homeip.net>  Thu, 13 Apr 2023 09:48:52 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Thu, 13 Apr 2023 09:48:52 -0400
 
 metpx-sr3 (3.00.35) unstable; urgency=medium
 
   * bugfix #641 - baseDir it should remove baseDir from directory being
     written.
 
- -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 17:17:08 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Mon, 03 Apr 2023 17:17:08 -0400
 
 metpx-sr3 (3.00.34) unstable; urgency=medium
 
   * slight patch (more symlink combined with strip stuff.) 
   * display changes.
 
- -- Peter <peter@bsqt.homeip.net>  Mon, 03 Apr 2023 14:37:09 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Mon, 03 Apr 2023 14:37:09 -0400
 
 metpx-sr3 (3.00.33) unstable; urgency=medium
 
@@ -151,26 +154,26 @@ metpx-sr3 (3.00.33) unstable; urgency=medium
     re-publish later... perhaps will have to skip this version.
   * yup... cannot re-publish ... have to increment.
 
- -- Peter <peter@bsqt.homeip.net>  Sun, 02 Apr 2023 10:03:59 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Sun, 02 Apr 2023 10:03:59 -0400
 
 metpx-sr3 (3.00.32) unstable; urgency=medium
 
   * slight patch to updateFieldsAccepted (more symlink stuff.) 
 
- -- Peter <peter@bsqt.homeip.net>  Fri, 31 Mar 2023 08:50:00 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Fri, 31 Mar 2023 08:50:00 -0400
 
 metpx-sr3 (3.00.31) unstable; urgency=medium
 
   * another (final?) fix for ln -sf case (fileOp field transformation.)
 
- -- Peter <peter@bsqt.homeip.net>  Wed, 29 Mar 2023 00:16:25 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Wed, 29 Mar 2023 00:16:25 -0400
 
 metpx-sr3 (3.00.30) unstable; urgency=medium
 
   * bugfix #638 discard uption not working in sr3
   * another fix for relative paths in certain case.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Tue, 28 Mar 2023 10:27:55 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Tue, 28 Mar 2023 10:27:55 -0400
 
 metpx-sr3 (3.00.29) unstable; urgency=medium
 
@@ -179,7 +182,7 @@ metpx-sr3 (3.00.29) unstable; urgency=medium
   * fixes to processing when strip option is in use, particularly with
     symbolic links. 
 
- -- Peter <peter@bsqt.homeip.net>  Thu, 09 Mar 2023 17:57:32 -0500
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Thu, 09 Mar 2023 17:57:32 -0500
 
 metpx-sr3 (3.00.28) unstable; urgency=medium
 
@@ -196,7 +199,7 @@ metpx-sr3 (3.00.28) unstable; urgency=medium
   * plugin api: flowcb.accept.pathreplace uses improved sets 
   * plugin api: add_option( improved set support.) added all_values of set.
 
- -- Peter <peter@bsqt.homeip.net>  Fri, 7 Mar 2023 10:48:17 -0500
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Fri, 7 Mar 2023 10:48:17 -0500
 
 metpx-sr3 (3.00.27) unstable; urgency=medium
 
@@ -205,7 +208,7 @@ metpx-sr3 (3.00.27) unstable; urgency=medium
   * directories are posted.
   * change set parsing to be less surprising #608
 
- -- Peter <peter@bsqt.homeip.net>  Wed, 25 Jan 2023 18:07:29 -0500
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Wed, 25 Jan 2023 18:07:29 -0500
 
 metpx-sr3 (3.00.26) unstable; urgency=medium
 
@@ -215,7 +218,7 @@ metpx-sr3 (3.00.26) unstable; urgency=medium
   * #605 attempt to fix delete option in file: transfer protocol
   * flowcb now accepts child class logger to propagate priority.
 
- -- Peter <peter@bsqt.homeip.net>  Wed, 11 Jan 2023 13:41:21 -0500
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Wed, 11 Jan 2023 13:41:21 -0500
 
 metpx-sr3 (3.00.25) unstable; urgency=medium
 
@@ -233,14 +236,14 @@ metpx-sr3 (3.00.25) unstable; urgency=medium
   * bugfix: sr3 --users declare does nothing if no component configurations exist.
   * new default: when post_baseUrl use file:/... use /... to set post_baseDir.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 09 Dec 2022 11:02:27 -0500
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Fri, 09 Dec 2022 11:02:27 -0500
 
 metpx-sr3 (3.00.24) unstable; urgency=medium
 
   * critical: sr3 would crash when sum none present in a configuration.
   * documentation touchups to README.txt (shown on pypi.python.org)
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 07 Dec 2022 15:42:47 -0500
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Wed, 07 Dec 2022 15:42:47 -0500
 
 metpx-sr3 (3.00.23) unstable; urgency=medium
 
@@ -285,7 +288,7 @@ metpx-sr3 (3.00.22) unstable; urgency=medium
   * fixes for duplicate suppression of cod integrity case.
   * removed unused vestiges of "index" files for ftp and sftp protocols.
   
- -- Peter Silva <peter@bsqt.homeip.net>  Fri, 02 Dec 2022 10:32:41 -0500
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Fri, 02 Dec 2022 10:32:41 -0500
 
 metpx-sr3 (3.00.21) unstable; urgency=medium
 
@@ -303,7 +306,7 @@ metpx-sr3 (3.00.21) unstable; urgency=medium
   * added plugins and configuration to reproduce #131
   * work-around for #563 to avoid declaring unnamed queues. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 03 Nov 2022 12:47:41 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Thu, 03 Nov 2022 12:47:41 -0400
 
 metpx-sr3 (3.00.20) unstable; urgency=medium
 
@@ -314,13 +317,13 @@ metpx-sr3 (3.00.20) unstable; urgency=medium
   * fixes for postRateLimiting parsing, and invalid broker specifications.
   * more documentation/web site information in French. 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Mon, 17 Oct 2022 11:40:52 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Mon, 17 Oct 2022 11:40:52 -0400
 
 metpx-sr3 (3.00.19) unstable; urgency=medium
 
   * detection/fallbacks for python libraries to get partial functionality.
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 05 Oct 2022 10:12:09 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Wed, 05 Oct 2022 10:12:09 -0400
 
 metpx-sr3 (3.00.18) unstable; urgency=medium
 
@@ -340,7 +343,7 @@ metpx-sr3 (3.00.17) unstable; urgency=medium
   * #438 v2 to sr3 config converter added (still has some problems, but mostly working.)
   * #513 improved shutdown on signal receipt.  * 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Wed, 21 Sep 2022 11:59:03 -0400
+ -- Peter Silva <peter.silva@ssc-spc.gc.ca>  Wed, 21 Sep 2022 11:59:03 -0400
 
 metpx-sr3 (3.00.16) unstable; urgency=medium
 
