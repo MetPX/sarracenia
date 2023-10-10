@@ -53,7 +53,7 @@ class Age(FlowCB):
         for m in worklist.ok:
             if not 'mtime' in m:
                 return None
-            completed = sarracenia.timestr2flt(m['timeCompleted'])
+            completed = sarracenia.timestr2flt(m['report']['timeCompleted'])
             mtime = sarracenia.timestr2flt(m['mtime'])
             pubtime = sarracenia.timestr2flt(m['pubTime'])
             age = completed - mtime

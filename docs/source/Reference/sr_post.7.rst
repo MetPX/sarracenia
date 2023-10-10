@@ -130,6 +130,7 @@ The headers are an array of name:value pairs::
           headers will be present:
   
           "report" { "code": 999  - HTTP style response code. 
+                     "timeCompleted": "YYYYMMDDTHHMMSS.ss" - UTC date/timestamp.
                      "message" :  - status report message documented in `Report Messages`_
                    }
 

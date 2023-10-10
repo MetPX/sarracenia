@@ -58,7 +58,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
 
   OBLIGATOIRE:
 
-          "pubTime"       - YYYYMMDDTHHMMSS.ss - UTC date/horodatage.
+          "pubTime"       - "YYYYMMDDTHHMMSS.ss" - UTC date/horodatage.
           "baseUrl"       - racine de l’URL à télécharger.
           "relPath"       - Le chemin relatif peut être concaténé à <base_url>
 
@@ -124,6 +124,7 @@ Les en-têtes sont un tableau de paires nom:valeur::
           Pour le messages de thème "v03.report", les en-têtes additionnelles qui suivent seront présents:
 
           "report" { "code": 999  - Code de réponse de style HTTP.
+                     "timeCompleted": "YYYYMMDDTHHMMSS.ss" - UTC date/horodatage.
                      "message" :  - message de rapport d’état documenté dans `Report Messages`_
                    }
 

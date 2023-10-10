@@ -543,8 +543,7 @@ class Flow:
                         self.post()
                         self._runCallbacksWorklist('after_post')
 
-                    self.report()
-
+                    self._runCallbacksWorklist('report')
                     self._runCallbackMetrics()
 
                     if hasattr(self.o, 'metricsFilename' ):
@@ -1057,11 +1056,6 @@ class Flow:
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
-
-    def report(self) -> None:
-        # post reports
-        # apply on_report plugins
-        pass
 
     def write_inline_file(self, msg) -> bool:
         """

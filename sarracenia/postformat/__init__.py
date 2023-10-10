@@ -95,7 +95,7 @@ class PostFormat:
             topic_prefix = options['topicPrefix']
             topic_separator='.'
 
-        if 'topic' in options:
+        if 'topic' in options and options['topic'] and (type(options['topic']) is not list):
             topic = options['topic'].split(topic_separator)
         else:
             if 'relPath' in msg: 

@@ -984,6 +984,7 @@ class Config:
            * 'str'        an arbitrary string value, as will all of the above types, each 
                           succeeding occurrence overrides the previous one.
     
+           If a value is set to None, that could mean that it has not been set.
         """
         #Blindly add the option to the list if it doesn't already exist
         if not hasattr(self, option):
@@ -1016,7 +1017,12 @@ class Config:
         elif kind == 'list':  
             list_options.append( option )
             if type(v) is not list:
-                setattr(self, option, [v])
+                #subtlety... None means: has not been set, 
+                # where an empty list to be an explicit setting.
+                if v is None:
+                    setattr(self, option, None)
+                else:
+                    setattr(self, option, [v])
         elif kind == 'set':  
             set_options.append(option)
             sv=set()
