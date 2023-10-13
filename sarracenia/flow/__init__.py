@@ -897,13 +897,23 @@ class Flow:
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
                             elif os.sep not in msg['fileOp'][f]:
-                                msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
+                                if d:
+                                    msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
+                                elif new_dir:
+                                    msg['fileOp'][f] = new_dir + '/' + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
             for f in ['link', 'hlink', 'rename']:
-                if (f in msg['fileOp']) and (len(u.path) > 1) and msg['fileOp'][f].startswith(u.path):
-                    msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                if (f in msg['fileOp']):
+                    if (len(u.path) > 1):
+                        if msg['fileOp'][f].startswith(u.path):
+                            msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                        elif '/' not in msg['fileOp'][f]:
+                            if d:
+                                msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
+                            elif new_dir:
+                                msg['fileOp'][f] = new_dir + '/' + msg['fileOp'][f]
                             
         # add relPath to the base directory established above.
 
