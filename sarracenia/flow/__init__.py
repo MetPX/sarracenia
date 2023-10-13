@@ -807,11 +807,6 @@ class Flow:
             elif self.o.post_baseDir:
                 d = self.o.variableExpansion(self.o.post_baseDir, msg)
 
-        if d:
-            new_baseDir = d
-        else:
-            new_baseDir = new_dir
-
         # if provided, strip (integer) ... strip N heading directories
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
@@ -837,14 +832,12 @@ class Flow:
                         if fopv[0] == '':
                             strip += 1
                         elif len(fopv) == 1:
-                            msg['fileOp'][f] = new_baseDir + '/' + fopv[0]
+                            toclimb=len(token)-1
+                            msg['fileOp'][f] = '../'*(toclimb) + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
-                            if toclimb > 0:
-                                msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
-                            else:
-                                msg['fileOp'][f] = '/'.join(rest)
+                            msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
                             
         # strip using a pattern
         elif pstrip:
@@ -905,7 +898,8 @@ class Flow:
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
                             elif os.sep not in msg['fileOp'][f]:
-                                msg['fileOp'][f] = new_baseDir + '/' + msg['fileOp'][f]
+                                toclimb=len(token)-1
+                                msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -915,7 +909,8 @@ class Flow:
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
                         elif '/' not in msg['fileOp'][f]:
-                            msg['fileOp'][f] = new_baseDir + '/' + msg['fileOp'][f]
+                            toclimb=len(token)-1
+                            msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
         # add relPath to the base directory established above.
 
