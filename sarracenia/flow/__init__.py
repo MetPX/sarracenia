@@ -888,8 +888,11 @@ class Flow:
             if d:
                 if 'fileOp' in msg and len(self.o.baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
-                        if (f in msg['fileOp']) and msg['fileOp'][f].startswith(self.o.baseDir):
-                             msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                        if (f in msg['fileOp']) :
+                            if msg['fileOp'][f].startswith(self.o.baseDir):
+                                msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                            elif os.sep not in msg['fileOp'][f]:
+                                msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
