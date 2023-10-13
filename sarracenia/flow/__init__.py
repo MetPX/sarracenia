@@ -784,12 +784,30 @@ class Flow:
         token = relPath.split('/')
         filename = token[-1]
 
+        # resolve a current base directory to which the relative path will eventually be added.
+        #  update fileOp fields to replace baseDir.
+        #if self.o.currentDir : new_dir = self.o.currentDir
+
+        new_dir=''
+        if maskDir:
+            new_dir = self.o.variableExpansion(maskDir, msg)
+        else:
+            if self.o.post_baseDir:
+                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
+        d=None
+        if self.o.baseDir:
+            if new_dir:
+                d = new_dir
+            elif self.o.post_baseDir:
+                d = self.o.variableExpansion(self.o.post_baseDir, msg)
+
         # if provided, strip (integer) ... strip N heading directories
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
 
         if path_strip_count > 0:
 
+            logger.warning( f"path_strip_count:{path_strip_count}   ")
             strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
@@ -807,6 +825,11 @@ class Flow:
                         # the link and rename fields may be absolute, requiring and adjustmeent when stripping
                         if fopv[0] == '':
                             strip += 1
+                        elif len(fopv) == 1:
+                            if d:  #no path in field, need a dir...
+                               msg['fileOp'][f] = d + '/' + fopv[0]
+                            elif new_dir:
+                               msg['fileOp'][f] = new_dir + '/' + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
@@ -854,25 +877,7 @@ class Flow:
 
         # uses current dir
 
-        # resolve a current base directory to which the relative path will eventually be added.
-        #  update fileOp fields to replace baseDir.
-        #if self.o.currentDir : new_dir = self.o.currentDir
-        if maskDir:
-            new_dir = self.o.variableExpansion(maskDir, msg)
-        else:
-            if self.o.post_baseDir:
-                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
-            else:
-                new_dir = ''
-
         if self.o.baseDir:
-            if new_dir:
-                d = new_dir
-            elif self.o.post_baseDir:
-                d = self.o.variableExpansion(self.o.post_baseDir, msg)
-            else:
-                d = None
-
             # remove baseDir from relPath if present.
             token_baseDir = self.o.baseDir.split('/')[1:]
             remcnt=0
