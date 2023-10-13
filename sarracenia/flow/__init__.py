@@ -714,7 +714,9 @@ class Flow:
             elif re.compile('DESTFNSCRIPT=.*').match(spec):
                 scriptclass = spec[13:].split('.')[-1]
                 for dfm in self.plugins['destfn']:
-                    if scriptclass == dfm.__qualname__.split('.')[0] :
+                    classname =  dfm.__qualname__.split('.')[0]
+                    if (scriptclass == classname) or (
+                            (scriptclass[1:] == classname[1:]) and (scriptclass[0].upper() == classname[0])): 
                          destFileName = dfm(msg)
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
