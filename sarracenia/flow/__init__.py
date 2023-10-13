@@ -739,7 +739,12 @@ class Flow:
     # how will the download file land on this server
     # with all options, this is really tricky
     # ==============================================
+    """
+        to test changes to updateFieldsAccepted, run:  make test_shim in the SarraC package...
+        because it tickles a lot of these settings, in addition to the flow_tests before
+        trying to PR changes here.
 
+    """
     def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, path_strip_count, pstrip, flatten) -> None:
         """
@@ -753,6 +758,7 @@ class Flow:
            * pstrip: pattern strip regexp to apply instead of a count.
            * flatten: a character to replace path separators with toe change a multi-directory 
              deep file name into a single long file name
+
         """
 
         # resolve source.
@@ -801,6 +807,11 @@ class Flow:
             elif self.o.post_baseDir:
                 d = self.o.variableExpansion(self.o.post_baseDir, msg)
 
+        if d:
+            new_baseDir = d
+        else:
+            new_baseDir = new_dir
+
         # if provided, strip (integer) ... strip N heading directories
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
@@ -826,10 +837,7 @@ class Flow:
                         if fopv[0] == '':
                             strip += 1
                         elif len(fopv) == 1:
-                            if d:  #no path in field, need a dir...
-                               msg['fileOp'][f] = d + '/' + fopv[0]
-                            elif new_dir:
-                               msg['fileOp'][f] = new_dir + '/' + fopv[0]
+                            msg['fileOp'][f] = new_baseDir + '/' + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
@@ -897,10 +905,7 @@ class Flow:
                             if msg['fileOp'][f].startswith(self.o.baseDir):
                                 msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
                             elif os.sep not in msg['fileOp'][f]:
-                                if d:
-                                    msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
-                                elif new_dir:
-                                    msg['fileOp'][f] = new_dir + '/' + msg['fileOp'][f]
+                                msg['fileOp'][f] = new_baseDir + '/' + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
@@ -910,10 +915,7 @@ class Flow:
                         if msg['fileOp'][f].startswith(u.path):
                             msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
                         elif '/' not in msg['fileOp'][f]:
-                            if d:
-                                msg['fileOp'][f] = d + '/' + msg['fileOp'][f]
-                            elif new_dir:
-                                msg['fileOp'][f] = new_dir + '/' + msg['fileOp'][f]
+                            msg['fileOp'][f] = new_baseDir + '/' + msg['fileOp'][f]
                             
         # add relPath to the base directory established above.
 
