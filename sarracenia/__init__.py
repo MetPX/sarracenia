@@ -601,10 +601,10 @@ class Message(dict):
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
-        if hasattr(o, 'blocksize') and (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
-           lstat and (lstat.st_size > o.blocksize):
-           if o.blocksize > 1:
-               msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
+        if hasattr(o, 'blocksize') and (o.blocksize > 1) and lstat and \
+                (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
+                (lstat.st_size > o.blocksize):
+           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])

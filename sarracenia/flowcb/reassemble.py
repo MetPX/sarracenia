@@ -88,6 +88,7 @@ class Reassemble(FlowCB):
 
             # this callback only operates on partition files.
             if not ('blocks' in m and m['relPath'].endswith('_§') ):
+                new_ok.append(m)
                 continue
 
             new_sz=0
@@ -98,6 +99,7 @@ class Reassemble(FlowCB):
             blk_suffix=re.search( '§block_.*_§', rp ).group().split(',')
             if not len(blk_suffix) >= 2:
                 logger.error( f"badly name block file, skipping {m['relPath']} " )
+                new_ok.append(m)
                 continue
 
             # assert: have a properly named block file.
