@@ -601,7 +601,8 @@ class Message(dict):
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
-        if hasattr(o, 'blocksize') and lstat and (lstat.st_size > o.blocksize) :
+        if hasattr(o, 'blocksize') and (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
+           lstat and (lstat.st_size > o.blocksize):
            if o.blocksize > 1:
                msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
 
