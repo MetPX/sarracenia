@@ -732,7 +732,7 @@ class Flow:
             else:
                 logger.error("Don't understand this DESTFN parameter: %s" %
                              spec)
-                return (None, None)
+                return filename
         return destFileName + satnet + timeSuffix
 
 
@@ -867,18 +867,6 @@ class Flow:
                     if f in msg['fileOp']:
                         msg['fileOp'][f] = flatten.join(msg['fileOp'][f].split('/'))
                             
-        if maskFileOption is not None:
-            filename = self.sundew_getDestInfos(msg, maskFileOption,
-                                                       filename)
-            token[-1] = filename
-
-        # not mirroring
-
-        if not mirror:
-            token = [filename]
-
-        # uses current dir
-
         if self.o.baseDir:
             # remove baseDir from relPath if present.
             token_baseDir = self.o.baseDir.split('/')[1:]
@@ -913,8 +901,6 @@ class Flow:
                             toclimb=len(token)-1
                             msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
-        # add relPath to the base directory established above.
-
         if len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
@@ -925,6 +911,15 @@ class Flow:
         # when sr_sender did not derived from sr_subscribe it was always called
         new_dir = self.o.sundew_dirPattern(pattern, urlstr, tfname, new_dir)
         msg.updatePaths(self.o, new_dir, filename)
+
+        if maskFileOption:
+            msg['new_file'] = self.sundew_getDestInfos(msg, maskFileOption, filename)
+            logger.warning( f" dir_list: {msg['new_relPath'].split('/')[0:-1]} .. filename {msg['new_file']} " )
+            msg['new_relPath'] = '/'.join(  msg['new_relPath'].split('/')[0:-1] + [ msg['new_file'] ]  )
+        # not mirroring
+
+        if not mirror:
+            msg['new_relPath'] = msg['new_file']
 
 
 
