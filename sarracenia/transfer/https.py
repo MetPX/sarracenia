@@ -180,15 +180,15 @@ class Https(Transfer):
         arg1 = arg1.replace(' ', '\\ ')
         arg2 = local_file
 
-        if exactLength:
-            range=f"--header=Range: bytes={remote_offset}-{length-1}"
-        else:
-            range=""
-
         cmd = self.o.accelWgetCommand.replace('%s', arg1)
 
         cmd = cmd.replace('%d', arg2).split()
-        cmd = [cmd[0]] + [range] + cmd[1:]
+
+        if exactLength:
+            cmd = [cmd[0]] + [ f"--header=Range: bytes={remote_offset}-{length-1}" ] + cmd[1:]
+        else:
+            cmd = [cmd[0]] + cmd[1:]
+
         logger.info("accel_wget: %s" % ' '.join(cmd))
         p = subprocess.Popen(cmd)
         p.wait()

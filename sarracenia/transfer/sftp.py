@@ -333,10 +333,10 @@ class Sftp(Transfer):
             local_file,
             remote_offset=0,
             local_offset=0,
-            length=0):
+            length=0, exactLength=False):
         logger.debug(
-            "sr_sftp get %s %s %d %d %d" %
-            (remote_file, local_file, remote_offset, local_offset, length))
+            "sr_sftp get %s %s %d %d %d %s" %
+            (remote_file, local_file, remote_offset, local_offset, length, exactLength))
 
         alarm_set(2 * self.o.timeout)
         rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
@@ -347,7 +347,7 @@ class Sftp(Transfer):
         # read from rfp and write to local_file
 
         rw_length = self.read_writelocal(remote_file, rfp, local_file,
-                                         local_offset, length)
+                                         local_offset, length, exactLength=False)
 
         
         # close
