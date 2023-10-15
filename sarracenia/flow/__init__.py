@@ -1762,12 +1762,9 @@ class Flow:
         new_inflight_path = None
 
         if 'blocks' in msg: 
-            logger.error( f" blocks active, manifest is: {msg['blocks']} " )
             if msg['blocks']['method'] in [ 'inplace' ]: # download only a specific block from a file, not the whole thing.
-                logger.info( f"splitting into individual block downloads blocks: {msg['blocks']}" )
-
+                logger.debug( f"splitting 1 file into {len(msg['blocks']['manifest'])} block messages." )
                 blkno = msg['blocks']['number']
-                
                 blksz_l = sarracenia.naturalSize(msg['blocks']['size']).split()
                 blksz = blksz_l[0]+blksz_l[1][0].lower()
                 new_file += f"§block_{blkno:04d},{blksz}_§"

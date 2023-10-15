@@ -148,9 +148,7 @@ class Log(FlowCB):
             if lag > self.lagMax:
                 self.lagMax = lag
             if set(['after_accept']) & self.o.logEvents:
-
-                logger.info("accepted: (lag: %.2f ) %s " %
-                            (lag, self._messageAcceptStr(msg)))
+                logger.info( f"accepted: (lag: {lag:.2f} ) {self._messageStr(msg)}" )
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:

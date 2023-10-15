@@ -208,6 +208,16 @@ class Reassemble(FlowCB):
 
             if len( old_blocks['waiting'] ) > 0 :
                 # do not re-post the message if it's only part that has been received.
+                """
+                206 Partial Content 
+                   The server is delivering only part of the resource (byte 
+                   serving) due to a range header sent by the client. The range
+                   header is used by HTTP clients to enable resuming of 
+                   interrupted downloads, or split a download into multiple 
+                   simultaneous streams.
+                   (from https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)
+                """
+                m.setReport( 206, "file block subset received and reassembled ok. Not forwarding." )
                 worklist.rejected.append(m)
             else:
                 # FIXME: for inflight.  now rename the file to the real name.
