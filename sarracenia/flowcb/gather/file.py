@@ -564,7 +564,13 @@ class File(FlowCB):
             try:
                 messages.extend(self.process_event(event, src, dst))
             except OSError as err:
-                logger.error("skipping event that could not be processed: ({}): {}".format(
+                """
+                  This message is reduced to debug priority because it often happens when files
+                  are too transitory (they disappear before we have a chance to post them)
+                  not sure if it should be an error message or not.
+                  
+                """
+                logger.debug("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
             self.left_events.pop(key)
