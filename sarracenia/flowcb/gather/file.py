@@ -164,15 +164,6 @@ class File(FlowCB):
     def post_file(self, path, lstat, key=None, value=None):
         #logger.debug("start  %s" % path)
 
-        # check if it is a part file
-        if path.endswith('.' + self.o.part_ext):
-            return self.post_file_part(path, lstat)
-
-        # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
-
-        elif hasattr(self, 'suppress_posting_partial_assembled_file'):
-            return []
-
         # check the value of blocksize
 
         fsiz = lstat.st_size
@@ -303,34 +294,6 @@ class File(FlowCB):
             messages.append(copy.deepcopy(msg))
 
         return messages
-
-    def post_file_part(self, path, lstat):
-
-        msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
-
-        # verify suffix
-
-        ok, log_msg, suffix, partstr, sumstr = self.msg.verify_part_suffix(
-            path)
-
-        # something went wrong
-
-        if not ok:
-            logger.debug("file part extension but %s for file %s" %
-                         (log_msg, path))
-            return False
-
-        # check rename see if it has the right part suffix (if present)
-        if 'rename' in self.msg.headers and not suffix in self.msg.headers[
-                'rename']:
-            msg['rename'] += suffix
-
-        # complete  message
-
-        msg['parts'] = partstr
-        msg['identity'] = sumstr
-
-        return [msg]
 
     def post_link(self, path, key='link', value=None):
         #logger.debug("post_link %s" % path )
