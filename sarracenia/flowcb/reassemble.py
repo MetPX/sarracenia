@@ -4,7 +4,6 @@
  author: Peter Silva
 """
 
-import flufl.lock
 import humanfriendly
 import logging
 import os
