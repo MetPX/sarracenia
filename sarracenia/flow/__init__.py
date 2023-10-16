@@ -739,7 +739,12 @@ class Flow:
     # how will the download file land on this server
     # with all options, this is really tricky
     # ==============================================
+    """
+        to test changes to updateFieldsAccepted, run:  make test_shim in the SarraC package...
+        because it tickles a lot of these settings, in addition to the flow_tests before
+        trying to PR changes here.
 
+    """
     def updateFieldsAccepted(self, msg, urlstr, pattern, maskDir,
                              maskFileOption, mirror, path_strip_count, pstrip, flatten) -> None:
         """
@@ -753,6 +758,7 @@ class Flow:
            * pstrip: pattern strip regexp to apply instead of a count.
            * flatten: a character to replace path separators with toe change a multi-directory 
              deep file name into a single long file name
+
         """
 
         # resolve source.
@@ -784,12 +790,30 @@ class Flow:
         token = relPath.split('/')
         filename = token[-1]
 
+        # resolve a current base directory to which the relative path will eventually be added.
+        #  update fileOp fields to replace baseDir.
+        #if self.o.currentDir : new_dir = self.o.currentDir
+
+        new_dir=''
+        if maskDir:
+            new_dir = self.o.variableExpansion(maskDir, msg)
+        else:
+            if self.o.post_baseDir:
+                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
+        d=None
+        if self.o.baseDir:
+            if new_dir:
+                d = new_dir
+            elif self.o.post_baseDir:
+                d = self.o.variableExpansion(self.o.post_baseDir, msg)
+
         # if provided, strip (integer) ... strip N heading directories
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
 
         if path_strip_count > 0:
 
+            logger.warning( f"path_strip_count:{path_strip_count}   ")
             strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
@@ -807,13 +831,13 @@ class Flow:
                         # the link and rename fields may be absolute, requiring and adjustmeent when stripping
                         if fopv[0] == '':
                             strip += 1
+                        elif len(fopv) == 1:
+                            toclimb=len(token)-1
+                            msg['fileOp'][f] = '../'*(toclimb) + fopv[0]
                         if len(fopv) > strip:
                             rest=fopv[strip:]
                             toclimb=len(token)-rest.count('..')-1
-                            if toclimb > 0:
-                                msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
-                            else:
-                                msg['fileOp'][f] = '/'.join(rest)
+                            msg['fileOp'][f] = '../'*(toclimb)+'/'.join(rest)
                             
         # strip using a pattern
         elif pstrip:
@@ -854,25 +878,7 @@ class Flow:
 
         # uses current dir
 
-        # resolve a current base directory to which the relative path will eventually be added.
-        #  update fileOp fields to replace baseDir.
-        #if self.o.currentDir : new_dir = self.o.currentDir
-        if maskDir:
-            new_dir = self.o.variableExpansion(maskDir, msg)
-        else:
-            if self.o.post_baseDir:
-                new_dir = self.o.variableExpansion(self.o.post_baseDir, msg)
-            else:
-                new_dir = ''
-
         if self.o.baseDir:
-            if new_dir:
-                d = new_dir
-            elif self.o.post_baseDir:
-                d = self.o.variableExpansion(self.o.post_baseDir, msg)
-            else:
-                d = None
-
             # remove baseDir from relPath if present.
             token_baseDir = self.o.baseDir.split('/')[1:]
             remcnt=0
@@ -888,14 +894,23 @@ class Flow:
             if d:
                 if 'fileOp' in msg and len(self.o.baseDir) > 1:
                     for f in ['link', 'hlink', 'rename']:
-                        if (f in msg['fileOp']) and msg['fileOp'][f].startswith(self.o.baseDir):
-                             msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                        if (f in msg['fileOp']) :
+                            if msg['fileOp'][f].startswith(self.o.baseDir):
+                                msg['fileOp'][f] = msg['fileOp'][f].replace(self.o.baseDir, d, 1)
+                            elif os.sep not in msg['fileOp'][f]:
+                                toclimb=len(token)-1
+                                msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
 
         elif 'fileOp' in msg and new_dir:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
             for f in ['link', 'hlink', 'rename']:
-                if (f in msg['fileOp']) and (len(u.path) > 1) and msg['fileOp'][f].startswith(u.path):
-                    msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                if (f in msg['fileOp']):
+                    if (len(u.path) > 1):
+                        if msg['fileOp'][f].startswith(u.path):
+                            msg['fileOp'][f] = msg['fileOp'][f].replace(u.path, new_dir, 1)
+                        elif '/' not in msg['fileOp'][f]:
+                            toclimb=len(token)-1
+                            msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
         # add relPath to the base directory established above.
 
