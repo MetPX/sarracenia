@@ -1,8 +1,11 @@
 metpx-sr3 (3.00.45) UNRELEASED; urgency=medium
 
-  * incrementing away from previous release
+  * Adding NASA API plugin support #769
+  * interim fix #772 rename bug in mirroring.
+  * fix #773 DESTFNSCRIPT arguments different from callback.
+  * fix #774 DESTFNSCRIPT plugin finds msg['new_file'] undefined
 
- -- Peter <peter@bsqt.homeip.net>  Tue, 10 Oct 2023 15:38:23 -0400
+ -- Peter <peter.silva@ssc-spc.gc.ca>  Tue, 10 Oct 2023 15:38:23 -0400
 
 metpx-sr3 (3.00.44) unstable; urgency=medium
 
