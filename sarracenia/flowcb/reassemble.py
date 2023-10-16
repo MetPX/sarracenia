@@ -76,6 +76,7 @@ class Reassemble(FlowCB):
         #FIXME: missing metrics for now.
         self.metric_scanned = 0
         self.metric_hits = 0
+        sarracenia.known_report_codes['206'] = 'file block subset received and reassembled ok. Waiting for more.'
        
     def after_work(self, worklist) -> None:
 
@@ -166,7 +167,7 @@ class Reassemble(FlowCB):
 
             if blkno in old_blocks['waiting']:
                 del old_blocks['waiting'][blkno]
-                logger.info( f"deleted block {blkno} from waiting: {old_blocks['waiting']} ") 
+                logger.info( f"deleted block {blkno} from waiting: {len(old_blocks['waiting'])} left. ") 
 
             # calculate where to seek to...
             offset=0
@@ -203,7 +204,7 @@ class Reassemble(FlowCB):
 
             with sarracenia.filemetadata.FileMetadata(root_file) as xrfab:
                 xrfab.set('mtime',m['mtime'])
-                logger.info( f" about to persist...waiting: {old_blocks['waiting']} ")
+                logger.info( f" about to persist...waiting: {len(old_blocks['waiting'])} ")
                 xrfab.set('blocks',old_blocks)
 
             if len( old_blocks['waiting'] ) > 0 :
@@ -217,16 +218,17 @@ class Reassemble(FlowCB):
                    simultaneous streams.
                    (from https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)
                 """
-                m.setReport( 206, "file block subset received and reassembled ok. Not forwarding." )
+                m.setReport( 206, f"file block subset {msg['blocks']['number']} received and reassembled ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
                 worklist.rejected.append(m)
             else:
                 # FIXME: for inflight.  now rename the file to the real name.
-
+                
                 m['relPath'] = rp[0:rp.find("§block_")]
                 m['new_file'] = m['new_file'][0:m['new_file'].find("§block_")]
                 m['blocks']['method'] = 'inplace'
                 del m['blocks']['number']
                 m['size'] = new_sz
+                logger.info( f"completed reassembly of {m['relPath']}" )
                 new_ok.append(m)
 
             flck.unlock()
