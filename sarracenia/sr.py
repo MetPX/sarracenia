@@ -529,6 +529,7 @@ class sr_GlobalState:
                         os.chdir(cfg)
 
                         if os.path.exists("disabled"): # double check, if disabled should ignore state.
+                            os.chdir('..')
                             continue
 
                         for filename in os.listdir():
