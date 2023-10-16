@@ -517,19 +517,20 @@ class sr_GlobalState:
             return
         os.chdir(dir)
         for c in self.components:
-            if os.path.isdir(c):
+            c_dir = os.path.join(dir, c)
+            if os.path.isdir(c_dir):
                 if c not in self.configs: continue
-                os.chdir(c)
+                os.chdir(c_dir)
                 for cfg in os.listdir():
                     if cfg[0] == '.': continue
                     
                     if cfg not in self.configs[c]: continue
-
-                    if os.path.isdir(cfg):
-                        os.chdir(cfg)
+                    
+                    cfg_dir = os.path.join(c_dir, cfg)
+                    if os.path.isdir(cfg_dir):
+                        os.chdir(cfg_dir)
 
                         if os.path.exists("disabled"): # double check, if disabled should ignore state.
-                            os.chdir('..')
                             continue
 
                         for filename in os.listdir():
@@ -557,8 +558,8 @@ class sr_GlobalState:
                                     if i not in self.procs:
                                         if i != 0:
                                             missing.append([c,cfg,i])
-                        os.chdir('..')
-                os.chdir('..')
+                    os.chdir(c_dir) # back to component dir containing configs
+                os.chdir(dir) # back to dir containing components
 
         self.missing.extend(missing)
 
