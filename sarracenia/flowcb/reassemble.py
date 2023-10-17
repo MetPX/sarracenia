@@ -4,6 +4,7 @@
  author: Peter Silva
 """
 
+import flufl.lock
 import humanfriendly
 import logging
 import os
@@ -18,17 +19,6 @@ import sarracenia.filemetadata
 from sarracenia.flowcb import FlowCB
 
 from sarracenia.featuredetection import features
-
-features['reassemble'] = { 'modules_needed': [ 'flufl.lock' ], 'Needed': True,
-        'lament' : 'need to lock block segmented files to put them back together',
-        'rejoice' : 'can reassemble block segmented files transferred' }
-
-try:
-    import flufl.lock
-    features['reassemble']['present'] = True
-except:
-    features['reassemble']['present'] = False
-
 
 logger = logging.getLogger(__name__)
 

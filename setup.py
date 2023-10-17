@@ -42,6 +42,7 @@ features = {
        'filetypes-redhat': [ "python-file-magic" ], 
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
+       'reassemble': [ 'flufl.lock' ],
        'vip': [ 'netifaces' ],
        'redis': [ 'redis' ]
     } 
