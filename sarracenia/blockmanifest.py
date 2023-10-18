@@ -14,8 +14,38 @@ class BlockManifest:
 
       json i/o to a file, of a given dict, using locking to serialize updates.
       
-      there might be an API to reconcile...
-         -- compare what is on disk to what is in memory.
+      instantiate the object to lock read the file.
+
+      get()/set() to see the values or change them.
+
+      when it goes away, the file gets re-written with updated content, and is unlocked.
+
+
+      Problems:
+
+      - the locking is advisory... so only other reassemble modules will use it.
+        if you have multiple subscribers, and another downloads the manifest, it can clobber
+        the one being used by re-assemble.
+
+      - to avoid that:
+
+        * have the block_manifest used by reassembly be named block_reassembly? but if a watch
+          sees that, then same issue arises.
+
+        * never download block_manifest (currently there are rejects for the block_manifest files)
+          (requires that manifest be in the message.)
+
+        * leaves manifests everywhere... should I have options:
+          * don't write the manifest to disk
+          * erase the manifest once you're done.
+          * rebuild the manifest, if it's missing, from disk.
+
+
+       TODO:
+
+       * uses flufl.lock with feature guards.
+
+
 
     """
 
@@ -34,22 +64,17 @@ class BlockManifest:
 
         self.lock_file = self.path + '.flufl_lock'
 
-        logger.info( f"FIXME! locking with: {self.lock_file}" )
         self.lock = flufl.lock.Lock(self.lock_file)
 
         self.lock.lock()
-        logger.info( "FIXME! locked." )
 
         self.x = None
         self.new_x = None
 
         if os.path.exists(self.path):
             self.fd = open(self.path,"r+")
-            logger.info( f" self.fd: {self.fd} " )
             s=self.fd.read()
-            logger.info( f" manifest content: {s} " )
             self.x = json.loads(s)
-            logger.info( f" read self.x: {self.x} " )
 
             for k in ['manifest', 'waiting' ]:
                 if k in self.x:
@@ -96,15 +121,14 @@ class BlockManifest:
            return
 
        if self.new_x and (self.new_x != self.x):
-           logger.info( f"FIXME! overwriting" )
+           logger.info( f"overwriting" )
            self.fd.seek(0)
            self.fd.write(json.dumps(self.new_x,sort_keys=True,indent=4))
            self.fd.truncate()
        else:
-           logger.info( f"FIXME! closing unchanged" )
+           logger.info( f"closing unchanged" )
 
        self.fd.close()
-       logger.info( f"FIXME! unlocking " )
        self.lock.unlock()
        self.fd=None
 

@@ -279,8 +279,9 @@ class File(FlowCB):
             msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
         
-        with sarracenia.blockmanifest.BlockManifest( path ) as x:
-            x.set(msg['blocks'])
+        if not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete:
+            with sarracenia.blockmanifest.BlockManifest( path ) as x:
+                x.set(msg['blocks'])
 
         messages = []
         for current_block in blocks:

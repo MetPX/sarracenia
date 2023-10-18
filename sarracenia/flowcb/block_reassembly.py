@@ -24,17 +24,26 @@ from sarracenia.featuredetection import features
 logger = logging.getLogger(__name__)
 
 
-class Reassemble(FlowCB):
+class Block_reassembly(FlowCB):
     """
      if you see receive partitioned files (with §block_... _§ at the end of the file name)    
      then turning on this callback will have them re-assembled.
 
-
      usage:
+        include block_reassembly.inc
 
-        callback_prepend reassemble
 
-        * whan a part is received but we are still waiting for more blocks, do the
+
+     equivalent to:
+        
+
+        reject .*\.flufl_lock.*
+        reject .*§block_manifest§.*
+
+        callback_prepend block_reassembly
+
+
+        * when a part is received but we are still waiting for more blocks, do the
           block file message is put in the rejected worklist.
         * only when all parts are received will a completed file be forwarded for
           processing by subsequent plugins, and posting for future consumer.
@@ -63,6 +72,7 @@ class Reassemble(FlowCB):
 
         super().__init__(options,logger)
 
+        self.o.add_option( "block_manifest_delete", 'flag', False )
         #FIXME: missing metrics for now.
         self.metric_scanned = 0
         self.metric_hits = 0
@@ -172,11 +182,12 @@ class Reassemble(FlowCB):
                 offset += thisblk
                 i+=1
             
-            logger.info( f" disk manifest is: {old_blocks['manifest']}" )
+            #logger.info( f" disk manifest is: {old_blocks['manifest']}" )
             byteCount = m['blocks']['manifest'][blkno]['size']
 
             logger.info( f" blocks: adding block {blkno} by seeking to: {offset} to write {byteCount} bytes in {root_file}" )
-            logger.info( f" still waiting for: {len(old_blocks['waiting'])} - {old_blocks['waiting']} " ) 
+            logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            #- {old_blocks['waiting']} " ) 
 
             # FIXME: can seek ever fail? how do we check?
             rf.seek(offset)     
@@ -193,13 +204,10 @@ class Reassemble(FlowCB):
 
             rf.close()
             pf.close()
-            logger.info( f"50 locked {flck} lock_file: {lock_file}" )
 
             # assert: block data is now in main file, so delete block
             os.unlink(part_file)
 
-            with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
-                rfm.set(old_blocks)
 
             if len( old_blocks['waiting'] ) > 0 :
                 # do not re-post the message if it's only part that has been received.
@@ -212,7 +220,9 @@ class Reassemble(FlowCB):
                    simultaneous streams.
                    (from https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)
                 """
-                m.setReport( 206, f"file block subset {msg['blocks']['number']} received and reassembled ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
+                with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
+                    rfm.set(old_blocks)
+                m.setReport( 206, f"file block subset {m['blocks']['number']} received and reassembled ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
                 worklist.rejected.append(m)
             else:
                 # FIXME: for inflight.  now rename the file to the real name.
@@ -224,8 +234,16 @@ class Reassemble(FlowCB):
                 m['size'] = new_sz
                 logger.info( f"completed reassembly of {m['relPath']}" )
                 new_ok.append(m)
-
+                if hasattr(self.o, 'block_manifest_delete') and self.o.block_manifest_delete:
+                    manifest = msg['new_file'] + "§block_manifest§" 
+                    if os.path.exists(manifest):
+                        os.unlink(manifest)
+                else:
+                    del old_blocks['waiting']
+                    with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
+                        rfm.set(old_blocks)
             flck.unlock()
+
 
         worklist.ok = new_ok
 
