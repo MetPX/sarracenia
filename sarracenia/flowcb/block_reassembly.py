@@ -67,6 +67,16 @@ class Block_reassembly(FlowCB):
        * if all blocks of the file have been delivered
           * then make the message reflect the whole file.
           
+    TODO:
+       - support more inflight options.
+       - if the manifest isn't present for the file on disk. create it.
+       - look at ../blockmanifest.
+       - think about file overwrite clashes...
+         - use a different name? 
+         - close, then re-open & re-write?
+       - recover from corrupted manifest by re-building.
+
+
     """
     def __init__(self, options) -> None:
 

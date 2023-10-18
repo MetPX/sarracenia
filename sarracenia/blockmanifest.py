@@ -44,7 +44,7 @@ class BlockManifest:
        TODO:
 
        * uses flufl.lock with feature guards.
-
+       * look at flowcb/block_reassembly.py
 
 
     """
