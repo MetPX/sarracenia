@@ -19,8 +19,12 @@ from random import choice
 
 import sarracenia
 from sarracenia import *
-import sarracenia.blockmanifest
+
 from sarracenia.featuredetection import features
+
+if features['reassembly']['present']:
+    import sarracenia.blockmanifest
+
 from sarracenia.flowcb import FlowCB
 import sarracenia.identity
 
@@ -279,7 +283,8 @@ class File(FlowCB):
             msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
         
-        if not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete:
+        if features['reassembly']['present'] and \
+           (not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete):
             with sarracenia.blockmanifest.BlockManifest( path ) as x:
                 x.set(msg['blocks'])
 

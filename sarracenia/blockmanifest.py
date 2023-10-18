@@ -1,4 +1,10 @@
 
+"""
+ DEPENDENCY:
+  should not be imported unless sarracenia.features['reassembly']['present'] is True
+  (indicating that flufl.lock is installed.)
+
+"""
 
 import logging
 import json

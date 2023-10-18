@@ -23,7 +23,6 @@ from sarracenia.featuredetection import features
 
 logger = logging.getLogger(__name__)
 
-
 class Block_reassembly(FlowCB):
     """
      if you see receive partitioned files (with §block_... _§ at the end of the file name)    
