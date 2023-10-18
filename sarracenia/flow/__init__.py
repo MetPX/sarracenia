@@ -18,6 +18,7 @@ import urllib.parse
 import sarracenia
 
 import sarracenia.filemetadata
+import sarracenia.blockmanifest
 
 # for v2 subscriber routines...
 import json, os, sys, time
@@ -1767,7 +1768,8 @@ class Flow:
                 blkno = msg['blocks']['number']
                 blksz_l = sarracenia.naturalSize(msg['blocks']['size']).split()
                 blksz = blksz_l[0]+blksz_l[1][0].lower()
-                new_file += f"§block_{blkno:04d},{blksz}_§"
+                if not '§block_' in new_file:
+                    new_file += f"§block_{blkno:04d},{blksz}_§"
                 msg['new_file'] = new_file
 
         if options.inflight == None:
@@ -2409,11 +2411,12 @@ class Flow:
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        x = sarracenia.filemetadata.FileMetadata(local_file)
 
         if 'blocks' in msg:
-            x.set('blocks', msg['blocks'] )
+            with sarracenia.blockmanifest.BlockManifest(local_file) as y:
+                y.set( msg['blocks'] )
 
+        x = sarracenia.filemetadata.FileMetadata(local_file)
         # FIXME ... what to do when checksums don't match?
         if 'onfly_checksum' in msg: 
             x.set( 'identity', msg['onfly_checksum'] )

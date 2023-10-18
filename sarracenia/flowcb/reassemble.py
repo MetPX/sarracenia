@@ -15,6 +15,7 @@ import time
 from sarracenia import nowflt
 import sarracenia
 import sarracenia.filemetadata
+import sarracenia.blockmanifest
 
 from sarracenia.flowcb import FlowCB
 
@@ -111,6 +112,7 @@ class Reassemble(FlowCB):
             flck = flufl.lock.Lock(lock_file)
 
             flck.lock()
+            logger.info( f"10 locked {flck} lock_file: {lock_file}" )
 
             pf=open(part_file,'rb')
 
@@ -119,11 +121,15 @@ class Reassemble(FlowCB):
             else:
                 rf=open(root_file,'w+b')
 
+
             old_stat = os.stat(root_file)
 
             old_blocks=None
-            with sarracenia.filemetadata.FileMetadata(root_file) as xrfa:
-                old_blocks = xrfa.get( 'blocks' )
+            with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
+                old_blocks = rfm.get()
+
+            if old_blocks and not 'waiting' in old_blocks:
+                old_blocks['waiting'] = {}
 
             # calculate old file size.
             if old_blocks and 'manifest' in old_blocks:
@@ -187,14 +193,13 @@ class Reassemble(FlowCB):
 
             rf.close()
             pf.close()
+            logger.info( f"50 locked {flck} lock_file: {lock_file}" )
 
             # assert: block data is now in main file, so delete block
             os.unlink(part_file)
 
-            with sarracenia.filemetadata.FileMetadata(root_file) as xrfab:
-                xrfab.set('mtime',m['mtime'])
-                logger.info( f" about to persist...waiting: {len(old_blocks['waiting'])} ")
-                xrfab.set('blocks',old_blocks)
+            with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
+                rfm.set(old_blocks)
 
             if len( old_blocks['waiting'] ) > 0 :
                 # do not re-post the message if it's only part that has been received.

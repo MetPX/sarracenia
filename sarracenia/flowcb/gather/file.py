@@ -19,6 +19,7 @@ from random import choice
 
 import sarracenia
 from sarracenia import *
+import sarracenia.blockmanifest
 from sarracenia.featuredetection import features
 from sarracenia.flowcb import FlowCB
 import sarracenia.identity
@@ -278,9 +279,8 @@ class File(FlowCB):
             msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
         
-        x = sarracenia.filemetadata.FileMetadata( path )
-        x.set('blocks', msg['blocks'])
-        x.persist()
+        with sarracenia.blockmanifest.BlockManifest( path ) as x:
+            x.set(msg['blocks'])
 
         messages = []
         for current_block in blocks:
