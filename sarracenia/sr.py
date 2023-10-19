@@ -2369,7 +2369,7 @@ class sr_GlobalState:
                         if 'disconnectTime' in m:
                             connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
                         else:
-                            connectPercent= -1 
+                            connectPercent= 0
 
                         txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                     else:
@@ -2377,7 +2377,7 @@ class sr_GlobalState:
                         byteTotal=0
                         byteRate=0
                         msgRate=0
-                        connectPercent=-1
+                        connectPercent=0
                         byteConnectPercent= 0
 
                     if m["rxGoodCount"] > 0:
