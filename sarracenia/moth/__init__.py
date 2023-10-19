@@ -360,7 +360,7 @@ class Moth():
         self.metrics['txBadCount'] = 0
 
     def metricsReport(self) -> tuple:
-        if not self.metrics['connected']:
+        if not self.metrics['connected'] and (self.metrics['disconnectLast'] > 0):
             down_time = time.time() - self.metrics['disconnectLast']
             self.metrics['disconnectTime'] += down_time
 
