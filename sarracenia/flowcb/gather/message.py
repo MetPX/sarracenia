@@ -31,10 +31,7 @@ class Message(FlowCB):
         """
            return a current list of messages.
         """
-        if not hasattr(self,'consumer'):
-            return []
-
-        if hasattr(self.consumer,'newMessages'):
+        if hasattr(self,'consumer') and hasattr(self.consumer,'newMessages'):
             return self.consumer.newMessages()
         else:
             logger.warning( f'not connected. Trying to connect to {self.o.broker}')
