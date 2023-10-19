@@ -20,9 +20,10 @@ class Message(FlowCB):
 
         super().__init__(options,logger)
 
+        self.od = sarracenia.moth.default_options
+        self.od.update(self.o.dictify())
+
         if hasattr(self.o, 'broker') and self.o.broker:
-            self.od = sarracenia.moth.default_options
-            self.od.update(self.o.dictify())
             self.consumer = sarracenia.moth.Moth.subFactory(self.od)
         else:
             logger.critical('missing required broker specification')
