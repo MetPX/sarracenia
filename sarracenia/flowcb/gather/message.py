@@ -31,6 +31,9 @@ class Message(FlowCB):
         """
            return a current list of messages.
         """
+        if not hasattr(self,'consumer'):
+            return []
+
         if hasattr(self.consumer,'newMessages'):
             return self.consumer.newMessages()
         else:
@@ -39,6 +42,10 @@ class Message(FlowCB):
             return []
 
     def ack(self, mlist) -> None:
+
+        if not hasattr(self,'consumer'):
+            return
+
         for m in mlist:
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
             self.consumer.ack(m)
@@ -51,6 +58,9 @@ class Message(FlowCB):
 
     def on_housekeeping(self) -> None:
 
+        if not hasattr(self,'consumer'):
+            return
+
         if hasattr(self.consumer, 'metricsReport'):
             m = self.consumer.metricsReport()
             average = (m['rxByteCount'] /
@@ -61,6 +71,6 @@ class Message(FlowCB):
             self.consumer.metricsReset()
 
     def on_stop(self) -> None:
-        if hasattr(self.consumer, 'close'):
+        if hasattr(self,'consumer') and hasattr(self.consumer, 'close'):
             self.consumer.close()
         logger.info('closing')
