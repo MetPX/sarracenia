@@ -321,7 +321,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'logLevel': 'info',
      'logReject': False,
      'logRotateCount': 5,
-     'logRotateInterval': 1,
+     'logRotateInterval': 86400.0,
      'logStdout': True,
      'log_flowcb_needed': False,
      'masks': ['accept .* into //home/peter/sarra_devdocroot/recd_by_srpoll_test1 with mirror:True strip:.*sent_by_tsource2send/'],
@@ -1891,10 +1891,10 @@ LOGS and MONITORING
    unique to each node. So each node has it's own statefiles and logs.
    example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
-- logRotate <max_logs> ( default: 5 )
+- logRotateCount <max_logs> ( default: 5 )
    Maximum number of logs archived.
 
-- logRotate_interval <duration>[<time_unit>] ( default: 1 )
+- logRotateInterval <duration>[<time_unit>] ( default: 1d = 86,400s )
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 - permLog ( default: 0600 )

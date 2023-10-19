@@ -879,7 +879,7 @@ use [0-9]{8}, but it would appear that find's regex syntax does not include repe
 
 Note that the logs will clean up themselves. By default after 5 retention the oldest log will be
 remove at midnight if you have always use the same default config since the first rotation.
-It can be shorten to a single retention by adding *logRotate 1d* to default.conf.
+It can be shorten to a single retention by adding *logRotateCount 1* to default.conf.
 
 Ensuring Things are Up
 ~~~~~~~~~~~~~~~~~~~~~~

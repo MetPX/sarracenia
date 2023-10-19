@@ -323,7 +323,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'logLevel': 'info',
      'logReject': False,
      'logRotateCount': 5,
-     'logRotateInterval': 1,
+     'logRotateInterval': 86400,
      'logStdout': True,
      'log_flowcb_needed': False,
      'masks': ['accept .* into //home/peter/sarra_devdocroot/recd_by_srpoll_test1 with mirror:True strip:.*sent_by_tsource2send/'],
@@ -1878,10 +1878,10 @@ Fichiers journal et Suivi
    unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
    Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log.
 
-- logRotate <max_logs> ( défaut: 5 )
+- logRotateCount <max_logs> ( défaut: 5 )
    Nombre maximal de journaux archivés.
 
-- logRotate_interval <duration>[<time_unit>] ( défaut: 1 )
+- logRotateInterval <duration>[<time_unit>] ( défaut: 1 jour == 86,400 secondes )
    La durée de l’intervalle avec une unité de temps optionnelle (c’est-à-dire 5m, 2h, 3d)
 
 - permLog ( défaut: 0600 )

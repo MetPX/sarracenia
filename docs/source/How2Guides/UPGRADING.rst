@@ -39,20 +39,33 @@ Installation Instructions
 git
 ---
 
+3.0.45
+------
+
+*CHANGE*: config option: logRotateInterval units was days, is now 
+     a time interval (seconds) like all other intervals.
+
+
+
 3.0.41
 ------
 
-*CHANGE*: v03 postformat field renamed: "integrity" is now "identity"
+*CHANGE*: v03 post format field renamed: "integrity" is now "identity"
 
     * current version will read messsages with *integrity* and map them to *identity*.
     * current version will post with *identity*, so older versions will miss them.
     * https://github.com/MetPX/sarracenia/issues/703
-    * metpx-sr3c >= v3.23.06 
-    * metpx-sarracenia >= v2.23.06
+    * metpx-sr3c >= v3.23.06  (equivalent compatible C implementation)
+    * metpx-sarracenia >= v2.23.06 (equivalent v2 compatible (legacy) version.)
 
 
 3.0.40
 ------
+
+*CHANGE*: the default format in which messages are posted is v03, but as of this
+    version, to override the format, one must use *post_format v02*
+    prior to this version, setting of post_topicPrefix was sufficient.
+    Now both settings are needed.
 
 *CHANGE*:  Python API breaking changes
 
@@ -206,6 +219,11 @@ V2 to Sr3
 **CHANGE**: log messages look completely different. Any log parsing will have to be reviewed.
           New log format includes a prefix with process-id and the routine generating the notification message.
 
+**CHANGE**: default message format in sr3 is v03. in v2, the default format was v2.
+
+**CHANGE**: default topicPrefix and post_topicPrefix in sr3 is 'v03' ... in v2 it 
+          was 'v02.post'
+        
 *NOTICE*: When migrating from v2 to sr3, simple configurations will mostly "just work."
           However, cases relying on user built plugins will require effort to port.
           The built-in plugins provided with Sarracenia have been ported as updated
