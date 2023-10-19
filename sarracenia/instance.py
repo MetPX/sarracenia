@@ -132,21 +132,13 @@ class instance:
 
         cfg_preparse = sarracenia.config.one_config(component, config)
 
-        # FIXME: do we put explicit error handling here for bad input?
-        #        probably worth exploring.
-        #
-        lr_when = 'midnight'
-        if (type(cfg_preparse.logRotateInterval) == str) and (
-                cfg_preparse.logRotateInterval[-1] in 'mMhHdD'):
-            lr_when = cfg_preparse.logRotateInterval[-1]
-            logRotateInterval = int(float(cfg_preparse.logRotateInterval[:-1]))
+        if cfg_preparse.logRotateInterval < (24*60*60):
+            logRotateInterval=int(cfg_preparse.logRotateInterval)
+            lr_when='s'
         else:
-            logRotateInterval = int(float(cfg_preparse.logRotateInterval))
-
-        if type(cfg_preparse.logRotateCount) == str:
-            logRotateCount = int(float(cfg_preparse.logRotateCount))
-        else:
-            logRotateCount = cfg_preparse.logRotateCount
+            logRotateInterval = int(cfg_preparse.logRotateInterval/(24*60*60))
+            lr_when='midnight'
+            
 
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action in ['start','run'] and not cfg_preparse.logStdout:
@@ -183,7 +175,7 @@ class instance:
                 logfilename,
                 when=lr_when,
                 interval=logRotateInterval,
-                backupCount=logRotateCount)
+                backupCount=cfg_preparse.logRotateCount)
             handler.setFormatter(logging.Formatter(log_format))
 
             logger.addHandler(handler)

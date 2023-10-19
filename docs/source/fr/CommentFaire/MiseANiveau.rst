@@ -38,15 +38,33 @@ Instructions d’installation
 git
 ---
 
-*CHANGE*: v03 postformat field renamded: "integrity" is now "identity"
+3.0.45
+------
 
-    * current version will read messsages with integrity and map them to identity.
-    * current version will post with "Identity", so older versions will miss them.
+*CHANGEMENT*: l´unité dans l´option *logRotateInterval* est rendu
+    secondes, comme toute autre intervalle dans la configuration.
+    Dans les versions antérieurs, c´était une quantité de jours.
+
+
+3.0.41
+------
+
+*CHANGEMENT*: champs de message v03 renommé: "integrity" est devenu "identity"
+
+    * version actuel va accepter est convertir les anciens messages.
+    * version actuel va publier le nouveau champ et est donc incompatible avec toute version antérieur.
     * https://github.com/MetPX/sarracenia/issues/703
+    * metpx-sr3c >= v3.23.06   (versio compatible de l´implantation en C)
+    * metpx-sarracenia >= v2.23.06 (version v2 (ancien) compatible.)
+
+
 
 3.0.40
 ------
 
+*CHANGEMENT*: l´option *post_format v02* est nécessaire pour que sr3 émet des
+    messages en format v02.  Avant cette version, l´option *post_topicPrefix v02.post*
+    était suffisant.  Avec la version actuel, les deux options doivent être spécifiés.
 
 *CHANGEMENT*:  l'interface de programmation (API) python a subit un changement de rupture
 

@@ -959,7 +959,7 @@ regex n'inclut pas les répétitions. )
 
 Il est à noter que les logs se nettoieront par eux-mêmes, par défaut, après 5 rotations le log
 le plus ancien sera enlevé à minuit, seulement si la configuration par défaut a été utilisée
-depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant *logrotate 1d*
+depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant *logRotateCount 3*
 à default.conf.
 
 S’assurer que les choses sont en place

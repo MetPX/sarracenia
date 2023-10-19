@@ -105,8 +105,9 @@ default_options = {
 }
 
 count_options = [
-    'batch', 'count', 'exchangeSplit', 'instances', 'no', 'post_exchangeSplit', 'prefetch',
-    'messageCountMax', 'messageRateMax', 'messageRateMin'
+    'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
+    'messageRateMin'
 ]
 
 # all the boolean settings.
@@ -122,7 +123,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'debug
 float_options = [ ]
 
 duration_options = [
-    'expire', 'housekeeping', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
+    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
@@ -759,7 +760,7 @@ class Config:
         self.identity_arbitrary_value = None
         self.logReject = False
         self.logRotateCount = 5
-        self.logRotateInterval = 1
+        self.logRotateInterval = 60*60*24
         self.masks = []
         self.instances = 1
         self.mirror = False
@@ -2564,20 +2565,16 @@ def one_config(component, config, isPost=False):
 
 def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
 
-    lr_when = 'midnight'
-    if (type(cfg_preparse.logRotateInterval) == str) and (
-            cfg_preparse.logRotateInterval[-1] in 'mMhHdD'):
-        lr_when = cfg_preparse.logRotateInterval[-1]
-        logRotateInterval = int(float(cfg_preparse.logRotateInterval[:-1]))
-    else:
-        logRotateInterval = int(float(cfg_preparse.logRotateInterval))
 
-    if type(cfg_preparse.logRotateCount) == str:
-        logRotateCount = int(float(cfg_preparse.logRotateCount))
+    if cfg_preparse.logRotateInterval < 24*24*60:
+        logRotateInterval=int(cfg_preparse.logRotateInterval)
+        lr_when='s'
     else:
-        logRotateCount = cfg_preparse.logRotateCount
+        logRotateInterval = int(cfg_preparse.logRotateInterval/(24*24*60))
+        lr_when='midnight'
 
     # init logs here. need to know instance number and configuration and component before here.
+
     if cfg_preparse.action == 'start' and not cfg_preparse.logStdout:
         if cfg_preparse.statehost:
             hostdir = cfg_preparse.hostdir
@@ -2612,7 +2609,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             logfilename,
             when=lr_when,
             interval=logRotateInterval,
-            backupCount=logRotateCount)
+            backupCount=cfg_preparse.logRotateCount)
         handler.setFormatter(logging.Formatter(log_format))
 
         logger.addHandler(handler)

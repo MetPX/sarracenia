@@ -234,12 +234,12 @@ class Flow:
                 logger.debug( "details:", exc_info=True )
                 return False
 
-            logger.debug( f'flowCallback plugin loading: {c} an instance of: {plugin}' )
+            #logger.debug( f'flowCallback plugin loading: {c} an instance of: {plugin}' )
             for entry_point in sarracenia.flowcb.entry_points:
                 if hasattr(plugin, entry_point):
                     fn = getattr(plugin, entry_point)
                     if callable(fn):
-                        logger.debug( f'registering {c}/{entry_point}' )
+                        #logger.debug( f'registering {c}/{entry_point}' )
                         if entry_point in self.plugins:
                             self.plugins[entry_point].append(fn)
                         else:
