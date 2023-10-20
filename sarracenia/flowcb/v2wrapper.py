@@ -392,6 +392,10 @@ class V2Wrapper(FlowCB):
 
     def restoreMsg(self, m, v2msg):
 
+        if 'topic' in m:
+            if m['topic'][0:2] == ['v02', 'post' ]:
+               m['topic'] = self.o.post_topicPrefix + m['topic'][2:]      
+
         if ('link' in v2msg.headers):
             if not 'fileOp' in m:
                m['fileOp'] = {}
