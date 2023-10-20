@@ -95,14 +95,17 @@ class PostFormat:
             topic_prefix = options['topicPrefix']
             topic_separator='.'
 
-        if 'topic' in options and options['topic'] and (type(options['topic']) is not list):
+        if 'topic' in msg:
+            topic = msg['topic'] 
+        elif 'topic' in options and options['topic'] and (type(options['topic']) is not list):
             topic = options['topic'].split(topic_separator)
         else:
             if 'relPath' in msg: 
                 topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+            elif 'subtopic' in msg:
+                topic = topic_prefix + msg['subtopic']  
             else:
                 topic = topic_prefix
-
         return topic
 
    
