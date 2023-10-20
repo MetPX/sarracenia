@@ -1503,6 +1503,8 @@ class sr_GlobalState:
                         component_path) + os.sep + 'instance.py'
                     cmd = [sys.executable, component_path, '--no', "0"]
                     cmd.extend(sys.argv[1:])
+                    if c not in [ 'post', 'watch' ]:
+                        cmd[-1] = f"{c}/{cfg}"
 
                 elif c[0] != 'c':  # python components
                     if cfg is None:
