@@ -603,7 +603,6 @@ class AMQP(Moth):
 
         raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
 
-        logger.info( f" topic is {headers['topic']}" )
         topic = '.'.join(headers['topic'])
         topic = topic.replace('#', '%23')
         topic = topic.replace('*', '%22')
@@ -620,6 +619,8 @@ class AMQP(Moth):
                              (version, type(raw_body),  raw_body))
             logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
 
+        message['post_topic'] = topic
+        message['_deleteOnPost'] |= set( ['post_topic'] )
         del headers['topic']
 
         if headers :  
@@ -651,8 +652,7 @@ class AMQP(Moth):
         body=raw_body
         ebo = 1
         try:
-            logger.debug("trying to publish body: {} headers: {} to {} under: {} ".format(
-                          body, headers, exchange, topic))
+            logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
             self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
             # Issue #732: tx_commit can get stuck forever
             self.channel.tx_commit()
