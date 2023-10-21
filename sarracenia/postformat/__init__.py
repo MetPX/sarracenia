@@ -80,6 +80,7 @@ class PostFormat:
            Sarracenia standard topic derivation.
 
            https://metpx.github.io/sarracenia/Explanation/Concepts.html#amqp-v09-rabbitmq-settings
+
         """
 
         if options['broker'].url.scheme.startswith('mqtt'):
@@ -96,7 +97,10 @@ class PostFormat:
             topic_separator='.'
 
         if 'topic' in msg:
-            topic = msg['topic'] 
+            if type(msg['topic']) is list:
+                topic = msg['topic']
+            else:
+                topic = msg['topic'].split(topic_separator)
         elif 'topic' in options and options['topic'] and (type(options['topic']) is not list):
             topic = options['topic'].split(topic_separator)
         else:
