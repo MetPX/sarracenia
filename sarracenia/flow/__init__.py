@@ -914,7 +914,6 @@ class Flow:
 
         if maskFileOption:
             msg['new_file'] = self.sundew_getDestInfos(msg, maskFileOption, filename)
-            logger.warning( f" dir_list: {msg['new_relPath'].split('/')[0:-1]} .. filename {msg['new_file']} " )
             msg['new_relPath'] = '/'.join(  msg['new_relPath'].split('/')[0:-1] + [ msg['new_file'] ]  )
         # not mirroring
 

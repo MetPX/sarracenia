@@ -29,7 +29,7 @@ class Log(FlowCB):
         self.o.add_option('logEvents', 'set',
                           ['after_accept', 'on_housekeeping'])
         self.o.add_option('logMessageDump', 'flag', False)
-        logger.info(f'{self.o.component} initialized with: {self.o.logEvents}')
+        logger.info(f'{self.o.component} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
         if self.o.component in ['sender']:
             self.action_verb = 'sent'
         elif self.o.component in ['post', 'poll', 'watch']:
@@ -41,6 +41,10 @@ class Log(FlowCB):
         else:
             self.action_verb = 'downloaded'
         self.started = nowflt()
+ 
+        self.rxTopicSeparator='.'
+        if hasattr(options,'broker') and options.broker and options.broker.url.scheme.startswith('mqtt'):
+            self.rxTopicSeparator='/'
 
         self.__reset()
 
@@ -68,6 +72,59 @@ class Log(FlowCB):
         else:
             return msg['baseUrl'] + ' ' + msg['relPath']
 
+    def _messageAcceptStr(self,msg):
+        if self.o.logMessageDump:
+            return msg.dumps()
+
+        s = " "
+        if 'exchange' in msg:
+            s+= f"exchange: {msg['exchange']} "
+        if 'subtopic' in msg:
+            s+= f"subtopic: {self.rxTopicSeparator.join(msg['subtopic'])} "
+        if 'fileOp' in msg:
+            op=','.join(msg['fileOp'].keys())
+
+            if op in ['link']:
+                s+= f"a link to {msg['fileOp']['link']} with baseUrl: {msg['baseUrl']} "
+            elif op in ['rename']:
+                s+= f"a rename {msg['fileOp']['rename']} with baseUrl: {msg['baseUrl']} "
+            else:
+                s+= f"a {op} with baseUrl: {msg['baseUrl']} "
+        else:
+            s+= f"a file with baseUrl: {msg['baseUrl']} "
+        if 'relPath' in msg:
+            s+= f"relPath: {msg['relPath']} "
+        if 'retrievePath' in msg:
+            s+= f"retrievePath: {msg['retrievePath']} "
+        return s
+        
+    def _messagePostStr(self,msg):
+        if self.o.logMessageDump:
+            return msg.dumps()
+
+        s = "to "
+        if ('exchange' in msg) and ('post_topic' in msg) and not msg['post_topic'].startswith(msg['exchange'][0]):
+            s+= f"exchange: {msg['exchange'][0]} " 
+        if 'post_topic' in msg:
+            s+= f"topic: {msg['post_topic']} "
+
+        if 'fileOp' in msg:
+            op=','.join(msg['fileOp'].keys())
+
+            if op in ['link']:
+                s+= f"a link to {msg['fileOp']['link']} with baseUrl: {msg['baseUrl']} "
+            elif op in ['rename']:
+                s+= f"a rename {msg['fileOp']['rename']} with baseUrl: {msg['baseUrl']} "
+            else:
+                s+= f"a {op} with baseUrl: {msg['baseUrl']} "
+        else:
+            s+= f"a file with baseUrl: {msg['baseUrl']} "
+        if 'relPath' in msg:
+            s+= f"relPath: {msg['relPath']} "
+        if 'retrievePath' in msg:
+            s+= f"retrievePath: {msg['retrievePath']} "
+        return s
+
     def after_accept(self, worklist):
 
         self.rejectCount += len(worklist.rejected)
@@ -81,7 +138,7 @@ class Log(FlowCB):
                         "%s rejected: %d %s " %
                         (msg['relPath'], msg['report']['code'], msg['report']['message']))
                 else:
-                    logger.info("rejected: %s " % self._messageStr(msg))
+                    logger.info("rejected: %s " % self._messageAcceptStr(msg))
 
         for msg in worklist.incoming:
 
@@ -92,14 +149,14 @@ class Log(FlowCB):
             if set(['after_accept']) & self.o.logEvents:
 
                 logger.info("accepted: (lag: %.2f ) %s " %
-                            (lag, self._messageStr(msg)))
+                            (lag, self._messageAcceptStr(msg)))
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:
             for msg in worklist.ok:
-                logger.info("posted %s" % msg)
+                logger.info("posted %s" % self._messagePostStr(msg))
             for msg in worklist.failed:
-                logger.info("failed to post, queued to retry %s" % msg)
+                logger.info("failed to post, queued to retry %s" % self._messagePostStr(msg))
 
     def after_work(self, worklist):
         self.rejectCount += len(worklist.rejected)
