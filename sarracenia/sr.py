@@ -1503,8 +1503,16 @@ class sr_GlobalState:
                         component_path) + os.sep + 'instance.py'
                     cmd = [sys.executable, component_path, '--no', "0"]
                     cmd.extend(sys.argv[1:])
-                    if c not in [ 'post', 'watch' ]:
-                        cmd[-1] = f"{c}/{cfg}"
+                    """
+                    FIXME... replace 'sub*/*amis*' on invocation with the resolved thing.
+                         this feels hacky... but I can't think of a case that won't work.
+                    """
+                    if '--config' in cmd:
+                        cmd[ cmd.index( '--config' )+1 ] = f
+                    elif '-c' in cmd:
+                        cmd[ cmd.index( '-c' )+1 ] = f
+                    elif c not in [ 'post', 'watch' ]:
+                        cmd[-1] = f
 
                 elif c[0] != 'c':  # python components
                     if cfg is None:
