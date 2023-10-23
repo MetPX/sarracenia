@@ -741,7 +741,7 @@ class Config:
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
-        self.logEvents = set(['after_accept', 'after_work', 'on_housekeeping' ])
+        self.logEvents = set(['after_accept', 'after_post', 'after_work', 'on_housekeeping' ])
         self.destfn_scripts = []
         self.plugins_late = []
         self.plugins_early = []
