@@ -1,12 +1,13 @@
-metpx-sr3 (3.00.45) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.45) unstable; urgency=medium
 
   * use topic field in message as an override when available to 
     determine publishing topic of downloaded files.
   * log rotation setting parsing now uses normal parsing (same as
     all other options) CHANGE: logRotateInterval default units is seconds,
     like all other sr3 *duration* settings
+  * work-around #785 windows bug... sr3_logRotateManually introduced for now.
   * improved messages when failing to connect to brokers.
-  * log messages content reviewed for improved readability/usability
+  * log messages content reviewed for improved readability/usability.
   * fix #784 starting foreground with patterns.
   * fix #783 metrics calculations (large negative number on startup)
   * fix #780 disabled instances prevents finding missing ones.
