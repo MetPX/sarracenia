@@ -531,8 +531,11 @@ class Flow:
                             m['old_format'] = m['_format']
                             m['_deleteOnPost'] |= set(['old_format'])
                         m['_format'] = m['post_format']
-                        
 
+                        # restore adjustment to fileOp
+                        if 'post_fileOp' in m:
+                            m['fileOp'] = m['post_fileOp']
+                        
                     self._runCallbacksWorklist('after_work')
 
                     self.ack(self.worklist.rejected)
@@ -807,6 +810,14 @@ class Flow:
                 d = new_dir
             elif self.o.post_baseDir:
                 d = self.o.variableExpansion(self.o.post_baseDir, msg)
+
+        # to get locally resolvable links and renames, need to mangle the pathnames.
+        # to get something to restore for downstream consumers, need to put the original
+        # names back.
+
+        if 'fileOp' in msg:
+            msg['post_fileOp'] = copy.deepcopy(msg['fileOp'])
+            msg['_deleteOnPost'] |= set( [ 'post_fileOp' ] )
 
         # if provided, strip (integer) ... strip N heading directories
         #         or  pstrip (pattern str) strip regexp pattern from relPath
