@@ -63,6 +63,7 @@ setup(
         "console_scripts": [
             "sr3=sarracenia.sr:main",
             "sr3_post=sarracenia.sr_post:main",
+            "sr3_rotateLogsManually=sarracenia.sr_rotateLogsManually:main", 
             #"sr3_poll=sarracenia.sr_flow:main",
             #"sr3_report=sarracenia.sr_flow:main",
             #"sr3_watch=sarracenia.sr_flow:main",

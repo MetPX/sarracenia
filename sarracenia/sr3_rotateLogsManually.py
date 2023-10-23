@@ -5,11 +5,17 @@ import re
 import sarracenia.config
 import sys
 
+keep_count=5
+
+print( 'EXPERIMENTAL log rotation tool to deal with a bug on windows' )
+print( 'bug details: https://github.com/MetPX/sarracenia/issues/785' )
+print( 'usage: accept an integer argument: number of old logs to keep, defaults to $keep_count' )
+print( 'it does a log rotation each time it is called, if there is a current log to rotate')
+
 if len(sys.argv) > 1:
     print(f" logs to keep: {sys.argv[1]}")
     keep_count=int(sys.argv[1])
-else:
-    keep_count=5
+
 
 timesuffix=str(datetime.datetime.now()).replace(' ','_').replace(':','_')[0:19]
 logdir=sarracenia.config.user_cache_dir('sr3','MetPX') + os.sep + 'log'
