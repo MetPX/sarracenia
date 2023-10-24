@@ -3,6 +3,8 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
   [ done ]
 
   * fixes for windows executable generation.
+  * v3 is now assumed, re-organized git branches:
+    v03_wip --> development
 
   [ Goals ]
 

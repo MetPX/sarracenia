@@ -38,7 +38,7 @@ Things that will be installed by automated setup:
 after you have cloned the source code::
 
     git clone -b development https://github.com/MetPX/sarracenia sr3
-    git clone -b v03 https://github.com/MetPX/sarrac sr3c
+    git clone -b development https://github.com/MetPX/sarrac sr3c
     git clone https://github.com/MetPX/sr_insects insects
     cd sr3
 
