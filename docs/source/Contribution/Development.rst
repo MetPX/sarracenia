@@ -119,9 +119,9 @@ A gate for merging to development is for a second developer to run the flow_test
 
 Planned by 2022/04/11:
 
- * main will be merged from development, so the default branch for new arrivals will be sr3.
+ * main will be merged from (version 3) development, so the default version for new work is sr3.
 
- * launchpad will have new recipes to produce sr3 packages from the main branch. 
+ * launchpad has recipes to produce metpx-sr3 packages from the main branch. 
 
 
 
