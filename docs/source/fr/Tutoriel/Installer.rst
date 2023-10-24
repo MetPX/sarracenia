@@ -232,7 +232,7 @@ Lorsque Sarracenia est installé à l’aide d’un paquet Debian :
 
 Si vous effectuez l’installation à l’aide de méthodes python3 (pip), ce fichier doit être installé :
 
-    https://github.com/MetPX/sarracenia/blob/v03_wip/debian/metpx-sr3.service
+    https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service
 
 au bon endroit. Il peut être installé dans::
 

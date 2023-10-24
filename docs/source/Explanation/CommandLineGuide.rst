@@ -222,7 +222,7 @@ The last line says which directory the log files are in.
 Also *list examples* shows included configuration templates available as starting points with the *add* action::
     
   $ sr3 list examples
-    Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
+    Sample Configurations: (from: /home/peter/Sarracenia/development/sarra/examples )
     cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
     poll/pollnoaa.conf               poll/pollsoapshc.conf            poll/pollusgs.conf               
     poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              

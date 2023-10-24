@@ -9,7 +9,7 @@ command line, python, and C users.
 Home page: https://metpx.github.io/sarracenia 
 
 Discussions: https://github.com/MetPX/sarracenia/discussions
-Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
+Source Repo: https://github.com/MetPX/sarracenia/tree/development
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version
@@ -33,7 +33,7 @@ Source Repo: https://github.com/MetPX/sarracenia/tree/v03_wip
 
 CI/CD:
 
-.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=v03_wip
+.. image:: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml/badge.svg?branch=development
     :alt: flow tests status
     :target: https://github.com/MetPX/sarracenia/actions/workflows/flow.yml
 

@@ -56,12 +56,12 @@ traitement personnalisé à différents points du flux.
 Des exemples sont disponibles à l’aide de la commande list ::
 
     fractal% sr3 list fcb
-    Provided plugins: ( /home/peter/Sarracenia/v03_wip/sarra ) 
+    Provided plugins: ( /home/peter/Sarracenia/development/sarra ) 
     flowcb/gather/file.py            flowcb/gather/message.py         flowcb/line_log.py               flowcb/line_mode.py
     flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py          flowcb/filter/log.py             flowcb/nodupe.py
     flowcb/post/log.py               flowcb/post/message.py           flowcb/retry.py                  flowcb/v2wrapper.py
     fractal%
-    fractal% fcbdir=/home/peter/Sarracenia/v03_wip/sarra
+    fractal% fcbdir=/home/peter/Sarracenia/development/sarra
 
 Listes de travail (Worklist)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -493,7 +493,7 @@ Points de rappel de flux
 Sarracenia interprétera les noms des fonctions comme des heures d'indication dans le de traitement lorsque
 une routine donnée devrait être appelée.
 
-Voir le `FlowCB source <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py>`_
+Voir le `FlowCB source <https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py>`_
 pour des informations détaillées sur les signatures d’appel et les valeurs de retour, etc.
 
 +---------------------+----------------------------------------------------+
@@ -633,7 +633,7 @@ points d’entrée spécifiques généralement implémentés dans les sous-class
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 
-Voir les classes intégrés `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
+Voir les classes intégrés `flowcb Poll <https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py>`_
 est utile.
 
 .. [#] voir `smc_download_cp <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py>`_
@@ -933,7 +933,7 @@ Pour implémenter un sondage personnalisé, déclarez-le en tant que sous-classe
 l’analyse html « handle_data ») doit être écrite pour remplacer le comportement fourni
 par la classe parente.
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py )
 
 Le plugin a une routine principale « parse », qui appelle la classe html.parser, dans laquelle
 le data_handler est appelé pour chaque ligne, construisant progressivement les self.entries
@@ -974,11 +974,11 @@ Voici le rappel complet du poll::
 
 Le fichier est ici:
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py )
 
 et le fichier de configuration correspondant fourni ici :
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf )
 
 
 

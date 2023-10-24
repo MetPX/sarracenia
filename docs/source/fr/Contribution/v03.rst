@@ -405,9 +405,9 @@ une API simplifiée.  résume les différences de protocole
 (Ce dernier est devenu le module Moth.)
 
 La méthode d’essai consiste à apporter des modifications et à les vérifier par rapport à la branche
-sr_insects v03_wip. En général, un sr_insects non modifié devrait
+sr_insects development. En général, un sr_insects non modifié devrait
 fonctionner, mais comme les journaux changent, il y a une logique ajoutée sur cette branche
-pour analyser les versions v2 et sr3 de la même manière. Ainsi, les tests de branche v03_wip
+pour analyser les versions v2 et sr3 de la même manière. Ainsi, les tests de branche development
 sont compatibles avec les versions stables et en cours de développement.
 
 Pour que chaque composant fonctionne, entraînez-vous avec des tests unitaires individuels, puis

@@ -62,12 +62,12 @@ processing at various points in the flow.
 Examples are available using the list command::
 
     fractal% sr3 list fcb
-    Provided plugins: ( /home/peter/Sarracenia/v03_wip/sarra ) 
+    Provided plugins: ( /home/peter/Sarracenia/development/sarra ) 
     flowcb/gather/file.py            flowcb/gather/message.py         flowcb/line_log.py               flowcb/line_mode.py
     flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py          flowcb/filter/log.py             flowcb/nodupe.py
     flowcb/post/log.py               flowcb/post/message.py           flowcb/retry.py                  flowcb/v2wrapper.py
     fractal%
-    fractal% fcbdir=/home/peter/Sarracenia/v03_wip/sarra
+    fractal% fcbdir=/home/peter/Sarracenia/development/sarra
 
 Worklists
 ~~~~~~~~~
@@ -531,7 +531,7 @@ Flow Callback Points
 Sarracenia will interpret the names of functions as indicating times in processing when
 a given routine should be called.
 
-View the `FlowCB source <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py>`_
+View the `FlowCB source <https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py>`_
 for detailed information about call signatures and return values, etc...
 
 +---------------------+----------------------------------------------------+
@@ -752,7 +752,7 @@ subclass specific entry points usually implemented in sub-classes:
 |                   |                                                    |
 +-------------------+----------------------------------------------------+
 
-Examination of the built-in `flowcb Poll <https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py>`_
+Examination of the built-in `flowcb Poll <https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py>`_
 class is helpful 
 
 .. [#] see `smc_download_cp <https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py>`_
@@ -1005,7 +1005,7 @@ To implement a customized poll, declare it as a subclass of Poll
 the html parsing "handle_data") need be written to override the behaviour provided 
 by the parent class.
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/__init__.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py )
 
 The plugin has a main "parse" routine, which invokes the html.parser class, in which
 the data_handler is called for each line, gradually building the self.entries 
@@ -1046,11 +1046,11 @@ Here it the complete poll callback::
 
 The file is here:
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py )
 
 and matching config file provided here:
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf )
 
 
 

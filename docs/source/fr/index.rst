@@ -7,7 +7,7 @@ S´abonner et répliquer 3 (Sr3) est la version 3 de Sarracenia : une boîte à 
 Page d'accueil: https://metpx.github.io/sarracenia 
 
 Discussions: https://github.com/MetPX/sarracenia/discussions
-Source: https://github.com/MetPX/sarracenia/tree/v03_wip
+Source: https://github.com/MetPX/sarracenia/tree/development
 
 .. image:: https://img.shields.io/pypi/v/metpx-sarracenia?style=flat
   :alt: PyPI version

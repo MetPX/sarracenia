@@ -37,7 +37,7 @@ Things that will be installed by automated setup:
 
 after you have cloned the source code::
 
-    git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+    git clone -b development https://github.com/MetPX/sarracenia sr3
     git clone -b v03 https://github.com/MetPX/sarrac sr3c
     git clone https://github.com/MetPX/sr_insects insects
     cd sr3
@@ -102,7 +102,7 @@ on Launchpad.net:
 v3 Workflow
 ~~~~~~~~~~~
 
-The upcoming version of Sarracenia is developed in the v03_wip (work in progress) branch.
+The upcoming version of Sarracenia is developed in the development (work in progress) branch.
 As the major refactor is substantially complete, the remaining work is now entirely constructive 
 and all development is co-ordinated through issues exactly as v2 is. Issues unique to v3, be 
 they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*. 
@@ -110,15 +110,15 @@ Issues that are common between the releases are tagged *v3*.
 
 The workflow with v3 is similar to v2 but with different branches. New development work should
 have a v03\_ prefix, such as v03\_issue401. Having all the flow tests complete fairly successfully
-is one criterion for acceptance into v03_wip.
+is one criterion for acceptance into development.
 
-To run the sr_insects tests, the repository must be cloned with the v03_wip branch.
-A gate for merging to v03_wip is for a second developer to run the flow_tests.
+To run the sr_insects tests, the repository must be cloned with the development branch.
+A gate for merging to development is for a second developer to run the flow_tests.
 **For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow**
 
 Planned by 2022/04/11:
 
- * main will be merged from v03_wip, so the default branch for new arrivals will be sr3.
+ * main will be merged from development, so the default branch for new arrivals will be sr3.
 
  * launchpad will have new recipes to produce sr3 packages from the main branch. 
 
@@ -232,7 +232,7 @@ then prompt ssh to accept the localhost key::
 This will provide a shell in an initialized VM.  To configure it::
 
  
-  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+  git clone -b development https://github.com/MetPX/sarracenia sr3
   cd sr3
 
 There are scripts that automate the installation of necessary environment to be able to run tests::
@@ -360,7 +360,7 @@ explained in detail in following sections)::
    sudo dpkg -i ../*.deb
    cd ..
 
-   git clone -b v03_wip https://github.com/MetPX/sr_insects
+   git clone -b development https://github.com/MetPX/sr_insects
    cd sr_insects
    sr3 status  # make sure there are no components configured before you start.
                # test results will likely be skewed otherwise.
@@ -1208,14 +1208,14 @@ Main Branches
 There is a long running discussion about `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
 The current set up is that there are four main branches:
 
-* main branch is the release version of sr3, merging from v03_wip. used to build sr3 packages in the
+* main branch is the release version of sr3, merging from development. used to build sr3 packages in the
   `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_ repository.
 
-* v03_wip ... The `version 3 <v03.rst>`_ work in progress branch is a next version of sarracenia in development.
-  the v03_wip branch is used to build sr3 packages for the `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
+* development ... The `version 3 <v03.rst>`_ work in progress branch is a next version of sarracenia in development.
+  the development branch is used to build sr3 packages for the `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
   and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
 
-* issue branches to be merged to v03_wip, it should be called v3_issueXXX
+* issue branches to be merged to development, it should be called v3_issueXXX
 
 * v2_dev ... the integration branch for v2 maintenance used prior to promotion to v2_stable.
 
@@ -1236,10 +1236,10 @@ and allow automated patching to upgrade them as needed.
 Repositories:
 
 * Daily https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily (living on the edge... )
-  automated daily build of sr3 packages happens from *v03_wip* branch.
+  automated daily build of sr3 packages happens from *development* branch.
 
 * Pre-Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release (for newest features.)
-  from *v03_wip* branch. Developers manually trigger builds here when it seems appropriate (testing out
+  from *development* branch. Developers manually trigger builds here when it seems appropriate (testing out
   code that is ready for release.)
 
 * Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx (for maximum stability)
@@ -1268,7 +1268,7 @@ To publish a release one needs to:
 - upload the release to launchpad.net, so that the installation of debian packages
   using the repository succeeds.
 - upload the release notes and binaries to github.com.
-- increment the version for future commits to v2_dev or v03_wip.
+- increment the version for future commits to v2_dev or development.
 
 Versioning Scheme
 ~~~~~~~~~~~~~~~~~
@@ -1300,7 +1300,7 @@ resume the year/month convention, hopefully 3.22.
 Releases are classified as follows:
 
 Alpha
-  Snapshot releases taken directly from v03_wip, with no other qualitative guarantees.
+  Snapshot releases taken directly from development, with no other qualitative guarantees.
   No guarantee of functionality, some components may be partially implemented, some
   breakage may occur.
   No bug-fixes, issues addressed by subsequent version.
@@ -1344,10 +1344,10 @@ The first alpha release in January 2016 would be versioned as ``metpx-sarracenia
 Set the Version
 ~~~~~~~~~~~~~~~
 
-This is done to *start* development on a version. It should be done on v03_wip
+This is done to *start* development on a version. It should be done on development
 after every release.
 
-* git checkout v03_wip
+* git checkout development
 * Edit ``sarracenia/_version.py`` manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
@@ -1381,22 +1381,22 @@ When development for a version is complete. The following should occur:
 
 A tag should be created to identify the end of the cycle::
 
-   git checkout v03_wip
+   git checkout development
    git tag -a sarra-v3.16.01a01 -m "release 3.16.01a01"
    git push
    git push origin sarra-v3.16.01a01
 
-Once the tag is in the v03_wip branch, promote it to main::
+Once the tag is in the development branch, promote it to main::
 
    git checkout main
-   git merge v03_wip
+   git merge development
    git push
 
 Once main is updated on github, the docker images will be automatically upgraded, but
 we then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
 
 Once package generation is complete, one should `Set the Version`_
-in v03_wip to the next logical increment to ensure no further development
+in development to the next logical increment to ensure no further development
 occurs that is identified as the released version.    
 
 
@@ -1540,7 +1540,7 @@ Example of creating a multipass image for fedora to build with::
 Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-dependencies::
 
   sudo dnf install -y rpmdevtools rpmlint git
-  git clone -b v03_wip https://github.com/MetPX/sarracenia sr3
+  git clone -b development https://github.com/MetPX/sarracenia sr3
 
 One can build a very limited sort of rpm package on an rpm based distro by
 using the python distutils::

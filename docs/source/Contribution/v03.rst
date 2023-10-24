@@ -412,9 +412,9 @@ passing library with a simplified API.  abstracts the protocol differences
 away. (This later became the Moth module.)
 
 The method of testing is to make modifications and check them against the 
-sr_insects v03_wip branch. In general, an un-modified sr_insects tests should
+sr_insects development branch. In general, an un-modified sr_insects tests should
 work, but since the logs change, there is logic being added on that branch
-to parse v2 and sr3 versions in the same way. Thus the v03_wip branch tests
+to parse v2 and sr3 versions in the same way. Thus the development branch tests
 are compatible with both stable and work-in-progress versions.
 
 To get each component working, practice with individual unit tests, and then

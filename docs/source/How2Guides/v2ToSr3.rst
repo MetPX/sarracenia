@@ -532,7 +532,7 @@ Mapping v2 Entry Points to v3 Callbacks
 
 for a comprehensive look at the v3 entry points, have a look at:
 
-https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
+https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py
 
 for details.
 
@@ -829,9 +829,9 @@ sr3 version of same plugin (nasa_mls_nrt.py):
             if self.myfname == None : return
             if self.myfname == data : return
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py )
 and matching config file provided here:
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf )
 
 The new class is declared as a subclass of Poll, and only the needed
 The HTML routine (handle_data) need be written to override the behaviour
@@ -919,7 +919,7 @@ create a flowCallback class with a *download* entry point.
 
   is ported to sr3:
 
-      * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
+      * https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/noaa_hydrometric.py
 
   The ported result sets the new field *retrievePath* ( retrieval path ) instead of new_dir and new_file 
   fields, and normal processing of the *retrievePath* field in the notification message will do a good download, no
@@ -1061,7 +1061,7 @@ One can browse the two trees, and using the table below,
 can review, compare and contrast the implementations.
 
 * V2 plugins are under: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
-* Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
+* Sr3 plugins are under: https://github.com/MetPX/sarracenia/tree/development/sarracenia/flowcb
 
 The naming also gives an example of the name convention mapping... e.g. plugins whos v2 name start with:
 

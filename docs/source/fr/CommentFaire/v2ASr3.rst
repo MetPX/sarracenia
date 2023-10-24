@@ -489,7 +489,7 @@ Mappage des points d’entrée v2 aux Callbacks v3
 -----------------------------------------------
 
 Pour un aperçu complet des points d’entrée v3, jetez un coup d’œil :
-https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/__init__.py
+https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py
 
 pour plus de détails.
 
@@ -771,9 +771,9 @@ version sr3 du même plugin (nasa_mls_nrt.py):
             if self.myfname == None : return
             if self.myfname == data : return
 
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/nasa_mls_nrt.py )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py )
 et le fichier de configuration correspondant fourni ici :
-( https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/examples/poll/nasa-mls-nrt.conf )
+( https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf )
 
 La nouvelle classe est déclarée comme une sous-classe de Poll, et seule la classe nécessaire
 de routine HTML (handle_data) doit être écrite pour remplacer le comportement
@@ -855,7 +855,7 @@ créer une classe flowCallback avec un point d’entrée *download*.
 
   est porté sur sr3 :
 
-      * https://github.com/MetPX/sarracenia/blob/v03_wip/sarracenia/flowcb/poll/noaa_hydrometric.py
+      * https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/noaa_hydrometric.py
 
   Le résultat porté définit le nouveau champ *retrievePath* (chemin de récupération) au lieu de new_dir et new_file
   et le traitement normal du champ *retrievePath* dans le message de notification fera un bon téléchargement, aucun
@@ -998,7 +998,7 @@ peut examiner, comparer et contraster les implémentations.
 
 
 * arbo v2: https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins
-* arbo Sr3: https://github.com/MetPX/sarracenia/tree/v03_wip/sarracenia/flowcb
+* arbo Sr3: https://github.com/MetPX/sarracenia/tree/development/sarracenia/flowcb
 
 La dénomination donne également un exemple de mappage de convention de nom... par ex. plugins dont le nom v2 commence par :
 

@@ -224,7 +224,7 @@ La dernière ligne indique dans quel répertoire se trouvent les fichiers journa
 *list examples* montre également les modèles de configuration inclus disponibles comme points de départ avec l’action *add* ::
 
   $ sr3 list examples
-    Sample Configurations: (from: /home/peter/Sarracenia/v03_wip/sarra/examples )
+    Sample Configurations: (from: /home/peter/Sarracenia/development/sarra/examples )
     cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             
     poll/pollnoaa.conf               poll/pollsoapshc.conf            poll/pollusgs.conf               
     poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              
