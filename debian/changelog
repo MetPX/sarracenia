@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
+
+  * fixes for windows executable generation.
+
+ -- peter <peter.silva@ssc-spc.gc.ca>  Tue, 24 Oct 2023 00:39:35 -0400
+
 metpx-sr3 (3.00.45) unstable; urgency=medium
 
   * use topic field in message as an override when available to 

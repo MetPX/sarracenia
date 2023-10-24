@@ -30,7 +30,6 @@ packages=
     humanfriendly
     humanize
     jsonpickle
-    pathtools
     pycparser
     watchdog
 files=README.rst
