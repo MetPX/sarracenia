@@ -108,8 +108,9 @@ and all development is co-ordinated through issues exactly as v2 is. Issues uniq
 they regressions or enhancements that don't make sense to add to v2, have the tag *v3only*. 
 Issues that are common between the releases are tagged *v3*.
 
-The workflow with v3 is similar to v2 but with different branches. New development work should
-have a v03\_ prefix, such as v03\_issue401. Having all the flow tests complete fairly successfully
+The workflow with v3 is similar to v2 but with different branches.  branches are assumed
+to be branched from the *development* branch, so v3 is assumed unless v2\_ is present.
+Having all the flow tests complete fairly successfully
 is one criterion for acceptance into development.
 
 To run the sr_insects tests, the repository must be cloned with the development branch.
@@ -1169,8 +1170,8 @@ FIXME: steps missing, more clarity required.
 
 Most components will use MQTT instead of amqp and can be run normally.
 
-Commits to the Main Branch
---------------------------
+Commits to the Development Branch
+---------------------------------
 
 Aside from typos, language fixups in the documentation, and incrementing
 the version, developers are not expected to commit to main. All work 
@@ -1182,7 +1183,7 @@ request on github.
 
 ::
    
-   git checkout issueXXX  # v03_issueXXX for v3 work.
+   git checkout issueXXX  # v02_issueXXX for v2 work., github suggested branch names are fine also.
    vi CHANGES.rst # summarize the changes in Restructured Text
    dch # copy/paste from CHANGES.rst, inserting one leading space.
    vi doc/UPGRADING.rst # rarely, if code has user impact.
@@ -1215,14 +1216,14 @@ The current set up is that there are four main branches:
   the development branch is used to build sr3 packages for the `Daily <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily>`_
   and `Pre-Release <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release>`_ repositories on launchpad.net.
 
-* issue branches to be merged to development, it should be called v3_issueXXX
+* issue branches to be merged to development, it should be start with issueXXX or suggested branch names from github are ok also.
+
+* sometimes, multiple branches are needed for a single issue, say for variations of a fix, eg. issueXXX_2_do_it_this_way .
 
 * v2_dev ... the integration branch for v2 maintenance used prior to promotion to v2_stable.
 
 * v2_stable ... generally this branch gets code via merges from v2_dev, after the pre-release has been tested on a
   as many systems as possible. used to build packages on the stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
-  
-* issue branches to be merged to main should be called issueXXX.
   
 
 Repositories

@@ -39,7 +39,7 @@ Les éléments qui seront installés par configuration automatisée :
 après avoir cloné le code source::
 
     git clone -b development https://github.com/MetPX/sarracenia sr3
-    git clone -b v03 https://github.com/MetPX/sarrac sr3c
+    git clone -b development https://github.com/MetPX/sarrac metpx-sr3c
     git clone https://github.com/MetPX/sr_insects insects
     cd sr3
 
@@ -106,9 +106,9 @@ et tout le développement est coordonné par des issues exactement comme l’est
 sont les régressions ou améliorations qui n’ont pas de sens à ajouter à v2, ont la balise *v3only*.
 Les problèmes communs entre les versions sont marqués *v3*.
 
-Le flux de travail avec v3 est similaire à v2 mais avec des branches différentes. De nouveaux travaux de
-développement devraient avoir un préfixe v03\_, tel que v03_issue401. Avoir tous les tests de flux
-complétés avec assez de succès est l’un des critères d’acceptation dans development.
+Le flux de travail avec v3 est similaire à v2 mais avec des branches différentes. 
+Avoir tous les tests de flux
+complétés avec assez de succès est un des critères d’acceptation dans development.
 
 Pour exécuter les tests sr_insects, le référentiel doit être cloné avec la branche development.
 Une porte pour la fusion à development est pour un deuxième développeur d’exécuter le flow_tests.
@@ -1211,14 +1211,13 @@ demande sur GitHub.
 
 ::
    
-   git checkout issueXXX  # v03_issueXXX for v3 work.
-   vi CHANGES.rst # summarize the changes in Restructured Text
-   dch # copy/paste from CHANGES.rst, inserting one leading space.
-   vi doc/UPGRADING.rst # rarely, if code has user impact.
+   git checkout issueXXX  # v02_issueXXX  pour du travaille sur l´ancienne version.
+   dch # résumer les changement dans changelog.
+   vi doc/UPGRADING.rst # rarement en cas de changement visible dont l´usager doit prendre connaissance.
    vi doc/fr/UPGRADING.rst # bon... ceci est visible aux usagers, donc...
    git commit -a
    git push 
-   # issue a pull request on github.com.
+   # déclencher un *pull request* chez github.com
 
 Un deuxième développeur examinera la demande d’extraction et le réviseur décidera si
 la fusion est appropriée. On s’attend à ce que le développeur examine chaque validation, et
@@ -1491,15 +1490,15 @@ prend la source à partir d’une branche différente : *v03_launchpad*. Pour ch
 doit être rebasée à partir de *development*
 
 * git checkout v03_launchpad
-* git rebase development
+* git rebase -i development
 * git push
-* import souce
+* import source
 * Request build from *metpx-sr3-daily-bionic* Recipe.
 
 En quoi cette branche *v03_launchpad* est-elle différente ? Elle:
 
-* Supprime la dépendance sur python3-paho-mqtt car la version dans les référentiels est trop ancienne.
-* Suppression de la dépendance sur python3-dateparser, car ce paquet n’est pas disponible dans le référentiel.
+* Supprime la dépendance sur python3-paho-mqtt car la version dans le *repository* d´ubuntu est trop ancienne.
+* Suppression de la dépendance sur python3-dateparser, car ce paquet n’est pas disponible dans le *repository* d´ubuntu.
 * remplacer la cible de test dans debian/rules, parce que tester sans les dépendances échoue ::
 
      override_dh_auto_test:
