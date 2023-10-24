@@ -5,7 +5,7 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - v03_wip
+      - development
 
   workflow_dispatch:
     inputs:
