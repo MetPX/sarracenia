@@ -1,6 +1,25 @@
 metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
 
+  [ done ]
+
   * fixes for windows executable generation.
+
+  [ Goals ]
+
+  * on gitlab... look at symlink mirroring complaint.
+  * #791 review published messages when mirror off.
+  * #782 variable expansion in queueName in default.conf?
+  * move metrics to sub-directory (for Greg's work on cloud)
+  * queue size to metrics/status...
+
+  [ Opportunities ]
+
+  * review/update/re-enable? docker image generation: batteries-included.
+  * enable github generation of windows executables.
+  * origin/v03_issue396_2_manifest_files - working towards re-enabling partitioned transfers.
+  * #785 log rollover fails on Windows
+  * #771 features in install guide.
+  * #770 harmless error message in docker.
 
  -- peter <peter.silva@ssc-spc.gc.ca>  Tue, 24 Oct 2023 00:39:35 -0400
 
@@ -74,7 +93,7 @@ metpx-sr3 (3.00.42) unstable; urgency=medium
 metpx-sr3 (3.00.41) unstable; urgency=medium
 
   * issue #700 nodupe_redis driver (experimental for now)
-  * issue #703 v03 message encoding change integrity to identify
+  * issue #703 v03 message encoding change integrity to identity
   * issue #699 v03 message encoding adding contentType
   * issue #698 WIS format encoding support added (experimental)
   * issue #695 fix for broken discard option.
