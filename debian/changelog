@@ -3,16 +3,18 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
   [ done ]
 
   * fixes for windows executable generation.
-  * v3 is now assumed, re-organized git branches:
-    v03_wip --> development
+  * branch re-org: v03 now assumed, so *development* replaces v03_wip
 
   [ Goals ]
 
+  * why are mqtt flow tests failing?
   * on gitlab... look at symlink mirroring complaint.
   * #791 review published messages when mirror off.
   * #782 variable expansion in queueName in default.conf?
   * move metrics to sub-directory (for Greg's work on cloud)
   * queue size to metrics/status...
+  * #649 sr3 status display size of queue.
+  * #767 Add metrics for number of messages in AMQP queue (same as #649)
 
   [ Opportunities ]
 
@@ -22,6 +24,9 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
   * #785 log rollover fails on Windows
   * #771 features in install guide.
   * #770 harmless error message in docker.
+  * #625 re-enable reporting, complete it by testing a bit.
+  * #702 flowcb to create metadata files... blocked transfer is an example.
+  * #771 "features" in Installation log.
 
  -- peter <peter.silva@ssc-spc.gc.ca>  Tue, 24 Oct 2023 00:39:35 -0400
 
