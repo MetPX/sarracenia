@@ -2,12 +2,13 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
 
   [ done ]
 
-  * fixes for windows executable generation.
+  * fixes for windows executable generation. 
   * branch re-org: v03 now assumed, so *development* replaces v03_wip
 
   [ Goals ]
 
   * why are mqtt flow tests failing?
+  * Ensure *785 work-around works. (test manual log rotation on windows)
   * on gitlab... look at symlink mirroring complaint.
   * #791 review published messages when mirror off.
   * #782 variable expansion in queueName in default.conf?
