@@ -912,7 +912,7 @@ class Flow:
                             toclimb=len(token)-1
                             msg['fileOp'][f] = '../'*(toclimb) + msg['fileOp'][f]
                             
-        if len(token) > 1:
+        if self.o.mirror and len(token) > 1:
             new_dir = new_dir + '/' + '/'.join(token[:-1])
 
         new_dir = self.o.variableExpansion(new_dir, msg)
