@@ -10,7 +10,7 @@ Vcs-Git: https://github.com/MetPX/sarracenia
 Package: metpx-sr3
 Architecture: all 
 Depends: ${misc:Depends}, ${python3:Depends}, python3-pkg-resources
-Recommends: ncftp, wget
+Recommends: ncftp, wget, python3-amqp, python3-paho-mqtt (>=1.5.1), python3-netifaces
 Suggests: rabbitmq-server
 Homepage: https://metpx.github.io/sarracenia
 Description: v3 Directory mirroring in real-time for users, file servers and web sites.
