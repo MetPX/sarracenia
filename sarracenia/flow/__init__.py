@@ -1468,6 +1468,7 @@ class Flow:
 
             if not os.path.isdir(msg['new_dir']):
                 try:
+                    logger.info( "missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], 0o775, True)
                 except Exception as ex:
@@ -1479,6 +1480,7 @@ class Flow:
 
             if 'fileOp' in msg :
                 if 'rename' in msg['fileOp']:
+
                     if 'renameUnlink' in msg:
                         self.removeOneFile(msg['fileOp']['rename'])
                         msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
@@ -1496,7 +1498,12 @@ class Flow:
                             msg.setReport(201, 'renamed')
                             continue
 
-                elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ) and ( 'rmdir' in self.o.fileEvents):
+                elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ): 
+                    if  'rmdir' in self.o.fileEvents:
+                        msg.setReport(202, "skipping rmdir %s" % new_path)
+                        self.worklist.ok.append(msg)
+                        continue
+
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'rmdired')
                         self.worklist.ok.append(msg)
@@ -1508,7 +1515,12 @@ class Flow:
                         self.reject(msg, 500, "rmdir %s failed" % new_path)
                     continue
 
-                elif ('remove' in msg['fileOp']) and ('delete' in self.o.fileEvents):
+                elif ('remove' in msg['fileOp']):
+                    if 'delete' in self.o.fileEvents:
+                        msg.setReport(202, "skipping delete %s" % new_path)
+                        self.worklist.ok.append(msg)
+                        continue
+
                     if self.removeOneFile(new_path):
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
@@ -1522,7 +1534,12 @@ class Flow:
 
                 # no elif because if rename fails and operation is an mkdir or a symlink..
                 # need to retry as ordinary creation, similar to normal file copy case.
-                if ('directory' in msg['fileOp']) and ('mkdir' in self.o.fileEvents):
+                if 'directory' in msg['fileOp']:
+                    if 'mkdir' not in self.o.fileEvents:
+                        msg.setReport(202, "skipping mkdir %s" % new_path)
+                        self.worklist.ok.append(msg)
+                        continue
+
                     if self.mkdir(msg):
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
@@ -1532,7 +1549,12 @@ class Flow:
                         self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
                     continue
 
-                elif 'link' in msg['fileOp'] or 'hlink' in msg['fileOp'] and ('link' in self.o.fileEvents):
+                elif 'link' in msg['fileOp'] or 'hlink' in msg['fileOp']:
+                    if 'link' not in self.o.fileEvents:
+                        msg.setReport(202, "skipping link %s" % new_path)
+                        self.worklist.ok.append(msg)
+                        continue
+
                     if self.link1file(msg):
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
@@ -1893,9 +1915,10 @@ class Flow:
                             'AcceptSizeWrong download size mismatch, received %d of expected %d bytes for %s'
                             % (len_written, block_length, new_inflight_path))
                     else:
-                        logger.error(
-                            'incomplete download only %d of expected %d bytes for %s'
-                            % (len_written, block_length, new_inflight_path))
+                        if len_written > block_length:
+                            logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
+                        else:
+                            logger.error( f'incomplete download only {len_written} of expected {block_length} bytes for {new_inflight_path}' )
                         return False
                 # when len_written is different than block_length
                 msg['size'] = len_written
@@ -2122,13 +2145,13 @@ class Flow:
                 if 'directory' in msg['fileOp'] :
                     if 'contentType' not in msg:
                         msg['contentType'] = 'text/directory'
-                    if hasattr(self.proto[self.scheme], 'delete'):
+                    if hasattr(self.proto[self.scheme], 'mkdir'):
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
                             self.proto[self.scheme].mkdir(new_file)
                         self.metrics['flow']['transferTxFiles'] += 1
                         return True
-                    logger.error("%s, delete not supported" % self.scheme)
+                    logger.error("%s, mkdir not supported" % self.scheme)
                     return False
 
 
