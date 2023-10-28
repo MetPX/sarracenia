@@ -2425,6 +2425,33 @@ class Flow:
 
         for msg in self.worklist.incoming:
 
+            # weed out non-file transfer operations that are configured to not be done.
+            if 'fileOp' in msg:
+                if ('directory' in msg['fileOp']) and ('remove' in msg['fileOp']) and ( 'rmdir' not in self.o.fileEvents ):
+                    msg.setReport(202, "skipping rmdir here." )
+                    self.worklist.ok.append(msg)
+                    continue
+
+                elif ('remove' in msg['fileOp']) and ( 'delete' not in self.o.fileEvents ):
+                    msg.setReport(202, "skipping delete here." )
+                    self.worklist.ok.append(msg)
+                    continue
+
+                if ('directory' in msg['fileOp']) and ( 'mkdir' not in self.o.fileEvents ):
+                    msg.setReport(202, "skipping mkdir here." )
+                    self.worklist.ok.append(msg)
+                    continue
+
+                if ('hlink' in msg['fileOp']) and ( 'link' not in self.o.fileEvents ):
+                    msg.setReport(202, "skipping hlink here." )
+                    self.worklist.ok.append(msg)
+                    continue
+
+                if ('link' in msg['fileOp']) and ( 'link' not in self.o.fileEvents ):
+                    msg.setReport(202, "skipping link here." )
+                    self.worklist.ok.append(msg)
+                    continue
+
             #=================================
             # proceed to send :  has to work
             #=================================
