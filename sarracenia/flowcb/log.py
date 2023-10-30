@@ -103,8 +103,12 @@ class Log(FlowCB):
             return msg.dumps()
 
         s = "to "
-        if ('exchange' in msg) and ('post_topic' in msg) and not msg['post_topic'].startswith(msg['exchange'][0]):
-            s+= f"exchange: {msg['exchange'][0]} " 
+        if 'exchange' in msg: 
+            if ('post_topic' in msg) and not msg['post_topic'].startswith(msg['exchange'][0]):
+                if type(msg['exchange']) is list:
+                    s+= f"exchange: {msg['exchange'][0]} " 
+                else:
+                    s+= f"exchange: {msg['exchange']} " 
         if 'post_topic' in msg:
             s+= f"topic: {msg['post_topic']} "
 
