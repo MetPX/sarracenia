@@ -85,7 +85,7 @@ sr_insects ont été exécutés avec succès : au moins static_flow, flakey_brok
 Lorsqu’un PR est généré, le deuxième développeur peut l’examiner pour détecter des préoccupations.
 Une fois satisfait de la nature du correctif, le deuxième développeur doit retirer la branche
 et exécutez à nouveau les tests de flux (les trois mêmes) pour confirmer.  Seulement après que les tests de flux
-ont été exécutés sur plusieurs machines qu'on peut ensuite fusionner avec main.
+ont été exécutés sur plusieurs machines qu'on peut ensuite fusionner avec stable.
 
 Les problèmes propres à la v2 doivent être étiquetés *v2only*.
 sur Launchpad.net :
@@ -433,7 +433,7 @@ antérieurs soient sont bons avant de passer aux tests suivant.
 Notez que le système de développement doit être configuré pour que les tests sr_insects s’exécutent correctement.
 Voir la suite pour les instructions de configuration. Pour le développement avec une nouvelle installation du
 système d’exploitation, les étapes de configuration ont été automatisées et peuvent être appliquées avec le
-flow_autoconfig.sh dans sr_insects (https://github.com/MetPX/sr_insects/blob/main/flow_autoconfig.sh).
+flow_autoconfig.sh dans sr_insects (https://github.com/MetPX/sr_insects/blob/stable/flow_autoconfig.sh).
 L'exécution à l’aveugle de ce script sur un système fonctionnel peut entraîner des effets secondaires
 indésirables; vous êtes prévenus !
 
@@ -1253,7 +1253,7 @@ La configuration actuelle est qu’il y a quatre branches principales:
   que la pré-version a été testée sur autant de systèmes que possible. Utilisé pour construire des
   paquets sur la version stable: `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_
   
-* les branches issues à fusionner avec main doivent être appelées issueXXX.
+* les branches issues à fusionner avec stable doivent être appelées issueXXX.
   
 
 Référentiels
@@ -1417,13 +1417,13 @@ Une balise doit être créée pour identifier la fin du cycle ::
    git push
    git push origin sarra-v3.16.01a01
 
-Une fois que la balise est là dans la branche development, il faut promouvoir sur main::
+Une fois que la balise est là dans la branche development, il faut promouvoir sur stable::
 
-   git checkout main
+   git checkout stable
    git merge development
    git push
 
-Une fois en main, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
+Une fois en stable, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
 les différentes méthodes de distribution: `PyPI`_, et `Launchpad`_
 
 Une fois la génération du package terminée, il faut `Création d´une version`_
@@ -1512,7 +1512,7 @@ Création d’un programme d’installation Windows
 ++++++++++++++++++++++++++++++++++++++++++++++
 
 On peut également construire un programme d’installation Windows avec cela
-`script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
+`script <https://github.com/MetPX/sarracenia/blob/stable/generate-win-installer.sh>`_.
 Il doit être exécuté à partir d’un système d’exploitation Linux (de préférence Ubuntu 18)
 dans le répertoire racine de git de Sarracenia. 
 

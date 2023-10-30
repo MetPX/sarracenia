@@ -87,7 +87,7 @@ sr_insects have been run successfully:  at least static_flow, flakey_broker, and
 When a PR is generated, the second developer can look it over for concerns.
 Once satisfied with the nature of the patch, the second developer should pull the branch
 and run the flow tests again (the same three) to confirm.  Only after the flow tests
-have been run on multiple machines should a change be merged to main.
+have been run on multiple machines should a change be merged to stable.
 
 issues unique to v2 should be tagged *v2only*.
 on Launchpad.net:
@@ -119,9 +119,9 @@ A gate for merging to development is for a second developer to run the flow_test
 
 Planned by 2022/04/11:
 
- * main will be merged from (version 3) development, so the default version for new work is sr3.
+ * stable will be merged from (version 3) development, so the default version for new work is sr3.
 
- * launchpad has recipes to produce metpx-sr3 packages from the main branch. 
+ * launchpad has recipes to produce metpx-sr3 packages from the stable branch. 
 
 
 
@@ -129,7 +129,7 @@ sr_insects
 ~~~~~~~~~~
 
 The sr_insects repository has it's own issues DB, and work on sr_insects is encouraged.
-Both v2 and v3 are supported on the main branch of sr_insects.  That branch should be
+Both v2 and v3 are supported on the stable branch of sr_insects.  That branch should be
 used to support all development in both versions.... 
 
 
@@ -323,13 +323,13 @@ The options are detailed below:
 Committing Code
 ~~~~~~~~~~~~~~~
 
-What should be done prior to committing to the main branch?
+What should be done prior to committing to the stable branch?
 Checklist:
 
 - do development on some other branch. Usually the branch will be named after the issue being
   addressed. Example: issue240, if we give up on an initial approach and start another one, 
   there may be issue240_2 for a second attempt. There may also be feature branches, such as v03.
-- **sr_insects tests works** (See Testing) The main branch should always be functional, do not commit code if the sr_insects tests are not working.
+- **sr_insects tests works** (See Testing) The stable branch should always be functional, do not commit code if the sr_insects tests are not working.
 - Natural consequence: if the code changes means tests need to change, include the test change in the commit.
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
@@ -340,7 +340,7 @@ to issue a pull request. Eventually, we get to `Commits to the Main Branch`_
 sr_insects Tests Description
 ----------------------------
 
-Before committing code to the main branch, as a Quality Assurance measure, one should run 
+Before committing code to the stable branch, as a Quality Assurance measure, one should run 
 all available self-tests. It is assumed that the specific changes in the code have already been unit
 tested. Please add self-tests as appropriate to this process to reflect the new ones.
 Generally speaking one should solve problems at the first test that fails as each test
@@ -417,7 +417,7 @@ tests are good before proceeding to the next test.
 Note that the development system must be configured for the sr_insects tests to run successfully. See the next
 section for configuration instructions. For development with a fresh OS installation,
 the configuration steps have been automated and can be applied with the flow_autoconfig.sh
-script in sr_insects (https://github.com/MetPX/sr_insects/blob/main/flow_autoconfig.sh). Blind 
+script in sr_insects (https://github.com/MetPX/sr_insects/blob/stable/flow_autoconfig.sh). Blind 
 execution of this script on a working system may lead to undesirable side effects; you have been warned!
 
 
@@ -547,7 +547,7 @@ Running Flow Tests
 
 This section documents these steps in much more detail.  
 Before one can run the sr_insects tests, some pre-requisites must be taken care of.
-Note that there is Github Actions integration for at least the main branch
+Note that there is Github Actions integration for at least the stable branch
 to verify functionality on a variety of python version.  Consult::
 
    https://github.com/MetPX/sarracenia/actions
@@ -810,7 +810,7 @@ Then check show it went with flow_check.sh::
 
 If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the 
 python application, but the test coverage is not exhaustive. This is the lowest gate for committing
-changes to thy python code into the main branch. It is more qualitative sampling of the most
+changes to thy python code into the stable branch. It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.
 
@@ -1174,10 +1174,10 @@ Commits to the Development Branch
 ---------------------------------
 
 Aside from typos, language fixups in the documentation, and incrementing
-the version, developers are not expected to commit to main. All work 
+the version, developers are not expected to commit to stable. All work 
 happens on development branches, and all testing is expected to pass before 
-one considers affecting main. Once the branch development is complete, 
-or a unit of work-in-progress is felt to be worth merging to main, one 
+one considers affecting stable. Once the branch development is complete, 
+or a unit of work-in-progress is felt to be worth merging to stable, one 
 must summarize the changes from the branch for the debian change log, 
 request on github.
 
@@ -1203,13 +1203,13 @@ the tests in their own development environment. If it passes in the local develo
 environment one can approve a merge in spite of Github Actions' complaints.  
 
 
-Main Branches
--------------
+Key Branches
+------------
 
 There is a long running discussion about `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
-The current set up is that there are four main branches:
+The current set up is that there are four principal branches:
 
-* main branch is the release version of sr3, merging from development. used to build sr3 packages in the
+* stable branch is the release version of sr3, merging from development. used to build sr3 packages in the
   `MetPX <https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx>`_ repository.
 
 * development ... The `version 3 <v03.rst>`_ work in progress branch is a next version of sarracenia in development.
@@ -1358,7 +1358,7 @@ after every release.
 
 If development continues and the time passes without the release occurring, then
 the version needs to be set to again (or overwritten).  For example, a development
-cycle begins in August, the version in main will be 3.19.08b1... but if development
+cycle begins in August, the version in stable will be 3.19.08b1... but if development
 continues into September, one should use this procedure the change the version to 3.19.09b1.
 
 note on Debian terminology:
@@ -1387,13 +1387,13 @@ A tag should be created to identify the end of the cycle::
    git push
    git push origin sarra-v3.16.01a01
 
-Once the tag is in the development branch, promote it to main::
+Once the tag is in the development branch, promote it to stable::
 
-   git checkout main
+   git checkout stable
    git merge development
    git push
 
-Once main is updated on github, the docker images will be automatically upgraded, but
+Once stable is updated on github, the docker images will be automatically upgraded, but
 we then need to update the various distribution methods: `PyPI`_, and `Launchpad`_
 
 Once package generation is complete, one should `Set the Version`_
@@ -1457,7 +1457,7 @@ Building a Windows Installer
 ++++++++++++++++++++++++++++
 
 One can also build a Windows installer with that 
-`script <https://github.com/MetPX/sarracenia/blob/main/generate-win-installer.sh>`_.
+`script <https://github.com/MetPX/sarracenia/blob/stable/generate-win-installer.sh>`_.
 It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia's git. 
 find the python version in use::
 
