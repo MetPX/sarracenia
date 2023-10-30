@@ -513,9 +513,15 @@ class Poll(FlowCB):
         msg = sarracenia.Message.fromFileInfo(post_relPath, self.o, desc)
 
         if stat.S_ISDIR(desc.st_mode):
-             msg['fileOp'] = { 'directory':'' }
+            if 'mkdir' not in self.o.fileEvents:
+                return None
+
+            msg['fileOp'] = { 'directory':'' }
              
         elif stat.S_ISLNK(desc.st_mode):
+            if 'link' not in self.o.fileEvents:
+                return None
+
             if not self.o.follow_symlinks:
                 try: 
                     msg['fileOp'] = { 'link': self.dest.readlink(path) }
@@ -523,6 +529,9 @@ class Poll(FlowCB):
                     logger.error("cannot read link %s message dropped" % post_relPath)
                     logger.debug('Exception details: ', exc_info=True)
                     return None
+
+        if 'create' not in self.o.fileEvents and 'modify' not in self.o.fileEvents:
+            return None
 
         if self.o.identity_method and (',' in self.o.identity_method):
             m, v = self.o.identity_method.split(',')
