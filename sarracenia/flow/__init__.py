@@ -926,11 +926,6 @@ class Flow:
         if maskFileOption:
             msg['new_file'] = self.sundew_getDestInfos(msg, maskFileOption, filename)
             msg['new_relPath'] = '/'.join(  msg['new_relPath'].split('/')[0:-1] + [ msg['new_file'] ]  )
-        # not mirroring
-
-        if not mirror:
-            msg['new_relPath'] = msg['new_file']
-
 
 
     def filter(self) -> None:
