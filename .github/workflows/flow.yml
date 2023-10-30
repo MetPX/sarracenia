@@ -7,7 +7,7 @@ on:
     branches:
       - development
       - v2_dev
-      - main
+      - stable
       - v2_stable
 
   workflow_dispatch:
