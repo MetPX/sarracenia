@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Create and publish image to GitHub Container Registry
+name: build development container image to GitHub Container Registry
 
 on:
   push:
