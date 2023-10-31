@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-MAINTAINER "Peter.Silva@ssc-spc.gc.ca"
+LABEL maintainer="Peter.Silva@ssc-spc.gc.ca"
 
 ENV TZ="Etc/UTC" \
     DEBIAN_FRONTEND="noninteractive" \

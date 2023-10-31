@@ -6,7 +6,10 @@ on:
   push:
     branches:
       - development
+    paths-ignore:
+      - '.github/**'
 
+        
   workflow_dispatch:
     inputs:
       debug_enabled:

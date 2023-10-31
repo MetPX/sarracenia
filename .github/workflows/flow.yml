@@ -10,6 +10,9 @@ on:
       - stable
       - v2_stable
 
+    paths-ignore:
+      - '.github/**'
+
   workflow_dispatch:
     inputs:
       debug_enabled:
