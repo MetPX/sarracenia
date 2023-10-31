@@ -8,6 +8,7 @@ on:
       - v03_disabled
     paths-ignore:
       - '.github/**'
+      - 'debian/changelog'
 
 
   workflow_dispatch:
