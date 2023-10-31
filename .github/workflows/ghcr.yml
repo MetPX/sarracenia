@@ -45,16 +45,19 @@ jobs:
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
+          # Get actual tagged version
+          TAG_VERSION=$(git describe --exact-match)
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           # Strip "v" prefix from tag name
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          # Use Docker `latest` tag convention when building from main branch, otherwise branch/tag name is used
-          [ "$VERSION" == "main" ] && VERSION=latest
+          # Use Docker `latest` tag convention when building from stable branch, otherwise branch/tag name is used
+          #[ "$VERSION" == "stable" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID >> $GITHUB_ENV
           echo VERSION=$VERSION >> $GITHUB_ENV
+          echo TAG_VERSION=$TAG_VERSION >> $GITHUB_ENV
 
       - name: Build and push
         uses: docker/build-push-action@v2.7.0
@@ -64,4 +67,6 @@ jobs:
           platforms: linux/arm64, linux/amd64
           push: true
           tags: |
+            ${{ env.IMAGE_ID }}:latest
             ${{ env.IMAGE_ID }}:${{ env.VERSION }}
+            ${{ env.IMAGE_ID }}:${{ env.TAG_VERSION }}
