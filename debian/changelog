@@ -4,6 +4,9 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
 
   * fixes for windows executable generation. 
   * branch re-org: v03 now assumed, so *development* replaces v03_wip
+  * github container repository (GHCR) updates... "latest" now versioned.
+  * GHCR development snapshot image now available.
+  * GHCR both images built from _base image that does all dependencies.
 
   [ Goals ]
 
