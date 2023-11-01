@@ -1494,9 +1494,8 @@ class Flow:
                             continue
 
                 elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ): 
-                    if  'rmdir' in self.o.fileEvents:
-                        msg.setReport(202, "skipping rmdir %s" % new_path)
-                        self.worklist.ok.append(msg)
+                    if  'rmdir' not in self.o.fileEvents:
+                        self.reject(msg, 202, "skipping rmdir %s" % new_path)
                         continue
 
                     if self.removeOneFile(new_path):
@@ -1512,8 +1511,7 @@ class Flow:
 
                 elif ('remove' in msg['fileOp']):
                     if 'delete' not in self.o.fileEvents:
-                        msg.setReport(202, "skipping delete %s" % new_path)
-                        self.worklist.ok.append(msg)
+                        self.reject(msg, 202, "skipping delete %s" % new_path)
                         continue
 
                     if self.removeOneFile(new_path):
@@ -1531,8 +1529,7 @@ class Flow:
                 # need to retry as ordinary creation, similar to normal file copy case.
                 if 'directory' in msg['fileOp']:
                     if 'mkdir' not in self.o.fileEvents:
-                        msg.setReport(202, "skipping mkdir %s" % new_path)
-                        self.worklist.ok.append(msg)
+                        self.reject(msg, 202, "skipping mkdir %s" % new_path)
                         continue
 
                     if self.mkdir(msg):
@@ -1546,8 +1543,7 @@ class Flow:
 
                 elif 'link' in msg['fileOp'] or 'hlink' in msg['fileOp']:
                     if 'link' not in self.o.fileEvents:
-                        msg.setReport(202, "skipping link %s" % new_path)
-                        self.worklist.ok.append(msg)
+                        self.reject(msg, 202, "skipping link %s" % new_path)
                         continue
 
                     if self.link1file(msg):
@@ -2423,28 +2419,23 @@ class Flow:
             # weed out non-file transfer operations that are configured to not be done.
             if 'fileOp' in msg:
                 if ('directory' in msg['fileOp']) and ('remove' in msg['fileOp']) and ( 'rmdir' not in self.o.fileEvents ):
-                    msg.setReport(202, "skipping rmdir here." )
-                    self.worklist.ok.append(msg)
+                    self.reject(msg, 202, "skipping rmdir here." )
                     continue
 
                 elif ('remove' in msg['fileOp']) and ( 'delete' not in self.o.fileEvents ):
-                    msg.setReport(202, "skipping delete here." )
-                    self.worklist.ok.append(msg)
+                    self.reject(msg, 202, "skipping delete here." )
                     continue
 
                 if ('directory' in msg['fileOp']) and ( 'mkdir' not in self.o.fileEvents ):
-                    msg.setReport(202, "skipping mkdir here." )
-                    self.worklist.ok.append(msg)
+                    self.reject(msg, 202, "skipping mkdir here." )
                     continue
 
                 if ('hlink' in msg['fileOp']) and ( 'link' not in self.o.fileEvents ):
-                    msg.setReport(202, "skipping hlink here." )
-                    self.worklist.ok.append(msg)
+                    self.reject(msg, 202, "skipping hlink here." )
                     continue
 
                 if ('link' in msg['fileOp']) and ( 'link' not in self.o.fileEvents ):
-                    msg.setReport(202, "skipping link here." )
-                    self.worklist.ok.append(msg)
+                    self.reject(msg, 202, "skipping link here." )
                     continue
 
             #=================================
