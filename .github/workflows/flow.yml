@@ -30,7 +30,7 @@ jobs:
       # Don't cancel the entire matrix when one job fails
       fail-fast: false
       matrix:
-       which_test: [ static_flow, flakey_broker, dynamic_flow, restart_server ]
+       which_test: [ static_flow, no_mirror, flakey_broker, dynamic_flow, restart_server ]
        osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
 
     runs-on: ${{ matrix.osver }}
