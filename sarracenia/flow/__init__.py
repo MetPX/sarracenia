@@ -1511,7 +1511,7 @@ class Flow:
                     continue
 
                 elif ('remove' in msg['fileOp']):
-                    if 'delete' in self.o.fileEvents:
+                    if 'delete' not in self.o.fileEvents:
                         msg.setReport(202, "skipping delete %s" % new_path)
                         self.worklist.ok.append(msg)
                         continue
