@@ -965,9 +965,14 @@ class sr_GlobalState:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
-                                    self.configs[c][cfg]['status'] = 'stopped'
+                                    if len(self.states[c][cfg]['instance_pids']) == 0 :
+                                        self.configs[c][cfg]['status'] = 'stopped' 
+                                    else:
+                                        self.configs[c][cfg]['status'] = 'missing' 
+                                        if not i in self.states[c][cfg]['instance_pids']:
+                                             self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        self.configs[c][cfg]['status'] = 'stopped'
+                        self.configs[c][cfg]['status'] = 'stopped' if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         self.configs[c][cfg]['status'] = 'waitVip'
                     else:
@@ -2001,7 +2006,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in [ 'missing', 'stopped']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
