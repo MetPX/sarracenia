@@ -147,10 +147,24 @@ class instance:
             else:
                 hostdir = None
 
-            logfilename = sarracenia.config.get_log_filename(
-                hostdir, component, config, cfg_preparse.no)
+            metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
 
-            #print('logfilename= %s' % logfilename )
+            dir_not_there = not os.path.exists(os.path.dirname(metricsfilename))
+            while dir_not_there:
+                try:
+                    os.makedirs(os.path.dirname(metricsfilename), exist_ok=True)
+                    dir_not_there = False
+                except FileExistsError:
+                    dir_not_there = False
+                except Exception as ex:
+                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                    logging.debug("Exception details:", exc_info=True)
+
+            cfg_preparse.metricsFilename = metricsfilename
+
+
+            logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
+
             dir_not_there = not os.path.exists(os.path.dirname(logfilename))
             while dir_not_there:
                 try:
@@ -209,7 +223,6 @@ class instance:
 
         cfg = sarracenia.config.one_config(component, config)
 
-        cfg.metricsFilename = pidfilename.replace(".pid", ".metrics")
         cfg.novipFilename = pidfilename.replace(".pid", ".noVip")
 
         if not hasattr(cfg, 'env_declared'):
