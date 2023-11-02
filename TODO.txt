@@ -1,0 +1,16 @@
+Section from debian/changelog kept between releases to track short term
+development release plans.
+
+  [ Opportunities ]
+
+  * why are mqtt flow tests failing?
+  * queue size to metrics/status #649, #767...
+  * #795 sr status... show stopped,
+  * enable github generation of windows executables.
+  * origin/v03_issue396_2_manifest_files - working towards re-enabling partitioned transfers.
+  * #785 log rollover fails on Windows
+  * #771 features in install guide.
+  * #770 harmless error message in docker.
+  * #625 re-enable reporting, complete it by testing a bit.
+  * #702 flowcb to create metadata files... blocked transfer is an example.
+  * #771 "features" in Installation log.

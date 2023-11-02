@@ -13,6 +13,7 @@ on:
     paths-ignore:
       - '.github/**'
       - 'debian/changelog'
+      - 'TODO.txt'
 
   workflow_dispatch:
     inputs:
