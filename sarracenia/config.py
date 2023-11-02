@@ -360,6 +360,21 @@ def get_log_filename(hostdir, component, configuration, no):
 
     return logdir + os.sep + component + configuration + '_%02d' % no + '.log'
 
+def get_metrics_filename(hostdir, component, configuration, no):
+    """
+      return the name of a single logfile for a single instance.
+   """
+    metricsdir = get_user_cache_dir(hostdir) + os.sep + 'metrics'
+
+    if configuration is None:
+        configuration = ''
+    else:
+        configuration = '_' + configuration
+
+    if configuration[-5:] == '.conf':
+        configuration = configuration[:-5]
+
+    return metricsdir + os.sep + component + configuration + '_%02d' % no + '.json'
 
 def wget_config(urlstr, path, remote_config_url=False):
     logger.debug("wget_config %s %s" % (urlstr, path))
@@ -1829,10 +1844,9 @@ class Config:
                 hostdir = self.hostdir
             else:
                 hostdir = None
-            self.pid_filename = get_pid_filename(hostdir, component, cfg,
-                                                 self.no)
+            self.metricsFilename = get_metrics_filename(hostdir, component, cfg, self.no)
+            self.pid_filename = get_pid_filename(hostdir, component, cfg, self.no)
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
-            self.metricsFilename = self.pid_filename.replace('.pid', '.metrics')
             self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
 
@@ -2581,10 +2595,24 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
         else:
             hostdir = None
 
-        logfilename = get_log_filename(
-            hostdir, component, config, child_inst)
+        metricsfilename = get_metrics_filename( hostdir, component, config, child_inst)
 
-        #print('logfilename= %s' % logfilename )
+        dir_not_there = not os.path.exists(os.path.dirname(metricsfilename))
+        while dir_not_there:
+            try:
+                os.makedirs(os.path.dirname(metricsfilename), exist_ok=True)
+                dir_not_there = False
+            except FileExistsError:
+                dir_not_there = False
+            except Exception as ex:
+                logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
+                logging.debug("Exception details:", exc_info=True)
+                os.sleep(1)
+
+        cfg_preparse.metricsFilename = metricsfilename
+
+        logfilename = get_log_filename( hostdir, component, config, child_inst)
+
         dir_not_there = not os.path.exists(os.path.dirname(logfilename))
         while dir_not_there:
             try:

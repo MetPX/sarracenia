@@ -469,7 +469,7 @@ class sr_GlobalState:
 
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
-                            if p.suffix in ['.pid', '.qname', '.state', '.metrics', '.noVip']:
+                            if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
                                 if sys.version_info[0] > 3 or sys.version_info[
                                         1] > 4:
                                     t = p.read_text().strip()
@@ -501,6 +501,45 @@ class sr_GlobalState:
                         os.chdir('..')
                 os.chdir('..')
 
+    def _read_metrics_dir(self,metrics_parent_dir):
+        # read in metrics files
+
+        dir1 = metrics_parent_dir + os.sep + 'metrics'
+
+        if not os.path.isdir(dir1):
+            return
+        os.chdir(dir1)
+
+        for l in os.listdir(dir1):
+
+            if not l.endswith('.json'):
+                continue
+
+            ll = os.path.basename(l.replace('.json','')).split('_')
+            if len(ll) < 3:
+                continue
+
+            c= ll[0]
+            cfg = '_'.join(ll[1:-1])
+            i = int(ll[-1].replace('i',''))
+
+            if (not c in self.components) or (not cfg in self.states[c]):
+                continue
+
+            if not 'instance_metrics' in self.states[c][cfg]:
+                self.states[c][cfg]['instance_metrics'] = {}
+
+            try:
+                p = pathlib.Path(l)
+                with p.open() as f:
+                    t = f.read().strip()
+
+                self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
+                self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
+            except:
+                logger.error( f"corrupt metrics file {pathname}: {t}" )
+
+
     def _read_states(self):
         self.states = {}
         for c in self.components:
@@ -508,6 +547,8 @@ class sr_GlobalState:
 
         self._read_state_dir(self.user_cache_dir)
         self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
+        self._read_metrics_dir(self.user_cache_dir)
+        self._read_metrics_dir(self.user_cache_dir + os.sep + self.hostdir)
 
     def _find_missing_instances_dir(self, dir):
         """ find processes which are no longer running, based on pidfiles in state, and procs.
