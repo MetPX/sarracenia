@@ -134,6 +134,7 @@ en utilisant la notation *${..} * :
 * PBD      - le "post base dir".
 * *var*    - n'importe quelle variable d’environnement.
 * BROKER_USER - le nom d’utilisateur pour l’authentification auprès du courtier (par exemple, anonyme)
+* POST_BROKER_USER - le nom d’utilisateur pour l’authentification auprès du courtier de destination (post_broker)
 * PROGRAM     - le nom du composant (subscribe, shovel, etc...)
 * CONFIG      - le nom du fichier de configuration en cours d'exécution.
 * HOSTNAME    - le hostname qui exécute le client.
