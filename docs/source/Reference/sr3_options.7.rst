@@ -130,6 +130,7 @@ option, with the use of *${..}* notation:
 * PBD      - the post base dir
 * *var*    - any environment variable.
 * BROKER_USER - the user name for authenticating to the broker (e.g. anonymous)
+* POST_BROKER_USER - the user name for authenticating to the post_broker (e.g. anonymous)
 * PROGRAM     - the name of the component (subscribe, shovel, etc...)
 * CONFIG      - the name of the configuration file being run.
 * HOSTNAME    - the hostname running the client.

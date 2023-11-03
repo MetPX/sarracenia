@@ -909,6 +909,10 @@ class Config:
             result = result.replace('${BROKER_USER}', self.broker.url.username)
             # FIXME: would this work also automagically if BROKER.USERNAME ?
 
+        if (('${POST_BROKER_USER}' in word) and hasattr(self, 'post_broker') and self.post_broker is not None and
+                self.post_broker.url is not None and hasattr(self.post_broker.url, 'username')):
+            result = result.replace('${POST_BROKER_USER}', self.post_broker.url.username)
+
         if not '$' in result:
             return result
 
