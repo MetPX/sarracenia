@@ -56,6 +56,13 @@ class Poll(Flow):
 
         super().__init__(options)
 
+        if hasattr(self.o,'post_exchange') and hasattr(self.o,'exchange'):
+            px = self.o.post_exchange if type(self.o.post_exchange) != list else self.o.post_exchange[0]
+            if px != self.o.exchange:
+                logger.warning( f"post_exchange: {px} is different from exchange: {self.o.exchange}. The settings need for multiple instances to share a poll." )
+            else:
+                logger.info( f"Good! post_exchange: {px} and exchange: {self.o.exchange} match so multiple instances to share a poll." )
+
         if not 'poll' in ','.join(self.plugins['load']):
             logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
