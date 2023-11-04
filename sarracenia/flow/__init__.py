@@ -549,7 +549,7 @@ class Flow:
                     self._runCallbacksWorklist('report')
                     self._runCallbackMetrics()
 
-                    if hasattr(self.o, 'metricsFilename' ):
+                    if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
                         metrics=json.dumps(self.metrics)
                         with open(self.o.metricsFilename, 'w') as mfn:
                              mfn.write(metrics+"\n")
