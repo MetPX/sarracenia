@@ -11,6 +11,12 @@ on:
 
 
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
 
@@ -35,6 +41,11 @@ jobs:
           travis/flow_autoconfig.sh
           travis/ssh_localhost.sh
          
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+
       - name: Add and Remove configs, 
         run: |
           pwd
