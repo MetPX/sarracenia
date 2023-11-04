@@ -141,7 +141,7 @@ class instance:
             
 
         # init logs here. need to know instance number and configuration and component before here.
-        if cfg_preparse.action in ['start','run'] and not cfg_preparse.logStdout:
+        if cfg_preparse.action in ['start','run'] :
             if cfg_preparse.statehost:
                 hostdir = cfg_preparse.hostdir
             else:
@@ -162,45 +162,46 @@ class instance:
 
             cfg_preparse.metricsFilename = metricsfilename
 
+            if not cfg_preparse.logStdout:
 
-            logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
+                logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
 
-            dir_not_there = not os.path.exists(os.path.dirname(logfilename))
-            while dir_not_there:
-                try:
-                    os.makedirs(os.path.dirname(logfilename), exist_ok=True)
-                    dir_not_there = False
-                except FileExistsError:
-                    dir_not_there = False
-                except Exception as ex:
-                    logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
-                    logging.debug("Exception details:", exc_info=True)
-                    os.sleep(1)
+                dir_not_there = not os.path.exists(os.path.dirname(logfilename))
+                while dir_not_there:
+                    try:
+                        os.makedirs(os.path.dirname(logfilename), exist_ok=True)
+                        dir_not_there = False
+                    except FileExistsError:
+                        dir_not_there = False
+                    except Exception as ex:
+                        logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
+                        logging.debug("Exception details:", exc_info=True)
+                        os.sleep(1)
 
-            log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
-            if logging.getLogger().hasHandlers():
-                for h in logging.getLogger().handlers:
-                    h.close()
-                    logging.getLogger().removeHandler(h)
-            logger = logging.getLogger()
-            logger.setLevel(logLevel)
+                log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+                if logging.getLogger().hasHandlers():
+                    for h in logging.getLogger().handlers:
+                        h.close()
+                        logging.getLogger().removeHandler(h)
+                logger = logging.getLogger()
+                logger.setLevel(logLevel)
 
-            handler = RedirectedTimedRotatingFileHandler(
-                logfilename,
-                when=lr_when,
-                interval=logRotateInterval,
-                backupCount=cfg_preparse.logRotateCount)
-            handler.setFormatter(logging.Formatter(log_format))
+                handler = RedirectedTimedRotatingFileHandler(
+                    logfilename,
+                    when=lr_when,
+                    interval=logRotateInterval,
+                    backupCount=cfg_preparse.logRotateCount)
+                handler.setFormatter(logging.Formatter(log_format))
 
-            logger.addHandler(handler)
+                logger.addHandler(handler)
 
-            if hasattr(cfg_preparse, 'permLog'):
-                os.chmod(logfilename, cfg_preparse.permLog)
+                if hasattr(cfg_preparse, 'permLog'):
+                    os.chmod(logfilename, cfg_preparse.permLog)
 
-            # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
-            if sys.platform != 'win32':
-                os.dup2(handler.stream.fileno(), 1)
-                os.dup2(handler.stream.fileno(), 2)
+                # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
+                if sys.platform != 'win32':
+                    os.dup2(handler.stream.fileno(), 1)
+                    os.dup2(handler.stream.fileno(), 2)
 
         else:
             logger.setLevel(logLevel)
