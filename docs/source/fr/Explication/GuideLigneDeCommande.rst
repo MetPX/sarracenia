@@ -812,7 +812,7 @@ accept, reject and accept_unmatch
 
 - **accept    <expression régulière (regexp)>  (facultatif)**
 - **reject    <expression régulière (regexp)>  (facultatif)**
-- **acceptUnmatched   <booléen> (par défaut: False)**
+- **acceptUnmatched   <booléen> (par défaut: True)**
 - **baseUrl_relPath   <booléen> (par défaut: False)**
 
 Les options **accept** et **reject** traitent des expressions régulières (regexp).
