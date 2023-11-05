@@ -1477,8 +1477,9 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 on older systems, or on newer ones::
 
    python3 -m build --no-isolation
-   twine upload dist/metpx_sarracenia-2.22.6-py3-none-any.whl
+   twine upload dist/metpx_sarracenia-2.22.6-py3-none-any.whl dist/metpx_sarracenia-2.22.6.tar.gz
 
+Should always include source (the .tar.gz file)
 Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
 on upload.  
 
