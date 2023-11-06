@@ -3,6 +3,7 @@ development release plans.
 
   [ Opportunities ]
 
+  * Ensure #785 work-around works. (test manual log rotation on windows)
   * why are mqtt flow tests failing?
   * queue size to metrics/status #649, #767...
   * #795 sr status... show stopped,

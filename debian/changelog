@@ -1,6 +1,4 @@
-metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
-
-  [ done ]
+metpx-sr3 (3.00.46) unstable; urgency=medium
 
   * closes #796, #791 messages published after transfer with mirror off.
   * closes #793 move metrics to sub-directory (for Greg's work on cloud)
@@ -9,13 +7,12 @@ metpx-sr3 (3.00.46) UNRELEASED; urgency=medium
   * github container repository (GHCR) updates... "latest" now versioned.
   * GHCR development snapshot image now available.
   * GHCR both images built from _base image that does all dependencies.
+  * closes #811 - documentated default wrong for acceptUnmatch.
+  * closes #809 - flow_api_consumer example crashing.
+  * closes #804 - warning message on poll with exchange name mismatch.
+  * closes #802 - adds POST_BROKER_USER variable.
 
-  [ Goals ]
-
-  * #802 (replaces #782) add POST_BROKER_USER
-  * Ensure #785 work-around works. (test manual log rotation on windows)
-
- -- peter <peter.silva@ssc-spc.gc.ca>  Tue, 24 Oct 2023 00:39:35 -0400
+ -- peter <peter.silva@ssc-spc.gc.ca>  Mon, 06 Nov 2023 11:08:57 -0400
 
 metpx-sr3 (3.00.45) unstable; urgency=medium
 
