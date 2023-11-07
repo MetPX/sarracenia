@@ -537,7 +537,7 @@ class sr_GlobalState:
                 self.states[c][cfg]['instance_metrics'][i] = json.loads(t)
                 self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
             except:
-                logger.error( f"corrupt metrics file {pathname}: {t}" )
+                logger.error( f"corrupt metrics file {dir1+os.sep+l}: {t}" )
 
 
     def _read_states(self):
