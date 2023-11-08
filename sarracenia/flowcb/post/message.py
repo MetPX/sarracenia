@@ -63,6 +63,11 @@ class Message(FlowCB):
         else:
             logger.info( "no metrics available" )
 
+    def on_start(self):
+        if hasattr(self,'poster') and self.poster:
+            self.poster.putSetup()
+        logger.info('starting')
+
     def on_stop(self):
         if hasattr(self,'poster') and self.poster:
             self.poster.close()

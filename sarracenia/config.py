@@ -1745,7 +1745,10 @@ class Config:
 
             if (component in ['poll' ]) and (hasattr(self,'vip') and self.vip):
                 if (not hasattr(self,'exchange') or not self.exchange):
-                    self.exchange = self.post_exchange[0]
+                    if type(self.post_exchange) is list:
+                        self.exchange = self.post_exchange[0]
+                    else:
+                        self.exchange = self.post_exchange
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
