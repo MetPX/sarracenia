@@ -33,7 +33,7 @@ class Msg_FDelay(object):
         if msg.sumflg == 'R' : return False
 
         parent.logger.info("%s" % msg.notice)
-        lag = msg.get_elapse()
+        lag = nowflt() - timestr2flt(parent.msg.pubtime)
 
         parent.logger.info("msg_fdelay received: %s %s%s topic=%s lag=%g %s" % \
            tuple( msg.notice.split()[0:3] + [ msg.topic, lag, msg.hdrstr ] ) )
