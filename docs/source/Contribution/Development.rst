@@ -1608,11 +1608,21 @@ Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-d
 One can build a very limited sort of rpm package on an rpm based distro by
 The names of the package for file magic data (to determin file types) has different names on 
 ubuntu vs. redhat.  The last three lines of **dependencies** in pyproject.toml are about 
-"python-magic", but on redhat, it needs to be "file-magic" instead::
+"python-magic", but on redhat/fedora >= 9, it needs to be "file-magic" instead::
 
-   vi pyproject.toml
+   # remove last three lines of dependencies in setup.py
 
-using the normal (for Redhat) rpmbuild tool::
+   * on redhat <=8: vi setup.py ;  python3 setup.py bdist_rpm
+
+   # might work, but might need some removals also.
+   * on redhat >=9: vi pyproject.toml;  python3 -m build
+
+When doing this on the redhat 8, edit the setup.py to remove the last three lines of dependencies
+because there are no OS packages for: paramiko, watchdog, xattr, & magic. One can supplement
+with pip packages, but if these dependencies are included when building the RPM sr3 package
+will fail when invoked.
+
+This will fail trying to open a non-existent CHANGES.txt... a strange incompatibility. So 
 
    rpmbuild --build-in-place -bb metpx-sr3.spec
 
