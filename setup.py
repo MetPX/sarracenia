@@ -44,6 +44,9 @@ features = {
        'vip': [ 'netifaces' ],
        'redis': [ 'redis' ]
     } 
+
+
+
 features['all'] = list(itertools.chain.from_iterable(features.values()))
 
 setup(
@@ -95,12 +98,17 @@ setup(
         'Topic :: System :: Logging',
     ],
     install_requires=[
-        "appdirs", "humanfriendly", "humanize", "jsonpickle", "paramiko",
-        "psutil>=5.3.0", "watchdog",
+        "appdirs", "humanfriendly", "humanize", "jsonpickle", "psutil>=5.3.0", 
+        "paramiko", "watchdog",
         'xattr ; sys_platform!="win32"', 'python-magic; sys_platform!="win32"',
         'python-magic-bin; sys_platform=="win32"'
-
     ],
+    # when building on HPC redhat, python OS packages don't exist. 
+    # remove the last three lines of install_requires above, aka: 
+    # paramiko, watchdog, xattr, python-magic before you do:
+    # 
+    #    python3 setup.py bdist_rpm
+
     extras_require = features
     )
 

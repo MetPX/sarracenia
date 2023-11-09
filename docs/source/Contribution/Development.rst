@@ -1546,7 +1546,13 @@ Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-d
 One can build a very limited sort of rpm package on an rpm based distro by
 using the python distutils::
 
+   # remove last three lines of dependencies in setup.py
    python3 setup.py bdist_rpm
+
+When doing this on the redhat 8, edit the setup.py to remove the last three lines of dependencies
+because there are no OS packages for: paramiko, watchdog, xattr, & magic. One can supplement
+with pip packages, but if these dependencies are included when building the RPM sr3 package
+will fail when invoked.
 
 This will fail trying to open a non-existent CHANGES.txt... a strange incompatibility. So 
 
