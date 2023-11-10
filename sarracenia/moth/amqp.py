@@ -233,14 +233,14 @@ class AMQP(Moth):
             next_time = self.last_qDeclare + 30
             now=time.time()
             if next_time <= now:
-                self._queueDeclare()
+                self._queueDeclare(True)
                 self.last_qDeclare=now
 
         super().metricsReport()
 
         return self.metrics
 
-    def _queueDeclare(self) ->  int:
+    def _queueDeclare(self,passive=False) ->  int:
 
         try:
             # from sr_consumer.build_connection...
@@ -272,7 +272,7 @@ class AMQP(Moth):
                 else:
                     qname, msg_count, consumer_count = self.management_channel.queue_declare(
                         self.o['queueName'],
-                        passive=False,
+                        passive=passive,
                         durable=self.o['durable'],
                         exclusive=False,
                         auto_delete=self.o['auto_delete'],
