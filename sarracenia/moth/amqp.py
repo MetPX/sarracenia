@@ -217,11 +217,78 @@ class AMQP(Moth):
             self.connection.connect()
 
         self.channel = self.connection.channel()
+        self.management_channel = self.connection.channel()
         return True
 
     def _amqp_setup_signal_handler(self, signum, stack):
         logger.info("ok, asked to stop")
         self.please_stop=True
+
+    def metricsReport(self):
+
+        if self.is_subscriber and self.connection and self.connection.connected: 
+            self._queueDeclare()
+
+        super().metricsReport()
+
+        return self.metrics
+
+    def _queueDeclare(self) ->  int:
+
+        try:
+            # from sr_consumer.build_connection...
+            if not self.__connect(self.o['broker']):
+                logger.critical('could not connect')
+                if hasattr(self,'metrics'):
+                    self.metrics['brokerQueuedMessageCount'] = -2
+                return -2
+
+            #FIXME: test self.first_setup and props['reset']... delete queue...
+            broker_str = self.o['broker'].url.geturl().replace(
+                ':' + self.o['broker'].url.password + '@', '@')
+
+            if self.o['queueDeclare'] and self.o['queueName']:
+
+                args = {}
+                if self.o['expire']:
+                    x = int(self.o['expire'] * 1000)
+                    if x > 0: args['x-expires'] = x
+                if self.o['message_ttl']:
+                    x = int(self.o['message_ttl'] * 1000)
+                    if x > 0: args['x-message-ttl'] = x
+
+                #FIXME: conver expire, message_ttl to proper units.
+                if self.o['dry_run']:
+                    logger.info('queue declare (dry run) %s (as: %s) ' %
+                            (self.o['queueName'], broker_str))
+                    msg_count=0
+                else:
+                    qname, msg_count, consumer_count = self.management_channel.queue_declare(
+                        self.o['queueName'],
+                        passive=False,
+                        durable=self.o['durable'],
+                        exclusive=False,
+                        auto_delete=self.o['auto_delete'],
+                        nowait=False,
+                        arguments=args)
+                    logger.info( f"queue declared {self.o['queueName']} (as: {broker_str}), (messages waiting: {msg_count})" )
+
+                if hasattr(self,'metrics'):
+                   self.metrics['brokerQueuedMessageCount'] = msg_count
+                return msg_count
+
+        except Exception as err:
+            logger.error(
+                    f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+                )
+            logger.error("AMQP getSetup failed to {} with {}".format(
+                    self.o['broker'].url.hostname, err))
+            logger.debug('Exception details: ', exc_info=True)
+
+        if hasattr(self,'metrics'):
+            self.metrics['brokerQueuedMessageCount'] = -1
+        return -1
+
 
     def getSetup(self) -> None:
         """
@@ -264,31 +331,9 @@ class AMQP(Moth):
                     ':' + self.o['broker'].url.password + '@', '@')
 
                 # from Queue declare
-                if self.o['queueDeclare'] and self.o['queueName']:
-
-                    args = {}
-                    if self.o['expire']:
-                        x = int(self.o['expire'] * 1000)
-                        if x > 0: args['x-expires'] = x
-                    if self.o['message_ttl']:
-                        x = int(self.o['message_ttl'] * 1000)
-                        if x > 0: args['x-message-ttl'] = x
-
-                    #FIXME: conver expire, message_ttl to proper units.
-                    if self.o['dry_run']:
-                        logger.info('queue declare (dry run) %s (as: %s) ' %
-                                (self.o['queueName'], broker_str))
-                    else:
-                        qname, msg_count, consumer_count = self.channel.queue_declare(
-                            self.o['queueName'],
-                            passive=False,
-                            durable=self.o['durable'],
-                            exclusive=False,
-                            auto_delete=self.o['auto_delete'],
-                            nowait=False,
-                            arguments=args)
-                        logger.info('queue declared %s (as: %s) ' %
-                                (self.o['queueName'], broker_str))
+                msg_count = self._queueDeclare()
+                
+                if msg_count == -2: break
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
@@ -301,7 +346,7 @@ class AMQP(Moth):
                             logger.info('binding %s with %s to %s (as: %s)' % \
                                 ( self.o['queueName'], topic, exchange, broker_str ) )
                             if exchange:
-                                self.channel.queue_bind(self.o['queueName'], exchange,
+                                self.management_channel.queue_bind(self.o['queueName'], exchange,
                                                 topic)
 
                 # Setup Successfully Complete!
