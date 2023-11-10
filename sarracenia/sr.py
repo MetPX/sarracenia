@@ -59,7 +59,7 @@ empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0
+        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
         }
 
 def ageOfFile(lf) -> int:
@@ -2307,7 +2307,7 @@ class sr_GlobalState:
         """
 
 
-        line = "%-40s %-11s %7s %10s %9s %10s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+        line = "%-40s %-11s %7s %10s %19s %14s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
             line += "%-40s %17s %33s %40s" % ("Counters (per housekeeping)", "", "Data Counters", "" )
@@ -2318,8 +2318,8 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "LagMax", "LagAvg", "%rej", "pubsub", "messages", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "----", "--------", "----", "------", "------" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %8s %7s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "%rej", "pubsub", "messages", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %8s %7s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "--------", "----", "------", "------" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
@@ -2385,6 +2385,7 @@ class sr_GlobalState:
                 line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
+                    brokerQdmCount = -1
                     m = self.states[c][cfg]['metrics']
                     if m[ "lagMessageCount" ] > 0:
                         lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
@@ -2392,6 +2393,9 @@ class sr_GlobalState:
                         lagMean = 0
                     
                     retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+
+                    if 'brokerQueuedMessageCount' in m:
+                        brokerQdmCount = m['brokerQueuedMessageCount']
 
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
@@ -2420,6 +2424,7 @@ class sr_GlobalState:
                         rxCumulativeMessageRate +=  byteRate
                         
 
+
                         if 'transferConnectTime' in m:
                             byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
                         else:
@@ -2444,8 +2449,8 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %5d %3d%% %3d%% %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
-                            retry, connectPercent, byteConnectPercent, m['lagMax'], lagMean, \
+                    line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
+                            retry, connectPercent, byteConnectPercent, brokerQdmCount, m['lagMax'], lagMean, \
                             rejectPercent,\
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
