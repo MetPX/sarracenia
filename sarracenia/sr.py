@@ -2338,6 +2338,8 @@ class sr_GlobalState:
         print(underline)
 
         configs_running = 0
+        rxCumulativeLagTime=0
+        rxCumulativeLagCount=0
         rxCumulativeMessagesQueued=0
         rxCumulativeMessagesRetry=0
         rxCumulativeMessageByteRate=0
@@ -2391,6 +2393,8 @@ class sr_GlobalState:
                     m = self.states[c][cfg]['metrics']
                     if m[ "lagMessageCount" ] > 0:
                         lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
+                        rxCumulativeLagTime += m[ "lagTotal" ]
+                        rxCumulativeLagCount +=  m[ "lagMessageCount" ]
                     else:
                         lagMean = 0
                     
@@ -2516,12 +2520,17 @@ class sr_GlobalState:
         print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d' % ( 
+        if rxCumulativeLagCount  > 0:
+            CumulativeMeanLag = rxCumulativeLagTime / rxCumulativeLagCount 
+        else:
+            CumulativeMeanLag = 0
+
+        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
                 naturalSize(rxCumulativeMessageRate),\
                 naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
                 naturalSize(txCumulativeMessageRate),
-                rxCumulativeMessagesQueued, rxCumulativeMessagesRetry
+                rxCumulativeMessagesQueued, rxCumulativeMessagesRetry, CumulativeMeanLag
             ))
         print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
                naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
