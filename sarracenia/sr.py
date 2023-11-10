@@ -2338,6 +2338,8 @@ class sr_GlobalState:
         print(underline)
 
         configs_running = 0
+        rxCumulativeMessagesQueued=0
+        rxCumulativeMessagesRetry=0
         rxCumulativeMessageByteRate=0
         rxCumulativeMessageRate=0
         txCumulativeMessageRate=0
@@ -2393,9 +2395,11 @@ class sr_GlobalState:
                         lagMean = 0
                     
                     retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+                    rxCumulativeMessagesRetry += retry
 
                     if 'brokerQueuedMessageCount' in m:
                         brokerQdmCount = m['brokerQueuedMessageCount']
+                        rxCumulativeMessagesQueued += brokerQdmCount
 
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
@@ -2512,11 +2516,12 @@ class sr_GlobalState:
         print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s)' % ( 
+        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
                 naturalSize(rxCumulativeMessageRate),\
                 naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
-                naturalSize(txCumulativeMessageRate)
+                naturalSize(txCumulativeMessageRate),
+                rxCumulativeMessagesQueued, rxCumulativeMessagesRetry
             ))
         print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
                naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
