@@ -975,7 +975,7 @@ class sr_GlobalState:
                                         if not i in self.states[c][cfg]['instance_pids']:
                                              self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        self.configs[c][cfg]['status'] = 'stopped' if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        self.configs[c][cfg]['status'] = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         self.configs[c][cfg]['status'] = 'waitVip'
                     else:
