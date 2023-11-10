@@ -899,6 +899,9 @@ class sr_GlobalState:
                             continue
 
                         for j in self.states[c][cfg]['instance_metrics'][i]:
+                            #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
+                            #print( f"states of c/cfg: {self.states[c][cfg]} " )
+                            #print( f"instance metrics states of c/cfg: {self.states[c][cfg]['instance_metrics']} " )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
