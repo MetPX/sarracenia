@@ -156,6 +156,8 @@ class AMQP(Moth):
 
         super().__init__(props, is_subscriber)
 
+        self.last_qDeclare = time.time()
+
         logging.basicConfig(
             format=
             '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s')
@@ -226,8 +228,13 @@ class AMQP(Moth):
 
     def metricsReport(self):
 
-        if self.is_subscriber and self.connection and self.connection.connected: 
-            self._queueDeclare()
+        if 'no' in self.o and self.o['no'] < 2 and self.is_subscriber and self.connection and self.connection.connected:
+            # control frequency of checks for queue size. hardcoded for now.
+            next_time = self.last_qDeclare + 30
+            now=time.time()
+            if next_time <= now:
+                self._queueDeclare()
+                self.last_qDeclare=now
 
         super().metricsReport()
 
@@ -320,6 +327,11 @@ class AMQP(Moth):
                 if not self.__connect(self.o['broker']):
                     logger.critical('could not connect')
                     break
+
+                # only first/lead instance needs to declare a queue and bindings.
+                if 'no' in self.o and self.o['no'] >= 2:
+                    self.metricsConnect()
+                    return
 
                 #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
