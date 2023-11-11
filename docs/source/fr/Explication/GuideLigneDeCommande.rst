@@ -61,7 +61,6 @@ le courtier ou pour gérer les configurations.
 
  - cleanup:       supprime les ressources du composant sur le serveur
  - declare:       crée les ressources du composant sur le serveur.
- - setup:         comme declare, fait en plus des liaisons de fil d'attente.
  - add:           copie une configuration à la liste des configurations disponibles.
  - list:          Énumérer toutes les configurations disponibles.
  - list plugins:  Énumérer toutes les *plugins* disponibles.
@@ -93,10 +92,9 @@ Pour que les composants roulent tous en meme temps,sur Linux on peut utiliser l'
 `Admin Guide <../How2Guides/Admin.html>`_ . Sur Windows, il est possible de configurer un service,
 comme décrit dans `Windows user manual <../Tutorials/Windows.html>`_
 
-Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les
+Les actions **cleanup**, **declare**, peuvent être utilisées pour gérer les
 ressources sur le courtier rabbitmq. Les ressources sont soit des files d'attente,
-soit des échanges. **declare** crée les ressources. **setup** crée les files
-d'attente et les liaisons.
+soit des échanges. **declare** crée les ressources.
 
 Les actions **add, remove, list, edit, enable & disable** sont utilisées pour gérer la liste
 de configurations et *plugins*. On peut voir toutes les configurations disponibles en utilisant l´action **list**.
@@ -115,8 +113,8 @@ dans le répertoire *~/.config/sr3/composant/v3_config.conf*. Pas exemple, cette
 ACTIONS
 -------
 
-declare|setup
-~~~~~~~~~~~~~
+declare
+~~~~~~~
 
 Appeler la fonction correspondante pour chacune des configurations::
 

@@ -61,7 +61,6 @@ the broker, or manage the configurations.
 
  - cleanup:       deletes the component's resources on the server.
  - declare:       creates the component's resources on the server.
- - setup:         like declare, additionally does queue bindings.
  - add:           copy to the list of available configurations.
  - list:          list all the configurations available.
  - list plugins:  list all the plugins available. 
@@ -92,9 +91,9 @@ To have components run all the time, on Linux one can use `systemd <https://www.
 as described in the `Admin Guide <../How2Guides/Admin.rst>`_ On Windows, one can configure a service,
 as described in the `Windows user manual <../Tutorials/Windows.html>`_
 
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
+The actions **cleanup**, **declare**, can be used to manage resources on
 the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally binds the queues.
+the resources.
 
 The **add, remove, list, edit, enable & disable** actions are used to manage the list 
 of configurations.  One can see all of the configurations available using the **list**
@@ -114,8 +113,8 @@ with *sr3 convert component/config*.
 ACTIONS
 -------
 
-declare|setup
-~~~~~~~~~~~~~
+declare
+~~~~~~~
 
 Call the corresponding function for each configuration::
 

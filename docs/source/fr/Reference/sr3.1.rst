@@ -74,7 +74,6 @@ Les types d'actions disponible. Une seule parmi:
  - run:           comme *start* mais on attend que les sous-processus reviennent.
  - restart:       arrêter et ensuite commencer une configuration.
  - sanity:        cherche des instances qui sont perdus/coincées/en panne et les redémarres.
- - setup:         comme declare, et fait également des queue bindings.
  - show           afficher une version interprétée d’un fichier de configuration.
  - start:         partir l'execution d'une ensemble de configurations
  - status:        vérifier si une configuration est en train de rouler.
