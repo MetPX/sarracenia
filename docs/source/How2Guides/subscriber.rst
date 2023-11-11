@@ -927,16 +927,19 @@ logLevel, and logReject:
 
 At the end of the day (at midnight), these logs are rotated automatically by
 the components, and the old log gets a date suffix. The directory in which
-the logs are stored can be overridden by the **log** option, the number of
-rotated logs to keep are set by the **logRotate** parameter. The oldest log
-file is deleted when the maximum number of logs has been reach and this
-continues for each rotation. An interval takes a duration of the interval and
-it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' for hours,
-or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
+the logs and metrics are stored can be overridden by the **log** option, the 
+number of rotated logs to keep are set by the **logRotate** parameter. The 
+oldest log file is deleted when the maximum number of logs and metrics has been 
+reached and this continues for each rotation. An interval takes a duration of 
+the interval and it may takes a time unit suffix, such as 'd\|D' for days, 'h\|H' 
+for hours, or 'm\|M' for minutes. If no unit is provided logs will rotate at midnight.
 Here are some settings for log file management:
 
 - log <dir> ( default: ~/.cache/sarra/log ) (on Linux)
    The directory to store log files in.
+
+- logMetrics ( default: True ) 
+   whether to accumulate multiple metrics files at all.
 
 - statehost <False|True> ( default: False )
    In large data centres, the home directory can be shared among thousands of
@@ -944,10 +947,10 @@ Here are some settings for log file management:
    unique to each node. So each node has it's own statefiles and logs.
    example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.
 
-- logRotate <max_logs> ( default: 5 , alias: lr_backupCount)
+- logRotateCount <max_logs> ( default: 5 , alias: lr_backupCount)
    Maximum number of logs archived.
 
-- logRotate_interval <duration>[<time_unit>] ( default: 1, alias: lr_interval)
+- logRotateInterval <duration>[<time_unit>] ( default: 1, alias: lr_interval)
    The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
 
 - permLog ( default: 0600 )
