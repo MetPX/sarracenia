@@ -64,6 +64,19 @@ import sarracenia.moth
 import sarracenia.identity
 import sarracenia.instance
 
+
+class octal_number():
+
+    def __init__(self,number):
+        self.number=number
+
+    def __str__(self) -> str:
+        return f"o{self.number:o}"
+
+    def __repr__(self) -> str:
+        return f"o{self.number:o}"
+
+
 default_options = {
     'acceptSizeWrong': False,
     'acceptUnmatched': True,
@@ -87,9 +100,9 @@ default_options = {
     'nodupe_ttl': 0,
     'overwrite': True,
     'path': [],
-    'permDefault': 0,
-    'permDirDefault': 0o775,
-    'permLog': 0o600,
+    'permDefault' : octal_number(0),
+    'permDirDefault' : octal_number(0o775),
+    'permLog': octal_number(0o600),
     'post_documentRoot': None,
     'post_baseDir': None,
     'post_baseUrl': None,
@@ -109,6 +122,7 @@ count_options = [
     'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
     'messageRateMin'
 ]
+
 
 # all the boolean settings.
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'baseUrl_relPath', 'debug', \
@@ -898,7 +912,7 @@ class Config:
 
         if word is None:
             return word
-        elif type(word) in [bool, int, float]:
+        elif type(word) in [bool, int, float, octal_number]:
             return word
         elif not '$' in word:
             return word
@@ -986,6 +1000,7 @@ class Config:
            
            * 'count'      integer count type. 
 
+           * 'octal'      base-8 (octal) integer type.
            * 'duration'   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
                           modified by a unit suffix ( m-minute, h-hour, w-week ) 
 
@@ -1043,6 +1058,10 @@ class Config:
                     setattr(self, option, None)
                 else:
                     setattr(self, option, [v])
+        elif kind == 'octal':
+            perm_options.append(option)
+            if type(v) is not octal_number:
+                setattr(self, option, octal_number(int(v,base=8)))
         elif kind == 'set':  
             set_options.append(option)
             sv=set()
@@ -1555,7 +1574,7 @@ class Config:
                     logger.error(f'Ignored "{i}": {e}')
             elif k in perm_options:
                 if v.isdigit():
-                    setattr(self, k, int(v, base=8))
+                    setattr(self, k, octal_number(int(v, base=8)))
                 else:
                     logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
             elif k in size_options:
