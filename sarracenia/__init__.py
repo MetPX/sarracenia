@@ -658,8 +658,9 @@ class Message(dict):
         if lstat is None: return msg
 
         if (lstat.st_mode is not None) :
-            if (o.permCopy and lstat.st_mode):
-                msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+            msg['mode'] = "%o" % (lstat.st_mode & 0o7777)
+            if not o.permCopy:
+                msg['_deleteOnPost'] |= set(['mode'])
             
             if os_stat.S_ISDIR(lstat.st_mode):
                 msg['fileOp'] = { 'directory': '' }
@@ -668,11 +669,13 @@ class Message(dict):
         if lstat.st_size is not None:
             msg['size'] = lstat.st_size
 
-        if o.timeCopy:
-            if lstat.st_mtime is not None:
-                msg['mtime'] = timeflt2str(lstat.st_mtime)
-            if lstat.st_atime is not None:
-                msg['atime'] = timeflt2str(lstat.st_atime)
+        if lstat.st_mtime is not None:
+            msg['mtime'] = timeflt2str(lstat.st_mtime)
+        if lstat.st_atime is not None:
+            msg['atime'] = timeflt2str(lstat.st_atime)
+
+        if not o.timeCopy:
+            msg['_deleteOnPost'] |= set([ 'atime', 'mtime' ])
 
         return msg
 
