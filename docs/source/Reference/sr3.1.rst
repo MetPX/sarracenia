@@ -75,7 +75,6 @@ The type of action to take. One of:
  - restart: stop and then start the configuration.
  - run:  run as a master process (like start, but don't return.)
  - sanity: looks for instances which have crashed or gotten stuck and restarts them.
- - setup:         like declare, additionally does queue bindings.
  - show           view an interpreted version of a configuration file.
  - start:  start the configuration running
  - status: check if the configuration is running.

@@ -15,7 +15,7 @@ SYNOPSIS
 ========
 
 **sr_cpump** foreground|start|stop|restart|reload|status configfile
-**sr_cpump** cleanup|declare|setup configfile
+**sr_cpump** cleanup|declare configfile
 
 DESCRIPTION
 ===========
@@ -61,13 +61,9 @@ exécuter le programme et son fichier de configuration de manière interactive..
 n'est pas concerné par d'autres actions. L'utilisateur cesserait d'utiliser l'instance **foreground**
 en simplement <ctrl-c> sous linux ou utilisez d'autres moyens pour envoyer SIGINT ou SIGTERM au processus.
 
-Les actions **cleanup**, **declare**, **setup** peuvent être utilisées pour gérer les ressources sur
+Les actions **cleanup**, **declare**, peuvent être utilisées pour gérer les ressources sur
 le serveur rabbitmq. Les ressources sont soit des files d'attente, soit des échanges. **déclarer** crée
-les ressources. **setup** crée et met en place les liaisons des files d'attente.
-
-The actions **cleanup**, **declare**, **setup** can be used to manage resources on
-the rabbitmq server. The resources are either queues or exchanges. **declare** creates
-the resources. **setup** creates and additionally does the bindings of queues.
+les ressources. 
 
 Les actions **ajouter**, **supprimer**, **modifier**, **lister**, **activer**, **désactiver** agissent
 sur les configurations.
