@@ -1045,12 +1045,13 @@ la vitesse d’exécution de tous les processus qui écrivent à stdout.
 logRotateCount <max_logs> ( défaut: 5 )
 ---------------------------------------
 
-Nombre maximal de journaux archivés.
+Nombre maximal de journaux de messages (logs) et statistiques (metrics) archivés.
 
 logRotateInterval <intervalle>[<unité_de_temps>] ( défaut: 1d )
 ---------------------------------------------------------------
 
 La durée de l’intervalle avec une unité de temps optionnel (soit 5m, 2h, 3d)
+entre chaque changement de fichier journal (de messages et statistiques)
 
 messageCountMax <count> (défaut: 0)
 -----------------------------------

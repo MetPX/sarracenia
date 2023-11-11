@@ -1060,12 +1060,12 @@ writing to stdout.
 logRotateCount <max_logs> ( default: 5 )
 ----------------------------------------
 
-Maximum number of logs archived.
+Maximum number of logs (both messages and metrics) archived.
 
 logRotateInterval <interval>[<time_unit>] ( default: 1d )
 ---------------------------------------------------------
 
-The duration of the interval with an optional time unit (ie 5m, 2h, 3d)
+The duration of the interval with an optional time unit (ie 5m, 2h, 3d) for rotation of logs and metrics.
 
 
 messageCountMax <count> (default: 0)
