@@ -2566,6 +2566,7 @@ class sr_GlobalState:
                     if k == 'destination':
                         if component == 'poll':
                             k = 'pollUrl'
+                            v3_cfg.write('permCopy off\n')
                         else:
                             k = 'sendTo'
                     elif (k == 'get' ) and (component == 'poll'):
