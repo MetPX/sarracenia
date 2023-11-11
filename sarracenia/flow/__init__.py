@@ -1,4 +1,5 @@
 import copy
+import glob
 import importlib
 import logging
 import os
@@ -554,9 +555,22 @@ class Flow:
                         with open(self.o.metricsFilename, 'w') as mfn:
                              mfn.write(metrics+"\n")
                         if self.o.logMetrics:
+                            if self.o.logRotateInterval >= 24*60*60:
+                                tslen=8
+                            elif self.o.logRotateInterval > 60:
+                                tslen=14
+                            else:
+                                tslen=16
                             timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
-                            with open(self.o.metricsFilename + '.' + timestamp[0:8], 'a') as mfn:
+                            with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                                 mfn.write( f'\"{timestamp}\" : {metrics},\n')
+
+                            # removing old metrics files
+                            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+                            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+                            for o in old_metrics:
+                                logger.info( f"removing old metrics file: {o} " )
+                                os.unlink(o)
 
                     self.worklist.ok = []
                     self.worklist.directories_ok = []
