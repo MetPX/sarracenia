@@ -381,7 +381,7 @@ class Poll(FlowCB):
 
         # assert at this point we have an sftp_obj...
         if 'sftp_obj' in locals() and ((sftp_obj.st_mode
-                                        & self.o.permDefault) == self.o.permDefault):
+                                        & int(self.o.permDefault)) == int(self.o.permDefault)):
             return sftp_obj
         else:
             return None
