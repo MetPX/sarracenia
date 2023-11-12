@@ -65,7 +65,7 @@ import sarracenia.identity
 import sarracenia.instance
 
 
-class octal_number():
+class octal_number(int):
 
     def __init__(self,number):
         self.number=number
