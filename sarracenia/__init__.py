@@ -688,7 +688,7 @@ class Message(dict):
             fh.write(data)
 
         if hasattr(o, 'chmod') and o.chmod:
-            os.chmod(path, o.chmod)
+            os.chmod(path, int(o.chmod))
 
         return sarracenia.Message.fromFileData(path, o, stat(path))
 

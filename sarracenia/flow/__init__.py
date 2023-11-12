@@ -1082,7 +1082,7 @@ class Flow:
         if not os.path.isdir(msg['new_dir']):
             try:
                 self.worklist.directories_ok.append(msg['new_dir'])
-                os.makedirs(msg['new_dir'], 0o775, True)
+                os.makedirs(msg['new_dir'], int(self.o.permDirDefault), True)
             except Exception as ex:
                 logger.error("failed to make directory %s: %s" %
                              (msg['new_dir'], ex))
@@ -1167,7 +1167,7 @@ class Flow:
             self.set_local_file_attributes(path, msg)
 
         except Exception as ex:
-            logger.warning("failed writing and finalizing: %s" % (path, ex))
+            logger.warning("failed writing and finalizing: %s: %s" % (path, ex))
             return False
 
         return True
@@ -1363,7 +1363,7 @@ class Flow:
 
         if not os.path.isdir(msg['new_dir']):
             try:
-                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
+                os.makedirs(msg['new_dir'], int(self.o.permDirDefault), True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
@@ -1407,7 +1407,7 @@ class Flow:
         if not os.path.isdir(msg['new_dir']):
             try:
                 self.worklist.directories_ok.append(msg['new_dir'])
-                os.makedirs(msg['new_dir'], self.o.permDirDefault, True)
+                os.makedirs(msg['new_dir'], int(self.o.permDirDefault), True)
             except Exception as ex:
                 logger.warning("making %s: %s" % (msg['new_dir'], ex))
                 logger.debug('Exception details:', exc_info=True)
@@ -1465,7 +1465,7 @@ class Flow:
                 try:
                     logger.info( "missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
-                    os.makedirs(msg['new_dir'], 0o775, True)
+                    os.makedirs(msg['new_dir'], int(self.o.permDirDefault), True)
                 except Exception as ex:
                     logger.warning("making %s: %s" % (msg['new_dir'], ex))
                     logger.debug('Exception details:', exc_info=True)
@@ -1566,7 +1566,7 @@ class Flow:
                     if not self.o.dry_run and not os.path.isdir(self.o.inflight):
                         try:
                             os.mkdir(self.o.inflight)
-                            os.chmod(self.o.inflight, self.o.permDirDefault)
+                            os.chmod(self.o.inflight, int(self.o.permDirDefault))
                         except:
                             pass
                     new_inflight_path = self.o.inflight + new_file
@@ -1754,7 +1754,7 @@ class Flow:
             try:
                 if not os.path.isdir(new_dir):
                     self.worklist.directories_ok.append(new_dir)
-                    os.makedirs(new_dir, 0o775, True)
+                    os.makedirs(new_dir, int(self.o.permDirDefault), True)
                 os.chdir(new_dir)
                 logger.debug( f"local cd to {new_dir}") 
             except Exception as ex:
@@ -1856,7 +1856,7 @@ class Flow:
                 try:
                     if not self.o.dry_run:
                         os.mkdir(options.inflight)
-                        os.chmod(options.inflight, options.permDirDefault)
+                        os.chmod(options.inflight, int(options.permDirDefault))
                 except:
                     logger.error('unable to make inflight directory %s/%s' %
                                  (msg['new_dir'], options.inflight))
@@ -2359,7 +2359,7 @@ class Flow:
                 os.chmod(local_file, mode)
 
         if mode == 0 and self.o.permDefault != 0:
-            os.chmod(local_file, self.o.permDefault)
+            os.chmod(local_file, int(self.o.permDefault))
 
         if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
             mtime = sarracenia.timestr2flt(msg['mtime'])
@@ -2387,7 +2387,7 @@ class Flow:
 
             if mode == 0 and self.o.permDefault != 0:
                 try:
-                    proto.chmod(self.o.permDefault, remote_file)
+                    proto.chmod(int(self.o.permDefault), remote_file)
                 except:
                     pass
 

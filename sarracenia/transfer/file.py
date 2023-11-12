@@ -85,7 +85,7 @@ class File(Transfer):
     # chmod
     def chmod(self, perm, path):
         logger.debug("sr_file chmod %s %s" % ("{0:o}".format(perm), path))
-        os.chmod(path, perm)
+        os.chmod(path, int(perm))
 
     # close
     def close(self):
