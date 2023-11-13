@@ -219,8 +219,15 @@ class Moth():
            logger.error('unknown broker scheme/protocol specified')
            return None
 
-        for sc in Moth.__subclasses__():
+        for sc in Moth.findAllSubclasses(Moth):
             driver=sc.__name__.lower()
+            # when amqp_consumer option is True, use the moth.AMQPConsumer class, not normal moth.AMQP
+            if "amqp_consumer" in props and props["amqp_consumer"]:
+                if driver == 'amqp':
+                    continue
+                if driver == 'amqpconsumer':
+                    # driver needs to be amqp to match with the broker URL's scheme
+                    driver = 'amqp'
             scheme=props['broker'].url.scheme
             if (scheme == driver) or \
                ( (scheme[0:-1] == driver) and (scheme[-1] in [ 's', 'w' ])) or \
@@ -254,6 +261,15 @@ class Moth():
         # ProtocolPresent test should ensure that we never get here...
         logger.error('broker intialization failure')
         return None
+    
+    @staticmethod
+    def findAllSubclasses(cls) -> set:
+        """Recursively finds all subclasses of a class. __subclasses__() only gives direct subclasses.
+        """
+        cls_subclasses = set(cls.__subclasses__())
+        for sc in cls_subclasses:
+            cls_subclasses = cls_subclasses.union(Moth.findAllSubclasses(sc))
+        return cls_subclasses
 
     def __init__(self, props=None, is_subscriber=True) -> None:
         """
@@ -394,6 +410,7 @@ class Moth():
 
 if features['amqp']['present']:
     import sarracenia.moth.amqp
+    import sarracenia.moth.amqpconsumer
 
 if features['mqtt']['present']:
     import sarracenia.moth.mqtt
