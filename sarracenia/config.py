@@ -70,14 +70,11 @@ class octal_number(int):
     def __init__(self,number):
         self.number=number
 
-    def __int__(self) -> int:
-        return self.number
-
     def __str__(self) -> str:
-        return f"0o{self.number:o}"
+        return f"o{self.number:o}"
 
     def __repr__(self) -> str:
-        return f"0o{self.number:o}"
+        return f"o{self.number:o}"
 
 
 default_options = {
@@ -2672,7 +2669,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
         logger.addHandler(handler)
 
         if hasattr(cfg_preparse, 'permLog'):
-            os.chmod(logfilename, int(cfg_preparse.permLog))
+            os.chmod(logfilename, cfg_preparse.permLog)
 
         # FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...
         if sys.platform != 'win32':
