@@ -120,7 +120,7 @@ class Sftp(Transfer):
 
             # create and go to subdir
             alarm_set(self.o.timeout)
-            self.sftp.mkdir(d, int(self.o.permDirDefault))
+            self.sftp.mkdir(d, self.o.permDirDefault)
             self.sftp.chdir(d)
             alarm_cancel()
 
@@ -437,7 +437,7 @@ class Sftp(Transfer):
             alarm_cancel()
             return
 
-        self.sftp.mkdir(remote_dir, int(self.o.permDirDefault))
+        self.sftp.mkdir(remote_dir, self.o.permDirDefault)
         alarm_cancel()
 
     # put

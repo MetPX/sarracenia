@@ -262,18 +262,18 @@ class Wmo2msc(FlowCB):
                 d = d.replace(self.o.filter_olddir, self.o.filter_newdir)
                 logger.debug('filter_wmo2msc check %s after replace' % (d))
                 if not os.path.isdir(d):
-                    os.makedirs(d, int(self.o.permDirDefault), True)
+                    os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][0:2].decode('ascii')
                 d = d + os.sep + self.bulletin[0][7:11].decode('ascii')
                 logger.debug('filter_wmo2msc check %s' % (d))
                 if not os.path.isdir(d):
-                    os.makedirs(d, int(self.o.permDirDefault), True)
+                    os.makedirs(d, self.o.permDirDefault, True)
 
                 d = d + os.sep + self.bulletin[0][14:16].decode('ascii')
                 logger.debug('filter_wmo2msc check %s' % (d))
                 if not os.path.isdir(d):
-                    os.makedirs(d, int(self.o.permDirDefault), True)
+                    os.makedirs(d, self.o.permDirDefault, True)
 
                 local_file = d + os.sep + AHLfn
             else:
