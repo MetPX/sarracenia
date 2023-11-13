@@ -48,7 +48,15 @@ class AMQPConsumer(AMQP):
         self._raw_msg_q = queue.Queue() # Queue is thread safe
         self._consumer_thread = None
         self._thread_please_stop = False
-        logger.setLevel("DEBUG") # TODO test if the normal log level syntax works, if not, implement
+
+        # control log level in config file:
+        # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
+        me = "%s.%s" % (__class__.__module__, __class__.__name__)
+        if ('settings' in self.o) and (me in self.o['settings']):
+            for s in self.o['settings'][me]:
+                self.o[s] = self.o['settings'][me][s]
+            if 'logLevel' in self.o['settings'][me]:
+                logger.setLevel(self.o['logLevel'].upper())
 
     def __get_on_message(self, msg):
         """ Callback for AMQP basic_consume, called when the broker sends a new message.
@@ -61,11 +69,10 @@ class AMQPConsumer(AMQP):
         """ Calls drain_events on the connection until told to stop.
         """
         logger.debug("thread starting")
-        # need to handle signals so it doesn't get killed...
         while not self._thread_please_stop:
             # This blocks until there's an event to deal with
             try:
-                self.connection.drain_events(timeout=2)
+                self.connection.drain_events(timeout=2) # TODO configurable timeout?
             except TimeoutError:
                 pass
             except Exception as e:
