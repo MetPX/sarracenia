@@ -58,12 +58,16 @@ class AMQPConsumer(AMQP):
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel(self.o['logLevel'].upper())
 
-    def __get_on_message(self, msg):
-        """ Callback for AMQP basic_consume, called when the broker sends a new message.
+    def __consumer_setup(self) -> None:
+        """ Start consuming from the queue.
         """
-        logger.debug(f"new message pushed from broker: {msg.body}")
-        # This will block until the msg can be put in the queue
-        self._raw_msg_q.put(msg)
+        if not self.connection:
+            self.getSetup()
+        # docs.celeryq.dev/projects/amqp/en/latest/reference/amqp.channel.html#amqp.channel.Channel.basic_consume
+        self.channel.basic_consume(self.o['queueName'], no_ack=False, callback=self.__get_on_message)
+        self.__stop_thread() # make sure it's not already running
+        self._consumer_thread = threading.Thread(target=self.__drain_events)
+        self._consumer_thread.start()
 
     def __drain_events(self):
         """ Calls drain_events on the connection until told to stop.
@@ -81,6 +85,13 @@ class AMQPConsumer(AMQP):
         logger.debug("thread stopping")
         self._consumer_thread = None
 
+    def __get_on_message(self, msg):
+        """ Callback for AMQP basic_consume, called when the broker sends a new message.
+        """
+        logger.debug(f"new message pushed from broker: {msg.body}")
+        # This will block until the msg can be put in the queue
+        self._raw_msg_q.put(msg)
+
     def __stop_thread(self):
         # need to stop consuming - tell the thread to stop, then join it and wait
         self._thread_please_stop = True
@@ -93,17 +104,6 @@ class AMQPConsumer(AMQP):
         logger.info("ok, asked to stop")
         self.please_stop=True
         self.__stop_thread()
-
-    def getSetup(self) -> None:
-        """
-        Setup so we can consume messages.
-        """
-        super().getSetup()
-        # docs.celeryq.dev/projects/amqp/en/latest/reference/amqp.channel.html#amqp.channel.Channel.basic_consume
-        self.channel.basic_consume(self.o['queueName'], no_ack=False, callback=self.__get_on_message)
-        self.__stop_thread() # make sure it's not already running
-        self._consumer_thread = threading.Thread(target=self.__drain_events)
-        self._consumer_thread.start()
 
     def getCleanUp(self) -> None:
         self.__stop_thread()
@@ -120,6 +120,9 @@ class AMQPConsumer(AMQP):
         try:
             if not self.connection:
                 self.getSetup()
+
+            if not self._consumer_thread:
+                self.__consumer_setup()
 
             try:
                 # don't block waiting for the queue to be available, better to just try again later
