@@ -42,27 +42,21 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install dependencies
+      # 2023-11-13 RS Added SSH config changes to see if it makes the tests more reliable
         run: |
           travis/flow_autoconfig.sh
           travis/ssh_localhost.sh
+          sudo sh -c 'echo "MaxSessions 750" >> /etc/ssh/sshd_config'
+          sudo sh -c 'echo "MaxStartups 750" >> /etc/ssh/sshd_config'
+          sudo systemctl restart ssh
           echo "amqp_consumer True" >> ${HOME}/.config/sr3/default.conf
           echo "set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug" >> ${HOME}/.config/sr3/default.conf
-         
+      
       - name: Setup ${{ matrix.which_test }} test.
         run: |
           cd ${HOME}; pwd; ls ; 
           echo hoho
           cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
-
-      # Enable tmate debugging of manually-triggered workflows if the input option was provided
-      # https://github.com/marketplace/actions/debugging-with-tmate
-      # 2023/07/22 PAS, removed because when manually invoking test it always enables in spite
-      # of the github box not being checked, so cannot invoke the tests manually.
-      # 
-      #- name: Setup tmate session
-      #  uses: mxschmitt/action-tmate@v3
-      #  if: ${{ github.event.inputs.debug_enabled }}
-      #  #if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
       - name: Limit ${{ matrix.which_test }} test.
         run: |
