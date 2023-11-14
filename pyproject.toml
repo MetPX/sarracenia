@@ -41,6 +41,12 @@ dependencies =[
         'python-magic-bin; sys_platform == "win32"'
 ]
 
+# NOTE:
+# on Redhat, when building an rpm, need to replace the 
+# python-magic (last two lines of dependencies above )
+# by either nothing (older releases) or *file-magic* (fc39
+#        'file-magic'
+
 [project.scripts]
 sr3 = "sarracenia.sr:main"
 sr3_post = "sarracenia.sr_post:main"

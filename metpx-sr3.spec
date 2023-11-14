@@ -12,7 +12,7 @@ Source:         %{url}/archive/v%{version}/metpx-sr3-%{version}.tar.gz / %{pypi_
 BuildArch:      noarch / BuildRequires:  gcc
 BuildRequires:  python3-devel
 
-Requires: python3-appdirs, python3-humanfriendly, python3-humanize, python3-jsonpickle, python3-paramiko, python3-psutil
+Requires: python3-appdirs, python3-humanfriendly, python3-humanize, python3-jsonpickle, python3-paramiko, python3-psutil, python3-xattr
 
 %global _description %{expand:
 MetPX-sr3 (Sarracenia v3) is a data duplication or distribution pump that leverage
