@@ -1599,11 +1599,21 @@ Basé sur https://www.redhat.com/sysadmin/create-rpm-package ...  installer les 
 
   sudo dnf install -y rpmdevtools rpmlint git
   git clone -b development https://github.com/MetPX/sarracenia sr3
+  cd sr3
 
-On peut construire un type très limité de paquet rpm sur une distribution basée sur rpm
-en utilisant les distutils python::
+Les noms du package pour les données magiques de fichiers (pour déterminer les types de fichiers) ont des noms différents sur
+Ubuntu contre RedHat. Les trois dernières lignes de **dépendances** dans pyproject.toml concernent
+"python-magic", mais sur Redhat, il doit plutôt être "file-magic" ::
 
-   python3 setup.py bdist_rpm
+   vi pyproject.toml
+
+On peut construire paquet rpm sur une distribution de Linux approprié, avec la commande *rpmbuild*::
+
+   rpmbuild --build-in-place -bb metpx-sr3.spec
+
+Cela marche tel quel sur fedora 39, mais ca se peut qu´il faut editer metpx-sr3.spec afin d´enlever
+des paquets listé comme *dependencies*, faute de disponibilité en format RPM dans les anciennes 
+versions de Redhat. Eventuellement, on aura enlevé assez de dépendences pour que le .rpm se construit. 
 
 Cela échouera en essayant d’ouvrir un CHANGES.txt qui n'existe pas ... Une étrange incompatibilité. Alors,
 

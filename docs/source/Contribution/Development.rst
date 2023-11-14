@@ -1603,74 +1603,63 @@ Based on https://www.redhat.com/sysadmin/create-rpm-package ...  install build-d
 
   sudo dnf install -y rpmdevtools rpmlint git
   git clone -b development https://github.com/MetPX/sarracenia sr3
+  cd sr3
 
 One can build a very limited sort of rpm package on an rpm based distro by
-using the python distutils::
+The names of the package for file magic data (to determin file types) has different names on 
+ubuntu vs. redhat.  The last three lines of **dependencies** in pyproject.toml are about 
+"python-magic", but on redhat, it needs to be "file-magic" instead::
 
-   # remove last three lines of dependencies in setup.py
-   python3 setup.py bdist_rpm
+   vi pyproject.toml
 
-When doing this on the redhat 8, edit the setup.py to remove the last three lines of dependencies
-because there are no OS packages for: paramiko, watchdog, xattr, & magic. One can supplement
-with pip packages, but if these dependencies are included when building the RPM sr3 package
-will fail when invoked.
+using the normal (for Redhat) rpmbuild tool::
 
-This will fail trying to open a non-existent CHANGES.txt... a strange incompatibility. So 
+   rpmbuild --build-in-place -bb metpx-sr3.spec
 
-  **comment out the two lines in setup.py used to set the long_description**, 
-
-these lines::
-   #long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
-   #                   '\n\n' + read('AUTHORS.rst')),
- 
-and then the rpm build will complete. Unfortunately, it doesn't add proper dependencies, so 
-one can install those manually.  
-
-A way of addressing the dependency problem  is to decode the options from the debian/control::
-
-   [ubuntu@fed34 sr3]$ grep Recommends debian/control | sed 's/Recommends: //;s/ //g'
-   ncftp,wget
-   [ubuntu@fed34 sr3]$ 
-
-and repeat with the setup.py file...  (note: setup.py does not want spaces around versions for 
-python packages, but bdist_rpm option requires them, so fix that... )::
-
-   [ubuntu@fed34 sr3]$ tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g;s/^"/"python3-/;s/,"/,"python3-/g'
-   "python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
-   [ubuntu@fed34 sr3]$ 
-
-then copy/paste the dependencies into the rpm building line::
-
-   python3 setup.py bdist_rpm --requires=ncftp,wget,"python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
+When doing this on the redhat 8, edit the metpx-sr3.spec and potentially pyproject.toml
+to remove the other dependencies because there are no OS packages for: paramiko, 
+watchdog, xattr, & magic.  Eventually, one will have removed enough that the rpm file
+will be built.
 
 One can check if the dependencies are there like so::
   
-  [ubuntu@fed34 sr3]$ rpm -qp dist/metpx-sr3-3.0.6-1.noarch.rpm --requires
+  [ubuntu@fed39 sr3]$ rpm -qR /home/ubuntu/rpmbuild/RPMS/noarch/metpx-sr3-3.00.47-0.fc39.noarch.rpm
+
   /usr/bin/python3
-  ncftp
-  python3-amqp
+  python(abi) = 3.12
   python3-appdirs
+  python3-humanfriendly
   python3-humanize
   python3-jsonpickle
-  python3-netifaces
-  python3-paho-mqtt >= 1.5.1 
   python3-paramiko
-  python3-psutil >= 5.3.0
-  python3-watchdog
+  python3-psutil
+  python3-xattr
+  python3.12dist(appdirs)
+  python3.12dist(humanfriendly)
+  python3.12dist(humanize)
+  python3.12dist(jsonpickle)
+  python3.12dist(paramiko)
+  python3.12dist(psutil) >= 5.3
+  python3.12dist(watchdog)
+  python3.12dist(xattr)
   rpmlib(CompressedFileNames) <= 3.0.4-1
   rpmlib(FileDigests) <= 4.6.0-1
   rpmlib(PartialHardlinkSets) <= 4.0.4-1
   rpmlib(PayloadFilesHavePrefix) <= 4.0-1
   rpmlib(PayloadIsZstd) <= 5.4.18-1
-  wget
-  [ubuntu@fed34 sr3]$
+
+  [ubuntu@fed39 sr3]$
 
 You can see all of the prefixed python3 dependencies required, as well as the recommended binary accellerator packages
 are listed. Then if you install with dnf install, it will pull them all in.  Unfortunately, this method does not allow
 the specification of version of the python dependencies which are stripped out. on Fedora 34, this is not a problem,
 as all versions are new enough.  Such a package should install well.
 
-a bit inelegant, and not sure if it will work with older versions:
+After installation, one can supplement, installing missing dependencies using pip (or pip3.)
+Can check how much sr3 is working using *sr3 features* and use pip to add more features
+after the RPM is installed.
+
+Certainly a bit clumsy, and not sure if it will work with older versions:
 `Help Wanted  <https://github.com/MetPX/sarracenia/issues57>`_
 
 
