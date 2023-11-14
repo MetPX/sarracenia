@@ -144,7 +144,7 @@ class File(Transfer):
         if base_url[-1] == '/':
             base_url = base_url[0:-1]
         arg1 = base_url + self.cwd + os.sep + remote_file
-        arg1 = arg1.replace(' ', '\ ')
+        arg1 = arg1.replace(' ', '\\ ')
         arg2 = local_file
 
         cmd = self.o.accelCpCommand.replace('%s', arg1)

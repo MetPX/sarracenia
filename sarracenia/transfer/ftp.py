@@ -296,7 +296,7 @@ class Ftp(Transfer):
         if base_url[-1] == '/':
             base_url = base_url[0:-1]
         arg1 = base_url + self.pwd + os.sep + remote_file
-        arg1 = arg1.replace(' ', '\ ')
+        arg1 = arg1.replace(' ', '\\ ')
         arg2 = local_file
 
         cmd = self.o.accelFtpgetCommand.replace('%s', arg1)
@@ -408,7 +408,7 @@ class Ftp(Transfer):
         if dest_baseUrl[-1] == '/':
             dest_baseUrl = dest_baseUrl[0:-1]
         arg2 = dest_baseUrl + msg['new_dir'] + os.sep + remote_file
-        arg2 = arg2.replace(' ', '\ ')
+        arg2 = arg2.replace(' ', '\\ ')
         arg1 = local_file
 
         cmd = self.o.accelFtpputCommand.replace('%s', arg1)
