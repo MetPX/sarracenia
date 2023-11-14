@@ -67,14 +67,11 @@ import sarracenia.instance
 
 class octal_number(int):
 
-    def __init__(self,number):
-        self.number=number
-
     def __str__(self) -> str:
-        return f"o{self.number:o}"
+        return f"0o{self:o}"
 
     def __repr__(self) -> str:
-        return f"o{self.number:o}"
+        return f"0o{self:o}"
 
 
 default_options = {
