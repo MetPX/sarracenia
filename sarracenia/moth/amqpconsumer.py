@@ -40,7 +40,7 @@ class AMQPConsumer(AMQP):
         Set amqp_consumer True in the config to use this instead of the regular AMQP class.
 
         TODO: 
-          - how does this work with the batch and prefetch options?
+          - how does this work with the batch and prefetch options? 
     """
 
     def __init__(self, props, is_subscriber) -> None:
