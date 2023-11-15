@@ -1395,7 +1395,7 @@ class sr_GlobalState:
             if not 'options' in self.configs[c][cfg]:
                 continue
 
-            if len(self.states[c][cfg]['instance_pids']) > 0:
+            if 'instance_pids' in self.states[c][cfg] and len(self.states[c][cfg]['instance_pids']) > 0:
                 logging.error("cannot disable %s while it is running! " % f)
                 continue
 
