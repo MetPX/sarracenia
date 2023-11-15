@@ -1920,7 +1920,7 @@ class sr_GlobalState:
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
                     pcount += 1
-            if len(self.states[c][cfg]['hung_instances']) > 0:
+            if 'hung_instances' in self.states[c][cfg] and len(self.states[c][cfg]['hung_instances']) > 0:
                 for i in self.states[c][cfg]['hung_instances']:
                     kill_pid=self.states[c][cfg]['instance_pids'][i]
                     print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
