@@ -681,7 +681,8 @@ class AMQP(Moth):
             logger.info('raw message headers: type: %s value: %s' % (type(headers),  headers))
 
         message['post_topic'] = topic
-        message['_deleteOnPost'] |= set( ['post_topic'] )
+        message['post_exchange'] = exchange
+        message['_deleteOnPost'] |= set( ['post_exchange', 'post_topic'] )
         del headers['topic']
 
         if headers :  
