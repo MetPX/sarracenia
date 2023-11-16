@@ -739,7 +739,7 @@ class Flow:
                 if 'pubTime' in msg:
                     timeSuffix = ":" + msg['pubTime'].split('.')[0]
                 if 'pubTime' in msg:
-                    timeSuffix = ":" + msg['pubtime'].split('.')[0]
+                    timeSuffix = ":" + msg['pubTime'].split('.')[0]
                     timeSuffix = timeSuffix.replace('T', '')
                 # check for PX or PDS behavior ...
                 # if file already had a time extension keep his...
