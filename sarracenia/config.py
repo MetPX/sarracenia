@@ -67,6 +67,13 @@ import sarracenia.instance
 
 class octal_number(int):
 
+    def __new__(cls, value):
+        if type(value) is str:
+            self = int(value,base=8)
+        elif type(value) is int:
+            self = value
+        return self
+
     def __str__(self) -> str:
         return f"0o{self:o}"
 
