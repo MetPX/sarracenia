@@ -114,15 +114,19 @@ built-in ones. For example::
         directory /mylocaldirectory/${%Y%m%d}/mydailies
         accept    .*observations.*
 
-        rename hoho.${%Y%m%d_%H%M%S.%f-1h}.csv
+        rename hoho.${%o-1h%Y%m%d_%H%M%S.%f}.csv
 
 In the last example above, the *varTimeOffset* will modify the evaluation of YYYYMMDD to be 5m in the past.
 In the rename option, the time to be substituted is one hour in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
-* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string augmented by an offset duration suffix (- for in the past, + for in the future)
-  example:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ 
+
+  * compatible date/time formatting string augmented by an offset duration suffix (o- for in the past, o+ for in the future)
+  * example:  ${%o-1h%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+
+* time offset begin a strtime pattern with %o for an offset +-1(s/m/h/d/w) units.
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 
