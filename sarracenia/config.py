@@ -2339,8 +2339,8 @@ class Config:
                             nargs='?',
                             help=' specifical configuration to select ')
         parser.add_argument('--dangerWillRobinson',
-                            action='store_true',
-                            default=False,
+                            type=int,
+                            default=0,
                             help='Confirm you want to do something dangerous')
         parser.add_argument('--debug',
                             action='store_true',

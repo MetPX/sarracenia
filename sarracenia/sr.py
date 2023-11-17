@@ -1577,11 +1577,11 @@ class sr_GlobalState:
 
     def cleanup(self):
 
-        if len(self.filtered_configurations
-               ) > 1 and not self.options.dangerWillRobinson:
-            logging.error(
-                "specify --dangerWillRobinson to cleanup > 1 config at a time")
-            return
+        if len(self.filtered_configurations) > 1 :
+            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
+                logging.error(
+                "specify --dangerWillRobinson=<number> of configs to cleanup  when cleaning more than one")
+                return
 
         queues_to_delete = []
         for f in self.filtered_configurations:
@@ -1828,11 +1828,13 @@ class sr_GlobalState:
             logging.error("No configuration matched")
             return
 
-        if len(self.filtered_configurations
-               ) > 1 and not self.options.dangerWillRobinson:
-            logging.error(
-                "specify --dangerWillRobinson to remove > 1 config at a time")
-            return
+        logging.error( f" configs matched: {len(self.filtered_configurations)} ")
+
+        if len(self.filtered_configurations) > 1 :
+            if len(self.filtered_configurations) != self.options.dangerWillRobinson:
+                logging.error(
+                    "specify --dangerWillRobinson=<n> of configs to remove when > 1 involved.")
+                return
 
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -2128,7 +2130,7 @@ class sr_GlobalState:
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
-                    print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
+                    print("Use --dangerWillRobinson=1 to force stop foreground instances with sr3 stop.")
                 return 0
             attempts += 1
 
@@ -2187,7 +2189,7 @@ class sr_GlobalState:
             print('All stopped after KILL')
             if len(fg_instances) > 0:
                 print(f"Foreground instances {fg_instances} are running and were not stopped.")
-                print("Use --dangerWillRobinson to force stop foreground instances with sr3 stop.")
+                print("Use --dangerWillRobinson=1 to force stop foreground instances with sr3 stop.")
             return 0
         else:
             print('not responding to SIGKILL:')
