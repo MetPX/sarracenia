@@ -118,15 +118,18 @@ intégrés:
         directory /monrépertoirelocal/${%Y%m%d_%Hh%m:%S.%f}/mydailies
         accept    .*observations.*
 
-        rename lala_${%Y%m%d%H%m%S.%f-1h}
+        rename lala_${%o-1h%Y%m%d%H%m%S.%f}
 
 Il est possible les substitution de date et heure, avec des décalage, dans le premier cas avec varTimeOffset,
 un décalage de 5 minutes dans le passé, dans le deuxième cas, c'est une heure dans le passé. 
 Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du *directory*
 en utilisant la notation *${..} * :
 
-* %...     - un patron tel qu'accepté par `datetime.strftime() <https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime>`_ avec l'ajout du décalage avec +- et une durée.
-  exemple:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.123479
+* %...     - un patron tel qu'accepté par `datetime.strftime() <https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime>`_ 
+
+    * avec l'ajout du décalage avec o+- et une durée.
+    * exemple:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.123479
+
 * SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
 * BD       - le répertoire de base.
 * BUP      - le composant du chemin de baseUrl (ou : baseUrlPath).

@@ -2137,35 +2137,38 @@ class Config:
             JJJ = whenStamp.strftime("%j")
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
-        while '${%' in new_dir:
-            offset_check = re.search( "\$\{\%.*([-+])(\d+)(\D)\}", new_dir )
-            if offset_check:
-                seconds = durationToSeconds(''.join(offset_check.group(2,3)), 's')
-                if offset_check.group(1) == '-':
-                     whenStamp = datetime.datetime.fromtimestamp( time.time()-seconds )
+        # strftime compatible patterns.
+        fragment_list=[]
+        for fragment in new_dir.split( '${%' ):
+            close_brace = fragment.find('}')
+            frag_start=0
+            seconds=self.varTimeOffset
+            if fragment[0] in ['+','-','o']:
+                end_of_offset=fragment.find('%')
+                if fragment[0] == 'o':
+                    s= 2 if fragment[1] in [ '-','+' ] else 1
                 else:
-                     whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
-                # remove offset from strftime pattern.
-                new_dir = re.sub(  r'\$\{\%(.*)[-+]\d+\D\}', '${%\\1}', new_dir ) 
-            else: # no units specified, seconds assumed (as per duration settings)
-                offset_check = re.search( "\$\{\%.*([-+])(\d+)\}", new_dir )
-                if offset_check:
-                        seconds = durationToSeconds(offset_check.group(2))
-                        if offset_check.group(1) == '-':
-                            whenStamp = datetime.datetime.fromtimestamp( time.time()-seconds )
-                        else:
-                            whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
-                        # remove offset from pattern.
-                        new_dir = re.sub(  r'\$\{\%(.*)[-+]\d+\}', '${%\\1}', new_dir ) 
+                    s= 1 if fragment[0] in [ '-','+' ] else 0
+                seconds = durationToSeconds(fragment[s:end_of_offset])
+                frag_start=end_of_offset+1
+                if '-' in fragment[0:2]: 
+                    seconds = -1 * seconds
 
-            new_dir = re.sub( "\$\{\%(.*)\}", "%\g<1>", new_dir )
-            new_dir = whenStamp.strftime(new_dir)
-
+            whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
+        
+            if close_brace > 0:
+                time_str=whenStamp.strftime( "%"+fragment[frag_start:close_brace] )
+                fragment_list.append(time_str)
+                fragment_list.append(fragment[close_brace+1:])
+            else:
+                fragment_list.append(fragment)
+        new_dir=''.join(fragment_list)
+        
         # Parsing cdir to subtract time from it in the following formats
         # time unit can be: sec/mins/hours/days/weeks
 
         # ${YYYY-[number][time_unit]}
-        offset_check = re.search(r'\$\{YYYY-(\d+)(\D)\}', cdir)
+        offset_check = re.search( r'\$\{YYYY-(\d+)(\D)\}', cdir)
         if offset_check:
             logger.info( f"offset 0: {offset_check.group(1,2)}" )
             seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
@@ -2173,10 +2176,10 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             YYYY1D = time.strftime("%Y", time.localtime(epoch))
-            new_dir = re.sub('\$\{YYYY-\d+\D\}', YYYY1D, new_dir)
+            new_dir = re.sub( r'\$\{YYYY-\d+\D\}', YYYY1D, new_dir)
 
         # ${MM-[number][time_unit]}
-        offset_check = re.search(r'\$\{MM-(\d+)(\D)\}', cdir)
+        offset_check = re.search( r'\$\{MM-(\d+)(\D)\}', cdir)
         if offset_check:
             logger.info( f"offset 1: {offset_check.group(1,2)}" )
             seconds = durationToSeconds(''.join(offset_check.group(1, 2)),
@@ -2184,7 +2187,7 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             MM1D = time.strftime("%m", time.localtime(epoch))
-            new_dir = re.sub('\$\{MM-\d+\D\}', MM1D, new_dir)
+            new_dir = re.sub( r'\$\{MM-\d+\D\}', MM1D, new_dir)
 
         # ${JJJ-[number][time_unit]}
         offset_check = re.search(r'\$\{JJJ-(\d+)(\D)\}', cdir)
@@ -2195,7 +2198,7 @@ class Config:
 
             epoch = time.mktime(time.gmtime()) - seconds
             JJJ1D = time.strftime("%j", time.localtime(epoch))
-            new_dir = re.sub('\$\{JJJ-\d+\D\}', JJJ1D, new_dir)
+            new_dir = re.sub( r'\$\{JJJ-\d+\D\}', JJJ1D, new_dir)
 
         # ${YYYYMMDD-[number][time_unit]}
         offset_check = re.search(r'\$\{YYYYMMDD-(\d+)(\D)\}', cdir)
@@ -2206,7 +2209,7 @@ class Config:
             epoch = time.mktime(time.gmtime()) - seconds
             YYYYMMDD = time.strftime("%Y%m%d", time.localtime(epoch))
             logger.info( f"seconds: {seconds} YYYYMMDD {YYYYMMDD}" )
-            new_dir = re.sub('\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
+            new_dir = re.sub( r'\$\{YYYYMMDD-\d+\D\}', YYYYMMDD, new_dir)
 
         new_dir = self._varsub(new_dir)
 
