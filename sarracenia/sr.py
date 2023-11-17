@@ -1828,8 +1828,6 @@ class sr_GlobalState:
             logging.error("No configuration matched")
             return
 
-        logging.error( f" configs matched: {len(self.filtered_configurations)} ")
-
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
                 logging.error(
