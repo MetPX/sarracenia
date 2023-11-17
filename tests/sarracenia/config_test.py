@@ -55,6 +55,5 @@ def test_variableExpansion():
      good = re.compile( options.post_baseDir + '/smorgasbord/[0-9]{8}/' )
      assert good.match(result)
 
-     assert False 
-     
-     
+     # to get stuff to print out, make it fail.
+     #assert False 
