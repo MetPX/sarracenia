@@ -2143,7 +2143,9 @@ class Config:
             close_brace = fragment.find('}')
             frag_start=0
             seconds=self.varTimeOffset
-            if fragment[0] in ['+','-','o']:
+
+            # only support %o time offsets at the beginning of the string.
+            if fragment[0] in ['+','-','o', '0', '1', '2', '3', '4', '5','6','7', '8',  '9' ]:
                 end_of_offset=fragment.find('%')
                 if fragment[0] == 'o':
                     s= 2 if fragment[1] in [ '-','+' ] else 1

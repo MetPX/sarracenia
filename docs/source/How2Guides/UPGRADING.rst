@@ -39,6 +39,14 @@ Installation Instructions
 git
 ---
 
+3.0.47
+------
+
+*CHANGE*: config option, strftime options, offset grammar changed:
+in v2 you had ${YYYYMMDD-70m}, in sr3 it should be ${%o-70m%Y%m%d}
+in 3.0.47, moved the time offset parsing to the beginning of the pattern.
+
+
 3.0.45
 ------
 
