@@ -121,8 +121,11 @@ In the rename option, the time to be substituted is one hour in the past.
 One can also specify variable substitutions to be performed on arguments to the directory
 option, with the use of *${..}* notation:
 
-* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string augmented by an offset duration suffix (- for in the past, + for in the future)
-  example:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+* %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ compatible date/time formatting string augmented by an offset duration prefix (- for in the past, + for in the future)
+
+  * example (complex date):  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+  * example (add offset):  ${%o-1h%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_16h36:34.014412 
+
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 
@@ -738,7 +741,7 @@ and in early use (when default was 1 week) brokers would often get overloaded wi
 long queues for left-over experiments.
 
 
-filename <keyword> (default:WHATFN)
+filename <keyword> (default:None)
 -----------------------------------
 
 From **metpx-sundew**, the support of this option give all sorts of possibilities

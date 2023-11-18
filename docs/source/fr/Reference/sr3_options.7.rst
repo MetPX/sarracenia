@@ -727,7 +727,7 @@ assigné au courtier, et dans les premières utilisations (lorsque le défaut é
 étaient souvent surchargés de très longues files d’attente pour les tests restants.
 
 
-filename <mots-clé> (défaut:WHATFN)
+filename <mots-clé> (défaut:None)
 -----------------------------------
 
 De **MetPX Sundew**, le support de cette option donne toutes sortes de possibilités
