@@ -93,7 +93,7 @@ default_options = {
     'documentRoot': None,
     'download': False,
     'dry_run': False,
-    'filename': 'WHATFN',
+    'filename': None,
     'flowMain': None,
     'inflight': None,
     'inline': False,
@@ -973,7 +973,7 @@ class Config:
             fn = arguments[1]
         else:
             fn = self.filename
-        if re.compile('DESTFNSCRIPT=.*').match(fn):
+        if fn and re.compile('DESTFNSCRIPT=.*').match(fn):
             script=fn[13:]
             self.destfn_scripts.append(script)
 
@@ -1622,6 +1622,8 @@ class Config:
 
             elif k in str_options:
                 v = ' '.join(line[1:])
+                if v == 'None':
+                    v=None
                 setattr(self, k, v)
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
