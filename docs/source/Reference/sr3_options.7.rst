@@ -124,9 +124,11 @@ option, with the use of *${..}* notation:
 * %...     - a `datetime.strftime() <https://docs.python.org/3/library/datetime.html#datetime.date.strftime>`_ 
 
   * compatible date/time formatting string augmented by an offset duration suffix (o- for in the past, o+ for in the future)
-  * example:  ${%o-1h%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+  * example (complex date):  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.014412 
+  * example (add offset):  ${%o-1h%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_16h36:34.014412 
 
 * time offset begin a strtime pattern with %o for an offset +-1(s/m/h/d/w) units.
+
 * SOURCE   - the amqp user that injected data (taken from the notification message.)
 * BD       - the base directory
 * BUP      - the path component of the baseUrl (or: baseUrlPath) 
@@ -742,7 +744,7 @@ and in early use (when default was 1 week) brokers would often get overloaded wi
 long queues for left-over experiments.
 
 
-filename <keyword> (default:WHATFN)
+filename <keyword> (default:None)
 -----------------------------------
 
 From **metpx-sundew**, the support of this option give all sorts of possibilities

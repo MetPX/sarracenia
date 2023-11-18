@@ -127,7 +127,7 @@ en utilisant la notation *${..} * :
 
 * %...     - un patron tel qu'accepté par `datetime.strftime() <https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime>`_ 
 
-    * avec l'ajout du décalage avec o+- et une durée.
+    * avec l'ajout du décalage au début avec o+- et une durée.
     * exemple:  ${%Y/%m/%d_%Hh%M:%S.%f} --> 2022/12/04_17h36:34.123479
 
 * SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d'annonce).
@@ -730,7 +730,7 @@ assigné au courtier, et dans les premières utilisations (lorsque le défaut é
 étaient souvent surchargés de très longues files d’attente pour les tests restants.
 
 
-filename <mots-clé> (défaut:WHATFN)
+filename <mots-clé> (défaut:None)
 -----------------------------------
 
 De **MetPX Sundew**, le support de cette option donne toutes sortes de possibilités

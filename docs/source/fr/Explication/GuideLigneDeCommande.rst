@@ -2477,7 +2477,7 @@ pour la livraison du produit. Le script reçoit une instance de la classe sender
 Le script prends le parent comme argument, et par exemple, une
 modification de **parent.msg.new_file** changera le nom du fichier écrit localement.
 
-filename <mots-clé> (défaut:WHATFN)
+filename <mots-clé> (défaut:None)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 De **MetPX Sundew**, le support de cette option donne toutes sortes de possibilités

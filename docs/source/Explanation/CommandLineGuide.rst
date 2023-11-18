@@ -300,7 +300,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'feeder': ParseResult(scheme='amqp', netloc='tfeed@localhost', path='/', params='', query='', fragment=''),
      'fileEvents': {'create', 'link', 'modify', 'delete', 'mkdir', 'rmdir' },
      'file_total_interval': '0',
-     'filename': 'WHATFN',
+     'filename': None,
      'fixed_headers': {},
      'flatten': '/',
      'hostdir': 'fractal',
