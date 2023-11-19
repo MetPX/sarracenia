@@ -1,6 +1,11 @@
 metpx-sr3 (3.00.47) UNRELEASED; urgency=medium
 
-  * increment away from previous release. 
+  * fixed #829 crash when :TIME: present in sundew pattern.
+  * began unit tests for config (file name interpretation as per #829)
+  * fixed #828 log.py/after_post printing wrong exchange 
+  * fixed #817 metrics file rotation (so they do not always grow)
+  * fixed #816 crash in API when metrics directory missing.
+  * fixed #808 poll start hang because exchanges missing.
 
  -- peter <peter@bsqt.homeip.net>  Mon, 06 Nov 2023 15:19:02 -0500
 
