@@ -1,8 +1,12 @@
-metpx-sr3 (3.00.47) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.47) unstable; urgency=medium
 
+  * fixed #834 change filename default from "WHATFN" to None
+  * fixed #833 directory option with multiple time codes, bad result.
+  * fixed #827 --dangerWillRobinson=25 match # of configs for destructive stuff.
   * fixed #829 crash when :TIME: present in sundew pattern.
   * began unit tests for config (file name interpretation as per #829)
   * fixed #828 log.py/after_post printing wrong exchange 
+  * fixed #825 sr3 disable crash.
   * fixed #817 metrics file rotation (so they do not always grow)
   * fixed #816 crash in API when metrics directory missing.
   * fixed #808 poll start hang because exchanges missing.
