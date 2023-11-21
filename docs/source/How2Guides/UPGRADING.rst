@@ -46,6 +46,10 @@ git
 in v2 you had ${YYYYMMDD-70m}, in sr3 it should be ${%o-70m%Y%m%d}
 in 3.0.47, moved the time offset parsing to the beginning of the pattern.
 
+*CHANGE*: default value of *filename* setting is now *None* instead of
+'WHATFN', which reduces compatibility with Sundew, but makes behaviour
+less surprising when not using/familiar with Sundew.
+
 
 3.0.45
 ------
