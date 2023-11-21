@@ -48,7 +48,9 @@ in 3.0.47, moved the time offset parsing to the beginning of the pattern.
 
 *CHANGE*: default value of *filename* setting is now *None* instead of
 'WHATFN', which reduces compatibility with Sundew, but makes behaviour
-less surprising when not using/familiar with Sundew.
+less surprising when not using/familiar with Sundew. This *None* setting
+is the same as used by v2, so it should improve compatibility with 
+sarracenia v2 configurations.
 
 
 3.0.45

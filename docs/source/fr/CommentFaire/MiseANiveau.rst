@@ -38,6 +38,29 @@ Instructions d’installation
 git
 ---
 
+3.0.47
+------
+
+*CHANGEMENT*: les options de substitution temporelles, qui reflète
+les options des routines *strftime* de python ont un élément rajouté:
+un décalage (anglais: Offset?) pour decaler le moment d´un étampe temporelle
+dans le temps.  en v2 on exprimait, par exemple:
+
+* ${YYYYMMDD-70m}
+
+Pour donner l´année, mois jour, il y 70 minutes dans le passé.
+En 3.0.47, on exprime cela avec:
+
+* %{%o-70m%Y%m%d}
+
+*CHANGEMENT*: le valeur de défaut pour l´option *filename* est maintenant
+*None*, au lieu de 'WHATFN'.  Ceci réduit la compatibilité avec Sundew
+mais l´augmente avec Sarra v2, et minimise l´étonnement de ceux qui ne
+connaissent pas Sundew (réduction de comportement inattendu)
+
+
+*CHANGEMENT*:
+
 3.0.45
 ------
 
