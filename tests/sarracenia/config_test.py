@@ -47,7 +47,9 @@ def test_variableExpansion():
      assert try_pattern(  options, message, "${PBD}/${BUPL}/${%Y%m%d}/",  options.post_baseDir + '/smorgasbord/[0-9]{8}/' )
      assert try_pattern(  options, message, "${PBD}/${%Y%m%d}/${SOURCE}/AIRNOW/CSV/BCMOE/${%H}/",  \
              options.post_baseDir + '/[0-9]{8}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
-     assert try_pattern(  options, message, "${PBD}/${%Y%m%d}/${SOURCE}/AIRNOW/CSV/BCMOE/${%o-4h%H}/",  \
+     assert try_pattern(  options, message, "/pub/DATASETS/NOAA/G02158/unmasked/${%Y}/${%m}_${%b}", \
+            "/pub/DATASETS/NOAA/G02158/unmasked/" + '/[0-9]{4}/[0-9]{2}_[A-Z]{1}[a-z]{2}' )
+     assert try_pattern(  options, message, "${PBD}/${%Y}/${SOURCE}/AIRNOW/CSV/BCMOE//",  \
              options.post_baseDir + '/[0-9]{8}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
 
 
