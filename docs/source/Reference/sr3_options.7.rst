@@ -1030,7 +1030,7 @@ logLevel ( default: info )
 
 The level of logging as expressed by python's logging. Possible values are :  critical, error, info, warning, debug.
 
-LogMetrics ( default: False )
+logMetrics ( default: False )
 -----------------------------
 
 Write metrics to a daily metrics file for statistics gathering. can be used to generate statistics.
