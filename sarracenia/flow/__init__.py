@@ -1694,17 +1694,13 @@ class Flow:
             u = sarracenia.baseUrlParse(msg['baseUrl']) 
             logger.debug( f"baseUrl.path= {u.path} ")
             if remote_path:
-                if u.path != '/' and remote_path:
-                    if remote_path[0] == '/':
-                        remote_path = u.path + remote_path
-                    else:
+                if u.path: 
+                    if ( u.path[-1] != '/' ) and ( remote_path[0] != '/' ) :
                         remote_path = u.path + '/' + remote_path
+                    else:
+                        remote_path = u.path + remote_path
 
-                # relPath does not contain a prefix / , add it for cdir
-                if remote_path[0] != '/':
-                    cdir = '/' + remote_path
-                else:
-                    cdir = remote_path
+                cdir = remote_path
             else:
                 if u.path:
                     cdir=u.path
