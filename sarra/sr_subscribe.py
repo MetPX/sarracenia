@@ -1322,6 +1322,10 @@ class sr_subscribe(sr_instances):
            if self.msg.isRetry: self.consumer.msg_worked()
            return True
 
+        if (self.msg.headers['sum'][0] in ['m', 'r']):
+           self.logger.info("skipping unimplemented mkdir and rmdir events")
+           return True
+
         #=================================
         # prepare download 
         # the post_base_dir should exists : it the starting point of the downloads

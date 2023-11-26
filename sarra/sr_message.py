@@ -283,7 +283,8 @@ class sr_message():
            self.topic     = msg.delivery_info['routing_key']
            self.topic     = self.topic.replace('%20',' ')
            self.topic     = self.topic.replace('%23','#')
-           sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z" }
+           sum_algo_v3tov2 = { "arbitrary":"a", "md5":"d", "sha512":"s", "md5name":"n", "random":"0", "link":"L", "remove":"R", "cod":"z", 
+                   "directory": "m" }
            if msg.body[0] == '[' :
                self.logger.debug("from_amqplib transitional v03" )
                self.pubtime, self.baseurl, self.relpath, self.headers = json.loads(msg.body)
@@ -320,6 +321,12 @@ class sr_message():
                        self.event = 'link'
                    elif sa == 'R':
                        self.event = 'delete'
+                   elif sa == 'm':
+                       if "remove" in self.headers["fileOp"]:
+                           sa="r"
+                           self.event='rmdir'
+                       else:
+                           self.event = 'mkdir'
                    else:
                        self.event = 'modify'
 
@@ -344,8 +351,15 @@ class sr_message():
                        self.event = 'link'
                        sa='L'
                    elif 'remove' in self.headers['fileOp']:
-                       self.event = 'delete'
-                       sa='R'
+                       if 'directory' in self.headers['fileOp']:
+                           self.event = 'rmdir'
+                           sa='r'
+                       else:
+                           self.event = 'delete'
+                           sa='R'
+                   elif 'directory' in self.headers['fileOp']:
+                       self.event = 'mkdir'
+                       sa='m'
                    elif 'rename' in self.headers['fileOp']:
                        self.headers['oldname'] = self.headers['fileOp']['rename']
                        self.event = 'modify'
