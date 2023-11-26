@@ -2807,10 +2807,15 @@ class sr_config:
 
         if flgs == self.lastflg : return
 
-        if flgs in [ '0', 'L', 'R' ]:
+        if flgs in [ '0', 'L', 'R'  ]:
            self.sumalgo = self.sumalgos['0']
            self.lastflg = flgs
            return
+
+        if flgs in [ 'm', 'r' ]:
+            self.sumalgo = flgs
+            self.lastflg = flgs
+            return  
 
         try   : 
                 self.sumalgo = self.sumalgos[flgs]
