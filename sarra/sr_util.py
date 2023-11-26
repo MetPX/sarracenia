@@ -414,6 +414,12 @@ class sr_transport():
         self.logger.debug("%s_transport download" % self.scheme)
 
         token       = msg.relpath.split('/')
+
+        if (self.scheme == 'sftp'):
+            baseurl_parsed = urllib.parse.urlparse( msg.baseurl )
+            if baseurl_parsed.path:
+                token = baseurl_parsed.path.split('/')[1:] + token
+
         cdir        = '/'.join(token[:-1])
         remote_file = token[-1]
         urlstr      = msg.baseurl + '/' + msg.relpath
