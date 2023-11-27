@@ -278,7 +278,8 @@ class AMQP(Moth):
                         auto_delete=self.o['auto_delete'],
                         nowait=False,
                         arguments=args)
-                    logger.info( f"queue declared {self.o['queueName']} (as: {broker_str}), (messages waiting: {msg_count})" )
+                    if not passive:
+                        logger.info( f"queue declared {self.o['queueName']} (as: {broker_str}), (messages waiting: {msg_count})" )
 
                 if hasattr(self,'metrics'):
                    self.metrics['brokerQueuedMessageCount'] = msg_count
