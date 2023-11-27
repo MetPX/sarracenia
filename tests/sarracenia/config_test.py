@@ -48,10 +48,15 @@ def test_variableExpansion():
      assert try_pattern(  options, message, "${PBD}/${%Y%m%d}/${SOURCE}/AIRNOW/CSV/BCMOE/${%H}/",  \
              options.post_baseDir + '/[0-9]{8}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
      assert try_pattern(  options, message, "/pub/DATASETS/NOAA/G02158/unmasked/${%Y}/${%m}_${%b}", \
-            "/pub/DATASETS/NOAA/G02158/unmasked/" + '/[0-9]{4}/[0-9]{2}_[A-Z]{1}[a-z]{2}' )
-     assert try_pattern(  options, message, "${PBD}/${%Y}/${SOURCE}/AIRNOW/CSV/BCMOE//",  \
-             options.post_baseDir + '/[0-9]{8}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
+            "/pub/DATASETS/NOAA/G02158/unmasked" + '/[0-9]{4}/[0-9]{2}_[A-Z]{1}[a-z]{2}' )
+     assert try_pattern(  options, message, "${PBD}/${%Y}/${SOURCE}/AIRNOW/CSV/BCMOE/${%H}/",  \
+             options.post_baseDir + '/[0-9]{4}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
 
+     options.post_baseDir = '/apps/sarra/public_data'
+     input_path='sftp://sarra@server//var/opt/CampbellSci/LoggerNet/data/WQL/WQL_final_storage_1.dat'
+     message['_matches'] = re.match( r'.*.data.(.*)/.*', input_path )
+     assert( try_pattern( options, message, "${PBD}/${YYYYMMDD}/${SOURCE}/loggernet/${0}/", 
+         "/apps/sarra/public_data/[0-9]{8}/WhereDataComesFrom/loggernet/WQL" ) )
 
      # to get stuff to print out, make it fail.
      #assert False 
