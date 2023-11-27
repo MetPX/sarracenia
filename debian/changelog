@@ -1,6 +1,7 @@
 metpx-sarracenia (2.23.11) UNRELEASED; urgency=medium
 
-  * 
+  * #639 take the root of paths from the baseUrl, for compatibility with sr3
+  * #639 add ability to ignore unimplemented mkdir and rmdir events without errors
 
  -- peter <peter@bsqt.homeip.net>  Fri, 24 Nov 2023 18:45:44 -0500
 
