@@ -772,6 +772,8 @@ class Config:
         self.displayFull = False
         self.dry_run = False
         self.env_declared = []  # list of variable that are "declared env"'d 
+        self.files = []
+        self.lineno = 0
         self.v2plugins = {}
         self.v2plugin_options = []
         self.imports = []
@@ -966,7 +968,7 @@ class Config:
         try:
             regex = re.compile(arguments[0])
         except:
-            logger.critical( f"invalid regular expression: {arguments[0]}, ignored." )
+            logger.critical( f"{self.files}{self.lineno} invalid regular expression: {arguments[0]}, ignored." )
             return None
 
         if len(arguments) > 1:
@@ -1035,7 +1037,7 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{self.files}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
@@ -1111,10 +1113,10 @@ class Config:
             elif type(v) is not str:
                 setattr(self, option, str(v))
         else:
-            logger.error('invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            logger.error( f'{self.files}{self.lineno} invalid kind: %s for option: %s, ignored' % ( kind, option ) )
             return
 
-        logger.debug('%s declared as type:%s value:%s' % (option, type(getattr(self,option)), v))
+        logger.debug( f'{self.files}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}' )
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -1230,7 +1232,6 @@ class Config:
                 self._override_field(k, self._varsub(oth[k]))
         else:
             for k in oth.__dict__.keys():
-                logger.error('k=%s, v=%s' % (k, getattr(oth, k)))
                 self._override_field(k, self._varsub(getattr(oth, k)))
 
     def _resolve_exchange(self):
@@ -1265,7 +1266,7 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( 'broker needed before subtopic' )
+                logger.error( '{self.files}{self.lineno} broker needed before subtopic' )
                 return
 
             if self.broker.url.scheme == 'amq' :
@@ -1411,9 +1412,14 @@ class Config:
             logger.debug( f'found {cfgfilepath}')
 
         lineno=0
+        self.files.append(cfgfilepath)
+
         for l in open(cfgfilepath, "r").readlines():
             l = l.strip()
             lineno+=1
+            if self.lineno > 0:
+                saved_lineno = self.lineno
+            self.lineno = lineno
             line = l.split()
 
             #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
@@ -1476,7 +1482,7 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error('%s:%d %s missing argument(s) ' % ( cfname, lineno, k ) )
+                logger.error( f'{self.files} {lineno} {k} missing argument(s) ' )
                 continue
             if k in ['accept', 'reject' ]:
                 self.masks.append(self._build_mask(k, line[1:]))
@@ -1502,7 +1508,7 @@ class Config:
                 try:
                     self.parse_file(v)
                 except Exception as ex:
-                    logger.error('file %s failed to parse:  %s' % (v, ex))
+                    logger.error( f'{self.files}:{self.lineno} file {v} failed to parse:  {ex}' )
                     logger.debug('Exception details: ', exc_info=True)
             elif k in ['subtopic']:
                 self._parse_binding(v)
@@ -1576,12 +1582,12 @@ class Config:
                 try:
                     setattr(self, k, float(v))
                 except (ValueError, TypeError) as e:
-                    logger.error(f'Ignored "{i}": {e}')
+                    logger.error(f'{self.files}:{self.lineno} Ignored "{i}": {e}')
             elif k in perm_options:
                 if v.isdigit():
                     setattr(self, k, octal_number(int(v, base=8)))
                 else:
-                    logger.error('%s setting to %s ignored: only numberic modes supported' % ( k, v ) )
+                    logger.error( f'{self.files}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
             elif k in size_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in count_options:
@@ -1618,7 +1624,7 @@ class Config:
                 if k in set_choices :
                     for i in getattr(self,k):
                         if i not in set_choices[k]:
-                            logger.error('invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
+                            logger.error('{self.files}:{lineno} invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
 
             elif k in str_options:
                 v = ' '.join(line[1:])
@@ -1628,7 +1634,7 @@ class Config:
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
                 if k not in self.undeclared:
-                    logger.debug('possibly undeclared option: %s' % line )
+                    logger.debug('{self.files} {self.lineno} possibly undeclared option: %s' % line )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
@@ -1646,7 +1652,9 @@ class Config:
                 else:
                     # FIXME:
                     setattr(self, k, v)
-                    self.undeclared.append(k)
+                    self.undeclared.append( (cfname, lineno, k) )
+        self.files.pop()
+        self.lineno = saved_lineno
 
     def finalize(self, component=None, config=None):
         """ 
@@ -1945,9 +1953,9 @@ class Config:
 
         alloptions = str_options + flag_options + float_options + list_options + set_options + count_options + size_options + duration_options
         # FIXME: confused about this...  commenting out for now...
-        for u in self.undeclared:
+        for f,l,u in self.undeclared:
             if u not in alloptions:
-                logger.error("undeclared option: %s" % u)
+                logger.error( f"{f}:{l} undeclared option: {u}")
 
         no_defaults=set()
         for u in alloptions:
