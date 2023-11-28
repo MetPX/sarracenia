@@ -1683,6 +1683,31 @@ On peut désactiver la liaison de fil d’attente comme cela::
 
 (False, ou off marchera aussi.)
 
+sundew_compat_regex_first_match_is_zero (default: Faux)
+------------------------------------------------------
+
+
+Lors de la numérotation des groupes dans les modèles de correspondance, les groupes Sundew commencent à 0.
+Les expressions régulières Python utilisent le groupe zéro pour représenter la chaîne entière et chaque correspondance
+le groupe commence à 1. Il est considéré comme moins surprenant de se conformer aux conventions Python,
+mais le faire unilatéralement romprait la compatibilité. Voici donc un switch à utiliser
+lors du pontage entre Sundew, sarra v2 et sr3. Finalement, cela devrait toujours être désactivé.
+Exemples:
+
+* sundew_compat_regex_first_match_is_zero: True
+* url du message:  https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml
+* argument *accept*: .*/WXO-DD/meteocode/(atl|ont|pnr|pyr|que)/.*/TRANSMIT\.FP([A-Z][A-Z]).*([0-2][0-9][0-6][0-9]Z).*
+* *directory* corréspondant: /tmp/meteocode/${2}/${0}/${1}
+* répertoire évalué:  /tmp/meteocode/1000Z/que/CN
+
+Pour obtenir le même résultat lorsque le option est faux:
+
+* sundew_compat_regex_first_match_is_zero: False
+* *directory* corréspondant: /tmp/meteocode/${3}/${1}/${2}
+
+Le monde qui fouille sur les ressources sur les expressions régulière de python
+seront moins surpris par cette dernière convention.
+
 
 timeCopy (défaut: on)
 ---------------------
