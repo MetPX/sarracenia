@@ -2624,6 +2624,8 @@ class sr_GlobalState:
                     elif ( k == 'acceptUnmatched' ):
                             acceptUnmatched_explicit=line[1]
                             continue
+                    elif ( k == 'post_baseUrl' ) and line[1][-1] != '/':
+                            line[1]+='/'
 
                     if k in convert_to_v3:
                         if len(line) > 1:

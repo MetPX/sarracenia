@@ -987,7 +987,7 @@ class Flow:
 
             url = self.o.variableExpansion(m['baseUrl'], m)
             if (m['baseUrl'][-1] == '/') or (len(m['relPath']) > 0 and (m['relPath'][0] == '/')):
-                if (m['baseUrl'][-1] == '/') and (m['relPath'][0] == '/'):
+                if (m['baseUrl'][-1] == '/') and (len(m['relPath'])>0) and (m['relPath'][0] == '/'):
                     url += m['relPath'][1:]
                 else:
                     url += m['relPath']
