@@ -117,6 +117,7 @@ default_options = {
     'report': False,
     'retryEmptyBeforeExit': False,
     'sanity_log_dead': 9999,
+    'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
@@ -135,8 +136,8 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
-    'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sourceFromExchange', \
-    'statehost', 'users', 'v2compatRenameDoublePost'
+    'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero' \
+    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
@@ -305,6 +306,8 @@ convert_patterns_to_v3 = {
    '${JJJ': '${%j',
    '${HH': '${%H',
    '${DD': '${%d',
+   '${MM': '${%m',
+   '${SS': '${%S',
 
 }
 
@@ -2139,34 +2142,36 @@ class Config:
             JJJ = whenStamp.strftime("%j")
             new_dir = new_dir.replace('${JJJ}', JJJ)
 
+
         # strftime compatible patterns.
-        fragment_list=[]
-        for fragment in new_dir.split( '${%' ):
-            close_brace = fragment.find('}')
-            frag_start=0
-            seconds=self.varTimeOffset
+        if len(new_dir.split( '${%' )) > 1:
+            fragment_list=[]
+            for fragment in new_dir.split( '${%' ):
+                close_brace = fragment.find('}')
+                frag_start=0
+                seconds=self.varTimeOffset
 
-            # only support %o time offsets at the beginning of the string.
-            if fragment[0] in ['+','-','o', '0', '1', '2', '3', '4', '5','6','7', '8',  '9' ]:
-                end_of_offset=fragment.find('%')
-                if fragment[0] == 'o':
-                    s= 2 if fragment[1] in [ '-','+' ] else 1
-                else:
-                    s= 1 if fragment[0] in [ '-','+' ] else 0
-                seconds = durationToSeconds(fragment[s:end_of_offset])
-                frag_start=end_of_offset+1
-                if '-' in fragment[0:2]: 
-                    seconds = -1 * seconds
+                # only support %o time offsets at the beginning of the string.
+                if fragment[0] in [ '+', '-', 'o'  ]:
+                    end_of_offset=fragment.find('%')
+                    if fragment[0] == 'o':
+                        s= 2 if fragment[1] in [ '-','+' ] else 1
+                    else:
+                        s= 1 if fragment[0] in [ '-','+' ] else 0
+                    seconds = durationToSeconds(fragment[s:end_of_offset])
+                    frag_start=end_of_offset+1
+                    if '-' in fragment[0:2]: 
+                        seconds = -1 * seconds
 
-            whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
+                whenStamp = datetime.datetime.fromtimestamp( time.time()+seconds )
         
-            if close_brace > 0:
-                time_str=whenStamp.strftime( "%"+fragment[frag_start:close_brace] )
-                fragment_list.append(time_str)
-                fragment_list.append(fragment[close_brace+1:])
-            else:
-                fragment_list.append(fragment)
-        new_dir=''.join(fragment_list)
+                if close_brace > 0:
+                    time_str=whenStamp.strftime( "%"+fragment[frag_start:close_brace] )
+                    fragment_list.append(time_str)
+                    fragment_list.append(fragment[close_brace+1:])
+                else:
+                    fragment_list.append(fragment)
+            new_dir=''.join(fragment_list)
         
         # Parsing cdir to subtract time from it in the following formats
         # time unit can be: sec/mins/hours/days/weeks
@@ -2217,7 +2222,38 @@ class Config:
 
         new_dir = self._varsub(new_dir)
 
+        # substitute positional fields from the regex accept (0,1,2,3...)
+        if '_matches' in message and len(new_dir.split( '${' )) > 1:
+            fragment_list=[]
+            for fragment in new_dir.split( '${' ):
+                close_brace = fragment.find('}')
+                frag_start=0
+                if close_brace < 0 :
+                    fragment_list.append(fragment)
+                    continue
+
+                match_field=fragment[0:close_brace]
+                matches= re.search( r'^[0-9]+$', match_field)
+                # non-numeric thing... variable or something.
+                if not matches:
+                    fragment_list.append(fragment)
+                    continue
+                field=int(match_field)
+                if self.sundew_compat_regex_first_match_is_zero:
+                    field +=1
+                if len(message['_matches'].groups()) >= field:
+                    fragment_list.append(message['_matches'].group(field))
+                    fragment_list.append(fragment[close_brace+1:])
+                else:
+                    logger.error( f"only {len(message['_matches'].groups())} groups in regex, group number too high: ${{{fragment}" )
+                    fragment_list.append('${' +fragment)
+
+            new_dir=''.join(fragment_list)
+
+            del message['_matches']
+            message['_deleteOnPost'] -= set(['_matches'])
         return new_dir
+
 
 
     """
