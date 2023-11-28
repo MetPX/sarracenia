@@ -1713,6 +1713,30 @@ One can turn off queue binding as follows::
 
 (False, or off will also work.)
 
+sundew_compat_regex_first_match_is_zero (default: off)
+------------------------------------------------------
+
+When numbering groups in match patterns, Sundew groups start from 0.
+Python regular expressions use the zeroth group to represent the entire string, and each match
+group starts from 1. It is considered less surprising to conform to Python conventions,
+but doing so unilaterally would break compatbility.  So here is a switch to use
+when bridging between Sundew, sarra v2 and sr3.  Eventually, this should always be off.
+Examples:
+
+* sundew_compat_regex_first_match_is_zero: True
+* input url:  https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml
+* accept pattern: .*/WXO-DD/meteocode/(atl|ont|pnr|pyr|que)/.*/TRANSMIT\.FP([A-Z][A-Z]).*([0-2][0-9][0-6][0-9]Z).*
+* directory setting: /tmp/meteocode/${2}/${0}/${1}
+* resulting directory:  /tmp/meteocode/1000Z/que/CN
+
+in contrast, to get the same result:
+
+* sundew_compat_regex_first_match_is_zero: False
+* directory setting: /tmp/meteocode/${3}/${1}/${2}
+* to get the same result.
+
+folks who research python re will normally produce the latter version first.
+
 
 timeCopy (default: on)
 ----------------------
