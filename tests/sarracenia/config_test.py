@@ -77,6 +77,9 @@ def test_variableExpansion():
 
      assert( try_pattern( options, message, '/tmp/meteocode/${2}/${0}/${1}' , r'/tmp/meteocode/1000Z/que/CN' ))
 
+     options.sundew_compat_regex_first_match_is_zero = False
+     assert( try_pattern( options, message, '/tmp/meteocode/${3}/${1}/${2}' , r'/tmp/meteocode/1000Z/que/CN' ))
+
 
 
      # to get stuff to print out, make it fail.
