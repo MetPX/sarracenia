@@ -2250,8 +2250,8 @@ class Config:
 
             new_dir=''.join(fragment_list)
 
-            del message['_matches']
-            message['_deleteOnPost'] -= set(['_matches'])
+            #del message['_matches']
+            #message['_deleteOnPost'] -= set(['_matches'])
         return new_dir
 
 
