@@ -1266,7 +1266,7 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f'{self.files}{self.lineno} broker needed before subtopic' )
+                logger.error( f'{self.files}:{self.lineno} broker needed before subtopic' )
                 return
 
             if self.broker.url.scheme == 'amq' :
@@ -1482,7 +1482,7 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error( f'{self.files} {lineno} {k} missing argument(s) ' )
+                logger.error( f'{self.files}:{lineno} {k} missing argument(s) ' )
                 continue
             if k in ['accept', 'reject' ]:
                 self.masks.append(self._build_mask(k, line[1:]))
@@ -1624,7 +1624,7 @@ class Config:
                 if k in set_choices :
                     for i in getattr(self,k):
                         if i not in set_choices[k]:
-                            logger.error('{self.files}:{lineno} invalid entry for %s:  %s. Must be one of: %s' % ( k, i, set_choices[k] ) )
+                            logger.error( f'{self.files}:{lineno} invalid entry for {k}:  {i}. Must be one of: {set_choices[k]}' )
 
             elif k in str_options:
                 v = ' '.join(line[1:])
@@ -1634,7 +1634,7 @@ class Config:
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
                 if k not in self.undeclared:
-                    logger.debug('{self.files} {self.lineno} possibly undeclared option: %s' % line )
+                    logger.debug( f'{self.files}:{self.lineno} possibly undeclared option: {line}' )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
@@ -1867,7 +1867,7 @@ class Config:
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 queueName += '.' + str(randint(0, 100000000)).zfill(8)
                 self.queueName = queueName
-                logger.debug('default guessed queueName  %s ' % self.queueName )
+                logger.debug( f'default guessed queueName  {self.queueName} ' )
 
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
@@ -1938,9 +1938,7 @@ class Config:
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info(
-                    'overriding batch for consistency with messageCountMax: %d'
-                    % self.batch)
+                logger.info( 'overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
