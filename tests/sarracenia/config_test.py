@@ -52,11 +52,32 @@ def test_variableExpansion():
      assert try_pattern(  options, message, "${PBD}/${%Y}/${SOURCE}/AIRNOW/CSV/BCMOE/${%H}/",  \
              options.post_baseDir + '/[0-9]{4}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
 
+     options.sundew_compat_regex_first_match_is_zero = True
      options.post_baseDir = '/apps/sarra/public_data'
      input_path='sftp://sarra@server//var/opt/CampbellSci/LoggerNet/data/WQL/WQL_final_storage_1.dat'
-     message['_matches'] = re.match( r'.*.data.(.*)/.*', input_path )
+     accept_regex= r'.*.data.(.*)/.*'
+     logger.info( f"path matched: {input_path} against: {accept_regex}" )
+     message['_matches'] = re.match( accept_regex, input_path )
      assert( try_pattern( options, message, "${PBD}/${YYYYMMDD}/${SOURCE}/loggernet/${0}/", 
          "/apps/sarra/public_data/[0-9]{8}/WhereDataComesFrom/loggernet/WQL" ) )
+
+     logger.info( "Next is an error message generated because the fourth group does not exist. Expected result is that the ${4} is not replaced." )
+     options.sundew_compat_regex_first_match_is_zero = False
+     message['_matches'] = re.match( r'.*.data.(.*)/.*_([0-9])\.', input_path )
+     assert( try_pattern( options, message, "${PBD}/${YYYYMMDD}/${SOURCE}/loggernet/${1}${4}",
+         r"/apps/sarra/public_data/[0-9]{8}/WhereDataComesFrom/loggernet/WQL\$\{4\}" ) )
+
+     
+     options.sundew_compat_regex_first_match_is_zero = True
+     input_path= r'https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml'
+     accept_regex= r'.*/WXO-DD/meteocode/(atl|ont|pnr|pyr|que)/.*/TRANSMIT\.FP([A-Z][A-Z]).*([0-2][0-9][0-6][0-9]Z).*'
+     logger.info( f"path matched: {input_path} against: {accept_regex}" )
+     message['_matches'] = re.match( accept_regex, input_path )
+     print( f" matched: {message['_matches']} ")
+
+     assert( try_pattern( options, message, '/tmp/meteocode/${2}/${0}/${1}' , r'/tmp/meteocode/1000Z/que/CN' ))
+
+
 
      # to get stuff to print out, make it fail.
      #assert False 
