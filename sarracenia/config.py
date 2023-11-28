@@ -1266,7 +1266,7 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( '{self.files}{self.lineno} broker needed before subtopic' )
+                logger.error( f'{self.files}{self.lineno} broker needed before subtopic' )
                 return
 
             if self.broker.url.scheme == 'amq' :
