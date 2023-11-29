@@ -2101,7 +2101,6 @@ class sr_GlobalState:
                         "pid: %s-%s does not match any configured instance, sending it TERM"
                         % (pid, self.procs[pid]['cmdline'][0:5]))
                     signal_pid(pid, signal.SIGTERM)
-
             ttw = 1 << attempts
             print(
                 'Waiting %d sec. to check if %d processes stopped (try: %d)' %
@@ -2133,7 +2132,7 @@ class sr_GlobalState:
             attempts += 1
 
         print('doing SIGKILL this time')
-
+        
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in p['name']:
@@ -2193,7 +2192,7 @@ class sr_GlobalState:
             print('not responding to SIGKILL:')
             for p in self.procs:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
-                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)):
+                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)): 
                     print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
@@ -2571,7 +2570,9 @@ class sr_GlobalState:
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
         acceptUnmatched_explicit=False
+        pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
+            v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
@@ -2615,7 +2616,7 @@ class sr_GlobalState:
                         else:
                             logger.error( f"unknown checksum spec: {line}")
                             continue
-
+               
                     if (k == 'accept') :
                         if line[1] == '.*':
                             accept_all_seen=True
@@ -2657,6 +2658,9 @@ class sr_GlobalState:
                             while p in line[1]:
                                line[1] = line[1].replace(p,convert_patterns_to_v3[p])
 
+                    if not pos_args_present and re.search( r'\${[0-9]}', ' '.join(line[1:]) ):
+                         pos_args_present=True
+                         v3_cfg.write('sundew_compat_regex_first_match_is_zero True\n')
                     v3_cfg.write(' '.join(line)+'\n')
                 if accept_all_seen:
                     pass
@@ -2666,7 +2670,7 @@ class sr_GlobalState:
                 elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
-        logging.info('wrote conversion from v2 %s to sr3 ' % cfg)
+        logging.info( f'wrote conversion from v2 {cfg} to sr3' )
 
 
     def overview(self):
