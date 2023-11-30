@@ -49,7 +49,7 @@ class Airnow(FlowCB):
                 logger.info(last_poll)
 
                 fakeStat = paramiko.SFTPAttributes()
-                fakeStat.st_size = resp.headers['content-length']
+                fakeStat.st_size = int(resp.headers['content-length'])
 
                 # convert datetime to numeric timestamp from beginning of POSIX epoch.
                 fakeStat.st_mtime = mtime.timestamp()
