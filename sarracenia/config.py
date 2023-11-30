@@ -2061,7 +2061,7 @@ class Config:
 
         return defval
 
-    def variableExpansion(self, cdir, message=None ):
+    def variableExpansion(self, cdir, message=None ) -> str:
         """
             replace substitution patterns, variable substitutions as described in
             https://metpx.github.io/sarracenia/Reference/sr3_options.7.html#variables
