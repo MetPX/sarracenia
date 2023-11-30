@@ -2438,8 +2438,8 @@ class sr_GlobalState:
                         txCumulativeFileRate += transferTxFileRate
                         txCumulativeDataRate += transferTxByteRate
                         
-                        rxCumulativeMessageByteRate += msgRate
-                        rxCumulativeMessageRate +=  byteRate
+                        rxCumulativeMessageByteRate += byteRate 
+                        rxCumulativeMessageRate +=  msgRate
                         
 
 
@@ -2537,9 +2537,9 @@ class sr_GlobalState:
 
         print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
                 naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
-                naturalSize(rxCumulativeMessageRate),\
+                naturalSize(rxCumulativeMessageByteRate),\
                 naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
-                naturalSize(txCumulativeMessageRate),
+                naturalSize(txCumulativeMessageByteRate),
                 rxCumulativeMessagesQueued, rxCumulativeMessagesRetry, CumulativeMeanLag
             ))
         print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
