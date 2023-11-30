@@ -163,6 +163,7 @@ class Wiski(Scheduled):
         then = now - self.ts_length
 
         logger.info( f"stations: {k.get_station_list().station_id} " )
+        directory=self.o.variableExpansion( self.o.directory )
 
         for station_id in k.get_station_list().station_id:
 
