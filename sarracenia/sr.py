@@ -69,15 +69,20 @@ def ageOfFile(lf) -> int:
     st=os.stat(lf)
     return st.st_mtime
 
-def signal_pid( pid, sig ):
+def signal_pid( pid, sig ) -> int:
     """
         wrap os.kill in a try/except for cleaner error messages and avoid control jumping somewhere
         unexpected.
     """
     try:
        os.kill(pid, sig)
+       return 0
+    except ProcessLookupError:
+        return -2
+
     except Exception as ex:
        logger.warning('sending kill signal to pid:%s failed: %s' % ( pid, ex))
+       return -1
 
 # noinspection PyArgumentList
 class sr_GlobalState:
@@ -2053,11 +2058,13 @@ class sr_GlobalState:
         fg_instances = set()
         # kill sr_audit first, so it does not restart while others shutting down.
         # https://github.com/MetPX/sarracenia/issues/210
+        pids_signalled=set([])
 
         if ('audit' in self.filtered_configurations) and self.auditors > 0:
             for p in self.procs:
                 if 'audit' in self.procs[p]['name']:
                     signal_pid(p, signal.SIGTERM)
+                    pids_signalled |= set([p])
                     print('.', end='', flush=True)
                     pcount += 1
 
@@ -2075,12 +2082,13 @@ class sr_GlobalState:
                 for i in self.states[c][cfg]['instance_pids']:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
-                    if self.states[c][cfg]['instance_pids'][i] in self.procs:
+                    p=self.states[c][cfg]['instance_pids'][i]
+                    if p in self.procs:
                         if self.options.dry_run:
-                            print( f"kill -TERM {self.states[c][cfg]['instance_pids'][i]} # {c}/{cfg}[{i}] " )
+                            print( f"kill -TERM {p} # {c}/{cfg}[{i}] " )
                         else:
-                            signal_pid(self.states[c][cfg]['instance_pids'][i],
-                                signal.SIGTERM)
+                            signal_pid( p, signal.SIGTERM )
+                            pids_signalled |= set([p])
                             print('.', end='', flush=True)
                         pcount += 1
 
@@ -2101,10 +2109,11 @@ class sr_GlobalState:
                         "pid: %s-%s does not match any configured instance, sending it TERM"
                         % (pid, self.procs[pid]['cmdline'][0:5]))
                     signal_pid(pid, signal.SIGTERM)
+                    pids_signalled |= set([pid])
             ttw = 1 << attempts
             print(
                 'Waiting %d sec. to check if %d processes stopped (try: %d)' %
-                (ttw, len(self.procs), attempts))
+                (ttw, len(pids_signalled), attempts))
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2137,6 +2146,7 @@ class sr_GlobalState:
             for p in self.procs:
                 if 'audit' in p['name']:
                     signal_pid(p, signal.SIGKILL)
+                    pids_signalled |= set([p])
 
         for f in self.filtered_configurations:
             if f == 'audit': continue
@@ -2148,18 +2158,19 @@ class sr_GlobalState:
             if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
-                        print("signal_pid( %s, SIGKILL )" %
-                              self.states[c][cfg]['instance_pids'][i])
-                        signal_pid(self.states[c][cfg]['instance_pids'][i],
-                                signal.SIGKILL)
+                        p=self.states[c][cfg]['instance_pids'][i]
+                        print( f"signal_pid( {p}, SIGKILL )")
+                        signal_pid(p, signal.SIGKILL)
+                        pids_signalled |= set([p])
                         print('.', end='')
 
         for pid in self.procs:
             if not self.procs[pid]['claimed']:
                 print(
-                    "pid: %s-%s does not match any configured instance, would kill"
+                    "pid: %s-%s does not match any configured instance, killing"
                     % (pid, self.procs[pid]['cmdline']))
                 signal_pid(pid, signal.SIGKILL)
+                pids_signalled |= set([pid])
 
         print('Done')
         print('Waiting again...')
@@ -2192,7 +2203,7 @@ class sr_GlobalState:
             print('not responding to SIGKILL:')
             for p in self.procs:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
-                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)): 
+                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)) and p in pids_signalled: 
                     print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
             return 1
 
