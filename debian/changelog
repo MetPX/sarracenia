@@ -1,8 +1,12 @@
-metpx-sr3 (3.00.48) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.48) unstable; urgency=medium
 
-  * 
+  * fix #846 bad messages when stopping subsets.
+  * fix #843 adding file name and line number to config parsing messages.
+  * fix #841 v2 compat: adds / to end of baseUrl when converting
+  * fix #839 v2 compat: parsing positional parameters broken.
+  * fix #639 sftp relative URL parsing issue
 
- -- peter <peter@bsqt.homeip.net>  Mon, 20 Nov 2023 22:24:27 -0500
+ -- peter <peter@bsqt.homeip.net>  Mon, 30 Nov 2023 12:27:27 -0500
 
 metpx-sr3 (3.00.47) unstable; urgency=medium
 
