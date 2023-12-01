@@ -2578,6 +2578,10 @@ class sr_GlobalState:
         if not os.path.isdir(base_v3 + component):
             os.makedirs(base_v3 + component)
 
+        if os.path.exists(v3_config_path):
+            logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
+            return
+
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
         acceptUnmatched_explicit=False
