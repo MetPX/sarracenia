@@ -1163,7 +1163,7 @@ nodupe_fileAgeMin
 -----------------
 
 If files are newer than this setting (default: 0), then ignore them, they are too
-old to post. 0 deactivates the setting.
+new to post. 0 deactivates the setting.
 
 nodupe_ttl <off|on|999[smhdw]> 
 ------------------------------
