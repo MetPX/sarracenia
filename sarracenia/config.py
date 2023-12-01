@@ -2229,7 +2229,7 @@ class Config:
         new_dir = self._varsub(new_dir)
 
         # substitute positional fields from the regex accept (0,1,2,3...)
-        if '_matches' in message and len(new_dir.split( '${' )) > 1:
+        if message and '_matches' in message and len(new_dir.split( '${' )) > 1:
             fragment_list=[]
             for fragment in new_dir.split( '${' ):
                 close_brace = fragment.find('}')
