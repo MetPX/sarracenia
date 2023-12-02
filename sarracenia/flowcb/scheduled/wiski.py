@@ -162,8 +162,10 @@ class Wiski(Scheduled):
         now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         then = now - self.ts_length
 
-        logger.info( f"stations: {k.get_station_list().station_id} " )
+        logger.info( f"stations: {k.get_station_list().station_id}" )
         directory=self.o.variableExpansion( self.o.directory )
+        logger.info( f"current directory: {directory}" )
+        os.makedirs(directory, self.o.permDirDefault, True)
 
         for station_id in k.get_station_list().station_id:
 
@@ -177,10 +179,10 @@ class Wiski(Scheduled):
             for ts_id in timeseries:
                 # writing files on windows is quite painful, so many illegal characters.
                 if sys.platform.startswith( "win" ):
-                    fname = f"{self.o.directory}{os.sep}ts_{ts_id}_{station_id}__{str(now).replace(' ','T')}.csv" 
+                    fname = f"{directory}{os.sep}ts_{ts_id}_{station_id}__{str(now).replace(' ','T')}.csv" 
                     fname = fname[0:3]+fname[3:].replace(':','_').replace('.','_',1).replace('+','_').replace('-','_')
                 else:
-                    fname = f"{self.o.directory}{os.sep}ts_{ts_id}_{station_id}_{str(then).replace(' ','T')}_{str(now).replace(' ','T')}.csv" 
+                    fname = f"{directory}{os.sep}ts_{ts_id}_{station_id}_{str(then).replace(' ','T')}_{str(now).replace(' ','T')}.csv" 
     
                 logger.info( f"Timeseries {ts_id} for station_id {station_id} to be written to: {fname}" )
                 f=open(fname,'w')
@@ -208,7 +210,7 @@ if __name__ == '__main__':
     if sys.platform.startswith( "win" ):
         flow.o.directory = "C:\\temp\wiski"
     else:
-        flow.o.directory = "/tmp/wiski"
+        flow.o.directory = "/tmp/wiski/${%Y%m%d}"
     logging.basicConfig(level=logging.DEBUG)
 
     me = Wiski(flow.o)
