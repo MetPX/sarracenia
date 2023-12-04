@@ -80,6 +80,9 @@ def test_variableExpansion():
      options.sundew_compat_regex_first_match_is_zero = False
      assert( try_pattern( options, message, '/tmp/meteocode/${3}/${1}/${2}' , r'/tmp/meteocode/1000Z/que/CN' ))
 
+     options.sundew_compat_regex_first_match_is_zero = True
+     assert( try_pattern( options, None, '${PBD}/${%Y%m%d}' , r'/apps/sarra/public_data/[0-9]{8}' ))
+
 
 
      # to get stuff to print out, make it fail.
