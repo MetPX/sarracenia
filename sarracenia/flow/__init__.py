@@ -977,13 +977,15 @@ class Flow:
                 oldname_matched = False
                 for mask in self.o.masks:
                     pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-                    matches = mask_regexp.match(urlToMatch)
-                    if (pattern == '.*') or matches:
-                        if matches:
-                            m[ '_matches'] = matches
-                            m['_deleteOnPost'] |= set(['_matches'])
+                    if (pattern == '.*'):
                         oldname_matched = accepting
                         break
+                    matches = mask_regexp.match(urlToMatch)
+                    if matches:
+                            m[ '_matches'] = matches
+                            m['_deleteOnPost'] |= set(['_matches'])
+                    oldname_matched = accepting
+                    break
 
             url = self.o.variableExpansion(m['baseUrl'], m)
             if (m['baseUrl'][-1] == '/') or (len(m['relPath']) > 0 and (m['relPath'][0] == '/')):
@@ -1004,12 +1006,13 @@ class Flow:
             matched = False
             for mask in self.o.masks:
                 pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-                matches = mask_regexp.match(urlToMatch)
-                if (pattern == '.*') or matches:
+                if (pattern != '.*') :
+                    matches = mask_regexp.match(urlToMatch)
                     if matches:
                         m[ '_matches'] = matches
                         m['_deleteOnPost'] |= set(['_matches'])
 
+                if (pattern == '.*') or matches:
                     matched = True
                     if not accepting:
                         if 'fileOp' in m and 'rename' in m['fileOp'] and oldname_matched:
