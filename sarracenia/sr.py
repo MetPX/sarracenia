@@ -236,7 +236,7 @@ class sr_GlobalState:
             return
 
         if list(filter(p['name'].startswith, sr3_tools_entry_points)) != []:
-            print( f"skipping sr3_tools process: {p['name']}" )
+            #print( f"skipping sr3_tools process: {p['name']}" )
             return
 
         #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
