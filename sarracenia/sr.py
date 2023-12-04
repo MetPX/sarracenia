@@ -62,6 +62,8 @@ empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
         }
 
+sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
+
 def ageOfFile(lf) -> int:
     """ return number of seconds since a file was modified as a floating point number of seconds.
         FIXME: mocked here for now. 
@@ -231,6 +233,10 @@ class sr_GlobalState:
             p['name'] = n
         
         if p['name'][0:2] != 'sr' :
+            return
+
+        if list(filter(p['name'].startswith, sr3_tools_entry_points)) != []:
+            print( f"skipping sr3_tools process: {p['name']}" )
             return
 
         #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
