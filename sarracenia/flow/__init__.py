@@ -1088,6 +1088,14 @@ class Flow:
                      (len(self.worklist.ok), self._stop_requested))
 
     def post(self) -> None:
+
+        # work-around for python3.5 not being able to copy re.match issue: 
+        # https://github.com/MetPX/sarracenia/issues/857 
+        if sys.version_info.major == 3 and sys.version_info.minora <= 6:
+            for m in self.worklist.ok:
+                if '_matches' in m:
+                    del m['_matches']
+
         for p in self.plugins["post"]:
             try:
                 p(self.worklist)
