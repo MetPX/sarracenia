@@ -1,7 +1,16 @@
-metpx-sr3 (3.00.49) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.50) UNRELEASED; urgency=medium
 
-  * incrementing away from release.
-  * 
+  * increment away from release
+
+ -- peter <peter@bsqt.homeip.net>  Mon, 04 Dec 2023 17:19:31 -0500
+
+metpx-sr3 (3.00.49) unstable; urgency=medium
+
+  * fix #854 ignore sr3_tools processes. 
+  * bugs in sarracenia/flowcb/scheduled/wiski.py
+  * bugs in sarracenia/flowcb/poll/airnow.py
+  * sr3 convert now refuses to overwrite existing sr3 configs
+  * bugfix incorrect cumulative metrics display.
 
  -- peter <peter@bsqt.homeip.net>  Thu, 30 Nov 2023 17:43:34 -0500
 

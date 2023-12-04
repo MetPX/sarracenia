@@ -73,7 +73,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          sr3 stop --dangerWillRobinson
+          sr3 stop --dangerWillRobinson=1
           cd ${HOME}/.cache/sr3/
           tar -czf ${HOME}/cache_sr3.tar.gz *
       
