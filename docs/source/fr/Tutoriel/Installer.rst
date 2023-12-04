@@ -309,11 +309,11 @@ alors exécutez git tag et faites un checkout de la dernière (la dernière vers
     .
     .
     .
-    v2.18.05b3
-    v2.18.05b4
-  $ git checkout v2.18.05b4
-  $ python3 setup.py bdist_wheel
-  $ pip3 install dist/metpx_sarracenia-2.18.5b4-py3-none-any.whl
+    v3.00.48
+    v3.00.49
+  $ git checkout v3.00.49
+  $ python3 -m build --no-isolation
+  $ pip3 install dist/metpx_sarracenia-3.00.49-py3-none-any.whl
 
 
 
