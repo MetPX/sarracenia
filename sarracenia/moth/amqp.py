@@ -136,7 +136,7 @@ class AMQP(Moth):
             msg['local_offset'] = 0
             msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
-                if hasattr(self,channel):
+                if hasattr(self,'channel'):
                     self.channel.basic_ack(msg['ack_id'])
                 logger.error('message acknowledged and discarded: %s' % msg)
                 msg = None
