@@ -815,19 +815,19 @@ class Message(dict):
         return True if message format seems ok, return True, else return False, log some reasons.
         """
         if not type(msg) is sarracenia.Message:
+            logger.error( f"not a message")
             return False
 
         res = True
         for required_key in ['pubTime', 'baseUrl', 'relPath']:
             if not required_key in msg:
-                logger.error('missing key: %s' % required_key)
+                logger.error( f'missing key: {required_key}' )
                 res = False
 
         if not timeValidate(msg['pubTime']):
+            logger.error( f"malformed pubTime: {msg['pubTime']}")
             res = False
 
-        if not res:
-            logger.error('malformed message: %s', msg)
         return res
 
     def getContent(msg):
