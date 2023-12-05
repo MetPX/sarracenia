@@ -984,7 +984,7 @@ class Flow:
                     if matches:
                             m[ '_matches'] = matches
                             m['_deleteOnPost'] |= set(['_matches'])
-                    oldname_matched = accepting
+                            oldname_matched = accepting
                     break
 
             url = self.o.variableExpansion(m['baseUrl'], m)
