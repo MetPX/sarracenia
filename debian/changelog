@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.50) unstable; urgency=medium
+metpx-sr3 (3.00.50rc1) unstable; urgency=medium
 
   * fixes #857 positional parameter code being incompatible with python 3.6 
   * restored shortcut processing when evaluating .* pattern.
