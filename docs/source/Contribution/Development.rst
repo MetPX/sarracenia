@@ -1303,7 +1303,7 @@ Where:
   X.ypostN #ack! patched release.
 
 Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
-Releases are currently  3.00.iibj
+Releases are currently  3.00.iircj
 where:
   * ii -- incremental number of pre-releases of 3.00
   * j -- beta increment.
@@ -1387,10 +1387,57 @@ changes (increments versions.)  More info: `https://en.wikipedia.org/wiki/Debian
 so when performing releases, the changelog is changed from UNRELEASED to unstable, and
 back to UNRELEASED when working between releases, as per Debian custom.
 
+Release Versions and Quality Assurance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Quality Assurance process, or QA occurs mainly on the development branch.
+prior to accepting a release, and barring known exceptions, 
+
+* QA tests automatically keyed to pushes to the development branch should all pass.
+  (All related github actions.)
+  tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow are included in "flow.yml"
+
+* build an ubuntu 18.04 vm and run the flow tests there to ensure that it works.
+  (installation method: cloning from development on github.)
+  tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow
+
+* build a redhat 8 vm and run the flow test there to ensure that it works.
+  (installation method: cloning from development on github.)
+  tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow
+ 
+* After that, a pre-release version is prepared. It should have an rcX suffix
+  publish to: https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release
+  publish to: pypi.org   (rcX suffix is detected as a pre-release.)
+  publish to: github.com (tag as pre-release.)
+
+  the pre-release repository.
+
+  * pre-release version is installed on development server.
+    (from launchpad repo.)
+
+  * pre-release version is installed on some staging workloads.
+    i(from launchpad repo.)
+
+  * if the pre-release version runs all configured flows without incidents for a week.
+
+* Then a stable version is declared, pushed to the stable repository:
+
+  * ensure there is no rcX suffix on the version.
+  * publish to:  https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx
+  * publish to: pypi.org   (remove rcX suffix so it is considered latest.)
+  * publish to: github.com (tag as latest .)
+
+the mechanics of preparing each release are documented in the following section.
+
+For extensive discussion see:  https://github.com/MetPX/sarracenia/issues/139
+
+
+
+
 Releasing
 ~~~~~~~~~
 
-
+Prior to releasing, ensure that all QA tests in the section above are passed.
 When development for a version is complete. The following should occur:
 
 A tag should be created to identify the end of the cycle::
