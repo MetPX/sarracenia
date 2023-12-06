@@ -269,6 +269,19 @@ which version is installed and test v3 if both are present.  To override that::
 
 Then one can run flow_tests from this shell normally.
 
+Ubuntu 18.04
+~~~~~~~~~~~~
+
+A number of systems run Ubuntu 18.04 even though it is pretty old.
+
+```
+
+multipass launch -m 8G bionic
+
+
+```
+can run developer tests as per multipass as described above.
+
 Python Wheel
 ~~~~~~~~~~~~
 
