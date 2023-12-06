@@ -1,8 +1,10 @@
-metpx-sr3 (3.00.50) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.50) unstable; urgency=medium
 
-  * increment away from release
+  * fixes #857 positional parameter code being incompatible with python 3.6 
+  * restored shortcut processing when evaluating .* pattern.
+  * more descriptive error log on receipt of invalid notifications.
 
- -- peter <peter@bsqt.homeip.net>  Mon, 04 Dec 2023 17:19:31 -0500
+ -- peter <peter@bsqt.homeip.net>  Mon, 06 Dec 2023 11:52:31 -0500
 
 metpx-sr3 (3.00.49) unstable; urgency=medium
 
