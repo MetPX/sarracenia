@@ -1496,7 +1496,7 @@ class Flow:
 
             if not os.path.isdir(msg['new_dir']):
                 try:
-                    logger.info( "missing destination directories, makedirs: {msg['new_dir']} " )
+                    logger.info( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], 0o775, True)
                 except Exception as ex:
