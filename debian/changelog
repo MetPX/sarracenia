@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.50rc2) UNRELEASED; urgency=medium
+
+  * document new versioning/release scheme.
+
+ -- peter <peter@bsqt.homeip.net>  Wed, 06 Dec 2023 17:42:37 -0500
+
 metpx-sr3 (3.00.50rc1) unstable; urgency=medium
 
   * fixes #857 positional parameter code being incompatible with python 3.6 
