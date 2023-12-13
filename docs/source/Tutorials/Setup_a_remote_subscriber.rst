@@ -34,7 +34,7 @@ The *edit* command starts the user's configured editor on the file to be created
   See issue `#251 <https://github.com/MetPX/sarracenia/issues/251>`_ for more info or to complain.
   In the interim instead use::
 
-    $ mkdir -p .config/sarra/subscribe
+    $ mkdir -p .config/sr3/subscribe
     $ touch $_/swob.conf
     $ sr3 edit swob.conf
 
@@ -58,7 +58,7 @@ Now start up the newly created subscriber::
     2015-12-03 06:53:35,269 [INFO] instances 1 
     2015-12-03 06:53:35,270 [INFO] sr subscribe swob 0001 started
 
-Activity can be monitored via log files in ``~/.cache/sarra/log/`` or with the *log* command::
+Activity can be monitored via log files in ``~/.cache/sr3/log/`` or with the *log* command::
 
   $ sr3 log swob
     
