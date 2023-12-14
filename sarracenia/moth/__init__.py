@@ -44,7 +44,6 @@ def ProtocolPresent(p) -> bool:
     else:
         logger.critical( f"Protocol scheme {p} unsupported for communications with message brokers" )
 
-    sys.exit(1)
     return False
 
 
