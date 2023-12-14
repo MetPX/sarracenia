@@ -2243,7 +2243,7 @@ class Config:
                 matches= re.search( r'^[0-9]+$', match_field)
                 # non-numeric thing... variable or something.
                 if not matches:
-                    fragment_list.append(fragment)
+                    fragment_list.append('${' + fragment)
                     continue
                 field=int(match_field)
                 if self.sundew_compat_regex_first_match_is_zero:
