@@ -51,10 +51,12 @@ def test_variableExpansion():
             "/pub/DATASETS/NOAA/G02158/unmasked" + '/[0-9]{4}/[0-9]{2}_[A-Z]{1}[a-z]{2}' )
      assert try_pattern(  options, message, "${PBD}/${%Y}/${SOURCE}/AIRNOW/CSV/BCMOE/${%H}/",  \
              options.post_baseDir + '/[0-9]{4}/'+ message['source'] +'/AIRNOW/CSV/BCMOE/[0-9]{2}/' )
-     assert try_pattern( options, message, "a_path/${DONT_TOUCH_THIS}something/else", "a_path/\${DONT_TOUCH_THIS}something/else")
-     assert try_pattern( options, message, "a_path/${1DONT_TOUCH_THIS}something/else", "a_path/\${1DONT_TOUCH_THIS}something/else")
+     assert try_pattern( options, message, "a_path/${DONT_TOUCH_THIS}something/else", r"a_path/\${DONT_TOUCH_THIS}something/else")
+     assert try_pattern( options, message, "a_path/${1DONT_TOUCH_THIS}something/else", r"a_path/\${1DONT_TOUCH_THIS}something/else")
      assert try_pattern( options, message, "/apps/sarra/public_data/20231214/SSC-DATAINTERCHANGE/MSC-BULLETINS/${T1}${T2}/${CCCC}/17", 
-                        "/apps/sarra/public_data/20231214/SSC-DATAINTERCHANGE/MSC-BULLETINS/\${T1}\${T2}/\${CCCC}/17")
+                        r"/apps/sarra/public_data/20231214/SSC-DATAINTERCHANGE/MSC-BULLETINS/\${T1}\${T2}/\${CCCC}/17")
+     assert try_pattern( options, message, "a_path/${1DONT_TOUCH_THIS}some/${%H}/thing/${STILL_DONT_CHANGE_ME}/${%Y}/hello", 
+                        r"a_path/\${1DONT_TOUCH_THIS}some/[0-2][0-9]/thing/\${STILL_DONT_CHANGE_ME}/[0-9]{4}/hello")
 
      options.sundew_compat_regex_first_match_is_zero = True
      options.post_baseDir = '/apps/sarra/public_data'
