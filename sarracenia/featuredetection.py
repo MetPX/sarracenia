@@ -50,7 +50,6 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-
 features = { 
     'amqp' : { 'modules_needed': [ 'amqp' ], 'present': False, 
             'lament' : 'cannot connect to rabbitmq brokers', 
@@ -115,4 +114,11 @@ for x in features:
        except:
            logger.debug( f"extra feature {x} needs missing module {y}. Disabled" ) 
            features[x]['present']=False
+
+
+if features['filetypes']['present']:
+    import magic
+    if not hasattr(magic,'from_file'):
+        features['filetypes']['present'] = False
+        logger.debug( f'redhat magic bindings not supported.')
 
