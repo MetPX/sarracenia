@@ -1415,6 +1415,7 @@ class Config:
             logger.debug( f'found {cfgfilepath}')
 
         lineno=0
+        saved_lineno=0
         self.files.append(cfgfilepath)
 
         for l in open(cfgfilepath, "r").readlines():
