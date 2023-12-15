@@ -2150,9 +2150,10 @@ class Config:
 
 
         # strftime compatible patterns.
-        if len(new_dir.split( '${%' )) > 1:
-            fragment_list=[]
-            for fragment in new_dir.split( '${%' ):
+        fragments = new_dir.split( '${%' )
+        if len(fragments) > 1:
+            fragment_list=[fragments[0]]
+            for fragment in fragments[1:]:
                 close_brace = fragment.find('}')
                 frag_start=0
                 seconds=self.varTimeOffset
@@ -2242,7 +2243,7 @@ class Config:
                 matches= re.search( r'^[0-9]+$', match_field)
                 # non-numeric thing... variable or something.
                 if not matches:
-                    fragment_list.append(fragment)
+                    fragment_list.append('${' + fragment)
                     continue
                 field=int(match_field)
                 if self.sundew_compat_regex_first_match_is_zero:
