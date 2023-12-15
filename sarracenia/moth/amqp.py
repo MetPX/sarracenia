@@ -131,6 +131,12 @@ class AMQP(Moth):
             topic = raw_msg.delivery_info['routing_key'].replace(
                 '%23', '#').replace('%22', '*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
+            if self.o['sourceFromExchange']:
+                source = self.o.get_source_from_exchange(msg['exchange'])
+                if source:
+                    msg['source'] = source
+                    msg['_deleteOnPost'] |= set(['source'])
+
             msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
