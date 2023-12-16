@@ -2438,7 +2438,7 @@ class sr_GlobalState:
                     if "transferLast" in m:
                         latestTransfer = f"{now - m['transferLast']:4.1f}s"
                     elif "messageLast" in m:
-                        latestTransfer = f"{now - m['messageLast']:4.1f}"
+                        latestTransfer = f"{now - m['messageLast']:4.1f}s"
 
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
