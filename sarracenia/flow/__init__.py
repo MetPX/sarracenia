@@ -1514,6 +1514,8 @@ class Flow:
                         msg.setReport(201, 'old unlinked %s' % msg['fileOp']['rename'])
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+
                     else:
                         # actual rename...
                         ok = self.renameOneItem(msg['fileOp']['rename'], new_path)
@@ -1524,6 +1526,7 @@ class Flow:
                             self.worklist.ok.append(msg)
                             self.metrics['flow']['transferRxFiles'] += 1
                             msg.setReport(201, 'renamed')
+                            self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                             continue
 
                 elif ('directory' in msg['fileOp']) and ('remove' in msg['fileOp'] ): 
@@ -1535,6 +1538,7 @@ class Flow:
                         msg.setReport(201, 'rmdired')
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1551,6 +1555,7 @@ class Flow:
                         msg.setReport(201, 'removed')
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
                         #FIXME: should this really be queued for retry? or just permanently failed?
                         # in rejected to avoid retry, but wondering if failed and deferred
@@ -1569,6 +1574,7 @@ class Flow:
                         msg.setReport(201, 'made directory')
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
                         # as above...
                         self.reject(msg, 500, "mkdir %s failed" % msg['new_file'])
@@ -1583,6 +1589,7 @@ class Flow:
                         msg.setReport(201, 'linked')
                         self.worklist.ok.append(msg)
                         self.metrics['flow']['transferRxFiles'] += 1
+                        self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     else:
                         # as above...
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
@@ -1648,6 +1655,7 @@ class Flow:
                 if self.write_inline_file(msg):
                     msg.setReport(201, "Download successful (inline content)")
                     self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     continue
                 logger.warning(
                     "failed to write inline content %s, falling through to download"
@@ -1665,11 +1673,12 @@ class Flow:
                 ok = self.download(msg, self.o)
                 if ok:
                     logger.debug("downloaded ok: %s" % new_path)
-                    msg.setReport(201, "Download successful %s" % new_path)
+                    msg.setReport(201, "Download successful" )
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
                     if 'content' in msg:
                         del msg['content']
                     self.worklist.ok.append(msg)
+                    self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     break
                 else:
                     logger.info("attempt %d failed to download %s/%s to %s" \
@@ -2147,7 +2156,9 @@ class Flow:
                                 self.proto[self.scheme].rmdir(new_file)
                             else:
                                 self.proto[self.scheme].delete(new_file)
+                        msg.setReport(201, f'file or directory removed')
                         self.metrics['flow']['transferTxFiles'] += 1
+                        self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -2157,7 +2168,9 @@ class Flow:
                         logger.debug( f"message is to rename {msg['fileOp']['rename']} to {new_file}" )
                         if not self.o.dry_run:
                             self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                        msg.setReport(201, f'file renamed')
                         self.metrics['flow']['transferTxFiles'] += 1
+                        self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return True
                     logger.error("%s, delete not supported" % self.scheme)
                     return False
@@ -2169,7 +2182,9 @@ class Flow:
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
                             self.proto[self.scheme].mkdir(new_file)
+                        msg.setReport(201, f'directory created')
                         self.metrics['flow']['transferTxFiles'] += 1
+                        self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return True
                     logger.error("%s, mkdir not supported" % self.scheme)
                     return False
@@ -2196,7 +2211,9 @@ class Flow:
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:
                              self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                        msg.setReport(201, f'file linked')
                         self.metrics['flow']['transferTxFiles'] += 1
+                        self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
                         return True
                     logger.error("%s, symlink not supported" % self.scheme)
                     return False
@@ -2308,8 +2325,10 @@ class Flow:
                 else:
                     len_written = msg['size']
 
+            msg.setReport(201, 'file sent')
             self.metrics['flow']['transferTxBytes'] += len_written
             self.metrics['flow']['transferTxFiles'] += 1
+            self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
 
             # fix permission
 
