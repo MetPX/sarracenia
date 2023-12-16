@@ -58,6 +58,7 @@ logger = logging.getLogger(__name__)
 empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
+        "transferRxLast": 0, "transferTxLast": 0, \
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
         }
@@ -922,6 +923,10 @@ class sr_GlobalState:
                                     elif k in [ "last_housekeeping" ]:
                                         if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
+                                    elif k in [ "transferRxLast", "transferTxLast" ]:
+                                        newval = sarracenia.timestr2flt(newval)
+                                        if 'transferLast' not in metrics or (newval > metrics['transferLast']):
+                                            metrics['transferLast'] = newval
                                     else:
                                         metrics[k] += newval
 
@@ -2334,8 +2339,8 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %8s %7s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "%rej", "pubsub", "messages", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %8s %7s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "--------", "----", "------", "------" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %8s %5s %5s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %8s %5s %5s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "--------", "----", "------", "------" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
@@ -2421,6 +2426,11 @@ class sr_GlobalState:
                         brokerQdmCount = m['brokerQueuedMessageCount']
                         rxCumulativeMessagesQueued += brokerQdmCount
 
+                    if "transferLast" in m:
+                        latestTransfer = now - m['transferLast']
+                    else:
+                        latestTransfer = 0
+
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
                         byteTotal = 0
@@ -2473,9 +2483,9 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
+                    line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %4.1fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
                             retry, connectPercent, byteConnectPercent, brokerQdmCount, m['lagMax'], lagMean, \
-                            rejectPercent,\
+                            latestTransfer, rejectPercent,\
                             naturalSize(byteRate), \
                             naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
                             naturalSize(transferRxByteRate), \
@@ -2497,7 +2507,7 @@ class sr_GlobalState:
                             naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
                             time_base )
                 else:
-                    line += " %10s %10s %9s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-" )
+                    line += " %10s %10s %9s %5s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
                         line += " %8s %7s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s" % \
                             ( "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-" )
