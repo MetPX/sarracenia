@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
-        "transferRxLast": 0, "transferTxLast": 0, \
+        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, \
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
         }
@@ -910,25 +910,33 @@ class sr_GlobalState:
                             #print( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
                             continue
 
+                        #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
+                        #print( f"instance metrics states of {c}/{cfg}: {self.states[c][cfg]['instance_metrics']} " )
                         for j in self.states[c][cfg]['instance_metrics'][i]:
                             #print( f"i={i}, j={j}, c={c}, cfg={cfg}" )
-                            #print( f"states of c/cfg: {self.states[c][cfg]} " )
-                            #print( f"instance metrics states of c/cfg: {self.states[c][cfg]['instance_metrics']} " )
                             for k in self.states[c][cfg]['instance_metrics'][i][j]:
+                                #print( f"k={k}" )
                                 if k in metrics:
                                     newval = self.states[c][cfg]['instance_metrics'][i][j][k]
+                                    #print( f"k={k}, newval={newval}" )
                                     if k in [ "lagMax" ]:
                                         if newval > metrics[k]:
                                             metrics[k] = newval
                                     elif k in [ "last_housekeeping" ]:
                                         if metrics[k] == 0 or newval < metrics[k] :
                                             metrics[k] = newval
-                                    elif k in [ "transferRxLast", "transferTxLast" ]:
+                                    elif k in [ "transferRxLast", "transferTxLast"  ]:
                                         newval = sarracenia.timestr2flt(newval)
                                         if 'transferLast' not in metrics or (newval > metrics['transferLast']):
                                             metrics['transferLast'] = newval
+                                    elif k in [ "rxLast", "txLast"  ]:
+                                        newval = sarracenia.timestr2flt(newval)
+                                        if 'messageLast' not in metrics or (newval > metrics['messageLast']):
+                                            metrics['messageLast'] = newval
                                     else:
                                         metrics[k] += newval
+                                #else:
+                                #    print( f'skipping {k}')
 
                         if 'transferConnectTime' in metrics:
                             metrics['transferConnectTime'] = metrics['transferConnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
@@ -2339,8 +2347,8 @@ class sr_GlobalState:
 
         print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %8s %5s %5s %5s %10s %10s %10s %10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %8s %5s %5s %5s %10s %10s %10s %10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "--------", "----", "------", "------" )
+        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
+        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
         if self.options.displayFull:
             line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
@@ -2426,10 +2434,11 @@ class sr_GlobalState:
                         brokerQdmCount = m['brokerQueuedMessageCount']
                         rxCumulativeMessagesQueued += brokerQdmCount
 
+                    latestTransfer = "n/a"
                     if "transferLast" in m:
-                        latestTransfer = now - m['transferLast']
-                    else:
-                        latestTransfer = 0
+                        latestTransfer = f"{now - m['transferLast']:4.1f}s"
+                    elif "messageLast" in m:
+                        latestTransfer = f"{now - m['messageLast']:4.1f}"
 
                     if "last_housekeeping" in m and m["last_housekeeping"] > 0:
                         time_base = now - m[ "last_housekeeping" ] 
@@ -2483,7 +2492,7 @@ class sr_GlobalState:
                     else:
                         rejectPercent = 0
 
-                    line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %4.1fs %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
+                    line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %-5s %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
                             retry, connectPercent, byteConnectPercent, brokerQdmCount, m['lagMax'], lagMean, \
                             latestTransfer, rejectPercent,\
                             naturalSize(byteRate), \

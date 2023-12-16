@@ -209,9 +209,20 @@ class Flow:
         self.metricsFlowReset()
 
     def metricsFlowReset(self) -> None:
-        self.metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
+
+        self.new_metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
               'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
               'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
+
+        # carry over some metrics... that don't reset.
+        if hasattr(self,'metrics'):
+            if 'transferRxLast' in self.metrics:
+                self.new_metrics['transferRxLast'] = self.metrics['transferRxLast']
+
+            if 'transferTxLast' in self.metrics:
+                self.new_metrics['transferTxLast'] = self.metrics['transferTxLast']
+
+        self.metrics=self.new_metrics
 
     def loadCallbacks(self, plugins_to_load=None):
 
