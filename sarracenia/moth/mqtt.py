@@ -583,6 +583,7 @@ class MQTT(Moth):
         message['local_offset'] = 0
         message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
 
+        self.metrics['rxLast'] = sarracenia.nowstr()
         if message.validate():
             self.metrics['rxGoodCount'] += 1
             return message
@@ -748,6 +749,7 @@ class MQTT(Moth):
 
                 self.metrics['txByteCount'] += len(raw_body)
                 self.metrics['txGoodCount'] += 1
+                self.metrics['txLast'] = sarracenia.nowstr()
                 logger.info("published mid={} ack_pending={} {} to under: {} ".format(
                     info.mid, ack_pending, body, topic))
                 return True  #success...
