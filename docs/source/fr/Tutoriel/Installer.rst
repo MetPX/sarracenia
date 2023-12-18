@@ -185,6 +185,21 @@ Une fois les dépendances en place, on peut construire un fichier RPM en utilisa
 Cette procédure installe uniquement l’application python (pas celle en C).
 Aucune page de manuel ni aucune autre documentation n’est installée non plus.
 
+The paquet RPM n'inclut pas non plus l'intégration avec Systemd (pour rouler sarra
+comme une service.) Il faut faire cette installation manuellement::
+
+    groupadd sarra
+    useradd -g sarra sarra
+    wget  https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service
+    cp metpx-sr3.service /lib/systemd/system
+    cp metpx-sr3.service /etc/systemd/system
+
+Après cette intervention, on peut utiliser les commandes de SystemD normalement.
+
+
+(Oui, on est d´accord que ceci est triste, plus d´informations: https://github.com/MetPX/sarracenia/issues/863 )
+
+
 PIP
 ~~~
 

@@ -184,7 +184,7 @@ Optional ones::
 
   $ sudo dnf install python3-setuptools # needed to build rpm package.
 
-If packages are not available, the one can substitute by using python install package (pip)
+If packages are not available, the one can substitute by using python install package (pip/pip3)
 
 Once the dependencies are in place, one can build an RPM file using ``setuptools``::
 
@@ -197,6 +197,18 @@ Once the dependencies are in place, one can build an RPM file using ``setuptools
 This procedure installs only the python application (not the C one.)
 No man pages nor other documentation is installed either.
 
+The RPM file does not include systemd integration, which must currently be taken
+care of manually::
+
+    groupadd sarra
+    useradd -g sarra sarra
+    wget  https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service
+    cp metpx-sr3.service /lib/systemd/system
+    cp metpx-sr3.service /etc/systemd/system
+
+After this it can be enabled as per any other systemd unit. 
+
+(yes this is sad, more information here: https://github.com/MetPX/sarracenia/issues/863 )
 
 PIP
 ~~~
