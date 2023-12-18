@@ -117,6 +117,7 @@ default_options = {
     'report': False,
     'retryEmptyBeforeExit': False,
     'sanity_log_dead': 9999,
+    'sourceFromExchange': False,
     'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
@@ -1415,6 +1416,7 @@ class Config:
             logger.debug( f'found {cfgfilepath}')
 
         lineno=0
+        saved_lineno=0
         self.files.append(cfgfilepath)
 
         for l in open(cfgfilepath, "r").readlines():
@@ -1792,6 +1794,15 @@ class Config:
 
         if self.sourceFromExchange and self.exchange:
            self.source = self.get_source_from_exchange(self.exchange)
+           if not self.source and self.post_exchange:
+               self.source = self.get_source_from_exchange(self.post_exchange)
+
+        if not hasattr(self,'source') and hasattr(self, 'post_broker') and \
+           hasattr(self.post_broker,'url') and self.post_broker.url.username:
+           self.source = self.post_broker.url.username
+        if not hasattr(self,'source') and hasattr(self, 'broker') and \
+           hasattr(self.broker,'url') and self.broker.url.username:
+           self.source = self.broker.url.username
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
