@@ -1,10 +1,17 @@
-metpx-sr3 (3.00.51dev1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.51rc1) unstable; urgency=medium
 
-  * document new versioning/release scheme.
+  * fix #872 crash in watch.
+  * fix #866 print features rather then exit on critical errors.
+  * fix #864 crash on redhat, python-magic library clash.
+  * fix #861 some Sundew compatible pattern matching still broken.
+  * attempting to fix #860: sourceFromExchange not working. 
+  * enhancement #824 last transfer metrics added.
+  * fix crash when config files have errors near beginning.
+  * document new versioning/pre-release scheme ( #139 )
 
  -- peter <peter@bsqt.homeip.net>  Wed, 06 Dec 2023 17:42:37 -0500
 
-metpx-sr3 (3.00.50rc1) unstable; urgency=medium
+metpx-sr3 (3.00.50) unstable; urgency=medium
 
   * fixes #857 positional parameter code being incompatible with python 3.6 
   * restored shortcut processing when evaluating .* pattern.

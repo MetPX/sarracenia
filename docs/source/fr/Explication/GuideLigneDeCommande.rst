@@ -186,7 +186,7 @@ par exemple::
 
 
 fournit une méthode simple pour déterminer quelles configurations sont dans un état particulier.
-Autre exemple, si *sr status* signale que l’expéditeur/tsource2send_f50 est partiel, alors
+Autre exemple, si *sr3 status* signale que l’expéditeur/tsource2send_f50 est partiel, alors
 on peut utiliser dump pour obtenir plus de détails::
 
   $ sr3 dump | grep sender/tsource2send_f50
@@ -424,82 +424,89 @@ status
 ~~~~~~
 
 Exemple d’état OK (sr3 est en cours d’exécution) ::
-
+    
     fractal% sr3 status
     status:
-    Component/Config                         Processes   Connection        Lag                Rates
-                                             State   Run Retry  msg data   LagMax  LagAvg  %rej     pubsub   messages     RxData     TxData
-                                             -----   --- -----  --- ----   ------  ------  ----   --------       ----     ------     ------
-    cpost/veille_f34                         run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%    0.00s    0.00s 84.2%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%    0.00s    0.00s 84.2%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/xvan_f14                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/xvan_f15                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    poll/f62                                 run     1/1     0 100%   0%    0.16s    0.05s  0.0%  1.2 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    post/shim_f63                            stop    0/0     0          -          -         -     -          -        -
-    post/test2_f61                           stop    0/0     0 100%   0%    0.00s    0.00s  0.0% 68 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    sarra/download_f20                       run     3/3     0 100%   0%    6.23s    2.93s  0.0% 246 Bytes/s   0 msgs/s 143 Bytes/s  0 Bytes/s
-    sender/tsource2send_f50                  run   10/10     0 100%   0%    3.83s    0.43s  0.0%  3.8 KiB/s   3 msgs/s  0 Bytes/s  1.4 KiB/s
-    shovel/pclean_f90                        run     3/3     0 100%   0%   95.91s   69.99s  0.0%  4.5 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/pclean_f92                        run     3/3     0 100%   0%   96.70s   75.64s  0.0%  1.7 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%    4.00s    0.83s  0.0%  4.9 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/t_dd1_f00                         run     3/3     0 100%   0%    9.34s    2.67s 85.4%  2.8 KiB/s  12 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/t_dd2_f00                         run     3/3     0 100%   0%    8.89s    2.68s 85.3%  2.8 KiB/s  12 msgs/s  0 Bytes/s  0 Bytes/s
-    subscribe/amqp_f30                       run     3/3     0 100%  44%   11.00s    5.19s  0.0%  1.2 KiB/s   1 msgs/s  1.3 KiB/s  0 Bytes/s
-    subscribe/cclean_f91                     run     3/3     0 100%   0%    0.00s    0.00s 100.0% 215 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    subscribe/cdnld_f21                      run     3/3     0 100%  44%    8.49s    2.60s  0.0%  1.1 KiB/s   1 msgs/s  1.2 KiB/s  0 Bytes/s
-    subscribe/cfile_f44                      run     3/3     0 100%  33%    2.05s    0.20s  0.0%  1.3 KiB/s   3 msgs/s  1.2 KiB/s  0 Bytes/s
-    subscribe/cp_f61                         run     3/3     0 100%  43%    5.76s    1.58s  0.2% 559 Bytes/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
-    subscribe/ftp_f70                        run     3/3     0 100%  39%    1.14s    0.55s  0.0%  1.2 KiB/s   2 msgs/s  1.7 KiB/s  0 Bytes/s
-    subscribe/q_f71                          run     3/3     0 100%  37%    4.50s    1.09s  0.0%  1.2 KiB/s   3 msgs/s  1.7 KiB/s  0 Bytes/s
-    subscribe/rabbitmqtt_f31                 run     3/3     0 100%   8%    4.20s    1.27s  0.0%  2.5 KiB/s   3 msgs/s  1.0 KiB/s  0 Bytes/s
-    subscribe/u_sftp_f60                     run     3/3     0 100%  41%    4.11s    1.30s  0.0% 558 Bytes/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
-    watch/f40                                run     1/1     0 100%   0%    0.02s    0.01s  0.0%  2.9 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    winnow/t00_f10                           run     1/1     0 100%   0%    5.98s    3.13s 50.0%  1.2 KiB/s   1 msgs/s  0 Bytes/s  0 Bytes/s
-    winnow/t01_f10                           run     1/1     0 100%   0%    5.88s    3.45s 50.0% 875 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-          total running configs:  25 ( processes: 64 missing: 0 stray: 0 uss:1.4 GiB rss:2.1 GiB vms:5.4 GiB user:29.28s system:4.54s )
-                   pub/sub received: 36.8 Kim/s (36.8 KiB/s), Sent:   25 msgs/s (25 Bytes/s)
-                  data received: 21 Files/s (12.0 KiB/s)  sent:  3 Files/s ( 1.4 KiB/s)
+    Component/Config                         Processes   Connection        Lag                              Rates
+                                             State   Run Retry  msg data   Queued  LagMax LagAvg  Last  %rej     pubsub messages   RxData     TxData
+                                             -----   --- -----  --- ----   ------  ------ ------  ----  ----     ------ --------   ------     ------
+    cpost/veille_f34                         run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   31.3%  0 Bytes/s   4 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   31.3%  0 Bytes/s   4 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f14                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f15                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    poll/f62                                 run     1/1     0 100%   0%      0    0.08s    0.04s  1.4s  0.0%  2.0 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    post/shim_f63                            stop    0/0          -          -         -     -     -          -        -
+    post/test2_f61                           stop    0/0     0 100%   0%      0    0.02s    0.01s  0.4s  0.0%  8.1 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    sarra/download_f20                       run     3/3     0 100%  10%      0   13.17s    5.63s  1.8s  0.0%  5.4 KiB/s   4 msgs/s  1.7 KiB/s  0 Bytes/s
+    sender/tsource2send_f50                  run   10/10     0 100%   9%      0    1.37s    1.08s  1.9s  0.0%  8.1 KiB/s   5 msgs/s  0 Bytes/s  1.7 KiB/s
+    shovel/pclean_f90                        run     3/3   136 100%   0%      0    0.00s    0.00s  0.6s  0.0%  4.0 KiB/s   5 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/pclean_f92                        run     3/3     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%      0    0.89s    0.67s  1.5s  0.0%  8.1 KiB/s   5 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd1_f00                         run     3/3     0 100%   0%    124   23.15s    4.50s  0.1s 55.0%  3.9 KiB/s   9 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd2_f00                         run     3/3     0 100%   0%     83   11.82s    3.50s  0.1s 49.2%  3.6 KiB/s   8 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/amqp_f30                       run     3/3     0 100%  12%      0   18.79s    9.22s  0.1s  0.0%  3.3 KiB/s   4 msgs/s  1.9 KiB/s  0 Bytes/s
+    subscribe/cclean_f91                     run     3/3   145 100%   0%      1    0.00s    0.00s  0.4s  0.0%  2.3 KiB/s   6 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cdnld_f21                      run     3/3     0 100%  17%     12    7.20s    2.81s  0.7s  0.0%  2.3 KiB/s   3 msgs/s  1.7 KiB/s  0 Bytes/s
+    subscribe/cfile_f44                      run     3/3     0 100%   6%      1    3.32s    0.32s  0.4s  0.0%  2.3 KiB/s   6 msgs/s  1.7 KiB/s  0 Bytes/s
+    subscribe/cp_f61                         run     3/3     0 100%   3%      0    6.42s    3.49s  1.6s  0.0%  4.2 KiB/s   6 msgs/s 635 Bytes/s  0 Bytes/s
+    subscribe/ftp_f70                        run     3/3     0 100%   8%      0    1.18s    0.83s  0.2s  0.0%  1.8 KiB/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
+    subscribe/q_f71                          run     3/3     0 100%   0%      0    1.62s    0.57s  0.0s  0.0%  1.2 KiB/s   3 msgs/s  1.2 KiB/s  0 Bytes/s
+    subscribe/rabbitmqtt_f31                 run     3/3     0 100%  11%      0    4.27s    1.95s  1.2s  0.0%  4.2 KiB/s   6 msgs/s 637 Bytes/s  0 Bytes/s
+    subscribe/u_sftp_f60                     run     3/3     0 100%   1%      0    2.69s    2.23s  1.3s  0.7%  4.2 KiB/s   6 msgs/s 644 Bytes/s  0 Bytes/s
+    watch/f40                                run     1/1     0 100%   0%      0    0.10s    0.05s  1.9s  0.0%  4.2 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t00_f10                           run     1/1     0 100%   0%      0   12.31s    4.33s  3.5s 50.0%  3.2 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t01_f10                           run     1/1     0 100%   0%      0   11.59s    3.76s  0.1s 50.5%  4.2 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s
+          Total Running Configs:  25 ( Processes: 64 missing: 0 stray: 0 )
+                         Memory: uss:2.4 GiB rss:3.3 GiB vms:6.2 GiB
+                       CPU Time: User:39.62s System:4.42s
+    	   Pub/Sub Received: 103 msgs/s (80.6 KiB/s), Sent:  63 msgs/s (32.8 KiB/s) Queued: 221 Retry: 281, Mean lag: 2.32s
+    	      Data Received: 32 Files/s (11.9 KiB/s), Sent: 5 Files/s (1.7 KiB/s)
     fractal%
 
 L'état au complet ::
 
+    
     fractal% sr3 --full status
     status:
-    Component/Config                         Processes   Connection        Lag                Rates                                        Counters (per housekeeping)                                                    Data Counters                                           Memory                             CPU Time
-                                             State   Run Retry  msg data   LagMax  LagAvg  %rej     pubsub   messages     RxData     TxData   subBytes   Accepted   Rejected  Malformed   pubBytes    pubMsgs     pubMal     rxData    rxFiles     txData    txFiles    Since       uss        rss        vms       user     system
-                                             -----   --- -----  --- ----   ------  ------  ----   --------       ----     ------     ------    -------   --------   --------  ---------    -------     ------      -----      -----    -------     ------  -------      -----        ---        ---        ---       ----     ------
-    cpost/veille_f34                         run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.3 MiB    6.1 MiB   15.0 MiB        0.00       0.01
-    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%    0.00s    0.00s 82.1%  0 Bytes/s  10 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes   280 msgs   230 msgs     0 msgs    0 Bytes    50 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    3.9 MiB    7.1 MiB   16.9 MiB        0.02       0.00
-    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%    0.00s    0.00s 82.1%  0 Bytes/s  10 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes   280 msgs   230 msgs     0 msgs    0 Bytes    50 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    3.9 MiB    7.1 MiB   16.9 MiB        0.03       0.01
-    cpump/xvan_f14                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     2 msgs     0 msgs     0 msgs    0 Bytes      1 msg     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.9 MiB    4.8 MiB   15.8 MiB        0.00       0.00
-    cpump/xvan_f15                           run     1/1     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     4 msgs     0 msgs     0 msgs    0 Bytes     2 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   27.22s    2.9 MiB    4.8 MiB   15.8 MiB        0.00       0.00
-    poll/f62                                 run     1/1     0 100%   0%    0.05s    0.03s  0.0%  1.1 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs   154 msgs     0 msgs   31.0 KiB    96 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.08s   31.4 MiB   43.7 MiB  207.2 MiB        0.63       0.04
-    post/shim_f63                            stop    0/0     0          -          -         -     -          -        -        -       -          -          -          -          -          -          -          -          -          -          -    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
-    post/test2_f61                           stop    0/0     0 100%   0%    0.00s    0.00s  0.0%  2.5 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    6.0 KiB    14 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files    2.43s    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
-    sarra/download_f20                       run     3/3     0 100%   4%    9.21s    4.10s  0.0%  2.9 KiB/s   2 msgs/s 653 Bytes/s  0 Bytes/s   41.2 KiB    68 msgs     0 msgs     0 msgs   44.8 KiB    68 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   29.44s   70.4 MiB  108.3 MiB  165.9 MiB        0.63       0.10
-    sender/tsource2send_f50                  run   10/10     0 100%   0%    3.83s    1.19s  0.0%  3.9 KiB/s   4 msgs/s  0 Bytes/s 649 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs   43.8 KiB   124 msgs     0 msgs    0 Bytes    0 Files   18.8 KiB  124 Files   29.61s  233.8 MiB  355.8 MiB  982.4 MiB        2.15       0.26
-    shovel/pclean_f90                        run     3/3     0 100%   0%    0.00s    0.00s  0.0%  2.4 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.51s   70.5 MiB  107.3 MiB  163.5 MiB        0.57       0.08
-    shovel/pclean_f92                        run     3/3     0 100%   0%    0.00s    0.00s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.31s   69.9 MiB  106.4 MiB  163.2 MiB        0.56       0.06
-    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%    4.00s    1.51s  0.0%  4.8 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs   70.5 KiB   124 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.31s   69.6 MiB  106.0 MiB  163.2 MiB        0.56       0.08
-    shovel/t_dd1_f00                         run     3/3     0 100%   0%    9.34s    3.59s 87.7%  4.3 KiB/s  19 msgs/s  0 Bytes/s  0 Bytes/s   82.0 KiB   578 msgs   507 msgs     0 msgs   43.0 KiB    71 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.16s   70.6 MiB  109.4 MiB  164.1 MiB        0.78       0.10
-    shovel/t_dd2_f00                         run     3/3     0 100%   0%    8.89s    3.47s 87.3%  4.2 KiB/s  19 msgs/s  0 Bytes/s  0 Bytes/s   78.9 KiB   557 msgs   486 msgs     0 msgs   43.0 KiB    71 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   29.08s   70.6 MiB  109.4 MiB  164.1 MiB        0.78       0.09
-    subscribe/amqp_f30                       run     3/3     0 100%  27%   10.23s    5.04s  0.0%  1.6 KiB/s   2 msgs/s 665 Bytes/s  0 Bytes/s   44.8 KiB    68 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   28.88s   69.5 MiB  106.5 MiB  163.0 MiB        0.61       0.07
-    subscribe/cclean_f91                     run     3/3     0 100%   0%    0.00s    0.00s  0.0%  1.5 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   25.8 KiB    74 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   16.95s   69.5 MiB  105.6 MiB  162.9 MiB        0.64       0.06
-    subscribe/cdnld_f21                      run     3/3     0 100%  29%    8.49s    2.64s  0.0%  1.3 KiB/s   2 msgs/s 361 Bytes/s  0 Bytes/s   37.5 KiB    58 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   10.2 KiB   58 Files    0 Bytes    0 Files   28.92s   70.2 MiB  108.9 MiB  163.7 MiB        0.74       0.10
-    subscribe/cfile_f44                      run     3/3     0 100%  10%    2.05s    0.25s  0.0%  1.4 KiB/s   4 msgs/s 345 Bytes/s  0 Bytes/s   40.0 KiB   117 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    9.8 KiB  117 Files    0 Bytes    0 Files   29.04s   69.2 MiB  105.3 MiB  162.9 MiB        0.59       0.08
-    subscribe/cp_f61                         run     3/3     0 100%  21%    5.76s    2.11s  0.0% 652 Bytes/s   4 msgs/s 664 Bytes/s  0 Bytes/s   18.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB  124 Files    0 Bytes    0 Files   28.95s   69.4 MiB  105.9 MiB  162.9 MiB        0.75       0.07
-    subscribe/ftp_f70                        run     3/3     0 100%   7%    1.05s    0.73s  0.0%  1.0 KiB/s   2 msgs/s 664 Bytes/s  0 Bytes/s   29.0 KiB    68 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB   68 Files    0 Bytes    0 Files   28.93s   69.2 MiB  105.6 MiB  162.9 MiB        0.61       0.07
-    subscribe/q_f71                          run     3/3     0 100%  17%    0.64s    0.43s  0.0%  1.1 KiB/s   3 msgs/s 568 Bytes/s  0 Bytes/s   31.0 KiB    96 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   16.1 KiB   96 Files    0 Bytes    0 Files   29.02s   70.5 MiB  107.0 MiB  452.9 MiB        0.74       0.11
-    subscribe/rabbitmqtt_f31                 run     3/3     0 100%   0%    4.20s    1.82s  0.0%  2.4 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s   70.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes   56 Files    0 Bytes    0 Files   29.10s   69.8 MiB  106.4 MiB  163.0 MiB        0.62       0.09
-    subscribe/u_sftp_f60                     run     3/3     0 100%  13%    4.11s    1.56s  0.0% 647 Bytes/s   4 msgs/s 658 Bytes/s  0 Bytes/s   18.5 KiB   124 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   18.8 KiB  124 Files    0 Bytes    0 Files   29.19s   69.3 MiB  105.5 MiB  162.9 MiB        0.60       0.05
-    watch/f40                                run     1/1     0 100%   0%    0.01s    0.00s  0.0%  2.4 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs    87 msgs     0 msgs   70.5 KiB   124 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.88s   24.6 MiB   36.7 MiB  271.8 MiB        0.28       0.06
-    winnow/t00_f10                           run     1/1     0 100%   0%    8.65s    4.13s 50.0%  2.4 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   46.1 KiB    76 msgs    38 msgs     0 msgs   23.1 KiB    38 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.85s   23.3 MiB   35.5 MiB   54.4 MiB        0.24       0.02
-    winnow/t01_f10                           run     1/1     0 100%   0%    9.06s    3.45s 50.0%  1.9 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   36.2 KiB    60 msgs    30 msgs     0 msgs   18.1 KiB    30 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   28.85s   23.2 MiB   35.4 MiB   54.4 MiB        0.22       0.01
-          total running configs:  25 ( processes: 64 missing: 0 stray: 0 uss:1.4 GiB rss:2.1 GiB vms:4.3 GiB user:13.35s system:1.62s )
-    		   pub/sub received: 44.2 Kim/s (44.2 KiB/s), Sent:   35 msgs/s (35 Bytes/s)
-    		  data received: 26 Files/s ( 4.5 KiB/s)  sent:  4 Files/s (649 Bytes/s)
-    fractal%
+    Component/Config                         Processes   Connection        Lag                              Rates                                        Counters (per housekeeping)                                                    Data Counters                                           Memory                             CPU Time
+                                             State   Run Retry  msg data   Queued  LagMax LagAvg  Last  %rej     pubsub messages   RxData     TxData       subBytes   Accepted   Rejected  Malformed   pubBytes    pubMsgs     pubMal     rxData    rxFiles     txData    txFiles    Since       uss        rss        vms       user     system
+                                             -----   --- -----  --- ----   ------  ------ ------  ----  ----     ------ --------   ------     ------        -------   --------   --------  ---------    -------     ------      -----      -----    -------     ------  -------      -----        ---        ---        ---       ----     ------
+    cpost/veille_f34                         run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  121.40s    2.4 MiB    5.9 MiB   15.2 MiB        0.03       0.08
+    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   83.5%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes    1.4 Kim    1.1 Kim     0 msgs    0 Bytes   230 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  121.40s    3.9 MiB    6.8 MiB   17.2 MiB        0.12       0.11
+    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   83.5%  0 Bytes/s  11 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes    1.4 Kim    1.1 Kim     0 msgs    0 Bytes   230 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  121.40s    3.9 MiB    7.0 MiB   17.2 MiB        0.17       0.06
+    cpump/xvan_f14                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   12.90s    3.0 MiB    4.7 MiB   16.1 MiB        0.01       0.01
+    cpump/xvan_f15                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes      1 msg     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files    8.63s    3.0 MiB    4.6 MiB   16.1 MiB        0.01       0.02
+    poll/f62                                 run     1/1     0 100%   0%      0    0.16s    0.05s  0.8s  0.0%  1.3 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs    4.4 Kim     0 msgs  151.1 KiB   420 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  118.56s   45.1 MiB   59.0 MiB  229.3 MiB        2.62       0.32
+    post/shim_f63                            stop    0/0          -          -         -     -     -          -        -        -       -          -          -          -          -          -          -          -          -          -          -    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
+    post/test2_f61                           stop    0/0     0 100%   0%      0    0.03s    0.02s  0.5s  0.0% 11.5 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs     0 msgs     0 msgs    6.7 KiB    14 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files    0.58s    0 Bytes    0 Bytes    0 Bytes        0.00       0.00
+    sarra/download_f20                       run     3/3     0 100%   0%      0   10.17s    2.87s  1.1s  0.0%  1.1 KiB/s   0 msgs/s  1.1 KiB/s  0 Bytes/s   27.1 KiB    47 msgs     0 msgs     0 msgs   36.0 KiB    47 msgs     0 msgs   65.6 KiB   47 Files    0 Bytes    0 Files   57.57s  132.5 MiB  192.4 MiB  280.1 MiB        2.72       0.40
+    sender/tsource2send_f50                  run   10/10     0 100%   9%      0    1.37s    0.52s  1.3s  0.0%  5.5 KiB/s   3 msgs/s  0 Bytes/s  1.3 KiB/s  326.0 KiB   421 msgs     0 msgs     0 msgs  326.6 KiB   421 msgs     0 msgs    0 Bytes    0 Files  152.7 KiB  421 Files  118.97s  425.6 MiB  562.8 MiB    2.2 GiB        7.80       0.93
+    shovel/pclean_f90                        run     3/3   310 100%   0%      0   82.03s   75.72s  0.7s  0.0%  5.6 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s  111.4 KiB   120 msgs     0 msgs     0 msgs   99.9 KiB   111 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   38.02s  127.4 MiB  169.0 MiB  249.6 MiB        2.37       0.27
+    shovel/pclean_f92                        run     3/3     0 100%   0%      0   82.49s   76.06s 19.1s  0.0%  1.7 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s   99.9 KiB   111 msgs     0 msgs     0 msgs  103.0 KiB   111 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  118.28s  126.4 MiB  168.5 MiB  249.2 MiB        2.04       0.21
+    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%      0    1.25s    0.54s  1.3s  0.0%  5.5 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s  326.0 KiB   421 msgs     0 msgs     0 msgs  326.0 KiB   421 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  118.77s  126.0 MiB  167.6 MiB  248.7 MiB        2.12       0.20
+    shovel/t_dd1_f00                         run     3/3     0 100%   0%      3   23.15s    3.06s  0.1s 82.3%  3.4 KiB/s  14 msgs/s  0 Bytes/s  0 Bytes/s  231.6 KiB    1.6 Kim    1.3 Kim     0 msgs  168.4 KiB   293 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  118.19s  127.3 MiB  171.0 MiB  250.1 MiB        2.77       0.32
+    shovel/t_dd2_f00                         run     3/3     0 100%   0%      0   11.82s    2.61s  0.2s 82.2%  3.3 KiB/s  13 msgs/s  0 Bytes/s  0 Bytes/s  225.7 KiB    1.6 Kim    1.3 Kim     0 msgs  166.6 KiB   290 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files  118.33s  127.3 MiB  170.6 MiB  250.1 MiB        2.74       0.39
+    subscribe/amqp_f30                       run     3/3     0 100%  39%      0   18.79s    6.44s  0.7s  0.0%  1.5 KiB/s   2 msgs/s  1.2 KiB/s  0 Bytes/s  181.0 KiB   237 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs  146.8 KiB  237 Files    0 Bytes    0 Files  117.95s  126.2 MiB  168.0 MiB  248.9 MiB        2.20       0.27
+    subscribe/cclean_f91                     run     3/3   213 100%   0%      0    0.00s    0.00s  0.5s 17.4%  2.7 KiB/s   6 msgs/s  0 Bytes/s  0 Bytes/s   35.5 KiB    92 msgs    16 msgs     0 msgs    0 Bytes     0 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   13.37s  126.1 MiB  167.9 MiB  248.8 MiB        2.53       0.36
+    subscribe/cdnld_f21                      run     3/3     0 100%  41%      0   10.43s    3.13s  0.1s  0.0%  1.4 KiB/s   2 msgs/s  1.4 KiB/s  0 Bytes/s  167.1 KiB   262 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs  162.7 KiB  262 Files    0 Bytes    0 Files  117.90s  131.6 MiB  190.7 MiB  277.6 MiB        3.39       0.42
+    subscribe/cfile_f44                      run     3/3     0 100%  40%      0    3.32s    0.30s  0.0s  0.0%  1.5 KiB/s   4 msgs/s  1.4 KiB/s  0 Bytes/s  178.3 KiB   509 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs  161.8 KiB  509 Files    0 Bytes    0 Files  118.09s  130.9 MiB  188.5 MiB  278.0 MiB        2.62       0.30
+    subscribe/cp_f61                         run     3/3     0 100%  12%      0    6.42s    2.09s  0.1s  0.0%  2.8 KiB/s   3 msgs/s 597 Bytes/s  0 Bytes/s  326.6 KiB   421 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   69.0 KiB  123 Files    0 Bytes    0 Files  118.23s  125.9 MiB  166.8 MiB  248.9 MiB        2.48       0.31
+    subscribe/ftp_f70                        run     3/3     0 100%  39%      0    1.75s    0.77s  0.1s  0.0%  1.3 KiB/s   2 msgs/s  1.4 KiB/s  0 Bytes/s  158.4 KiB   340 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs  159.8 KiB  340 Files    0 Bytes    0 Files  118.04s  126.1 MiB  167.4 MiB  248.8 MiB        2.22       0.36
+    subscribe/q_f71                          run     3/3     0 100%  31%      0    3.12s    1.18s  5.7s  0.0%  1.2 KiB/s   3 msgs/s  1.1 KiB/s  0 Bytes/s  142.7 KiB   396 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs  124.6 KiB  396 Files    0 Bytes    0 Files  118.49s  135.0 MiB  191.9 MiB  928.8 MiB        4.30       0.68
+    subscribe/rabbitmqtt_f31                 run     3/3     0 100%   8%      0    4.27s    1.10s  1.1s  0.0%  2.8 KiB/s   3 msgs/s 598 Bytes/s  0 Bytes/s  326.0 KiB   421 msgs     0 msgs     0 msgs    0 Bytes     0 msgs     0 msgs   69.0 KiB  123 Files    0 Bytes    0 Files  118.15s  126.2 MiB  167.9 MiB  248.9 MiB        2.22       0.27
+    subscribe/u_sftp_f60                     run     3/3     0 100%   9%      0    2.69s    1.71s  1.2s  0.2%  2.8 KiB/s   3 msgs/s 599 Bytes/s  0 Bytes/s  326.6 KiB   421 msgs      1 msg     0 msgs    0 Bytes     0 msgs     0 msgs   69.0 KiB  122 Files    0 Bytes    0 Files  117.93s  126.4 MiB  167.8 MiB  249.2 MiB        2.05       0.33
+    watch/f40                                run     1/1     0 100%   0%      0    0.06s    0.02s  1.6s  0.0%  3.0 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s    0 Bytes     0 msgs    74 msgs     0 msgs  169.5 KiB   203 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   57.21s   46.3 MiB   65.3 MiB  311.8 MiB        1.95       0.14
+    winnow/t00_f10                           run     1/1     0 100%   0%      0    6.38s    3.47s  0.2s 51.7%  1.7 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   66.8 KiB   116 msgs    60 msgs     0 msgs   32.3 KiB    56 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   57.79s   42.5 MiB   56.2 MiB   83.3 MiB        0.77       0.12
+    winnow/t01_f10                           run     1/1     0 100%   0%      0    9.75s    2.53s  0.1s 51.3%  1.8 KiB/s   2 msgs/s  0 Bytes/s  0 Bytes/s   67.2 KiB   117 msgs    60 msgs     0 msgs   32.8 KiB    57 msgs     0 msgs    0 Bytes    0 Files    0 Bytes    0 Files   56.37s   42.3 MiB   55.7 MiB   83.2 MiB        0.81       0.12
+          Total Running Configs:  25 ( Processes: 64 missing: 0 stray: 0 )
+                         Memory: uss:2.5 GiB rss:3.4 GiB vms:7.4 GiB
+                       CPU Time: User:53.06s System:7.00s
+    	   Pub/Sub Received: 99 msgs/s (63.2 KiB/s), Sent:  53 msgs/s (29.3 KiB/s) Queued: 3 Retry: 523, Mean lag: 4.54s
+    	      Data Received: 18 Files/s (9.3 KiB/s), Sent: 3 Files/s (1.3 KiB/s)
+    fractal% sr3 --full status
+    
+
 
 La première rangée catégorise les informations pour les lignes suivantes:
 
@@ -509,7 +516,9 @@ La première rangée catégorise les informations pour les lignes suivantes:
 
 * Lag (Délai): Le sévérité du délai expériencé ou la durée de vie des données par le temps que le téléchargement soit complété.
 
-* Rates (Vitesse): La vitesse des transferts, plusieurs métriques sont communiqués.
+* Last (Dernier): combien de temps a passé depuis le dernier transfert de fichier ou message.
+
+* Rates (Taux): La vitesse des transferts, plusieurs métriques sont communiqués.
 
 * Counters (Compteurs): La base des calculs des taux, se réinitialise à chaque interval de housekeeping.
 
@@ -543,8 +552,10 @@ Run           Nombre de processus ou instances en marche en comparaison au nombr
 Retry         Le nombre de messages dans la queue retry, indiquant des problèmes avec le transfert.
 msg           Le pourcentage du temps connecté à un broker pour publier ou s'abonner à des messages.
 data          Le pourcentage du temps connecté à une source de données.
+LagQueued     Le nombre de messages en attente sur le courtier (serveur à distance.)
 LagMax        La durée maximale d'un message à la reception (avant un téléchargement).
 LagAvg        La durée moyenne d'un message à la reception (avant un téléchargement).
+Last          Combien de temps a passé depuis le dernier téléchargement (ou message.)
 pubsub        Le débit des messages pub/sub téléchargés en bytes/seconde.
 messages      Le débit des messages pub/sub téléchargés en message/seconde.
 %rej          Le pourcentage des messages téléchargés rejeté (indication du statut du filtre d'abonnement (subscription).
