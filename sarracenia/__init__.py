@@ -30,6 +30,7 @@ from ._version import __version__
 from base64 import b64decode, b64encode
 import calendar
 import datetime
+import humanize
 import importlib.util
 import logging
 import os
@@ -311,6 +312,11 @@ def timev2tov3str(s):
     else:
         return s[0:8] + 'T' + s[8:]
 
+def durationToString(d) -> str:
+    """
+      given a numbner of seconds, return a short, human readable string.
+    """
+    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s") 
 
 def durationToSeconds(str_value, default=None) -> float:
     """

@@ -541,6 +541,7 @@ class AMQP(Moth):
                     return None
                 else:
                     self.metrics['rxGoodCount'] += 1
+                self.metrics['rxLast'] = sarracenia.nowstr()
                 if hasattr(self.o, 'fixed_headers'):
                     for k in self.o.fixed_headers:
                         msg[k] = self.o.fixed_headers[k]
@@ -701,6 +702,7 @@ class AMQP(Moth):
         self.metrics['txByteCount'] += len(raw_body) 
         if headers:
             self.metrics['txByteCount'] += len(''.join(str(headers)))
+        self.metrics['txLast'] = sarracenia.nowstr()
 
         # timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout
         try:
