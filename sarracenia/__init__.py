@@ -419,7 +419,7 @@ class Message(dict):
                      msg['identity'] = fxainteg
                      return
                 logger.debug("xattr different method than on disk")
-                calc_method = o.identity
+                calc_method = o.identity_method
             else:
                 logger.debug("xattr sum too old")
                 calc_method = o.identity_method
