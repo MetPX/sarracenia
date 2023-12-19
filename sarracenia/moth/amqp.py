@@ -28,13 +28,15 @@ import json
 
 import logging
 
-from urllib.parse import unquote
+import re
+
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import signal
 
 import time
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 """
@@ -79,6 +81,7 @@ class AMQP(Moth):
        queueDeclare     - declare queue before use.
 
     """
+
     def _msgRawToDict(self, raw_msg) -> sarracenia.Message:
         if raw_msg is not None:
             body = raw_msg.body
@@ -132,10 +135,20 @@ class AMQP(Moth):
                 '%23', '#').replace('%22', '*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
             if self.o['sourceFromExchange']:
-                source = self.o.get_source_from_exchange(msg['exchange'])
-                if source:
-                    msg['source'] = source
-                    msg['_deleteOnPost'] |= set(['source'])
+                itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
+                if itisthere:
+                    source = itisthere[1]
+                else:
+                    itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
+                    if itisthere:
+                        source = itisthere[1]
+            else:
+                if 'source' in self.o:
+                    source = self.o['source']
+
+            if source:
+                msg['source'] = source
+                msg['_deleteOnPost'] |= set(['source'])
 
             msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
