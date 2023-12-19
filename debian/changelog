@@ -1,4 +1,10 @@
-metpx-sr3 (3.00.51rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.51rc3) unstable; urgency=medium
+
+  * fix for crash in config parsing.
+
+ -- peter <peter@bsqt.homeip.net>  Tue, 19 Dec 2023 10:38:56 -0500
+
+metpx-sr3 (3.00.51rc2) unstable; urgency=medium
 
   * fix #875 sundew_compat_regez_first_match_is_zero does not work.
 
