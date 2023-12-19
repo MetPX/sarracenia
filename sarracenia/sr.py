@@ -1604,7 +1604,7 @@ class sr_GlobalState:
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
                 logging.error(
-                "specify --dangerWillRobinson=<number> of configs to cleanup  when cleaning more than one")
+                        f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
                 return
 
         queues_to_delete = []
@@ -1854,8 +1854,9 @@ class sr_GlobalState:
 
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
-                logging.error(
-                    "specify --dangerWillRobinson=<n> of configs to remove when > 1 involved.")
+                logging.error( f"specify --dangerWillRobinson=<n> of configs to remove "
+                   f"when > 1 involved. (actual: {len(self.filtered_configurations)}, "
+                   f"given: {self.options.dangerWillRobinson}")
                 return
 
         for f in self.filtered_configurations:
