@@ -1794,7 +1794,7 @@ class Config:
 
         if self.sourceFromExchange and self.exchange:
            self.source = self.get_source_from_exchange(self.exchange)
-           if not self.source and self.post_exchange:
+           if not self.source and hasattr(self,'post_exchange'):
                self.source = self.get_source_from_exchange(self.post_exchange)
 
         if not hasattr(self,'source') and hasattr(self, 'post_broker') and \
