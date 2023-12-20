@@ -790,21 +790,6 @@ class Flow:
 
         """
 
-        # resolve source.
-        if not 'source' in msg:
-            source=None
-            if self.o.sourceFromExchange:
-                if 'exchange' in msg:
-                    source = self.o.get_source_from_exchange( msg['exchange'] )
-                if not source and hasattr(self,'exchange'):
-                    source = self.o.get_source_from_exchange( self.o.exchange )
-            if not source and hasattr(self.o,'source'):
-                source = self.o.source
-
-            if source:
-                msg['source'] = source
-                msg['_deleteOnPost'] |= set(['source'])
-
         # relative path by default mirror
 
         relPath = '%s' % msg['relPath']
