@@ -1791,12 +1791,6 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
-
-        if self.sourceFromExchange and self.exchange:
-           self.source = self.get_source_from_exchange(self.exchange)
-           if not self.source and hasattr(self,'post_exchange'):
-               self.source = self.get_source_from_exchange(self.post_exchange)
-
         if not hasattr(self,'source') and hasattr(self, 'post_broker') and \
            hasattr(self.post_broker,'url') and self.post_broker.url.username:
            self.source = self.post_broker.url.username
