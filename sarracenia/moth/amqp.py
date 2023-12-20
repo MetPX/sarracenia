@@ -134,7 +134,10 @@ class AMQP(Moth):
             topic = raw_msg.delivery_info['routing_key'].replace(
                 '%23', '#').replace('%22', '*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
-            if self.o['sourceFromExchange']:
+            source=None
+            if 'source' in self.o:
+                source = self.o['source']
+            elif self.o['sourceFromExchange']:
                 itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
                 if itisthere:
                     source = itisthere[1]
@@ -142,9 +145,6 @@ class AMQP(Moth):
                     itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
                     if itisthere:
                         source = itisthere[1]
-            else:
-                if 'source' in self.o:
-                    source = self.o['source']
 
             if source:
                 msg['source'] = source
