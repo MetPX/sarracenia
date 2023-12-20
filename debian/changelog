@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.51rc4) UNRELEASED; urgency=medium
+
+  * fixed #860 properly this time.
+
+ -- peter <peter@bsqt.homeip.net>  Wed, 20 Dec 2023 12:14:07 -0500
+
 metpx-sr3 (3.00.51rc3) unstable; urgency=medium
 
   * fix for crash in config parsing.
