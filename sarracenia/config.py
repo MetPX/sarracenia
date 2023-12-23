@@ -953,6 +953,7 @@ class Config:
                 e = 'component'
             else:
                 e = E.lower()
+
             if hasattr(self, e):
                 repval = getattr(self, e)
                 if type(repval) is list:
@@ -1791,12 +1792,11 @@ class Config:
                 if (not hasattr(self,'broker') or not self.broker):
                     self.broker = self.post_broker
 
-        if not hasattr(self,'source') and hasattr(self, 'post_broker') and \
-           hasattr(self.post_broker,'url') and self.post_broker.url.username:
-           self.source = self.post_broker.url.username
-        if not hasattr(self,'source') and hasattr(self, 'broker') and \
-           hasattr(self.broker,'url') and self.broker.url.username:
-           self.source = self.broker.url.username
+        if not ( hasattr(self, 'source') or self.sourceFromExchange):
+            if hasattr(self, 'post_broker') and hasattr(self.post_broker,'url') and self.post_broker.url.username:
+               self.source = self.post_broker.url.username
+            elif hasattr(self, 'broker') and hasattr(self.broker,'url') and self.broker.url.username:
+               self.source = self.broker.url.username
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
