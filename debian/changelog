@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.51rc5) UNRELEASED; urgency=medium
+
+  * increment away from release.
+
+ -- peter <peter@bsqt.homeip.net>  Thu, 21 Dec 2023 14:01:42 -0500
+
 metpx-sr3 (3.00.51rc4) unstable; urgency=medium
 
   * fixed #860 properly this time.
