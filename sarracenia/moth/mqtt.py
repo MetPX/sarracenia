@@ -361,8 +361,8 @@ class MQTT(Moth):
                 logger.info( f"is no around? {self.o['no']} " )
                 if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                     self.client = self.__clientSetup(cid)
-                    if hasattr(self, 'client') and hasattr(self.client, 'manual_ack'):  # FIXME breaking this...
-                        self.client.manual_ack(True)
+                    if hasattr(self, 'client') and hasattr(self.client, 'manual_ack_set'):  # FIXME breaking this...
+                        self.client.manual_ack_set(True)
                         logger.debug(
                             "Switching on manual_acks for higher reliability via explicit acknowledgements."
                         )
