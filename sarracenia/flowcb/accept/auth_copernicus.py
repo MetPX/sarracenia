@@ -44,6 +44,10 @@ How to set up your download config:
     URL matches your ``openidConnectUrl``). Most usernames are email addresses - you will need to use ``%40`` instead
     of the ``@`` symbol in the username.
 
+    NOTE: When downloading large files on a slow connection, it is possible for the access token to expire during a
+    batch download. Setting ``batch 1`` or ``batch n`` (where n*(download time per file) < 10 minutes) in your
+    download config will help prevent this.
+
 Change log:
 -----------
 
@@ -113,11 +117,9 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
         """
         now = datetime.datetime.utcnow()
         if not self._token or self._token_expires <= now:
-            logger.info(f"Requesting a new token. Expired? {self._token_expires <= now}")
-
             # Use username and password when refresh token is not available or expired
             if not self._refresh or self._refresh_expires <= now:
-                logger.info("Using username/password")
+                logger.info("Requesting a new token using username/password")
                 # Credentials
                 ok, details = self.o.credentials.get(self.o.openidConnectUrl)
                 creds = details.url
@@ -134,7 +136,7 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
                     "grant_type": self.o.grantType,
                 }
             else:
-                logger.info("Using refresh_token")
+                logger.info("Requesting a new access token using refresh_token")
                 data = {
                     "client_id": self.o.clientId,
                     "refresh_token": self._refresh,
@@ -160,6 +162,3 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
                 return None
         
         return self._token
-
-
-#'expires_in': 600, 'refresh_expires_in': 3600, 'refresh_token': 'eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhZmFlZTU2Zi1iNWZiLTRiMzMtODRlYS0zMWY2NzMyMzNhNzgifQ.eyJleHAiOjE3MDM3ODA2ODIsImlhdCI6MTcwMzc3NzA4MiwianRpIjoiMjg1Y2NiNzEtMWNkYS00YTk1LWJjN2UtYmVlODgzNjRmNDg4IiwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5kYXRhc3BhY2UuY29wZXJuaWN1cy5ldS9hdXRoL3JlYWxtcy9DRFNFIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eS5kYXRhc3BhY2UuY29wZXJuaWN1cy5ldS9hdXRoL3JlYWxtcy9DRFNFIiwic3ViIjoiNGY5ODIwMGYtYzM3Ny00YWU3LTgyMTQtZTE5NTdjZDhjY2Q5IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImNkc2UtcHVibGljIiwic2Vzc2lvbl9zdGF0ZSI6IjhkYjdjM2JlLWQxNzItNDI4OS1hYTU3LTk5MWVmNWY4ZmUwNCIsInNjb3BlIjoiQVVESUVOQ0VfUFVCTElDIG9wZW5pZCBlbWFpbCBwcm9maWxlIG9uZGVtYW5kX3Byb2Nlc3NpbmcgdXNlci1jb250ZXh0Iiwic2lkIjoiOGRiN2MzYmUtZDE3Mi00Mjg5LWFhNTctOTkxZWY1ZjhmZTA0In0.rBMOTKRq497G6_L_DQ-7SpvYWDMi1BXWcxm7uFdL2KY', 'token_type': 'Bearer', 'not-before-policy': 0, 'session_state': '8db7c3be-d172-4289-aa57-991ef5f8fe04', 'scope': 'AUDIENCE_PUBLIC openid email profile ondemand_processing user-context'}
