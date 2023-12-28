@@ -14,6 +14,7 @@ Register for an account here: https://documentation.dataspace.copernicus.eu/Regi
 
 This code is based on https://documentation.dataspace.copernicus.eu/APIs/Token.html#by-python-script.
 
+According to this, each token is valid for 10 minutes: https://documentation.dataspace.copernicus.eu/FAQ.html#apis
   
 Configurable Options:
 ----------------------
@@ -71,8 +72,9 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
         self.o.add_option('grantType', kind='str', default_value='password')
 
         self._token = None
-        self._token_expires = None # format MM/DD/YYYY, e.g. 12/25/2023
-
+        self._token_expires = datetime.datetime.utcnow()
+        self._refresh = None
+        self._refresh_expires = self._token_expires
         # end __init__
 
     def after_accept(self, worklist):
@@ -84,6 +86,10 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
         for msg in worklist.incoming:
             token = self.get_token()
             
+            if not token:
+                logger.error("Failed to get token!")
+                continue
+
             # If the credential already exists and the bearer_token matches, don't need to do anything
             ok, details = self.o.credentials.get(msg['baseUrl'])
             token_already_in_creds = False
@@ -105,34 +111,55 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
     def get_token(self):
         """ Returns a token, or None
         """
-        if not self._token:
-            logger.debug("Requesting a token")
+        now = datetime.datetime.utcnow()
+        if not self._token or self._token_expires <= now:
+            logger.info(f"Requesting a new token. Expired? {self._token_expires <= now}")
 
-            # Credentials - from Earthdata endpoint URL
-            ok, details = self.o.credentials.get(self.o.openidConnectUrl)
-            creds = details.url
-            username = creds.username
-            password = creds.password
-            if not ok or not username or not password:
-                # logger.debug(f"{ok}, {username}, {password}")
-                logger.error(f"credential lookup failed for {self.o.openidConnectUrl}. Check credentials.conf!")
-                return None
+            # Use username and password when refresh token is not available or expired
+            if not self._refresh or self._refresh_expires <= now:
+                logger.info("Using username/password")
+                # Credentials
+                ok, details = self.o.credentials.get(self.o.openidConnectUrl)
+                creds = details.url
+                username = creds.username
+                password = creds.password
+                if not ok or not username or not password:
+                    # logger.debug(f"{ok}, {username}, {password}")
+                    logger.error(f"credential lookup failed for {self.o.openidConnectUrl}. Check credentials.conf!")
+                    return None
+                data = {
+                    "client_id": self.o.clientId,
+                    "username": username,
+                    "password": password,
+                    "grant_type": self.o.grantType,
+                }
+            else:
+                logger.info("Using refresh_token")
+                data = {
+                    "client_id": self.o.clientId,
+                    "refresh_token": self._refresh,
+                    "grant_type": "refresh_token",
+                }
 
-            data = {
-                "client_id": self.o.clientId,
-                "username": username,
-                "password": password,
-                "grant_type": self.o.grantType,
-            }
             try:
                 r = requests.post(self.o.openidConnectUrl, data=data)
                 r.raise_for_status()
                 j = r.json()
-                self._token = j["access_token"]
+                self._token = j['access_token']
+                self._token_expires = now + datetime.timedelta(seconds=j['expires_in'])
+                self._refresh = j['refresh_token']
+                self._refresh_expires = now + datetime.timedelta(seconds=j['refresh_expires_in'])
                 logger.info("Success! Access token created.")
                 logger.debug(j)
             except Exception as e:
                 logger.error(f"Access token creation failed. Reponse from the server was: {r.json()}")
+                self._token = None
+                self._token_expires = now
+                self._refresh = None
+                self._refresh_expires = now
                 return None
         
         return self._token
+
+
+#'expires_in': 600, 'refresh_expires_in': 3600, 'refresh_token': 'eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhZmFlZTU2Zi1iNWZiLTRiMzMtODRlYS0zMWY2NzMyMzNhNzgifQ.eyJleHAiOjE3MDM3ODA2ODIsImlhdCI6MTcwMzc3NzA4MiwianRpIjoiMjg1Y2NiNzEtMWNkYS00YTk1LWJjN2UtYmVlODgzNjRmNDg4IiwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5kYXRhc3BhY2UuY29wZXJuaWN1cy5ldS9hdXRoL3JlYWxtcy9DRFNFIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eS5kYXRhc3BhY2UuY29wZXJuaWN1cy5ldS9hdXRoL3JlYWxtcy9DRFNFIiwic3ViIjoiNGY5ODIwMGYtYzM3Ny00YWU3LTgyMTQtZTE5NTdjZDhjY2Q5IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImNkc2UtcHVibGljIiwic2Vzc2lvbl9zdGF0ZSI6IjhkYjdjM2JlLWQxNzItNDI4OS1hYTU3LTk5MWVmNWY4ZmUwNCIsInNjb3BlIjoiQVVESUVOQ0VfUFVCTElDIG9wZW5pZCBlbWFpbCBwcm9maWxlIG9uZGVtYW5kX3Byb2Nlc3NpbmcgdXNlci1jb250ZXh0Iiwic2lkIjoiOGRiN2MzYmUtZDE3Mi00Mjg5LWFhNTctOTkxZWY1ZjhmZTA0In0.rBMOTKRq497G6_L_DQ-7SpvYWDMi1BXWcxm7uFdL2KY', 'token_type': 'Bearer', 'not-before-policy': 0, 'session_state': '8db7c3be-d172-4289-aa57-991ef5f8fe04', 'scope': 'AUDIENCE_PUBLIC openid email profile ondemand_processing user-context'}
