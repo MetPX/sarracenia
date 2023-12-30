@@ -1923,6 +1923,8 @@ class Flow:
                         self.proto[self.scheme].update_file(new_inflight_path)
             elif len_written < 0:
                 logger.error("failed to download %s" % new_file)
+                if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
+                    os.remove(new_inflight_path)
                 return False
             else:
                 if block_length == 0:
@@ -1944,6 +1946,8 @@ class Flow:
                             logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
                         else:
                             logger.error( f'incomplete download only {len_written} of expected {block_length} bytes for {new_inflight_path}' )
+                        if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
+                            os.remove(new_inflight_path)
                         return False
                 # when len_written is different than block_length
                 msg['size'] = len_written
