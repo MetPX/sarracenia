@@ -377,7 +377,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'v2plugin_options': [],
      'v2plugins': {'plugin': ['msg_total_save', 'file_total_save']},
      'vhost': '/',
-     'vip': None}
+     'vip': []}
     
     % 
 
@@ -2173,7 +2173,9 @@ moving vip.
 **vip 153.14.126.3**
 
 When **sr3** does not find the vip, it sleeps for 5 seconds and retries.
-If it does, it consumes and processes a notification message and than rechecks for the vip.
+If it does find the vip, it consumes and processes a notification message and than rechecks for the vip.
+if multiple vips are specified, then posession of any of the vips is sufficient
+to be declared active.
 
 
 [--blocksize <value>] (default: 0 (auto))

@@ -148,7 +148,7 @@ duration_options = [
     'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
-list_options = ['path' ]
+list_options = [ 'path', 'vip' ]
 
 # set, valid values of the set.
 set_options = [ 'logEvents', 'fileEvents' ]
@@ -170,7 +170,7 @@ str_options = [
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
-    'nodupe_basis', 'tlsRigour', 'topic', 'vip'
+    'nodupe_basis', 'tlsRigour', 'topic'
 ]
 """
    for backward compatibility, 
@@ -821,7 +821,7 @@ class Config:
         self.undeclared = []
         self.declared_users = {}
         self.users = False
-        self.vip = None
+        self.vip = []
 
     def __deepcopy__(self, memo) -> 'Configuration':
         """
@@ -1599,10 +1599,11 @@ class Config:
             elif k in count_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in list_options:
-                if not hasattr(self, k):
+                if not hasattr(self, k) or not getattr(self,k):
                     setattr(self, k, [' '.join(line[1:])])
                 else:
-                    getattr(self, k).append(' '.join(line[1:]))
+                    l = getattr(self, k)
+                    l.append(' '.join(line[1:]))
             elif k in set_options:
                 if v.lower() == 'none':
                     setattr(self, k, set([]))

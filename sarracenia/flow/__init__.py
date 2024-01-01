@@ -57,7 +57,7 @@ default_options = {
     'messageRateMin': 0,
     'sleep': 0.1,
     'topicPrefix': ['v03'],
-    'vip': None
+    'vip': []
 }
 
 if features['filetypes']['present']:
@@ -322,29 +322,32 @@ class Flow:
                     logger.debug( "details:", exc_info=True )
 
 
-    def has_vip(self):
+    def has_vip(self) -> list:
+        """
+            return list of vips which are active on the current machine, or an empty list.
+        """
 
         if not features['vip']['present']: return True
 
         # no vip given... standalone always has vip.
-        if self.o.vip == None:
-            return True
+        if self.o.vip == []:
+            return [ 'AnyAddressIsFine' ]
 
         try:
             for i in netifaces.interfaces():
                 for a in netifaces.ifaddresses(i):
                     j = 0
                     while (j < len(netifaces.ifaddresses(i)[a])):
-                        if self.o.vip in netifaces.ifaddresses(i)[a][j].get(
-                                'addr'):
-                            return True
+                        k=netifaces.ifaddresses(i)[a][j].get('addr')
+                        if k in self.o.vip:
+                            return k
                         j += 1
         except Exception as ex:
             logger.error(
                 f'error while looking for interfaces to compare with vip {self.o.vip}: {ex}' )
             logger.debug('Exception details: ', exc_info=True)
 
-        return False
+        return []
 
     def reject(self, m, code, reason) -> None:
         """
@@ -414,9 +417,9 @@ class Flow:
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
         if not self.has_vip():
-           logger.info( f'starting up passive, as do not possess vip {self.o.vip}' )
-           with open( self.o.novipFilename, 'w' ) as f:
-               f.write(str(start_time) + '\n' )
+            logger.info( f'starting up passive, as do not possess any vip from: {self.o.vip}' )
+            with open( self.o.novipFilename, 'w' ) as f:
+                f.write(str(start_time) + '\n' )
         else:
             if os.path.exists( self.o.novipFilename ):
                 os.unlink( self.o.novipFilename )
@@ -487,13 +490,13 @@ class Flow:
 
                 if (self.o.component == 'poll') and not self.have_vip:
                     if had_vip:
-                        logger.info("now passive on vip %s" % self.o.vip )
+                        logger.info("now passive on vips %s" % self.o.vip )
                         with open( self.o.novipFilename, 'w' ) as f:
                             f.write(str(nowflt()) + '\n' )
                         had_vip=False
                 else:
                     if not had_vip:
-                        logger.info("now active on vip %s" % self.o.vip )
+                        logger.info("now active on vip %s" % self.have_vip )
                         had_vip=True
                         if os.path.exists( self.o.novipFilename ):
                             os.unlink( self.o.novipFilename )

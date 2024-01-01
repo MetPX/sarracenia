@@ -378,7 +378,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'v2plugin_options': [],
      'v2plugins': {'plugin': ['msg_total_save', 'file_total_save']},
      'vhost': '/',
-     'vip': None}
+     'vip': []}
     
     % 
 
@@ -2154,6 +2154,8 @@ vip en mouvement.
 
 Lorsque **sr3** ne trouve pas le vip, il dort pendant 5 secondes et réessaie.
 S´il possède le vip, il consomme et traite un message, puis revérifie le vip.
+lorque plus qu´une addresse est setté commen vip, la possesion de n´importe laquelle
+dans la liste est suffisante.
 
 
 [--blocksize <value>] (default: 0 (auto))
