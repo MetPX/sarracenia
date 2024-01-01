@@ -1835,7 +1835,7 @@ the server go down, the **vip** is moved on another server, and processing
 then happens using the new server that now has the vip active.
 Both servers would run an **sr3 instance**::
 
- - **vip          <string>          (None)**
+ - **vip          <list>          []**
 
 When you run only one **sr3 instance** on one server, these options are not set,
 and subscribe will run in 'standalone mode'.
@@ -1847,6 +1847,7 @@ moving vip.
 
 When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
+Multiple vips form a list, where any individual address being active is enough.
 
 SEE ALSO
 ========

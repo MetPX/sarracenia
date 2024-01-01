@@ -1799,7 +1799,7 @@ le serveur tombe en panne, le **vip** est déplacé sur un autre serveur et le t
 se produit en utilisant le nouveau serveur qui a maintenant le VIP actif.
 Les deux serveurs exécuteraient une instance **sr3**::
 
- - **vip          <string>          (None)**
+ - **vip          <list>          []**
 
 Lorsqu’une seule instance **sr3** est exécutée  sur un serveur, ces options ne sont pas définies,
 et l’abonnement fonctionnera en « mode autonome » (standalone mode).
@@ -1811,6 +1811,7 @@ vip qui change.
 
 Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
 Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
+lorsque plus qu'un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.
 
 SEE ALSO
 ========
