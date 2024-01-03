@@ -1627,11 +1627,19 @@ class Flow:
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):
+
                 if self.o.inflight:
+                    how_old = time.time() - os.path.getmtime(msg['new_inflight_path'])
                     #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
-                    logger.warning(
-                        'inflight file already exists. race condition, deferring transfer of %s'
-                        % msg['new_path'])
+                    #       Added this with fixed value, should it be a setting?
+                    if how_old > 300:
+                        os.unlink( msg['new_inflight_path'] )
+                        logger.info(
+                            f"inflight file is {how_old}s old. Removed previous attempt {msg['new_path']}" )
+                    else:
+                        logger.warning(
+                            'inflight file already exists. race condition, deferring transfer of %s'
+                            % msg['new_path'])
                     self.worklist.failed.append(msg)
                     continue
                 # overwriting existing file.
