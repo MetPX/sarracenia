@@ -6,38 +6,24 @@ Poll Rate Limit Plugin
 
 Limits how frequenty a poll accesses a remote server. 
 
-Once ``pollRateLimit_count`` requests\* to the remote server have been made within ``pollRateLimit_period``, wait
-for the remaining amount of time before making the next request(s).
-
-Example: count=10, period=60s. 10 requests are made between 10:00:00 and 10:00:10. This plugin will wait 50s
-before allowing the next request(s) to be made.
-
 \*This limits the number of lsdir requests made to the server. If the poll that you want to rate limit doesn't
 call ``sarracenia.flowcb.poll.Poll.poll_directory``, then it won't work.
   
 Configurable Options:
 ----------------------
 
-``pollRateLimit_count``:
-^^^^^^^^^^^^^^^^^^^^^^^^^
+``pollLsdirRateMax``:
+^^^^^^^^^^^^^^^^^^^^^^
 
-    How many requests can be made within ``pollRateLimit_period``.
+    Maximum number of (remote server) directory listings per second. Floating point number.
 
-``pollRateLimit_period``:
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-    This is a duration option. It will accept a floating point number, or a floating point number suffixed with
-    a unit. 
-
-How to set up your poll config:
---------------------------------
- 
-    Use ``callback poll.rate_limit`` and set the above options.
+    E.g. 1.0 = <= 1 lsdir/sec, 0.25 = <= 1 lsdir every 4 seconds.
 
 Change log:
 -----------
 
     - 2024-01: First attempt.
+    - 2024-01-04: Changed to use a rate.
 """
 
 import datetime
@@ -56,14 +42,34 @@ class Rate_limit(sarracenia.flowcb.poll.Poll):
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
 
-        self.o.add_option('pollRateLimit_count', kind='count', default_value=1)
-        self.o.add_option('pollRateLimit_period', kind='duration', default_value=10)
+        self.o.add_option('pollRateLimit_count', kind='count', default_value=0)
+        self.o.add_option('pollRateLimit_period', kind='duration', default_value=0)
+        self.o.add_option('pollLsdirRateMax', kind='float', default_value=0.0)
+
+        if self.o.pollLsdirRateMax != 0.0:
+            logger.debug(f"Setting pollRateLimit_count and pollRateLimit_period using pollLsdirRateMax")
+            if self.o.pollRateLimit_count != 0 or self.o.pollRateLimit_period != 0:
+                logger.warning("Using pollLsdirRateMax, ignoring pollRateLimit_count and pollRateLimit_period")
+            self.o.pollRateLimit_count = 1
+            self.o.pollRateLimit_period = 1/self.o.pollLsdirRateMax
+        else:
+            self.o.pollLsDirRateMax = self.o.pollRateLimit_count/self.o.pollRateLimit_period
 
         self._lsdir_count = 0
         self._last_limit = datetime.datetime.utcnow()
+        self._lsdir_total = 0
+    
+    def poll(self):
+        self._lsdir_total = 0 # total # of lsdirs since the poll started
+        start_time = datetime.datetime.utcnow()
+        msgs = super().poll()
+        end_time = datetime.datetime.utcnow()
+        rate = self._lsdir_total/((end_time - start_time).seconds)
+        logger.info(f"Actual rate: {rate:.4f} lsdir/sec, pollLsdirRateMax: {self.o.pollLsdirRateMax:.4f} lsdir/sec")
+        return msgs
     
     def poll_directory(self, pdir):
-        if self._lsdir_count >= self.o.pollRateLimit_count:
+        if self.o.pollRateLimit_count and self._lsdir_count >= self.o.pollRateLimit_count:
             logger.debug(f"{self._lsdir_count} requests have been made since {self._last_limit}")
             time_to_sleep = int(self.o.pollRateLimit_period - (datetime.datetime.utcnow() - self._last_limit).seconds)
             if time_to_sleep > 0:
@@ -79,4 +85,6 @@ class Rate_limit(sarracenia.flowcb.poll.Poll):
             self._last_limit = datetime.datetime.utcnow()
         
         self._lsdir_count += 1
+        self._lsdir_total += 1
         return super().poll_directory(pdir)
+    
