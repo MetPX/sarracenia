@@ -161,8 +161,7 @@ class Https(Transfer):
             url = self.sendTo + '/' + msg['retrievePath']
         else:
             u = urllib.parse.urlparse( self.sendTo )
-            url = u.scheme + '://' + u.netloc + '/' + urllib.parse.quote(self.path + '/' +
-                                                              remote_file)
+            url = u.scheme + '://' + u.netloc + '/' + self.path + '/' + remote_file
 
         ok = self.__open__(url, remote_offset, length)
 
@@ -219,7 +218,7 @@ class Https(Transfer):
 
         self.entries = {}
 
-        url = self.sendTo + '/' + urllib.parse.quote(self.path)
+        url = self.sendTo + '/' + self.path
 
         ok = self.__open__(url)
 
