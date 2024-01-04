@@ -1630,11 +1630,19 @@ class Flow:
             # assert new_inflight_path is set.
 
             if os.path.exists(msg['new_inflight_path']):
+
                 if self.o.inflight:
+                    how_old = time.time() - os.path.getmtime(msg['new_inflight_path'])
                     #FIXME: if mtime > 5 minutes, perhaps rm it, and continue? what if transfer crashed?
-                    logger.warning(
-                        'inflight file already exists. race condition, deferring transfer of %s'
-                        % msg['new_path'])
+                    #       Added this with fixed value, should it be a setting?
+                    if how_old > 300:
+                        os.unlink( msg['new_inflight_path'] )
+                        logger.info(
+                            f"inflight file is {how_old}s old. Removed previous attempt {msg['new_path']}" )
+                    else:
+                        logger.warning(
+                            'inflight file already exists. race condition, deferring transfer of %s'
+                            % msg['new_path'])
                     self.worklist.failed.append(msg)
                     continue
                 # overwriting existing file.
@@ -1926,6 +1934,8 @@ class Flow:
                         self.proto[self.scheme].update_file(new_inflight_path)
             elif len_written < 0:
                 logger.error("failed to download %s" % new_file)
+                if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
+                    os.remove(new_inflight_path)
                 return False
             else:
                 if block_length == 0:
@@ -1947,6 +1957,8 @@ class Flow:
                             logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
                         else:
                             logger.error( f'incomplete download only {len_written} of expected {block_length} bytes for {new_inflight_path}' )
+                        if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
+                            os.remove(new_inflight_path)
                         return False
                 # when len_written is different than block_length
                 msg['size'] = len_written
