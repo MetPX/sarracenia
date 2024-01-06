@@ -130,5 +130,16 @@ echo
 # Configure users
 sr3 --users declare
 echo "dir: +${PWD}+"
+
+# get bits and bobs for future work
+git clone https://github.com/MetPX/sarrac metpx-sr3c
 git clone https://github.com/MetPX/sr_insects
+
+sudo dnf install -y make gcc json-c-devel librabbitmq-devel openssl-devel
+
+cd metpx-sr3c
+make rpm_rhel7
+sudo rpm -ivh ${HOME}/rpmbuild/RPMS/`uname -m`/*.rpm
+cd
+ 
 
