@@ -14,6 +14,11 @@ authors = [
    { name = "Peter Silva", email = "peter.silva@ssc-spc.gc.ca" },
    { name = "Reid Sunderland", email = "" },
    { name = "André Leblanc",  email = "" },
+   { name = "Michel Grenier", email ="" },
+   { name = "Greg Linton", email ="" },
+   { name = "Cléa Aumont", email ="" },
+   { name = "Cody Au", email ="" },
+   { name = "Benoit Lapointe", email ="" },
 ]
 
 classifiers = [

@@ -75,7 +75,7 @@ cd ..
 # Remove last build
 rm -rf dist
 rm -rf build
-python3 setup.py bdist_wheel
+python3 -m build
 
 if [ "$1" ]; then
     PYVERSION=$1
