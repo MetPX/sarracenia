@@ -23,7 +23,7 @@ sudo dnf install -y erlang findutils git librabbitmq net-tools python3-pip rabbi
 sudo dnf install -y wget 
 
 sudo dnf install -y python3-devel
-sudo dnf install -y rpmdevtools rpmlint
+sudo dnf install -y rpmdevtools rpmlint lsb_release
 
 #sudo dnf install xattr 
 #sudo dnf install openssh-client openssh-server 
