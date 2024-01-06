@@ -84,7 +84,7 @@ def disable_xattr():
 
 
 class FileMetadata:
-    """
+    r"""
       This class implements storing metadata *with* a file.
 
       on unlix/linux/mac systems, we use extended attributes,
