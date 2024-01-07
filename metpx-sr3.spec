@@ -11,6 +11,8 @@ Source:         %{url}/archive/v%{version}/metpx-sr3-%{version}.tar.gz / %{pypi_
 
 BuildArch:      noarch / BuildRequires:  gcc
 BuildRequires:  python3-devel
+BuildRequires: systemd-rpm-macros
+
 
 Requires: python3-appdirs, python3-humanfriendly, python3-humanize, python3-jsonpickle, python3-paramiko, python3-psutil, python3-xattr
 
@@ -28,7 +30,6 @@ Summary:        %{summary}
 %prep
 %autosetup -p1 -n metpx-sr3-%{version}
 
-
 %generate_buildrequires
 %pyproject_buildrequires  requirements.txt
 
@@ -41,6 +42,10 @@ Summary:        %{summary}
 %pyproject_install
 %pyproject_save_files sarracenia
 
+mkdir -p %{buildroot}%{_unitdir}
+mkdir -p %{buildroot}%{_userunitdir}
+install -m 644 debian/metpx-sr3.service %{buildroot}%{_unitdir}/
+install -m 644 tools/metpx-sr3_user.service %{buildroot}%{_userunitdir}/metpx-sr3.service
 
 
 %files -n metpx-sr3 -f %{pyproject_files}
@@ -48,7 +53,8 @@ Summary:        %{summary}
 %{_bindir}/sr3_post
 %{_bindir}/sr3_rotateLogsManually
 %{_bindir}/sr3_tailf
-
+%{_unitdir}/metpx-sr3.service
+%{_userunitdir}/metpx-sr3.service
 
 %changelog
 %autochangelog
