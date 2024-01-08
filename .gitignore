@@ -13,3 +13,11 @@ pynsist_pkgs
 sarra/*.pyc
 .idea
 .vscode
+.pyproject-builddir/
+metpx-sr3-3.00.47-0.fc39.x86_64-pyproject-buildrequires
+metpx-sr3-3.00.47-0.fc39.x86_64-pyproject-files
+metpx-sr3-3.00.47-0.fc39.x86_64-pyproject-ghost-distinfo
+metpx-sr3-3.00.47-0.fc39.x86_64-pyproject-modules
+metpx-sr3-3.00.47-0.fc39.x86_64-pyproject-record
+pyproject-wheeldir/
+

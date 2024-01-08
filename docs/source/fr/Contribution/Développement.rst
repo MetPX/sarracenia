@@ -1599,62 +1599,51 @@ Basé sur https://www.redhat.com/sysadmin/create-rpm-package ...  installer les 
 
   sudo dnf install -y rpmdevtools rpmlint git
   git clone -b development https://github.com/MetPX/sarracenia sr3
+  cd sr3
 
-On peut construire un type très limité de paquet rpm sur une distribution basée sur rpm
-en utilisant les distutils python::
+Les noms du package pour les données magiques de fichiers (pour déterminer les types de fichiers) ont des noms différents sur
+Ubuntu contre RedHat. Les trois dernières lignes de **dépendances** dans pyproject.toml concernent
+"python-magic", mais sur Redhat, il doit plutôt être "file-magic" ::
 
-   python3 setup.py bdist_rpm
+   vi pyproject.toml
 
-Cela échouera en essayant d’ouvrir un CHANGES.txt qui n'existe pas ... Une étrange incompatibilité. Alors,
+On peut construire paquet rpm sur une distribution de Linux approprié, avec la commande *rpmbuild*::
 
-  **Commentez les deux lignes de setup.py utilisées pour définir le long_description**,
+   rpmbuild --build-in-place -bb metpx-sr3.spec
 
-Ces lignes::
-
-   #long_description=(read('README.rst') + '\n\n' + read('CHANGES.rst') +
-   #                   '\n\n' + read('AUTHORS.rst')),
- 
-Et puis la génération RPM se terminera. Malheureusement, il n’ajoute pas de dépendances appropriées,
-on peut donc les installer manuellement.
-
-Une façon de résoudre le problème de dépendance est de décoder les options de debian/control ::
-
-   [ubuntu@fed34 sr3]$ grep Recommends debian/control | sed 's/Recommends: //;s/ //g'
-   ncftp,wget
-   [ubuntu@fed34 sr3]$ 
-
-et répétez avec le fichier setup.py...  (Note: setup.py ne veut pas d’espaces autour des versions
-pour les paquets python, mais l'option bdist_rpm les nécessite, alors corrigez cela... )::
-
-   [ubuntu@fed34 sr3]$ tail -4 setup.py |  egrep -v '\[' | egrep -v ']' | tr '\n' ' ' | sed 's/ *//g;s/>=/ >= /g;s/^"/"python3-/;s/,"/,"python3-/g'
-   "python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
-   [ubuntu@fed34 sr3]$ 
-
-Ensuite, copiez/collez les dépendances dans la ligne de construction RPM::
-
-   python3 setup.py bdist_rpm --requires=ncftp,wget,"python3-amqp","python3-appdirs","python3-watchdog","python3-netifaces","python3-humanize","python3-jsonpickle","python3-paho-mqtt >= 1.5.1","python3-paramiko","python3-psutil >= 5.3.0"
+Cela marche tel quel sur fedora 39, mais ca se peut qu´il faut editer metpx-sr3.spec afin d´enlever
+des paquets listé comme *dependencies*, faute de disponibilité en format RPM dans les anciennes 
+versions de Redhat. Eventuellement, on aura enlevé assez de dépendences pour que le .rpm se construit. 
 
 On peut vérifier si les dépendances sont là comme ça::
   
-  [ubuntu@fed34 sr3]$ rpm -qp dist/metpx-sr3-3.0.6-1.noarch.rpm --requires
+  [ubuntu@fed39 sr3]$ rpm -qR /home/ubuntu/rpmbuild/RPMS/noarch/metpx-sr3-3.00.47-0.fc39.noarch.rpm
+
   /usr/bin/python3
-  ncftp
-  python3-amqp
+  python(abi) = 3.12
   python3-appdirs
+  python3-humanfriendly
   python3-humanize
   python3-jsonpickle
-  python3-netifaces
-  python3-paho-mqtt >= 1.5.1 
   python3-paramiko
-  python3-psutil >= 5.3.0
-  python3-watchdog
+  python3-psutil
+  python3-xattr
+  python3.12dist(appdirs)
+  python3.12dist(humanfriendly)
+  python3.12dist(humanize)
+  python3.12dist(jsonpickle)
+  python3.12dist(paramiko)
+  python3.12dist(psutil) >= 5.3
+  python3.12dist(watchdog)
+  python3.12dist(xattr)
   rpmlib(CompressedFileNames) <= 3.0.4-1
   rpmlib(FileDigests) <= 4.6.0-1
   rpmlib(PartialHardlinkSets) <= 4.0.4-1
   rpmlib(PayloadFilesHavePrefix) <= 4.0-1
   rpmlib(PayloadIsZstd) <= 5.4.18-1
-  wget
-  [ubuntu@fed34 sr3]$
+
+  [ubuntu@fed39 sr3]$
+
 
 Vous pouvez voir toutes les dépendances python3 préfixées requises, ainsi que les paquets d’accellerator
 binaires recommandés sont répertoriés. Ensuite, si vous installez avec dnf install, il les attirera tous.

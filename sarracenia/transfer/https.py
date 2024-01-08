@@ -177,7 +177,7 @@ class Https(Transfer):
     def getAccelerated(self, msg, remote_file, local_file, length):
 
         arg1 = msg['baseUrl'] + '/' + msg['relPath']
-        arg1 = arg1.replace(' ', '\ ')
+        arg1 = arg1.replace(' ', '\\ ')
         arg2 = local_file
 
         cmd = self.o.accelWgetCommand.replace('%s', arg1)

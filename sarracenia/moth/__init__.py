@@ -48,7 +48,7 @@ def ProtocolPresent(p) -> bool:
 
 
 class Moth():
-    """
+    r"""
         Moth ... Messages Organized by Topic Headers
         (en français: Messages organisés par thème hierarchique. )
 

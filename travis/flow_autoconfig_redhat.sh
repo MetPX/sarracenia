@@ -4,15 +4,29 @@
 # Intended use case is a fresh sys (tested on ubuntu18.04desktop)
 # which can easily be run in a virtualbox VM.
 
+#
+# STATUS:  EXPERIMENTAL... not actually working...
+# testing with fedora39
+
 # Install and configure dependencies
-sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
-sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
-sudo apt update
-sudo apt upgrade
-sudo apt -y install python3-setuptools python3-magic
-sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
-sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
-sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
+#sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
+#sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
+#sudo apt update
+#sudo apt upgrade
+
+sudo dnf install -y python3-setuptools python3-magic
+
+#sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
+#sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
+
+sudo dnf install -y erlang findutils git librabbitmq net-tools python3-pip rabbitmq-server 
+sudo dnf install -y wget 
+
+sudo dnf install -y python3-devel
+sudo dnf install -y rpmdevtools rpmlint lsb_release
+
+#sudo dnf install xattr 
+#sudo dnf install openssh-client openssh-server 
 
 pip3 install -U pip
 pip3 install pyftpdlib paramiko net-tools
@@ -99,14 +113,6 @@ sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
 
-for p in $HOME/.local/bin /usr/local/bin; do
-
-    if [[ ":$PATH:" != *":$p:"* ]]; then
-       export PATH=$p:$PATH
-    fi
-done
-
-
 if [[ $(($check_wsl == "init" )) ]]; then
 	sudo service rabbitmq-server restart
 else 
@@ -124,5 +130,16 @@ echo
 # Configure users
 sr3 --users declare
 echo "dir: +${PWD}+"
+
+# get bits and bobs for future work
+git clone https://github.com/MetPX/sarrac metpx-sr3c
 git clone https://github.com/MetPX/sr_insects
+
+sudo dnf install -y make gcc json-c-devel librabbitmq-devel openssl-devel
+
+cd metpx-sr3c
+make rpm_rhel7
+sudo rpm -ivh ${HOME}/rpmbuild/RPMS/`uname -m`/*.rpm
+cd
+ 
 

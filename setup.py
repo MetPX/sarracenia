@@ -39,6 +39,13 @@ print("packages = %s" % packages)
 features = {
        'amqp' : [ "amqp" ],
        'filetypes': [ "python-magic" ], 
+       'filetypes-redhat': [ "python-file-magic" ], 
+       'ftppoll' : ['dateparser' ],
+       'mqtt': [ 'paho.mqtt>=1.5.1' ],
+       'vip': [ 'netifaces' ],
+       'redis': [ 'redis' ]
+    } 
+
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'vip': [ 'netifaces' ],
@@ -100,8 +107,7 @@ setup(
     install_requires=[
         "appdirs", "humanfriendly", "humanize", "jsonpickle", "psutil>=5.3.0", 
         "paramiko", "watchdog",
-        'xattr ; sys_platform!="win32"', 'python-magic; sys_platform!="win32"',
-        'python-magic-bin; sys_platform=="win32"'
+        'xattr ; sys_platform!="win32"', 
     ],
     # when building on HPC redhat, python OS packages don't exist. 
     # remove the last three lines of install_requires above, aka: 
