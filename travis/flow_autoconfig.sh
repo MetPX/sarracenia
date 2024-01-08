@@ -99,6 +99,14 @@ sudo rabbitmqctl set_user_tags bunnymaster administrator
 
 echo
 
+for p in $HOME/.local/bin /usr/local/bin; do
+
+    if [[ ":$PATH:" != *":$p:"* ]]; then
+       export PATH=$p:$PATH
+    fi
+done
+
+
 if [[ $(($check_wsl == "init" )) ]]; then
 	sudo service rabbitmq-server restart
 else 
