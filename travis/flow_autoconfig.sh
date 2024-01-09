@@ -32,7 +32,7 @@ done
 # in case it was installed as a dependency.
 sudo apt -y remove metpx-sr3
 
-pip3 install -e .
+pip3 install .
 
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3
