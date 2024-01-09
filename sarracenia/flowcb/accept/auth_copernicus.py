@@ -41,8 +41,7 @@ How to set up your download config:
     Add ``callback accept.auth_copernicus``, in your subscribe, sarra or other download config.  
 
     Add ``https://username:password@identity.dataspace.copernicus.eu/`` to your ``credentials.conf`` file (or whatever
-    URL matches your ``openidConnectUrl``). Most usernames are email addresses - you will need to use ``%40`` instead
-    of the ``@`` symbol in the username.
+    URL matches your ``openidConnectUrl``).
 
     NOTE: When downloading large files on a slow connection, it is possible for the access token to expire during a
     batch download. Setting ``batch 1`` or ``batch n`` (where n*(download time per file) < 10 minutes) in your
@@ -82,10 +81,8 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
         # end __init__
 
     def after_accept(self, worklist):
-        """ Doesn't actually do any downloading. Get/create a bearer token by logging in with the username and 
-            password from credentials.conf. Then adds the bearer token to Sarracenia's credentials DB for the 
-            message's baseUrl. This will allow the file to be downloaded from msg['baseUrl']+msg['relPath'] 
-            using the bearer token.
+        """ Adds a bearer token to Sarracenia's in memory credentials DB for the message's baseUrl. This will allow
+            the file to be downloaded with Sarracenia's default HTTPS transfer class using the bearer token.
         """
         for msg in worklist.incoming:
             token = self.get_token()
@@ -112,11 +109,14 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
                 cred.bearer_token = token
                 self.o.credentials.add(msg['baseUrl'], details=cred)
 
-    def get_token(self):
-        """ Returns a token, or None
+    def get_token(self, retry=False):
+        """ Returns a bearer token, or None
         """
+        r = None
         now = datetime.datetime.utcnow()
         if not self._token or self._token_expires <= now:
+            self._token = None
+
             # Use username and password when refresh token is not available or expired
             if not self._refresh or self._refresh_expires <= now:
                 logger.info("Requesting a new token using username/password")
@@ -148,17 +148,26 @@ class Auth_copernicus(sarracenia.flowcb.FlowCB):
                 r.raise_for_status()
                 j = r.json()
                 self._token = j['access_token']
-                self._token_expires = now + datetime.timedelta(seconds=j['expires_in'])
+                # set tokens to expire sooner than they actually do, to reduce likelihood of it expiring between
+                # when after_accept runs and when download runs.
+                self._token_expires = now + datetime.timedelta(seconds=j['expires_in'], minutes=-2)
                 self._refresh = j['refresh_token']
-                self._refresh_expires = now + datetime.timedelta(seconds=j['refresh_expires_in'])
+                self._refresh_expires = now + datetime.timedelta(seconds=j['refresh_expires_in'], minutes=-5)
                 logger.info("Success! Access token created.")
                 logger.debug(j)
             except Exception as e:
-                logger.error(f"Access token creation failed. Reponse from the server was: {r.json()}")
+                logger.error(f"Access token creation failed. {e}")
+                logger.debug("Details:", exc_info=True)
+                if r:
+                    logger.debug(f"response: {r.json()}")
                 self._token = None
                 self._token_expires = now
                 self._refresh = None
                 self._refresh_expires = now
-                return None
+                if retry:
+                    return None
+                else:
+                    # do 1 retry
+                    return self.get_token(retry=True)
         
         return self._token
