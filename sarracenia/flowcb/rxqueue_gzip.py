@@ -37,7 +37,9 @@ class RxQueue_gzip(FlowCB):
             tname = f'{gzname}.tmp'
             if os.path.exists(fname):
                 # Only try this if the uncompressed file actually exists
-                gzip.open(tname, 'wb').write(open(fname,'rb').read())
+                gzf = gzip.open(tname, 'wb')
+                gzf.write(open(fname,'rb').read())
+                gzf.close()
                 os.rename(tname, gzname)
                 os.unlink(fname)
                 self.rxq.put( gzname )
