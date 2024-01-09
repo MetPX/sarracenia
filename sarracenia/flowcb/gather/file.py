@@ -52,7 +52,7 @@ def path_inflight_tooNew(inflight, lstat):
       return True if the file is too new to be posted.
     """
 
-    if not isinstance(inflight, int):
+    if not type(inflight) in [float, int] :
         #logger.debug("ok inflight unused")
         return False
 
