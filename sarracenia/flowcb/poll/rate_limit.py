@@ -16,6 +16,8 @@ You should either set ``pollLsdirRateMax`` to define a maximum rate of requests 
 ``pollRateLimit_count`` and ``pollRateLimit_period`` instead, to define a maximum number of requests that are
 allowed within an arbitrary time period (e.g. 120 requests [count] allowed per minute [period]).
 
+When using ``pollLsdirRateMax``, ``pollRateLimit_count = 1`` and ``pollRateLimit_period = 1 / pollLsdirRateMax``.
+
 ``pollLsdirRateMax``:
 ^^^^^^^^^^^^^^^^^^^^^^
 
