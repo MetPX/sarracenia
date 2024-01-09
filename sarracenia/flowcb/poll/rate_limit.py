@@ -12,12 +12,27 @@ call ``sarracenia.flowcb.poll.Poll.poll_directory``, then it won't work.
 Configurable Options:
 ----------------------
 
+You should either set ``pollLsdirRateMax`` to define a maximum rate of requests per second **or** use both of 
+``pollRateLimit_count`` and ``pollRateLimit_period`` instead, to define a maximum number of requests that are
+allowed within an arbitrary time period (e.g. 120 requests [count] allowed per minute [period]).
+
 ``pollLsdirRateMax``:
 ^^^^^^^^^^^^^^^^^^^^^^
 
     Maximum number of (remote server) directory listings per second. Floating point number.
 
     E.g. 1.0 = <= 1 lsdir/sec, 0.25 = <= 1 lsdir every 4 seconds.
+
+``pollRateLimit_count``:
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    How many requests can be made within ``pollRateLimit_period`` before waiting.
+
+``pollRateLimit_period``:
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    This is a duration option. It will accept a floating point number, or a floating point number suffixed with
+    a unit (s = seconds, m = minutes, h = hours, etc.). 
 
 Change log:
 -----------
