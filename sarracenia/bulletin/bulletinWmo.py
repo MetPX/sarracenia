@@ -23,19 +23,19 @@ named COPYING in the root of the source directory tree.
 """
 
 import string
-import bulletin
+import sarracenia.bulletin
 
 __version__ = '2.0'
 
-class BulletinWmo(bulletin.bulletin):
-    __doc__ = bulletin.bulletin.__doc__ + \
+class BulletinWmo(sarracenia.bulletin.Bulletin):
+    __doc__ = sarracenia.bulletin.Bulletin.__doc__ + \
     """
     For now, a bulletinWmo's only attribute is it's specific processing.
 
     """
 
     def __init__(self,stringBulletin,logger,lineSeparator='\n',finalLineSeparator='\n',wmo_id=[]):
-        bulletin.bulletin.__init__(self,stringBulletin,logger,lineSeparator,finalLineSeparator,wmo_id)
+        super().__init__(stringBulletin,logger,lineSeparator,finalLineSeparator,wmo_id)
 
     def doSpecificProcessing(self):
         """doSpecificProcessing()
@@ -121,5 +121,5 @@ class BulletinWmo(bulletin.bulletin):
         if self.bulletin[-1] != '':
             self.bulletin += ['']
 
-        bulletin.bulletin.verifyHeader(self)
+        self.verifyHeader()
 
