@@ -135,7 +135,7 @@
 <span class="sd">      return True if the file is too new to be posted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inflight</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="p">:</span>
         <span class="c1">#logger.debug(&quot;ok inflight unused&quot;)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
