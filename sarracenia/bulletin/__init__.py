@@ -23,13 +23,20 @@ named COPYING in the root of the source directory tree.
 ###############################################################################
 """
 
-
+import logging
 import time
-import string, traceback, sys
+from sarracenia.config import Config
 from sarracenia.bulletin.bufr import Bufr
 from sarracenia.bulletin.grib import Grib
 
 __version__ = '2.0'
+
+logger = logging.getLogger(__name__)
+
+default_options = {
+    'logLevel':'info',
+    'logFormat':'%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
+}
 
 class bulletinException(Exception):
     """bulletin exception class: FIXME not very useful documentation, when needed?"""
@@ -45,7 +52,7 @@ class Bulletin:
 
     """
 
-    def __init__(self, stringBulletin, logger, lineSeparator='\n',finalLineSeparator='\n',wmo_id=[]):
+    def __init__(self, stringBulletin, lineSeparator='\n',finalLineSeparator='\n',wmo_id=[], options=default_options):
         """The AHL of a bulletin is checked during instantiation.  To skip the check,
         override verifyHeader in a derived class.
 
@@ -54,10 +61,6 @@ class Bulletin:
             stringBulletin          String
 
                                     - The bulletin as a string.
-
-            logger                  Objet log
-
-                                    - Logging object 
 
             finalLineSeparator      String
 
@@ -81,7 +84,21 @@ class Bulletin:
                   - after call to getBulletin, this contains the entire 
                     bulletin with lineSeparator as the line separator.
         """
-        self.logger = logger
+        options_error = False
+        if type(options) == dict:
+            self.o = options
+        elif isinstance(options, Config):
+            self.o = options.dictify()
+        else:
+            self.o = default_options
+            options_error = True
+
+        logging.basicConfig(format=self.o['logFormat'], level=getattr(logging, self.o['logLevel'].upper()))
+        
+        if options_error:
+            logger.warning("Failed to set options, using default_options")
+
+
         self.errorBulletin = None
         self.lineSeparator = lineSeparator
         self.finalLineSeparator = finalLineSeparator
@@ -105,7 +122,7 @@ class Bulletin:
 
         self.verifyHeader()
 
-        self.logger.veryverbose("newBulletin: %s" % stringBulletin)
+        logger.debug("newBulletin: %s" % stringBulletin)
 
     def compute_Age(self, ep_now=None):
         """compute_Age() -
@@ -325,9 +342,8 @@ class Bulletin:
             try:
                 objbul = objbul.decode('utf-8')
             except:
-                import traceback
-                self.logger.info('bulletin.getHeader() - 1st Line read problem')
-                self.logger.error(traceback.format_exc())
+                logger.error('bulletin.getHeader() - 1st Line read problem')
+                logger.debug('Exception details:', exc_info=True)
                 #pass
         return objbul
 
@@ -347,7 +363,7 @@ class Bulletin:
            Retourne logger attribute.
 
         """
-        return self.logger
+        return logger
 
     def getOrigin(self):
         """getOrigin() -> origine
@@ -528,15 +544,16 @@ class Bulletin:
         """
         self.bulletin[0] = header
 
-        self.logger.debug("new bulletin header: %s",header)
+        logger.debug("new bulletin header: %s",header)
 
-    def setLogger(self,logger):
+    def setLogger(self,new_logger):
         """setLogger(logger)
 
            set Logger attribute.
 
         """
-        self.logger = logger
+        logger.info('Not setting logger.')
+        pass
 
     def splitlinesBulletin(self,stringBulletin):
         """splitlinesBulletin(stringBulletin) -> listeLignes
@@ -607,8 +624,8 @@ class Bulletin:
                        self.emission    = bufr.observation
                        self.ep_emission = bufr.ep_observation
                     else:
-                       self.logger.warning('Bufr without a valid internal date in section 1')
-                       self.logger.warning('Use date from bulletin header')
+                       logger.warning('Bufr without a valid internal date in section 1')
+                       logger.warning('Use date from bulletin header')
 
                     return b
 
@@ -636,7 +653,7 @@ class Bulletin:
                 #return stringBulletin.split(self.lineSeparator)
                 return strBulletin.split(self.lineSeparator)
         except Exception as e:
-            self.logger.exception('Error splitting bulletin:\n' + ''.join(traceback.format_exception(Exception, e,sys.exc_info()[2])))
+            logger.error('Error splitting bulletin:\n', exc_info=True)
             self.setError('Error splitting bulletin into lines')
             return stringBulletin.split(self.lineSeparator)
 
@@ -675,7 +692,7 @@ class Bulletin:
 
         if len(tokens[2]) > 6: # On enleve les ['z', 'Z'] ou ['utc', 'UTC']  s'ils sont presents dans le groupe JJHHMM
             tokens[2] = tokens[2][0:6]
-            self.logger.info("header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
+            logger.info("header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
             self.setHeader(' '.join(tokens))
             tokens = self.getHeader().split()
 
@@ -693,7 +710,7 @@ class Bulletin:
 
         if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3][0] not in ['C','A','R','P']:
             #self.setError('Entete non conforme (champ BBB incorrect')
-            self.logger.info("Header normalized: fourth and later fields removed.") 
+            logger.info("Header normalized: fourth and later fields removed.") 
             parts = self.getHeader().split()
             del parts[3:]
             self.setHeader(' '.join(parts))
@@ -703,7 +720,7 @@ class Bulletin:
                 (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4][0] not in ['C','A','R','P']):
 
             #self.setError('malformed header4 (second BBB field corrupt)')
-            self.logger.info("header normalized: fifth and later fields removed")
+            logger.info("header normalized: fifth and later fields removed")
             parts = self.getHeader().split()
             del parts[4:]
             self.setHeader(' '.join(parts))
@@ -712,7 +729,7 @@ class Bulletin:
         if len(tokens) > 5:
 
             #self.setError('Entete non conforme (plus de 5 champs')
-            self.logger.info("header normalized: sixth and later fields removed")
+            logger.info("header normalized: sixth and later fields removed")
             parts = self.getHeader().split()
             del parts[5:]
             self.setHeader(' '.join(parts))

@@ -20,11 +20,12 @@ named COPYING in the root of the source directory tree.
 #   2015-04-14  DP          Investigate & apply code changes for Python 3.
 ###############################################################################
 """
-
-import array, time
-import string, traceback, sys
+import array
+import logging
 
 __version__ = '1.0'
+
+logger = logging.getLogger(__name__)
 
 class Grib:
     """This class is a very basic GRIB processing.

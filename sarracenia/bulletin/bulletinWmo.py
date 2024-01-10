@@ -21,11 +21,12 @@ named COPYING in the root of the source directory tree.
 #   2015-05-13  DP          Replace six.moves.range with Python 3 range.
 ###############################################################################
 """
-
-import string
+import logging
 import sarracenia.bulletin
 
 __version__ = '2.0'
+
+logger = logging.getLogger(__name__)
 
 class BulletinWmo(sarracenia.bulletin.Bulletin):
     __doc__ = sarracenia.bulletin.Bulletin.__doc__ + \
@@ -34,8 +35,8 @@ class BulletinWmo(sarracenia.bulletin.Bulletin):
 
     """
 
-    def __init__(self,stringBulletin,logger,lineSeparator='\n',finalLineSeparator='\n',wmo_id=[]):
-        super().__init__(stringBulletin,logger,lineSeparator,finalLineSeparator,wmo_id)
+    def __init__(self,stringBulletin,lineSeparator='\n',finalLineSeparator='\n',wmo_id=[]):
+        super().__init__(stringBulletin,lineSeparator,finalLineSeparator,wmo_id)
 
     def doSpecificProcessing(self):
         """doSpecificProcessing()

@@ -19,10 +19,13 @@ named COPYING in the root of the source directory tree.
 #   2015-04-10  DP          Investigate & apply code changes for Python 3.
 ###############################################################################
 """
-import array, time
-import string, traceback, sys
+import array
+import logging
+import time
 
 __version__ = '1.0'
+
+logger = logging.getLogger(__name__)
 
 class Bufr:
     """This class is a very basic BUFR processing.
@@ -259,39 +262,3 @@ class Bufr:
         self.valid = True
 
         return
-
-import sys, os, os.path, time, stat
-
-if __name__=="__main__":
-      fd = open(sys.argv[1], 'rb')
-      str = fd.read()
-      bufr = Bufr(str)
-      print(bufr.valid)
-      print('BUFR')
-      print(bufr.length)
-      print(bufr.version)
-      #print 'subcenter'
-      #print bufr.s1_subcenter
-      #print 'center'
-      #print bufr.s1_center
-      #print 'update'
-      #print bufr.s1_update_sequence
-
-      print(' ')
-      if bufr.version <= 3:
-          print('century')
-          print(bufr.s1_century             )
-      else:
-          print('year')
-          print(bufr.s1_year)             
-      print(bufr.s1_month)               
-      print(bufr.s1_day)                 
-      print(bufr.s1_hour)                
-      print(bufr.s1_min)                 
-      print(bufr.s1_sec)                 
-      print(' ')
-      print(bufr.observation)
-      print(bufr.ep_observation)
-      fd.close()
-
-
