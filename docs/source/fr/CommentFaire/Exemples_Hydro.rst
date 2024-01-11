@@ -195,7 +195,8 @@ Les plugins pour n’importe quel service Web GET peuvent être généralisés p
 utilisés pour l’API NOAA CO-OPS peuvent également être réutilisés dans ce contexte. Par défaut, les ID de station
 à transmettre sont différents, ainsi que le méthode de les passer, de sorte que le code de plug-in qui détermine les
 ID de station à utiliser diffère, mais la méthode conceptuellement, c’est toujours la même chose. Vous transmettez
-une version généralisée de l’URL comme pollingUrl dans la config, par exemple
+une version généralisée de l’URL comme pollingUrl dans la config, par exemple::
+
  https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&indent=on&site={0}&period=PT3H&parameterCd=00060,00065,00011
 
 et dans le plugin, vous remplaceriez le '{0}' (Python rend cela facile avec le formatage de chaîne) par les sites qui

@@ -1206,8 +1206,8 @@ Voici un guide pratique minimal pour notre support RabbitMQTT:
   pour permettre à l’utilisateur partenaire de s’abonner à votre flux mqtt
   (c’est-à-dire en utilisant mosquitto_sub)::
 
-  rabbitmqctl set_permissions -p / anonymous "^q_anonymous.*|^mqtt-subscription"
-  "^q_anonymous.*|^xs_anonymous$|^mqtt-subscription" "^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$"
+     rabbitmqctl set_permissions -p / anonymous "^q_anonymous.*|^mqtt-subscription" "^q_anonymous.*|^xs_anonymous$|^mqtt-subscription" "^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$"
+
 * Écrivez vos configurations qui seront publiées sur rabbitmqtt exchange::
 
    # Voici un shovel/myshovel.conf minimal

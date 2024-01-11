@@ -287,7 +287,7 @@ nodupe_ttl on|off|999
   et beaucoup de transfert de données en double en résultera.
 
 identity <method>[,<value>]
-----------------------------
+---------------------------
 
 Toutes les publications de fichiers incluent une somme de contrôle. L'option *sum* spécifie comment la calculer.
 C'est une chaîne séparée par des virgules. Les méthodes d'intégrité valides sont ::
@@ -298,7 +298,7 @@ C'est une chaîne séparée par des virgules. Les méthodes d'intégrité valide
         random - inventez une valeur aléatoire pour chaque publication.
         arbitrary - appliquer la valeur fixe littérale.
 
-.. Remarque::
+.. Note::
 
   Les sommes de contrôle sont stockées dans les attributs de fichier étendus (ou Alternate Data Streams sous Windows).
   Ceci est nécessaire pour que la méthode *arbitrary* fonctionne, puisque nous n'avons aucun moyen de la calculer.

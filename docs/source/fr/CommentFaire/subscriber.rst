@@ -185,8 +185,8 @@ Pour supprimer une configuration::
 
 pour plus d'informations:
 
-* `CLI Introduction (Jupyter Notebook) <../Tutoriel/1_CLI_introduction.html>`_
-* `Subscriber à distance<../Tutoriel/Mettre_en_place_un_subscriber_distant.html>`_
+* `CLI Introduction (Jupyter Notebook) <../Tutoriel/1_CLI_introduction.rst>`_
+* `S'abonner à distance <../Tutoriel/Mettre_en_place_un_subscriber_distant.rst>`_
 * `les options dans les fichiers de configuration <../Reference/sr3_options.7.rst>`_
 
 
@@ -343,7 +343,8 @@ peu ou pas de fil d’attente pour ces données.
 Affiner la sélection
 --------------------
 
-.. Avertissement::
+.. Warning::
+
   **FIXME**: Faire une photo, avec un:
 
   - courtier à une extrémité, et le subtopic s’y applique.
@@ -358,7 +359,7 @@ qui fourni un filtrage basé sur l’expression régulière des messages qui son
 le flux de notification reçu doit en fait être téléchargé. Regardez dans les *Downloads*
 du fichier journal pour des exemples de ce chemin d’accès transformé.
 
-.. Remarque:: Brève introduction aux expressions régulières
+.. Note:: Brève introduction aux expressions régulières
 
   Les expressions régulières sont un moyen très puissant d’exprimer les correspondances de motifs.
   Elles offrent une flexibilité extrême, mais dans ces exemples, nous n’utiliserons qu’un
@@ -451,7 +452,7 @@ catalog_common/in, plutôt que dans l'hiérarchie des données ponctuelles
 utilisée pour stocker les données qui correspondent aux trois premiers
 clauses d'accept.
 
-.. Remarque::
+.. Note::
   Notez que .* dans la directive de subtopic, où
   cela signifie "correspondre à un topic" (c’est-à-dire qu’aucun caractère de point n’est autorisé dans un nom
   de sujet) a une signification différente de celle qui est dans une clause accept,
@@ -547,8 +548,8 @@ Il y a de nombreux aspects de la performance que nous n'aborderons pas ici.
 
 plus :
 
-* `Quand ramasser un fichier<../Explication/StrategieDetectionFichiers.html>`_ 
-* `Quand savoir qu´un fichier est livré<../Explication/AssurerLaLivraison.html>`_ 
+* `Quand ramasser un fichier <../Explication/StrategieDetectionFichiers.html>`_ 
+* `Quand savoir qu´un fichier est livré <../Explication/AssurerLaLivraison.html>`_ 
  
 Dans les cas de haut-débit, comment faire remarquer rapidement les modifications de fichiers, 
 filtrer les réécritures fréquentes de fichiers, planifier des copies :
@@ -793,7 +794,7 @@ Avec rxpipe, chaque fois qu’un transfert de fichiers est terminé et est prêt
 post-traitement, son nom est écrit sur le canal linux (nommé .rxpipe.)
 
 
-.. REMARQUE::
+.. Note::
 
    Dans le cas où un grand nombre d’instances d’abonnement fonctionnent
    Sur la même configuration, il y a une légère probabilité que les notifications
@@ -966,6 +967,7 @@ L’une ou l’autre de ces options ou les deux feront de très gros journaux et
 plus:
 
 * (code source, en anglais) `Moth API <../../api-documentation.html#module-sarracenia.moth>`_
+
 Métrique Housekeeping
 ---------------------
 Les rappels de flux peuvent implémenter un point d’entrée on_housekeeping.  Ce point d’entrée est généralement

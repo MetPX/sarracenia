@@ -22,7 +22,7 @@ manière plus générale.
 Comparison to 2015 Video
 ------------------------
 
-La vidéo de novembre 2015 ( `Sarracenia in 10 Minutes <https://www.youtube.com/watch?v=G47DRwzwckk>`https://www.youtube.com/watch?v=G47DRwzwckk>`_ )
+La vidéo de novembre 2015 ( `Sarracenia in 10 Minutes <https://www.youtube.com/watch?v=G47DRwzwckk>`_ )
 a tracé les grandes lignes d'une vision. La première phase des travaux de
 développement s'est déroulée en 2015 et au début de l'année 2016, suivie de
 déploiements importants plus tard en 2016. Cette mise à jour, écrit au début
@@ -77,7 +77,7 @@ déployées à l'appui du programme Environnement Canada, surtout pour les
 prévisions météorologiques opérationnelles, en place depuis le début des
 travaux jusqu´à janvier 2018.
 
-.. image:: ../../../Explanation/History/deployment-2018/E-services_data_volume_pas.png
+.. image:: ../../../Explanation/History/deployment_2018/E-services_data_volume_pas.png
 
 Sarracenia est utilisée de façon opérationnelle pour acquérir environ quatre téraoctets.
 des observations provenant de systèmes automatisés d'observation météorologique, des RADARS météorologiques qui
@@ -160,7 +160,7 @@ est transparent pour les données RADAR, en ce sens que les scans de volume sero
 téléchargé à partir de l'autre concentrateur, et l'autre processeur URP produira le fichier
 produits nécessaires.
 
-.. image:: ../../../Explanation/History/deployment-2018/RADAR_DI_LogicFlow_Current.gif
+.. image:: ../../../Explanation/History/deployment_2018/RADAR_DI_LogicFlow_Current.gif
     :scale: 20%
 
 Chaque site a plusieurs serveurs Ninjo. Nous utilisons des serveurs de fichiers

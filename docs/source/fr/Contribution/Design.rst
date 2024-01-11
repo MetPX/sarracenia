@@ -655,7 +655,7 @@ Le courtier sur le nœud SR a une connexion par la suite.
 DD indépendant
 ~~~~~~~~~~~~~~
 
- - L’équilibreur de charge transmet les demandes entrantes à plusieurs configurations Standalone_.
+ - L’équilibreur de charge transmet les demandes entrantes à plusieurs configurations independantes.
 
  - Chaque nœud télécharge toutes les données.  L'espace disque requis pour les nœuds dans cette configuration
    sont beaucoup plus grands que pour les nœuds DDSR, où chaque nœud ne contient que 1/n des données.
@@ -697,8 +697,7 @@ Shared-Broker DD
  -Ou:
 
     -- Ne peut annoncer un produit qu’une fois qu’il est clair que chaque nœud actif possède le produit.
-    -- 1er arrivé, 1er servi : appliquer le vannage des empreintes digitales. Annoncez uniquement le
-       nœud qui a obtenu les données en premier.
+    -- 1er arrivé, 1er servi : appliquer le vannage des empreintes digitales. Annoncez uniquement le nœud qui a obtenu les données en premier.
 
  - Comme dans la configuration indépendante, les nœuds partagent des files d’attente et téléchargent
    une fraction des données en amont.

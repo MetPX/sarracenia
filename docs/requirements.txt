@@ -1,6 +1,7 @@
 Sphinx
-magic
 nbsphinx
 jupyter
 docutils
 sphinx-rtd-theme
+boto3
+GTStoWIS2

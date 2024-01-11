@@ -6,7 +6,7 @@ Portage des plugins V2 vers Sr3
 Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
 Sarracenia version 3.x (metpx-sr3)
 
-.. Contenu ::
+.. Contents::
 
 .. note :: Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
    ne lisez pas ceci. cela ne fera que vous confondre. **Ce guide s’adresse à ceux qui ont besoin de prendre des
@@ -143,8 +143,8 @@ les déclarations de plugins de routine individuelles on_message, on_file, etc..
 faire les choses dans la v3. Vous déclarez des rappels et leur demandez de contenir les points d’entrée dont vous avez besoin.
 
 * DESTFNSCRIPT fonctionne de manière similaire dans v3 à v2, mais l’API est faite pour correspondre v3 flowCallbacks,
-les nouvelles routines, ou on renvoie le nouveau nom de fichier en sortie, au lieu de modifier un champ
-dans le message de notification.
+  les nouvelles routines, ou on renvoie le nouveau nom de fichier en sortie, au lieu de modifier un champ
+  dans le message de notification.
 
 
 Différences de codage entre les plugins dans v2 vs Sr3
@@ -275,7 +275,7 @@ En général, les plugins v3:
          do the same logic as in the v2 plugin. 
          for one message at a time in the loop.
 
-  les mappages de tous les points d'entrée sont décrits dans `Mappage des points d'entrée v2 aux rappels v3`_
+  Les mappages de tous les points d'entrée sont décrits dans `Mappage des points d'entrée v2 aux Callbacks v3`_
   section plus loin dans ce document
 
   Chaque message de notification v3 agit comme un dictionnaire python. Ci-dessous un mappage de table
@@ -1097,5 +1097,3 @@ Les chemins relatifs des dossiers ci-dessus sont indiqués dans le tableau (les 
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
 | spare                                           |                                                                                                                                              |
 +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------+
-
-

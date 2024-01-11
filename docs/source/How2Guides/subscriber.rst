@@ -1040,7 +1040,7 @@ sr_winnow. See the Administrator Guide for more information.
 
 more:
 
-* `Duplicate Suppression <../Explanation/DuplicateSuppression.html>`_
+* `Duplicate Suppression <../Explanation/DuplicateSuppression.rst>`_
 
 
 Web Proxies

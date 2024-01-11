@@ -2,15 +2,11 @@
 # The sarracenia suite is Free and is proudly provided by the Government of Canada
 # Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2019
 #
-"""
- Second version configuration parser
+r"""
 
+Second version configuration parser
 
-FIXME: pas 2023/02/05...  missing options from v2:
-
-   max_queue_size
-   outlet
-   pipe
+FIXME: pas 2023/02/05...  missing options from v2: max_queue_size, outlet, pipe
 
 """
 
@@ -173,7 +169,8 @@ str_options = [
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
-"""
+
+r"""
    for backward compatibility, 
 
    convert some old plugins that are hard to get working with
@@ -184,6 +181,7 @@ str_options = [
 
    accelerators and rate limiting are now built-in, no plugin required.
 """
+
 convert_to_v3 = {
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
@@ -314,7 +312,7 @@ convert_patterns_to_v3 = {
 
 logger = logging.getLogger(__name__)
 
-"""
+r"""
    FIXME: respect appdir stuff using an environment variable.
    for not just hard coded as a class variable appdir_stuff
 
@@ -567,7 +565,7 @@ def config_path(subdir, config, mandatory=True, ctype='conf'):
 
 
 class Config:
-    """
+    r"""
        The option parser to produce a single configuration.
 
        it can be instantiated with one of:
@@ -824,7 +822,7 @@ class Config:
         self.vip = []
 
     def __deepcopy__(self, memo) -> 'Configuration':
-        """
+        r"""
             code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
             Needed for python < 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076
             deepcopy fails for objects with re's in them?
@@ -1007,7 +1005,7 @@ class Config:
         return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
-        """
+        r"""
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
            
            * 'count'      integer count type. 
@@ -1325,7 +1323,7 @@ class Config:
 
           options should be fed to plugin class on instantiation.
           stripped of class... 
-               options = { 'level' : 'debug' }
+          * options = { 'level' : 'debug' }
     
 
        """

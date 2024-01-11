@@ -30,10 +30,11 @@ Analogie FTP
 Spécifier l’utilisation d’un protocole seul peut être insuffisant pour fournir suffisamment d’informations pour
 l’échange de données et l’interopérabilité.  Par exemple, lors de l’échange de données via FTP, un certain nombre de choix
 doivent être fait au-delà du protocole.
-        - utilisation authentifiée ou anonyme ?
-        - comment signaler qu’un transfert de fichier est terminé (bits d’autorisation? suffixe? préfixe?)
-        - convention de nommage
-        - transfert binaire ou texte
+
+* utilisation authentifiée ou anonyme ?
+* comment signaler qu’un transfert de fichier est terminé (bits d’autorisation? suffixe? préfixe?)
+* convention de nommage
+* transfert binaire ou texte
 
 Des conventions convenues au-delà du simple FTP (IETF RFC 959) sont nécessaires.
 Semblable à l’utilisation de FTP seul comme protocole de transfert est insuffisant
@@ -67,7 +68,7 @@ autorisations et le nom de la fil d’attente) peuvent consommer à partir de la
 de nommer la fil d’attente. Dans un autre protocole, tel que MQTT, on ne peut pas nommer la fil d’attente, et donc
 ce modèle de traitement n’est pas pris en charge.
 
-La convention de mappage décrite dans `Topic < ../../Reference/sr3_post.7.html#topic>`_, permet à
+La convention de mappage décrite dans `Topic < ../../Reference/sr3_post.7.rst#topic>`_, permet à
 MQTT d'établir des hiérarchies distinctes qui fournissent une distribution fixe entre
 les travailleurs, mais pas exactement la fil d’attente partagée auto-équilibrée fournie par AMQP.
 
@@ -196,9 +197,11 @@ Un *exchange* est un entremetteur entre les files d’attente *publisher* et *co
    - Pour Sarracenia, nous utilisons (norme AMQP) *topic based exchangess*.
    - Les abonnés indiquent les sujets qui les intéressent, et le filtrage se produit côté serveur/courtier.
    - Les sujets ne sont que des mots-clés séparés par un point. caractères génériques : # correspond à n’importe quoi,
+
      * correspond à un mot.
+
    - Nous créons la hiérarchie des rubriques à partir du nom du chemin (mappage à la syntaxe AMQP)
-   - La résolution et la syntaxe du filtrage des serveurs sont définies par AMQP. (. séparateur, caractères génériques # et *)
+   - La résolution et la syntaxe du filtrage des serveurs sont définies par AMQP. (. séparateur, caractères génériques \# et \*)
    - Le filtrage côté serveur est grossier, les messages de notification peuvent être filtrés
      après le téléchargement à l’aide de regexp sur les chemins réels (les directives reject/accept).
 
@@ -223,17 +226,20 @@ moins spécifique à l’AMQP.
   Si quelqu’un connaît l’AMQP, il comprend. Sinon, ils peuvent faire des recherches.
 
 - Les utilisateurs configurent un *broker*, au lieu d’une pompe.
+
   - les utilisateurs peuvent explicitement choisir leurs noms de *queue*.
   - les utilisateurs définissent *subtopic*,
   - les sujets avec séparateur de points sont peu transformés, plutôt que codés.
   - fil d’attente *durable*.
-  - nous utilisons des *message headers* (AMQP-speak pour les paires clé-valeur) plutôt
-    que l’encodage en JSON ou dans un autre format de charge utile.
+  - nous utilisons des *message headers* (AMQP-speak pour les paires clé-valeur) plutôt que l’encodage en JSON ou dans un autre format de charge utile.
 
 - réduire la complexité par le biais de conventions.
+
    - n’utiliser qu’un seul type d’échanges (Topic), s’occuper des liaisons.
    - les conventions de nommage pour les échanges et les files d’attente.
+
       - les échanges commencent par x.
+
         - xs_Weather - l’échange pour la source (utilisateur amqp) nommée Météo pour poster des messages de notification
         - xpublic -- échange utilisé pour la plupart des abonnés.
       - les files d’attente commencent par q

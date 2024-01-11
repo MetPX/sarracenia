@@ -265,7 +265,7 @@ sur la ligne de commande ont le même effet que lorsqu’elles sont spécifiés 
 Les options disponibles dans les fichiers de configuration :
 
 accelTreshold <size> défaut: 0 (désactiver.)
----------------------------------------------------
+--------------------------------------------
 
 L'option accelThreshold indique la taille minimale d'un fichier transféré pour
 qu'un téléchargeur binaire puisse être lancé.
@@ -1684,8 +1684,7 @@ On peut désactiver la liaison de fil d’attente comme cela::
 (False, ou off marchera aussi.)
 
 sundew_compat_regex_first_match_is_zero (default: Faux)
-------------------------------------------------------
-
+-------------------------------------------------------
 
 Lors de la numérotation des groupes dans les modèles de correspondance, les groupes Sundew commencent à 0.
 Les expressions régulières Python utilisent le groupe zéro pour représenter la chaîne entière et chaque correspondance

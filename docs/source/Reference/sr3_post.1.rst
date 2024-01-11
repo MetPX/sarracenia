@@ -458,7 +458,7 @@ SEE ALSO
 
 `sr3_credentials(7) <sr3_credentials.7.html>`_ - Convert logfile lines to .save Format for reload/resend.
 
-`sr3_options(7) <sr_options.7.html>`_ - the configuration options
+`sr3_options(7) <sr3_options.7.html>`_ - the configuration options
 
 `sr_post(7) <sr_post.7.html>`_ - the format of notification messages.
 

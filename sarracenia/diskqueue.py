@@ -37,8 +37,8 @@ class DiskQueue():
     retry_ttl how long 
 
     self.retry_cache 
-    * a dictionary indexed by some sort of key to prevent duplicate
-      messages being stored in it.
+
+    * a dictionary indexed by some sort of key to prevent duplicate messages being stored in it.
 
     retry_path = ~/.cache/sr3/<component>/<config>/diskqueue_<name>
 

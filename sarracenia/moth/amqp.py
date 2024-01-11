@@ -202,7 +202,7 @@ class AMQP(Moth):
         """
           connect to broker. 
           returns True if connected, false otherwise.
-            side effect: self.channel set to a new channel.
+          * side effect: self.channel set to a new channel.
 
           Expect caller to handle errors.
         """

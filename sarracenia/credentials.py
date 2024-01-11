@@ -43,9 +43,12 @@ import sys
 
 
 class Credential:
-    """An object that holds information about a credential, read from a 
+    r"""
+
+    An object that holds information about a credential, read from a 
     credential file, which has one credential per line, format::
-        url option1=value1, option2=value2
+
+      url option1=value1, option2=value2
        
     Examples::
         sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa

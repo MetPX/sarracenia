@@ -114,19 +114,18 @@ Pour exécuter les tests sr_insects, le référentiel doit être cloné avec la 
 Une porte pour la fusion à development est pour un deuxième développeur d’exécuter le flow_tests.
 **Pour la v03, ces tests doivent exécuter : static_flow, flakey_broker, dynamic_flow, transform_flow**
 
-Prévu d’ici le 11/04/2022 :
+Prévu d’ici le 11/04/2022:
 
 * Main sera fusionné à partir de development, donc la branche par défaut pour les nouveaux arrivants sera SR3.
 
 * Launchpad aura de nouvelles recettes pour produire des paquets SR3 à partir de la branche principale.
 
-
 sr_insects
 ~~~~~~~~~~
 
 Le référentiel sr_insects a sa propre base de données de problèmes, et le travail sur sr_insects est encouragé.
-Les versions 2 et 3 sont prises en charge sur la branche principale de sr_insects.  Cette branche devrait être
-utilisé pour prendre en charge tout le développement dans les deux versions....
+Les versions 2 et 3 sont prises en charge sur la branche principale de sr_insects. Cette branche devrait être
+utilisé pour prendre en charge tout le développement dans les deux versions...
 
 Installation locale
 -------------------
@@ -1383,8 +1382,9 @@ après que la version précedente a été relachée.
 * Modifier ``sarracenia/_version.py`` manuellement et définissez le numéro de version.
 * Modifier CHANGES.rst pour ajouter une section pour la version.
 * Exécuter dch pour démarrer le journal des modifications de la version actuelle.
-  * assurer que UNRELEASED soit l'étiquette de status au lieu de *unstable* (peut-être automatiquement
-    faite par dch) 
+
+  * assurer que UNRELEASED soit l'étiquette de status au lieu de *unstable* (peut-être automatiquement faite par dch) 
+
 * git commit -a 
 * git push
 
@@ -1426,7 +1426,7 @@ Une fois que la balise est là dans la branche development, il faut promouvoir s
 Une fois en stable, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
 les différentes méthodes de distribution: `PyPI`_, et `Launchpad`_
 
-Une fois la génération du package terminée, il faut `Création d´une version`_
+Une fois la génération du package terminée, il faut `Création d'une version`_
 dans development à l’incrément logique suivant pour s’assurer qu’aucun autre développement
 identifié comme la version publiée ne se produit.
 
