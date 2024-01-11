@@ -100,7 +100,7 @@ les secondes, comptent. Les technologies web push standard, ATOM, RSS, etc.... s
 technologies de sondage qui, lorsqu'elles sont utilisées dans des applications à faible latence,
 consomment beaucoup de bande passante et surcharge les serveurs et réseaux inutilement.  Pour ces raisons
 précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP
- (Advanced Message Queueing Protocol) pousse réellement les notifications et rend l'envoi en temps réel
+(Advanced Message Queueing Protocol) pousse réellement les notifications et rend l'envoi en temps réel
 beaucoup plus efficace.
 
 .. image:: ../../Explanation/Concepts/sr3_flow_example.svg
@@ -115,14 +115,12 @@ routage est opaque, et le traçage du cheminement des données nécessitent l'ai
 Le diagnostic est alors grandement simplifié.
 
 
-Pour les gros fichiers / haute performance, les fichiers sont segmentés à l'
-ingestion s'ils sont suffisamment gros pour que cela en vaille la peine.
+Pour les gros fichiers / haute performance, les fichiers sont segmentés à l'ingestion s'ils sont suffisamment gros pour que cela en vaille la peine.
 Chaque fichier peut traverser le réseau de pompage de données indépendamment, et le réassemblage du fichier initial ne se fait qu'à la fin du processus de transfert. Un fichier de taille suffisante annoncera
 la disponibilité de plusieurs segments pour le transfert, des fils multiples ou des nœuds de transfert prendront ces segments et les transféreront. Plus il y a de segments disponibles, plus le niveau de parallèlisme du transfert est élevé. Dans de nombreux cas, Sarracenia gère le parallélisme et l'utilisation du
 réseau sans intervention explicite de l'utilisateur.Les pompes de données ne doivent ni stocker ni transférer des fichiers entiers, la taille maximale de fichier qui peut voyager à travers le réseau est maximisée.
 
-* **REMARQUE:** Pour la v03, la fonctionnalité de segmentation a été supprimée temporairement. Prévu pour
-retour dans la version 3.1.
+* **REMARQUE:** Pour la v03, la fonctionnalité de segmentation a été supprimée temporairement. Prévu pour retour dans la version 3.1.
 
 Implémentations
 ---------------
@@ -132,17 +130,17 @@ Il y a des implémentations multiples qui acceptent ses messages d'annonce:
 
 
 - Sarracenia elle-même (http://github.com/MetPX/sarracenia)
-une implémentation de référence complète en Python >= 3.4.
-Il fonctionne sous Linux, Mac et Windows.
+  une implémentation de référence complète en Python >= 3.4.
+  Il fonctionne sous Linux, Mac et Windows.
 
 - sarrac ( https://github.com/MetPX/sarrac) est une implémentation en
-C de l'insertion de données (post & watch.) C'est Linux uniquement. Il
-y a aussi une libcshim pour pouvoir implémenter de manière transparente
-l'insertion de données avec cet outil, et libsarra permet aux programmes
-C de poster directement. Il y a aussi du code consommateur (sr_cpump,
-pour lire les files d'attente) mais pas de téléchargement jusqu'à présent.
-Ce sous-ensemble est destiné à être utilisé là où les environnements
-python3 ne sont pas pratiques (certains environnements HPC).
+  C de l'insertion de données (post & watch.) C'est Linux uniquement. Il
+  y a aussi une libcshim pour pouvoir implémenter de manière transparente
+  l'insertion de données avec cet outil, et libsarra permet aux programmes
+  C de poster directement. Il y a aussi du code consommateur (sr_cpump,
+  pour lire les files d'attente) mais pas de téléchargement jusqu'à présent.
+  Ce sous-ensemble est destiné à être utilisé là où les environnements
+  python3 ne sont pas pratiques (certains environnements HPC).
 
 - node-sarra ( https://github.com/darkskyapp/node-sarra) Une implémentation embryonnaire pour node.js.
 
@@ -185,7 +183,7 @@ ce qui signifie qu'il ne prend pas en charge la *transitivité* des transferts
 de données entre plusieurs pompes de données qui est désiré. D'autre part, le
 premier cas d'utilisation de la Sarracenia est la distribution du nouveaux
 fichiers. Au départ, les mises à jour des dossiers n'étaient pas courantes.
-`ZSync <http://zsync.moria.org.uk/>`_ est beaucoup plus proche dans l'esprit
+`ZSync <http://zsync.moria.org.uk>`_ est beaucoup plus proche dans l'esprit
 de ce cas d'utilisation. Sarracenia divise les fichiers en block de facon similaire,
 bien que généralement beaucoup plus grand (50M est un bon choix), que les blocs
 Zsync (typiquement 4k), plus propice à l'accélération. Utilisation d'une

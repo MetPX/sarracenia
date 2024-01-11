@@ -82,7 +82,7 @@ Le journal de démarrage semble normal, indiquant que les informations d’authe
 ``sr_subscribe`` recevra la notification et téléchargera le fichier dans le répertoire actuel
 (sauf indication contraire dans le fichier de configuration).
 
-----
+
 Un téléchargement normal ressemble à ceci ::
 
   2015-12-03 17:32:15,031 [INFO] Received topic   v02.post.observations.swob-ml.20151203.CMED

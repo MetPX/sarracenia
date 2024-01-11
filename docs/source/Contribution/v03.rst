@@ -285,11 +285,12 @@ the two versions, is clear:
 |                          | diskqueue.py              |
 +--------------------------+---------------------------+
 | sr_post.py               | flowcb/gather/file.py     |
-|                          |                           |
 |                          | flow/post.py              |
+|                          |                           |
 +--------------------------+---------------------------+
 | sr_poll.py               | flowcb/poll/              |
-|                          |        __init__.py        |
+|                          |   __init__.py             |
+|                          |                           |
 |                          | flow/poll.py              |
 |                          |                           |
 +--------------------------+---------------------------+

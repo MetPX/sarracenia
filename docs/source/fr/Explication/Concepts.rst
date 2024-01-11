@@ -459,8 +459,8 @@ feeder
 
 Admin
   Un utilisateur autorisé à gérer la pompe locale. C’est le vrai rabbitmq-server
- administrateur. L’administrateur exécute sr_audit pour créer/supprimer des échanges,
- utilisateurs, ou nettoyer les files d’attente inutilisées, etc.
+  administrateur. L’administrateur exécute sr_audit pour créer/supprimer des échanges,
+  utilisateurs, ou nettoyer les files d’attente inutilisées, etc.
 
 
 Exemple d'un fichier admin.conf valide complet, pour un hôte nommé *blacklab* ::

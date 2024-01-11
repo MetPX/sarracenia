@@ -485,7 +485,7 @@ de valeur par défaut est inclus sans code supplémentaire. Il serait mentionné
 
     self.o.poll_usgs_stn_file
 
-Mappage des points d’entrée v2 aux Callbacks v3
+Mappage des points d'entrée v2 aux Callbacks v3
 -----------------------------------------------
 
 Pour un aperçu complet des points d’entrée v3, jetez un coup d’œil :
