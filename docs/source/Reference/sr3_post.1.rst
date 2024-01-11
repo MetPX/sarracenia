@@ -61,7 +61,7 @@ Format of argument to the *path* option::
        or
        relative_path_to_the/filename
 
-The *-pipe* option can be specified to have sr_post read path names from standard 
+The *-pipe* option can be specified to have sr3_post read path names from standard 
 input as well.
 
 
@@ -69,7 +69,7 @@ An example invocation of *sr3_post*::
 
  sr3_post --post_broker amqp://broker.com --post_baseUrl sftp://stanley@mysftpserver.com/ --path /data/shared/products/foo 
 
-By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
+By default, sr3_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user 'guest' (default credentials)
 and sends the post  to defaults vhost '/' and default exchange. The default exchange 
 is the prefix *xs_* followed by the broker username, hence defaulting to 'xs_guest'.
@@ -99,7 +99,7 @@ Another example::
 
  sr3_post --post_broker mqtt://broker.com --post_baseDir /data/web/public_data --postBaseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456
 
-By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user 'guest'
 (default credentials) and sends the post to defaults vhost '/' and exchange 'xs_guest', resulting
@@ -180,7 +180,7 @@ for files of various sizes.  As the file size varies, the automatic computation 
 results.  This will result in resending information which has not changed as partitions of a different 
 size will have different sums, and therefore be tagged as different.  
   
-By default, **sr_post** computes a reasonable blocksize that depends on the file size.
+By default, **sr3_post** computes a reasonable blocksize that depends on the file size.
 The user can set a fixed *blocksize* if it is better for its products or if he wants to
 take advantage of the **cache** mechanism.  In cases where large files are being appended to, for example,
 it make sense to specify a fixed partition size so that the blocks in the cache will be the 
@@ -216,7 +216,7 @@ rename <path>
 With the *rename*  option, the user can suggest a destination path to its files. If the given
 path ends with '/' it suggests a directory path...  If it doesn't, the option specifies a file renaming.
 
-*sr_post*, and *sr_watch* use a file based model based on a process and a disk cache,
+*sr3_post*, and *sr_watch* use a file based model based on a process and a disk cache,
 whose design is single threaded. The shim library is typically used by many processes
 at once, and would have resource contention and/or corruption issues with the cache.
 The shim library therefore has a purely memory-based cache, tunable with 
@@ -280,7 +280,7 @@ nodupe_ttl on|off|999
 
   Avoid posting duplicates by comparing each file to those seen during the
   *suppress_duplicates* interval. When posting directories, will cause
-  *sr_post* post only files (or parts of files) that were new when invoked again. 
+  *sr3_post* post only files (or parts of files) that were new when invoked again. 
  
   Over time, the number of files in the cache can grow too large, and so it is cleaned out of
   old entries. The default lifetime of a cache entry is five minutes (300 seconds). This
@@ -326,7 +326,7 @@ Add a <name> header with the given value to notification messages. Used to pass 
 SHIM LIBRARY USAGE
 ==================
 
-Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+Rather than invoking a sr3_post to post each file to publish, one can have processes automatically
 post the files they right by having them use a shim library intercepting certain file i/o calls to libc 
 and the kernel. To activate the shim library, in the shell environment add::
 
@@ -335,10 +335,10 @@ and the kernel. To activate the shim library, in the shell environment add::
 
 where *shimpost.conf* is an sr_cpost configuration file in
 the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
-as an sr_post one, except that plugins are not supported.  With the shim
+as an sr3_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
-as it would be by sr_post. If using with ssh, where one wants files which are
+as it would be by sr3_post. If using with ssh, where one wants files which are
 scp'd to be posted, one needs to include the activation in the .bashrc and pass 
 it the configuration to use::
 
@@ -460,7 +460,7 @@ SEE ALSO
 
 `sr3_options(7) <sr_options.7.html>`_ - the configuration options
 
-`sr3_post(7) <sr_post.7.html>`_ - the format of notification messages.
+`sr_post(7) <sr_post.7.html>`_ - the format of notification messages.
 
 **Home Page:**
 
