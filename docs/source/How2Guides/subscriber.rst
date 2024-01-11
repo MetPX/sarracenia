@@ -1071,8 +1071,8 @@ Or one may not want to use the Sarracenia configuration scheme,
 perhaps one just wants to use the message protocol support, for 
 that: 
 
-* Subscribing using the (much less complex) Moth API (Jupyter Notebook) `<../Tutorials/4_api_moth_sub_demo.html>`_
-* Posting from python code with Moth (Jupyter Notebook) `../Tutorials/5_api_moth_post_demo.html>`_
+* Subscribing using the (much less complex) Moth API (Jupyter Notebook) `<../Tutorials/4_api_moth_sub_demo.ipynb>`_
+* Posting from python code with Moth (Jupyter Notebook) `<../Tutorials/5_api_moth_post_demo.ipynb>`_
 
 
 

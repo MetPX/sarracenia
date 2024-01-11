@@ -119,8 +119,7 @@ ajouts ou des modifications apportés au nouveau composant.
 Guide de Style
 ~~~~~~~~~~~~~~
 
-L’exécution sur la ligne de commande doit être écrite dans le style suivant::
-  
+L’exécution sur la ligne de commande doit être écrite dans le style suivant:
 Un commentaire initial décrivant les étapes ou processus suivants ::
 
     $ command 1

@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - '.github/**'
 
+  workflow_dispatch:
 
 jobs:
   gh-pages:
