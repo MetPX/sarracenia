@@ -178,7 +178,7 @@ class Sarracenia:
         call. However the notification message returned will lack an identity checksum field.
         once you get the file, you can add the Identity field with:
     
-        m.__computeIdentity(path, o):
+        m.computeIdentity(path, o):
     
         In terms of consuming notification messages, the fields in the dictionary provide metadata
         for the announced resource. The anounced data could be embedded in the notification message itself,
@@ -390,7 +390,7 @@ class Message(dict):
         self['_deleteOnPost'] = set(['_format'])
 
 
-    def __computeIdentity(msg, path, o):
+    def computeIdentity(msg, path, o, offset=0):
         """
            check extended attributes for a cached identity sum calculation.
            if extended attributes are present, and 
@@ -406,32 +406,36 @@ class Message(dict):
         """
         xattr = sarracenia.filemetadata.FileMetadata(path)
 
-        if o.randomize:
-            methods = [
-                'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
-            ]
-            calc_method = random.choice(methods)
-        elif 'identity' in xattr.x and 'mtime' in xattr.x:
-            if xattr.get('mtime') >= msg['mtime']:
-                logger.debug("mtime remembered by xattr")
-                fxainteg = xattr.get('identity')
-                if fxainteg['method'] == o.identity_method: 
-                     msg['identity'] = fxainteg
-                     return
-                logger.debug("xattr different method than on disk")
-                calc_method = o.identity_method
+        if not 'blocks' in msg:
+            if o.randomize:
+                methods = [
+                    'random', 'md5', 'md5name', 'sha512', 'cod,md5', 'cod,sha512'
+                ]
+                calc_method = random.choice(methods)
+            elif 'identity' in xattr.x and 'mtime' in xattr.x:
+                if xattr.get('mtime') >= msg['mtime']:
+                    logger.debug("mtime remembered by xattr")
+                    fxainteg = xattr.get('identity')
+                    if fxainteg['method'] == o.identity_method: 
+                         msg['identity'] = fxainteg
+                         return
+                    logger.debug("xattr different method than on disk")
+                    calc_method = o.identity
+                else:
+                    logger.debug("xattr sum too old")
+                    calc_method = o.identity_method
             else:
-                logger.debug("xattr sum too old")
                 calc_method = o.identity_method
-        else:
+        else: 
             calc_method = o.identity_method
 
         if calc_method == None:
             return
 
-        xattr.set('mtime', msg['mtime'])
+        if 'mtime' in msg:
+            xattr.set('mtime', msg['mtime'])
 
-        #logger.debug("sum set by compute_sumstr")
+        logger.debug("mtime persisted, calc_method: {calc_method}")
 
         if calc_method[:4] == 'cod,' and len(calc_method) > 2:
             sumstr = calc_method
@@ -443,7 +447,7 @@ class Message(dict):
                 'method': 'arbitrary',
                 'value': o.identity_arbitrary_value
             }
-        else:
+        else: # a "normal" calculation method, liks sha512, or md5
             sumalgo = sarracenia.identity.Identity.factory(calc_method)
             sumalgo.set_path(path)
 
@@ -453,7 +457,12 @@ class Message(dict):
 
                 fp = open(path, 'rb')
                 i = 0
-                while i < msg['size']:
+
+                #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
+                if offset:
+                    fp.seek( offset )
+
+                while i < offset+msg['size']:
                     buf = fp.read(o.bufsize)
                     if not buf: break
                     sumalgo.update(buf)
@@ -543,7 +552,7 @@ class Message(dict):
         m = sarracenia.Message.fromFileInfo(path, o, lstat)
         if lstat :
             if os_stat.S_ISREG(lstat.st_mode):
-                m.__computeIdentity(path, o)
+                m.computeIdentity(path, o)
                 if features['filetypes']['present']:
                     try:
                         t = magic.from_file(path,mime=True)
@@ -591,6 +600,11 @@ class Message(dict):
             msg['exchange'] = o.post_exchange
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
+
+        if hasattr(o, 'blocksize') and (o.blocksize > 1) and lstat and \
+                (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
+                (lstat.st_size > o.blocksize):
+           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])

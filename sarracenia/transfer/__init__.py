@@ -297,7 +297,7 @@ class Transfer():
                         src,
                         local_file,
                         local_offset=0,
-                        length=0):
+                        length=0, exactLength=False):
         #logger.debug("sr_proto read_writelocal")
 
         # open
@@ -313,7 +313,7 @@ class Transfer():
         # 2022/12/02 - pas - need copies to always work...
         # in HPC mirroring case, a lot of short files, likely length is wrong in announcements.
         # grab the whole file unconditionally for now, detect error using mismatch.
-        rw_length = self.read_write(src, dst, 0)
+        rw_length = self.read_write(src, dst, length if exactLength else 0)
 
         # close
         self.local_write_close(dst)

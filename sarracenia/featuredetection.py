@@ -72,6 +72,9 @@ features = {
    'process' : { 'modules_needed': ['psutil'], 'present': False,
         'lament': 'cannot monitor running processes, sr3 CLI basically does not work.',
         'rejoice': 'can monitor, start, stop processes:  Sr3 CLI should basically work' },
+   'reassembly' :  { 'modules_needed': [ 'flufl.lock' ], 'Needed': True,
+        'lament' : 'need to lock block segmented files to put them back together',
+        'rejoice' : 'can reassemble block segmented files transferred' },
    'redis' : { 'modules_needed': [ 'redis', 'redis_lock' ],
         'lament': 'cannot use redis implementations of retry and nodupe',
         'rejoice': 'can use redis implementations of retry and nodupe'

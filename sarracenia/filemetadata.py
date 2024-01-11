@@ -154,7 +154,12 @@ class FileMetadata:
             self.x['identity'] = self.x['integrity']
             del self.x['integrity']
 
-         
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.persist()
+
     def __del__(self):
         self.persist()
 
@@ -174,6 +179,13 @@ class FileMetadata:
            return the value of the named extended attribute.
         """
         if name in self.x.keys():
+            if name == 'blocks':
+                for k in ['manifest', 'waiting' ]:
+                    m={}
+                    if k in self.x['blocks']:
+                        for db in self.x['blocks'][k]: # when json'd for writing, numeric indices are stringified.
+                            m[db if type(db) is int else int(db)] = self.x['blocks'][k][db]
+                        self.x['blocks'][k] = m
             return self.x[name]
         return None
 

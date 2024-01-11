@@ -19,6 +19,7 @@ import sarracenia
 
 import sarracenia.filemetadata
 
+
 # for v2 subscriber routines...
 import json, os, sys, time
 
@@ -30,6 +31,9 @@ from mimetypes import guess_type
 # end v2 subscriber
 
 from sarracenia.featuredetection import features
+
+if features['reassembly']['present']:
+    import sarracenia.blockmanifest
 
 from sarracenia import nowflt
 
@@ -1223,6 +1227,9 @@ class Flow:
                             # cache good.
                             msg['local_identity'] = s
                             msg['_deleteOnPost'] |= set(['local_identity'])
+                            b = x.get('blocks')
+                            msg['local_blocks'] = b
+                            msg['_deleteOnPost'] |= set(['local_blocks'])
                             return
             except:
                 pass
@@ -1758,8 +1765,17 @@ class Flow:
         new_file = msg['new_file']
         new_inflight_path = None
 
-        if options.inflight == None or (
-            ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
+        if 'blocks' in msg: 
+            if msg['blocks']['method'] in [ 'inplace' ]: # download only a specific block from a file, not the whole thing.
+                logger.debug( f"splitting 1 file into {len(msg['blocks']['manifest'])} block messages." )
+                blkno = msg['blocks']['number']
+                blksz_l = sarracenia.naturalSize(msg['blocks']['size']).split()
+                blksz = blksz_l[0]+blksz_l[1][0].lower()
+                if not '§block_' in new_file:
+                    new_file += f"§block_{blkno:04d},{blksz}_§"
+                msg['new_file'] = new_file
+
+        if options.inflight == None:
             new_inflight_path = new_file
         elif type(options.inflight) == str:
             if options.inflight == '.':
@@ -1855,26 +1871,28 @@ class Flow:
                     self.proto[self.scheme].cd(cdir)
 
             remote_offset = 0
+            exactLength=False
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
-                remote_offset = msg['offset']
+                blkno=msg['blocks']['number']
+                remote_offset=0
+                exactLength=True
+                while blkno > 0:
+                    blkno -= 1
+                    remote_offset += msg['blocks']['manifest'][blkno]['size']
 
-            if 'size' in msg:
+                block_length=msg['blocks']['manifest'][msg['blocks']['number']]['size']
+                logger.info( f"offset calculation:  start={remote_offset} count={block_length}" )
+
+            elif 'size' in msg:
                 block_length = msg['size']
-                str_range = ''
-                if ('blocks' in msg) and (
-                        msg['blocks']['method'] == 'inplace'):
-                    block_length = msg['blocks']['size']
-                    str_range = 'bytes=%d-%d' % (remote_offset, remote_offset +
-                                                 block_length - 1)
             else:
                 block_length = 0
-                str_range = ''
 
             #download file
 
             logger.debug(
-                'Beginning fetch of %s %s into %s %d-%d' %
-                (urlstr, str_range, new_inflight_path, msg['local_offset'],
+                'Beginning fetch of %s %d-%d into %s %d-%d' %
+                (urlstr, remote_offset, block_length-1, new_inflight_path, msg['local_offset'],
                  msg['local_offset'] + block_length - 1))
 
             # FIXME  locking for i parts in temporary file ... should stay lock
@@ -1918,15 +1936,18 @@ class Flow:
             if not self.o.dry_run:
                 if accelerated:
                     len_written = self.proto[self.scheme].getAccelerated(
-                        msg, remote_file, new_inflight_path, block_length)
+                        msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
                     #FIXME: no onfly_checksum calculation during download.
                 else:
                     self.proto[self.scheme].set_path(new_inflight_path)
                     len_written = self.proto[self.scheme].get(
                         msg, remote_file, new_inflight_path, remote_offset,
-                        msg['local_offset'], block_length)
+                        msg['local_offset'], block_length, exactLength)
             else:
                 len_written = block_length
+
+            if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
+                msg['blocks']['method'] = 'separate'
 
             if (len_written == block_length):
                 if not self.o.dry_run:
@@ -2110,7 +2131,7 @@ class Flow:
                 self.metrics['flow']['transferConnectStart'] = time.time() 
 
             #=================================
-            # if parts, check that the protol supports it
+            # if parts, check that the protocol supports it
             #=================================
 
             if not self.o.dry_run and not hasattr(self.proto[self.scheme],
@@ -2389,24 +2410,28 @@ class Flow:
         """
            after a file has been written, restore permissions and ownership if necessary.
         """
-        #logger.debug("sr_transport set_local_file_attributes %s" % local_file)
+        logger.debug("%s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime.
-        if (not 'blocks' in msg):
-            x = sarracenia.filemetadata.FileMetadata(local_file)
 
-            # FIXME ... what to do when checksums don't match?
-            if 'onfly_checksum' in msg: 
-                x.set( 'identity', msg['onfly_checksum'] )
-            elif 'identity' in msg:
-                x.set('identity', msg['identity'] )
+        if ('blocks' in msg) and sarracenia.features['reassembly']['present']:
+            with sarracenia.blockmanifest.BlockManifest(local_file) as y:
+                y.set( msg['blocks'] )
 
-            if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
-                x.set('mtime', msg['mtime'])
-            else:
-                x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
-            x.persist()
+        x = sarracenia.filemetadata.FileMetadata(local_file)
+        # FIXME ... what to do when checksums don't match?
+        if 'onfly_checksum' in msg: 
+            x.set( 'identity', msg['onfly_checksum'] )
+        elif 'identity' in msg:
+            x.set('identity', msg['identity'] )
+
+        if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
+            x.set('mtime', msg['mtime'])
+        else:
+            x.set('mtime', sarracenia.timeflt2str(os.path.getmtime(local_file)))
+
+        x.persist()
 
         mode = 0
         if self.o.permCopy and 'mode' in msg:

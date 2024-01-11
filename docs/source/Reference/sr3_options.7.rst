@@ -459,7 +459,7 @@ transfer protocols, not HTTP ones at the moment.
 blocksize <size> default: 0 (auto)
 -----------------------------------
 
-NOTE: **NOT IMPLEMENTEDin sr3, expected to return in future version**
+NOTE: **EXPERIMENTAL** sr3, expected to return in future version**
 This **blocksize** option controls the partitioning strategy used to post files.
 The value should be one of::
 

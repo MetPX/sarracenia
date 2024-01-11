@@ -89,6 +89,7 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
+    'block_reassemble': True,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -132,12 +133,12 @@ count_options = [
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'block_reassemble', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', 'reconnect', \
-    'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
+    'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
+    'reconnect', 'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
     'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
@@ -184,7 +185,6 @@ str_options = [
    accelerators and rate limiting are now built-in, no plugin required.
 """
 convert_to_v3 = {
-    'blocksize' : ['continue'],
     'cache_stat' : ['continue'],
     'cluster_aliases' : [ 'continue' ],
     'discard' : [ 'delete_destination', 'on' ], 

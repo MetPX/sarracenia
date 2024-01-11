@@ -19,7 +19,12 @@ from random import choice
 
 import sarracenia
 from sarracenia import *
+
 from sarracenia.featuredetection import features
+
+if features['reassembly']['present']:
+    import sarracenia.blockmanifest
+
 from sarracenia.flowcb import FlowCB
 import sarracenia.identity
 
@@ -133,7 +138,7 @@ class File(FlowCB):
         self.new_events = OrderedDict()
         self.left_events = OrderedDict()
 
-        self.o.blocksize = 200 * 1024 * 1024
+        #self.o.blocksize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
@@ -162,16 +167,7 @@ class File(FlowCB):
         return [msg]
 
     def post_file(self, path, lstat, key=None, value=None):
-        #logger.debug("post_file %s" % path)
-
-        # check if it is a part file
-        if path.endswith('.' + self.o.part_ext):
-            return self.post_file_part(path, lstat)
-
-        # This variable means that part_file_assemble plugin is loaded and will handle posting the original file (being assembled)
-
-        elif hasattr(self, 'suppress_posting_partial_assembled_file'):
-            return []
+        #logger.debug("start  %s" % path)
 
         # check the value of blocksize
 
@@ -180,8 +176,8 @@ class File(FlowCB):
 
         # if we should send the file in parts
 
-        #if blksz > 0 and blksz < fsiz:
-        #    return self.post_file_in_parts(path, lstat)
+        if (blksz > 0 and blksz < fsiz) and os.path.isfile(path):
+            return self.post_file_in_parts(path, lstat)
 
         msg = sarracenia.Message.fromFileData(path, self.o, lstat)
 
@@ -234,10 +230,11 @@ class File(FlowCB):
         return [msg]
 
     def post_file_in_parts(self, path, lstat):
-        #logger.debug("post_file_in_parts %s" % path )
+        #logger.info("start %s" % path )
 
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
+        logger.debug( f"initial msg:{msg}" )
         # check the value of blocksize
 
         fsiz = lstat.st_size
@@ -249,107 +246,60 @@ class File(FlowCB):
         remainder = fsiz % chunksize
         if remainder > 0: block_count = block_count + 1
 
-        # default sumstr
+        #logger.debug( f" fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}" )
 
-        sumstr = self.o.sumflg
-
-        # loop on chunks
+        # loop on blocks
 
         blocks = list(range(0, block_count))
-        if self.randomize:
+        if self.o.randomize:
             random.shuffle(blocks)
             #blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing
             logger.info('Sending partitions in the following order: ' +
                         str(blocks))
 
-        messages = []
-        for i in blocks:
+        msg['blocks'] = {
+            'method': 'inplace',
+            'size': chunksize,
+            'number': -1,
+            'manifest': {}
+        }
+        logger.debug( f" blocks:{blocks} " )
 
-            # setting sumalgo for that part
-
-            sumflg = self.o.sumflg
-
-            if sumflg[:2] == 'z,' and len(sumflg) > 2:
-                sumstr = sumflg
-
-            else:
-                sumflg = self.o.sumflg
-                sumalgo = sarracenia.identity.Identity.factory(sumflg)
-                sumalgo.set_path(path)
+        for current_block in blocks:
 
             # compute block stuff
-
-            current_block = i
-
             offset = current_block * chunksize
             length = chunksize
 
             last = current_block == block_count - 1
+
             if last and remainder > 0:
                 length = remainder
 
+            msg['size']=length
+
             # set partstr
+            msg.computeIdentity(path, self.o, offset=offset )
+            msg['blocks']['manifest'][current_block] = { 'size':length, 'identity': msg['identity']['value'] }
 
-            partstr = {
-                'method': 'inplace',
-                'size': chunksize,
-                'count': block_count,
-                'remainder': remainder,
-                'number': current_block
-            }
-            # compute checksum if needed
+        
+        if features['reassembly']['present'] and \
+           (not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete):
+            with sarracenia.blockmanifest.BlockManifest( path ) as x:
+                x.set(msg['blocks'])
 
-            if not self.sumflg in ['random', 'cod']:
-                bufsize = self.o.bufsize
-                if length < bufsize: bufsize = length
+        messages = []
+        for current_block in blocks:
 
-                fp = open(path, 'rb')
-                if offset != 0: fp.seek(offset, 0)
-                t = 0
-                while t < length:
-                    buf = fp.read(bufsize)
-                    if not buf: break
-                    sumalgo.update(buf)
-                    t += len(buf)
-                fp.close()
+            msg['blocks']['number'] = current_block
+            msg['size'] = msg['blocks']['manifest'][current_block]['size']
+            msg['identity']['value'] = msg['blocks']['manifest'][current_block]['identity']
 
-                checksum = sumalgo.value
-                sumstr = {'method': sumflg, 'value': checksum}
+            #logger.info( f" size: {msg['size']} blocks: {msg['blocks']}, offset: {offset} identity: {msg['identity']} " )
 
-            # complete  message
-
-            msg['identity'] = sumstr
-            messages.extend(copy.deepcopy(msg))
+            messages.append(copy.deepcopy(msg))
 
         return messages
-
-    def post_file_part(self, path, lstat):
-
-        msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
-
-        # verify suffix
-
-        ok, log_msg, suffix, partstr, sumstr = self.msg.verify_part_suffix(
-            path)
-
-        # something went wrong
-
-        if not ok:
-            logger.debug("file part extension but %s for file %s" %
-                         (log_msg, path))
-            return False
-
-        # check rename see if it has the right part suffix (if present)
-        if 'rename' in self.msg.headers and not suffix in self.msg.headers[
-                'rename']:
-            msg['rename'] += suffix
-
-        # complete  message
-
-        msg['parts'] = partstr
-        msg['identity'] = sumstr
-
-        return [msg]
 
     def post_link(self, path, key='link', value=None):
         #logger.debug("post_link %s" % path )
@@ -583,7 +533,13 @@ class File(FlowCB):
             try:
                 messages.extend(self.process_event(event, src, dst))
             except OSError as err:
-                logger.error("skipping event that could not be processed: ({}): {}".format(
+                """
+                  This message is reduced to debug priority because it often happens when files
+                  are too transitory (they disappear before we have a chance to post them)
+                  not sure if it should be an error message or not.
+                  
+                """
+                logger.debug("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
             self.left_events.pop(key)
