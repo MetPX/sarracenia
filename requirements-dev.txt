@@ -6,7 +6,6 @@ nbsphinx
 jupyter
 pyclamd
 docutils
-jinja2
 sphinx-rtd-theme
 twine
 build
