@@ -269,7 +269,7 @@ les deux versions, est clair:
 |                          |                           |
 | sr_message.py            |                           |
 +--------------------------+---------------------------+
-| sr_checksum.py           | identity/                |
+| sr_checksum.py           | identity/                 |
 |                          |      __init__.py          |
 | sum/*                    |      *                    |
 +--------------------------+---------------------------+

@@ -775,8 +775,8 @@ non prepended ones.
 To recap:
 
 * To view the plugins currently available on the system  *sr3 list fcb*
-* To view the contents of a plugin, browse the `FlowCallback Reference <../Reference/flowcb.html>`_use,
-  or use a text editor, or import in a python interpretre, and use python help()
+* To view the contents of a plugin, browse the `FlowCallback Reference <../Reference/flowcb.html>`_ use,
+  or use a text editor, or import in a python interpreter, and use python help()
 * Plugins can have option settings, just like built-in ones. They are described 
   in each plugin's documentation.
 * To set them, place the options in the configuration file before the plugin call itself

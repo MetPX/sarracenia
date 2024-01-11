@@ -145,7 +145,7 @@ Install one of those first. in these examples, we use amqp.
 
 * **pip install metpx-sr3[amqp]** would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
   one could also pull in all possible dependencies with **pip install metpx-sr3[all]**
-* **pip install -e .[amqp] ... lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.
+* **pip install -e .[amqp] ...** lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.
 
 * **apt install metpx-sr3** install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself. Also need **apt install python3-amqp**
 
@@ -274,12 +274,13 @@ Ubuntu 18.04
 
 A number of systems run Ubuntu 18.04 even though it is pretty old.
 
-```
+'''
 
 multipass launch -m 8G bionic
 
 
-```
+'''
+
 can run developer tests as per multipass as described above.
 
 Python Wheel
@@ -347,7 +348,7 @@ Checklist:
 - **update doc/** manual pages should get their updates ideally at the same time as the code.
 
 Usually there will be many such cycles on a development branch before one is ready
-to issue a pull request. Eventually, we get to `Commits to the Main Branch`_
+to issue a pull request. Eventually, we get to `Commits to the Development Branch`_
 
 
 sr_insects Tests Description
@@ -1305,7 +1306,9 @@ Where:
 Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
 Releases are currently  3.00.iircj
 where:
+
   * ii -- incremental number of pre-releases of 3.00
+
   * j -- beta increment.
 
 At some point 3.00 will be complete & solid enough that the we will
@@ -1383,7 +1386,7 @@ note on Debian terminology:
 
 for Metpx-Sr3, we have not yet approached the longevity of versions implied by Debian *stable*.
 The labels don't refer to how stable the software itself is, merely to how often the software
-changes (increments versions.)  More info: `https://en.wikipedia.org/wiki/Debian_version_history`_
+changes (increments versions.)  More info: `Debian Version History <https://en.wikipedia.org/wiki/Debian_version_history>`_
 so when performing releases, the changelog is changed from UNRELEASED to unstable, and
 back to UNRELEASED when working between releases, as per Debian custom.
 

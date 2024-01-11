@@ -1,4 +1,4 @@
-"""
+r"""
 wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk
 to MSC internal format in an alternate tree.  It is analogous to Sundew's 'bulletin-file'.
 Meant to be called as an sr_shovel plugin.
@@ -53,12 +53,11 @@ Parameters:
   The first line of the file is expected to contain an AHL. and when we build a tree
   from it, we build it as follows::
 
-     TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
+      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_<uniquify>
 
   assuming tree=on, uniquify=hash:
 
      SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22
-
 
 NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION 
       including hints about debugging.
