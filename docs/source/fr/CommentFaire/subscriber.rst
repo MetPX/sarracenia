@@ -741,13 +741,13 @@ Il y a aussi::
 qui ajoutera ce rappel à la liste, de sorte qu’il est appelé avant les autres.
 
 Les plugins sont tous écrits en python, et les utilisateurs peuvent créer les leurs et les placer dans ~/.config/sr3/plugins.
-Pour plus d’informations sur la création de nouveaux plug-ins personnalisés, reportez-vous à la section `Writing Flow Callbacks <FlowCallbacks.rst>`_
+Pour plus d’informations sur la création de nouveaux plug-ins personnalisés, reportez-vous à la section `Implanter des Flowcallback <FlowCallbacks.rst>`_
 
 
 Pour récapituler :
 
 * Pour voir les plugins actuellement disponibles sur le système *sr3 list fcb*
-* Pour afficher le contenu d’un plugin: `FlowCallback Reference (anglais) <../../Reference/flowcb.html>`
+* Pour afficher le contenu d’un plugin: `FlowCallback Reference (anglais) <../../Reference/flowcb.rst>`
 * Les plugins peuvent avoir des paramètres d’option, tout comme ceux intégrés
 * Pour les définir, placez les options dans le fichier de configuration avant que le plugin ne s’appelle lui-même
 * Pour créer vos propres plugins, créez-les dans ~/.config/sr3/plugins, ou dans le chemin PYTHONPATH configurer
@@ -756,7 +756,7 @@ Pour récapituler :
 plus:
 
 * `Concepts <../Explication/Concepts.html>`_
-* `using callbacks from command line (Jupyter Notebook) <../Tutoriel/2_CLI_with_flowcb_demo.html>`_
+* `using callbacks from command line (Jupyter Notebook) <../Tutoriel/2_CLI_with_flowcb_demo.ipynb>`_
 
 encore davantage:
 
@@ -1029,8 +1029,8 @@ Sarracenia, c'est une manière pythonique de démarrer un flux à partir de pyth
 Ou on peut éviter le schéma de configuration de Sarracenia, peut-être que l'on veut 
 juste utiliser le support du protocole de message:
 
-* abnonnement avec l´API **Moth** (plus simple) (Jupyter Notebook) `<../Tutoriel/4_api_moth_sub_demo.html>`_
-* annoncer des produits avec l´API **Moth** (Jupyter Notebook) `../Tutoriel/5_api_moth_post_demo.html>`_
+* abnonnement avec l´API **Moth** (plus simple) (Jupyter Notebook) `<../Tutoriel/4_api_moth_sub_demo.ipynb>`_
+* annoncer des produits avec l´API **Moth** (Jupyter Notebook)  `<../Tutoriel/5_api_moth_post_demo.ipynb>`_
 
 
 
@@ -1039,5 +1039,4 @@ Plus d’informations
 
 la page `sr3(1) <../Reference/sr3.1.html>`_ contient de l'informative définitive
 La page principale: `Sarracenia Documentation <https://metpx.github.io/sarracenia>`_
-
 

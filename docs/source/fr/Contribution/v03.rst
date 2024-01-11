@@ -285,7 +285,9 @@ les deux versions, est clair:
 +--------------------------+---------------------------+
 | sr_poll.py               | flowcb/poll/              |
 |                          |        __init__.py        |
+|                          |                           |
 |                          | flow/poll.py              |
+|                          |                           |
 +--------------------------+---------------------------+
 |                          | transfer/__init__.py      |
 | sr_util.py/sr_proto      |  * transfer.Protocol      |
@@ -303,7 +305,8 @@ les deux versions, est clair:
 +--------------------------+---------------------------+
 | plugins/                 | flowcb/  (celles sr3)     |
 |                          | plugins/ toujours la pour |
-|                          |    celles de v2.          |
+|                          | celles de v2.             |
+|                          |                           |
 +--------------------------+---------------------------+
 | overall flow             | flow/__init__.py          |
 +--------------------------+---------------------------+

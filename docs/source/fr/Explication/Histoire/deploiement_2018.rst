@@ -77,7 +77,7 @@ déployées à l'appui du programme Environnement Canada, surtout pour les
 prévisions météorologiques opérationnelles, en place depuis le début des
 travaux jusqu´à janvier 2018.
 
-.. image:: ../../../Explanation/History/deployment_2018/E-services_data_volume_pas.png
+.. image:: ../../../Explanation/History/deployment_2018/E-services_data-volume_pas.png
 
 Sarracenia est utilisée de façon opérationnelle pour acquérir environ quatre téraoctets.
 des observations provenant de systèmes automatisés d'observation météorologique, des RADARS météorologiques qui
