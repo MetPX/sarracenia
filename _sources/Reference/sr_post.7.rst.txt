@@ -103,10 +103,18 @@ The headers are an array of name:value pairs::
           "blocks"        - if the file being advertised is partitioned, then:
           {
               "method"    : "inplace" | "partitioned" , - is the file already in parts?
-              "size"      : "9999", - size of the blocks.
-              "count"     : "9999", - number of blocks in the file.
-              "remainder" : "9999", - the size of the last block.
+              "size"      : "9999", - nominal number of bytes in each block.
               "number"    : "9999", - which block is this.
+              "manifest"   - metadata for each block in the file.
+              {
+                  0: {                 - size and checksum of each block in the file.
+                      "size": 9999,    - may not match blocksize (e.g. last block of file.)
+                      "identity": encoded checksum of block (same format as identity value)
+                  },
+                  .
+                  . 
+                  . 
+              }
           }
           "atime" : date string - last access time of a file (optional)
           "mtime" : date string - last modification time of a file (optional)

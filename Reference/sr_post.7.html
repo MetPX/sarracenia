@@ -133,7 +133,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 10, 2024</p>
+<dd class="field-even"><p>Jan 11, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>UNKNOWN</p>
@@ -220,10 +220,18 @@ OPTIONAL:
         &quot;blocks&quot;        - if the file being advertised is partitioned, then:
         {
             &quot;method&quot;    : &quot;inplace&quot; | &quot;partitioned&quot; , - is the file already in parts?
-            &quot;size&quot;      : &quot;9999&quot;, - size of the blocks.
-            &quot;count&quot;     : &quot;9999&quot;, - number of blocks in the file.
-            &quot;remainder&quot; : &quot;9999&quot;, - the size of the last block.
+            &quot;size&quot;      : &quot;9999&quot;, - nominal number of bytes in each block.
             &quot;number&quot;    : &quot;9999&quot;, - which block is this.
+            &quot;manifest&quot;   - metadata for each block in the file.
+            {
+                0: {                 - size and checksum of each block in the file.
+                    &quot;size&quot;: 9999,    - may not match blocksize (e.g. last block of file.)
+                    &quot;identity&quot;: encoded checksum of block (same format as identity value)
+                },
+                .
+                .
+                .
+            }
         }
         &quot;atime&quot; : date string - last access time of a file (optional)
         &quot;mtime&quot; : date string - last modification time of a file (optional)

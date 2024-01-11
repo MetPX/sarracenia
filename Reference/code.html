@@ -325,8 +325,19 @@ What is missing:</p>
 <p>Unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,
 and hence the need for the copyDict member.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.Message.__computeIdentity">
-<span class="sig-name descname"><span class="pre">__computeIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sarracenia.Message.__computeIdentity" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="sarracenia.Message.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sarracenia.Message.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#sarracenia.Message.__weakref__" title="Link to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.Message.computeIdentity">
+<span class="sig-name descname"><span class="pre">computeIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.computeIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.computeIdentity" title="Link to this definition"></a></dt>
 <dd><p>check extended attributes for a cached identity sum calculation.
 if extended attributes are present, and
 * the file mtime is not too new, and
@@ -336,17 +347,6 @@ then use the cached value.</p>
 set the file’s extended attributes for the new value.
 the method of checksum calculation is from options.identity.</p>
 <p>sets the message ‘identity’ field if appropriate.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.Message.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.__init__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.Message.__weakref__">
-<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#sarracenia.Message.__weakref__" title="Link to this definition"></a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -479,7 +479,7 @@ lstat.longname= ‘lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameO
 <p>that you can then provide as an <em>lstat</em> argument to the above <em>fromFileInfo()</em>
 call. However the notification message returned will lack an identity checksum field.
 once you get the file, you can add the Identity field with:</p>
-<p>m.__computeIdentity(path, o):</p>
+<p>m.computeIdentity(path, o):</p>
 <p>In terms of consuming notification messages, the fields in the dictionary provide metadata
 for the announced resource. The anounced data could be embedded in the notification message itself,
 or available by a URL.</p>

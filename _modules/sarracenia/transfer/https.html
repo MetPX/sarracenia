@@ -231,7 +231,7 @@
             <span class="n">local_file</span><span class="p">,</span>
             <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">local_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_http self.path </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
 
@@ -251,18 +251,25 @@
         <span class="c1"># read from self.http write to local_file</span>
 
         <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_writelocal</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span>
-                                         <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+                                         <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">exactLength</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
-    <span class="k">def</span> <span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">getAccelerated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span> <span class="p">):</span>
 
         <span class="n">arg1</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
         <span class="n">arg1</span> <span class="o">=</span> <span class="n">arg1</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1"> &#39;</span><span class="p">)</span>
         <span class="n">arg2</span> <span class="o">=</span> <span class="n">local_file</span>
 
         <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">accelWgetCommand</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">arg1</span><span class="p">)</span>
+
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">arg2</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">exactLength</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span> <span class="sa">f</span><span class="s2">&quot;--header=Range: bytes=</span><span class="si">{</span><span class="n">remote_offset</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">]</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;accel_wget: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>

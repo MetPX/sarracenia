@@ -396,6 +396,20 @@ and hence the need for the copyDict member.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">computeIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia.html#Message.computeIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>check extended attributes for a cached identity sum calculation.
+if extended attributes are present, and
+* the file mtime is not too new, and
+* the cached sum us using the same method
+then use the cached value.</p>
+<p>otherwise, calculate a checksum.
+set the file’s extended attributes for the new value.
+the method of checksum calculation is from options.identity.</p>
+<p>sets the message ‘identity’ field if appropriate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">copyDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia.html#Message.copyDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>copy dictionary into message.</p>
 </dd></dl>
@@ -523,7 +537,7 @@ lstat.longname= ‘lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameO
 <p>that you can then provide as an <em>lstat</em> argument to the above <em>fromFileInfo()</em>
 call. However the notification message returned will lack an identity checksum field.
 once you get the file, you can add the Identity field with:</p>
-<p>m.__computeIdentity(path, o):</p>
+<p>m.computeIdentity(path, o):</p>
 <p>In terms of consuming notification messages, the fields in the dictionary provide metadata
 for the announced resource. The anounced data could be embedded in the notification message itself,
 or available by a URL.</p>

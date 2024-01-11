@@ -451,7 +451,7 @@ protocoles de transfert de fichiers, et non HTTP pour le moment.
 blocksize <size> défaut: 0 (auto)
 -----------------------------------
 
-REMARQUE: **NON IMPLEMENTÉ pour sr3, devrait revenir dans la version future**
+REMARQUE: **EXPERIMENTAL pour sr3, devrait revenir dans la version future**
 Cette option **blocksize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
 La valeur doit être l’une des suivantes ::
 
