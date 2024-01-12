@@ -348,6 +348,7 @@ Puis dans le ~/.bashrc sur le serveur exécutant la commande à distance ::
       export SR_POST_CONFIG=$LC_SRSHIM
       export LD_PRELOAD="libsrshim.so.1"
   fi
+
 SSH ne transmettra que les variables d'environnement qui commencent par LC\_ (locale) afin d'obtenir
 les variables passées avec un minimum d'effort, nous utilisons ce préfixe.
 
@@ -443,8 +444,6 @@ Voir aussi
 ==========
 
 `sr3(1) <sr3.1.html>`_ - Interface de ligne de commande principale de Sarracenia.
-
-`sr3_post(1) <sr3_post.1.html>`_ - publication des annonces de fichiers (implémentation python.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation c.)
 

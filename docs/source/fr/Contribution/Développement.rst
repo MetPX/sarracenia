@@ -1281,7 +1281,7 @@ Pour plus de détails, voir `Quelle version est stable <https://github.com/MetPX
 
 
 
-Création d’une version
+Création d'une version
 ----------------------
 
 MetPX-Sarracenia est distribué de différentes manières, et chacun a son propre processus de construction.
@@ -1758,4 +1758,4 @@ permettre au code de se dégrader avec élégance.
 
 Si la dépendance est ajoutée dans un plugin, alors il y a aussi une méthode pour celle décrite ici :
 
-`Guide de Programmeur<../Explication/SarraPluginDev.html#ajout-de-dependance-python-dans-les-callbacks>`_
+`Guide de Programmeur<../Explication/SarraPluginDev.html#ajout-de-dépendance-python-dans-les-callbacks>`_

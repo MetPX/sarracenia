@@ -43,8 +43,8 @@ Version 03 du format des annonces de modification d'un fichier pour sr_post.
 
 Un message sr_post se compose d’un sujet et du *BODY*
 
-**AMQP Topic:** *<version>.{<dir>.}*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**AMQP Topic:** 
+~~~~~~~~~~~~~~~
 
 ::
            <version> = « v03 » la version du protocole ou du format.
@@ -228,7 +228,7 @@ encodé en utf8, de sorte que la limite de longueur réelle peut être inférieu
 .. NOTE::
 
   Sarracenia s’appuie sur des courtiers pour interpréter l’en-tête du thème. Les courtiers interprètent
-  des en-têtes spécifiques au protocole *AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
+  des en-têtes spécifiques au protocole AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
   Par conséquent, l’en-tête du thème est stocké dans un en-tête AMQP, plutôt que dans la charge utile qui autorise le
   filtrage côté serveur. Pour éviter d’envoyer deux fois les mêmes informations, cet en-tête est
   omis de la charge utile JSON.
@@ -579,6 +579,7 @@ Un Autre Exemple
 Le post résultant de la commande de sr_watch suivante, a noter la création du fichier 'foo'::
 
  sr_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
+
 Ici, *sr_watch* vérifie si le fichier /data/shared/products/foo est modifié.
 Lorsque cela se produit, *sr_watch* lit le fichier /data/shared/products/foo et calcule sa somme de contrôle.
 Il crée ensuite un message d'annonce, se connecte à broker.com en tant qu’utilisateur « invité »

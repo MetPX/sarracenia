@@ -98,7 +98,7 @@ Tableau de stratégie de détection de fichiers
 |             | - Vulnérable à des pannes réseau.     |Réception de sources non-coopératives |
 | où          | - Vulnérable à des horloges désynchr  |                                      |
 |             |   onizés                              |(choix valable avec PDS)              |
-|nodupe_\     |                                       |                                      |
+|nodupe__\    |                                       |                                      |
 |fileAgeMin   |                                       |Si un processus re-écrit un fichier   |
 |             |                                       |souvent, mtime peut servire à réduire |
 |             |                                       |le rhythme de publication d´avis.     |

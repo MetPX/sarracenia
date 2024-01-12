@@ -71,6 +71,7 @@ Détails pris en charge :
 - ``prot_p`` - (FTPS) Utiliser une connexion de données sécurisée pour les connexions TLS (sinon, du texte clair est utilisé)
 - ``bearer_token=<token>`` (ou ``bt=<token>``) - (HTTP) Jeton Bearer pour l’authentification
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement
+
 déterminée. Cela peut être remplacé en spécifiant une méthode Particulière de connexion, ce qui peut être
 nécessaire si un broker prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement
 sélectionnée.

@@ -109,10 +109,7 @@ Variables
 
 Il est possible de faire une substitution dans la valeur d'une option. Les valeurs sont représentées par ${name}.
 Le nom peut être une variable d’environnement ordinaire, ou choisi parmi un certain nombre de variables déjà
-intégrés:
-
-
-::
+intégrés::
 
         varTimeOffset -5m
         directory /monrépertoirelocal/${%Y%m%d_%Hh%m:%S.%f}/mydailies
@@ -362,7 +359,7 @@ au moins ce qui est spécifié.
 Le **regexp pattern** peut être utilisé pour définir des parties du répertoire si une partie du message d'annonce est placée
 entre parenthèses. **sender** peut utiliser ces parties pour générer le nom du répertoire.
 Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé **${0}** dans le nom du répertoire...
-le second **{1} $ ** etc.
+le second **{1} $** etc.
 
 Exemple d’utilisation ::
 

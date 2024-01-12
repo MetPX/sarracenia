@@ -136,7 +136,7 @@ se trouverait ici:
 A la base, le répertoires *~/.config/sarra/default.conf* contient des paramètres
 qui sont lus par défaut pour tout composant au démarrage. Dans le même répertoire,
 *~/.config/sarra/credentials.conf*, il y a les identifiants (mots de passe) qui doivent
-être utilisé par sarracenia ( `CREDENTIALS`_ pour plus de détails ).
+être utilisé par sarracenia ( `CREDENTIALS <sr3_credentials.7.rst>`_ pour plus de détails ).
 
 Il est également possible de définir la valeur de la variable XDG_CONFIG_HOME pour remplacer
 le répertoire de base, ou sinon un fichier de configuration peut être placé dans n'importe quel

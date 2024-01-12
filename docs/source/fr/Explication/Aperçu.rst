@@ -250,4 +250,4 @@ D'autres logiciels, quelque peu similaires, aucun endossement ou jugement ne dev
 
 - `Rsync  <https://rsync.samba.org/>`_  moteur de transfert.
 - `Lsyncd <https://github.com/axkibe/lsyncd>`_   moteur de transfert.
-- `Zsync <https://zsync.moria.org.uk>`_ ( optimised rsync over HTTP. ) moteur de transfer.
+- `ZSync <https://zsync.moria.org.uk>`_ ( optimised rsync over HTTP. ) moteur de transfer.

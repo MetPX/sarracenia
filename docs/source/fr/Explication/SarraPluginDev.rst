@@ -1,6 +1,6 @@
 
 ==================================
- Guide de programmation Sarracenia
+ Guide de programmation sarracenia
 ==================================
 
 ---------------------------
@@ -176,7 +176,7 @@ ou flowcb accepte comme paramètre _options_ dans leurs routines __init__() ::
       """
 
 L’exemple ci-dessus définit une option "accel\_wget\_command"
-comme étant de type chaîne, avec la valeur par défaut _/usr/bin/wget_ .
+comme étant de type chaîne, avec la valeur par défaut __/usr/bin/wget__ .
 
 Autres méthodes utiles dans la classe sarracenia.config.Config :
 

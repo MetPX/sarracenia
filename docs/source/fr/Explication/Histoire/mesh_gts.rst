@@ -175,9 +175,10 @@ Les bases de données sont optimales pour les enregistrements de taille fixe. Pe
 -------------------------------------------------------------------------------------------------------------------
 
 .. note:
-image de deux arbres, l'un invisible et calculé (la BD) d'une part sélectionné, visible,
-inspectable (système de fichiers.) les performances de récupération doivent être les mêmes,
-ils font la même chose.
+
+   image de deux arbres, l'un invisible et calculé (la BD) d'une part sélectionné, visible,
+   inspectable (système de fichiers.) les performances de récupération doivent être les mêmes,
+   ils font la même chose.
 
 Il existe généralement deux grandes écoles de pensée sur le stockage des données météorologiques:
 les fichiers et les bases de données. Pendant de nombreuses années, les données étaient relativement
@@ -751,8 +752,7 @@ Programmabilité/interopérabilité
 --------------------------------
 
 Une nouvelle application pour traiter sr_post messages peut être réimplémentée s’il y a un désir
-de le faire, car en plus de la documentation complète, le code source d’une poignée
-`d’implémentations<../Aperçu.html#implémentations>`_
+de le faire, car en plus de la documentation complète, le code source d’une poignée `d’implémentations <../Aperçu.html#implémentations>`_
 (Python, C, Go, node.js), est facilement accessible au public. L’implémentation python dispose
 d’une interface de plug-in étendue disponible pour personnaliser le traitement de différentes
 manières, par exemple pour ajouter des protocoles de transfert de fichiers et effectuer un pré

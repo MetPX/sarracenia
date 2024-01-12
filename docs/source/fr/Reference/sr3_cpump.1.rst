@@ -103,7 +103,7 @@ VOIR AUSSI
 
 `sr3(1) <sr3.1.html>`_ - Interface de ligne de commande principale de Sarracenia.
 
-`sr3_post(1) <sr3_post.1.html>`_ - publication des annonces de fichiers (implémentation Python.)
+`sr3_post(1) <sr3_post.1.rst>`_ - publication des annonces de fichiers (implémentation Python.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation C.)
 
@@ -113,7 +113,7 @@ VOIR AUSSI
 
 `sr3_options(7) <sr3_options.7.html>`_ - liste de toute les options dans la langue de configuration.
 
-`sr3_post(7) <sr3_post.7.html>`_ - le format des annonces
+`sr3_post(7) <sr3_post.7.rst>`_ - le format des annonces
 
 **Page d'acceuil:**
 

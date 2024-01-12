@@ -68,7 +68,7 @@ autorisations et le nom de la fil d’attente) peuvent consommer à partir de la
 de nommer la fil d’attente. Dans un autre protocole, tel que MQTT, on ne peut pas nommer la fil d’attente, et donc
 ce modèle de traitement n’est pas pris en charge.
 
-La convention de mappage décrite dans `Topic < ../../Reference/sr_post.7.rst#topic>`_, permet à
+La convention de mappage décrite dans `Topic < ../../../Reference/sr_post.7.rst#topic>`_, permet à
 MQTT d'établir des hiérarchies distinctes qui fournissent une distribution fixe entre
 les travailleurs, mais pas exactement la fil d’attente partagée auto-équilibrée fournie par AMQP.
 
