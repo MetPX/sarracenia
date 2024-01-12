@@ -1,29 +1,18 @@
 metpx-sr3 (3.00.51rc5) UNRELEASED; urgency=medium
 
-  * increment away from release.
-
- -- peter <peter@bsqt.homeip.net>  Thu, 21 Dec 2023 14:01:42 -0500
-
-metpx-sr3 (3.00.51rc4) unstable; urgency=medium
-
+  * #396 initial experimental support for file partitioning
+    (block_reassembly.)
+  * PR #892 fix for numeric inflight not working
+  * PR #886 poll_rate_limit plugin (fixing a problem with spamming a server.)
+  * #884  second fix re-instating conversion but with + as a safe character
+  * improvements to poll_auth_plugins for dynamic tokens.  
   * fixed #860 properly this time.
-
- -- peter <peter@bsqt.homeip.net>  Wed, 20 Dec 2023 12:14:07 -0500
-
-metpx-sr3 (3.00.51rc3) unstable; urgency=medium
-
   * fix for crash in config parsing.
-
- -- peter <peter@bsqt.homeip.net>  Tue, 19 Dec 2023 10:38:56 -0500
-
-metpx-sr3 (3.00.51rc2) unstable; urgency=medium
-
+  * improvements to eumetsat & copernicus (dynamic token) 
+  * PR #889 improvement for tarring files on receipt.
+  * many lint type fixes arising from tests on redhat distros.
+  * fix #881 remove old inflight files in the way when restarting transfers
   * fix #875 sundew_compat_regez_first_match_is_zero does not work.
-
- -- peter <peter@bsqt.homeip.net>  Mon, 18 Dec 2023 16:55:58 -0500
-
-metpx-sr3 (3.00.51rc1) unstable; urgency=medium
-
   * fix #872 crash in watch.
   * fix #866 print features rather then exit on critical errors.
   * fix #864 crash on redhat, python-magic library clash.
@@ -32,7 +21,9 @@ metpx-sr3 (3.00.51rc1) unstable; urgency=medium
   * enhancement #824 last transfer metrics added.
   * fix crash when config files have errors near beginning.
   * document new versioning/pre-release scheme ( #139 )
-
+  * working on #740, adding hathling drive pyproject.toml to replace 
+    setup.py on newer systems.
+  * working on #863 created spec file to do native RPM installs on newer OS
  -- peter <peter@bsqt.homeip.net>  Wed, 06 Dec 2023 17:42:37 -0500
 
 metpx-sr3 (3.00.50) unstable; urgency=medium
