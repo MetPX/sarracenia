@@ -73,7 +73,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sarracenia.flowcb.filter.wmo2msc</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk</span>
 <span class="sd">to MSC internal format in an alternate tree.  It is analogous to Sundew&#39;s &#39;bulletin-file&#39;.</span>
 <span class="sd">Meant to be called as an sr_shovel plugin.</span>
@@ -128,12 +128,11 @@
 <span class="sd">  The first line of the file is expected to contain an AHL. and when we build a tree</span>
 <span class="sd">  from it, we build it as follows::</span>
 
-<span class="sd">     TT/CCCC/GG/TTAAii_CCCC_YYGGgg_&lt;uniquify&gt;</span>
+<span class="sd">      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_&lt;uniquify&gt;</span>
 
 <span class="sd">  assuming tree=on, uniquify=hash:</span>
 
 <span class="sd">     SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22</span>
-
 
 <span class="sd">NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION </span>
 <span class="sd">      including hints about debugging.</span>

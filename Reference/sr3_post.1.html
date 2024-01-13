@@ -128,7 +128,7 @@
 <dd class="field-odd"><p>1</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>UNKNOWN</p>
@@ -183,13 +183,13 @@ Format of argument to the <em>path</em> option:</p>
 <span class="n">relative_path_to_the</span><span class="o">/</span><span class="n">filename</span>
 </pre></div>
 </div>
-<p>The <em>-pipe</em> option can be specified to have sr_post read path names from standard
+<p>The <em>-pipe</em> option can be specified to have sr3_post read path names from standard
 input as well.</p>
 <p>An example invocation of <em>sr3_post</em>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseUrl</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span>
 </pre></div>
 </div>
-<p>By default, sr_post reads the file /data/shared/products/foo and calculates its checksum.
+<p>By default, sr3_post reads the file /data/shared/products/foo and calculates its checksum.
 It then builds a post message, logs into broker.com as user ‘guest’ (default credentials)
 and sends the post  to defaults vhost ‘/’ and default exchange. The default exchange
 is the prefix <em>xs_</em> followed by the broker username, hence defaulting to ‘xs_guest’.
@@ -216,7 +216,7 @@ is the checksum value. The <em>parts=1,4574,1,0,0</em> state that the file is av
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseDir</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">public_data</span> <span class="o">--</span><span class="n">postBaseUrl</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="n">SACN32_CWAO_123456</span>
 </pre></div>
 </div>
-<p>By default, sr_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+<p>By default, sr3_post reads the file /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (concatenating the post_base_dir and relative path of the source url to obtain the local file path)
 and calculates its checksum. It then builds a post message, logs into broker.com as user ‘guest’
 (default credentials) and sends the post to defaults vhost ‘/’ and exchange ‘xs_guest’, resulting
@@ -292,7 +292,7 @@ Files bigger than this value will get announced with <em>blocksize</em> sized pa
 for files of various sizes.  As the file size varies, the automatic computation will give different
 results.  This will result in resending information which has not changed as partitions of a different
 size will have different sums, and therefore be tagged as different.</p>
-<p>By default, <strong>sr_post</strong> computes a reasonable blocksize that depends on the file size.
+<p>By default, <strong>sr3_post</strong> computes a reasonable blocksize that depends on the file size.
 The user can set a fixed <em>blocksize</em> if it is better for its products or if he wants to
 take advantage of the <strong>cache</strong> mechanism.  In cases where large files are being appended to, for example,
 it make sense to specify a fixed partition size so that the blocks in the cache will be the
@@ -320,7 +320,7 @@ what the subscribers will use to download the product.</p>
 <h4>rename &lt;path&gt;<a class="headerlink" href="#rename-path" title="Link to this heading"></a></h4>
 <p>With the <em>rename</em>  option, the user can suggest a destination path to its files. If the given
 path ends with ‘/’ it suggests a directory path…  If it doesn’t, the option specifies a file renaming.</p>
-<p><em>sr_post</em>, and <em>sr_watch</em> use a file based model based on a process and a disk cache,
+<p><em>sr3_post</em>, and <em>sr_watch</em> use a file based model based on a process and a disk cache,
 whose design is single threaded. The shim library is typically used by many processes
 at once, and would have resource contention and/or corruption issues with the cache.
 The shim library therefore has a purely memory-based cache, tunable with
@@ -383,7 +383,7 @@ interval should not be less than about five seconds, as it may miss posting some
 <blockquote>
 <div><p>Avoid posting duplicates by comparing each file to those seen during the
 <em>suppress_duplicates</em> interval. When posting directories, will cause
-<em>sr_post</em> post only files (or parts of files) that were new when invoked again.</p>
+<em>sr3_post</em> post only files (or parts of files) that were new when invoked again.</p>
 <p>Over time, the number of files in the cache can grow too large, and so it is cleaned out of
 old entries. The default lifetime of a cache entry is five minutes (300 seconds). This
 lifetime can be overridden with a time interval as argument ( the 999 above ).</p>
@@ -423,7 +423,7 @@ You can overwrite the topicPrefix by setting this option.</p>
 </section>
 <section id="shim-library-usage">
 <h3>SHIM LIBRARY USAGE<a class="headerlink" href="#shim-library-usage" title="Link to this heading"></a></h3>
-<p>Rather than invoking a sr_post to post each file to publish, one can have processes automatically
+<p>Rather than invoking a sr3_post to post each file to publish, one can have processes automatically
 post the files they right by having them use a shim library intercepting certain file i/o calls to libc
 and the kernel. To activate the shim library, in the shell environment add:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SR_POST_CONFIG</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
@@ -432,10 +432,10 @@ and the kernel. To activate the shim library, in the shell environment add:</p>
 </div>
 <p>where <em>shimpost.conf</em> is an sr_cpost configuration file in
 the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
-as an sr_post one, except that plugins are not supported.  With the shim
+as an sr3_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the <em>accept/reject</em> clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
-as it would be by sr_post. If using with ssh, where one wants files which are
+as it would be by sr3_post. If using with ssh, where one wants files which are
 scp’d to be posted, one needs to include the activation in the .bashrc and pass
 it the configuration to use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expoert</span> <span class="n">LC_SRSHIM</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
@@ -543,8 +543,8 @@ implementation.</p>
 <p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - C implementation of the shovel component. (copy messages)</p>
 <p><strong>Formats:</strong></p>
 <p><a class="reference external" href="sr3_credentials.7.html">sr3_credentials(7)</a> - Convert logfile lines to .save Format for reload/resend.</p>
-<p><a class="reference external" href="sr_options.7.html">sr3_options(7)</a> - the configuration options</p>
-<p><a class="reference external" href="sr_post.7.html">sr3_post(7)</a> - the format of notification messages.</p>
+<p><a class="reference external" href="sr3_options.7.html">sr3_options(7)</a> - the configuration options</p>
+<p><a class="reference external" href="sr_post.7.html">sr_post(7)</a> - the format of notification messages.</p>
 <p><strong>Home Page:</strong></p>
 <p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia: a real-time pub/sub data sharing management toolkit</p>
 </section>

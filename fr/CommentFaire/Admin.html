@@ -1243,8 +1243,9 @@ activez le plugin RabbitMQ MQTT.:</p>
 <li><p>Modifier les autorisations d’utilisateur anonyme (rabbit_mqtt.default_user)
 pour permettre à l’utilisateur partenaire de s’abonner à votre flux mqtt
 (c’est-à-dire en utilisant mosquitto_sub):</p>
-<p>rabbitmqctl set_permissions -p / anonymous “^q_anonymous.*|^mqtt-subscription”
-“^q_anonymous.*|^xs_anonymous$|^mqtt-subscription” “^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$”</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">anonymous</span> <span class="s2">&quot;^q_anonymous.*|^mqtt-subscription&quot;</span> <span class="s2">&quot;^q_anonymous.*|^xs_anonymous$|^mqtt-subscription&quot;</span> <span class="s2">&quot;^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$&quot;</span>
+</pre></div>
+</div>
 </li>
 <li><p>Écrivez vos configurations qui seront publiées sur rabbitmqtt exchange:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Voici un shovel/myshovel.conf minimal

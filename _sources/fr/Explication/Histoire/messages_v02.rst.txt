@@ -12,11 +12,12 @@ elle est remplacée par la page de manuel sr_post(7).
 Ce dossier documente les conclusions/propositions finales, les raisonnements/débats
 va ailleurs.
 
-Les messages affichés comprennent quatre parties :
-Sujet: .<version><type>. <src>(.<dir>.) *. <nom de fichier>
-en-têtes : série de paires clé-valeur, selon les spécifications AMQP.
-1ère ligne (champs séparés par des espaces) : <horodatage> <srcURL> <relURL><newline>
-Reste du corps:
+Les messages affichés comprennent quatre parties:
+
+* Sujet: .<version><type>. <src>(.<dir>.) *. <nom de fichier>
+* en-têtes : série de paires clé-valeur, selon les spécifications AMQP.
+* 1ère ligne (champs séparés par des espaces) : <horodatage> <srcURL> <relURL><newline>
+* Reste du corps.
 
 La sujet du message se décompose comme suit ::
 
@@ -101,8 +102,7 @@ parts=<i|p>,<bsz>,<fzb>,<bno>,<remainder>
 	-- Récupération en plusieurs parties.
 
         -- File Segment strategy::
-		i - inplace (ne pas créer de fichiers temporaires, juste lseek
-			dans le fichier.)
+		i - inplace (ne pas créer de fichiers temporaires, juste lseek dans le fichier.)
 		    peut entraîner la création d’un fichier .srsig?
 		p - part files.  Utilisez .part fichiers, suffixe fixe.
 		    Je ne sais pas lequel sera par défaut.

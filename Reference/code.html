@@ -567,15 +567,8 @@ always UTC timezone.</p>
 </section>
 <section id="module-sarracenia.config">
 <span id="sarracenia-config"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">sarracenia.config</a><a class="headerlink" href="#module-sarracenia.config" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>Second version configuration parser</p>
-</div></blockquote>
-<p>FIXME: pas 2023/02/05…  missing options from v2:</p>
-<blockquote>
-<div><p>max_queue_size
-outlet
-pipe</p>
-</div></blockquote>
+<p>Second version configuration parser</p>
+<p>FIXME: pas 2023/02/05…  missing options from v2: max_queue_size, outlet, pipe</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.config.Config">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.Config" title="Link to this definition"></a></dt>
@@ -658,10 +651,8 @@ opt= sarracenia.flowcb.log.filter.Log.level  value = debug</p>
 <p>results in:
 self.settings[ sarracenia.flowcb.log.filter.Log ][level] = debug</p>
 <p>options should be fed to plugin class on instantiation.
-stripped of class…</p>
-<blockquote>
-<div><p>options = { ‘level’ : ‘debug’ }</p>
-</div></blockquote>
+stripped of class…
+* options = { ‘level’ : ‘debug’ }</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1278,11 +1269,10 @@ For performance reasons, all those writes need to be Appends.</p>
 to resolve them</p>
 <p>not clear if we need multi-task safety… just one task writes to each queue.</p>
 <p>retry_ttl how long</p>
-<p>self.retry_cache
-* a dictionary indexed by some sort of key to prevent duplicate</p>
-<blockquote>
-<div><p>messages being stored in it.</p>
-</div></blockquote>
+<p>self.retry_cache</p>
+<ul class="simple">
+<li><p>a dictionary indexed by some sort of key to prevent duplicate messages being stored in it.</p></li>
+</ul>
 <p>retry_path = ~/.cache/sr3/&lt;component&gt;/&lt;config&gt;/diskqueue_&lt;name&gt;</p>
 <p>with various suffixes:</p>
 <p>.new – messages added to the retry list are appended to this file.</p>
@@ -2273,10 +2263,8 @@ queueDeclare     - declare queue before use.</p>
 <dt class="sig sig-object py" id="sarracenia.moth.amqp.AMQP.__connect">
 <span class="sig-name descname"><span class="pre">__connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">broker</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sarracenia.moth.amqp.AMQP.__connect" title="Link to this definition"></a></dt>
 <dd><p>connect to broker.
-returns True if connected, false otherwise.</p>
-<blockquote>
-<div><p>side effect: self.channel set to a new channel.</p>
-</div></blockquote>
+returns True if connected, false otherwise.
+* side effect: self.channel set to a new channel.</p>
 <p>Expect caller to handle errors.</p>
 </dd></dl>
 

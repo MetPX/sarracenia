@@ -133,7 +133,7 @@
 <dd class="field-odd"><p>UNKNOWN</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 </dl>
 </section>
@@ -292,8 +292,8 @@ le modèle de subscribe/dd_amis.conf:</p>
 </div>
 <p>pour plus d’informations:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="../Tutoriel/1_CLI_introduction.html">CLI Introduction (Jupyter Notebook)</a></p></li>
-<li><p><a href="#id2"><span class="problematic" id="id3">`Subscriber à distance&lt;../Tutoriel/Mettre_en_place_un_subscriber_distant.html&gt;`_</span></a></p></li>
+<li><p><a class="reference internal" href="../Tutoriel/1_CLI_introduction.html"><span class="doc">CLI Introduction (Jupyter Notebook)</span></a></p></li>
+<li><p><a class="reference internal" href="../Tutoriel/Mettre_en_place_un_subscriber_distant.html"><span class="doc">S’abonner à distance</span></a></p></li>
 <li><p><a class="reference internal" href="../Reference/sr3_options.7.html"><span class="doc">les options dans les fichiers de configuration</span></a></p></li>
 </ul>
 </section>
@@ -438,6 +438,14 @@ peu ou pas de fil d’attente pour ces données.</p>
 </section>
 <section id="affiner-la-selection">
 <h3>Affiner la sélection<a class="headerlink" href="#affiner-la-selection" title="Link to this heading"></a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>FIXME</strong>: Faire une photo, avec un:</p>
+<ul class="simple">
+<li><p>courtier à une extrémité, et le subtopic s’y applique.</p></li>
+<li><p>client à l’autre extrémité, et l’accept/reject s’appliquent là.</p></li>
+</ul>
+</div>
 <p>Choisissez <em>subtopics</em> (qui sont appliquées sur le broker sans téléchargement de message de notification) pour affiner
 le nombre de messages de notification qui traversent le réseau pour accéder aux processus clients sarracenia.
 Les options <em>reject</em> et <em>accept</em> sont évaluées par les processus sr3 subscribe eux-mêmes,
@@ -445,6 +453,30 @@ qui fourni un filtrage basé sur l’expression régulière des messages qui son
 <em>accept</em> fonctionne sur le chemin réel (enfin, l’URL), indiquant quels fichiers dans
 le flux de notification reçu doit en fait être téléchargé. Regardez dans les <em>Downloads</em>
 du fichier journal pour des exemples de ce chemin d’accès transformé.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Brève introduction aux expressions régulières</p>
+<p>Les expressions régulières sont un moyen très puissant d’exprimer les correspondances de motifs.
+Elles offrent une flexibilité extrême, mais dans ces exemples, nous n’utiliserons qu’un
+sous-ensemble très basique : le . est un caractère générique correspondant à n’importe quel caractère unique. Si c’est
+suivi d’un nombre d’occurrences, il indique combien de lettres correspondront au motif. le caractère * (astérisque) signifie n’importe quel nombre d’occurrences.
+ainsi:</p>
+<ul class="simple">
+<li><p>.* désigne toute séquence de caractères de n’importe quelle longueur. En d’autres termes, faites correspondre n’importe quoi.</p></li>
+<li><p>cap.* désigne toute séquence de caractères commençant par cap.</p></li>
+<li><p>.*CAP.* désigne toute séquence de caractères avec CAP quelque part dedans.</p></li>
+<li><p>.*cap désigne toute séquence de caractères qui se termine par CAP. Dans le cas où plusieurs parties de la chaîne
+peuvent correspondre, la plus longue est sélectionnée.</p></li>
+<li><p>.*?cap comme ci-dessus, mais <em>non-greedy</em>, ce qui signifie que le match le plus court est choisi.</p></li>
+</ul>
+<p>Veuillez consulter diverses ressources Internet pour plus d’informations sur l’ensemble
+de variété de correspondance possible avec les expressions régulières :</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/re.html">https://docs.python.org/3/library/re.html</a></p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Regular_expression">https://en.wikipedia.org/wiki/Regular_expression</a></p></li>
+<li><p><a class="reference external" href="http://www.regular-expressions.info/">http://www.regular-expressions.info/</a></p></li>
+</ul>
+</div>
 <p>retour aux exemples de fichiers de configuration :</p>
 <p>Notez ce qui suit</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob
@@ -510,6 +542,14 @@ accept .*~~TRACKER,TRACK_MAXR.*</p>
 catalog_common/in, plutôt que dans l’hiérarchie des données ponctuelles
 utilisée pour stocker les données qui correspondent aux trois premiers
 clauses d’accept.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Notez que .* dans la directive de subtopic, où
+cela signifie “correspondre à un topic” (c’est-à-dire qu’aucun caractère de point n’est autorisé dans un nom
+de sujet) a une signification différente de celle qui est dans une clause accept,
+où cela signifie correspondre à n’importe quelle chaîne.</p>
+<p>Oui, c’est déroutant.  Non, on ne peut pas l’éviter.</p>
+</div>
 <p>Pour plus d´informations:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../Tutoriel/1_CLI_introduction.html">Téléchargement en mode ligne (Jupyter Notebook)</a></p></li>
@@ -591,8 +631,8 @@ augmenter de manière déraisonnable, votre abonnement a un problème de perform
 <p>Il y a de nombreux aspects de la performance que nous n’aborderons pas ici.</p>
 <p>plus :</p>
 <ul class="simple">
-<li><p><a href="#id4"><span class="problematic" id="id5">`Quand ramasser un fichier&lt;../Explication/StrategieDetectionFichiers.html&gt;`_</span></a></p></li>
-<li><p><a href="#id6"><span class="problematic" id="id7">`Quand savoir qu´un fichier est livré&lt;../Explication/AssurerLaLivraison.html&gt;`_</span></a></p></li>
+<li><p><a class="reference external" href="../Explication/StrategieDetectionFichiers.html">Quand ramasser un fichier</a></p></li>
+<li><p><a class="reference external" href="../Explication/AssurerLaLivraison.html">Quand savoir qu´un fichier est livré</a></p></li>
 </ul>
 <p>Dans les cas de haut-débit, comment faire remarquer rapidement les modifications de fichiers,
 filtrer les réécritures fréquentes de fichiers, planifier des copies :</p>
@@ -768,11 +808,11 @@ Il y a aussi:</p>
 </div>
 <p>qui ajoutera ce rappel à la liste, de sorte qu’il est appelé avant les autres.</p>
 <p>Les plugins sont tous écrits en python, et les utilisateurs peuvent créer les leurs et les placer dans ~/.config/sr3/plugins.
-Pour plus d’informations sur la création de nouveaux plug-ins personnalisés, reportez-vous à la section <a class="reference internal" href="FlowCallbacks.html"><span class="doc">Writing Flow Callbacks</span></a></p>
+Pour plus d’informations sur la création de nouveaux plug-ins personnalisés, reportez-vous à la section <a class="reference internal" href="FlowCallbacks.html"><span class="doc">Implanter des Flowcallback</span></a></p>
 <p>Pour récapituler :</p>
 <ul class="simple">
 <li><p>Pour voir les plugins actuellement disponibles sur le système <em>sr3 list fcb</em></p></li>
-<li><p>Pour afficher le contenu d’un plugin: <cite>FlowCallback Reference (anglais) &lt;../../Reference/flowcb.html&gt;</cite></p></li>
+<li><p>Pour afficher le contenu d’un plugin: <cite>FlowCallback Reference (anglais) &lt;../../Reference/flowcb.rst&gt;</cite></p></li>
 <li><p>Les plugins peuvent avoir des paramètres d’option, tout comme ceux intégrés</p></li>
 <li><p>Pour les définir, placez les options dans le fichier de configuration avant que le plugin ne s’appelle lui-même</p></li>
 <li><p>Pour créer vos propres plugins, créez-les dans ~/.config/sr3/plugins, ou dans le chemin PYTHONPATH configurer
@@ -781,7 +821,7 @@ pour acceder a vos modules Python.</p></li>
 <p>plus:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../Explication/Concepts.html">Concepts</a></p></li>
-<li><p><a class="reference external" href="../Tutoriel/2_CLI_with_flowcb_demo.html">using callbacks from command line (Jupyter Notebook)</a></p></li>
+<li><p><a class="reference internal" href="../Tutoriel/2_CLI_with_flowcb_demo.html"><span class="doc">using callbacks from command line (Jupyter Notebook)</span></a></p></li>
 </ul>
 <p>encore davantage:</p>
 <ul class="simple">
@@ -813,6 +853,13 @@ accept .*
 </div>
 <p>Avec rxpipe, chaque fois qu’un transfert de fichiers est terminé et est prêt pour
 post-traitement, son nom est écrit sur le canal linux (nommé .rxpipe.)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dans le cas où un grand nombre d’instances d’abonnement fonctionnent
+Sur la même configuration, il y a une légère probabilité que les notifications
+peuvent se corrompre mutuellement dans le canal nommé.</p>
+<p><strong>FIXME</strong> Nous devrions probablement vérifier si cette probabilité est négligeable ou non.</p>
+</div>
 </section>
 <section id="analyse-d-antivirus">
 <h3>Analyse d’antivirus<a class="headerlink" href="#analyse-d-antivirus" title="Link to this heading"></a></h3>
@@ -1046,8 +1093,8 @@ Sarracenia, c’est une manière pythonique de démarrer un flux à partir de py
 <p>Ou on peut éviter le schéma de configuration de Sarracenia, peut-être que l’on veut
 juste utiliser le support du protocole de message:</p>
 <ul class="simple">
-<li><p>abnonnement avec l´API <strong>Moth</strong> (plus simple) (Jupyter Notebook) <a class="reference external" href="../Tutoriel/4_api_moth_sub_demo.html">../Tutoriel/4_api_moth_sub_demo.html</a></p></li>
-<li><p>annoncer des produits avec l´API <strong>Moth</strong> (Jupyter Notebook) <a href="#id8"><span class="problematic" id="id9">`../Tutoriel/5_api_moth_post_demo.html&gt;`_</span></a></p></li>
+<li><p>abnonnement avec l´API <strong>Moth</strong> (plus simple) (Jupyter Notebook) <a class="reference internal" href="../Tutoriel/4_api_moth_sub_demo.html"><span class="doc">../Tutoriel/4_api_moth_sub_demo.ipynb</span></a></p></li>
+<li><p>annoncer des produits avec l´API <strong>Moth</strong> (Jupyter Notebook)  <a class="reference internal" href="../Tutoriel/5_api_moth_post_demo.html"><span class="doc">../Tutoriel/5_api_moth_post_demo.ipynb</span></a></p></li>
 </ul>
 </section>
 <section id="plus-dinformations">

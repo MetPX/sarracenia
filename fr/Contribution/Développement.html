@@ -62,7 +62,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#commits-vers-la-branche-principale">Commits vers la branche principale</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#branches-principales">Branches Principales</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#referentiels">Référentiels</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#creation-dune-version">Création d’une version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#creation-d-une-version">Création d’une version</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#github">github</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#environnement-de-developpement">Environnement de développement</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#conventions">Conventions</a></li>
@@ -142,7 +142,7 @@
 <dd class="field-odd"><p>UNKNOWN</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 </dl>
 <section id="outillage">
@@ -232,7 +232,7 @@ complétés avec assez de succès est un des critères d’acceptation dans deve
 <p>Pour exécuter les tests sr_insects, le référentiel doit être cloné avec la branche development.
 Une porte pour la fusion à development est pour un deuxième développeur d’exécuter le flow_tests.
 <strong>Pour la v03, ces tests doivent exécuter : static_flow, flakey_broker, dynamic_flow, transform_flow</strong></p>
-<p>Prévu d’ici le 11/04/2022 :</p>
+<p>Prévu d’ici le 11/04/2022:</p>
 <ul class="simple">
 <li><p>Main sera fusionné à partir de development, donc la branche par défaut pour les nouveaux arrivants sera SR3.</p></li>
 <li><p>Launchpad aura de nouvelles recettes pour produire des paquets SR3 à partir de la branche principale.</p></li>
@@ -241,8 +241,8 @@ Une porte pour la fusion à development est pour un deuxième développeur d’e
 <section id="sr-insects">
 <h3>sr_insects<a class="headerlink" href="#sr-insects" title="Link to this heading"></a></h3>
 <p>Le référentiel sr_insects a sa propre base de données de problèmes, et le travail sur sr_insects est encouragé.
-Les versions 2 et 3 sont prises en charge sur la branche principale de sr_insects.  Cette branche devrait être
-utilisé pour prendre en charge tout le développement dans les deux versions….</p>
+Les versions 2 et 3 sont prises en charge sur la branche principale de sr_insects. Cette branche devrait être
+utilisé pour prendre en charge tout le développement dans les deux versions…</p>
 </section>
 </section>
 <section id="installation-locale">
@@ -1391,8 +1391,8 @@ les développeurs fusionnent la branche v2_dev à v2_stable et déclenchent manu
 </ul>
 <p>Pour plus de détails, voir <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">Quelle version est stable</a></p>
 </section>
-<section id="creation-dune-version">
-<h2>Création d’une version<a class="headerlink" href="#creation-dune-version" title="Link to this heading"></a></h2>
+<section id="creation-d-une-version">
+<h2>Création d’une version<a class="headerlink" href="#creation-d-une-version" title="Link to this heading"></a></h2>
 <p>MetPX-Sarracenia est distribué de différentes manières, et chacun a son propre processus de construction.
 Les versions packagées sont toujours préférables aux versions uniques, car elles sont reproductibles.</p>
 <p>Lorsque le développement nécessite des tests sur une large gamme de serveurs, il est préférable de faire
@@ -1477,15 +1477,14 @@ Cela a un impact majeur sur les processus…</p>
 <h3>Définir la version<a class="headerlink" href="#definir-la-version" title="Link to this heading"></a></h3>
 <p>Ceci est fait pour <em>démarrer</em> le développement d’une version. D´habitude, on fais cela immédiatement
 après que la version précedente a été relachée.</p>
-<ul>
+<ul class="simple">
 <li><p>git checkout development</p></li>
 <li><p>Modifier <code class="docutils literal notranslate"><span class="pre">sarracenia/_version.py</span></code> manuellement et définissez le numéro de version.</p></li>
 <li><p>Modifier CHANGES.rst pour ajouter une section pour la version.</p></li>
-<li><p>Exécuter dch pour démarrer le journal des modifications de la version actuelle.
-* assurer que UNRELEASED soit l’étiquette de status au lieu de <em>unstable</em> (peut-être automatiquement</p>
-<blockquote>
-<div><p>faite par dch)</p>
-</div></blockquote>
+<li><p>Exécuter dch pour démarrer le journal des modifications de la version actuelle.</p>
+<ul>
+<li><p>assurer que UNRELEASED soit l’étiquette de status au lieu de <em>unstable</em> (peut-être automatiquement faite par dch)</p></li>
+</ul>
 </li>
 <li><p>git commit -a</p></li>
 <li><p>git push</p></li>
@@ -1523,7 +1522,7 @@ années pour l´instant.</p>
 </div>
 <p>Une fois en stable, les images docker seront automatiquement mises à niveau, mais nous devons ensuite mettre à jour
 les différentes méthodes de distribution: <a class="reference internal" href="#pypi">PyPI</a>, et <a class="reference internal" href="#launchpad">Launchpad</a></p>
-<p>Une fois la génération du package terminée, il faut <a href="#id4"><span class="problematic" id="id5">`Création d´une version`_</span></a>
+<p>Une fois la génération du package terminée, il faut <a class="reference internal" href="#creation-d-une-version">Création d’une version</a>
 dans development à l’incrément logique suivant pour s’assurer qu’aucun autre développement
 identifié comme la version publiée ne se produit.</p>
 </section>
@@ -1823,7 +1822,7 @@ l’importation nécessaire et les fonctionnalités qu’il apporte à Sr3. Vous
 protections if feature[‘x’][‘present’] dans le code où vous utilisez la fonctionnalité, afin de
 permettre au code de se dégrader avec élégance.</p>
 <p>Si la dépendance est ajoutée dans un plugin, alors il y a aussi une méthode pour celle décrite ici :</p>
-<p><a href="#id6"><span class="problematic" id="id7">`Guide de Programmeur&lt;../Explication/SarraPluginDev.html#ajout-de-dependance-python-dans-les-callbacks&gt;`_</span></a></p>
+<p><a href="#id4"><span class="problematic" id="id5">`Guide de Programmeur&lt;../Explication/SarraPluginDev.html#ajout-de-dépendance-python-dans-les-callbacks&gt;`_</span></a></p>
 </section>
 </section>
 

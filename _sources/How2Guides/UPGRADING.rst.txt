@@ -166,7 +166,7 @@ sarracenia v2 configurations.
 
 *CHANGE*: v03 notification message encoding changed: *Identity* checksum is now optional.
           (details: https://github.com/MetPX/sarracenia/issues/547 )
-         *md5sum* is no longer defined, replaced with *none* in sr3.
+          *md5sum* is no longer defined, replaced with *none* in sr3.
 
 *CHANGE*: v03 notification message encoding changed for symbolic links, and file renames
      and removals. There is now a 'fileOp' field for these dataless file operations.

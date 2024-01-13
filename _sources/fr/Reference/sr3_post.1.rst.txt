@@ -287,7 +287,7 @@ nodupe_ttl on|off|999
   et beaucoup de transfert de données en double en résultera.
 
 identity <method>[,<value>]
-----------------------------
+---------------------------
 
 Toutes les publications de fichiers incluent une somme de contrôle. L'option *sum* spécifie comment la calculer.
 C'est une chaîne séparée par des virgules. Les méthodes d'intégrité valides sont ::
@@ -298,7 +298,7 @@ C'est une chaîne séparée par des virgules. Les méthodes d'intégrité valide
         random - inventez une valeur aléatoire pour chaque publication.
         arbitrary - appliquer la valeur fixe littérale.
 
-.. Remarque::
+.. Note::
 
   Les sommes de contrôle sont stockées dans les attributs de fichier étendus (ou Alternate Data Streams sous Windows).
   Ceci est nécessaire pour que la méthode *arbitrary* fonctionne, puisque nous n'avons aucun moyen de la calculer.
@@ -348,6 +348,7 @@ Puis dans le ~/.bashrc sur le serveur exécutant la commande à distance ::
       export SR_POST_CONFIG=$LC_SRSHIM
       export LD_PRELOAD="libsrshim.so.1"
   fi
+
 SSH ne transmettra que les variables d'environnement qui commencent par LC\_ (locale) afin d'obtenir
 les variables passées avec un minimum d'effort, nous utilisons ce préfixe.
 
@@ -443,8 +444,6 @@ Voir aussi
 ==========
 
 `sr3(1) <sr3.1.html>`_ - Interface de ligne de commande principale de Sarracenia.
-
-`sr3_post(1) <sr3_post.1.html>`_ - publication des annonces de fichiers (implémentation python.)
 
 `sr3_cpost(1) <sr3_cpost.1.html>`_ - publication des annonces de fichiers (implémentation c.)
 

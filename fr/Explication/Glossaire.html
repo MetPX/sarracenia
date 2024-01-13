@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Pourquoi SFTP est plus souvent choisi que FTPS" href="sftps.html" />
-    <link rel="prev" title="Guide de programmation Sarracenia" href="SarraPluginDev.html" /> 
+    <link rel="prev" title="Guide de programmation sarracenia" href="SarraPluginDev.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -56,7 +56,7 @@
 <li class="toctree-l3"><a class="reference internal" href="SupprimerLesDoublons.html">Suppression de Doublons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Glossaire</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#amqp">AMQP</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#contre-pression-anglais-back-pressure">Contre-Pression (anglais: Back Pressure)</a></li>
@@ -227,6 +227,14 @@ HTTP / HTTPS sont les protocoles qui sont entièrement pris en charge par sarrac
 copient des fichiers de quelque part et les écrit localement. Ils font ensuite de la publicité à nouveau pour la
 copie locale à ses pompes voisines, et les utilisateurs qui sont abonnés peuvent
 obtenir les données de cette pompe.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Pour les utilisateurs finaux, une pompe et un courtier sont la même chose pour toutes les buts pratiques.
+Toutefois, lorsque les administrateurs de pompe configurent des clusters multi-hôtes, un
+Broker peut s’exécuter sur deux hôtes, et le même broker peut être utilisé par
+de nombreux moteurs de transport. L’ensemble du cluster serait considéré comme une pompe. Ainsi,
+deux mots ne sont pas toujours les mêmes.</p>
+</div>
 </section>
 <section id="reseau-de-pompage-anglais-pumping-network">
 <h2>Réseau de Pompage (anglais: Pumping Network)<a class="headerlink" href="#reseau-de-pompage-anglais-pumping-network" title="Link to this heading"></a></h2>
@@ -293,7 +301,7 @@ de processus est en cours depuis une dizaine d’années ou deux. Certains trava
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="SarraPluginDev.html" class="btn btn-neutral float-left" title="Guide de programmation Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="SarraPluginDev.html" class="btn btn-neutral float-left" title="Guide de programmation sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="sftps.html" class="btn btn-neutral float-right" title="Pourquoi SFTP est plus souvent choisi que FTPS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

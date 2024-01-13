@@ -56,7 +56,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../SupprimerLesDoublons.html">Suppression de Doublons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation sarracenia</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../Glossaire.html">Glossaire</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Histoire</a><ul class="current">
@@ -137,11 +137,13 @@
 elle est remplacée par la page de manuel sr_post(7).</p>
 <p>Ce dossier documente les conclusions/propositions finales, les raisonnements/débats
 va ailleurs.</p>
-<p>Les messages affichés comprennent quatre parties :
-Sujet: .&lt;version&gt;&lt;type&gt;. &lt;src&gt;(.&lt;dir&gt;.) <a href="#id1"><span class="problematic" id="id2">*</span></a>. &lt;nom de fichier&gt;
-en-têtes : série de paires clé-valeur, selon les spécifications AMQP.
-1ère ligne (champs séparés par des espaces) : &lt;horodatage&gt; &lt;srcURL&gt; &lt;relURL&gt;&lt;newline&gt;
-Reste du corps:</p>
+<p>Les messages affichés comprennent quatre parties:</p>
+<ul class="simple">
+<li><p>Sujet: .&lt;version&gt;&lt;type&gt;. &lt;src&gt;(.&lt;dir&gt;.) <a href="#id1"><span class="problematic" id="id2">*</span></a>. &lt;nom de fichier&gt;</p></li>
+<li><p>en-têtes : série de paires clé-valeur, selon les spécifications AMQP.</p></li>
+<li><p>1ère ligne (champs séparés par des espaces) : &lt;horodatage&gt; &lt;srcURL&gt; &lt;relURL&gt;&lt;newline&gt;</p></li>
+<li><p>Reste du corps.</p></li>
+</ul>
 <p>La sujet du message se décompose comme suit</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;version&gt;.&lt;type&gt;.[Varie selon la version].&lt;dir&gt;.&lt;dir&gt;.&lt;dir&gt;...
 
@@ -212,12 +214,9 @@ spécification (dans ce cas, la mienne.gif)</p>
 </dd>
 <dt>parts=&lt;i|p&gt;,&lt;bsz&gt;,&lt;fzb&gt;,&lt;bno&gt;,&lt;remainder&gt;</dt><dd><blockquote>
 <div><p>– Récupération en plusieurs parties.</p>
-<dl>
-<dt>– File Segment strategy::</dt><dd><dl>
-<dt>i - inplace (ne pas créer de fichiers temporaires, juste lseek</dt><dd><blockquote>
-<div><p>dans le fichier.)</p>
-</div></blockquote>
-<p>peut entraîner la création d’un fichier .srsig?</p>
+<dl class="simple">
+<dt>– File Segment strategy::</dt><dd><dl class="simple">
+<dt>i - inplace (ne pas créer de fichiers temporaires, juste lseek dans le fichier.)</dt><dd><p>peut entraîner la création d’un fichier .srsig?</p>
 </dd>
 <dt>p - part files.  Utilisez .part fichiers, suffixe fixe.</dt><dd><p>Je ne sais pas lequel sera par défaut.</p>
 </dd>

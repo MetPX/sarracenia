@@ -274,13 +274,11 @@ when a file is renamed.  This is now the default behaviour.</p>
 </section>
 <section id="id10">
 <h2>3.0.17<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
-<dl>
+<dl class="simple">
 <dt><em>CHANGE</em>: The “Vendor” string is now “MetPX” instead of “science.gc.ca”.</dt><dd><p>This affects some file placement particularly on Windows.</p>
 </dd>
-<dt><em>CHANGE</em>: v03 notification message encoding changed: <em>Identity</em> checksum is now optional.</dt><dd><blockquote>
-<div><p>(details: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/547">https://github.com/MetPX/sarracenia/issues/547</a> )</p>
-</div></blockquote>
-<p><em>md5sum</em> is no longer defined, replaced with <em>none</em> in sr3.</p>
+<dt><em>CHANGE</em>: v03 notification message encoding changed: <em>Identity</em> checksum is now optional.</dt><dd><p>(details: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/547">https://github.com/MetPX/sarracenia/issues/547</a> )
+<em>md5sum</em> is no longer defined, replaced with <em>none</em> in sr3.</p>
 </dd>
 <dt><em>CHANGE</em>: v03 notification message encoding changed for symbolic links, and file renames</dt><dd><p>and removals. There is now a ‘fileOp’ field for these dataless file operations.
 The <em>Identity</em> sum is now used exclusively for checksums.</p>

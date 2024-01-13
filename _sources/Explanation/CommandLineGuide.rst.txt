@@ -2194,7 +2194,7 @@ the network separately, and in parallel.  When files change, transfers are
 optimized by only sending parts which have changed.
 
 The *outlet* option allows the final output to be other than a post.  
-See `sr3_cpump(1) <sr3_cpump.1.html>`_ for details.
+See `sr3_cpump(1) <../Reference/sr3_cpump.1.html>`_ for details.
 
 [-pbd|--post_baseDir <path>] (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

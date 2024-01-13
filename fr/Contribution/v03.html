@@ -370,6 +370,103 @@ pourrait être une fonctionnalité.</p>
 <p>Maintenant que nous avons vu un bon bout du processus, un
 mappage des transcriptions de code source entre
 les deux versions, est clair:</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Fichier Version 2</p></td>
+<td><p>Fichier Version 3</p></td>
+</tr>
+<tr class="row-even"><td><p>sr_config.py</p></td>
+<td><p>config.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_instances.py</p></td>
+<td><p>sr.py la plus part du mgmt
+instance.py un seul proc</p></td>
+</tr>
+<tr class="row-even"><td><p>sr_consumer.py</p>
+<p>sr_amqp.py</p>
+<p>sr_message.py</p>
+</td>
+<td><p>moth/__init__.py</p>
+<p>moth/amqp.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_checksum.py</p>
+<p>sum/*</p>
+</td>
+<td><dl class="simple">
+<dt>identity/</dt><dd><p>__init__.py
+*</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_cache.py</p></td>
+<td><p>flowcb/nodupe.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_retry.py</p></td>
+<td><p>flowcb/retry.py</p>
+<p>diskqueue.py</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_post.py</p></td>
+<td><p>flowcb/gather/file.py</p>
+<p>flow/post.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_poll.py</p></td>
+<td><dl class="simple">
+<dt>flowcb/poll/</dt><dd><p>__init__.py</p>
+</dd>
+</dl>
+<p>flow/poll.py</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_util.py/sr_proto</p>
+<p>sr_util.py/sr_transport</p>
+<p>sr_file.py</p>
+<p>sr_ftp.py</p>
+<p>sr_http.py</p>
+<p>sr_sftp.py</p>
+</td>
+<td><dl class="simple">
+<dt>transfer/__init__.py</dt><dd><ul class="simple">
+<li><p>transfer.Protocol</p></li>
+</ul>
+</dd>
+</dl>
+<p>flow/__init__.py</p>
+<p>transfer/file.py</p>
+<p>transfer/ftp.py</p>
+<p>transfer/http.py</p>
+<p>transfer/sftp.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>plugins/</p></td>
+<td><p>flowcb/  (celles sr3)
+plugins/ toujours la pour
+celles de v2.</p></td>
+</tr>
+<tr class="row-even"><td><p>overall flow</p></td>
+<td><p>flow/__init__.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_poll.py</p>
+<p>sr_post.py</p>
+<p>sr_subscribe.py</p>
+<p>sr_shovel.py</p>
+<p>sr_report.py</p>
+<p>sr_sarra.py</p>
+<p>sr_sender.py</p>
+<p>sr_watch.py</p>
+<p>sr_winnow.py</p>
+</td>
+<td><p>sr_flow.py
+comme point d’entré</p>
+<p>mais normalment juste à
+utiliser sr.py comme un</p>
+</td>
+</tr>
+</tbody>
+</table>
 <section id="mappages">
 <h3>Mappages<a class="headerlink" href="#mappages" title="Link to this heading"></a></h3>
 <p>v2-&gt;sr3 variables d’instance:</p>

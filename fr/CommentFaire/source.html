@@ -144,7 +144,7 @@ plutôt que d’émettre de nouveaux fichiers.)</p>
 <dd class="field-odd"><p>UNKNOWN</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 </dl>
 <p>Une pompe de données Sarracenia est un serveur Web (ou sftp) avec des notifications pour que les
@@ -217,6 +217,13 @@ Donc, en supposant que l’on est connecté au compte de Peter sur grumpy, on pe
 informations d’identification du courtier en toute sécurité</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s1">&#39;amqps://rnd:rndpw@ddsr.cmc.ec.gc.ca&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">config</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">credentials</span><span class="o">.</span><span class="n">conf</span><span class="p">:</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Les mots de passe sont toujours stockés dans le fichier credentials.conf.
+pour éviter cela, il est préférable d’utiliser des clés, que Sarracenia peut trouver en
+en regardant les fichiers de configuration ssh. Configurez ssh pour qu’il fonctionne, et Sarracenia
+fonctionnera aussi.</p>
 </div>
 <p>Donc, maintenant, la ligne de commande pour sr_post n’est que l’URL pour que ddsr récupère le
 fichier sur grumpy:</p>

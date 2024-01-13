@@ -127,7 +127,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>UNKNOWN</p>
@@ -159,8 +159,8 @@ Voir <a class="reference external" href=".../Explications/History/messages_v03.h
 <h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
 <p>Version 03 du format des annonces de modification d’un fichier pour sr_post.</p>
 <p>Un message sr_post se compose d’un sujet et du <em>BODY</em></p>
-<section id="amqp-topic-version-dir">
-<h4><strong>AMQP Topic:</strong> <em>&lt;version&gt;.{&lt;dir&gt;.}</em><a class="headerlink" href="#amqp-topic-version-dir" title="Link to this heading"></a></h4>
+<section id="amqp-topic">
+<h4><strong>AMQP Topic:</strong><a class="headerlink" href="#amqp-topic" title="Link to this heading"></a></h4>
 <dl class="simple">
 <dt>::</dt><dd><p>&lt;version&gt; = « v03 » la version du protocole ou du format.
 « post » = le type de message dans le protocole.
@@ -275,7 +275,7 @@ rapport circulent également dans le chemin de contrôle, mais dans la direction
 de connaître l’ensemble de leur disposition.</p>
 <p>La couche minimale sur AMQP brut offre une fonctionnalité de transfert de fichiers plus complète :</p>
 <dl>
-<dt>Filtrage des sources (utilisation des échanges <a href="#id3"><span class="problematic" id="id4">`AMQP TOPIC`_</span></a>)</dt><dd><p>Les messages d´annonce utilisent les <em>topic exchanges</em> de l’AMQP, où les thèmes sont des hiérarchies
+<dt>Filtrage des sources (utilisation des échanges <a href="#id1"><span class="problematic" id="id2">`AMQP TOPIC`_</span></a>)</dt><dd><p>Les messages d´annonce utilisent les <em>topic exchanges</em> de l’AMQP, où les thèmes sont des hiérarchies
 destiné à représenter des thèmes d’intérêt pour un consommateur. Un consommateur peut télécharger le
 critères de sélection pour le courtier de sorte que seulement un petit sous-ensemble d’avis
 sont transmis au client.  Lorsqu’il y a beaucoup d’utilisateurs intéressés par seulement un
@@ -335,7 +335,7 @@ encodé en utf8, de sorte que la limite de longueur réelle peut être inférieu
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Sarracenia s’appuie sur des courtiers pour interpréter l’en-tête du thème. Les courtiers interprètent
-des en-têtes spécifiques au protocole <a href="#id1"><span class="problematic" id="id2">*</span></a>AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
+des en-têtes spécifiques au protocole AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
 Par conséquent, l’en-tête du thème est stocké dans un en-tête AMQP, plutôt que dans la charge utile qui autorise le
 filtrage côté serveur. Pour éviter d’envoyer deux fois les mêmes informations, cet en-tête est
 omis de la charge utile JSON.</p>

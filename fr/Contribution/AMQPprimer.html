@@ -127,7 +127,7 @@
 }
 </style>
 <section id="amqp-introduction-a-sarracenia">
-<h1><a class="toc-backref" href="#id3" role="doc-backlink">AMQP - Introduction à sarracénia</a><a class="headerlink" href="#amqp-introduction-a-sarracenia" title="Link to this heading"></a></h1>
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">AMQP - Introduction à sarracénia</a><a class="headerlink" href="#amqp-introduction-a-sarracenia" title="Link to this heading"></a></h1>
 <p>Il s’agit d’un briefing court mais plutôt dense pour expliquer
 la motivation de l’utilisation de l’AMQP par la pompe de données MetPX-Sarracenia.
 Sarracenia est essentiellement une application AMQP,
@@ -141,28 +141,28 @@ révélera également une richesse de matériel.</p>
 <nav class="contents" id="contents">
 <p class="topic-title">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#amqp-introduction-a-sarracenia" id="id3">AMQP - Introduction à sarracénia</a></p>
+<li><p><a class="reference internal" href="#amqp-introduction-a-sarracenia" id="id1">AMQP - Introduction à sarracénia</a></p>
 <ul>
-<li><p><a class="reference internal" href="#selection-des-fonctionnalites-amqp" id="id4">Sélection des fonctionnalités AMQP</a></p>
+<li><p><a class="reference internal" href="#selection-des-fonctionnalites-amqp" id="id2">Sélection des fonctionnalités AMQP</a></p>
 <ul>
-<li><p><a class="reference internal" href="#analogie-ftp" id="id5">Analogie FTP</a></p></li>
-<li><p><a class="reference internal" href="#amqp-pas-1-0-mais-0-8-or-0-9" id="id6">AMQP: pas 1.0, mais 0.8 or 0.9</a></p></li>
-<li><p><a class="reference internal" href="#echanges-et-files-dattente-nommes" id="id7">Échanges et files d’attente nommés</a></p></li>
-<li><p><a class="reference internal" href="#echanges-thematiques" id="id8">Échanges thématiques</a></p></li>
-<li><p><a class="reference internal" href="#peu-de-donnees" id="id9">Peu de données</a></p></li>
-<li><p><a class="reference internal" href="#autres-parametres" id="id10">Autres paramètres</a></p></li>
+<li><p><a class="reference internal" href="#analogie-ftp" id="id3">Analogie FTP</a></p></li>
+<li><p><a class="reference internal" href="#amqp-pas-1-0-mais-0-8-or-0-9" id="id4">AMQP: pas 1.0, mais 0.8 or 0.9</a></p></li>
+<li><p><a class="reference internal" href="#echanges-et-files-dattente-nommes" id="id5">Échanges et files d’attente nommés</a></p></li>
+<li><p><a class="reference internal" href="#echanges-thematiques" id="id6">Échanges thématiques</a></p></li>
+<li><p><a class="reference internal" href="#peu-de-donnees" id="id7">Peu de données</a></p></li>
+<li><p><a class="reference internal" href="#autres-parametres" id="id8">Autres paramètres</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#mappage-des-concepts-amqp-a-sarracenia" id="id11">Mappage des concepts AMQP à Sarracenia</a></p></li>
-<li><p><a class="reference internal" href="#sarracenia-est-une-application-mqp" id="id12">Sarracenia est une application MQP</a></p></li>
-<li><p><a class="reference internal" href="#revision" id="id13">Révision</a></p></li>
-<li><p><a class="reference internal" href="#annexe-a-contexte" id="id14">Annexe A : Contexte</a></p>
+<li><p><a class="reference internal" href="#mappage-des-concepts-amqp-a-sarracenia" id="id9">Mappage des concepts AMQP à Sarracenia</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-est-une-application-mqp" id="id10">Sarracenia est une application MQP</a></p></li>
+<li><p><a class="reference internal" href="#revision" id="id11">Révision</a></p></li>
+<li><p><a class="reference internal" href="#annexe-a-contexte" id="id12">Annexe A : Contexte</a></p>
 <ul>
-<li><p><a class="reference internal" href="#pourquoi-utiliser-amqp" id="id15">Pourquoi utiliser AMQP?</a></p></li>
-<li><p><a class="reference internal" href="#dou-vient-lamqp" id="id16">D’où vient l’AMQP?</a></p></li>
-<li><p><a class="reference internal" href="#pile-intel-cray-hpc" id="id17">Pile Intel/Cray HPC</a></p></li>
-<li><p><a class="reference internal" href="#openstack" id="id18">OpenStack</a></p></li>
-<li><p><a class="reference internal" href="#comment-adopter-lamqp" id="id19">Comment adopter l’AMQP</a></p></li>
+<li><p><a class="reference internal" href="#pourquoi-utiliser-amqp" id="id13">Pourquoi utiliser AMQP?</a></p></li>
+<li><p><a class="reference internal" href="#dou-vient-lamqp" id="id14">D’où vient l’AMQP?</a></p></li>
+<li><p><a class="reference internal" href="#pile-intel-cray-hpc" id="id15">Pile Intel/Cray HPC</a></p></li>
+<li><p><a class="reference internal" href="#openstack" id="id16">OpenStack</a></p></li>
+<li><p><a class="reference internal" href="#comment-adopter-lamqp" id="id17">Comment adopter l’AMQP</a></p></li>
 </ul>
 </li>
 </ul>
@@ -170,25 +170,23 @@ révélera également une richesse de matériel.</p>
 </ul>
 </nav>
 <section id="selection-des-fonctionnalites-amqp">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Sélection des fonctionnalités AMQP</a><a class="headerlink" href="#selection-des-fonctionnalites-amqp" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Sélection des fonctionnalités AMQP</a><a class="headerlink" href="#selection-des-fonctionnalites-amqp" title="Link to this heading"></a></h2>
 <p>AMQP est un protocole universel de transmission de messages avec de nombreuses
 options pour prendre en charge de nombreux modèles de messagerie différents.  MetPX-sarracenia spécifie et utilise un
 petit sous-ensemble de modèles AMQP. Un élément important du développement de Sarracenia a été de
 choisir parmi les nombreuses possibilités un petit sous-ensemble de méthodes qui sont générales et
 facile à comprendre, afin de maximiser le potentiel d’interopérabilité.</p>
 <section id="analogie-ftp">
-<h3><a class="toc-backref" href="#id5" role="doc-backlink">Analogie FTP</a><a class="headerlink" href="#analogie-ftp" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">Analogie FTP</a><a class="headerlink" href="#analogie-ftp" title="Link to this heading"></a></h3>
 <p>Spécifier l’utilisation d’un protocole seul peut être insuffisant pour fournir suffisamment d’informations pour
 l’échange de données et l’interopérabilité.  Par exemple, lors de l’échange de données via FTP, un certain nombre de choix
 doivent être fait au-delà du protocole.</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li><p>utilisation authentifiée ou anonyme ?</p></li>
 <li><p>comment signaler qu’un transfert de fichier est terminé (bits d’autorisation? suffixe? préfixe?)</p></li>
 <li><p>convention de nommage</p></li>
 <li><p>transfert binaire ou texte</p></li>
 </ul>
-</div></blockquote>
 <p>Des conventions convenues au-delà du simple FTP (IETF RFC 959) sont nécessaires.
 Semblable à l’utilisation de FTP seul comme protocole de transfert est insuffisant
 pour spécifier une procédure complète de transfert de données, l’utilisation d’AMQP,
@@ -196,7 +194,7 @@ sans plus d’informations, est incomplète. L’intention des conventions super
 l’AMQP est d’être un montant minimum pour obtenir un échange de données significatif.</p>
 </section>
 <section id="amqp-pas-1-0-mais-0-8-or-0-9">
-<h3><a class="toc-backref" href="#id6" role="doc-backlink">AMQP: pas 1.0, mais 0.8 or 0.9</a><a class="headerlink" href="#amqp-pas-1-0-mais-0-8-or-0-9" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">AMQP: pas 1.0, mais 0.8 or 0.9</a><a class="headerlink" href="#amqp-pas-1-0-mais-0-8-or-0-9" title="Link to this heading"></a></h3>
 <p>AMQP 1.0 standardise le protocole sur le fil, mais supprime toute normalisation des courtiers.
 Étant donné que l’utilisation de courtiers est essentielle à l’utilisation de Sarracenia,
 était un élément fondamental des normes antérieures,
@@ -205,7 +203,7 @@ comme il est fourni par de nombreux courtiers gratuits, tels que rabbitmq et Apa
 mais les courtiers de 0,9 et de post-0,9 pourraient bien interagir.</p>
 </section>
 <section id="echanges-et-files-dattente-nommes">
-<h3><a class="toc-backref" href="#id7" role="doc-backlink">Échanges et files d’attente nommés</a><a class="headerlink" href="#echanges-et-files-dattente-nommes" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Échanges et files d’attente nommés</a><a class="headerlink" href="#echanges-et-files-dattente-nommes" title="Link to this heading"></a></h3>
 <p>Dans AMQP avant la version 1.0, de nombreux acteurs différents peuvent définir des paramètres de communication, tels que les échanges
 auquels publier, les files d’attente où les messages de notification s’accumulent et les liaisons entre les deux. Les applications
 et les utilisateurs déclarent et utilisent leurs échanges, files d’attente et liaisons. Tout cela a été abandonné
@@ -215,7 +213,7 @@ beaucoup plus difficile.</p>
 autorisations et le nom de la fil d’attente) peuvent consommer à partir de la même fil d’attente. Cela nécessite d’être capable
 de nommer la fil d’attente. Dans un autre protocole, tel que MQTT, on ne peut pas nommer la fil d’attente, et donc
 ce modèle de traitement n’est pas pris en charge.</p>
-<p>La convention de mappage décrite dans <a href="#id20"><span class="problematic" id="id21">`Topic &lt; ../../Reference/sr3_post.7.html#topic&gt;`_</span></a>, permet à
+<p>La convention de mappage décrite dans <a href="#id18"><span class="problematic" id="id19">`Topic &lt; ../../../Reference/sr_post.7.rst#topic&gt;`_</span></a>, permet à
 MQTT d’établir des hiérarchies distinctes qui fournissent une distribution fixe entre
 les travailleurs, mais pas exactement la fil d’attente partagée auto-équilibrée fournie par AMQP.</p>
 <div class="admonition note">
@@ -228,7 +226,7 @@ Les noms des files d’attente commencent par : q_&lt;user&gt;_.</p>
 </div>
 </section>
 <section id="echanges-thematiques">
-<h3><a class="toc-backref" href="#id8" role="doc-backlink">Échanges thématiques</a><a class="headerlink" href="#echanges-thematiques" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Échanges thématiques</a><a class="headerlink" href="#echanges-thematiques" title="Link to this heading"></a></h3>
 <p>Les échanges thématiques sont utilisés exclusivement. AMQP prend en charge de nombreux autres
 types d’échanges, mais la rubrique de sr_post est envoyée afin de prendre en charge le filtrage
 côté serveur à l’aide du filtrage par rubrique. À l’AMQP 1.0, les échanges thématiques
@@ -244,7 +242,7 @@ versions précédentes simultanément de cette manière.  La deuxième sous-rubr
 Au moment de la rédaction de cet article : v02.post est le préfixe de rubrique pour les messages de notification actuels.</p>
 </section>
 <section id="peu-de-donnees">
-<h3><a class="toc-backref" href="#id9" role="doc-backlink">Peu de données</a><a class="headerlink" href="#peu-de-donnees" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Peu de données</a><a class="headerlink" href="#peu-de-donnees" title="Link to this heading"></a></h3>
 <p>Les messages AMQP contiennent des messages de notification, pas de données de fichier réelles. AMQP est optimisé pour et suppose
 de petits messages. Garder les messages petits permet un maximum de transmission de messages et permet
 aux clients d’utiliser des mécanismes de priorité basés sur le transfert de données, plutôt que sur les messages de notification.
@@ -277,7 +275,7 @@ dans les messages de notification. Pour l’instant, l’en-tête <em>content</e
 à se produire.</p>
 </section>
 <section id="autres-parametres">
-<h3><a class="toc-backref" href="#id10" role="doc-backlink">Autres paramètres</a><a class="headerlink" href="#autres-parametres" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Autres paramètres</a><a class="headerlink" href="#autres-parametres" title="Link to this heading"></a></h3>
 <p>AMQP a de nombreux autres paramètres et une fiabilité pour un cas d’utilisation particulier
 est assuré en faisant les bons choix.</p>
 <ul class="simple">
@@ -294,7 +292,7 @@ traitement des messages.  Cette liste n’est pas exhaustive.</p>
 </section>
 </section>
 <section id="mappage-des-concepts-amqp-a-sarracenia">
-<h2><a class="toc-backref" href="#id11" role="doc-backlink">Mappage des concepts AMQP à Sarracenia</a><a class="headerlink" href="#mappage-des-concepts-amqp-a-sarracenia" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Mappage des concepts AMQP à Sarracenia</a><a class="headerlink" href="#mappage-des-concepts-amqp-a-sarracenia" title="Link to this heading"></a></h2>
 <a class="reference internal image-reference" href="../../_images/AMQP4Sarra.svg"><img alt="../../_images/AMQP4Sarra.svg" class="align-center" height="302" src="../../_images/AMQP4Sarra.svg" width="434" /></a>
 <p>Un serveur AMQP est appelé Broker. <em>Broker</em> est parfois utilisé pour désigner le logiciel,
 d’autres fois le serveur exécutant le logiciel broker (même confusion que <em>serveur web</em>.) Dans le diagramme ci-dessus,
@@ -332,10 +330,13 @@ vous n’aurez manqué aucun message de notification.</p></li>
 <dt>Comment décider si quelqu’un est intéressé.</dt><dd><ul>
 <li><p>Pour Sarracenia, nous utilisons (norme AMQP) <em>topic based exchangess</em>.</p></li>
 <li><p>Les abonnés indiquent les sujets qui les intéressent, et le filtrage se produit côté serveur/courtier.</p></li>
-<li><p>Les sujets ne sont que des mots-clés séparés par un point. caractères génériques : # correspond à n’importe quoi,
-* correspond à un mot.</p></li>
+<li><p>Les sujets ne sont que des mots-clés séparés par un point. caractères génériques : # correspond à n’importe quoi,</p>
+<ul>
+<li><p>correspond à un mot.</p></li>
+</ul>
+</li>
 <li><p>Nous créons la hiérarchie des rubriques à partir du nom du chemin (mappage à la syntaxe AMQP)</p></li>
-<li><p>La résolution et la syntaxe du filtrage des serveurs sont définies par AMQP. (. séparateur, caractères génériques # et <a href="#id1"><span class="problematic" id="id2">*</span></a>)</p></li>
+<li><p>La résolution et la syntaxe du filtrage des serveurs sont définies par AMQP. (. séparateur, caractères génériques # et *)</p></li>
 <li><p>Le filtrage côté serveur est grossier, les messages de notification peuvent être filtrés
 après le téléchargement à l’aide de regexp sur les chemins réels (les directives reject/accept).</p></li>
 </ul>
@@ -354,7 +355,7 @@ d’un fichier (ou d’une partie d’un fichier) disponible.</p></li>
 </ul>
 </section>
 <section id="sarracenia-est-une-application-mqp">
-<h2><a class="toc-backref" href="#id12" role="doc-backlink">Sarracenia est une application MQP</a><a class="headerlink" href="#sarracenia-est-une-application-mqp" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Sarracenia est une application MQP</a><a class="headerlink" href="#sarracenia-est-une-application-mqp" title="Link to this heading"></a></h2>
 <p>Dans la version 2, MetPX-Sarracenia n’est qu’un léger wrapper/revêtement autour de l’AMQP.
 Dans la version 3, cela a été retravaillé et un pilote MQTT a été ajouté pour le rendre
 moins spécifique à l’AMQP.</p>
@@ -364,32 +365,34 @@ pour coordonner les transferts de données client SFTP et HTTP, et accompagne un
 serveur Web (apache) et serveur sftp (openssh) sur la même adresse d’utilisateur.</p></li>
 <li><p>Chaque fois que cela est raisonnable, nous utilisons leur terminologie et leur syntaxe.
 Si quelqu’un connaît l’AMQP, il comprend. Sinon, ils peuvent faire des recherches.</p></li>
-<li><p>Les utilisateurs configurent un <em>broker</em>, au lieu d’une pompe.
-- les utilisateurs peuvent explicitement choisir leurs noms de <em>queue</em>.
-- les utilisateurs définissent <em>subtopic</em>,
-- les sujets avec séparateur de points sont peu transformés, plutôt que codés.
-- fil d’attente <em>durable</em>.
-- nous utilisons des <em>message headers</em> (AMQP-speak pour les paires clé-valeur) plutôt</p>
-<blockquote>
-<div><p>que l’encodage en JSON ou dans un autre format de charge utile.</p>
-</div></blockquote>
+<li><p>Les utilisateurs configurent un <em>broker</em>, au lieu d’une pompe.</p>
+<ul class="simple">
+<li><p>les utilisateurs peuvent explicitement choisir leurs noms de <em>queue</em>.</p></li>
+<li><p>les utilisateurs définissent <em>subtopic</em>,</p></li>
+<li><p>les sujets avec séparateur de points sont peu transformés, plutôt que codés.</p></li>
+<li><p>fil d’attente <em>durable</em>.</p></li>
+<li><p>nous utilisons des <em>message headers</em> (AMQP-speak pour les paires clé-valeur) plutôt que l’encodage en JSON ou dans un autre format de charge utile.</p></li>
+</ul>
 </li>
-<li><dl class="simple">
-<dt>réduire la complexité par le biais de conventions.</dt><dd><ul class="simple">
+<li><p>réduire la complexité par le biais de conventions.</p>
+<blockquote>
+<div><ul>
 <li><p>n’utiliser qu’un seul type d’échanges (Topic), s’occuper des liaisons.</p></li>
-<li><dl class="simple">
-<dt>les conventions de nommage pour les échanges et les files d’attente.</dt><dd><ul>
-<li><p>les échanges commencent par x.
-- xs_Weather - l’échange pour la source (utilisateur amqp) nommée Météo pour poster des messages de notification
-- xpublic – échange utilisé pour la plupart des abonnés.</p></li>
+<li><p>les conventions de nommage pour les échanges et les files d’attente.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>les échanges commencent par x.</p>
+<ul>
+<li><p>xs_Weather - l’échange pour la source (utilisateur amqp) nommée Météo pour poster des messages de notification</p></li>
+<li><p>xpublic – échange utilisé pour la plupart des abonnés.</p></li>
+</ul>
+</li>
 <li><p>les files d’attente commencent par q</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 <li><p>Les ressources Internet sont plus utiles et réduisent notre charge de documentation.</p></li>
 <li><p>Nous écrivons moins de code (exposer l’AMQP brut signifie moins de colle.)</p></li>
@@ -399,7 +402,7 @@ Si quelqu’un connaît l’AMQP, il comprend. Sinon, ils peuvent faire des rech
 </ul>
 </section>
 <section id="revision">
-<h2><a class="toc-backref" href="#id13" role="doc-backlink">Révision</a><a class="headerlink" href="#revision" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">Révision</a><a class="headerlink" href="#revision" title="Link to this heading"></a></h2>
 <p>Si vous avez compris le reste du document, cela devrait avoir du sens pour vous :</p>
 <p>Un courtier AMQP est un processus de serveur qui héberge les échanges et les files d’attente
 utilisés pour acheminer les messages de notification
@@ -410,9 +413,9 @@ filtrage côté serveur des consommateurs. L’arborescence des rubriques est ba
 naviguez si vous visitez le serveur Web correspondant.</p>
 </section>
 <section id="annexe-a-contexte">
-<h2><a class="toc-backref" href="#id14" role="doc-backlink">Annexe A : Contexte</a><a class="headerlink" href="#annexe-a-contexte" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Annexe A : Contexte</a><a class="headerlink" href="#annexe-a-contexte" title="Link to this heading"></a></h2>
 <section id="pourquoi-utiliser-amqp">
-<h3><a class="toc-backref" href="#id15" role="doc-backlink">Pourquoi utiliser AMQP?</a><a class="headerlink" href="#pourquoi-utiliser-amqp" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Pourquoi utiliser AMQP?</a><a class="headerlink" href="#pourquoi-utiliser-amqp" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>standard ouvert, multiples implémentations libres.</p></li>
 <li><p>transmission de messages à faible latence.</p></li>
@@ -423,7 +426,7 @@ naviguez si vous visitez le serveur Web correspondant.</p>
 </ul>
 </section>
 <section id="dou-vient-lamqp">
-<h3><a class="toc-backref" href="#id16" role="doc-backlink">D’où vient l’AMQP?</a><a class="headerlink" href="#dou-vient-lamqp" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">D’où vient l’AMQP?</a><a class="headerlink" href="#dou-vient-lamqp" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Norme ouvertes international du monde financier.</p></li>
 <li><p>De nombreux systèmes propriétaires similaires existent, AMQP construit pour échapper au verrouillage.
@@ -434,17 +437,17 @@ Le standard est construit avec une longue expérience des systèmes de messageri
 </ul>
 </section>
 <section id="pile-intel-cray-hpc">
-<h3><a class="toc-backref" href="#id17" role="doc-backlink">Pile Intel/Cray HPC</a><a class="headerlink" href="#pile-intel-cray-hpc" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Pile Intel/Cray HPC</a><a class="headerlink" href="#pile-intel-cray-hpc" title="Link to this heading"></a></h3>
 <p><a class="reference external" href="http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html">Intel/Cray HPC stack</a></p>
 <a class="reference internal image-reference" href="../../_images/IntelHPCStack.png"><img alt="../../_images/IntelHPCStack.png" class="align-center" src="../../_images/IntelHPCStack.png" style="width: 505.5px; height: 311.0px;" /></a>
 </section>
 <section id="openstack">
-<h3><a class="toc-backref" href="#id18" role="doc-backlink">OpenStack</a><a class="headerlink" href="#openstack" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">OpenStack</a><a class="headerlink" href="#openstack" title="Link to this heading"></a></h3>
 <p><a class="reference external" href="http://docs.openstack.org/developer/nova/rpc.html">AMQP is the messaging technology chosen by the OpenStack cloud.</a></p>
 <a class="reference internal image-reference" href="../../_images/OpenStackArch.png"><img alt="../../_images/OpenStackArch.png" class="align-center" src="../../_images/OpenStackArch.png" style="width: 436.79999999999995px; height: 349.29999999999995px;" /></a>
 </section>
 <section id="comment-adopter-lamqp">
-<h3><a class="toc-backref" href="#id19" role="doc-backlink">Comment adopter l’AMQP</a><a class="headerlink" href="#comment-adopter-lamqp" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">Comment adopter l’AMQP</a><a class="headerlink" href="#comment-adopter-lamqp" title="Link to this heading"></a></h3>
 <p>Adopter AMQP ressemble plus à l’adoption de XML qu’à l’adoption de FTP.  l’Interopérabilité FTP
 est facile car les choix sont limités. Avec XML, cependant, vous obtenez <strong>plus de palette que de peinture.</strong> Beaucoup
 de dialectes différents, méthodes de schéma, etc…  XML sera valide et analysé, mais sans

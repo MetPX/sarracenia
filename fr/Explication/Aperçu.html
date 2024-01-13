@@ -60,7 +60,7 @@
 <li class="toctree-l3"><a class="reference internal" href="SupprimerLesDoublons.html">Suppression de Doublons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
-<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Glossaire.html">Glossaire</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Histoire/index.html">Histoire</a></li>
@@ -203,11 +203,9 @@ doivent être transmises le plus rapidement possible jusqu’au prochain saut, e
 les secondes, comptent. Les technologies web push standard, ATOM, RSS, etc…. sont en fait des
 technologies de sondage qui, lorsqu’elles sont utilisées dans des applications à faible latence,
 consomment beaucoup de bande passante et surcharge les serveurs et réseaux inutilement.  Pour ces raisons
-précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP</p>
-<blockquote>
-<div><p>(Advanced Message Queueing Protocol) pousse réellement les notifications et rend l’envoi en temps réel</p>
-</div></blockquote>
-<p>beaucoup plus efficace.</p>
+précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP
+(Advanced Message Queueing Protocol) pousse réellement les notifications et rend l’envoi en temps réel
+beaucoup plus efficace.</p>
 <a class="reference internal image-reference" href="../../_images/sr3_flow_example.svg"><img alt="../../_images/sr3_flow_example.svg" class="align-center" height="793" src="../../_images/sr3_flow_example.svg" width="1122" /></a>
 <p>Les sources de données publient leurs produits, les pompes extraient les données en utilisant HTTP ou SFTP via arborescence de dossiers (WAF), puis annoncent cette arborescence aux clients en aval.
 Lorsque les clients téléchargent des données, ils peuvent écrire un rapport au serveur. Les serveurs sont configurés pour renvoyer ces messages de rapport du
@@ -215,36 +213,30 @@ client par l’intermédiaire de la fonction à la source. : La source peut voir
 cas des applications de commutation traditionnelles, les sources ne voient que ce qu’elles ont livré au premier maillon d’une chaîne. Au-delà de ce premier maillon,  le
 routage est opaque, et le traçage du cheminement des données nécessitent l’aide des administrateurs de chacun des systèmes. Avec la transmission de rapport de Sarracenia, le réseau de commutaiton est relativement transparent pour les sources.
 Le diagnostic est alors grandement simplifié.</p>
-<p>Pour les gros fichiers / haute performance, les fichiers sont segmentés à l’
-ingestion s’ils sont suffisamment gros pour que cela en vaille la peine.
+<p>Pour les gros fichiers / haute performance, les fichiers sont segmentés à l’ingestion s’ils sont suffisamment gros pour que cela en vaille la peine.
 Chaque fichier peut traverser le réseau de pompage de données indépendamment, et le réassemblage du fichier initial ne se fait qu’à la fin du processus de transfert. Un fichier de taille suffisante annoncera
 la disponibilité de plusieurs segments pour le transfert, des fils multiples ou des nœuds de transfert prendront ces segments et les transféreront. Plus il y a de segments disponibles, plus le niveau de parallèlisme du transfert est élevé. Dans de nombreux cas, Sarracenia gère le parallélisme et l’utilisation du
 réseau sans intervention explicite de l’utilisateur.Les pompes de données ne doivent ni stocker ni transférer des fichiers entiers, la taille maximale de fichier qui peut voyager à travers le réseau est maximisée.</p>
 <ul class="simple">
-<li><p><strong>REMARQUE:</strong> Pour la v03, la fonctionnalité de segmentation a été supprimée temporairement. Prévu pour</p></li>
+<li><p><strong>REMARQUE:</strong> Pour la v03, la fonctionnalité de segmentation a été supprimée temporairement. Prévu pour retour dans la version 3.1.</p></li>
 </ul>
-<p>retour dans la version 3.1.</p>
 </section>
 <section id="implementations">
 <h2>Implémentations<a class="headerlink" href="#implementations" title="Link to this heading"></a></h2>
 <p>Une partie de Sarracénia définit un message d’annonce avec AMQP comme transport.
 Il y a des implémentations multiples qui acceptent ses messages d’annonce:</p>
 <ul class="simple">
-<li><p>Sarracenia elle-même (<a class="reference external" href="http://github.com/MetPX/sarracenia">http://github.com/MetPX/sarracenia</a>)</p></li>
-</ul>
-<p>une implémentation de référence complète en Python &gt;= 3.4.
-Il fonctionne sous Linux, Mac et Windows.</p>
-<ul class="simple">
-<li><p>sarrac ( <a class="reference external" href="https://github.com/MetPX/sarrac">https://github.com/MetPX/sarrac</a>) est une implémentation en</p></li>
-</ul>
-<p>C de l’insertion de données (post &amp; watch.) C’est Linux uniquement. Il
+<li><p>Sarracenia elle-même (<a class="reference external" href="http://github.com/MetPX/sarracenia">http://github.com/MetPX/sarracenia</a>)
+une implémentation de référence complète en Python &gt;= 3.4.
+Il fonctionne sous Linux, Mac et Windows.</p></li>
+<li><p>sarrac ( <a class="reference external" href="https://github.com/MetPX/sarrac">https://github.com/MetPX/sarrac</a>) est une implémentation en
+C de l’insertion de données (post &amp; watch.) C’est Linux uniquement. Il
 y a aussi une libcshim pour pouvoir implémenter de manière transparente
 l’insertion de données avec cet outil, et libsarra permet aux programmes
 C de poster directement. Il y a aussi du code consommateur (sr_cpump,
 pour lire les files d’attente) mais pas de téléchargement jusqu’à présent.
 Ce sous-ensemble est destiné à être utilisé là où les environnements
-python3 ne sont pas pratiques (certains environnements HPC).</p>
-<ul class="simple">
+python3 ne sont pas pratiques (certains environnements HPC).</p></li>
 <li><p>node-sarra ( <a class="reference external" href="https://github.com/darkskyapp/node-sarra">https://github.com/darkskyapp/node-sarra</a>) Une implémentation embryonnaire pour node.js.</p></li>
 <li><p>ecpush ( <a class="reference external" href="https://github.com/TheTannerRyan/ecpush">https://github.com/TheTannerRyan/ecpush</a> ) un simple client in Go ( <a class="reference external" href="http://golang.org">http://golang.org</a> )</p></li>
 <li><p>PySarra ( <a class="reference external" href="https://github.com/JohnTheNerd/PySarra">https://github.com/JohnTheNerd/PySarra</a> ) un client archi-simple en python3.</p></li>
@@ -278,7 +270,7 @@ ce qui signifie qu’il ne prend pas en charge la <em>transitivité</em> des tra
 de données entre plusieurs pompes de données qui est désiré. D’autre part, le
 premier cas d’utilisation de la Sarracenia est la distribution du nouveaux
 fichiers. Au départ, les mises à jour des dossiers n’étaient pas courantes.
-<a class="reference external" href="http://zsync.moria.org.uk/">ZSync</a> est beaucoup plus proche dans l’esprit
+<a class="reference external" href="http://zsync.moria.org.uk">ZSync</a> est beaucoup plus proche dans l’esprit
 de ce cas d’utilisation. Sarracenia divise les fichiers en block de facon similaire,
 bien que généralement beaucoup plus grand (50M est un bon choix), que les blocs
 Zsync (typiquement 4k), plus propice à l’accélération. Utilisation d’une
@@ -343,7 +335,7 @@ peuvent aider. AMQP est une solution de socket pure qui a les mêmes avantages q
 webockets pour l’efficacité. Note : la compagnie derrière KAAZING a écrit la pièce… pas désintéressé.</p></li>
 <li><p><a class="reference external" href="https://rsync.samba.org/">Rsync</a>  moteur de transfert.</p></li>
 <li><p><a class="reference external" href="https://github.com/axkibe/lsyncd">Lsyncd</a>   moteur de transfert.</p></li>
-<li><p><a class="reference external" href="https://zsync.moria.org.uk">Zsync</a> ( optimised rsync over HTTP. ) moteur de transfer.</p></li>
+<li><p><a class="reference external" href="https://zsync.moria.org.uk">ZSync</a> ( optimised rsync over HTTP. ) moteur de transfer.</p></li>
 </ul>
 </section>
 </section>

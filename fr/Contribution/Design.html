@@ -774,7 +774,7 @@ de connexion à un nœud pour le traitement.</p>
 <h3><a class="toc-backref" href="#id22" role="doc-backlink"><span class="sectnum">1.7.6 </span>DD indépendant</a><a class="headerlink" href="#dd-independant" title="Link to this heading"></a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><p>L’équilibreur de charge transmet les demandes entrantes à plusieurs configurations <a href="#id26"><span class="problematic" id="id27">Standalone_</span></a>.</p></li>
+<li><p>L’équilibreur de charge transmet les demandes entrantes à plusieurs configurations independantes.</p></li>
 <li><p>Chaque nœud télécharge toutes les données.  L’espace disque requis pour les nœuds dans cette configuration
 sont beaucoup plus grands que pour les nœuds DDSR, où chaque nœud ne contient que 1/n des données.</p></li>
 <li><p>Chaque nœud annonce chaque produit qu’il a téléchargé, en utilisant son propre nom de nœud, car
@@ -812,10 +812,7 @@ Il ne sait pas si d’autres nœuds ont ce produit.   (Annonce en tant que DD1 v
 <p>-Ou:</p>
 <blockquote>
 <div><p>– Ne peut annoncer un produit qu’une fois qu’il est clair que chaque nœud actif possède le produit.
-– 1er arrivé, 1er servi : appliquer le vannage des empreintes digitales. Annoncez uniquement le</p>
-<blockquote>
-<div><p>nœud qui a obtenu les données en premier.</p>
-</div></blockquote>
+– 1er arrivé, 1er servi : appliquer le vannage des empreintes digitales. Annoncez uniquement le nœud qui a obtenu les données en premier.</p>
 </div></blockquote>
 <ul class="simple">
 <li><p>Comme dans la configuration indépendante, les nœuds partagent des files d’attente et téléchargent

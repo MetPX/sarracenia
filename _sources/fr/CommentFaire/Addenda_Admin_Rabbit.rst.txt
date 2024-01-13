@@ -281,7 +281,7 @@ vient d’arriver dans la db de metpx avec un message de la forme ::
     a985c32cbdee8af2ab5d7b8f6022e781 498081     http://urp-1.cmc.ec.gc.ca/ db/20150120/RADAR/URP/IWA/201501201810~~PA,60,10,PA_PRECIPET,MM_HR,MM:URP:IWA:RADAR:META::20150120180902
 
 Ces messages AMQP sont envoyés au serveur rabbitmq sur bunny-op avec une clé d’échange qui commence par
-``v00.urp.input``suivie par convention par le chemin de db avec le '/' remplacé par '.'.
+*v00.urp.input* suivie par convention par le chemin de db avec le '/' remplacé par '.'.
 
 .. note:: que urp-1/2 exécute apache et que l’annonce du produit se trouve dans la base de données de
           metpx et est visible à partir de l’URL du message.

@@ -76,15 +76,11 @@
 <span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
 <span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2019</span>
 <span class="c1">#</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd"> Second version configuration parser</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 
+<span class="sd">Second version configuration parser</span>
 
-<span class="sd">FIXME: pas 2023/02/05...  missing options from v2:</span>
-
-<span class="sd">   max_queue_size</span>
-<span class="sd">   outlet</span>
-<span class="sd">   pipe</span>
+<span class="sd">FIXME: pas 2023/02/05...  missing options from v2: max_queue_size, outlet, pipe</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -259,7 +255,8 @@
     <span class="s1">&#39;report_exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;strip&#39;</span><span class="p">,</span> <span class="s1">&#39;timezone&#39;</span><span class="p">,</span> <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;nodupe_driver&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;nodupe_basis&#39;</span><span class="p">,</span> <span class="s1">&#39;tlsRigour&#39;</span><span class="p">,</span> <span class="s1">&#39;topic&#39;</span>
 <span class="p">]</span>
-<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   for backward compatibility, </span>
 
 <span class="sd">   convert some old plugins that are hard to get working with</span>
@@ -270,6 +267,7 @@
 
 <span class="sd">   accelerators and rate limiting are now built-in, no plugin required.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="n">convert_to_v3</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;cache_stat&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
     <span class="s1">&#39;cluster_aliases&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
@@ -400,7 +398,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">   FIXME: respect appdir stuff using an environment variable.</span>
 <span class="sd">   for not just hard coded as a class variable appdir_stuff</span>
 
@@ -670,7 +668,7 @@
 <div class="viewcode-block" id="Config">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.Config">[docs]</a>
 <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       The option parser to produce a single configuration.</span>
 
 <span class="sd">       it can be instantiated with one of:</span>
@@ -932,7 +930,7 @@
 <div class="viewcode-block" id="Config.__deepcopy__">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.config.Config.__deepcopy__">[docs]</a>
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Configuration&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            code for this from here: https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object</span>
 <span class="sd">            Needed for python &lt; 3.7ish? (ubuntu 18) found this bug: https://bugs.python.org/issue10076</span>
 <span class="sd">            deepcopy fails for objects with re&#39;s in them?</span>
@@ -1133,7 +1131,7 @@
 <div class="viewcode-block" id="Config.add_option">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.Config.add_option">[docs]</a>
     <span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">all_values</span><span class="o">=</span><span class="kc">None</span> <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.</span>
 <span class="sd">           </span>
 <span class="sd">           * &#39;count&#39;      integer count type. </span>
@@ -1475,7 +1473,7 @@
 
 <span class="sd">          options should be fed to plugin class on instantiation.</span>
 <span class="sd">          stripped of class... </span>
-<span class="sd">               options = { &#39;level&#39; : &#39;debug&#39; }</span>
+<span class="sd">          * options = { &#39;level&#39; : &#39;debug&#39; }</span>
 <span class="sd">    </span>
 
 <span class="sd">       &quot;&quot;&quot;</span>

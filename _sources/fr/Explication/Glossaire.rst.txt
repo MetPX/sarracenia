@@ -102,7 +102,7 @@ copient des fichiers de quelque part et les écrit localement. Ils font ensuite 
 copie locale à ses pompes voisines, et les utilisateurs qui sont abonnés peuvent
 obtenir les données de cette pompe.
 
-.. Remaqrque::
+.. Note::
   Pour les utilisateurs finaux, une pompe et un courtier sont la même chose pour toutes les buts pratiques.
   Toutefois, lorsque les administrateurs de pompe configurent des clusters multi-hôtes, un
   Broker peut s’exécuter sur deux hôtes, et le même broker peut être utilisé par

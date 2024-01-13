@@ -181,7 +181,7 @@
 <dd class="field-odd"><p>UNKNOWN</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jan 12, 2024</p>
+<dd class="field-even"><p>Jan 13, 2024</p>
 </dd>
 </dl>
 <section id="tools-you-need">
@@ -296,7 +296,7 @@ Install one of those first. in these examples, we use amqp.</p>
 <li><p><strong>Wheel</strong> when people are running different operating systems (non-ubuntu, non-debian) people will be installing wheels, typically that have been uploaded to pypi.python.org.  On the other hand, it is a bit of a pain/noise to upload every development version, so we only upload releases, so testing of wheels is done by building local wheels. Need to build a new wheel every time a change is made.</p></li>
 <li><p><strong>pip install metpx-sr3[amqp]</strong> would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
 one could also pull in all possible dependencies with <strong>pip install metpx-sr3[all]</strong></p></li>
-<li><p><a href="#id1"><span class="problematic" id="id2">**</span></a>pip install -e .[amqp] … lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.</p></li>
+<li><p><strong>pip install -e .[amqp] …</strong> lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.</p></li>
 <li><p><strong>apt install metpx-sr3</strong> install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself. Also need <strong>apt install python3-amqp</strong></p></li>
 <li><p><strong>dpkg -i</strong> builds a debian package for local installation. This is how packages are tested prior to upload to repositories.  It can also be used to support development (have to run dpkg -i for each package change.) also need <strong>apt install python3-amqp</strong></p></li>
 </ul>
@@ -416,10 +416,10 @@ ubuntu@flow:~/sr_insects$
 <section id="ubuntu-18-04">
 <h3>Ubuntu 18.04<a class="headerlink" href="#ubuntu-18-04" title="Link to this heading"></a></h3>
 <p>A number of systems run Ubuntu 18.04 even though it is pretty old.</p>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<p>‘’’</p>
 <p>multipass launch -m 8G bionic</p>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-can run developer tests as per multipass as described above.</p>
+<p>‘’’</p>
+<p>can run developer tests as per multipass as described above.</p>
 </section>
 <section id="python-wheel">
 <h3>Python Wheel<a class="headerlink" href="#python-wheel" title="Link to this heading"></a></h3>
@@ -478,7 +478,7 @@ there may be issue240_2 for a second attempt. There may also be feature branches
 <li><p><strong>update doc/</strong> manual pages should get their updates ideally at the same time as the code.</p></li>
 </ul>
 <p>Usually there will be many such cycles on a development branch before one is ready
-to issue a pull request. Eventually, we get to <a href="#id12"><span class="problematic" id="id13">`Commits to the Main Branch`_</span></a></p>
+to issue a pull request. Eventually, we get to <a class="reference internal" href="#commits-to-the-development-branch">Commits to the Development Branch</a></p>
 </section>
 </section>
 <section id="sr-insects-tests-description">
@@ -1485,7 +1485,7 @@ for security issues.</p></li>
 </ul>
 <p>for Metpx-Sr3, we have not yet approached the longevity of versions implied by Debian <em>stable</em>.
 The labels don’t refer to how stable the software itself is, merely to how often the software
-changes (increments versions.)  More info: <a href="#id14"><span class="problematic" id="id15">`https://en.wikipedia.org/wiki/Debian_version_history`_</span></a>
+changes (increments versions.)  More info: <a class="reference external" href="https://en.wikipedia.org/wiki/Debian_version_history">Debian Version History</a>
 so when performing releases, the changelog is changed from UNRELEASED to unstable, and
 back to UNRELEASED when working between releases, as per Debian custom.</p>
 </section>
