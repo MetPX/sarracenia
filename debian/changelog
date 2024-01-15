@@ -1,29 +1,29 @@
 metpx-sr3 (3.00.51rc5) UNRELEASED; urgency=medium
 
-  * #396 initial experimental support for file partitioning
-    (block_reassembly.)
   * PR #892 fix for numeric inflight not working
   * PR #886 poll_rate_limit plugin (fixing a problem with spamming a server.)
   * #884  second fix re-instating conversion but with + as a safe character
   * improvements to poll_auth_plugins for dynamic tokens.  
-  * fixed #860 properly this time.
+  * fixed #860 properly this time (sourceFromExchange)
   * fix for crash in config parsing.
   * improvements to eumetsat & copernicus (dynamic token) 
   * PR #889 improvement for tarring files on receipt.
   * many lint type fixes arising from tests on redhat distros.
   * fix #881 remove old inflight files in the way when restarting transfers
-  * fix #875 sundew_compat_regez_first_match_is_zero does not work.
+  * fix #880 multiple vips ored configurable.
+  * fix #875 sundew_compat_regex_first_match_is_zero does not work.
   * fix #872 crash in watch.
   * fix #866 print features rather then exit on critical errors.
   * fix #864 crash on redhat, python-magic library clash.
   * fix #861 some Sundew compatible pattern matching still broken.
-  * attempting to fix #860: sourceFromExchange not working. 
   * enhancement #824 last transfer metrics added.
   * fix crash when config files have errors near beginning.
   * document new versioning/pre-release scheme ( #139 )
   * working on #740, adding hathling drive pyproject.toml to replace 
     setup.py on newer systems.
   * working on #863 created spec file to do native RPM installs on newer OS
+  * #396 initial experimental support for file partitioning
+    (block_reassembly.)
  -- peter <peter@bsqt.homeip.net>  Wed, 06 Dec 2023 17:42:37 -0500
 
 metpx-sr3 (3.00.50) unstable; urgency=medium
