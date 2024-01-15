@@ -271,11 +271,19 @@ class Amserver(FlowCB):
                 # Create a file for new messages and let sarracenia format the data
                 try:
                     ## Filenames have the following naming scheme:
-                    ##   1. Bulletin header
-                    ##   2. Counter (makes filename unique for each bulletin)
-                    ##   IF A* or R* present in header, include in filename
+                    ##   1. Bulletin header (composed of bulletin type, Issuing office, timestamp)
+					##   2. BBB, for amendments
+					##   3. Station (sometimes omitted, depending on the bulletin)
+                    ##   4. Counter (makes filename unique for each bulletin)
                     ##
-                    ##   Example: SXVX65_KWNB_181800_RRB__99705
+                    ##   Example: SXVX65_KWNB_181800_RRB_WVR_99705
+					##            Type   |    |      |   |   |
+					##					 Issuing office  |   |
+					##						  Timestamps |   |
+					##						         Amendment
+					##									 Station
+					##										  Random Integer
+
                     filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
 
                     file = open(filepath, 'wb')
@@ -288,5 +296,6 @@ class Amserver(FlowCB):
 
                 except:
                     logger.error("Unable to generate bulletin file.")
+					logger.debug(f"Bulletin file contents: {bulletin}")
 
         return newmsg 
