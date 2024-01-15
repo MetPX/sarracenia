@@ -272,7 +272,7 @@ class Amserver(FlowCB):
                 try:
                     ## Filenames have the following naming scheme:
                     ##   1. Bulletin header (composed of bulletin type, Issuing office, timestamp)
-					##   2. BBB, for amendments
+					##   2. BBB, for amendments (usually not present)
 					##   3. Station (sometimes omitted, depending on the bulletin)
                     ##   4. Counter (makes filename unique for each bulletin)
                     ##
@@ -284,18 +284,34 @@ class Amserver(FlowCB):
 					##									 Station
 					##										  Random Integer
 
-                    filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
+					
 
-                    file = open(filepath, 'wb')
-                    file.write(bulletin)
-                    file.close()
-                    st = os.stat(filepath)
+					# Complete specific bulletins, add default header (derived from sundew -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py)
+					missing_ahl = b'CACN00 CWAO'
+					
+					filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
 
-                    sarramsg = sarracenia.Message.fromFileData(filepath, self.o, lstat=st)
-                    newmsg.append(sarramsg)
+					if bulletinHeader in [ "CA", "RA", "MA" ]:
+						lines = bulletin.splitlines()
+						lines[0] += missing_ahl
 
-                except:
-                    logger.error("Unable to generate bulletin file.")
+						# Reconstruct the bulletin
+						new_bulletin = b''
+						for i in lines:
+							new_bulletin += i + b'\n'
+						bulletin = new_bulletin
+
+					file = open(filepath, 'wb')
+					file.write(bulletin)
+
+					file.close()
+					st = os.stat(filepath)
+
+					sarramsg = sarracenia.Message.fromFileData(filepath, self.o, lstat=st)
+					newmsg.append(sarramsg)
+
+				except:
+					logger.error("Unable to generate bulletin file.")
 					logger.debug(f"Bulletin file contents: {bulletin}")
 
-        return newmsg 
+		return newmsg 
