@@ -1587,6 +1587,26 @@ For seamless upgrade, early testers need to do supply the <code class="docutils 
 </section>
 <section id="launchpad">
 <h3>Launchpad<a class="headerlink" href="#launchpad" title="Link to this heading"></a></h3>
+<p>Canonical, the company behind Ubuntu, provides Launchpad as a means of enabling third parties to build
+packages for their operating system releases.  It turns out that the newer OS versions have dependencies
+that are not available on the old ones. So the development branch is configured to build on newer
+releases, but an a separate branch must be created when creating releases for ubuntu bionic (18.04) and focal (20.04)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">stable</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">D</span> <span class="n">stable_focal_bionic</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="n">stable_focal_bionic</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">stable_focal_bionic</span>
+<span class="n">vi</span> <span class="n">debian</span><span class="o">/</span><span class="n">control</span>
+<span class="c1"># remove pybuild-plugin-pyproject from the &quot;Build-Depends&quot;</span>
+<span class="n">git</span> <span class="n">rm</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
+<span class="c1"># remove the new-style installer to force use of setup.py</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;adjust for older os&quot;</span>
+</pre></div>
+</div>
+<p>There might be a “–force” required at some point. Perhaps something along the lines of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">stable_focal_bionic</span> <span class="o">--</span><span class="n">force</span>
+</pre></div>
+</div>
+<p>Then proceed with Launchpad instructions.</p>
 <section id="automated-build">
 <h4>Automated Build<a class="headerlink" href="#automated-build" title="Link to this heading"></a></h4>
 <ul class="simple">
