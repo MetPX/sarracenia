@@ -44,9 +44,7 @@ features = {
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'reassemble': [ 'flufl.lock' ],
        'vip': [ 'netifaces' ],
-       'redis': [ 'redis' ]
-    } 
-
+       'redis': [ 'redis' ],
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'vip': [ 'netifaces' ],
