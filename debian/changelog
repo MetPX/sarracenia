@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.51rc5) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.51rc6) UNRELEASED; urgency=medium
 
   * PR #892 fix for numeric inflight not working
   * PR #886 poll_rate_limit plugin (fixing a problem with spamming a server.)
