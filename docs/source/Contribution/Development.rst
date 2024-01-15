@@ -1503,6 +1503,30 @@ on upload.
 Launchpad
 ~~~~~~~~~
 
+Canonical, the company behind Ubuntu, provides Launchpad as a means of enabling third parties to build
+packages for their operating system releases.  It turns out that the newer OS versions have dependencies 
+that are not available on the old ones. So the development branch is configured to build on newer 
+releases, but an a separate branch must be created when creating releases for ubuntu bionic (18.04) and focal (20.04)
+::
+
+  git checkout stable
+  git branch -D stable_focal_bionic
+  git branch stable_focal_bionic
+  git checkout stable_focal_bionic
+  vi debian/control
+  # remove pybuild-plugin-pyproject from the "Build-Depends"
+  git rm pyproject.toml
+  # remove the new-style installer to force use of setup.py
+  git commit -a -m "adjust for older os"
+
+There might be a "--force" required at some point. Perhaps something along the lines of::
+
+  git push origin stable_focal_bionic --force
+
+Then proceed with Launchpad instructions.
+
+
+
 Automated Build
 +++++++++++++++
 
