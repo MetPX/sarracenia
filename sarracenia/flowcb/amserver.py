@@ -284,14 +284,15 @@ class Amserver(FlowCB):
 					##									 Station
 					##										  Random Integer
 
-					
-
 					# Complete specific bulletins, add default header (derived from sundew -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py)
 					missing_ahl = b'CACN00 CWAO'
 					
 					filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
 
 					if bulletinHeader in [ "CA", "RA", "MA" ]:
+
+						logger.debug("Adding missing headers in file contents")
+
 						lines = bulletin.splitlines()
 						lines[0] += missing_ahl
 
@@ -300,6 +301,9 @@ class Amserver(FlowCB):
 						for i in lines:
 							new_bulletin += i + b'\n'
 						bulletin = new_bulletin
+
+
+						logger.debug("Missing contents added")
 
 					file = open(filepath, 'wb')
 					file.write(bulletin)
