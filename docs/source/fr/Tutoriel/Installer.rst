@@ -90,6 +90,7 @@ Sur Ubuntu 22.04 et dérivés du même::
   sudo apt install python3-amqp  # support optionnel pour les courtiers AMWP (rabbitmq)
   sudo apt install python3-paramiko  # support optionnel pour SFTP/SSH 
   sudo apt install python3-magic  # support optionnel pour les entêtes "content-type" dans les messages
+  sudo apt install python3-xattr  # support optionnel pour stocker les checksum des fichiers dans les attributs étendus.
   sudo apt install python3-paho-mqtt  # support optionnel pour les courtiers MQTT 
   sudo apt install python3-netifaces # support optionnel pour les vip (haut-disponibilité)
   sudo apt install python3-dateparser python3-pytz # support optionnel pour les sondages ftp. 
@@ -99,6 +100,12 @@ Actuellement, seuls les paquets Debian incluent des pages de manuel. Les guides 
 disponible dans le référentiel de source. Pour les versions antérieures d’Ubuntu, installez
 via pip est requis en raison de dépendances manquantes dans l’environnement python
 livré avec des systèmes d’exploitation antérieurs.
+
+.. note::
+
+   pour bien juger si in fichier est un duplicat, dans le cas d'un application ou le checksum ne peut 
+   être dérivé du contenu (méthode: *abritrary* ( arbitraire ) ) le module python3-xattr est nécessaire.
+   Un example d'un source affecté sera les données DMS.
 
 Si une option n’est pas installée, mais est nécessaire pour une configuration donnée, alors sr3 le
 détectera et se plaindra, et il faut installer le support manquant::
@@ -166,7 +173,8 @@ Facultatifs::
 
   $ sudo dnf install python3-paramiko  # support pour SFTP/SSH
   $ sudo dnf install python3-amqp   # support pour les messages AMQP (couriers rabbitmq)
-  $ sudo dnf install python3-magic   # support optionnel pour le champs ¨content-type¨  
+  $ sudo dnf install python3-file-magic   # support optionnel pour le champs ¨content-type¨  
+  $ sudo dnf install python3-xattr   # support optionnel stocké certains métadonnées dans les attributs étendus.
   $ sudo dnf install python3-netifaces # support optionnel pour l´optio vip
   $ sudo dnf install python3-paho-mqtt # support optionnel pour les courtiers MQTT 
 
