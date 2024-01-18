@@ -14,7 +14,7 @@ BuildRequires:  python3-devel
 BuildRequires: systemd-rpm-macros
 
 
-Requires: python3-appdirs, python3-humanfriendly, python3-humanize, python3-jsonpickle, python3-paramiko, python3-psutil, python3-xattr
+Requires: python3-appdirs, python3-humanfriendly, python3-humanize, python3-jsonpickle, python3-paramiko, python3-psutil
 
 %global _description %{expand:
 MetPX-sr3 (Sarracenia v3) is a data duplication or distribution pump that leverage
