@@ -60,7 +60,10 @@ class Amserver(FlowCB):
         self.limit = 32678
         self.patternAM = '80sII4siIII20s'
         self.sizeAM = struct.calcsize(self.patternAM)
+
         self.o.add_option('AllowIPs', 'list', [])
+        self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
+
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
         self.minnum = 00000
@@ -267,7 +270,10 @@ class Amserver(FlowCB):
                 logger.debug(f"Bulletin contents: {bulletin}")
 
                 parse = self.header.split(b'\0',1)
+                
+                # We only want the first two letters of the bulletin.
                 bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
+                firstchars = bulletinHeader[0:2]
 
                 # Insert AHL headers in bulletin contents
                 try:
@@ -285,13 +291,13 @@ class Amserver(FlowCB):
                     ##                                   Station
                     ##                                       Random Integer
 
-                    missing_ahl = b'CN00 CWAO'
+                    missing_ahl = self.o.MissingAMHeaders
 
 
                     filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
                     filepath = self.o.directory + os.sep + filename
 
-                    if bulletinHeader in [ "CA", "RA", "MA" ]:
+                    if firstchars in [ "CA", "RA", "MA" ]:
 
                         logger.debug("Adding missing headers in file contents")
 
