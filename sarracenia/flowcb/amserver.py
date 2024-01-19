@@ -312,24 +312,25 @@ class Amserver(FlowCB):
                 # Create sarracenia message
                 try:
 
-	                # file = open(filepath, 'wb')
-                    # file.write(bulletin)
-                    # file.close()
-                    # st = os.stat(filepath)
                     stat = paramiko.SFTPAttributes() 
                     msg = sarracenia.Message.fromFileInfo(filepath, self.o, stat)
 
                     # Store the bulletin contents inside of the message.
-                    # this is only used internally to pass the file contents to the download code
-                    # the content in the message is not posted to the broker.
-
-                    msg['_deleteOnPost'] |= set( ['content'] )
-                    msg['content'] = { "encoding":"utf-8", "value":bulletin }
+                    msg['content'] = { "encoding":"utf-8", "value":bulletin.decode('utf-8') }
                     msg['size'] = len(bulletin)
 
                     msg['new_file'] = filename
                     msg['new_dir'] = self.o.directory
                     msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+
+                    # Calculate the checksum
+                    # There is always a default value given
+                    ident = sarracenia.identity.Identity.factory(method=self.o.identity_method)
+                    ident.set_path("") # the argument isn't used
+                    ident.update(bulletin)
+                    msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
+
+                    logger.debug(f"New sarracenia message: {msg}")
 
                     newmsg.append(msg)
 
