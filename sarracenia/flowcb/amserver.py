@@ -40,6 +40,7 @@ Author:
 
 import logging, socket, struct, time, sys, os, signal, ipaddress
 import urllib.parse
+import paramiko
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
@@ -268,7 +269,7 @@ class Amserver(FlowCB):
                 parse = self.header.split(b'\0',1)
                 bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
 
-                # Create a file for new messages and let sarracenia format the data
+                # Insert AHL headers in bulletin contents
                 try:
                     ## NOTE: Bulletin filenames have the following naming scheme
                     ##   1. Bulletin header (composed of bulletin type, Issuing office, timestamp)
@@ -286,7 +287,9 @@ class Amserver(FlowCB):
 
                     missing_ahl = b'CN00 CWAO'
 
-                    filepath = self.o.directory + os.sep + bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
+
+                    filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
+                    filepath = self.o.directory + os.sep + filename
 
                     if bulletinHeader in [ "CA", "RA", "MA" ]:
 
@@ -303,14 +306,33 @@ class Amserver(FlowCB):
 
                         logger.debug("Missing contents added")
 
+                except Exception as e:
+                    logger.error(f"Unable to add AHL headers. Error message: {e}")
 
-                    file = open(filepath, 'wb')
-                    file.write(bulletin)
-                    file.close()
-                    st = os.stat(filepath)
+                # Create sarracenia message
+                try:
 
-                    sarramsg = sarracenia.Message.fromFileData(filepath, self.o, lstat=st)
-                    newmsg.append(sarramsg)
+	                # file = open(filepath, 'wb')
+                    # file.write(bulletin)
+                    # file.close()
+                    # st = os.stat(filepath)
+                    stat = paramiko.SFTPAttributes() 
+                    msg = sarracenia.Message.fromFileInfo(filepath, self.o, stat)
+
+                    # Store the bulletin contents inside of the message.
+                    # this is only used internally to pass the file contents to the download code
+                    # the content in the message is not posted to the broker.
+
+                    msg['_deleteOnPost'] |= set( ['content'] )
+                    msg['content'] = { "encoding":"utf-8", "value":bulletin }
+                    msg['size'] = len(bulletin)
+
+                    msg['new_file'] = filename
+                    msg['new_dir'] = self.o.directory
+                    msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
+
+                    newmsg.append(msg)
+
 
                 except Exception as e:
                     logger.error(f"Unable to generate bulletin file. Error message: {e}")
