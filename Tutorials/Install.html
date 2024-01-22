@@ -206,6 +206,7 @@ be used.</p>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span>  <span class="c1"># main python package.</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">magic</span> <span class="c1"># optional support putting file type content-type message headers.</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">xattr</span> <span class="c1"># optional support putting checksums in extended attributes (on linux)</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3c</span> <span class="c1"># optional C client.</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">paramiko</span>  <span class="c1"># support SFTP (polls and transfers.)</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span>  <span class="c1"># optionally support rabbitmq brokers</span>
@@ -219,6 +220,12 @@ Currently, only the debian packages include man pages. The guides are only
 available in the source repository. For earlier ubuntu versions, install
 via pip is required because of missing dependencies in the python environment
 shipped with earlier operating systems.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>if handling data from sources that use the <em>arbitrary</em> checksum algorithm for duplicate suppression
+they define a token that cannot be derived from the content.  The ECCC DMS application is one that
+does that. To correctly forward such messages, the python3-xattr library is very helpful.</p>
+</div>
 <p>One can create a bulletin ingest configuration:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">~/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">subscribe</span>
 <span class="n">cat</span> <span class="o">&lt;&lt;</span><span class="n">EOT</span> <span class="o">&gt;~/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">subscribe</span><span class="o">/</span><span class="n">data</span><span class="o">-</span><span class="n">ingest</span><span class="o">.</span><span class="n">conf</span>
@@ -289,11 +296,12 @@ $ sudo dnf install python3-humanize
 $ sudo dnf install python3-psutil
 $ sudo dnf install python3-watchdog
 $ sudo dnf install python3-paramiko
+$ sudo dnf install python3-xattr
 </pre></div>
 </div>
 <p>Optional ones:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo dnf install python3-amqp      # optionally support rabbitmq brokers
-$ sudo dnf install python3-magic      # optionally support content-type header in messages.
+$ sudo dnf install python3-file-magic      # optionally support content-type header in messages.
 $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
 $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
 
