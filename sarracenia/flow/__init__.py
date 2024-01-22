@@ -1082,16 +1082,15 @@ class Flow:
                 self.worklist.incoming.extend(new_incoming)
 
     def do(self) -> None:
-        """
-            stub to do the work: does nothing, marking everything done.
-            to be replaced in child classes that do transforms or transfers.
-        """
 
-        # mark all remaining messages as done.
-        self.worklist.ok = self.worklist.incoming
-        self.worklist.incoming = []
-        logger.debug('processing %d messages worked! (stop requested: %s)' %
-                     (len(self.worklist.ok), self._stop_requested))
+        if self.o.download:
+            self.do_download()
+        else:
+            # mark all remaining messages as done.
+            self.worklist.ok = self.worklist.incoming
+            self.worklist.incoming = []
+
+        logger.debug('processing %d messages worked!' % len(self.worklist.ok))
 
     def post(self) -> None:
 
