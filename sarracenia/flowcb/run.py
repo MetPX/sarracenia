@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from sarracenia.flowcb import FlowCB
 import subprocess
 
@@ -58,13 +59,14 @@ class Run(FlowCB):
         self.o.add_option('run_start', 'str')
         self.o.add_option('run_stop', 'str')
         self.o.add_option('run_housekeeping', 'str')
+        logger.info( f"run_work_itemis {self.o.run_work_item}")
 
     def run_script(self, script):
         try:
             subprocess.run(script, check=True)
         except Exception as err:
-            logging.error("subprocess.run failed err={}".format(err))
-            logging.debug("Exception details:", exc_info=True)
+            logger.error("subprocess.run failed err={}".format(err))
+            logger.debug("Exception details:", exc_info=True)
 
     def gather(self):
         """
@@ -88,7 +90,7 @@ class Run(FlowCB):
         if hasattr(self.o, 'run_accept_item' ) and self.o.run_accept_item:
             for m in worklist.incoming:
                 cmd = self.o.run_accept_item.split()
-                cmd.append( f"{m['new_dir']}/{m['new_file']}" )
+                cmd.append( str(os.path.join(m['new_dir'], m['new_file'])))
                 try:
                     p = subprocess.Popen( cmd )
                     p.wait()
@@ -111,7 +113,7 @@ class Run(FlowCB):
         if hasattr(self.o, 'run_work_item' ) and self.o.run_work_item is not None:
             for m in worklist.ok:
                 cmd = self.o.run_work_item.split()
-                cmd.append( f"{m['new_dir']}/{m['new_file']}" )
+                cmd.append( os.path.join(m['new_dir'], m['new_file']))
                 try:
                     p = subprocess.Popen( cmd )
                     p.wait()
