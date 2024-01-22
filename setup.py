@@ -48,7 +48,7 @@ features = {
        'ftppoll' : ['dateparser' ],
        'mqtt': [ 'paho.mqtt>=1.5.1' ],
        'vip': [ 'netifaces' ],
-       'redis': [ 'redis' ]
+       'redis': [ 'redis' ],
     } 
 
 
@@ -106,7 +106,6 @@ setup(
     install_requires=[
         "appdirs", "humanfriendly", "humanize", "jsonpickle", "psutil>=5.3.0", 
         "paramiko", "watchdog",
-        'xattr ; sys_platform!="win32"', 
     ],
     # when building on HPC redhat, python OS packages don't exist. 
     # remove the last three lines of install_requires above, aka: 

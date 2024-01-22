@@ -89,6 +89,7 @@ On Ubuntu 22.04 and derivatives::
   sudo apt update
   sudo apt install metpx-sr3  # main python package.
   sudo apt install python3-magic # optional support putting file type content-type message headers.
+  sudo apt install python3-xattr # optional support putting checksums in extended attributes (on linux)
   sudo apt install metpx-sr3c # optional C client.
   sudo apt install python3-paramiko  # support SFTP (polls and transfers.)
   sudo apt install python3-amqp  # optionally support rabbitmq brokers
@@ -101,6 +102,12 @@ Currently, only the debian packages include man pages. The guides are only
 available in the source repository. For earlier ubuntu versions, install 
 via pip is required because of missing dependencies in the python environment 
 shipped with earlier operating systems.
+
+.. note::
+   if handling data from sources that use the *arbitrary* checksum algorithm for duplicate suppression
+   they define a token that cannot be derived from the content.  The ECCC DMS application is one that 
+   does that. To correctly forward such messages, the python3-xattr library is very helpful.
+
 
 One can create a bulletin ingest configuration::
 
@@ -174,11 +181,12 @@ For example, on fedora 28 mandatories::
   $ sudo dnf install python3-psutil
   $ sudo dnf install python3-watchdog
   $ sudo dnf install python3-paramiko  
+  $ sudo dnf install python3-xattr  
 
 Optional ones::
 
   $ sudo dnf install python3-amqp      # optionally support rabbitmq brokers
-  $ sudo dnf install python3-magic      # optionally support content-type header in messages.
+  $ sudo dnf install python3-file-magic      # optionally support content-type header in messages.
   $ sudo dnf install python3-netifaces # optionally support vip directive for HA.
   $ sudo dnf install python3-paho-mqtt # optionally support mqtt brokers
 
