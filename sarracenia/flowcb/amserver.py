@@ -39,8 +39,8 @@ Author:
 """
 
 import logging, socket, struct, time, sys, os, signal, ipaddress
+from base64 import b64encode
 import urllib.parse
-import paramiko
 import sarracenia
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
@@ -297,6 +297,7 @@ class Amserver(FlowCB):
                     filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
                     filepath = self.o.directory + os.sep + filename
 
+                    # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
                     if firstchars in [ "CA", "RA", "MA" ]:
 
                         logger.debug("Adding missing headers in file contents")
@@ -318,12 +319,23 @@ class Amserver(FlowCB):
                 # Create sarracenia message
                 try:
 
-                    stat = paramiko.SFTPAttributes() 
-                    msg = sarracenia.Message.fromFileInfo(filepath, self.o, stat)
+                    msg = sarracenia.Message.fromFileInfo(filepath, self.o)
+                    decoded_bulletin = bulletin.decode('iso-8859-1')
 
                     # Store the bulletin contents inside of the message.
-                    msg['content'] = { "encoding":"utf-8", "value":bulletin.decode('utf-8') }
-                    msg['size'] = len(bulletin)
+                    # Contents can be binary or ASCII text
+                    try:
+                        msg['content'] = {
+                        "encoding":"utf-8", 
+                        "value":decoded_bulletin 
+                        }
+                    except:
+                        msg['content'] = {
+                        "encoding":"base64", 
+                        "value":b64encode(bulletin).decode('utf-8') 
+                        }
+
+                    msg['size'] = len(decoded_bulletin)
 
                     msg['new_file'] = filename
                     msg['new_dir'] = self.o.directory
@@ -333,7 +345,7 @@ class Amserver(FlowCB):
                     # There is always a default value given
                     ident = sarracenia.identity.Identity.factory(method=self.o.identity_method)
                     ident.set_path("") # the argument isn't used
-                    ident.update(bulletin)
+                    ident.update(decoded_bulletin)
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
                     logger.debug(f"New sarracenia message: {msg}")
