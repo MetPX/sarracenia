@@ -100,20 +100,6 @@
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_exchange&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
                 <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.post.message.Message&#39;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Sarra.do">
-<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.flow.sarra.Sarra.do">[docs]</a>
-    <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">download</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">do_download</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># mark all remaining messages as done.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;processing </span><span class="si">%d</span><span class="s1"> messages worked!&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">))</span></div>
 </div>
 
 </pre></div>

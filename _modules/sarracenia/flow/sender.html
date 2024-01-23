@@ -106,14 +106,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">scheme</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span></div>
 
 
-<div class="viewcode-block" id="Sender.do">
-<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.flow.sender.Sender.do">[docs]</a>
     <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">do_send</span><span class="p">()</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;processing </span><span class="si">%d</span><span class="s1"> messages worked!&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">))</span></div>
-</div>
 
 </pre></div>
 
