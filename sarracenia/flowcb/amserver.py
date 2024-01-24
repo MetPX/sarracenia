@@ -16,16 +16,22 @@ Description:
         To start, when on_start is called, the socket binds, listens and afterwards accepts a connection when one is received from a remote host.
         The receiver acts like an amtcp server. Instances are split into child/parent once an outbound connection is accepted.
         The child proceeds to the receiver service while the parent stays and keeps accepting connections.   
-        In the service, bulletins are received and are stored locally inside of a given filepath.
+        In the service, bulletins are received and are stored in a newly built sarracenia message from the contents field.
+        With the `download` option set to true, the file contents can then be ingested through the sarracenia main flow.
 
     Options:
-        AllowIPs (list): Filters outbound connections with provided IPs. All other IPs won't be accepted. 
-        If unselected, accept all IPs. 
+        AllowIPs (list): 
+            Filters outbound connections with provided IPs. All other IPs won't be accepted. 
+            If unselected, accept all IPs. 
 
-        directory (string): Specifies the directory where the bulletin files are to be stored. 
+        MissingAMHeaders (string):
+            Specify headers to be added inside of the file contents.
+
+        directory (string): 
+            Specifies the directory where the bulletin files are to be stored. 
 
     NOTE: AM protocol cannot correct data corruption and cannot be stopped without data loss.
-    Precautions should be taken during maintenance interventions.
+    Precautions should be taken during maintenance interventions    
 
 Platform:
     Linux/Mac: because of process forking, this will not work on Windows. 
@@ -275,7 +281,7 @@ class Amserver(FlowCB):
                 bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
                 firstchars = bulletinHeader[0:2]
 
-                # Insert AHL headers in bulletin contents
+                # Treat bulletin contents and compose file name
                 try:
                     ## NOTE: Bulletin filenames have the following naming scheme
                     ##   1. Bulletin header (composed of bulletin type, Issuing office, timestamp)
@@ -291,20 +297,26 @@ class Amserver(FlowCB):
                     ##                                   Station
                     ##                                       Random Integer
 
+                    binary = 0
                     missing_ahl = self.o.MissingAMHeaders
 
 
                     filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
                     filepath = self.o.directory + os.sep + filename
 
+                    lines = bulletin.splitlines()
+                    # Determine if bulletin is binary or not
+                    # From sundew source code
+                    if lines[1][:4] == b'BUFR' or lines[1][:4] == b'GRIB' or lines[1][:4] == b'\211PNG':
+                        binary = 1
+
                     # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
                     if firstchars in [ "CA", "RA", "MA" ]:
 
                         logger.debug("Adding missing headers in file contents")
 
-                        lines = bulletin.splitlines()
                         lines[0] += missing_ahl
-
+                        
                         # Reconstruct the bulletin
                         new_bulletin = b''
                         for i in lines:
@@ -320,19 +332,25 @@ class Amserver(FlowCB):
                 try:
 
                     msg = sarracenia.Message.fromFileInfo(filepath, self.o)
-                    decoded_bulletin = bulletin.decode('iso-8859-1')
 
                     # Store the bulletin contents inside of the message.
                     # Contents can be binary or ASCII text
-                    try:
+                    if not binary:
+                        
+                        decoded_bulletin = bulletin.decode('iso-8859-1')
+
                         msg['content'] = {
                         "encoding":"utf-8", 
                         "value":decoded_bulletin 
                         }
-                    except:
+
+                    else:
+
+                        decoded_bulletin = b64encode(bulletin).decode('utf-8') 
+
                         msg['content'] = {
                         "encoding":"base64", 
-                        "value":b64encode(bulletin).decode('utf-8') 
+                        "value":decoded_bulletin
                         }
 
                     msg['size'] = len(decoded_bulletin)
