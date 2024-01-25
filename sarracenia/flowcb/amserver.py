@@ -27,6 +27,10 @@ Description:
         MissingAMHeaders (string):
             Specify headers to be added inside of the file contents.
 
+        binaryInitialCharacters (list):
+            Binary bulletins are characterised by having certain sets of characters on its second line.
+            This option allows to customise which binary strings to look for to determine if a bulletin is binary or not.
+
         directory (string): 
             Specifies the directory where the bulletin files are to be stored. 
 
@@ -69,6 +73,7 @@ class Amserver(FlowCB):
 
         self.o.add_option('AllowIPs', 'list', [])
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
+        self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
         self.host = self.url.netloc.split(':')[0]
         self.port = int(self.url.netloc.split(':')[1])
@@ -305,9 +310,10 @@ class Amserver(FlowCB):
                     filepath = self.o.directory + os.sep + filename
 
                     lines = bulletin.splitlines()
+
                     # Determine if bulletin is binary or not
                     # From sundew source code
-                    if lines[1][:4] == b'BUFR' or lines[1][:4] == b'GRIB' or lines[1][:4] == b'\211PNG':
+                    if lines[1][:4] in self.o.binaryInitialCharacters:
                         binary = 1
 
                     # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
@@ -346,14 +352,15 @@ class Amserver(FlowCB):
 
                     else:
 
-                        decoded_bulletin = b64encode(bulletin).decode('utf-8') 
+                        decoded_bulletin = b64encode(bulletin).decode('iso-8859-1')
 
                         msg['content'] = {
                         "encoding":"base64", 
                         "value":decoded_bulletin
                         }
 
-                    msg['size'] = len(decoded_bulletin)
+                    # Receiver is looking for raw message.
+                    msg['size'] = len(bulletin)
 
                     msg['new_file'] = filename
                     msg['new_dir'] = self.o.directory
