@@ -130,7 +130,7 @@ class instance:
         else:
             component, config = cfg_preparse.configurations[0].split(os.sep)
 
-        cfg_preparse = sarracenia.config.one_config(component, config)
+        cfg_preparse = sarracenia.config.one_config(component, config, cfg_preparse.action)
 
         if cfg_preparse.logRotateInterval < (24*60*60):
             logRotateInterval=int(cfg_preparse.logRotateInterval)
@@ -222,7 +222,7 @@ class instance:
         with open(pidfilename, 'w') as pfn:
             pfn.write('%d' % os.getpid())
 
-        cfg = sarracenia.config.one_config(component, config)
+        cfg = sarracenia.config.one_config(component, config, cfg_preparse.action)
 
         cfg.novipFilename = pidfilename.replace(".pid", ".noVip")
 

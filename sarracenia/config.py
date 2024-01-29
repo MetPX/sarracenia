@@ -570,7 +570,7 @@ class Config:
 
        it can be instantiated with one of:
 
-       * one_config(component, config, isPost=False) -- read the options  for
+       * one_config(component, config, action, isPost=False) -- read the options  for
          a given component an configuration,  (all in one call.)
 
        On the other hand, a configu can be built up from the following constructors:
@@ -586,6 +586,7 @@ class Config:
          cfg.topicPrefix = [ 'v02', 'post']
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
+         cfg.action = 'start'
          cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
          cfg.queueName='q_anonymous.subscriber_test2'
          cfg.download=True
@@ -1722,28 +1723,33 @@ class Config:
                 else:
                       queue_file_read=True
 
-        else: # lead instance just tries once...
+        else: 
+            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+            # should write the state file.
 
+            # first make sure directory exists.
+            if not os.path.isdir(os.path.dirname(queuefile)):
+                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+    
+            # lead instance shou
             if os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
                 self.queueName = f.read()
                 f.close()
             
-        #if the queuefile is corrupt, then will need to guess anyways.
-        if ( self.queueName is None ) or ( self.queueName == '' ):
-            queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
-            if hasattr(self, 'queue_suffix'):
-                queueName += '.' + self.queue_suffix
-            queueName += '.' + str(randint(0, 100000000)).zfill(8)
-            queueName += '.' + str(randint(0, 100000000)).zfill(8)
-            self.queueName = queueName
-            logger.debug( f'default guessed queueName  {self.queueName} ' )
+            #if the queuefile is corrupt, then will need to guess anyways.
+            if ( self.queueName is None ) or ( self.queueName == '' ):
+                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
+                if hasattr(self, 'queue_suffix'):
+                    queueName += '.' + self.queue_suffix
+                queueName += '.' + str(randint(0, 100000000)).zfill(8)
+                queueName += '.' + str(randint(0, 100000000)).zfill(8)
+                self.queueName = queueName
+                logger.debug( f'default guessed queueName  {self.queueName} ' )
+    
+            if self.action not in [ 'start', 'foreground', 'declare' ]:
+                return
 
-        if not os.path.isdir(os.path.dirname(queuefile)):
-            pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
-
-        # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
-        # should write the state file.
             if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
                 f = open(queuefile, 'w')
                 f.write(self.queueName)
@@ -1770,6 +1776,9 @@ class Config:
         if not config and self.config:
             config = self.config
             
+        if self.action not in self.actions:
+            logger.error( f"invalid action: {self.action} must be one of: {','.join(self.actions)}" )
+
         if hasattr(self, 'nodupe_ttl'):
             if (type(self.nodupe_ttl) is str):
                 if isTrue(self.nodupe_ttl):
@@ -2597,7 +2606,7 @@ def no_file_config():
     return cfg
 
 
-def one_config(component, config, isPost=False):
+def one_config(component, config, action, isPost=False):
     """
       single call return a fully parsed single configuration for a single component to run.
 
@@ -2651,6 +2660,8 @@ def one_config(component, config, isPost=False):
     if component in ['poll' ]:
         if not hasattr(cfg,'broker') or (cfg.broker is None):
              cfg.broker = cfg.post_broker
+
+    cfg.action=action
 
     cfg.finalize(component, config)
 

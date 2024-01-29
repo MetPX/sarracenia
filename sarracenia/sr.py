@@ -338,6 +338,7 @@ class sr_GlobalState:
                         cfgbody.override({
                             'component': c,
                             'config': cbase,
+                            'action': self.options.action,
                             'directory': '${PWD}'
                         })
                         cfgbody.applyComponentDefaults( c )

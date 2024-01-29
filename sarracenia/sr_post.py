@@ -39,7 +39,7 @@ def main():
     cfg1.parse_args(isPost=True)
 
     if hasattr(cfg1, 'config'):
-        cfg2 = sarracenia.config.one_config('post', cfg1.config, isPost=True)
+        cfg2 = sarracenia.config.one_config('post', cfg1.config, cfg1.action, isPost=True)
     else:
         logger.critical('no posting configuration specified')
         return
