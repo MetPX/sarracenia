@@ -1727,9 +1727,6 @@ class Config:
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
 
-            # first make sure directory exists.
-            if not os.path.isdir(os.path.dirname(queuefile)):
-                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
     
             # lead instance shou
             if os.path.isfile(queuefile):
@@ -1750,10 +1747,21 @@ class Config:
             if self.action not in [ 'start', 'foreground', 'declare' ]:
                 return
 
-            if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
-                f = open(queuefile, 'w')
-                f.write(self.queueName)
-                f.close()
+            # first make sure directory exists.
+            if not os.path.isdir(os.path.dirname(queuefile)):
+                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+
+            if not os.path.isfile(queuefile) and (self.queueName is not None): 
+                tmpQfile=queuefile+'.tmp'
+                if not os.path.isfile(tmpQfile): 
+                    f = open(tmpQfile, 'w')
+                    f.write(self.queueName)
+                    f.close()
+                    os.rename( tmpQfile, queuefile )
+                else:
+                    logger.info( f'Queue name {self.queueName} being persisted to {queuefile} by some other process, so ignoring it.' )
+                    return
+
                 logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
 
 
