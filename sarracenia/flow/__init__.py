@@ -1133,7 +1133,7 @@ class Flow:
         if msg['content']['encoding'] == 'base64':
             data = b64decode(msg['content']['value'])
         else:
-            data = msg['content']['value'].encode('utf-8')
+            data = msg['content']['value'].encode(msg['content']['encoding'])
 
         if self.o.identity_method.startswith('cod,'):
             algo_method = self.o.identity_method[4:]

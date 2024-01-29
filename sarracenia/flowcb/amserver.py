@@ -321,7 +321,7 @@ class Amserver(FlowCB):
 
                         logger.debug("Adding missing headers in file contents")
 
-                        lines[0] += missing_ahl
+                        lines[0] += missing_ahl.encode('iso-8859-1')
                         
                         # Reconstruct the bulletin
                         new_bulletin = b''
@@ -340,19 +340,19 @@ class Amserver(FlowCB):
                     msg = sarracenia.Message.fromFileInfo(filepath, self.o)
 
                     # Store the bulletin contents inside of the message.
-                    # Contents can be binary or ASCII text
                     if not binary:
                         
+                        # Data can't be binary. Post method fails with binary data, with JSON parser.
                         decoded_bulletin = bulletin.decode('iso-8859-1')
 
                         msg['content'] = {
-                        "encoding":"utf-8", 
+                        "encoding":"iso-8859-1", 
                         "value":decoded_bulletin 
                         }
 
                     else:
 
-                        decoded_bulletin = b64encode(bulletin).decode('iso-8859-1')
+                        decoded_bulletin = b64encode(bulletin).decode('ascii')
 
                         msg['content'] = {
                         "encoding":"base64", 
@@ -370,7 +370,7 @@ class Amserver(FlowCB):
                     # There is always a default value given
                     ident = sarracenia.identity.Identity.factory(method=self.o.identity_method)
                     ident.set_path("") # the argument isn't used
-                    ident.update(decoded_bulletin)
+                    ident.update(bulletin)
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
                     logger.debug(f"New sarracenia message: {msg}")
