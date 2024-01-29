@@ -38,6 +38,18 @@ Instructions d’installation
 git
 ---
 
+3.0.51
+------
+
+*CHANGEMENT* : nouveau paramètre obligatoire *action* pour la routine sarracenia.config.one_config() 
+indiquant comment la configuration sera utilisée. Lorsqu'il est utilisé pour des opérations en lecture 
+seule (statut, show, dump) la configuration doit éviter de remplir des valeurs qui ne 
+devraient être définit lorsqu'il est utilisé. Les exemples ont été mis à jour en conséquence.
+
+*CHANGEMENT* : paramètre *action* désormais obligatoire pour sarracenia.config.finalize().
+
+
+
 3.0.47
 ------
 
