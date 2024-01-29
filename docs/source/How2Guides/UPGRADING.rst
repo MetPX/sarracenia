@@ -39,6 +39,18 @@ Installation Instructions
 git
 ---
 
+3.0.51
+-------
+
+*CHANGE*: Additional *action* argument sarracenia.config.one_config() indicating
+how the configuration will be used.  When used for readonly operations (status,
+show, dump) the configuration should avoid filling values that should only
+be defines when used.  Examples have been updated appropriately.
+
+*CHANGE*: *action* setting now mandatory for the sarracenia.config.finalize().
+
+
+
 3.0.47
 ------
 
