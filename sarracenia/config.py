@@ -1661,6 +1661,99 @@ class Config:
         self.files.pop()
         self.lineno = saved_lineno
 
+    def _resolveQueueName(self,component,cfg):
+
+        queuefile = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            queuefile += os.sep + self.hostdir
+
+        queuefile += os.sep + component + os.sep + cfg
+        queuefile += os.sep + component + '.' + cfg + '.' + self.broker.url.username
+
+        if hasattr(self, 'exchangeSplit') and hasattr(
+                self, 'no') and (self.no > 0):
+            queuefile += "%02d" % self.no
+        queuefile += '.qname'
+
+        self.queue_filename = queuefile
+
+        #while (not hasattr(self, 'queueName')) or (self.queueName is None):
+        """
+
+          normal:
+              if not the lead instance, wait a bit for the queuefile to be written.
+              look for a queuefile in the state directory, if it is there, read it.
+              if you can't read the file
+
+          if you are instance 1, or 0 (foreground) and the queuefile is missing, then need
+          to write it.  if queueName is set, use that, if not
+
+          if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)
+          will come out differently every time. So even in the case of a fixed queue name, need to write 
+
+        """
+
+        if hasattr(self,'no') and self.no > 1:
+            # worker instances need give lead instance time to write the queuefile
+            time.sleep(randint(4,14))
+
+            queue_file_read=False
+            config_read_try=0
+            while not queue_file_read:
+                if os.path.isfile(queuefile):
+                    f = open(queuefile, 'r')
+                    self.queueName = f.read()
+                    f.close()
+                else:
+                    self.queueName = ''
+
+                config_read_try += 1
+                logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
+                if len(self.queueName) < 1:
+                      nap=randint(1,4)
+                      logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
+                      time.sleep(nap)
+                      if config_read_try > 5:
+                          logger.critical( f'failed to read queue name from {queuefile}')
+                          sys.exit(2)
+                else:
+                      queue_file_read=True
+
+        else: # lead instance just tries once...
+
+            if os.path.isfile(queuefile):
+                f = open(queuefile, 'r')
+                self.queueName = f.read()
+                f.close()
+            
+        #if the queuefile is corrupt, then will need to guess anyways.
+        if ( self.queueName is None ) or ( self.queueName == '' ):
+            queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
+            if hasattr(self, 'queue_suffix'):
+                queueName += '.' + self.queue_suffix
+            queueName += '.' + str(randint(0, 100000000)).zfill(8)
+            queueName += '.' + str(randint(0, 100000000)).zfill(8)
+            self.queueName = queueName
+            logger.debug( f'default guessed queueName  {self.queueName} ' )
+
+        if not os.path.isdir(os.path.dirname(queuefile)):
+            pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+
+        # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
+        # should write the state file.
+            if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
+                f = open(queuefile, 'w')
+                f.write(self.queueName)
+                f.close()
+                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
+
+
+
+
+
     def finalize(self, component=None, config=None):
         """ 
          Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
@@ -1799,93 +1892,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
-
-            queuefile = sarracenia.user_cache_dir(
-                Config.appdir_stuff['appname'],
-                Config.appdir_stuff['appauthor'])
-
-            if self.statehost:
-                queuefile += os.sep + self.hostdir
-
-            queuefile += os.sep + component + os.sep + cfg
-            queuefile += os.sep + component + '.' + cfg + '.' + self.broker.url.username
-
-            if hasattr(self, 'exchangeSplit') and hasattr(
-                    self, 'no') and (self.no > 0):
-                queuefile += "%02d" % self.no
-            queuefile += '.qname'
-
-            self.queue_filename = queuefile
-
-            #while (not hasattr(self, 'queueName')) or (self.queueName is None):
-            """
-
-              normal:
-                  if not the lead instance, wait a bit for the queuefile to be written.
-                  look for a queuefile in the state directory, if it is there, read it.
-                  if you can't read the file
-
-              if you are instance 1, or 0 (foreground) and the queuefile is missing, then need
-              to write it.  if queueName is set, use that, if not
-
-              if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)
-              will come out differently every time. So even in the case of a fixed queue name, need to write 
-
-            """
-
-            if hasattr(self,'no') and self.no > 1:
-                # worker instances need give lead instance time to write the queuefile
-                time.sleep(randint(4,14))
-
-                queue_file_read=False
-                config_read_try=0
-                while not queue_file_read:
-                    if os.path.isfile(queuefile):
-                        f = open(queuefile, 'r')
-                        self.queueName = f.read()
-                        f.close()
-                    else:
-                        self.queueName = ''
-
-                    config_read_try += 1
-                    logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
-                    if len(self.queueName) < 1:
-                          nap=randint(1,4)
-                          logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
-                          time.sleep(nap)
-                          if config_read_try > 5:
-                              logger.critical( f'failed to read queue name from {queuefile}')
-                              sys.exit(2)
-                    else:
-                          queue_file_read=True
-
-            else: # lead instance just tries once...
-
-                if os.path.isfile(queuefile):
-                    f = open(queuefile, 'r')
-                    self.queueName = f.read()
-                    f.close()
-                
-            #if the queuefile is corrupt, then will need to guess anyways.
-            if ( self.queueName is None ) or ( self.queueName == '' ):
-                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
-                if hasattr(self, 'queue_suffix'):
-                    queueName += '.' + self.queue_suffix
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                self.queueName = queueName
-                logger.debug( f'default guessed queueName  {self.queueName} ' )
-
-            if not os.path.isdir(os.path.dirname(queuefile)):
-                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
-
-            # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
-            # should write the state file.
-            if (self.queueName is not None) and (not hasattr(self,'no') or (self.no < 2)):
-                f = open(queuefile, 'w')
-                f.write(self.queueName)
-                f.close()
-                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
+            self._resolveQueueName(component,cfg)
 
         if hasattr(self, 'no'):
             if self.statehost:
