@@ -115,7 +115,7 @@
 <dd><p>The option parser to produce a single configuration.</p>
 <p>it can be instantiated with one of:</p>
 <ul class="simple">
-<li><p>one_config(component, config, isPost=False) – read the options  for
+<li><p>one_config(component, config, action, isPost=False) – read the options  for
 a given component an configuration,  (all in one call.)</p></li>
 </ul>
 <p>On the other hand, a configu can be built up from the following constructors:</p>
@@ -130,6 +130,7 @@ a given component an configuration,  (all in one call.)</p></li>
 <span class="n">cfg</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;subscribe&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s1">&#39;flow_demo&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;start&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span> <span class="p">])</span> <span class="p">]</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">queueName</span><span class="o">=</span><span class="s1">&#39;q_anonymous.subscriber_test2&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">download</span><span class="o">=</span><span class="kc">True</span>
@@ -345,7 +346,7 @@ with python API calls.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>single call return a fully parsed single configuration for a single component to run.</p>
 <p>read in admin.conf and default.conf</p>
 <p>apply component default overrides ( maps to: component/check ?)

@@ -673,7 +673,7 @@
 
 <span class="sd">       it can be instantiated with one of:</span>
 
-<span class="sd">       * one_config(component, config, isPost=False) -- read the options  for</span>
+<span class="sd">       * one_config(component, config, action, isPost=False) -- read the options  for</span>
 <span class="sd">         a given component an configuration,  (all in one call.)</span>
 
 <span class="sd">       On the other hand, a configu can be built up from the following constructors:</span>
@@ -689,6 +689,7 @@
 <span class="sd">         cfg.topicPrefix = [ &#39;v02&#39;, &#39;post&#39;]</span>
 <span class="sd">         cfg.component = &#39;subscribe&#39;</span>
 <span class="sd">         cfg.config = &#39;flow_demo&#39;</span>
+<span class="sd">         cfg.action = &#39;start&#39;</span>
 <span class="sd">         cfg.bindings = [ (&#39;xpublic&#39;, [&#39;v02&#39;, &#39;post&#39;], [&#39;*&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;#&#39; ]) ]</span>
 <span class="sd">         cfg.queueName=&#39;q_anonymous.subscriber_test2&#39;</span>
 <span class="sd">         cfg.download=True</span>
@@ -1815,6 +1816,112 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">saved_lineno</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_resolveQueueName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">):</span>
+
+        <span class="n">queuefile</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span>
+            <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appname&#39;</span><span class="p">],</span>
+            <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appauthor&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
+            <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hostdir</span>
+
+        <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">cfg</span>
+        <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">cfg</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;exchangeSplit&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">queuefile</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span>
+        <span class="n">queuefile</span> <span class="o">+=</span> <span class="s1">&#39;.qname&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span> <span class="o">=</span> <span class="n">queuefile</span>
+
+        <span class="c1">#while (not hasattr(self, &#39;queueName&#39;)) or (self.queueName is None):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">          normal:</span>
+<span class="sd">              if not the lead instance, wait a bit for the queuefile to be written.</span>
+<span class="sd">              look for a queuefile in the state directory, if it is there, read it.</span>
+<span class="sd">              if you can&#39;t read the file</span>
+
+<span class="sd">          if you are instance 1, or 0 (foreground) and the queuefile is missing, then need</span>
+<span class="sd">          to write it.  if queueName is set, use that, if not</span>
+
+<span class="sd">          if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)</span>
+<span class="sd">          will come out differently every time. So even in the case of a fixed queue name, need to write </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># worker instances need give lead instance time to write the queuefile</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">14</span><span class="p">))</span>
+
+            <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">False</span>
+            <span class="n">config_read_try</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">queue_file_read</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+                <span class="n">config_read_try</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;instance read try </span><span class="si">{</span><span class="n">config_read_try</span><span class="si">}</span><span class="s1"> queueName </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> from queue state file </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                      <span class="n">nap</span><span class="o">=</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+                      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name corrupt take a short </span><span class="si">{</span><span class="n">nap</span><span class="si">}</span><span class="s1"> second nap, then try again&#39;</span> <span class="p">)</span>
+                      <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">nap</span><span class="p">)</span>
+                      <span class="k">if</span> <span class="n">config_read_try</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                          <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;failed to read queue name from </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                          <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                      <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">True</span>
+
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="c1"># only lead instance (0-foreground, 1-start, or none in the case of &#39;declare&#39;)</span>
+            <span class="c1"># should write the state file.</span>
+
+    
+            <span class="c1"># lead instance shou</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            
+            <span class="c1">#if the queuefile is corrupt, then will need to guess anyways.</span>
+            <span class="k">if</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="p">):</span>
+                <span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;q_&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">cfg</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;queue_suffix&#39;</span><span class="p">):</span>
+                    <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_suffix</span>
+                <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">))</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+                <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">))</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">queueName</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;default guessed queueName  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> &#39;</span> <span class="p">)</span>
+    
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;foreground&#39;</span><span class="p">,</span> <span class="s1">&#39;declare&#39;</span> <span class="p">]:</span>
+                <span class="k">return</span>
+
+            <span class="c1"># first make sure directory exists.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">)):</span>
+                <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> 
+                <span class="n">tmpQfile</span><span class="o">=</span><span class="n">queuefile</span><span class="o">+</span><span class="s1">&#39;.tmp&#39;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">):</span> 
+                    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span> <span class="n">tmpQfile</span><span class="p">,</span> <span class="n">queuefile</span> <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> being persisted to </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1"> by some other process, so ignoring it.&#39;</span> <span class="p">)</span>
+                    <span class="k">return</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> persisted to </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+
+
+
+
+
 <div class="viewcode-block" id="Config.finalize">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.Config.finalize">[docs]</a>
     <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1833,6 +1940,9 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
             
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;invalid action: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2"> must be one of: </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodupe_ttl</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">isTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodupe_ttl</span><span class="p">):</span>
@@ -1955,93 +2065,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_exchange</span><span class="p">()</span>
-
-            <span class="n">queuefile</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span>
-                <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appname&#39;</span><span class="p">],</span>
-                <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appauthor&#39;</span><span class="p">])</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
-                <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hostdir</span>
-
-            <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">cfg</span>
-            <span class="n">queuefile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">cfg</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span>
-
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;exchangeSplit&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="n">queuefile</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span>
-            <span class="n">queuefile</span> <span class="o">+=</span> <span class="s1">&#39;.qname&#39;</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span> <span class="o">=</span> <span class="n">queuefile</span>
-
-            <span class="c1">#while (not hasattr(self, &#39;queueName&#39;)) or (self.queueName is None):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">              normal:</span>
-<span class="sd">                  if not the lead instance, wait a bit for the queuefile to be written.</span>
-<span class="sd">                  look for a queuefile in the state directory, if it is there, read it.</span>
-<span class="sd">                  if you can&#39;t read the file</span>
-
-<span class="sd">              if you are instance 1, or 0 (foreground) and the queuefile is missing, then need</span>
-<span class="sd">              to write it.  if queueName is set, use that, if not</span>
-
-<span class="sd">              if you set the queuename, it might have variable values that when evaluated repeatedly (such as randomized settings)</span>
-<span class="sd">              will come out differently every time. So even in the case of a fixed queue name, need to write </span>
-
-<span class="sd">            &quot;&quot;&quot;</span>
-
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="c1"># worker instances need give lead instance time to write the queuefile</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">14</span><span class="p">))</span>
-
-                <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">False</span>
-                <span class="n">config_read_try</span><span class="o">=</span><span class="mi">0</span>
-                <span class="k">while</span> <span class="ow">not</span> <span class="n">queue_file_read</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
-                        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-
-                    <span class="n">config_read_try</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;instance read try </span><span class="si">{</span><span class="n">config_read_try</span><span class="si">}</span><span class="s1"> queueName </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> from queue state file </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                          <span class="n">nap</span><span class="o">=</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
-                          <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name corrupt take a short </span><span class="si">{</span><span class="n">nap</span><span class="si">}</span><span class="s1"> second nap, then try again&#39;</span> <span class="p">)</span>
-                          <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">nap</span><span class="p">)</span>
-                          <span class="k">if</span> <span class="n">config_read_try</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-                              <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;failed to read queue name from </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                              <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                          <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">True</span>
-
-            <span class="k">else</span><span class="p">:</span> <span class="c1"># lead instance just tries once...</span>
-
-                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
-                    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                
-            <span class="c1">#if the queuefile is corrupt, then will need to guess anyways.</span>
-            <span class="k">if</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="p">):</span>
-                <span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;q_&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">cfg</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;queue_suffix&#39;</span><span class="p">):</span>
-                    <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_suffix</span>
-                <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">))</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-                <span class="n">queueName</span> <span class="o">+=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">))</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">queueName</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;default guessed queueName  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> &#39;</span> <span class="p">)</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">)):</span>
-                <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-            <span class="c1"># only lead instance (0-foreground, 1-start, or none in the case of &#39;declare&#39;)</span>
-            <span class="c1"># should write the state file.</span>
-            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)):</span>
-                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> persisted to </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_resolveQueueName</span><span class="p">(</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
@@ -2771,7 +2795,7 @@
 
 <div class="viewcode-block" id="one_config">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.one_config">[docs]</a>
-<span class="k">def</span> <span class="nf">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">isPost</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">isPost</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      single call return a fully parsed single configuration for a single component to run.</span>
 
@@ -2825,6 +2849,8 @@
     <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;poll&#39;</span> <span class="p">]:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span><span class="s1">&#39;broker&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
              <span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">post_broker</span>
+
+    <span class="n">cfg</span><span class="o">.</span><span class="n">action</span><span class="o">=</span><span class="n">action</span>
 
     <span class="n">cfg</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
 
