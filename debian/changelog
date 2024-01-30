@@ -1,5 +1,8 @@
-metpx-sr3 (3.00.51rc6) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.51rc7) UNRELEASED; urgency=medium
 
+  * PR #900 major revamp of AM protocol reception.
+  * fix #905 queue name getting changed in spite of setting.
+  * move xattr hard dependency -> feature on linux because redhat is different.
   * PR #892 fix for numeric inflight not working
   * PR #886 poll_rate_limit plugin (fixing a problem with spamming a server.)
   * #884  second fix re-instating conversion but with + as a safe character
