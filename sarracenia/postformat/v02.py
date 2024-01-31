@@ -29,6 +29,11 @@ class V02(PostFormat):
        """
         if content_type == V02.content_type() :
             return True
+
+        # all the other formats are JSON based. only v02 has plain-text body.
+        if not '{' in payload[0:5]:
+            return True
+
         return False
 
     @staticmethod
