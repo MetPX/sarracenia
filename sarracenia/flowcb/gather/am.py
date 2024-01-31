@@ -62,7 +62,7 @@ from random import randint
 
 logger = logging.getLogger(__name__)
 
-class Amserver(FlowCB):
+class Am(FlowCB):
 
     def __init__(self, options):
         
@@ -352,7 +352,7 @@ class Amserver(FlowCB):
                         decoded_bulletin = bulletin.decode(charset)
 
                         msg['content'] = {
-                        "encoding":f"charset", 
+                        "encoding":f"{charset}", 
                         "value":decoded_bulletin 
                         }
 
