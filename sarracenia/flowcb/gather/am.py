@@ -24,6 +24,10 @@ Description:
             Filters outbound connections with provided IPs. All other IPs won't be accepted. 
             If unselected, accept all IPs. 
 
+        outputCharset (string):
+            Option to personalize the character set encoding advertised to consumers. 
+            Default value is utf-8
+
         MissingAMHeaders (string):
             Specify headers to be added inside of the file contents.
 
@@ -72,6 +76,7 @@ class Amserver(FlowCB):
         self.sizeAM = struct.calcsize(self.patternAM)
 
         self.o.add_option('AllowIPs', 'list', [])
+        self.o.add_option('outputCharset', 'str', 'utf-8')
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
@@ -274,6 +279,7 @@ class Amserver(FlowCB):
 
             if status == 'OK':
                 (bulletin, longlen) = self.unwrapmsg()
+                charset = self.o.outputCharset
 
                 # Set buffer for next bulletin ingestion
                 self.inBuffer = self.inBuffer[longlen:]
@@ -283,7 +289,7 @@ class Amserver(FlowCB):
                 parse = self.header.split(b'\0',1)
                 
                 # We only want the first two letters of the bulletin.
-                bulletinHeader = parse[0].decode('iso-8859-1').replace(' ', '_')
+                bulletinHeader = parse[0].decode(charset).replace(' ', '_')
                 firstchars = bulletinHeader[0:2]
 
                 # Treat bulletin contents and compose file name
@@ -321,7 +327,7 @@ class Amserver(FlowCB):
 
                         logger.debug("Adding missing headers in file contents")
 
-                        lines[0] += missing_ahl.encode('iso-8859-1')
+                        lines[0] += missing_ahl.encode(charset)
                         
                         # Reconstruct the bulletin
                         new_bulletin = b''
@@ -343,10 +349,10 @@ class Amserver(FlowCB):
                     if not binary:
                         
                         # Data can't be binary. Post method fails with binary data, with JSON parser.
-                        decoded_bulletin = bulletin.decode('iso-8859-1')
+                        decoded_bulletin = bulletin.decode(charset)
 
                         msg['content'] = {
-                        "encoding":"iso-8859-1", 
+                        "encoding":f"charset", 
                         "value":decoded_bulletin 
                         }
 
