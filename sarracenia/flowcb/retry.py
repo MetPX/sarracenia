@@ -69,24 +69,17 @@ class Retry(FlowCB):
 
         logger.debug('logLevel=%s' % self.o.logLevel)
 
-    def after_accept(self, worklist) -> None:
+    def gather(self, qty) -> None:
         """
         If there are only a few new messages, get some from the download retry queue and put them into
         `worklist.incoming`.
         """
         if not features['retry']['present'] :
-            return
+            return []
 
-        qty = (self.o.batch / 2) - len(worklist.incoming)
-        #logger.info('qty: %d len(worklist.incoming) %d' % ( qty, len(worklist.incoming) ) )
+        if qty <= 0: return []
 
-        if qty <= 0: return
-
-        mlist = self.download_retry.get(qty)
-
-        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.download_retry_name, qty, len(mlist)))
-        if len(mlist) > 0:
-            worklist.incoming.extend(mlist)
+        return self.download_retry.get(qty)
 
     def after_work(self, worklist) -> None:
         """
