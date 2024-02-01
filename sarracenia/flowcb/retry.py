@@ -91,6 +91,12 @@ class Retry(FlowCB):
 
         if len(worklist.failed) != 0:
             #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
+            for m in worklist.failed:
+                for k in m:
+                    if k in m['_deleteOnPost'] or k.startswith('new_'):
+                         del m[k]
+                del m['_deleteOnPost']
+
             self.download_retry.put(worklist.failed)
             worklist.failed = []
 
