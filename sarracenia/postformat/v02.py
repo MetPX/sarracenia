@@ -31,7 +31,7 @@ class V02(PostFormat):
             return True
 
         # all the other formats are JSON based. only v02 has plain-text body.
-        if not b'{' in payload[0:5]:
+        if not '{' in payload[0:5]:
             return True
 
         # in the v02, we used topic to identify message format. (not reliable for other formats.)
