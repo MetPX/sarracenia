@@ -28,7 +28,7 @@ class Message(FlowCB):
         else:
             logger.critical('missing required broker specification')
 
-    def gather(self) -> list:
+    def gather(self, messageCountMax) -> list:
         """
            return a current list of messages.
         """
