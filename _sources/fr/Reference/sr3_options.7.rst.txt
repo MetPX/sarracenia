@@ -926,6 +926,18 @@ inlineByteMax <taille>
 
 la taille maximale des fichiers dont le contenu est à inclure dans un messages d'annonce (envoyé inline.)
 
+
+
+inlineEncoding text|binary|guess (défaut: guess)
+_________________________________________________
+
+Quand on inclut les données dans le message on l'encode dans un format choisi:
+
+ * text: le fichier doit être du utf-8 valide (ou érreur.) 
+ * binary:  le fichier peut être encodé n'importe comment, il sera en format base64.
+ * guess: essaie le format text en premier, utilise binary en cas d'erreur.
+
+
 inlineOnly
 ----------
 ignorer les messages d´annonce si les données ne sont pas inline.

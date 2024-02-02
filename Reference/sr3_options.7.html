@@ -944,7 +944,15 @@ will not be posted.</p>
 </section>
 <section id="inlinebytemax-size">
 <h4>inlineByteMax &lt;size&gt;<a class="headerlink" href="#inlinebytemax-size" title="Link to this heading"></a></h4>
-<p>the maximums size of messages to inline.</p>
+<p>The maximum size of messages to inline.</p>
+<p>when inlining file content, what sort of encoding should be done? Three choices:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>text: the file content is assumed to be utf-8 text and encoded as such.</p></li>
+<li><p>binary: the file content is unconditionally converted to base64 binary encoding.</p></li>
+<li><p>guess: try making text, if that fails fall back to binary.</p></li>
+</ul>
+</div></blockquote>
 </section>
 <section id="inlineonly">
 <h4>inlineOnly<a class="headerlink" href="#inlineonly" title="Link to this heading"></a></h4>

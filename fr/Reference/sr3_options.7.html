@@ -945,6 +945,14 @@ ne sera pas affiché.</p>
 <section id="inlinebytemax-taille">
 <h4>inlineByteMax &lt;taille&gt;<a class="headerlink" href="#inlinebytemax-taille" title="Link to this heading"></a></h4>
 <p>la taille maximale des fichiers dont le contenu est à inclure dans un messages d’annonce (envoyé inline.)</p>
+<p>Quand on inclut les données dans le message on l’encode dans un format choisi:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>text: le fichier doit être du utf-8 valide (ou érreur.)</p></li>
+<li><p>binary:  le fichier peut être encodé n’importe comment, il sera en format base64.</p></li>
+<li><p>guess: essaie le format text en premier, utilise binary en cas d’erreur.</p></li>
+</ul>
+</div></blockquote>
 </section>
 <section id="inlineonly">
 <h4>inlineOnly<a class="headerlink" href="#inlineonly" title="Link to this heading"></a></h4>

@@ -941,7 +941,17 @@ will not be posted.
 inlineByteMax <size>
 --------------------
 
-the maximums size of messages to inline.
+The maximum size of messages to inline.
+
+inlineEncoding text|binary|guess (default: guess)
+_________________________________________________
+
+when inlining file content, what sort of encoding should be done? Three choices:
+
+ * text: the file content is assumed to be utf-8 text and encoded as such.
+ * binary: the file content is unconditionally converted to base64 binary encoding.
+ * guess: try making text, if that fails fall back to binary.
+
 
 inlineOnly
 ----------
