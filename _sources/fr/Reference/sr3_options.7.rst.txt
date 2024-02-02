@@ -491,6 +491,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
+bufsize <size> (défaut: 1m)
+---------------------------
+
+Les fichiers seront copiés en tranches de *bufsize* octets. Utilisé par les protocoles de transfert.
 
 byteRateMax <size> (défaut: 0)
 ------------------------------
