@@ -1739,6 +1739,14 @@ timeout <intervalle> (défaut: 0)
 L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
 transfert de connexion ou de téléchargement (appliqué pendant le transfert).
 
+timezone <chaine> (défaut: utc)
+--------------------------------
+
+Établir le fuseau horaire pour les dates afficher pour les fichiers sur un serveur FTP.
+La valeur est tel que décrit timezone as per `pytz <pypi.org/project/pytz>`_
+Seulement actif dans le contexte de sondage de serveur FTP.
+
+
 tlsRigour (défaut: medium)
 --------------------------
 

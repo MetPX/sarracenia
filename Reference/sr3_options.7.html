@@ -1658,6 +1658,11 @@ headers from the messages.</p>
 <p>The <strong>timeout</strong> option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).</p>
 </section>
+<section id="timezone-string-default-utc">
+<h4>timezone &lt;string&gt; (default: utc)<a class="headerlink" href="#timezone-string-default-utc" title="Link to this heading"></a></h4>
+<p>Interpret listings from an FTP server as being in the given timezone as per <a class="reference external" href="pypi.org/project/pytz">pytz</a>
+Has no effect other than in when polling an FTP server.</p>
+</section>
 <section id="tlsrigour-default-medium">
 <h4>tlsRigour (default: medium)<a class="headerlink" href="#tlsrigour-default-medium" title="Link to this heading"></a></h4>
 <p>tlsRigour can be set to: <em>lax, medium, or strict</em>, and gives a hint to the
