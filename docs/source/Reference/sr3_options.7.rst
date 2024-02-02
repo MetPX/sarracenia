@@ -503,6 +503,12 @@ Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.
 
 
+bufsize <size> (default: 1MB)
+-----------------------------
+
+Files will be copied in *bufsize*-byte blocks. for use by transfer protocols.
+
+
 byteRateMax <size> (default: 0)
 --------------------------------
 
