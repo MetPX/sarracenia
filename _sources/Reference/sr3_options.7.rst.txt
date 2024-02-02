@@ -1775,10 +1775,11 @@ The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
 
 
-timezone <string> (default: utc)
+timezone <string> (default: UTC)
 --------------------------------
 
 Interpret listings from an FTP server as being in the given timezone as per `pytz <pypi.org/project/pytz>`_
+Examples: Canada/Pacific, Pacific/Nauru, Canada/Eastern, Europe/Paris
 Has no effect other than in when polling an FTP server.
 
 
