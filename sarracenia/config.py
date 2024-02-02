@@ -163,7 +163,8 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 'logLevel', 
+    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 
+    'inlineEncoding', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -1910,6 +1911,10 @@ class Config:
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
             self._resolveQueueName(component,cfg)
+
+        valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
+        if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
+            logger.error( f"invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
 
         if hasattr(self, 'no'):
             if self.statehost:
