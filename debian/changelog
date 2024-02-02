@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.51rc8) UNRELEASED; urgency=medium
+
+  * 
+
+ -- peter <peter@bsqt.homeip.net>  Fri, 02 Feb 2024 09:00:18 -0500
+
 metpx-sr3 (3.00.51rc7) unstable; urgency=medium
 
   * PR #910 detect v02 messages without content_type header.
