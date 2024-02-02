@@ -246,9 +246,12 @@ OPTIONAL:
 
         &quot;content&quot;       - for smaller files, the content may be embedded.
         {
-            &quot;encoding&quot; : &quot;utf-8&quot; | &quot;base64&quot;  ,
+            &quot;encoding&quot; : &quot;utf-8&quot; | &quot;base64&quot; | &quot;iso-8859-1&quot; ,
             &quot;value&quot;    &quot; &quot;encoded file content&quot;
         }
+        Note that the iso-8859-1 encoding is only an allowance for legacy data flows.
+        Should normally not be used.
+
         &quot;contentType&quot; : &quot;string&quot; - MIME-type information referring to the data.
 
         For &quot;v03.report&quot; topic notification messages the following addtional

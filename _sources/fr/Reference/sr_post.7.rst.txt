@@ -94,7 +94,6 @@ Les en-têtes sont un tableau de paires nom:valeur::
           "type": "Feature"
           "geometry": RFC 7946 (geoJSON) spécification géographique compatible.
 
-
           "size"          - le nombre d’octets annoncés.
           "blocks"        - si le fichier publié est partitionné, alors :
           {
@@ -117,9 +116,12 @@ Les en-têtes sont un tableau de paires nom:valeur::
 
           "content"       - pour les fichiers plus petits, le contenu peut être incorporé.
           {
-              "encoding" : "utf-8" | "base64"  ,
+              "encoding" : "utf-8" | "base64" | "iso-8859-1" ,
               "value"    " "contenu de fichier encodé"
-          }
+          } 
+          Noter que iso-8859-1 est là pour des raisons de transmission inaltéré de formats obsolètes.
+
+          "contentType" : "chaine mime-type"  - indique le format des données.
 
           Pour le messages de thème "v03.report", les en-têtes additionnelles qui suivent seront présents:
 
@@ -128,9 +130,8 @@ Les en-têtes sont un tableau de paires nom:valeur::
                      "message" :  - message de rapport d’état documenté dans `Report Messages`_
                    }
 
-          "contentType" : "chaine mime-type"  - indique le format des données.
-          "type": "Feature"   - utilisé pour la compatibilité geoJSON.
-          "geometry" : ... selon la compatibilité GoJSON RFC7946.
+          Autres champs optionnels:
+
 
           des paires supplémentaires nom:valeur définies par l’utilisateur sont autorisées.
 

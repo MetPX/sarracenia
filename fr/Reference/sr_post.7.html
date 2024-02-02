@@ -209,7 +209,6 @@ FACULTATIF:
         &quot;type&quot;: &quot;Feature&quot;
         &quot;geometry&quot;: RFC 7946 (geoJSON) spécification géographique compatible.
 
-
         &quot;size&quot;          - le nombre d’octets annoncés.
         &quot;blocks&quot;        - si le fichier publié est partitionné, alors :
         {
@@ -232,9 +231,12 @@ FACULTATIF:
 
         &quot;content&quot;       - pour les fichiers plus petits, le contenu peut être incorporé.
         {
-            &quot;encoding&quot; : &quot;utf-8&quot; | &quot;base64&quot;  ,
+            &quot;encoding&quot; : &quot;utf-8&quot; | &quot;base64&quot; | &quot;iso-8859-1&quot; ,
             &quot;value&quot;    &quot; &quot;contenu de fichier encodé&quot;
         }
+        Noter que iso-8859-1 est là pour des raisons de transmission inaltéré de formats obsolètes.
+
+        &quot;contentType&quot; : &quot;chaine mime-type&quot;  - indique le format des données.
 
         Pour le messages de thème &quot;v03.report&quot;, les en-têtes additionnelles qui suivent seront présents:
 
@@ -243,9 +245,8 @@ FACULTATIF:
                    &quot;message&quot; :  - message de rapport d’état documenté dans `Report Messages`_
                  }
 
-        &quot;contentType&quot; : &quot;chaine mime-type&quot;  - indique le format des données.
-        &quot;type&quot;: &quot;Feature&quot;   - utilisé pour la compatibilité geoJSON.
-        &quot;geometry&quot; : ... selon la compatibilité GoJSON RFC7946.
+        Autres champs optionnels:
+
 
         des paires supplémentaires nom:valeur définies par l’utilisateur sont autorisées.
 </pre></div>

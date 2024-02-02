@@ -129,9 +129,12 @@ The headers are an array of name:value pairs::
 
           "content"       - for smaller files, the content may be embedded.
           {
-              "encoding" : "utf-8" | "base64"  , 
+              "encoding" : "utf-8" | "base64" | "iso-8859-1" , 
               "value"    " "encoded file content"
-          }
+          } 
+          Note that the iso-8859-1 encoding is only an allowance for legacy data flows.
+          Should normally not be used.
+
           "contentType" : "string" - MIME-type information referring to the data.
 
           For "v03.report" topic notification messages the following addtional
