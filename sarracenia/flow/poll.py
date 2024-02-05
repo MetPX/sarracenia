@@ -32,8 +32,8 @@ default_options = {
     'randomize': False,
     'post_on_start': False,
     'sleep': -1,
-    'nodupe_ttl': 7 * 60 * 60,
-    'nodupe_fileAgeMax': 30 * 24 * 60 * 60,
+    'nodupe_ttl': 8 * 60 * 60,
+    'nodupe_fileAgeMax': 7 * 60 * 60,
 }
 
 #  'sumflg': 'cod,md5',
@@ -73,6 +73,9 @@ class Poll(Flow):
 
         self.plugins['load'].insert(0,
                                     'sarracenia.flowcb.post.message.Message')
+
+        if self.o.nodupe_ttl < self.o.nodupe_fileAgeMax:
+            logger.warning( f"nodupe_ttl < nodupe_fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904")
 
         if not features['ftppoll']['present']:
             if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):

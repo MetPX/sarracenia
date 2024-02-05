@@ -177,6 +177,11 @@ Files which are older than 600 seconds (10 minutes) will not be considerred for 
 This is usually used with polls that have very long lasting directories on a remote 
 server. example: a remote server has a permanent database of remote files.
 
+It is often the case that nodupe_ttl should be greater than nodupe_fileAgeMax to prevent
+files from aging out of the cache before they are considered "too old" and then being 
+(erroneously) re-ingested.  A warning message is emitted if this is the case in a poll
+on startup.
+
 
 Roll Your Own
 -------------

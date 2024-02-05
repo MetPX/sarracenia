@@ -954,8 +954,10 @@ These options set what files the user wants to be notified for and where
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
 - **permDefault     <integer>        (default: 0o400)**
-- **nodupe_fileAgeMax <duration>   (default 30d)**
+- **nodupe_fileAgeMax <duration>   (default: 7h)**
 
+nodupe_fileAgeMax should be less than nodupe_ttl when using duplicate suppression,
+to avoid re-ingesting of files that have aged out of the nodupe cache.
 
 The option *filename* can be used to set a global rename to the products.
 Ex.:
