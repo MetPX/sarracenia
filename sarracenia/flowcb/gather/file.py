@@ -546,6 +546,7 @@ class File(FlowCB):
                 logger.debug("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
+                event_done=True
             if event_done:
                 self.left_events.pop(key)
         return messages
