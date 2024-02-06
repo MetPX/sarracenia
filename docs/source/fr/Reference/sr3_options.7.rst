@@ -894,6 +894,7 @@ peut également être spécifié comme une intervalle de temps, par exemple, 10 
 Lorsque l'option est défini sur une intervalle de temps, le processus de publication de fichiers attends
 jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
 ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
+C'est un effet pareil à un choix de valeur pou *fileAgeMin*.
 
 Enfin, **inflight** peut être réglé a *NONE*. Dans ce cas, le fichier est écrit directement
 avec le nom final, où le destinataire attendra de recevoir un poste pour notifier l’arrivée du fichier.
@@ -1146,8 +1147,8 @@ ou:
 
 Pour plus d´information: `Supprimer les doublons <../Explication/SupprimerLesDoublons.html>`_
 
-nodupe_fileAgeMax
------------------
+fileAgeMax
+----------
 
 Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu'il puisse être posté.
@@ -1155,12 +1156,6 @@ ancien pour qu'il puisse être posté.
 Dans un Poll :
  * La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.
  (discussion complète ici (en anglais): https://github.com/MetPX/sarracenia/issues/904)
-
-nodupe_fileAgeMin
------------------
-
-Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
-neufs pour qu'ils puissent être postés.
 
 nodupe_ttl <off|on|999[smhdw]>
 ------------------------------

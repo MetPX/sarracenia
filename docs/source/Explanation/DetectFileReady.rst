@@ -88,12 +88,12 @@ File Detection Strategy Table
 |sr_watch with|                                       |                                      |
 |inflight     |Minimum age (modification time)        |Last choice, guarantees delay only if |
 |number       |of the file before it is considered    |no other method works.                |
-|(mtime)      |complete.                              |                                      |
+|(mtime)      |complete. (aka: fileAgeMin)            |                                      |
 |             |                                       |Receiving from uncooperative          |
 |Alternate    | - Adds delay in every transfer.       |sources.                              |
 |setting      | - Vulnerable to network failures.     |                                      |
 |             | - Vulnerable to clock skew.           |(ok choice with PDS)                  |
-|nodupe\_\    |                                       |                                      |
+|             |                                       |                                      |
 |fileAgeMin   |                                       |If a process is re-writing a file     |
 |             |                                       |often, can use mtime to smooth out    |
 |             |                                       |the i/o pattern, by slowing posts.    |
