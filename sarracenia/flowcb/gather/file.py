@@ -449,12 +449,12 @@ class File(FlowCB):
 
         if event == 'delete' :
             if event in self.o.fileEvents:
-                return self.post1file(src, None)
+                return (True, self.post1file(src, None))
             return (True, [])
 
         if event == 'rmdir' :
             if event in self.o.fileEvents:
-                return self.post1file(src, None, is_directory=True)
+                return (True, self.post1file(src, None, is_directory=True))
             return (True, [])
 
         # move
