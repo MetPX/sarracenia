@@ -65,7 +65,7 @@ def path_inflight_tooNew(inflight, lstat):
         #logger.debug("ok lstat None")
         return False
 
-    age = nowflt() - lstat.st_mtime
+    age = time.time() - lstat.st_mtime
     if age < inflight:
         logger.debug("%d vs (inflight setting) %d seconds. Too New!" % \
             (age,inflight) )
