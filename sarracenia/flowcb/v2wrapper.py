@@ -61,6 +61,7 @@ def sumstrFromMessage( msg ) -> str:
     if 'fileOp' in msg:
         if 'rename' in msg['fileOp']:
             msg['oldname'] = msg['fileOp']['rename']
+
         if 'link' in msg['fileOp']:
             hash = sha512()
             hash.update( bytes( msg['fileOp']['link'], encoding='utf-8' ) )
@@ -77,7 +78,6 @@ def sumstrFromMessage( msg ) -> str:
                 sumstr = 'r,%s' % hash.hexdigest()
             else:
                 sumstr = 'm,%s' % hash.hexdigest()
-
         else:
             logger.error('unknown fileOp: %s' % msg['fileOp'] )
     return sumstr
