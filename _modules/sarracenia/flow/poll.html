@@ -107,8 +107,8 @@
     <span class="s1">&#39;randomize&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;post_on_start&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;sleep&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-    <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
-    <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">8</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="c1">#  &#39;sumflg&#39;: &#39;cod,md5&#39;,</span>
@@ -152,6 +152,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>
                                     <span class="s1">&#39;sarracenia.flowcb.post.message.Message&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nodupe_ttl</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">nodupe_fileAgeMax</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;nodupe_ttl &lt; nodupe_fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;ftppoll&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;pollUrl&#39;</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ftp&#39;</span><span class="p">)</span> <span class="p">):</span>

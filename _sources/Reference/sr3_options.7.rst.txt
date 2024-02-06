@@ -1169,11 +1169,16 @@ or:
 
 More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.html>`_
 
-nodupe_fileAgeMax
+nodupe_fileAgeMax 
 -----------------
 
-If files are older than this setting (default: 30d in poll, 0 in other components), 
+If files are older than this setting (default: 7h in poll, 0 in other components), 
 then ignore them, they are too old to post. 0 deactivates the setting.
+
+In a Poll:
+  * default is 7 hours. should be less than nodupe_ttl to prevent re-ingest of duplicate data.
+    (full discussion here: https://github.com/MetPX/sarracenia/issues/904 )
+
 
 nodupe_fileAgeMin
 -----------------
@@ -1197,6 +1202,9 @@ is in minutes, hours, days, or weeks. After the interval expires the contents ar
 dropped, so duplicates separated by a large enough interval will get through.
 A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.
+
+Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
+re-ingesting files that have aged out of the duplicate suppression cache.
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
 alternate strategy.  One must use either a fixed blocksize, or always never partition files.

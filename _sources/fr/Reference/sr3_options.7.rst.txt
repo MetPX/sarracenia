@@ -1152,6 +1152,10 @@ nodupe_fileAgeMax
 Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu'il puisse être posté.
 
+Dans un Poll :
+ * La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.
+ (discussion complète ici (en anglais): https://github.com/MetPX/sarracenia/issues/904)
+
 nodupe_fileAgeMin
 -----------------
 

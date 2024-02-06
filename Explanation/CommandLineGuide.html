@@ -1106,8 +1106,10 @@ Refer to <a class="reference external" href="../Reference/sr_post.7.html">sr_pos
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (must be set)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (optional)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (default: 0o400)</strong></p></li>
-<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (default 30d)</strong></p></li>
+<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (default: 7h)</strong></p></li>
 </ul>
+<p>nodupe_fileAgeMax should be less than nodupe_ttl when using duplicate suppression,
+to avoid re-ingesting of files that have aged out of the nodupe cache.</p>
 <p>The option <em>filename</em> can be used to set a global rename to the products.
 Ex.:</p>
 <p><strong>filename  rename=/naefs/grib2/</strong></p>

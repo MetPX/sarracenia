@@ -128,7 +128,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Feb 05, 2024</p>
+<dd class="field-even"><p>Feb 06, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>UNKNOWN</p>
@@ -1141,8 +1141,15 @@ regardless of name, to be considered a duplicate if the checksum matches.</p>
 </section>
 <section id="nodupe-fileagemax">
 <h4>nodupe_fileAgeMax<a class="headerlink" href="#nodupe-fileagemax" title="Link to this heading"></a></h4>
-<p>If files are older than this setting (default: 30d in poll, 0 in other components),
+<p>If files are older than this setting (default: 7h in poll, 0 in other components),
 then ignore them, they are too old to post. 0 deactivates the setting.</p>
+<dl class="simple">
+<dt>In a Poll:</dt><dd><ul class="simple">
+<li><p>default is 7 hours. should be less than nodupe_ttl to prevent re-ingest of duplicate data.
+(full discussion here: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/904">https://github.com/MetPX/sarracenia/issues/904</a> )</p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="nodupe-fileagemin">
 <h4>nodupe_fileAgeMin<a class="headerlink" href="#nodupe-fileagemin" title="Link to this heading"></a></h4>
@@ -1163,6 +1170,8 @@ is in minutes, hours, days, or weeks. After the interval expires the contents ar
 dropped, so duplicates separated by a large enough interval will get through.
 A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.</p>
+<p>Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
+re-ingesting files that have aged out of the duplicate suppression cache.</p>
 <p><strong>Use of the cache is incompatible with the default *parts 0* strategy</strong>, one must specify an
 alternate strategy.  One must use either a fixed blocksize, or always never partition files.
 One must avoid the dynamic algorithm that will change the partition size used as a file grows.</p>

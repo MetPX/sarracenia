@@ -960,8 +960,10 @@ Ces options définissent les fichiers pour lesquels l’utilisateur souhaite êt
 - **accept    <regexp pattern> [rename=] (doit être défini)**
 - **reject    <regexp pattern> (facultatif)**
 - **permDefault     <integer>        (par défaut: 0o400)**
-- **nodupe_fileAgeMax <duration>   (par défaut 30d)**
+- **nodupe_fileAgeMax <duration>   (par défaut 7h)**
 
+Nodupe_fileAgeMax doit être inférieur à nodupe_ttl lors de l'utilisation de la suppression des doublons,
+pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.
 
 L’option *filename* peut être utilisée pour définir un changement de nom global pour les produits.
 Ex.:

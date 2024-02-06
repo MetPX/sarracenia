@@ -127,7 +127,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Feb 05, 2024</p>
+<dd class="field-even"><p>Feb 06, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>UNKNOWN</p>
@@ -1146,6 +1146,13 @@ quel que soit le nom, pour qu’il puisse être considéré comme un doublon si 
 <h4>nodupe_fileAgeMax<a class="headerlink" href="#nodupe-fileagemax" title="Link to this heading"></a></h4>
 <p>Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu’il puisse être posté.</p>
+<dl>
+<dt>Dans un Poll :</dt><dd><ul class="simple">
+<li><p>La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.</p></li>
+</ul>
+<p>(discussion complète ici (en anglais): <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/904">https://github.com/MetPX/sarracenia/issues/904</a>)</p>
+</dd>
+</dl>
 </section>
 <section id="nodupe-fileagemin">
 <h4>nodupe_fileAgeMin<a class="headerlink" href="#nodupe-fileagemin" title="Link to this heading"></a></h4>

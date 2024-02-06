@@ -1062,8 +1062,10 @@ Référez <a class="reference external" href="../Reference/sr3_post.7.html">sr3_
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (doit être défini)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (facultatif)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (par défaut: 0o400)</strong></p></li>
-<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (par défaut 30d)</strong></p></li>
+<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (par défaut 7h)</strong></p></li>
 </ul>
+<p>Nodupe_fileAgeMax doit être inférieur à nodupe_ttl lors de l’utilisation de la suppression des doublons,
+pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.</p>
 <p>L’option <em>filename</em> peut être utilisée pour définir un changement de nom global pour les produits.
 Ex.:</p>
 <p><strong>filename  rename=/naefs/grib2/</strong></p>
