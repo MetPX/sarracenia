@@ -912,6 +912,7 @@ can also be specified as a time interval, for example, 10 for 10 seconds.
 When set to a time interval, file posting process ensures that it waits until
 the file has not been modified in that interval. So a file will
 not be processed until it has stayed the same for at least 10 seconds.
+This is the same as setting the **fileAgeMin** setting.
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
@@ -1169,14 +1170,14 @@ or:
 
 More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.html>`_
 
-nodupe_fileAgeMax
------------------
+fileAgeMax
+----------
 
 If files are older than this setting (default: 30d in poll, 0 in other components), 
 then ignore them, they are too old to post. 0 deactivates the setting.
 
-nodupe_fileAgeMin
------------------
+fileAgeMin
+----------
 
 If files are newer than this setting (default: 0), then ignore them, they are too
 new to post. 0 deactivates the setting.

@@ -170,7 +170,7 @@ Files That are Too Old
 
 in the configuration file::
 
-    nodupe_fileAgeMax 600
+    fileAgeMax 600
 
 Files which are older than 600 seconds (10 minutes) will not be considerred for transfer.
 

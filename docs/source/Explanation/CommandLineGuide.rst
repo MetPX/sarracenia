@@ -333,7 +333,7 @@ View all configuration settings (the result of all parsing... what the flow comp
      'message_ttl': 0,
      'mirror': True,
      'msg_total_interval': '0',
-     'nodupe_fileAgeMax': 0,
+     'fileAgeMax': 0,
      'nodupe_ttl': 0,
      'overwrite': True,
      'permCopy': True,
@@ -954,7 +954,7 @@ These options set what files the user wants to be notified for and where
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
 - **permDefault     <integer>        (default: 0o400)**
-- **nodupe_fileAgeMax <duration>   (default 30d)**
+- **fileAgeMax <duration>   (default 30d)**
 
 
 The option *filename* can be used to set a global rename to the products.
@@ -1019,12 +1019,12 @@ other nodes participating in the poll, when they don't have the vip,
 will subscribe to the output of the poll to keep their duplicate suppression 
 caches current.
 
-files that are more than nodupe_fileAgeMax are ignored. However, this 
+files that are more than fileAgeMax are ignored. However, this 
 can be modified to any specified time limit in the configurations by using 
-the option *nodupe_fileAgeMax <duration>*. By default in components
+the option *fileAgeMax <duration>*. By default in components
 other than poll, it is disabled by being set to zero (0). As it is a 
 duration option, units are in seconds by default, but minutes, hours, 
-days, and weeks, are available. In the poll component, nodupe_fileAgeMax
+days, and weeks, are available. In the poll component, fileAgeMax
 defaults to 30 days.
 
 Advanced Polling
@@ -1116,7 +1116,7 @@ The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.ht
 **poll** connects to a *broker*.  Every *sleep* seconds, it connects to
 a *pollUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
-files. The *nodupe_fileAgeMax* option eliminates files that are too old 
+files. The *fileAgeMax* option eliminates files that are too old 
 from consideration. When a file is found that matches a pattern given 
 by *accept*, **poll** builds a notification message for that product.
 

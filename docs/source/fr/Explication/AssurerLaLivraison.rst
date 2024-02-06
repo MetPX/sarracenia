@@ -49,9 +49,9 @@ Tableau de Inflight
 +-------------+---------------------------------------+--------------------------------------+
 |             |Âge minimum (temps de modification)    |Dernier choix, ne garantit un délai   |
 | entier      |du fichier avant que le transfer soit  |que si aucun autre moyen peut servir  |
-| (mtime)     |considéré Complèté.                    |                                      |
+| (mtime)     |considéré Complèté. (fileAgeMin pareil)|                                      |
 |             |                                       |Réception de ceux qui ne coopèrent pas|
-|             |Retard tous les avis                   |                                      |
+| fileAgeMin  |Retarde tous les avis                  |                                      |
 |             |Vulnérable aux pannes de réseau.       | (choix acceptable pour PDS)          |
 |             |Vulnérable aux horloges en désaccord   |                                      |
 +-------------+---------------------------------------+--------------------------------------+

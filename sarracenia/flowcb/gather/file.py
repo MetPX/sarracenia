@@ -118,16 +118,6 @@ class File(FlowCB):
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
-        self.ageMin=0
-        if type(self.o.inflight) in [ int, float ]  and self.o.inflight > 0:
-            self.ageMin = self.o.inflight
-
-        self.ageMax=0
-        if hasattr(self.o, 'nodupe_fileAgeMax') and \
-           type(self.o.nodupe_fileAgeMax) in [ int, float ] and self.o.nodupe_fileAgeMax > 0 :
-           self.ageMax = self.o.nodupe_fileAgeMax
-
-
     def post_delete(self, path, key=None, value=None,is_directory=False):
         #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
 
@@ -473,12 +463,13 @@ class File(FlowCB):
 
         if lstat and hasattr(lstat,'st_mtime'):
             age = time.time() - lstat.st_mtime
-            if age < self.ageMin:
-                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.ageMin) )
+
+            if age < self.o.fileAgeMin:
+                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.o.fileAgeMin) )
                 return (False, [])
 
-            if self.ageMax > 0 and age > self.ageMax:
-                logger.debug("%d vs (nodupe_fileAgeMax setting) %d seconds. Too Old!" % (age,self.ageMax) )
+            if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
+                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old!" % (age,self.o.fileAgeMax) )
                 return (True, [])
 
         # post it

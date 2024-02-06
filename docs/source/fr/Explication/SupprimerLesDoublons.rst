@@ -172,7 +172,7 @@ Fichiers trop vieux
 
 dans les fichiers de configuration::
 
-    nodupe_fileAgeMax 600
+    fileAgeMax 600
 
 Les messages notificationsfichiers pour des fichiers qui sont agés de plus que 600 secondes (10 minutes) seront
 supprimés.
