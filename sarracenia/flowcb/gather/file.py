@@ -51,30 +51,6 @@ if features['watch']['present']:
             self.on_moved = parent.on_moved
             super().__init__()
 
-def path_inflight_tooNew(inflight, lstat):
-    """
-      check the inflight, compare fail age against it.
-      return True if the file is too new to be posted.
-    """
-
-    if not type(inflight) in [float, int] :
-        #logger.debug("ok inflight unused")
-        return False
-
-    if lstat == None or not hasattr(lstat,'st_mtime'):
-        #logger.debug("ok lstat None")
-        return False
-
-    age = time.time() - lstat.st_mtime
-    if age < inflight:
-        logger.debug("%d vs (inflight setting) %d seconds. Too New!" % \
-            (age,inflight) )
-        return True
-
-    return False
-
-
-
 
 class File(FlowCB):
     """
@@ -141,6 +117,15 @@ class File(FlowCB):
         #self.o.blocksize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
+
+        self.ageMin=0
+        if type(self.o.inflight) in [ int, float ]  and self.o.inflight > 0:
+            self.ageMin = self.o.inflight
+
+        self.ageMax=0
+        if hasattr(self.o, 'nodupe_fileAgeMax') and \
+           type(self.o.nodupe_fileAgeMax) in [ int, float ] and self.o.nodupe_fileAgeMax > 0 :
+           self.ageMax = self.o.nodupe_fileAgeMax
 
 
     def post_delete(self, path, key=None, value=None,is_directory=False):
@@ -486,7 +471,15 @@ class File(FlowCB):
 
         lstat = sarracenia.stat(src)
 
-        if path_inflight_tooNew(self.o.inflight, lstat): return (False, [])
+        if lstat and hasattr(lstat,'st_mtime'):
+            age = time.time() - lstat.st_mtime
+            if age < self.ageMin:
+                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.ageMin) )
+                return (False, [])
+
+            if self.ageMax > 0 and age > self.ageMax:
+                logger.debug("%d vs (nodupe_fileAgeMax setting) %d seconds. Too Old!" % (age,self.ageMax) )
+                return (True, [])
 
         # post it
 
