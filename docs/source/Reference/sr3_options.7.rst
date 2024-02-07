@@ -1528,6 +1528,19 @@ retryEmptyBeforeExit: <boolean> (default: False)
 Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By default, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.
 
 
+retry_refilter <boolean> (default: False)
+-----------------------------------------
+
+The **retry_refilter** option alters how messages are reloaded when they are retrieved from
+a retry queue. The default way (value: False) is to repeat the transfer using exactly
+the same message as before. If **retry_refilter** is set (value: True) then all the
+message's calculated fields will be discarded, and the processing re-started from the gather
+phase (accept/reject processing will be repeated, destinations re-calculated.)
+
+The normal retry behaviour is use when the remote has had a failure, and need to 
+re-send later, while the retry_refilter option is used when recovering from configuration 
+file errors, and some messages had incorrect selection or destination criteria.
+
 retry_ttl <duration> (default: same as expire)
 ----------------------------------------------
 
