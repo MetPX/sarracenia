@@ -113,6 +113,7 @@ default_options = {
     'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
+    'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
     'sundew_compat_regex_first_match_is_zero': False,
@@ -134,7 +135,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
-    'reconnect', 'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
+    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
     'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
@@ -2511,6 +2512,10 @@ class Config:
             help=
             'allows simultaneous use of multiple versions and types of messages'
         )
+        parser.add_argument('--retry_refilter',
+                            action='store_true',
+                            default=self.retry_refilter,
+                            help='repeat message processing when retrying transfers (default just resends as previous attempt.)')
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument(
             '--select',
