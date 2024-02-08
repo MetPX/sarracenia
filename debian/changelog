@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.51rc7) unstable; urgency=medium
+metpx-sr3 (3.00.51) unstable; urgency=medium
 
   * PR #910 detect v02 messages without content_type header.
   * PR #900 major revamp of AM protocol reception.
