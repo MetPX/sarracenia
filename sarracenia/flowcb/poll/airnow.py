@@ -5,12 +5,17 @@ Compatible with Python 3.5+.
 usage:
 	in an sr3 poll configuration file:
 
+    # OLD URL
 	pollUrl http://files.airnowtech.org/?prefix=airnow/today/
+    # NEW URL
+    https://s3-us-west-1.amazonaws.com//files.airnowtech.org/airnow/today
 
-	callback airnow
+	callback poll/airnow
 
 STATUS: unknown... need some authentication, or perhaps the method has changed.
         does not seem to work out of the box.
+
+        Update (2024/02/08) - Working, but poor error handling.
 """
 
 import datetime
@@ -31,34 +36,41 @@ class Airnow(FlowCB):
 
         gathered_messages = []
         for Hours in range(1, 3):
-            last_hour_date_time = datetime.datetime.now() - datetime.timedelta(
-                hours=Hours)
-            Filename = 'HourlyData_%s.dat' % last_hour_date_time.strftime(
-                '%Y%m%d%H')
-            logger.debug("poll_airnow_http Filename: %s" % Filename)
-            URL = self.o.pollUrl + '/' + Filename
-            logger.info('INFO %s ' % URL)
-            #resp = requests.get(self.o.pollUrl + '/' + Filename)
-            resp = requests.get(URL)
-            if resp.ok:
-                mtime = datetime.datetime.strptime(resp.headers['last-modified'],\
-                     '%a, %d %b %Y %H:%M:%S %Z')
-                last_poll = datetime.datetime.utcnow() + datetime.timedelta(
-                    seconds=-sleep)
-                logger.info(mtime)
-                logger.info(last_poll)
+            try:
+                last_hour_date_time = datetime.datetime.now() - datetime.timedelta(
+                    hours=Hours)
+                Filename = 'HourlyData_%s.dat' % last_hour_date_time.strftime(
+                    '%Y%m%d%H')
+                logger.debug("poll_airnow_http Filename: %s" % Filename)
+                URL = self.o.pollUrl + '/' + Filename
+                logger.info('INFO %s ' % URL)
+                
+                #resp = requests.get(self.o.pollUrl + '/' + Filename)
+                resp = requests.get(URL)
 
-                fakeStat = paramiko.SFTPAttributes()
-                fakeStat.st_size = int(resp.headers['content-length'])
+                if resp.ok:
+                    mtime = datetime.datetime.strptime(resp.headers['last-modified'],\
+                         '%a, %d %b %Y %H:%M:%S %Z')
+                    last_poll = datetime.datetime.utcnow() + datetime.timedelta(
+                        seconds=-sleep)
+                    logger.info(mtime)
+                    logger.info(last_poll)
 
-                # convert datetime to numeric timestamp from beginning of POSIX epoch.
-                fakeStat.st_mtime = mtime.timestamp()
-                fakeStat.st_atime = mtime.timestamp()
-                fakeStat.st_mode = 0o644
+                    fakeStat = paramiko.SFTPAttributes()
+                    fakeStat.st_size = int(resp.headers['content-length'])
 
-                m = sarracenia.Message.fromFileInfo(Filename, self.o, fakeStat)
-                gathered_messages.append(m)
+                    # convert datetime to numeric timestamp from beginning of POSIX epoch.
+                    fakeStat.st_mtime = mtime.timestamp()
+                    fakeStat.st_atime = mtime.timestamp()
+                    fakeStat.st_mode = 0o644
 
-                logger.info('mtime: %s  last_pollL %s' % (mtime, last_poll))
+                    m = sarracenia.Message.fromFileInfo(Filename, self.o, fakeStat)
+                    gathered_messages.append(m)
+
+                    logger.info('mtime: %s  last_pollL %s' % (mtime, last_poll))
+            
+            except requests.exceptions as e:
+                logger.error(f"Could not fetch airnow data from {URL}. Exception: {e}")
+                
 
         return gathered_messages
