@@ -301,15 +301,6 @@ class sr_GlobalState:
 
         self.default_cfg = sarracenia.config.default_config()
 
-        #self.default_cfg = sarracenia.config.Config()
-        #if os.path.exists( "default.conf" ):
-        #    self.default_cfg.parse_file("default.conf")
-        #if os.path.exists( "admin.conf" ):
-        #    self.default_cfg.parse_file("admin.conf")
-
-        #self.admin_cfg = copy.deepcopy( self.default_cfg )
-        #if os.path.exists( "admin.conf" ):
-        #    self.admin_cfg.parse_file("admin.conf")
         os.chdir(self.user_config_dir)
 
         for c in self.components:
@@ -1361,6 +1352,20 @@ class sr_GlobalState:
                                     self.default_cfg.declared_users[u_url.username],
                                     u_url.username, u_url.password, self.options.dry_run )
 
+        # declare admin exchanges.
+        if hasattr(self,'default_cfg'):
+            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            if hasattr(self.default_cfg, 'declared_exchanges'):
+                xdc = sarracenia.moth.Moth.pubFactory(
+                    {
+                        'broker': self.default_cfg.admin,
+                        'dry_run': self.options.dry_run,
+                        'exchange': self.default_cfg.declared_exchanges,
+                        'message_strategy': { 'stubborn':True }
+                    })
+                xdc.putSetup()
+                xdc.close()
+               
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -1426,7 +1431,6 @@ class sr_GlobalState:
                 flow.runCallbacksTime('on_declare')
                 del flow
                 flow=None
-        
 
     def disable(self):
         if len(self.filtered_configurations) == 0:
