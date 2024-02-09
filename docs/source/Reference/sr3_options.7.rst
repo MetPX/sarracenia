@@ -1180,6 +1180,12 @@ In a Poll:
   * default is 7 hours. should be less than nodupe_ttl to prevent re-ingest of duplicate data.
     (full discussion here: https://github.com/MetPX/sarracenia/issues/904 )
 
+fileAgeMin
+----------
+
+If files are newer than this setting (default: 0), then ignore them, they are too
+new to post. 0 deactivates the setting.
+
 nodupe_ttl <off|on|999[smhdw]> 
 ------------------------------
 

@@ -1157,6 +1157,12 @@ Dans un Poll :
  * La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.
  (discussion complète ici (en anglais): https://github.com/MetPX/sarracenia/issues/904)
 
+fileAgeMin
+----------
+
+Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
+neufs pour qu'ils puissent être postés.
+
 nodupe_ttl <off|on|999[smhdw]>
 ------------------------------
 
