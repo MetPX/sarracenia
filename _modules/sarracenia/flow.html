@@ -1167,9 +1167,10 @@
             <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="p">)))</span>
 
     <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">so_far</span><span class="o">=</span><span class="mi">0</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s2">&quot;gather&quot;</span><span class="p">]:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">new_incoming</span> <span class="o">=</span> <span class="n">p</span><span class="p">()</span>
+                <span class="n">new_incoming</span> <span class="o">=</span> <span class="n">p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="o">-</span><span class="n">so_far</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;flowCallback plugin </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s1"> crashed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
@@ -1177,6 +1178,12 @@
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span>
+                <span class="n">so_far</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_incoming</span><span class="p">)</span> 
+
+            <span class="c1"># if we gathered enough with a subset of plugins then return.</span>
+            <span class="k">if</span> <span class="n">so_far</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">:</span>
+                <span class="k">return</span>
+
 
     <span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 

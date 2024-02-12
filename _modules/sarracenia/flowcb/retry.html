@@ -133,6 +133,11 @@
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_driver&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;disk&#39;</span><span class="p">)</span>
+
+        <span class="c1"># retry_refilter False -- rety to send with existing processing.</span>
+        <span class="c1"># retry_refilter True -- re-ingest and re-apply processing (if it has changed.)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_refilter&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
         <span class="c1">#queuedriver = os.getenv(&#39;SR3_QUEUEDRIVER&#39;, &#39;disk&#39;)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_driver</span> <span class="o">==</span> <span class="s1">&#39;redis&#39;</span><span class="p">:</span>
@@ -149,14 +154,46 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;logLevel=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="Retry.gather">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.gather">[docs]</a>
+    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there are only a few new messages, get some from the download retry queue and put them into</span>
+<span class="sd">        `worklist.incoming`.</span>
+
+<span class="sd">        Do this in the gather() entry point if retry_refilter is True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">message_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qty</span><span class="p">)</span>
+
+        <span class="c1"># eliminate calculated values so it is refiltered from scratch.</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">:</span>
+             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                 <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;new_&#39;</span><span class="p">):</span>
+                     <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+             <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">message_list</span></div>
+
+
+
 <div class="viewcode-block" id="Retry.after_accept">
 <a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.after_accept">[docs]</a>
     <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If there are only a few new messages, get some from the download retry queue and put them into</span>
 <span class="sd">        `worklist.incoming`.</span>
+
+<span class="sd">        Do this in the after_accept() entry point if retry_refilter is False.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">:</span>
             <span class="k">return</span>
 
         <span class="n">qty</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>

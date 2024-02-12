@@ -1524,6 +1524,21 @@ publiés avec succès, ils seront enregistrés sur le disque pour réessayer ult
 exécutée qu’une seule fois, comme dans les tests de flux, ces messages d'annonce ne seront jamais réessayés, sauf si
 retryEmptyBeforeExit est défini à True.
 
+retry_refilter <boolean> (par défaut : False)
+---------------------------------------------
+
+L'option **retry_refilter** modifie la façon dont les messages sont rechargés lorsqu'ils sont récupérés à partir 
+d'une file d'attente pour une nouvelle tentive de transfer (retry). La méthode par défaut (valeur : False) 
+consiste à répéter le transfert en utilisant exactement le même message que précédemment. Si **retry_refilter** 
+est défini (valeur : True), alors tous les Les champs calculés du message + seront supprimés et le 
+traitement redémarrera à partir de la phase *gather*  (le traitement d'acceptation/rejet sera 
+répété, les destinations recalculées.)
+
+Le comportement normal de nouvelle tentative (retry) est utilisé lorsque la destination a subit une 
+panne et doit renvoyer plus tard, tandis que l'option **retry_refilter** est utilisée lors de la récupération 
+de la configuration
+
+
 retry_ttl <duration> (défaut: identique à expire)
 -------------------------------------------------
 

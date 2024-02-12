@@ -199,6 +199,7 @@
     <span class="s1">&#39;recursive&#39;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
     <span class="s1">&#39;report&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;retryEmptyBeforeExit&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;retry_refilter&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">:</span> <span class="mi">9999</span><span class="p">,</span>
     <span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;sundew_compat_regex_first_match_is_zero&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
@@ -220,7 +221,7 @@
     <span class="s1">&#39;follow_symlinks&#39;</span><span class="p">,</span> <span class="s1">&#39;force_polling&#39;</span><span class="p">,</span> <span class="s1">&#39;inline&#39;</span><span class="p">,</span> <span class="s1">&#39;inlineOnly&#39;</span><span class="p">,</span> <span class="s1">&#39;inplace&#39;</span><span class="p">,</span> <span class="s1">&#39;logMetrics&#39;</span><span class="p">,</span> <span class="s1">&#39;logStdout&#39;</span><span class="p">,</span> <span class="s1">&#39;logReject&#39;</span><span class="p">,</span> <span class="s1">&#39;restore&#39;</span><span class="p">,</span> \
     <span class="s1">&#39;messageDebugDump&#39;</span><span class="p">,</span> <span class="s1">&#39;mirror&#39;</span><span class="p">,</span> <span class="s1">&#39;timeCopy&#39;</span><span class="p">,</span> <span class="s1">&#39;notify_only&#39;</span><span class="p">,</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">,</span> <span class="s1">&#39;post_on_start&#39;</span><span class="p">,</span> \
     <span class="s1">&#39;permCopy&#39;</span><span class="p">,</span> <span class="s1">&#39;queueBind&#39;</span><span class="p">,</span> <span class="s1">&#39;queueDeclare&#39;</span><span class="p">,</span> <span class="s1">&#39;randomize&#39;</span><span class="p">,</span> <span class="s1">&#39;recursive&#39;</span><span class="p">,</span> <span class="s1">&#39;realpathPost&#39;</span><span class="p">,</span> \
-    <span class="s1">&#39;reconnect&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="s1">&#39;reset&#39;</span><span class="p">,</span> <span class="s1">&#39;retryEmptyBeforeExit&#39;</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">,</span> <span class="s1">&#39;sundew_compat_regex_first_match_is_zero&#39;</span><span class="p">,</span> \
+    <span class="s1">&#39;reconnect&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="s1">&#39;reset&#39;</span><span class="p">,</span> <span class="s1">&#39;retry_refilter&#39;</span><span class="p">,</span> <span class="s1">&#39;retryEmptyBeforeExit&#39;</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">,</span> <span class="s1">&#39;sundew_compat_regex_first_match_is_zero&#39;</span><span class="p">,</span> \
     <span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">,</span> <span class="s1">&#39;statehost&#39;</span><span class="p">,</span> <span class="s1">&#39;users&#39;</span><span class="p">,</span> <span class="s1">&#39;v2compatRenameDoublePost&#39;</span>
                 <span class="p">]</span>
 
@@ -2695,6 +2696,10 @@
             <span class="n">help</span><span class="o">=</span>
             <span class="s1">&#39;allows simultaneous use of multiple versions and types of messages&#39;</span>
         <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--retry_refilter&#39;</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;repeat message processing when retrying transfers (default just resends as previous attempt.)&#39;</span><span class="p">)</span>
         <span class="c1">#FIXME: select/accept/reject in parser not implemented.</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
             <span class="s1">&#39;--select&#39;</span><span class="p">,</span>

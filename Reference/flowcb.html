@@ -464,8 +464,8 @@ so they can be acknowledged as received. Messages can only removed after ack.</p
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Task</span><span class="p">:</span> <span class="n">acknowledge</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">gather</span> <span class="n">source</span><span class="o">.</span>
 </pre></div>
 </div>
-<p>def gather(self) -&gt; list:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Task</span><span class="p">:</span> <span class="n">gather</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">source</span><span class="o">...</span> <span class="k">return</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">messages</span><span class="o">.</span>
+<p>def gather(self, messageCountMax) -&gt; list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Task</span><span class="p">:</span> <span class="n">gather</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">source</span><span class="o">...</span> <span class="k">return</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">messages</span>
 
       <span class="ow">in</span> <span class="n">a</span> <span class="n">poll</span><span class="p">,</span> <span class="n">gather</span> <span class="ow">is</span> <span class="n">always</span> <span class="n">called</span><span class="p">,</span> <span class="n">regardless</span> <span class="n">of</span> <span class="n">vip</span> <span class="n">posession</span><span class="o">.</span>
       <span class="ow">in</span> <span class="nb">all</span> <span class="n">other</span> <span class="n">components</span><span class="p">,</span> <span class="n">gather</span> <span class="ow">is</span> <span class="n">only</span> <span class="n">called</span> <span class="n">when</span> <span class="ow">in</span> <span class="n">posession</span>
@@ -1537,7 +1537,7 @@ perhaps a good time to use python iterators.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flowcb.gather.file.File.gather">
-<span class="sig-name descname"><span class="pre">gather</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/file.html#File.gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.file.File.gather" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messageCountMax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/file.html#File.gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.file.File.gather" title="Link to this definition"></a></dt>
 <dd><p>from sr_post.py/run</p>
 <p>FIXME: really bad performance with large trees: It scans an entire tree
 before emitting any messages. Need to re-factor with iterator style so produce
@@ -1606,7 +1606,7 @@ deal with symbolically linked directories correctly</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flowcb.gather.message.Message.gather">
-<span class="sig-name descname"><span class="pre">gather</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/message.html#Message.gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.message.Message.gather" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messageCountMax</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/message.html#Message.gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.message.Message.gather" title="Link to this definition"></a></dt>
 <dd><p>return a current list of messages.</p>
 </dd></dl>
 
@@ -1793,6 +1793,7 @@ expiry on each housekeeping event.</p></li>
 <span class="sig-name descname"><span class="pre">after_accept</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worklist</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flowcb/retry.html#Retry.after_accept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.retry.Retry.after_accept" title="Link to this definition"></a></dt>
 <dd><p>If there are only a few new messages, get some from the download retry queue and put them into
 <cite>worklist.incoming</cite>.</p>
+<p>Do this in the after_accept() entry point if retry_refilter is False.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1806,6 +1807,14 @@ expiry on each housekeeping event.</p></li>
 <span class="sig-name descname"><span class="pre">after_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worklist</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flowcb/retry.html#Retry.after_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.retry.Retry.after_work" title="Link to this definition"></a></dt>
 <dd><p>Messages in <cite>worklist.failed</cite> should be put in the download retry queue. If there are only a few new
 messages, get some from the post retry queue and put them into <cite>worklist.ok</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flowcb.retry.Retry.gather">
+<span class="sig-name descname"><span class="pre">gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qty</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flowcb/retry.html#Retry.gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.retry.Retry.gather" title="Link to this definition"></a></dt>
+<dd><p>If there are only a few new messages, get some from the download retry queue and put them into
+<cite>worklist.incoming</cite>.</p>
+<p>Do this in the gather() entry point if retry_refilter is True.</p>
 </dd></dl>
 
 <dl class="py method">

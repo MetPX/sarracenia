@@ -140,9 +140,9 @@
     <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span> <span class="s1">&#39;lagMax&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lagMax</span><span class="p">,</span> <span class="s1">&#39;lagTotal&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">lagTotal</span><span class="p">,</span> <span class="s1">&#39;lagMessageCount&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span><span class="p">,</span> <span class="s1">&#39;rejectCount&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">rejectCount</span> <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messageCountMax</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;gather&#39;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logEvents</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39; messageCountMax: </span><span class="si">{</span><span class="n">messageCountMax</span><span class="si">}</span><span class="s1"> &#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">[]</span>
 
