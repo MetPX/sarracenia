@@ -916,7 +916,8 @@ terminé, le fichier est renommé à son nom permanent pour permettre un traitem
 peut également être spécifié comme une intervalle de temps, par exemple, 10 pour 10 secondes.
 Lorsque l’option est défini sur une intervalle de temps, le processus de publication de fichiers attends
 jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
-ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.</p>
+ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
+C’est un effet pareil à un choix de valeur pou <em>fileAgeMin</em>.</p>
 <p>Enfin, <strong>inflight</strong> peut être réglé a <em>NONE</em>. Dans ce cas, le fichier est écrit directement
 avec le nom final, où le destinataire attendra de recevoir un poste pour notifier l’arrivée du fichier.
 Il s’agit de l’option la plus rapide et la moins coûteuse lorsqu’elle est disponible.
@@ -1142,8 +1143,8 @@ quel que soit le nom, pour qu’il puisse être considéré comme un doublon si 
 </div></blockquote>
 <p>Pour plus d´information: <a class="reference external" href="../Explication/SupprimerLesDoublons.html">Supprimer les doublons</a></p>
 </section>
-<section id="nodupe-fileagemax">
-<h4>nodupe_fileAgeMax<a class="headerlink" href="#nodupe-fileagemax" title="Link to this heading"></a></h4>
+<section id="fileagemax">
+<h4>fileAgeMax<a class="headerlink" href="#fileagemax" title="Link to this heading"></a></h4>
 <p>Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu’il puisse être posté.</p>
 <dl>
@@ -1154,8 +1155,8 @@ ancien pour qu’il puisse être posté.</p>
 </dd>
 </dl>
 </section>
-<section id="nodupe-fileagemin">
-<h4>nodupe_fileAgeMin<a class="headerlink" href="#nodupe-fileagemin" title="Link to this heading"></a></h4>
+<section id="fileagemin">
+<h4>fileAgeMin<a class="headerlink" href="#fileagemin" title="Link to this heading"></a></h4>
 <p>Si les fichiers sont plus neuf que ce paramètre (défaut: 0 … désactivé), ignorez-les, ils sont trop
 neufs pour qu’ils puissent être postés.</p>
 </section>

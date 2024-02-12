@@ -227,8 +227,8 @@
 <span class="n">float_options</span> <span class="o">=</span> <span class="p">[</span> <span class="p">]</span>
 
 <span class="n">duration_options</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;message_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
+    <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;message_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">,</span> \
+    <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
 <span class="p">]</span>
 
 <span class="n">list_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;vip&#39;</span> <span class="p">]</span>
@@ -769,7 +769,9 @@
         <span class="s1">&#39;exchange_split&#39;</span><span class="p">:</span> <span class="s1">&#39;exchangeSplit&#39;</span><span class="p">,</span>
         <span class="s1">&#39;exchange_suffix&#39;</span><span class="p">:</span> <span class="s1">&#39;exchangeSuffix&#39;</span><span class="p">,</span>
         <span class="s1">&#39;expiry&#39;</span><span class="p">:</span> <span class="s1">&#39;expire&#39;</span><span class="p">,</span> 
-        <span class="s1">&#39;file_time_limit&#39;</span> <span class="p">:</span> <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;file_time_limit&#39;</span> <span class="p">:</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;nodupe_fileAgeMax&#39;</span> <span class="p">:</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;nodupe_fileAgeMin&#39;</span> <span class="p">:</span> <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">,</span> 
         <span class="s1">&#39;fp&#39;</span> <span class="p">:</span> <span class="s1">&#39;force_polling&#39;</span><span class="p">,</span>
         <span class="s1">&#39;fs&#39;</span> <span class="p">:</span> <span class="s1">&#39;follow_symlinks&#39;</span><span class="p">,</span>
         <span class="s1">&#39;h&#39;</span> <span class="p">:</span> <span class="s1">&#39;help&#39;</span><span class="p">,</span>
@@ -873,7 +875,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bufsize</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">byteRateMax</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">nodupe_fileAgeMax</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># disabled.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileAgeMax</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># disabled.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileAgeMin</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># disabled.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span> <span class="o">=</span> <span class="s1">&#39;UTC&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">declared_exchanges</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1706,7 +1709,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_parse_v3unplugin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;inflight&#39;</span><span class="p">,</span> <span class="s1">&#39;lock&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">v</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
-                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">durationToSeconds</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                    <span class="n">vv</span> <span class="o">=</span> <span class="n">durationToSeconds</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fileAgeMin</span> <span class="o">=</span> <span class="n">vv</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">]:</span>
                         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>

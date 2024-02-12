@@ -443,7 +443,7 @@ les actions <strong>start</strong>, <strong>foreground</strong> ou <strong>resta
  <span class="s1">&#39;message_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;mirror&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;msg_total_interval&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
- <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;permCopy&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -1062,9 +1062,9 @@ Référez <a class="reference external" href="../Reference/sr3_post.7.html">sr3_
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (doit être défini)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (facultatif)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (par défaut: 0o400)</strong></p></li>
-<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (par défaut 7h)</strong></p></li>
+<li><p><strong>fileAgeMax &lt;duration&gt;   (par défaut 30d)</strong></p></li>
 </ul>
-<p>Nodupe_fileAgeMax doit être inférieur à nodupe_ttl lors de l’utilisation de la suppression des doublons,
+<p>fileAgeMax doit être inférieur à nodupe_ttl lors de l’utilisation de la suppression des doublons,
 pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.</p>
 <p>L’option <em>filename</em> peut être utilisée pour définir un changement de nom global pour les produits.
 Ex.:</p>
@@ -1116,12 +1116,12 @@ au moins ce qui est spécifié.</p>
 <p>Comme pour tous les autres composants, l’option <strong>vip</strong> peut être utilisée pour indiquer
 qu’un poll doit être actif sur seulement un seul nœud d’un cluster. Notez que quand
 d’autres nœuds participant au poll et wu’ils n’ont pas le vip, ils</p>
-<p>les fichiers qui sont plus vieux que nodupe_fileAgeMax sont ignorés. Cela
+<p>les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
 peut être modifié à n’importe quelle limite de temps spécifiée dans les configurations en utilisant
-l’option <em>nodupe_fileAgeMax &lt;duration&gt;</em>. Par défaut, dans les composants
+l’option <em>fileAgeMax &lt;duration&gt;</em>. Par défaut, dans les composants
 autre que poll, cette option est désactivé en étant défini à zéro (0). Comme il s’agit d’une
 option de durée, les unités sont en secondes par défaut, mais il est possible de definir l’option
-en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, nodupe_fileAgeMax
+en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, fileAgeMax
 est défini à 30 jours par défaut.</p>
 <section id="sondage-avance-advanced-polling">
 <h3>Sondage avancé (Advanced Polling)<a class="headerlink" href="#sondage-avance-advanced-polling" title="Link to this heading"></a></h3>
@@ -1198,7 +1198,7 @@ informe qu’il y a nouveau produit.</p>
 <p><strong>poll</strong> se connecte à un <em>broker</em>.  À toutes les secondes de <em>sleep</em>, il se connecte à
 une <em>pollUrl</em> (sftp, ftp, ftps). Pour chacun des <em>directory</em> définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
-L’option <em>nodupe_fileAgeMax</em> élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
+L’option <em>fileAgeMax</em> élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by <em>accept</em>, <strong>poll</strong> crée un message de notification pour ce produit.</p>
 <p>Le message est ensuite verifié dans la cache dupliqué (limité en temps par l’option
 nodupe_ttl) pour empêcher la publication de fichiers qui ont déjà été vus.</p>

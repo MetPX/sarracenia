@@ -487,7 +487,7 @@ the <strong>start</strong>, <strong>foreground</strong>, or <strong>restart</str
  <span class="s1">&#39;message_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;mirror&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;msg_total_interval&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
- <span class="s1">&#39;nodupe_fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
  <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
  <span class="s1">&#39;permCopy&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -1106,7 +1106,7 @@ Refer to <a class="reference external" href="../Reference/sr_post.7.html">sr_pos
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (must be set)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (optional)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (default: 0o400)</strong></p></li>
-<li><p><strong>nodupe_fileAgeMax &lt;duration&gt;   (default: 7h)</strong></p></li>
+<li><p><strong>fileAgeMax &lt;duration&gt;   (default 30d)</strong></p></li>
 </ul>
 <p>nodupe_fileAgeMax should be less than nodupe_ttl when using duplicate suppression,
 to avoid re-ingesting of files that have aged out of the nodupe cache.</p>
@@ -1161,12 +1161,12 @@ that a poll should be active on only a single node in a cluster. Note that
 other nodes participating in the poll, when they don’t have the vip,
 will subscribe to the output of the poll to keep their duplicate suppression
 caches current.</p>
-<p>files that are more than nodupe_fileAgeMax are ignored. However, this
+<p>files that are more than fileAgeMax are ignored. However, this
 can be modified to any specified time limit in the configurations by using
-the option <em>nodupe_fileAgeMax &lt;duration&gt;</em>. By default in components
+the option <em>fileAgeMax &lt;duration&gt;</em>. By default in components
 other than poll, it is disabled by being set to zero (0). As it is a
 duration option, units are in seconds by default, but minutes, hours,
-days, and weeks, are available. In the poll component, nodupe_fileAgeMax
+days, and weeks, are available. In the poll component, fileAgeMax
 defaults to 30 days.</p>
 <section id="advanced-polling">
 <h3>Advanced Polling<a class="headerlink" href="#advanced-polling" title="Link to this heading"></a></h3>
@@ -1245,7 +1245,7 @@ notify about the new product.</p>
 <p><strong>poll</strong> connects to a <em>broker</em>.  Every <em>sleep</em> seconds, it connects to
 a <em>pollUrl</em> (sftp, ftp, ftps). For each of the <em>directory</em> defined, it lists
 the contents.  Polling is only intended to be used for recently modified
-files. The <em>nodupe_fileAgeMax</em> option eliminates files that are too old
+files. The <em>fileAgeMax</em> option eliminates files that are too old
 from consideration. When a file is found that matches a pattern given
 by <em>accept</em>, <strong>poll</strong> builds a notification message for that product.</p>
 <p>The notification message is then checked in the duplicate cache (time limited by

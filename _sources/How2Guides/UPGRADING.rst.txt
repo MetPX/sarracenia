@@ -309,7 +309,7 @@ V2 to Sr3
           all participants in a vip update ls_files      nodes subscribe to the output exchange          
           poll builds strings to describe files          poll builds stat(2) like paramiko.SftpAttributes() 
           participants rely on their ls_files for state  poll uses flowcb.nodupe module like rest of sr3
-          file_time_limit to ignore older files          nodupe_fileAgeMax 
+          file_time_limit to ignore older files          fileAgeMax 
           *destination* gives where to poll              *pollUrl*
           *directory* gives remote directory to list     *path* used like in *post* and *watch*
           need *accept* per *directory*                  need only one *accept*
@@ -367,7 +367,7 @@ V2 to Sr3
           e                         fileEvents
           events                    fileEvents
           exchange_split            exchangeSplit
-          file_time_limit           nodupe_fileAgeMax
+          file_time_limit           fileAgeMax
           hb_memory_baseline_file   MemoryBaseLineFile
           hb_memory_max             MemoryMax
           hb_memory_multiplier      MemoryMultiplier

@@ -174,7 +174,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.gather.file">sarracenia.flowcb.gather.file</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.gather.file.File"><code class="docutils literal notranslate"><span class="pre">File</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.gather.file.SimpleEventHandler"><code class="docutils literal notranslate"><span class="pre">SimpleEventHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.gather.file.path_inflight_tooNew"><code class="docutils literal notranslate"><span class="pre">path_inflight_tooNew()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.gather.message">sarracenia.flowcb.gather.message</a><ul>
@@ -1563,7 +1562,7 @@ involve multiple messages for a single file. Similarly in the multi-block transf
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flowcb.gather.file.File.process_event">
 <span class="sig-name descname"><span class="pre">process_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/file.html#File.process_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.file.File.process_event" title="Link to this definition"></a></dt>
-<dd><p>return a list of messages.</p>
+<dd><p>return a tuple: pop? + list of messages.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1590,13 +1589,6 @@ deal with symbolically linked directories correctly</p>
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/file.html#SimpleEventHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.file.SimpleEventHandler.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="sarracenia.flowcb.gather.file.path_inflight_tooNew">
-<span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.gather.file.</span></span><span class="sig-name descname"><span class="pre">path_inflight_tooNew</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inflight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lstat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/gather/file.html#path_inflight_tooNew"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.gather.file.path_inflight_tooNew" title="Link to this definition"></a></dt>
-<dd><p>check the inflight, compare fail age against it.
-return True if the file is too new to be posted.</p>
 </dd></dl>
 
 </section>

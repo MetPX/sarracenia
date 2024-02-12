@@ -132,33 +132,6 @@
 </div>
 
 
-<div class="viewcode-block" id="path_inflight_tooNew">
-<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.path_inflight_tooNew">[docs]</a>
-<span class="k">def</span> <span class="nf">path_inflight_tooNew</span><span class="p">(</span><span class="n">inflight</span><span class="p">,</span> <span class="n">lstat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">      check the inflight, compare fail age against it.</span>
-<span class="sd">      return True if the file is too new to be posted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">inflight</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="p">:</span>
-        <span class="c1">#logger.debug(&quot;ok inflight unused&quot;)</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
-    <span class="k">if</span> <span class="n">lstat</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">lstat</span><span class="p">,</span><span class="s1">&#39;st_mtime&#39;</span><span class="p">):</span>
-        <span class="c1">#logger.debug(&quot;ok lstat None&quot;)</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
-    <span class="n">age</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
-    <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="n">inflight</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> vs (inflight setting) </span><span class="si">%d</span><span class="s2"> seconds. Too New!&quot;</span> <span class="o">%</span> \
-            <span class="p">(</span><span class="n">age</span><span class="p">,</span><span class="n">inflight</span><span class="p">)</span> <span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="k">return</span> <span class="kc">False</span></div>
-
-
-
-
 
 <div class="viewcode-block" id="File">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File">[docs]</a>
@@ -229,7 +202,6 @@
         <span class="c1">#self.o.blocksize = 200 * 1024 * 1024</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;create&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
             <span class="s1">&#39;modify&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span></div>
-
 
 
     <span class="k">def</span> <span class="nf">post_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">is_directory</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -533,7 +505,9 @@
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.process_event">[docs]</a>
     <span class="k">def</span> <span class="nf">process_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">          return a list of messages.</span>
+<span class="sd">          return a tuple: pop? + list of messages.</span>
+<span class="sd">          </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1">#logger.debug(&quot;process_event %s %s %s &quot; % (event,src,dst) )</span>
 
@@ -541,19 +515,19 @@
 
         <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;delete&#39;</span> <span class="p">:</span>
             <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;rmdir&#39;</span> <span class="p">:</span>
             <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="c1"># move</span>
 
         <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;move&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1move</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1move</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
 
         <span class="c1"># create or modify</span>
 
@@ -566,27 +540,36 @@
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
             <span class="k">if</span> <span class="s1">&#39;link&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[]</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="c1"># file : must exists</span>
         <span class="c1">#       (may have been deleted since event caught)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src</span><span class="p">):</span> <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src</span><span class="p">):</span> <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="c1"># file : must be old enough</span>
 
         <span class="n">lstat</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">path_inflight_tooNew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inflight</span><span class="p">,</span> <span class="n">lstat</span><span class="p">):</span> <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">lstat</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">lstat</span><span class="p">,</span><span class="s1">&#39;st_mtime&#39;</span><span class="p">):</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
+
+            <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMin</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> vs (inflight setting) </span><span class="si">%d</span><span class="s2"> seconds. Too New!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">age</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMin</span><span class="p">)</span> <span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> vs (fileAgeMax setting) </span><span class="si">%d</span><span class="s2"> seconds. Too Old!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">age</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span><span class="p">)</span> <span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="c1"># post it</span>
 
         <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span><span class="p">:</span> 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[]</span></div>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span></div>
 
 
     <span class="k">def</span> <span class="nf">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bssetting</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">):</span>
@@ -624,9 +607,11 @@
 
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span><span class="p">:</span>
+            <span class="n">event_done</span><span class="o">=</span><span class="kc">False</span>
             <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+                <span class="p">(</span><span class="n">event_done</span><span class="p">,</span> <span class="n">new_messages</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_messages</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                  This message is reduced to debug priority because it often happens when files</span>
@@ -637,7 +622,9 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;skipping event that could not be processed: (</span><span class="si">{}</span><span class="s2">): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">event</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">event_done</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">if</span> <span class="n">event_done</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">messages</span>
 
 <div class="viewcode-block" id="File.walk">

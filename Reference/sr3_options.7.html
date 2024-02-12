@@ -916,7 +916,8 @@ complete, the file is renamed to its permanent name to allow further processing.
 can also be specified as a time interval, for example, 10 for 10 seconds.
 When set to a time interval, file posting process ensures that it waits until
 the file has not been modified in that interval. So a file will
-not be processed until it has stayed the same for at least 10 seconds.</p>
+not be processed until it has stayed the same for at least 10 seconds.
+This is the same as setting the <strong>fileAgeMin</strong> setting.</p>
 <p>Lastly, <strong>inflight</strong> can be set to <em>NONE</em>, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
 of the file’s arrival.  This is the fastest, lowest overhead option when it is available.
@@ -1139,8 +1140,8 @@ regardless of name, to be considered a duplicate if the checksum matches.</p>
 </div></blockquote>
 <p>More information: <a class="reference external" href="../Explanation/DuplicateSuppression.html">Duplicate Suppresion</a></p>
 </section>
-<section id="nodupe-fileagemax">
-<h4>nodupe_fileAgeMax<a class="headerlink" href="#nodupe-fileagemax" title="Link to this heading"></a></h4>
+<section id="fileagemax">
+<h4>fileAgeMax<a class="headerlink" href="#fileagemax" title="Link to this heading"></a></h4>
 <p>If files are older than this setting (default: 7h in poll, 0 in other components),
 then ignore them, they are too old to post. 0 deactivates the setting.</p>
 <dl class="simple">
@@ -1151,8 +1152,8 @@ then ignore them, they are too old to post. 0 deactivates the setting.</p>
 </dd>
 </dl>
 </section>
-<section id="nodupe-fileagemin">
-<h4>nodupe_fileAgeMin<a class="headerlink" href="#nodupe-fileagemin" title="Link to this heading"></a></h4>
+<section id="fileagemin">
+<h4>fileAgeMin<a class="headerlink" href="#fileagemin" title="Link to this heading"></a></h4>
 <p>If files are newer than this setting (default: 0), then ignore them, they are too
 new to post. 0 deactivates the setting.</p>
 </section>

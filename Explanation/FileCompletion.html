@@ -201,7 +201,9 @@ same performance as Suffix method.</p></td>
 do not support suffix.</p></td>
 </tr>
 <tr class="row-odd"><td><p>number
-(mtime)</p></td>
+(mtime)</p>
+<p>fileAgeMin</p>
+</td>
 <td><p>Minimum age (modification time)
 of the file before it is considered
 complete.</p>
@@ -225,7 +227,7 @@ is set, the value of ‘.tmp’ is assumed as the best option.</p>
 <blockquote>
 <div><p>On versions of sr_sender prior to 2.18, the default was NONE, but was documented as ‘.tmp’
 To ensure compatibility with later versions, it is likely better to explicitly write
-the <em>inflight</em> setting.</p>
+the <em>inflight</em> setting.  The numeric variant is the same as setting <em>fileAgeMin</em></p>
 <p><em>inflight</em> was renamed from the old <em>lock</em> option in January 2017. For compatibility with
 older versions, can use <em>lock</em>, but name is deprecated.</p>
 <p>The old <em>PDS</em> software (which predates MetPX Sundew) only supports FTP. The completion protocol

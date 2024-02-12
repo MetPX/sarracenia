@@ -49,7 +49,7 @@ Inflight Table
 |  number     |of the file before it is considered    |guaranteed delay added                |
 |  (mtime)    |complete.                              |                                      |
 |             |                                       |Receiving from uncooperative          |
-|             |Adds delay in every transfer.          |sources.                              |
+|  fileAgeMin |Adds delay in every transfer.          |sources.                              |
 |             |Vulnerable to network failures.        |                                      |
 |             |Vulnerable to clock skew.              |(ok choice with PDS)                  |
 +-------------+---------------------------------------+--------------------------------------+
@@ -62,7 +62,7 @@ NOTES:
  
   On versions of sr_sender prior to 2.18, the default was NONE, but was documented as '.tmp'
   To ensure compatibility with later versions, it is likely better to explicitly write
-  the *inflight* setting.
+  the *inflight* setting.  The numeric variant is the same as setting *fileAgeMin*
  
   *inflight* was renamed from the old *lock* option in January 2017. For compatibility with
   older versions, can use *lock*, but name is deprecated.
