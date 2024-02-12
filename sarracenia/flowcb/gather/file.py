@@ -670,7 +670,7 @@ class File(FlowCB):
         self.queued_messages = []
         self.primed = False
 
-    def gather(self):
+    def gather(self, messageCountMax):
         """
            from sr_post.py/run 
 

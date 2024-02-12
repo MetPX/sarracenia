@@ -131,7 +131,7 @@ class Wiski(Scheduled):
         
         return submit_tokenization_request
 
-    def gather(self): # placeholder
+    def gather(self,messageCountMax): # placeholder
         
         messages=[]
 
@@ -216,5 +216,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     me = Wiski(flow.o)
-    me.gather()
+    me.gather(flow.o.batch)
 

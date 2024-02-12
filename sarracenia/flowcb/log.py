@@ -60,9 +60,9 @@ class Log(FlowCB):
     def metricsReport(self):
         return { 'lagMax': self.lagMax, 'lagTotal':self.lagTotal, 'lagMessageCount':self.msgCount, 'rejectCount':self.rejectCount }
 
-    def gather(self):
+    def gather(self, messageCountMax):
         if set(['gather']) & self.o.logEvents:
-            logger.info('')
+            logger.info( f' messageCountMax: {messageCountMax} ')
 
         return []
 

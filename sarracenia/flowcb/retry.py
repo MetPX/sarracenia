@@ -54,6 +54,11 @@ class Retry(FlowCB):
             return
 
         self.o.add_option( 'retry_driver', 'str', 'disk')
+
+        # retry_refilter False -- rety to send with existing processing.
+        # retry_refilter True -- re-ingest and re-apply processing (if it has changed.)
+        self.o.add_option( 'retry_refilter', 'flag', False)
+
         #queuedriver = os.getenv('SR3_QUEUEDRIVER', 'disk')
 
         if self.o.retry_driver == 'redis':
@@ -69,12 +74,41 @@ class Retry(FlowCB):
 
         logger.debug('logLevel=%s' % self.o.logLevel)
 
+
+    def gather(self, qty) -> None:
+        """
+        If there are only a few new messages, get some from the download retry queue and put them into
+        `worklist.incoming`.
+
+        Do this in the gather() entry point if retry_refilter is True.
+
+        """
+        if not features['retry']['present'] or not self.o.retry_refilter:
+            return []
+
+        if qty <= 0: return []
+
+        message_list = self.download_retry.get(qty)
+
+        # eliminate calculated values so it is refiltered from scratch.
+        for m in message_list:
+             for k in m:
+                 if k in m['_deleteOnPost'] or k.startswith('new_'):
+                     del m[k]
+             del m['_deleteOnPost']
+
+        return message_list
+
+
     def after_accept(self, worklist) -> None:
         """
         If there are only a few new messages, get some from the download retry queue and put them into
         `worklist.incoming`.
+
+        Do this in the after_accept() entry point if retry_refilter is False.
+
         """
-        if not features['retry']['present'] :
+        if not features['retry']['present'] or self.o.retry_refilter:
             return
 
         qty = (self.o.batch / 2) - len(worklist.incoming)
