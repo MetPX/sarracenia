@@ -32,8 +32,8 @@ default_options = {
     'randomize': False,
     'post_on_start': False,
     'sleep': -1,
-    'nodupe_ttl': 8 * 60 * 60,
-    'nodupe_fileAgeMax': 7 * 60 * 60,
+    'nodupe_ttl': 7 * 60 * 60,
+    'fileAgeMax': 30 * 24 * 60 * 60,
 }
 
 #  'sumflg': 'cod,md5',

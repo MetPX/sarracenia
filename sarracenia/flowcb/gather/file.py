@@ -51,30 +51,6 @@ if features['watch']['present']:
             self.on_moved = parent.on_moved
             super().__init__()
 
-def path_inflight_tooNew(inflight, lstat):
-    """
-      check the inflight, compare fail age against it.
-      return True if the file is too new to be posted.
-    """
-
-    if not type(inflight) in [float, int] :
-        #logger.debug("ok inflight unused")
-        return False
-
-    if lstat == None or not hasattr(lstat,'st_mtime'):
-        #logger.debug("ok lstat None")
-        return False
-
-    age = nowflt() - lstat.st_mtime
-    if age < inflight:
-        logger.debug("%d vs (inflight setting) %d seconds. Too New!" % \
-            (age,inflight) )
-        return True
-
-    return False
-
-
-
 
 class File(FlowCB):
     """
@@ -141,7 +117,6 @@ class File(FlowCB):
         #self.o.blocksize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
-
 
     def post_delete(self, path, key=None, value=None,is_directory=False):
         #logger.debug("post_delete %s (%s,%s)" % (path, key, value))
@@ -439,7 +414,9 @@ class File(FlowCB):
 
     def process_event(self, event, src, dst):
         """
-          return a list of messages.
+          return a tuple: pop? + list of messages.
+          
+
         """
         #logger.debug("process_event %s %s %s " % (event,src,dst) )
 
@@ -447,19 +424,19 @@ class File(FlowCB):
 
         if event == 'delete' :
             if event in self.o.fileEvents:
-                return self.post1file(src, None)
-            return []
+                return (True, self.post1file(src, None))
+            return (True, [])
 
         if event == 'rmdir' :
             if event in self.o.fileEvents:
-                return self.post1file(src, None, is_directory=True)
-            return []
+                return (True, self.post1file(src, None, is_directory=True))
+            return (True, [])
 
         # move
 
         if event == 'move':
             if self.o.create_modify:
-                return self.post1move(src, dst)
+                return (True, self.post1move(src, dst))
 
         # create or modify
 
@@ -472,27 +449,36 @@ class File(FlowCB):
 
         if os.path.islink(src):
             if 'link' in self.o.fileEvents:
-                return self.post1file(src, None)
-            return []
+                return (True, self.post1file(src, None))
+            return (True, [])
 
         # file : must exists
         #       (may have been deleted since event caught)
 
-        if not os.path.exists(src): return []
+        if not os.path.exists(src): return (True, [])
 
         # file : must be old enough
 
         lstat = sarracenia.stat(src)
 
-        if path_inflight_tooNew(self.o.inflight, lstat): return []
+        if lstat and hasattr(lstat,'st_mtime'):
+            age = time.time() - lstat.st_mtime
+
+            if age < self.o.fileAgeMin:
+                logger.debug( "%d vs (inflight setting) %d seconds. Too New!" % (age,self.o.fileAgeMin) )
+                return (False, [])
+
+            if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
+                logger.debug("%d vs (fileAgeMax setting) %d seconds. Too Old!" % (age,self.o.fileAgeMax) )
+                return (True, [])
 
         # post it
 
         if event == 'mkdir' and 'mkdir' in self.o.fileEvents:
-            return self.post1file(src, lstat, is_directory=True)
+            return (True, self.post1file(src, lstat, is_directory=True))
         elif self.o.create_modify: 
-            return self.post1file(src, lstat)
-        return []
+            return (True, self.post1file(src, lstat))
+        return (True, [])
 
     def set_blocksize(self, bssetting, fsiz):
 
@@ -529,9 +515,11 @@ class File(FlowCB):
 
         messages = []
         for key in self.cur_events:
+            event_done=False
             event, src, dst = self.cur_events[key]
             try:
-                messages.extend(self.process_event(event, src, dst))
+                (event_done, new_messages) = self.process_event(event, src, dst)
+                messages.extend(new_messages)
             except OSError as err:
                 """
                   This message is reduced to debug priority because it often happens when files
@@ -542,7 +530,9 @@ class File(FlowCB):
                 logger.debug("skipping event that could not be processed: ({}): {}".format(
                     event, err))
                 logger.debug("Exception details:", exc_info=True)
-            self.left_events.pop(key)
+                event_done=True
+            if event_done:
+                self.left_events.pop(key)
         return messages
 
     def walk(self, src):

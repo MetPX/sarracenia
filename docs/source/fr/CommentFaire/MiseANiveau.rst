@@ -295,7 +295,7 @@ V2 to Sr3
           e                         fileEvents
           events                    fileEvents
           exchange_split            exchangeSplit
-          file_time_limit           nodupe_fileAgeMax
+          file_time_limit           fileAgeMax
           hb_memory_baseline_file   MemoryBaseLineFile
           hb_memory_max             MemoryMax
           hb_memory_multiplier      MemoryMultiplier

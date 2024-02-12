@@ -141,8 +141,8 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
 float_options = [ ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
-    'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
+    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
@@ -666,7 +666,9 @@ class Config:
         'exchange_split': 'exchangeSplit',
         'exchange_suffix': 'exchangeSuffix',
         'expiry': 'expire', 
-        'file_time_limit' : 'nodupe_fileAgeMax', 
+        'file_time_limit' : 'fileAgeMax', 
+        'nodupe_fileAgeMax' : 'fileAgeMax', 
+        'nodupe_fileAgeMin' : 'fileAgeMin', 
         'fp' : 'force_polling',
         'fs' : 'follow_symlinks',
         'h' : 'help',
@@ -768,7 +770,8 @@ class Config:
         self.bufsize = 1024 * 1024
         self.byteRateMax = 0
 
-        self.nodupe_fileAgeMax = 0 # disabled.
+        self.fileAgeMax = 0 # disabled.
+        self.fileAgeMin = 0 # disabled.
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
@@ -1553,7 +1556,9 @@ class Config:
                 self._parse_v3unplugin(v)
             elif k in ['inflight', 'lock']:
                 if v[:-1].isnumeric():
-                    setattr(self, k, durationToSeconds(v))
+                    vv = durationToSeconds(v)
+                    setattr(self, k, vv)
+                    self.fileAgeMin = vv
                 else:
                     if line[1].lower() in ['none', 'off', 'false']:
                         setattr(self, k, None)

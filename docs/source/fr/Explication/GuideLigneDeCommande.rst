@@ -334,7 +334,7 @@ Afficher tous les paramètres de configuration (le résultat de toutes les analy
      'message_ttl': 0,
      'mirror': True,
      'msg_total_interval': '0',
-     'nodupe_fileAgeMax': 0,
+     'fileAgeMax': 0,
      'nodupe_ttl': 0,
      'overwrite': True,
      'permCopy': True,
@@ -960,9 +960,9 @@ Ces options définissent les fichiers pour lesquels l’utilisateur souhaite êt
 - **accept    <regexp pattern> [rename=] (doit être défini)**
 - **reject    <regexp pattern> (facultatif)**
 - **permDefault     <integer>        (par défaut: 0o400)**
-- **nodupe_fileAgeMax <duration>   (par défaut 7h)**
+- **fileAgeMax <duration>   (par défaut 30d)**
 
-Nodupe_fileAgeMax doit être inférieur à nodupe_ttl lors de l'utilisation de la suppression des doublons,
+fileAgeMax doit être inférieur à nodupe_ttl lors de l'utilisation de la suppression des doublons,
 pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.
 
 L’option *filename* peut être utilisée pour définir un changement de nom global pour les produits.
@@ -1026,12 +1026,12 @@ Comme pour tous les autres composants, l’option **vip** peut être utilisée p
 qu’un poll doit être actif sur seulement un seul nœud d’un cluster. Notez que quand
 d’autres nœuds participant au poll et wu’ils n’ont pas le vip, ils
 
-les fichiers qui sont plus vieux que nodupe_fileAgeMax sont ignorés. Cela
+les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
 peut être modifié à n’importe quelle limite de temps spécifiée dans les configurations en utilisant
-l’option *nodupe_fileAgeMax <duration>*. Par défaut, dans les composants
+l’option *fileAgeMax <duration>*. Par défaut, dans les composants
 autre que poll, cette option est désactivé en étant défini à zéro (0). Comme il s’agit d’une
 option de durée, les unités sont en secondes par défaut, mais il est possible de definir l'option
-en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, nodupe_fileAgeMax
+en utilisant des minutes, heures, jours ou des semaines. Dans la composante de poll, fileAgeMax
 est défini à 30 jours par défaut.
 
 Sondage avancé (Advanced Polling)
@@ -1120,7 +1120,7 @@ Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.
 **poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
 une *pollUrl* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
-L’option *nodupe_fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
+L’option *fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.
 
 Le message est ensuite verifié dans la cache dupliqué (limité en temps par l'option
