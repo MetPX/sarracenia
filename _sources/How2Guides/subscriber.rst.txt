@@ -30,10 +30,10 @@ The usual intent is to automatically download the data
 wanted to a directory on a subscriber
 machine where other software can process it.  Please note:
 
-- the tool is entirely command line driven (there is no GUI) More accurately, it is mostly configuration file driven.
-  most of the *interface* involves using a text editor to modify configuration files.
-- while written to be compatible with other environments, the focus is on Linux usage. 
-- the tool can be used as either an end-user tool, or a system-wide transfer engine.
+- The tool is entirely command line driven (there is no GUI) More accurately, it is mostly configuration file driven.
+  Most of the *interface* involves using a text editor to modify configuration files.
+- While written to be compatible with other environments, the focus is on Linux usage. 
+- The tool can be used as either an end-user tool, or a system-wide transfer engine.
   This guide is focused on the end-user case.  
 - All documentation of the package is available 
   at https://metpx.github.io/sarracenia
