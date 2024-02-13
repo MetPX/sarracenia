@@ -57,6 +57,9 @@ class Raw2bulletin(FlowCB):
         super().__init__(options,logger)
         self.seq = 0
         # self.o.add_option('headers2rename', 'list', ['CA', 'MA' , 'RA'])
+        # Need to redeclare these options to have their default values be initialized.
+        self.o.add_option('inputCharset', 'str', 'utf-8')
+        self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
     def after_accept(self,worklist):
@@ -96,11 +99,11 @@ class Raw2bulletin(FlowCB):
             # if ok == 0:
             # 	continue
 
-            lines  = data.split(b'\n')
-            #first_line  = lines[0].strip(b'\r')
-            #first_line  = first_line.strip(b' ')
-            #first_line  = first_line.strip(b'\t')
-            first_line  = lines[0].split(b' ')
+            lines  = data.split('\n')
+            #first_line  = lines[0].strip('\r')
+            #first_line  = first_line.strip(' ')
+            #first_line  = first_line.strip('\t')
+            first_line  = lines[0].split(' ')
 
             ddhhmm = None
 
@@ -150,24 +153,25 @@ class Raw2bulletin(FlowCB):
 
         # Read file data from message or from file path directly if message content not found.
         try:
+
+            binary = 0
             if msg['content']:
                 data = msg['content']['value']
             else:
-                self.binary = 0
 
                 fp = open(path, 'rb')
                 data = fp.read()
                 # bulletin = Bulletin(data)
                 fp.close()
 
-            # Decode data, binary and text. Integrate inputCharset
-            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                self.binary = 1
-                
-            if not self.binary:
-                data = data.decode(self.o.inputCharset)
-            else:
-                data = b64encode(data).decode('ascii')
+                # Decode data, binary and text. Integrate inputCharset
+                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                    binary = 1
+
+                if not binary:
+                    data = data.decode(self.o.inputCharset)
+                else:
+                    data = b64encode(data).decode('ascii')
 
             return data
 
@@ -306,7 +310,7 @@ class Raw2bulletin(FlowCB):
             hhmm = hour and mins
         """
 
-        parts = data.split(b',')
+        parts = data.split(',')
 
         if len(parts) < 4: return None
 
