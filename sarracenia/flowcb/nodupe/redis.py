@@ -173,7 +173,7 @@ class Redis(NoDupe):
                     worklist.rejected.append(m)
                     continue
 
-            if self._is_new(m):
+            if '_isRetry' in m or self._is_new(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
