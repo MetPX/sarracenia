@@ -154,8 +154,6 @@ class Disk(NoDupe):
 
         if self.o.fileAgeMin > 0:
             max_mtime = self.now - self.o.fileAgeMin
-        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
-            max_mtime = self.now - self.o.inflight
         else:
             # FIXME: should we add some time here to allow for different clocks?
             #        100 seconds in the future? hmm...
@@ -177,7 +175,7 @@ class Disk(NoDupe):
                     worklist.rejected.append(m)
                     continue
 
-            if self.check_message(m):
+            if '_isRetry' in m or self.check_message(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
