@@ -76,7 +76,7 @@ class Raw2bulletin(FlowCB):
                 good_msgs.append(msg)
                 continue
 
-            data = self.getData(data, path)
+            data = self.getData(msg, path)
 
             if data == None:
                 worklist.rejected.append(msg)
@@ -151,7 +151,7 @@ class Raw2bulletin(FlowCB):
         # Read file data from message or from file path directly if message content not found.
         try:
             if msg['content']:
-                data = msg['content']
+                data = msg['content']['value']
             else:
                 self.binary = 0
 
@@ -160,14 +160,14 @@ class Raw2bulletin(FlowCB):
                 # bulletin = Bulletin(data)
                 fp.close()
 
-                # Decode data, binary and text. Integrate inputCharset
-                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                    self.binary = 1
-                    
-                if not self.binary:
-                    data = data.decode(self.o.inputCharset)
-                else:
-                    data = b64encode(data).decode('ascii')
+            # Decode data, binary and text. Integrate inputCharset
+            if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                self.binary = 1
+                
+            if not self.binary:
+                data = data.decode(self.o.inputCharset)
+            else:
+                data = b64encode(data).decode('ascii')
 
             return data
 
