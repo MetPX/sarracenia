@@ -22,6 +22,8 @@ import datetime
 import logging
 import paramiko
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import sarracenia
 from sarracenia.flowcb import FlowCB
 
@@ -46,7 +48,16 @@ class Airnow(FlowCB):
                 logger.info('INFO %s ' % URL)
                 
                 #resp = requests.get(self.o.pollUrl + '/' + Filename)
-                resp = requests.get(URL)
+
+                # Setup an HTTP session. Set it up where we can retry 3 times if ever it fails and have exponential backoff applied.
+                # Backoff_factor set to 1 so normal exponential backoff.
+                session = requests.Session()
+                retry = Retry(connect=3, backoff_factor=1)
+                adapter = HTTPAdapter(max_retries=retry)
+                session.mount('http://', adapter)
+                session.mount('https://', adapter)
+
+                resp = session.get(URL)
 
                 if resp.ok:
                     mtime = datetime.datetime.strptime(resp.headers['last-modified'],\
@@ -67,7 +78,7 @@ class Airnow(FlowCB):
                     m = sarracenia.Message.fromFileInfo(Filename, self.o, fakeStat)
                     gathered_messages.append(m)
 
-                    logger.info('mtime: %s  last_pollL %s' % (mtime, last_poll))
+                    logger.info('mtime: %s  last_poll %s' % (mtime, last_poll))
             
             except requests.exceptions as e:
                 logger.error(f"Could not fetch airnow data from {URL}. Exception: {e}")
