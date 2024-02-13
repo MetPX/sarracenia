@@ -1,18 +1,18 @@
 """
 Description:
     sr3 equivalent of the V2 configuration cvt_bulletin_filename_from_content
+    Add bulletin data (full header, timestamp, station ID, BBB) to incomplete filename
 
     Works essentially the same way as its v2 counterpart, except it can get the bulletin file contents 2 ways.
        1. By the sr3 message content
        2. By opening and reading the path to the file directly.
-
-    Decoding of the data is done in the same way of the encoder in flowcb/gather/am.py
-
-    The plugin essentially captures what was done on the V2 converter and ties it up with Sundew source code logic to make it more generalized.
+    The plugin captures what was done on the V2 converter and ties it up with Sundew source code logic to make it more generalized.
     What it can do that the V2 plugin cannot:
         - Add the station ID in the filename
         - Add the BBB in the filename
         - Fetch bulletin data multiple ways
+
+    Decoding of the data is done in the same way of the encoder in flowcb/gather/am.py
 
 Examples:
 
@@ -20,19 +20,22 @@ Examples:
        WACN07 CWAO 082327
        CZEG AIRMET E1 VALID 080105/080505 CWEG-
 
-       Output: WACN07_CWAO_082327_CZEG__00001
+       Output filename: WACN07_CWAO_082327_CZEG__00001
     
     Another RAW Ninjo file
        FTCN32 CWAO 100500 AAM
        (...)
 
-       Output: FTCN32_CWAO_100500_AAM__00002
+       Output filename: FTCN32_CWAO_100500_AAM__00002
 
     A CACN bulletin missing the correct filename
-       CACN00 CWAO 141600
-       PQU
+       Input filename: CA__12345
 
-       Output: CACN00_CWAO_141600_PQU__00003
+       Contents:
+        CACN00 CWAO 141600
+        PQU
+
+       Output filename: CACN00_CWAO_141600_PQU__00003
 
 Usage:
    callback rename.raw2bulletin
@@ -41,6 +44,7 @@ Contributions:
     Andre LeBlanc - First author (2024/02)
 
 Improvements:
+    Delegate some of the generalized methods to a parent class. To be callable by other plugins.
     Add more Sundew logic if ever some bulletins end up failing when implemented
 """
 
