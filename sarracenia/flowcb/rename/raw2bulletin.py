@@ -60,7 +60,6 @@ class Raw2bulletin(FlowCB):
     def __init__(self,options) :
         super().__init__(options,logger)
         self.seq = 0
-        # self.o.add_option('headers2rename', 'list', ['CA', 'MA' , 'RA'])
         # Need to redeclare these options to have their default values be initialized.
         self.o.add_option('inputCharset', 'str', 'utf-8')
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
@@ -77,7 +76,7 @@ class Raw2bulletin(FlowCB):
             filenameFirstChars = msg['new_file'].split('_')[0]
 
             # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
-            # This is concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
+            # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
             # These messages are still good, so we will add them to the good_msgs list
             if len(filenameFirstChars) != 2:
                 good_msgs.append(msg)
@@ -89,20 +88,6 @@ class Raw2bulletin(FlowCB):
                 worklist.rejected.append(msg)
                 continue
             
-            ### Alternative to check for bulletins that need their filename rewritten ###
-
-            # ok = 0
-            # for header in self.o.headers2rename:
-            # 	_len = len(header)
-            # 	# Check if first chars of header match the ones we want to rename
-            # 	if data.split(b'\n')[0][0:_len] == header:
-            # 		ok = 1
-            # 		break
-            
-            # # If nothing has matched, skip to the next iteration
-            # if ok == 0:
-            # 	continue
-
             lines  = data.split('\n')
             #first_line  = lines[0].strip('\r')
             #first_line  = first_line.strip(' ')
@@ -118,20 +103,20 @@ class Raw2bulletin(FlowCB):
                 worklist.rejected.append(msg)
                 continue
             
-            # Get the station timestamp from the file contents
+            # Get the station timestamp from bulletin
             ddhhmm = self.getTime(data)
             if ddhhmm == None:
                 logger.error("Unable to get julian time. Skipping message")
                 worklist.rejected.append(msg)
                 continue
             
-            # Get the BBB
+            # Get the BBB from bulletin
             BBB = self.getBBB(first_line)
 
-            # Get the station ID
+            # Get the station ID from bulletin
             stn_id = self.getStation(data)
 
-            # Get sequence (random ints)
+            # Generate a sequence (random ints)
             seq = self.getSequence()
 
             # Rename file with data fetched
@@ -154,6 +139,11 @@ class Raw2bulletin(FlowCB):
 
 
     def getData(self, msg, path):
+        """Get the bulletin data.
+           We can either get the bulletin data via
+               1. Sarracenia message content
+               2. Locally downloaded file
+        """
 
         # Read file data from message or from file path directly if message content not found.
         try:
@@ -196,8 +186,6 @@ class Raw2bulletin(FlowCB):
     def getStation(self, data):
         """Extracted from Sundew code: https://github.com/MetPX/Sundew/blob/main/lib/bulletin.py#L327-L408
            Get the station ID from the bulletin contents.
-           Some station ID's are located on different lines (depends on the bulletin)
-           Use stn_id_loc to determine which line holds the station ID.
            Examples:
               CACN00 CWAO -> Station ID located on second line.
               FTCN32 CWAO -> Station ID located on first line (with header)
