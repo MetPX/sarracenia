@@ -253,8 +253,8 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
 
         nodupe = Redis(BaseOptions)
         nodupe.o.nodupe_ttl = 100000
-        nodupe.o.nodupe_fileAgeMin = 1000
-        nodupe.o.nodupe_fileAgeMax = 1000
+        nodupe.o.fileAgeMin = 1000
+        nodupe.o.fileAgeMax = 1000
 
         nodupe.now = nowflt() + 10
 
