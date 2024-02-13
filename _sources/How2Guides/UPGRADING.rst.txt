@@ -39,6 +39,23 @@ Installation Instructions
 git
 ---
 
+3.0.52
+------
+
+*CHANGE*: Additional messageCountMax arugment to flowcb.gather() entry point.
+when implementing flow callbacks for scheduled flows, or poll overrides, the
+gather entry point now takes one additional argument indicating the maximum
+number of messages that the routine should return.
+
+To be compatible with previous versions, one can establish a default value
+on the gather::
+
+   def gather(self, messageMaxCount=None):
+
+With the default value, plugins are downward compatible. (earlier versions
+will call with only self as an argument.)
+
+
 3.0.51
 -------
 
