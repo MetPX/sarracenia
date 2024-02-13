@@ -95,7 +95,9 @@ class Retry(FlowCB):
              for k in m:
                  if k in m['_deleteOnPost'] or k.startswith('new_'):
                      del m[k]
-             del m['_deleteOnPost']
+             m['_isRetry'] = True
+             m['_deleteOnPost'] = set( [ '_isRetry' ] )
+
 
         return message_list
 
