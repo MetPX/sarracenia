@@ -1,10 +1,11 @@
 metpx-sr3 (3.00.52rc1) UNRELEASED; urgency=medium
 
+  * fix #907 declare exchange in admin.conf wasn't working.
   * fix #912 enable v2 style retry processing with new --retry_refilter flag.
+  * fix #918 plugin for AM to name files with incomplete headers properly.
   * fix #920 fix inflight mtime not working in watch.
   * fix #920 replaced nodupe_fileAge(Min and Max) with fileAge(Min and Max)
   * fix #920 inflight mtime merged with fileMinAge
-  * fix #907 declare exchange in admin.conf wasn't working.
   * fix #922 sr3 showing wrong exchange on status/show.
 
  -- peter <peter@bsqt.homeip.net>  Fri, 02 Feb 2024 09:00:18 -0500
