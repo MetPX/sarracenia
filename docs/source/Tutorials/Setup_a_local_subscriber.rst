@@ -55,7 +55,7 @@ Setup the bits that post changes to the exchange::
     events modify,create
   
   $ mkdir -p /tmp/sarra/{in,out}put
-  $ sr start
+  $ sr3 start
   $ sr_watch log test-watch
 
 --> All reporting normal.::
@@ -96,7 +96,7 @@ Now you can watch the files trickle into the output folder,
 also watch the 'RabbitMQ Queues' page receive and process AMQP messages.
 When all is completed you can shut down both the subscriber and watcher with::
 
-  $ sr stop
+  $ sr3 stop
     ...
   $ sr_subscribe cleanup test-subscribe
     ...

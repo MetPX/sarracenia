@@ -572,7 +572,7 @@ To add Alice using sr_audit, one would add the following to ~/.config/sarra/admi
 then add an appropriate amqp entry in ~/.config/sarra/credentials.conf to set the password,
 then run::
 
-  sr --users declare
+  sr3 --users declare
 
 To remove users, just remove *declare source Alice* from the admin.conf file, and run::
 
@@ -650,7 +650,7 @@ Sarra from Another Pump
 Sarra works by having a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
 but also needs the configuration to post to the downstream broker. The feeder account on the broker is used for this sort
 of work, and is a semi-administrative user, able to publish data to any exchange. Assume apache is set up (not covered here) with a
-document root of /var/www/html. The linux account we have created to run all the sr processes is '*sarra*', so we make sure
+document root of /var/www/html. The linux account we have created to run all the sr3 processes is '*sarra*', so we make sure
 the document root is writable to those processes::
 
   sarra@boule:~$ cd ~/.config/sarra/sarra

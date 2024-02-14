@@ -635,7 +635,7 @@ Installez un courtier localhost minimal et configurez les utilisateurs de test r
     sudo wget http://localhost:15672/cli/rabbitmqadmin
     sudo chmod 755 rabbitmqadmin
 
-    sr --users declare
+    sr3 --users declare
 
 .. Note::
 
@@ -764,7 +764,7 @@ et définit certains clients de test fixes qui seront utilisés lors des auto-te
     Starting flow_post on: /home/peter/sarra_devdocroot, saving pid in .flowpostpid
     Starting up all components (sr start)...
     done.
-    OK: sr start was successful
+    OK: sr3 start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
 
@@ -1100,14 +1100,14 @@ mais continue de réessayer pour toujours avec un nombre variable d’éléments
 Pour récupérer de cet état sans rejeter les résultats d’un test long, procédez comme suit::
 
   ^C to interrupt the flow_check.sh 100000
-  blacklab% sr stop
+  blacklab% sr3 stop
   blacklab% cd ~/.cache/sarra
   blacklab% ls */*/*retry*
   shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
   blacklab% rm */*/*retry*
-  blacklab% sr start
+  blacklab% sr3 start
   blacklab% 
   blacklab%  ./flow_check.sh 100000
   Sufficient!

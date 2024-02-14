@@ -879,11 +879,11 @@ Fonctionnalités
 
 * les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.
 
-* sr ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
+* sr3 ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
 
-* sr list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
+* sr3 list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
 
-* sr show est maintenant utilisé pour afficher la configuration analysée.
+* sr3 show est maintenant utilisé pour afficher la configuration analysée.
 
 * les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.
 

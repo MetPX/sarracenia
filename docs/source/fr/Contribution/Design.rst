@@ -629,7 +629,7 @@ Le regroupement de courtiers est considéré comme une technologie mature et don
 DD : Configuration de la diffusion des données (AKA : Data Mart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-La configuration de déploiement sr est davantage une configuration de point de terminaison.  Chaque nœud est censé :
+La configuration de déploiement sr3 est davantage une configuration de point de terminaison.  Chaque nœud est censé :
 Avoir une copie complète de toutes les données téléchargées par tous les nœuds.   Donner une vue unifiée rend
 ca beaucoup plus compatible avec une variété de méthodes d’accès, telles qu’un navigateur de fichiers (sur HTTP,
 ou sftp) plutôt que de se limiter aux messages de notification AMQP.  C’est le type de vue présenté par

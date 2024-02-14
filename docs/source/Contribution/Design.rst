@@ -616,7 +616,7 @@ Broker clustering is considered mature technology, and therefore relatively trus
 DD: Data Dissemination Configuration (AKA: Data Mart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The sr deployment configuration is more of an end-point configuration. Each node is expected to
+The sr3 deployment configuration is more of an end-point configuration. Each node is expected to
 have a complete copy of all the data downloaded by all the nodes. Giving a unified view makes
 it much more compatible with a variety of access methods, such as a file browser (over http,
 or sftp) rather than being limited to AMQP notification messages. This is the type of view presented by
@@ -631,10 +631,10 @@ connection requests to a node for processing.
 
  - multiple server nodes.  Each standalone.
 
- - sr - load balancer, just re-directs to a sr node?
+ - sr3 - load balancer, just re-directs to a sr3 node?
    dd1,dd2, 
 
-   broker on sr node has connection thereafter.
+   broker on sr3 node has connection thereafter.
 
 
 Independent DD

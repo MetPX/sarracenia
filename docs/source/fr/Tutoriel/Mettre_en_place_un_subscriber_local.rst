@@ -56,7 +56,7 @@ Configurez les bits qui publient les modifications apportées à l’échange ::
     events modify,create
   
   $ mkdir -p /tmp/sarra/{in,out}put
-  $ sr start
+  $ sr3 start
   $ sr_watch log test-watch
 
 --> Tous les rapports normaux.::
@@ -98,7 +98,7 @@ Maintenant, vous pouvez regarder les fichiers ruisseler dans le dossier de sorti
 Regardez également la page 'RabbitMQ Queues' qui recoit et traite les messages AMQP.
 Lorsque tout est terminé, vous pouvez arrêter à la fois l’abonné et le watcher avec::
 
-  $ sr stop
+  $ sr3 stop
     ...
   $ sr_subscribe cleanup test-subscribe
     ...

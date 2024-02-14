@@ -761,7 +761,7 @@ and defines some fixed test clients that will be used during self-tests::
     Starting flow_post on: /home/peter/sarra_devdocroot, saving pid in .flowpostpid
     Starting up all components (sr start)...
     done.
-    OK: sr start was successful
+    OK: sr3 start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
 
@@ -1087,14 +1087,14 @@ Sometimes flow tests (especially for large numbers) get stuck because of problem
 To recover from this state without discarding the results of a long test, do::
 
   ^C to interrupt the flow_check.sh 100000
-  blacklab% sr stop
+  blacklab% sr3 stop
   blacklab% cd ~/.cache/sarra
   blacklab% ls */*/*retry*
   shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
   blacklab% rm */*/*retry*
-  blacklab% sr start
+  blacklab% sr3 start
   blacklab% 
   blacklab%  ./flow_check.sh 100000
   Sufficient!
