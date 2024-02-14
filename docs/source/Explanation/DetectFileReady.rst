@@ -108,7 +108,7 @@ File Detection Strategy Table
 +-------------+---------------------------------------+--------------------------------------+
 
 
-sr_watch is sr_post with the added *sleep* option that will cause it to loop
+sr_watch is sr3_post with the added *sleep* option that will cause it to loop
 over directories given as arguments.  sr3_cpost is a C version that functions
 identically, except it is faster and uses much less memory, at the cost of the
 loss of plugin support.  With sr_watch (and sr3_cpost) The default method of
@@ -157,7 +157,7 @@ need to be posted to call it::
 
 where *shimpost.conf* is an sr_cpost configuration file in
 the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
-as an sr_post one, except that plugins are not supported.  With the shim
+as an sr3_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
 as it would be by sr_watch.

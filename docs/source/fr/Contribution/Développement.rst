@@ -679,7 +679,7 @@ Besoin du package suivant pour cela::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
-Le script d’installation démarre un serveur Web trivial, un serveur ftp et un démon que sr_post appelle.
+Le script d’installation démarre un serveur Web trivial, un serveur ftp et un démon que sr3_post appelle.
 Il teste également les composants C, qui doivent également avoir déjà été installés.
 et définit certains clients de test fixes qui seront utilisés lors des auto-tests ::
 
@@ -877,9 +877,9 @@ d’attente, les échanges et les journaux. Cela doit également être fait entr
   2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
   2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
   2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
-  2018-02-10 09:17:35,115 [INFO] sr_post shim_f63 cleanup
+  2018-02-10 09:17:35,115 [INFO] sr3_post shim_f63 cleanup
   2018-02-10 09:17:35,122 [INFO] deleting exchange xs_tsource_shim (tsource@localhost)
-  2018-02-10 09:17:35,394 [INFO] sr_post test2_f61 cleanup
+  2018-02-10 09:17:35,394 [INFO] sr3_post test2_f61 cleanup
   2018-02-10 09:17:35,402 [INFO] deleting exchange xs_tsource_post (tsource@localhost)
   2018-02-10 09:17:35,659 [INFO] sr_report tsarra_f20 cleanup
   2018-02-10 09:17:35,659 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -1150,11 +1150,11 @@ Pour récupérer de cet état sans rejeter les résultats d’un test long, proc
   test 10 success: sr_subscribe q_f71 (195406) should have about the
   same number of items as sr_poll test1_f62(195408)
                    | flow_post  routing |
-  test 11 success: sr_post test2_f61 (193541) should have half the same
+  test 11 success: sr3_post test2_f61 (193541) should have half the same
   number of items of sr_sender(196368)
   test 12 success: sr_subscribe ftp_f70 (193541) should have about the
-  same number of items as sr_post test2_f61(193541)
-  test 13 success: sr_post test2_f61 (193541) should have about the same
+  same number of items as sr3_post test2_f61(193541)
+  test 13 success: sr3_post test2_f61 (193541) should have about the same
   number of items as shim_f63 195055
                    | py infos   routing |
   test 14 success: sr_shovel pclean_f90 (97019) should have the same

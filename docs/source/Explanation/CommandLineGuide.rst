@@ -1138,7 +1138,7 @@ The pollUrl option specify what is needed to connect to the remote server
 
 The *pollUrl* should be set with the minimum required information...
 **sr_poll**  uses *pollUrl* setting not only when polling, but also
-in the sr_post notification messages produced.
+in the sr3_post notification messages produced.
 
 For example, the user can set :
 

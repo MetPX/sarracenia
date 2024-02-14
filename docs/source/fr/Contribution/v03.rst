@@ -474,7 +474,7 @@ Avec le shovel et le winnow remplacés par de nouvelles implémentations, il pas
 le test de flux dynamique, y compris le module Retry porté sur sr3, et
 un certain nombre de modules v2 utilisés tels quels.
 
-Terminé une version initiale du composant sr_post maintenant (dans sr3 : flowcb.gather.file.File)
+Terminé une version initiale du composant sr3_post maintenant (dans sr3 : flowcb.gather.file.File)
 Maintenant, on travaille sur sr_poll, ce qui prendra un certain temps car il implique un refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp dans le module de transfert.
 

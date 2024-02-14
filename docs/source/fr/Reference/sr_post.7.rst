@@ -41,7 +41,7 @@ SYNOPSIS
 
 Version 03 du format des annonces de modification d'un fichier pour sr_post.
 
-Un message sr_post se compose d’un sujet et du *BODY*
+Un message sr3_post se compose d’un sujet et du *BODY*
 
 **AMQP Topic:** 
 ~~~~~~~~~~~~~~~

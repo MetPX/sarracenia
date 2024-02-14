@@ -27,7 +27,7 @@ Web du même serveur, mais cela n'est pas nécessaire. Le courtier pourrait
 La meilleure façon d'effectuer des transferts de données est d'éviter les
 sondages (examination récurrente de répertoires afin de détecter des
 changements de fichiers.) C'est plus efficace si les rédacteurs peuvent
-être amenés à émettre des messages d'annonce en format sr_post appropriés. De même,
+être amenés à émettre des messages d'annonce en format sr3_post appropriés. De même,
 lors de la livraison, il est idéal si les destinataires utilisent
 sr_subscribe, et un plugin on_file pour déclencher leur traitement ultérieur,
 de sorte que le fichier est qui leur a été remis sans sondage. C'est la façon

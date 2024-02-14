@@ -130,14 +130,14 @@ gratuits, tels que RabbitMQ, souvent appelé 0,8, mais 0,9 et post 0,9.
 Les courtiers sont également susceptibles de bien interopérer.
 
 Dans AMQP, de nombreux acteurs différents peuvent définir des paramètres de communication. Pour créer un
-modèle de sécurité, Sarracenia contraint ce modèle : les clients sr_post ne sont pas censés déclarer
+modèle de sécurité, Sarracenia contraint ce modèle : les clients sr3_post ne sont pas censés déclarer
 des échanges.  Tous les clients sont censés utiliser les échanges existants qui ont été déclarés par
 les administrateurs de courtiers.  Les autorisations client sont limitées à la création de files
 d’attente pour leur propre usage,
 en utilisant des schémas de nommage convenus.  File d’attente pour le client : qc_<user>.????
 
 Les échanges topic-based sont utilisés exclusivement. AMQP prend en charge de nombreux autres types d’échanges,
-mais sr_post envoye la rubrique afin de prendre en charge le filtrage côté serveur à l’aide du topic
+mais sr3_post envoye la rubrique afin de prendre en charge le filtrage côté serveur à l’aide du topic
 basé sur le filtrage.  Les rubriques reflètent le chemin d’accès des fichiers annoncés, ce qui permet un
 filtrage direct côté serveur, complété par un filtrage côté client à la réception des messages.
 

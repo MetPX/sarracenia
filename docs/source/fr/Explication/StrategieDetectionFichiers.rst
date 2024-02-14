@@ -113,7 +113,7 @@ Tableau de stratégie de détection de fichiers
 |             |                                       |en parallèle.                         |
 +-------------+---------------------------------------+--------------------------------------+
 
-sr_watch est sr_post avec l'option *sleep* qui lui permettra de boucler les répertoires donnés en arguments.
+sr_watch est sr3_post avec l'option *sleep* qui lui permettra de boucler les répertoires donnés en arguments.
 sr_cpost est une version C qui fonctionne de manière identique, sauf qu'elle est plus rapide et
 utilise beaucoup moins de mémoire, à l'adresse le coût de la perte du support des plugins.  Avec
 sr_watch (et sr_cpost) La méthode par défaut de la remarque les changements dans les répertoires

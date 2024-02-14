@@ -36,7 +36,7 @@ Quelle que soit la façon dont cela est fait, injecter des données signifie ind
 de sorte qu’elles puissent être acheminé vers/par la pompe. Cela peut être fait par l’un ou l’autre
 à l’aide de la commande active et explicite sr_post, ou simplement à l’aide de sr_watch sur un répertoire.
 Lorsqu’il y a un grand nombre de fichiers et/ou des contraintes de rapidité serrées, l’appel
-de sr_post directement par le producteur du dossier est optimale, par ce que sr_watch peut fournir de
+de sr3_post directement par le producteur du dossier est optimale, par ce que sr_watch peut fournir de
 performances décevantes. Une autre approche explicite, mais à basse fréquence, est la
 commande sr_poll, qui permet d’interroger des systèmes distants pour extraire des données
 dans le réseau efficacement.
@@ -103,10 +103,10 @@ informations d’identification du courtier en toute sécurité ::
   en regardant les fichiers de configuration ssh. Configurez ssh pour qu'il fonctionne, et Sarracenia
   fonctionnera aussi.
 
-Donc, maintenant, la ligne de commande pour sr_post n’est que l’URL pour que ddsr récupère le
+Donc, maintenant, la ligne de commande pour sr3_post n’est que l’URL pour que ddsr récupère le
 fichier sur grumpy::
 
-  sr_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
+  sr3_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
   -post_base_url http://localhost:81/frog.dna
 
   2016-01-20 14:53:49,014 [INFO] Output AMQP  broker(localhost) user(guest) vhost(/)
@@ -147,26 +147,26 @@ sur la pompe, pour l’acheminement vers les autres destinations de la pompe.
 
 Semblable à sr_subscribe, on peut également placer des fichiers de configuration dans un répertoire spécifique sr_post::
 
-  blacklab% sr_post edit dissem.conf
+  blacklab% sr3_post edit dissem.conf
 
   post_broker amqps://rnd@ddsr.cmc.ec.gc.ca/
   post_base_url sftp://peter@grumpy
 
 Et puis::
 
-  sr_post -c dissem -url treefrog/frog.dna
+  sr3_post -c dissem -url treefrog/frog.dna
 
 S’il existe différentes variétés de publication utilisées, les configurations peuvent être enregistrées pour chacune d’elles.
 
 .. warning::
    **FIXME**: Besoin de faire un exemple réel. ce truc inventé n’est pas suffisamment utile.
 
-   **FIXME**: sr_post n’accepte pas les fichiers de configuration pour le moment, indique la page de manuel.  Vrai/Faux ?
+   **FIXME**: sr3_post n’accepte pas les fichiers de configuration pour le moment, indique la page de manuel.  Vrai/Faux ?
 
-   sr_post lignes de commande peuvent être beaucoup plus simples si c’était le cas.
+   sr3_post lignes de commande peuvent être beaucoup plus simples si c’était le cas.
 
 sr_post revient généralement immédiatement car son seul travail est d’informer la pompe de la disponibilité
-de fichiers. Les fichiers ne sont pas transférés lorsque sr_post revient, il ne faut donc pas supprimer les fichiers
+de fichiers. Les fichiers ne sont pas transférés lorsque sr3_post revient, il ne faut donc pas supprimer les fichiers
 après avoir posté sans être sûr que la pompe les a réellement ramassés.
 
 .. NOTE::
@@ -248,7 +248,7 @@ pour l’utiliser.
 Messages de rapport
 -------------------
 
-Si le sr_post a fonctionné, cela signifie que la pompe a accepté de jeter un coup d’œil sur votre dossier.
+Si le sr3_post a fonctionné, cela signifie que la pompe a accepté de jeter un coup d’œil sur votre dossier.
 Pour savoir où vont vos données par la suite, il faut examiner le fichiers de journalisation de la source.
 Il est également important de noter que la pompe initiale, ou toute autre pompe
 en aval, peut refuser de transmettre vos données pour diverses raisons, qui ne seront que
@@ -414,7 +414,7 @@ de la bibliothèque C comme suit::
     export SR_POST_CONFIG=somepost.conf
     export LD_PRELOAD=libsrshim.so.1.0.0
 
-Où *somepost.conf* est une configuration valide qui peut être testée avec sr_post pour publier manuellement un fichier.
+Où *somepost.conf* est une configuration valide qui peut être testée avec sr3_post pour publier manuellement un fichier.
 Tout processus appelé à partir d’un shell avec ces paramètres aura tous les appels à des routines telles que close(2)
 intercepté par libsrshim. Libsrshim vérifiera si le fichier est en cours d’écriture, puis appliquera la configuration
 somepost (les clauses accept/reject) et publiera le fichier si cela est approprié.
@@ -452,31 +452,31 @@ Exemple::
     +++ echo 'FIXME: exec above fixes ... builtin i/o like redirection not being posted!'
     FIXME: exec above fixes ... builtin i/o like redirection not being posted!
     +++ bash -c 'echo "hoho" >>~/test/hoho'
-    2017-10-21 20:20:44,092 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,092 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,092 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,092 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,094 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,095 [DEBUG] isMatchingPattern: /home/peter/test/hoho matched mask: accept .*
     2017-10-21 20:20:44,096 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,096 [DEBUG] sr_post file2message called with: /home/peter/test/hoho sb=0x7ffef2aae2f0 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,096 [DEBUG] sr3_post file2message called with: /home/peter/test/hoho sb=0x7ffef2aae2f0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,096 [INFO] published: 20171021202044.096 sftp://peter@localhost /home/peter/test/hoho topic=v02.post.home.peter.test sum=s,a0bcb70b771de1f614c724a86169288ee9dc749a6c0bbb9dd0f863c2b66531d21b65b81bd3d3ec4e345c2fea59032a1b4f3fe52317da3bf075374f7b699b10aa source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202002.304 atime=20171021202002.308 mode=0644 parts=1,2,1,0,0
     +++ /usr/bin/python2.7 pyiotest
-    2017-10-21 20:20:44,105 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,105 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,105 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,105 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,107 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,107 [DEBUG] isMatchingPattern: /home/peter/src/sarracenia/c/hoho matched mask: accept .*
     2017-10-21 20:20:44,108 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,108 [DEBUG] sr_post file2message called with: /home/peter/src/sarracenia/c/hoho sb=0x7ffeb02838b0 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,108 [DEBUG] sr3_post file2message called with: /home/peter/src/sarracenia/c/hoho sb=0x7ffeb02838b0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,108 [INFO] published: 20171021202044.108 sftp://peter@localhost /c/hoho topic=v02.post.c sum=s,9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043 source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202044.101 atime=20171021202002.320 mode=0644 parts=1,5,1,0,0
     +++ cp libsrshim.c /home/peter/test/hoho_my_darling.txt
-    2017-10-21 20:20:44,112 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,112 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,112 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,112 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,114 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,114 [DEBUG] isMatchingPattern: /home/peter/test/hoho_my_darling.txt matched mask: accept .*
     2017-10-21 20:20:44,115 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,115 [DEBUG] sr_post file2message called with: /home/peter/test/hoho_my_darling.txt sb=0x7ffc8250d950 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,115 [DEBUG] sr3_post file2message called with: /home/peter/test/hoho_my_darling.txt sb=0x7ffc8250d950 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,116 [INFO] published: 20171021202044.115 sftp://peter@localhost /home/peter/test/hoho_my_darling.txt topic=v02.post.home.peter.test sum=s,f5595a47339197c9e03e7b3c374d4f13e53e819b44f7f47b67bf1112e4bd6e01f2af2122e85eda5da633469dbfb0eaf2367314c32736ae8aa7819743f1772935 source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202044.109 atime=20171021202002.328 mode=0644 parts=1,15117,1,0,0
     blacklab% 
     

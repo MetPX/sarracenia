@@ -155,7 +155,7 @@ Those hubs run the directory watching component (sr_watch) and determine
 checksums for the volume scans as they arrive. The Unified RADAR Processing 
 (URP) systems sr_subscribes to a hub, listening for new volume scans, and 
 downloads new data as soon as they are posted. URP systems then derive new 
-products and advertise them to the local hub using the sr_post component.
+products and advertise them to the local hub using the sr3_post component.
 In time, we hope to have a second URP fully at the western hub.
 
 In regional offices, the NinJo visualization servers download volume scans and

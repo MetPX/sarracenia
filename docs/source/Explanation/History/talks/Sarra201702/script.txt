@@ -290,7 +290,7 @@ Application Still Alpha?
   
   * reports have not been fully implemented, so they might not work yet (defer?)
   * plugin API requires a little more work (nothing incompatible so far, but worried.)
-  * sr_watch and sr_post change usage over last few months.
+  * sr_watch and sr3_post change usage over last few months.
   * Static trees 
   * Proper interswitch routing.
 

@@ -59,7 +59,7 @@ Layers Bkg,People,F0,Net,Pumps
 
 Layers Bkg,People,F0,Net,Pumps,tAl2Aamqpdesc,Al2Aa
 
-Alice uses the sr_post command to say: "I want my frog DNA folder to go to B and F!"
+Alice uses the sr3_post command to say: "I want my frog DNA folder to go to B and F!"
 
 Layers Bkg,People,F0,Net,Pumps,Al2Aa,tAl2Axfer,Al2Axl
 

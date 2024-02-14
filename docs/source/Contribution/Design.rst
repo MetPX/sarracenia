@@ -125,13 +125,13 @@ as is provided by many free brokers, such as rabbitmq, often referred to as 0.8,
 0.9 brokers are also likely to inter-operate well.
 
 In AMQP, many different actors can define communication parameters. To create a clearer
-security model, sarracenia constrains that model: sr_post clients are not expected to declare
+security model, sarracenia constrains that model: sr3_post clients are not expected to declare
 Exchanges.  All clients are expected to use existing exchanges which have been declared by
 broker administrators.  Client permissions are limited to creating queues for their own use,
 using agreed upon naming schemes.  Queue for client: qc_<user>.????
 
 Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
-but sr_post have the topic sent in order to support server side filtering by using topic
+but sr3_post have the topic sent in order to support server side filtering by using topic
 based filtering.  The topics mirror the path of the files being announced, allowing
 straight-forward server-side filtering, to be augmented by client-side filtering on
 message reception.
@@ -492,6 +492,12 @@ interaction with many layers, including the application.  Disks are either dedic
 or a cluster file system is to be used. The application is expected to deal with those two
 cases.
 
+most of the cluster management is taken care of by the sr3_tools project:
+
+  https://github.com/MetPX/sr3_tools
+
+A review of that project to manage deployments regardless of topology, would be helpful.
+
 Some document short-hand:
 
 Bunny
@@ -610,14 +616,14 @@ Broker clustering is considered mature technology, and therefore relatively trus
 DD: Data Dissemination Configuration (AKA: Data Mart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The sr deployment configuration is more of an end-point configuration.  Each node is expected to
-have a complete copy of all the data downloaded by all the nodes.   Giving a unified view makes
+The sr deployment configuration is more of an end-point configuration. Each node is expected to
+have a complete copy of all the data downloaded by all the nodes. Giving a unified view makes
 it much more compatible with a variety of access methods, such as a file browser (over http,
-or sftp) rather than being limited to AMQP notification messages.  This is the type of view presented by
+or sftp) rather than being limited to AMQP notification messages. This is the type of view presented by
 dd.weather.gc.ca.
 
 Given this view, all files must be fully reassembled on receipt, prior to announcing downstream
-availability.  files may have been fragmented for transfer across intervening pumps.
+availability. Files may have been fragmented for transfer across intervening pumps.
 
 There are multiple options for achieving this end user visible effect, each with tradeoffs.
 In all cases, there is a load balancer in front of the nodes which distributes incoming

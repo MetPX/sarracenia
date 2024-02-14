@@ -73,17 +73,18 @@ The administrative processes perform validation of postings from sources. Once
 they are validated, forward the postings to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:
 
-- sr_audit  - purge useless queues, create exchanges and users, set user permissions according to their roles.
-- sr_poll   - for sources without notification messages, revert to explicit polling for initial injection.
-- sr_sarra  - various configurations to pull data from other pumps to make it available from the local pump.
-- sr_sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
-- sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.
-- sr_shovel - copy notification messages from pump to another, usually to feed sr_winnow.
+- poll   - for sources without notification messages, revert to explicit polling for initial injection.
+- sarra  - various configurations to pull data from other pumps to make it available from the local pump.
+- sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)
+- winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sarra.
+- shovel - copy notification messages from pump to another, usually to feed winnow.
+- flow   - for gathering from different sorts of sources.
+
 
 As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once. To do so easily, one can invoke::
 
-  sr start
+  sr3 start
 
 to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc...)
 There are two users/roles that need to be set to use a pump. They are the admin and feeder options.
@@ -101,8 +102,8 @@ for each account, and the various configuration files would use the appropriate 
 
 
 
-Housekeeping - sr_audit
-~~~~~~~~~~~~~~~~~~~~~~~~
+Housekeeping - sr3 sanity 
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a client connects to a broker, it creates a queue which is then bound to an exchange. The user
 can choose to have the client self-destruct when disconnected (*auto-delete*), or it can make
@@ -140,11 +141,11 @@ only a single cpu to serve a queue. In such cases, creating multiple configurati
 (each with their own queue) dividing the traffic among them will allow further improvements 
 in throughput.
 
-sr_winnow is used to suppress duplicates.  
+winnow is used to suppress duplicates.  
 **Note that the duplicate suppresion cache is local to each instance**. When N instances share a queue, the
 first time a posting is received, it could be picked by one instance, and if a duplicate one is received
 it would likely be picked up by another instance. **For effective duplicate suppression with instances**,
-one must **deploy two layers of subscribers**. Use a **first layer of subscribers (sr_shovels)** with duplicate
+one must **deploy two layers of subscribers**. Use a **first layer of subscribers (shovels)** with duplicate
 suppression turned off and output with *post_exchangeSplit*, which route posts by checksum to
 a **second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.**
 
@@ -155,18 +156,18 @@ Routing
 -------
 
 The inter-connection of multiple pumps is done, on the data side, by daisy-chaining
-sr_sarra and/or sr_sender configurations from one pump to the next. 
+sarra and/or sender configurations from one pump to the next. 
 
 The *to_clusters*, and *source*  headers are used for routing decisions
 implemented in the *msg_to_clusters*, and *msg_by_source* plugins respectively
 to be user by sender or sarra components to limit data transfers between pumps.
 
 For report routing, the *from_cluster* header is interpreted by the 
-*msg_from_cluster* plugin. Report messages are defined in the sr_report(7) man
+*msg_from_cluster* plugin. Report messages are defined in the report(7) man
 page. They are emitted by *consumers* at the end, as well as *feeders* as the 
 notification messages traverse pumps. Report messages are posted to the xs\_<user> exchange,
 and after validation sent to the xreport exchange by the shovel component 
-configurations created by sr_audit.
+configurations created by *sr3 declare.*
 
 Messages in xreports destined for other clusters are routed to destinations by
 manually configured shovels. See the Reports_ section for more details.
@@ -175,11 +176,11 @@ manually configured shovels. See the Reports_ section for more details.
 What is Going On?
 -----------------
 
-The sr_report command can be invoked to bind to 'xreport' instead of the 
+The sr3 declare report command can be invoked to bind to 'xreport' instead of the 
 default user exchange to get report information for an entire broker.
 
 
-Canned sr_report configuration with an *on_message* action can be configured to
+Canned report configuration with an *on_message* action can be configured to
 gather statisical information.
 
 .. NOTE::

@@ -43,7 +43,7 @@ SYNOPSIS
 
 Version 03 format of file change notification messages for sr_post.  
 
-An sr_post notification message consists of a topic, and the *BODY* 
+An sr3_post notification message consists of a topic, and the *BODY* 
 
 **AMQP Topic:** *<version>.{<dir>.}*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
