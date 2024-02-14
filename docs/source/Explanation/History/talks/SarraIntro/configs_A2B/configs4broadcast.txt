@@ -13,7 +13,7 @@ It uses http throughout, which is simpler because there is less authentication.
 #
 #On Montreal's Server:
 
-echo sr_watch -u http://pumpAadmin@AliceServer//home/CWAO -b amqps://Montreal@pumpWashington/ -to GISC_cache -dr /var/www/???? FIXME
+echo sr3_watch -u http://pumpAadmin@AliceServer//home/CWAO -b amqps://Montreal@pumpWashington/ -to GISC_cache -dr /var/www/???? FIXME
 
 # Montreal has a web server running that permits anyone to download the data, including the
 # administrator of pumpWashington.

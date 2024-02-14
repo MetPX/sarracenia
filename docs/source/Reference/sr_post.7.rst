@@ -595,9 +595,9 @@ EXAMPLE
 Another example
 ---------------
 
-The post resulting from the following sr_watch command, noticing creation of the file 'foo'::
+The post resulting from the following sr3_watch command, noticing creation of the file 'foo'::
 
- sr_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
+ sr3_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
 
 Here, *sr_watch* checks if the file /data/shared/products/foo is modified.
 When it happens, *sr_watch*  reads the file /data/shared/products/foo and calculates its checksum.

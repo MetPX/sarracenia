@@ -56,7 +56,7 @@ Setup the bits that post changes to the exchange::
   
   $ mkdir -p /tmp/sarra/{in,out}put
   $ sr3 start
-  $ sr_watch log test-watch
+  $ sr3_watch log test-watch
 
 --> All reporting normal.::
 
@@ -70,7 +70,7 @@ Setup the bits that post changes to the exchange::
       no=1
 
 --> Note the line with **[ERROR]**, it was unable to find the queue.
-this is because the queue needs to first be created by sr_watch and since we started the
+this is because the queue needs to first be created by sr3_watch and since we started the
 subscriber and watch at the same time with '``sr start``' we ran into a small race condition.
 This was soon after resolved as the sr_subscribe has a 1 second retry time.
 This can be confirmed with the 'RabbitMQ Queues' page showing a ``q_bob.sr_subscribe.test_subscribe. ...`` queue in the list.::
@@ -85,7 +85,7 @@ This can be confirmed with the 'RabbitMQ Queues' page showing a ``q_bob.sr_subsc
     .
     2020-08-20 16:29:26,078 [INFO] file_log downloaded to: /tmp/sarra/output/testfile1.txt
 
-  $ sr_watch log test-watch
+  $ sr3_watch log test-watch
     2020-08-20 16:29:20,612 [INFO] post_log notice=20200820212920.611807823 file:/ /tmp/sarra/input/testfile1.txt headers={'to_clusters':'localhost', 'mtime':'20200820212920.0259232521', 'atime': '20200820212920.0259232521', 'mode': '644', 'parts': '1,0,1,0,0', 'sum':'d,d41d8cd98f00b204e9800998ecf8427e'}
     
   $ touch /tmp/sarra/input/testfile{2..9}.txt

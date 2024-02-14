@@ -4,7 +4,7 @@ File Detection Strategies
 =========================
 
 
-Le travail fondamental de sr_watch est de remarquer quand les fichiers sont
+Le travail fondamental de sr3_watch est de remarquer quand les fichiers sont
 disponibles pour être transférés. La stratégie appropriée varie en fonction de:
 
  - le **nombre de fichiers de l'arbre** à surveiller,
@@ -17,7 +17,7 @@ affiche un message pour un composant *sr_sarra*, alors l'utilisation de l'option
 le nombre minimale de fichiers dans le répertoire et minimisera le temps de remarquer les nouveaux. Dans ces
 conditions optimales, l'observation des fichiers dans un centième de seconde, c'est raisonnable
 de s'y attendre. N'importe quelle méthode fonctionnera bien pour de tels arbres, mais...  les charge imposé
-sur l´ordinateur par la méthode par défaut de sr_watch (inotify) sont généralement les plus basses.
+sur l´ordinateur par la méthode par défaut de sr3_watch (inotify) sont généralement les plus basses.
 
 Lorsque l’arborescence devient grande, la décision peut changer en fonction d’un certain nombre de facteurs,
 décrit dans le tableau suivant. Il décrit les approches qui seront les plus basses en
@@ -65,9 +65,9 @@ Tableau de stratégie de détection de fichiers
 |             |                                       | - ou la vitesse est important.       |
 |(en C)       | - plus vite que sr_watch.             | - ou on n´a pas besoin de plugins.   |
 |             | - utilise moins de mémoire vive que   | - limité sues with tree size         |
-|             |   sr_watch                            |   as sr_watch, just a little later.  |
+|             |   sr3_watch                            |   as sr_watch, just a little later.  |
 |             | - peut marcher avec des arbres        |   (see following methods)            |
-|             |   plus grand que sr_watch             |                                      |
+|             |   plus grand que sr3_watch             |                                      |
 +-------------+---------------------------------------+--------------------------------------+
 |             |Fichier transférés avec *.tmp* suffixe.|Réception de livraisons d´autres      |
 |sr_watch avec|lorsque complete, renommé pour enlevé  |systèmes ( .tmp étant standard)       |
@@ -81,7 +81,7 @@ Tableau de stratégie de détection de fichiers
 |             |   au démarrage                        |fichiers avec seulement quelques      |
 |(en Python)  | - chaque noeud dans un grappe a besoin|secondes de delai au démarrage.       |
 |             |   de tourner un instance.             |                                      |
-|             | - chaque sr_watch est une seul tâche. |trop lent pour des arbres de millions |
+|             | - chaque sr3_watch est une seul tâche. |trop lent pour des arbres de millions |
 |             |                                       |fichiers.                             |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch avec|utilisez conventsion linux pour cacher |                                      |
@@ -139,7 +139,7 @@ défaut et ne devrait pas être utilisé si la rapidité d'exécution est une pr
 
 Dans les clusters de supercalculateurs, des systèmes de fichiers distribués sont utilisés, et les
 méthodes optimisées pour le système d'exploitation les modifications de fichiers (INOTIFY sous Linux)
-ne franchissent pas les limites des nœuds. Pour utiliser sr_watch avec la stratégie par défaut
+ne franchissent pas les limites des nœuds. Pour utiliser sr3_watch avec la stratégie par défaut
 sur un répertoire dans un cluster de calcul, on doit généralement avoir un processus sr_watch
 sr_watch s'exécutant sur chaque noeud. Si cela n'est pas souhaitable, alors on peut le déployer sur
 un seul nœud avec *force_polling* mais le timing sera le suivant être limité par la taille du répertoire.
@@ -198,7 +198,7 @@ d'écrire des fichiers dans des répertoires surveillés par sr_watch. Le fait d
 correctement les protocoles de complétion de fichiers est une source commune de
 problèmes intermittents et difficiles à diagnostiquer en matière de transfert de fichiers.
 Pour des transferts de fichiers fiables, Il est essentiel que les processus qui écrivent
-des fichiers et sr_watch s'entendent sur la façon de représenter un fichier qui n'est pas complet.
+des fichiers et sr3_watch s'entendent sur la façon de représenter un fichier qui n'est pas complet.
 
 
 

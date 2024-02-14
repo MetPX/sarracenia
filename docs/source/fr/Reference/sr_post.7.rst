@@ -577,9 +577,9 @@ EXEMPLE
 Un Autre Exemple
 ----------------
 
-Le post résultant de la commande de sr_watch suivante, a noter la création du fichier 'foo'::
+Le post résultant de la commande de sr3_watch suivante, a noter la création du fichier 'foo'::
 
- sr_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
+ sr3_watch -pbu sftp://stanley@mysftpserver.com/ -path /data/shared/products/foo -pb amqp://broker.com
 
 Ici, *sr_watch* vérifie si le fichier /data/shared/products/foo est modifié.
 Lorsque cela se produit, *sr_watch* lit le fichier /data/shared/products/foo et calcule sa somme de contrôle.

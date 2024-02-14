@@ -813,7 +813,7 @@ Ensuite, vérifiez avec flow_check.sh::
     test  4 success: max shovel (1022) and subscriber t_f30 (1022) should have about the same number of items
     test  5 success: count of truncated headers (1022) and subscribed messages (1022) should have about the same number of items
     test  6 success: count of downloads by subscribe t_f30 (1022) and messages received (1022) should be about the same
-    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr_watch (1022) should be about the same
+    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr3_watch (1022) should be about the same
     test  8 success: posted by watch(1022) and sent by sr_sender (1022) should be about the same
     test  9 success: 1022 of 1022: files sent with identical content to those downloaded by subscribe
     test 10 success: 1022 of 1022: poll test1_f62 and subscribe q_f71 run together. Should have equal results.
@@ -834,7 +834,7 @@ approfondie, il est bon de savoir que les flux fonctionnent.
 
 Notez que l’abonné *fclean* examine les fichiers et les conserve suffisamment longtemps pour qu’ils puissent
 parcourir tous les autres tests.  Il le fait en attendant un délai raisonnable (45 secondes, la dernière fois
-vérifiée), puis il compare le fichier qui a été posté par sr_watch aux fichiers créés en téléchargeant à partir
+vérifiée), puis il compare le fichier qui a été posté par sr3_watch aux fichiers créés en téléchargeant à partir
 de celui-ci.  Au fur et à mesure que le dénombrement *sample now* progresse, il imprime "OK" si les fichiers
 téléchargés sont identiques à ceux postés par sr_watch. L’ajout de fclean et cfclean correspondant pour les
 cflow_test sont cassés.  La configuration par défaut qui utilise *fclean* et *cfclean* garantit que seulement
@@ -941,7 +941,7 @@ d’attente, les échanges et les journaux. Cela doit également être fait entr
   2018-02-10 09:17:39,927 [INFO] deleting queue q_tsource.sr_subscribe.u_sftp_f60.81353341.03950190 (tsource@localhost)
   2018-02-10 09:17:40,196 [WARNING] option url deprecated please use post_base_url
   2018-02-10 09:17:40,196 [WARNING] use post_broker to set broker
-  2018-02-10 09:17:40,197 [INFO] sr_watch f40 cleanup
+  2018-02-10 09:17:40,197 [INFO] sr3_watch f40 cleanup
   2018-02-10 09:17:40,207 [INFO] deleting exchange xs_tsource (tsource@localhost)
   2018-02-10 09:17:40,471 [INFO] sr_winnow t00_f10 cleanup
   2018-02-10 09:17:40,471 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -1043,7 +1043,7 @@ While it is runnig one can run flow_check.sh at any time::
   test  4 success: max shovel (100008) and subscriber t_f30 (99953) should have about the same number of items
   test  5 success: count of truncated headers (100008) and subscribed messages (100008) should have about the same number of items
   test  6 success: count of downloads by subscribe t_f30 (99953) and messages received (100008) should be about the same
-  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by sr_watch (199620) should be about the same
+  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by sr3_watch (199620) should be about the same
   test  8 success: posted by watch(199620) and subscribed cp_f60 (99966) should be about half as many
   test  9 success: posted by watch(199620) and sent by sr_sender (199549) should be about the same
   test 10 success: 0 messages received that we don't know what happenned.
@@ -1137,9 +1137,9 @@ Pour récupérer de cet état sans rejeter les résultats d’un test long, proc
   test  4 success: sr_subscribe (98068) should have the same number of
   items as sarra (98075)
                    | watch      routing |
-  test  5 success: sr_watch (397354) should be 4 times subscribe t_f30 (98068)
+  test  5 success: sr3_watch (397354) should be 4 times subscribe t_f30 (98068)
   test  6 success: sr_sender (392737) should have about the same number
-  of items as sr_watch (397354)
+  of items as sr3_watch (397354)
   test  7 success: sr_subscribe u_sftp_f60 (361172) should have the same
   number of items as sr_sender (392737)
   test  8 success: sr_subscribe cp_f61 (361172) should have the same

@@ -726,7 +726,7 @@ FIXME are things left to the side that need to be seen to.
 
 
 * **RELEASE BLOCKER** hairy. #403
-  sr_watch does not batch things. It just dumps an entire tree.
+  sr3_watch does not batch things. It just dumps an entire tree.
   This will need to be re-wored before release into an iterator style approach.
   so if you start in a tree with a million files, it will scan the entire million
   and present them as a single in memory worklist.  This will have performance
@@ -737,7 +737,7 @@ FIXME are things left to the side that need to be seen to.
   impact and delay to producing the first file is still there, but at least
   returns one batch at a time.
 
-* **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly. #389
+* **RELEASE BLOCKER** logs of sr_poll and sr3_watch tend to get humungous way too quickly. #389
 
 * try out jsonfile for building notification messages to post. can build json incrementally, #402
   so you do not need to delete the _deleteOnPost elements (can just skip over them)

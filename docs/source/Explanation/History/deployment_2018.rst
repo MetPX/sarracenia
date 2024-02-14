@@ -203,7 +203,7 @@ Expanded use cases explored:
   Having all user codes invoke a Python3 script is complete nonsense in an HPC environment, so 
   it was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
   Once the C implementation was begun, it was only a little additional work to implement a C version 
-  of sr_watch (called sr_cpost) which was much more memory and CPU efficient than the Python original.
+  of sr3_watch (called sr_cpost) which was much more memory and CPU efficient than the Python original.
 
 * Node.js implementation: A client of the public datamart decided to implement enough of Sarracenia 
   to download warnings in real-time.

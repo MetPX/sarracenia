@@ -35,14 +35,14 @@ this one.
 
 Regardless of how it is done, injecting data means telling the pump where the data
 is so that it can be forwarded to and/or by the pump. This can be done by either
-using the active and explicit sr3_post command, or just using sr_watch on a directory.
+using the active and explicit sr3_post command, or just using sr3_watch on a directory.
 Where there are large numbers of files, and/or tight timeliness constraints, invocation
-of sr3_post directly by the producer of the file is optimal, as sr_watch may provide
+of sr3_post directly by the producer of the file is optimal, as sr3_watch may provide
 disappointing performance. Another explicit, but low frequency approach is the
 sr_poll command, which allows one to query remote systems to pull data
 into the network efficiently.
 
-While sr_watch is written as an optimal directory watching system, there simply is no
+While sr3_watch is written as an optimal directory watching system, there simply is no
 quick way to watch large (say, more than 100,000 files) directory trees. On
 dd.weather.gc.ca, as an example, there are 60 million files in about a million
 directories. To walk that directory tree once takes several hours. To find new files,
@@ -197,7 +197,7 @@ is called *blacklab*, and the user on the server is *peter* running as peter on 
 a directory is created under /var/www/project/outgoing, writable by peter,
 which results in a configuration like so::
 
-  sr_watch edit project.conf 
+  sr3_watch edit project.conf 
 
   broker amqp://feeder@localhost/
   url http://blacklab/
@@ -206,15 +206,15 @@ which results in a configuration like so::
 
 Then a watch is started::
 
-  sr_watch start project 
+  sr3_watch start project 
 
 .. warning::
   **FIXME**: real example.
 
-  **FIXME**: sr_watch was supposed to take configuration files, but might not have
+  **FIXME**: sr3_watch was supposed to take configuration files, but might not have
    been modified to that effect yet.
 
-While sr_watch is running, any time a file is created in the *document_root* directory,
+While sr3_watch is running, any time a file is created in the *document_root* directory,
 it will be announced to the pump (on localhost, ie. the server blacklab itself).::
 
  cp frog.dna  /var/www/project/outgoing

@@ -713,7 +713,7 @@ Cette section comprend un mélange de tâches qui, espérons-le, peuvent être a
 FIXME sont des choses laissées de côté qui doivent être vues.
 
 * **RELEASE BLOCKER** poilu. #403
-  sr_watch ne fait pas de lot par lots. Il jette juste un arbre entier.
+  sr3_watch ne fait pas de lot par lots. Il jette juste un arbre entier.
   Cela devra être re-écrit avec une approche de style itérateur.
   Donc si vous commencez dans une arborescence avec un million de fichiers, il analysera le million entier
   et les présentera comme une liste de travail unique en mémoire.  Cela aura des problèmes performances.
@@ -724,7 +724,7 @@ FIXME sont des choses laissées de côté qui doivent être vues.
   l’impacte de la mémoire et le retard de production du premier fichier sont toujours là, mais au moins
   renvoie un lot à la fois.
 
-* **RELEASE BLOCKER** journaux de sr_poll et sr_watch ont tendance à devenir énormes beaucoup trop rapidement. #389
+* **RELEASE BLOCKER** journaux de sr_poll et sr3_watch ont tendance à devenir énormes beaucoup trop rapidement. #389
 
 * essayez jsonfile pour créer des messages de notification à publier. peut construire json de manière incrémentielle, # 402
   vous n’avez donc pas besoin de supprimer les éléments _deleteOnPost (vous pouvez simplement les ignorer)

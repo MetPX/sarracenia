@@ -33,7 +33,7 @@ sr_subscribe, et un plugin on_file pour déclencher leur traitement ultérieur,
 de sorte que le fichier est qui leur a été remis sans sondage. C'est la façon
 la plus efficace de travailler, mais... il est entendu que pas tous les logiciels
 ne seront coopératifs. Pour démarrer le flot en Sarracenia dans ces cas,
-ca prend des outils de sondage:  sr_poll (à distance), et sr_watch (locale.)
+ca prend des outils de sondage:  sr_poll (à distance), et sr3_watch (locale.)
 
 D'une manière générale, Linux est la principale cible de déploiement et la
 seule plate-forme sur laquelle les configurations de serveur sont déployées.

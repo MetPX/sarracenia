@@ -34,14 +34,14 @@ celui-ci.
 
 Quelle que soit la façon dont cela est fait, injecter des données signifie indiquer à la pompe où les données sont
 de sorte qu’elles puissent être acheminé vers/par la pompe. Cela peut être fait par l’un ou l’autre
-à l’aide de la commande active et explicite sr_post, ou simplement à l’aide de sr_watch sur un répertoire.
+à l’aide de la commande active et explicite sr_post, ou simplement à l’aide de sr3_watch sur un répertoire.
 Lorsqu’il y a un grand nombre de fichiers et/ou des contraintes de rapidité serrées, l’appel
-de sr3_post directement par le producteur du dossier est optimale, par ce que sr_watch peut fournir de
+de sr3_post directement par le producteur du dossier est optimale, par ce que sr3_watch peut fournir de
 performances décevantes. Une autre approche explicite, mais à basse fréquence, est la
 commande sr_poll, qui permet d’interroger des systèmes distants pour extraire des données
 dans le réseau efficacement.
 
-Alors que sr_watch est écrit comme un système de surveillance de répertoire optimal, il n’y a tout simplement pas de
+Alors que sr3_watch est écrit comme un système de surveillance de répertoire optimal, il n’y a tout simplement pas de
 moyen rapide de regarder des arborescences de répertoires volumineuses (disons, plus de 100 000 fichiers). Sur
 dd.weather.gc.ca, par exemple, il y a 60 millions de fichiers dans environ un million de répertoires.
 Parcourir cette arborescence de répertoires une fois prend plusieurs heures. Pour rechercher de nouveaux fichiers,
@@ -196,7 +196,7 @@ s’appelle *blacklab*, et l’utilisateur sur le serveur est *peter* s’exécu
 un répertoire est créé sous /var/www/project/outgoing, accessible en écriture par peter,
 ce qui se traduit par une configuration comme celle-ci ::
 
-  sr_watch edit project.conf
+  sr3_watch edit project.conf
 
   broker amqp://feeder@localhost/
   url http://blacklab/
@@ -205,12 +205,12 @@ ce qui se traduit par une configuration comme celle-ci ::
 
 Ensuite, une watch est démarrée::
 
-  sr_watch start project 
+  sr3_watch start project 
 
 .. warning::
   **FIXME** : exemple réel.
 
-  **FIXME** : sr_watch était censé prendre les fichiers de configuration, mais qui cela n'a peut-être pas
+  **FIXME** : sr3_watch était censé prendre les fichiers de configuration, mais qui cela n'a peut-être pas
    été modifié à cet effet.
 
 Pendant l’exécution de sr_watch, chaque fois qu’un fichier est créé dans le répertoire *document_root*,
