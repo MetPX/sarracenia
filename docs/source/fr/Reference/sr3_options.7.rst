@@ -491,6 +491,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
+bufsize <size> (défaut: 1m)
+---------------------------
+
+Les fichiers seront copiés en tranches de *bufsize* octets. Utilisé par les protocoles de transfert.
 
 byteRateMax <size> (défaut: 0)
 ------------------------------
@@ -890,6 +894,7 @@ peut également être spécifié comme une intervalle de temps, par exemple, 10 
 Lorsque l'option est défini sur une intervalle de temps, le processus de publication de fichiers attends
 jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
 ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
+C'est un effet pareil à un choix de valeur pou *fileAgeMin*.
 
 Enfin, **inflight** peut être réglé a *NONE*. Dans ce cas, le fichier est écrit directement
 avec le nom final, où le destinataire attendra de recevoir un poste pour notifier l’arrivée du fichier.
@@ -925,6 +930,18 @@ inlineByteMax <taille>
 ----------------------
 
 la taille maximale des fichiers dont le contenu est à inclure dans un messages d'annonce (envoyé inline.)
+
+
+
+inlineEncoding text|binary|guess (défaut: guess)
+_________________________________________________
+
+Quand on inclut les données dans le message on l'encode dans un format choisi:
+
+ * text: le fichier doit être du utf-8 valide (ou érreur.) 
+ * binary:  le fichier peut être encodé n'importe comment, il sera en format base64.
+ * guess: essaie le format text en premier, utilise binary en cas d'erreur.
+
 
 inlineOnly
 ----------
@@ -1130,14 +1147,18 @@ ou:
 
 Pour plus d´information: `Supprimer les doublons <../Explication/SupprimerLesDoublons.html>`_
 
-nodupe_fileAgeMax
------------------
+fileAgeMax
+----------
 
 Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
 ancien pour qu'il puisse être posté.
 
-nodupe_fileAgeMin
------------------
+Dans un Poll :
+ * La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.
+ (discussion complète ici (en anglais): https://github.com/MetPX/sarracenia/issues/904)
+
+fileAgeMin
+----------
 
 Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
 neufs pour qu'ils puissent être postés.
@@ -1503,6 +1524,21 @@ publiés avec succès, ils seront enregistrés sur le disque pour réessayer ult
 exécutée qu’une seule fois, comme dans les tests de flux, ces messages d'annonce ne seront jamais réessayés, sauf si
 retryEmptyBeforeExit est défini à True.
 
+retry_refilter <boolean> (par défaut : False)
+---------------------------------------------
+
+L'option **retry_refilter** modifie la façon dont les messages sont rechargés lorsqu'ils sont récupérés à partir 
+d'une file d'attente pour une nouvelle tentive de transfer (retry). La méthode par défaut (valeur : False) 
+consiste à répéter le transfert en utilisant exactement le même message que précédemment. Si **retry_refilter** 
+est défini (valeur : True), alors tous les Les champs calculés du message + seront supprimés et le 
+traitement redémarrera à partir de la phase *gather*  (le traitement d'acceptation/rejet sera 
+répété, les destinations recalculées.)
+
+Le comportement normal de nouvelle tentative (retry) est utilisé lorsque la destination a subit une 
+panne et doit renvoyer plus tard, tandis que l'option **retry_refilter** est utilisée lors de la récupération 
+de la configuration
+
+
 retry_ttl <duration> (défaut: identique à expire)
 -------------------------------------------------
 
@@ -1722,6 +1758,15 @@ timeout <intervalle> (défaut: 0)
 
 L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
 transfert de connexion ou de téléchargement (appliqué pendant le transfert).
+
+timezone <chaine> (défaut: UTC)
+--------------------------------
+
+Établir le fuseau horaire pour les dates afficher pour les fichiers sur un serveur FTP.
+La valeur est tel que décrit timezone as per `pytz <pypi.org/project/pytz>`_
+exemples: Canada/Pacific, Pacific/Nauru, Europe/Paris
+Seulement actif dans le contexte de sondage de serveur FTP.
+
 
 tlsRigour (défaut: medium)
 --------------------------

@@ -242,8 +242,8 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         #Disk
         nodupe_disk = NoDupe_Disk(BaseOptions)
         nodupe_disk.o.nodupe_ttl = 100000
-        nodupe_disk.o.nodupe_fileAgeMin = 1000
-        nodupe_disk.o.nodupe_fileAgeMax = 1000
+        nodupe_disk.o.fileAgeMin = 1000
+        nodupe_disk.o.fileAgeMax = 1000
         nodupe_disk.now = message_now
         nodupe_disk.on_start()
 
@@ -255,8 +255,8 @@ def test_after_accept__WithFileAges(tmp_path, capsys):
         #Redis
         nodupe_redis = NoDupe_Redis(BaseOptions)
         nodupe_redis.o.nodupe_ttl = 100000
-        nodupe_redis.o.nodupe_fileAgeMin = 1000
-        nodupe_redis.o.nodupe_fileAgeMax = 1000
+        nodupe_redis.o.fileAgeMin = 1000
+        nodupe_redis.o.fileAgeMax = 1000
         nodupe_redis.now = message_now
         nodupe_redis.on_start()
         

@@ -301,15 +301,6 @@ class sr_GlobalState:
 
         self.default_cfg = sarracenia.config.default_config()
 
-        #self.default_cfg = sarracenia.config.Config()
-        #if os.path.exists( "default.conf" ):
-        #    self.default_cfg.parse_file("default.conf")
-        #if os.path.exists( "admin.conf" ):
-        #    self.default_cfg.parse_file("admin.conf")
-
-        #self.admin_cfg = copy.deepcopy( self.default_cfg )
-        #if os.path.exists( "admin.conf" ):
-        #    self.admin_cfg.parse_file("admin.conf")
         os.chdir(self.user_config_dir)
 
         for c in self.components:
@@ -749,6 +740,37 @@ class sr_GlobalState:
             exl.append(x)
             return exl
 
+    def __resolved_post_exchanges(self, c, cfg, o):
+        """
+          Guess the name of an exchange. looking at either a direct setting,
+          or an existing queue state file, or lastly just guess based on conventions.
+        """
+        exl = []
+        #if hasattr(o,'declared_exchanges'):
+        #    exl.extend(o.declared_exchanges)
+
+        if hasattr(o, 'post_exchange'):
+            if type(o.post_exchange) == list:
+                exl.extend(o.post_exchange)
+            else:
+                exl.append(o.post_exchange)
+            return exl
+
+        x = 'xs_%s' % o.post_broker.url.username
+
+        if hasattr(o, 'post_exchangeSuffix'):
+            x += '_%s' % o.post_exchangeSuffix
+
+        if hasattr(o, 'post_exchangeSplit'):
+            l = []
+            for i in range(0, o.instances):
+                y = x + '%02d' % i
+                l.append(y)
+            return l
+        else:
+            exl.append(x)
+            return exl
+
     def __guess_queueName(self, c, cfg, o):
         """
           Guess the name of a queue. looking at either a direct setting,
@@ -832,17 +854,8 @@ class sr_GlobalState:
                 if hasattr(o, 'post_broker') and o.post_broker is not None and o.post_broker.url is not None:
                     host = self._init_broker_host(o.post_broker.url.netloc)
 
-                    #o.broker = o.post_broker
-                    if hasattr(o, 'post_exchange'):
-                        o.exchange = o.post_exchange
-                    if hasattr(o, 'post_exchangeSplit'):
-                        o.exchangeSplit = o.post_exchangeSplit
-                    if hasattr(o, 'post_exchangeSuffix'):
-                        o.exchangeSuffix = o.post_exchangeSuffix
-
-                    xl = self.__resolved_exchanges(c, cfg, o)
-
-                    self.configs[c][cfg]['options'].resolved_exchanges = xl
+                    self.configs[c][cfg]['options'].resolved_exchanges = \
+                            self.__resolved_post_exchanges(c, cfg, o)
 
                     if hasattr(o, 'post_exchange'):
                         self.brokers[host]['exchange'] = o.post_exchange
@@ -1339,6 +1352,20 @@ class sr_GlobalState:
                                     self.default_cfg.declared_users[u_url.username],
                                     u_url.username, u_url.password, self.options.dry_run )
 
+        # declare admin exchanges.
+        if hasattr(self,'default_cfg'):
+            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            if hasattr(self.default_cfg, 'declared_exchanges'):
+                xdc = sarracenia.moth.Moth.pubFactory(
+                    {
+                        'broker': self.default_cfg.admin,
+                        'dry_run': self.options.dry_run,
+                        'exchange': self.default_cfg.declared_exchanges,
+                        'message_strategy': { 'stubborn':True }
+                    })
+                xdc.putSetup()
+                xdc.close()
+               
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -1404,7 +1431,6 @@ class sr_GlobalState:
                 flow.runCallbacksTime('on_declare')
                 del flow
                 flow=None
-        
 
     def disable(self):
         if len(self.filtered_configurations) == 0:

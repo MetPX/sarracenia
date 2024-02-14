@@ -113,6 +113,7 @@ default_options = {
     'recursive' : True,
     'report': False,
     'retryEmptyBeforeExit': False,
+    'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
     'sundew_compat_regex_first_match_is_zero': False,
@@ -134,15 +135,15 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
-    'reconnect', 'report', 'reset', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
+    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
     'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'nodupe_fileAgeMax', 'retry_ttl',
-    'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
+    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
@@ -163,7 +164,8 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 'logLevel', 
+    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 
+    'inlineEncoding', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -665,7 +667,9 @@ class Config:
         'exchange_split': 'exchangeSplit',
         'exchange_suffix': 'exchangeSuffix',
         'expiry': 'expire', 
-        'file_time_limit' : 'nodupe_fileAgeMax', 
+        'file_time_limit' : 'fileAgeMax', 
+        'nodupe_fileAgeMax' : 'fileAgeMax', 
+        'nodupe_fileAgeMin' : 'fileAgeMin', 
         'fp' : 'force_polling',
         'fs' : 'follow_symlinks',
         'h' : 'help',
@@ -767,7 +771,8 @@ class Config:
         self.bufsize = 1024 * 1024
         self.byteRateMax = 0
 
-        self.nodupe_fileAgeMax = 0 # disabled.
+        self.fileAgeMax = 0 # disabled.
+        self.fileAgeMin = 0 # disabled.
         self.timezone = 'UTC'
         self.debug = False
         self.declared_exchanges = []
@@ -1552,7 +1557,9 @@ class Config:
                 self._parse_v3unplugin(v)
             elif k in ['inflight', 'lock']:
                 if v[:-1].isnumeric():
-                    setattr(self, k, durationToSeconds(v))
+                    vv = durationToSeconds(v)
+                    setattr(self, k, vv)
+                    self.fileAgeMin = vv
                 else:
                     if line[1].lower() in ['none', 'off', 'false']:
                         setattr(self, k, None)
@@ -1910,6 +1917,10 @@ class Config:
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
             self._resolveQueueName(component,cfg)
+
+        valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
+        if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
+            logger.error( f"invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
 
         if hasattr(self, 'no'):
             if self.statehost:
@@ -2511,6 +2522,10 @@ class Config:
             help=
             'allows simultaneous use of multiple versions and types of messages'
         )
+        parser.add_argument('--retry_refilter',
+                            action='store_true',
+                            default=self.retry_refilter,
+                            help='repeat message processing when retrying transfers (default just resends as previous attempt.)')
         #FIXME: select/accept/reject in parser not implemented.
         parser.add_argument(
             '--select',

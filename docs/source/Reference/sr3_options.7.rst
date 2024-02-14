@@ -503,6 +503,12 @@ Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.
 
 
+bufsize <size> (default: 1MB)
+-----------------------------
+
+Files will be copied in *bufsize*-byte blocks. for use by transfer protocols.
+
+
 byteRateMax <size> (default: 0)
 --------------------------------
 
@@ -906,6 +912,7 @@ can also be specified as a time interval, for example, 10 for 10 seconds.
 When set to a time interval, file posting process ensures that it waits until
 the file has not been modified in that interval. So a file will
 not be processed until it has stayed the same for at least 10 seconds.
+This is the same as setting the **fileAgeMin** setting.
 
 Lastly, **inflight** can be set to *NONE*, which case the file is written directly
 with the final name, where the recipient will wait to receive a post notifying it
@@ -941,7 +948,17 @@ will not be posted.
 inlineByteMax <size>
 --------------------
 
-the maximums size of messages to inline.
+The maximum size of messages to inline.
+
+inlineEncoding text|binary|guess (default: guess)
+_________________________________________________
+
+when inlining file content, what sort of encoding should be done? Three choices:
+
+ * text: the file content is assumed to be utf-8 text and encoded as such.
+ * binary: the file content is unconditionally converted to base64 binary encoding.
+ * guess: try making text, if that fails fall back to binary.
+
 
 inlineOnly
 ----------
@@ -1153,14 +1170,18 @@ or:
 
 More information: `Duplicate Suppresion <../Explanation/DuplicateSuppression.html>`_
 
-nodupe_fileAgeMax
------------------
+fileAgeMax
+----------
 
-If files are older than this setting (default: 30d in poll, 0 in other components), 
+If files are older than this setting (default: 7h in poll, 0 in other components), 
 then ignore them, they are too old to post. 0 deactivates the setting.
 
-nodupe_fileAgeMin
------------------
+In a Poll:
+  * default is 7 hours. should be less than nodupe_ttl to prevent re-ingest of duplicate data.
+    (full discussion here: https://github.com/MetPX/sarracenia/issues/904 )
+
+fileAgeMin
+----------
 
 If files are newer than this setting (default: 0), then ignore them, they are too
 new to post. 0 deactivates the setting.
@@ -1181,6 +1202,9 @@ is in minutes, hours, days, or weeks. After the interval expires the contents ar
 dropped, so duplicates separated by a large enough interval will get through.
 A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.
+
+Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
+re-ingesting files that have aged out of the duplicate suppression cache.
 
 **Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
 alternate strategy.  One must use either a fixed blocksize, or always never partition files.
@@ -1528,6 +1552,19 @@ retryEmptyBeforeExit: <boolean> (default: False)
 Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By default, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.
 
 
+retry_refilter <boolean> (default: False)
+-----------------------------------------
+
+The **retry_refilter** option alters how messages are reloaded when they are retrieved from
+a retry queue. The default way (value: False) is to repeat the transfer using exactly
+the same message as before. If **retry_refilter** is set (value: True) then all the
+message's calculated fields will be discarded, and the processing re-started from the gather
+phase (accept/reject processing will be repeated, destinations re-calculated.)
+
+The normal retry behaviour is use when the remote has had a failure, and need to 
+re-send later, while the retry_refilter option is used when recovering from configuration 
+file errors, and some messages had incorrect selection or destination criteria.
+
 retry_ttl <duration> (default: same as expire)
 ----------------------------------------------
 
@@ -1757,6 +1794,14 @@ timeout <interval> (default: 0)
 
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
+
+
+timezone <string> (default: UTC)
+--------------------------------
+
+Interpret listings from an FTP server as being in the given timezone as per `pytz <pypi.org/project/pytz>`_
+Examples: Canada/Pacific, Pacific/Nauru, Canada/Eastern, Europe/Paris
+Has no effect other than in when polling an FTP server.
 
 
 tlsRigour (default: medium)

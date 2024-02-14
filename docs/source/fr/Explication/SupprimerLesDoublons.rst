@@ -172,7 +172,7 @@ Fichiers trop vieux
 
 dans les fichiers de configuration::
 
-    nodupe_fileAgeMax 600
+    fileAgeMax 600
 
 Les messages notificationsfichiers pour des fichiers qui sont agés de plus que 600 secondes (10 minutes) seront
 supprimés.
@@ -180,6 +180,11 @@ supprimés.
 Ceci est généralement utilisé avec des sondages (poll) qui ont des répertoires de très longue durée.
 Exemple : un serveur distant dispose d'une base de données permanente de fichiers distants. ca ne sert à rien
 de reexaminer de fichiers vieux de deux ans.
+
+Il arrive souvent que nodupe_ttl soit supérieur à nodupe_fileAgeMax pour éviter
+les fichiers soient oubliés par la cache avant d'être considérés comme "trop vieux" et ensuite d'être
+(à tort) ré-ingéré. Un message d'avertissement est émis si c'est le cas dans un sondage
+au démarrage.
 
 
 

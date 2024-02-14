@@ -806,7 +806,8 @@ class Flow:
             relPath = u.path[1:] + '/' + relPath
 
         # FIXME... why the % ? why not just assign it to copy the value?
-        if 'rename' in msg: relPath = '%s' % msg['rename']
+        if self.o.download and 'rename' in msg: 
+            relPath = '%s' % msg['rename']
 
         token = relPath.split('/')
         filename = token[-1]
@@ -1070,9 +1071,10 @@ class Flow:
             (len(self.worklist.incoming), len(self.worklist.rejected)))
 
     def gather(self) -> None:
+        so_far=0
         for p in self.plugins["gather"]:
             try:
-                new_incoming = p()
+                new_incoming = p(self.o.batch-so_far)
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
@@ -1080,6 +1082,12 @@ class Flow:
 
             if len(new_incoming) > 0:
                 self.worklist.incoming.extend(new_incoming)
+                so_far += len(new_incoming) 
+
+            # if we gathered enough with a subset of plugins then return.
+            if so_far >= self.o.batch:
+                return
+
 
     def do(self) -> None:
 

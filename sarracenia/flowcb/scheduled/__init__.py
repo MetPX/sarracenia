@@ -87,7 +87,7 @@ class Scheduled(FlowCB):
         now=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         self.update_appointments(now)
 
-    def gather(self):
+    def gather(self,messageCountMax):
 
         # for next expected post
         self.wait_until_next()

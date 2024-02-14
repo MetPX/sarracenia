@@ -30,10 +30,10 @@ class Disk(NoDupe):
 
        The expiry based on nodupe_ttl is applied every housekeeping interval.
 
-       nodupe_fileAgeMax - the oldest file that will be considered for processing.
+       fileAgeMax - the oldest file that will be considered for processing.
                            files older than this threshold will be rejected.
 
-       nodupe_fileAgeMin - the newest file that can be considered for processing.
+       fileAgeMin - the newest file that can be considered for processing.
                            files newer than this threshold will be rejected.
                            if not specified, the value of option *inflight*
                            may be referenced if it is an integer value.
@@ -55,8 +55,6 @@ class Disk(NoDupe):
         logging.basicConfig(format=self.o.logFormat, level=getattr(logging, self.o.logLevel.upper()))
 
         self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
-        self.o.add_option( 'nodupe_fileAgeMax', 'duration', 0 ) 
-        self.o.add_option( 'nodupe_fileAgeMin', 'duration', 0 ) 
 
         logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
 
@@ -149,15 +147,13 @@ class Disk(NoDupe):
     def after_accept(self, worklist):
         new_incoming = []
         self.now = nowflt()
-        if self.o.nodupe_fileAgeMax > 0:
-            min_mtime = self.now - self.o.nodupe_fileAgeMax
+        if self.o.fileAgeMax > 0:
+            min_mtime = self.now - self.o.fileAgeMax
         else:
             min_mtime = 0
 
-        if self.o.nodupe_fileAgeMin > 0:
-            max_mtime = self.now - self.o.nodupe_fileAgeMin
-        elif type(self.o.inflight) in [ int, float ] and self.o.inflight > 0:
-            max_mtime = self.now - self.o.inflight
+        if self.o.fileAgeMin > 0:
+            max_mtime = self.now - self.o.fileAgeMin
         else:
             # FIXME: should we add some time here to allow for different clocks?
             #        100 seconds in the future? hmm...
@@ -179,7 +175,7 @@ class Disk(NoDupe):
                     worklist.rejected.append(m)
                     continue
 
-            if self.check_message(m):
+            if '_isRetry' in m or self.check_message(m):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])

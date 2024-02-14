@@ -80,9 +80,9 @@ class FlowCB:
 
         Task: acknowledge messages from a gather source.
 
-    def gather(self) -> list::
+    def gather(self, messageCountMax) -> list::
 
-        Task: gather messages from a source... return a list of messages.
+        Task: gather messages from a source... return a list of messages 
 
               in a poll, gather is always called, regardless of vip posession.
               in all other components, gather is only called when in posession

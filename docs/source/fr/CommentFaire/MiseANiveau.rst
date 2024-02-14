@@ -38,6 +38,22 @@ Instructions d’installation
 git
 ---
 
+3.0.52
+------
+
+*CHANGEMENT* : argument messageCountMax supplémentaire au point d'entrée flowcb.gather().
+lors de la mise en œuvre de rappels de flow pour les flux cédulés ou de remplacements d'poll, le
+le point d'entrée de *gather* prend désormais un argument supplémentaire indiquant le maximum
+nombre de messages que la routine doit retourner.
+
+Pour être compatible avec les versions précédentes, on peut établir une valeur par défaut
+sur le rassemblement ::
+
+    def gather(self, messageMaxCount=None) :
+
+Avec la valeur par défaut, les plugins sont compatible avec les version précédentes.
+
+
 3.0.51
 ------
 
@@ -295,7 +311,7 @@ V2 to Sr3
           e                         fileEvents
           events                    fileEvents
           exchange_split            exchangeSplit
-          file_time_limit           nodupe_fileAgeMax
+          file_time_limit           fileAgeMax
           hb_memory_baseline_file   MemoryBaseLineFile
           hb_memory_max             MemoryMax
           hb_memory_multiplier      MemoryMultiplier

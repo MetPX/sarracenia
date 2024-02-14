@@ -32,14 +32,14 @@ class Log(FlowCB):
         logger.info(f'{self.o.component} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
         if self.o.component in ['sender']:
             self.action_verb = 'sent'
+        elif self.o.component in ['subscribe', 'sarra' ]:
+            self.action_verb = 'downloaded'
         elif self.o.component in ['post', 'poll', 'watch']:
             self.action_verb = 'noticed'
-        elif self.o.component in ['shovel']:
-            self.action_verb = 'filtered'
-        elif self.o.component in ['flow']:
-            self.action_verb = 'flowed'
+        elif self.o.component in [ 'flow', 'shovel', 'winnow']:
+            self.action_verb = self.o.component + 'ed'
         else:
-            self.action_verb = 'downloaded'
+            self.action_verb = 'done'
         self.started = nowflt()
  
         self.rxTopicSeparator='.'
@@ -60,9 +60,9 @@ class Log(FlowCB):
     def metricsReport(self):
         return { 'lagMax': self.lagMax, 'lagTotal':self.lagTotal, 'lagMessageCount':self.msgCount, 'rejectCount':self.rejectCount }
 
-    def gather(self):
+    def gather(self, messageCountMax):
         if set(['gather']) & self.o.logEvents:
-            logger.info('')
+            logger.info( f' messageCountMax: {messageCountMax} ')
 
         return []
 

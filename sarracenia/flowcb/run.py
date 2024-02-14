@@ -68,7 +68,7 @@ class Run(FlowCB):
             logger.error("subprocess.run failed err={}".format(err))
             logger.debug("Exception details:", exc_info=True)
 
-    def gather(self):
+    def gather(self, messageCountMax):
         """
            FIXME: this does not make sense. need to figure out how to get the 
            messages back from the script, perhaps using a json file reader?
