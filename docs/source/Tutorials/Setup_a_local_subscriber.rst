@@ -73,7 +73,7 @@ Setup the bits that post changes to the exchange::
       no=1
 
 --> Note the line with **[ERROR]**, it was unable to find the queue.
-this is because the queue needs to first be created by sr3_watch and since we started the
+this is because the queue needs to first be created by the watch and since we started the
 subscriber and watch at the same time with '``sr start``' we ran into a small race condition.
 This was soon after resolved as the sr_subscribe has a 1 second retry time.
 This can be confirmed with the 'RabbitMQ Queues' page showing a ``q_bob.subscribe.test-subscribe. ...`` queue in the list.::

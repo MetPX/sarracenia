@@ -4,7 +4,7 @@ File Detection Strategies
 =========================
 
 
-The fundamental job of sr3_watch is to notice when files are available to be transferred.
+The fundamental job of watch is to notice when files are available to be transferred.
 The appropriate strategy varies according to:
 
  - the **number of files in the tree** to be monitored,
@@ -16,7 +16,7 @@ watch where one is posting for an *sr_sarra* component, then use of the
 *delete* option will keep the number of files in directory at any one point
 small and minimize the time to notice new ones. In such optimal conditions,
 noticing files in a hundredth of a second is reasonable to expect. Any method
-will work well for such trees, but the sr3_watch defaults (inotify) are usually
+will work well for such trees, but the watch defaults (inotify) are usually
 the lowest overhead.
 
 When the tree gets large, the decision can change based on a number of factors,
@@ -43,7 +43,7 @@ File Detection Strategy Table
 |library      |   might be posted.                    | - most efficient.                    |
 |             | - works on any size file tree.        | - more complicated to setup.         |
 |(LD_PRELOAD) | - very multi-threaded.                | - use where python3 not available.   |
-|             | - I/O by writer (better localized)    | - no sr3_watch needed.                |
+|             | - I/O by writer (better localized)    | - no watch needed.                   |
 |(in C)       | - very multi-threaded (user processes)| - no plugins.                        |
 |             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
@@ -60,7 +60,7 @@ File Detection Strategy Table
 +-------------+---------------------------------------+--------------------------------------+
 |sr_cpost     |works like watch if sleep > 0          | - where python3 is hard to get.      |
 |             |                                       | - where speed is critical.           |
-|(in C)       | - faster than sr3_watch                | - where plugins not needed.          |
+|(in C)       | - faster than watch                   | - where plugins not needed.          |
 |             | - uses less memory than sr_watch.     | - same issues with tree size         |
 |             | - practical with a bit bigger trees.  |   as sr_watch, just a little later.  |
 |             |                                       |   (see following methods)            |
@@ -76,7 +76,7 @@ File Detection Strategy Table
 |             | - Large trees mean long startup.      |works great with 10000 files          |
 |(in Python)  | - each node in a cluster may need     |only a few seconds startup.           |
 |             |   to run an instance                  |                                      |
-|             | - each sr3_watch single threaded.      |too slow for millions of files.       |
+|             | - each watch single threaded.         |too slow for millions of files.       |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|                                       |                                      |
 |reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
