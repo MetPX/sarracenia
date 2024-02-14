@@ -426,7 +426,7 @@ In general, v3 plugins:
   The checksum is already performed when the new notification message is being generated so most likely
   any message fields such as **sumalgo** and other **algo** fields can be discarded.
 
-  For an example of using the message builder, look at  `do_poll -> poll`_
+  For an example of using the message builder, look at  `do_poll -> poll or gather`_
 
 
 * v3 plugins **rarely, involve subclassing of moth or transfer classes.**
@@ -603,8 +603,8 @@ examples:
 
 
 
-do_poll -> poll
-~~~~~~~~~~~~~~~
+do_poll -> poll or gather
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 v2: call do_poll from plugin.
 
@@ -620,6 +620,9 @@ v2: call do_poll from plugin.
  * often paired with download\_something plugins where a partial message is built with the poll
    and the download one is specialized to to the actual download.
 
+There is a common pattern in v2 polls where, rather than querying a remote server to find out what new products
+are available, in sr3 we have the concept of a scheduled flow, where there is a fixed list of requests done
+periodically. See `Scheduled Flow` for more on that. For typical polls, the migration to sr3 follows:
 
 v3: define poll in a flowcb class.
 
@@ -682,7 +685,6 @@ and at the end::
 
      return gathered_messages
 
- 
 
 Virtual IP processing in poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -699,6 +701,20 @@ to update their recent_files cache.
 
 examples:
  * flowcb/poll/airnow.py
+
+Scheduled Flow
+~~~~~~~~~~~~~~
+
+If there is a WISKIS ( https://www.kisters.net/wiski ) server, one needs to issue
+time centric queries are regular intervals. so a gather() entry point is implmented
+which returns a list of messages that a downloader will use to obtain the data.
+
+* https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf an example flow configuration for polling Ontario Power Generation sensors.
+
+* https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py  The plugin used by the OPG configuration using the gather() entry point.
+
+
+
 
 on_html_page -> subclass flowcb/poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -62,8 +62,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#on-message-on-post-after-accept">on_message, on_post –&gt; after_accept</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#on-file-after-work">on_file –&gt; after_work</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#on-heartbeat-on-housekeeping">on_heartbeat -&gt; on_housekeeping</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#do-poll-poll">do_poll -&gt; poll</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#do-poll-poll-or-gather">do_poll -&gt; poll or gather</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#virtual-ip-processing-in-poll">Virtual IP processing in poll</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scheduled-flow">Scheduled Flow</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#on-html-page-subclass-flowcb-poll">on_html_page -&gt; subclass flowcb/poll</a></li>
 </ul>
 </li>
@@ -164,26 +165,27 @@ Sarracenia version 3.x (metpx-sr3)</p>
 <li><p><a class="reference internal" href="#on-message-on-post-after-accept" id="id12">on_message, on_post –&gt; after_accept</a></p></li>
 <li><p><a class="reference internal" href="#on-file-after-work" id="id13">on_file –&gt; after_work</a></p></li>
 <li><p><a class="reference internal" href="#on-heartbeat-on-housekeeping" id="id14">on_heartbeat -&gt; on_housekeeping</a></p></li>
-<li><p><a class="reference internal" href="#do-poll-poll" id="id15">do_poll -&gt; poll</a></p></li>
+<li><p><a class="reference internal" href="#do-poll-poll-or-gather" id="id15">do_poll -&gt; poll or gather</a></p></li>
 <li><p><a class="reference internal" href="#virtual-ip-processing-in-poll" id="id16">Virtual IP processing in poll</a></p></li>
-<li><p><a class="reference internal" href="#on-html-page-subclass-flowcb-poll" id="id17">on_html_page -&gt; subclass flowcb/poll</a></p></li>
+<li><p><a class="reference internal" href="#scheduled-flow" id="id17">Scheduled Flow</a></p></li>
+<li><p><a class="reference internal" href="#on-html-page-subclass-flowcb-poll" id="id18">on_html_page -&gt; subclass flowcb/poll</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#on-line-poll-subclassing" id="id18">on_line -&gt; poll subclassing</a></p></li>
-<li><p><a class="reference internal" href="#do-send-send" id="id19">do_send -&gt; send:</a></p></li>
-<li><p><a class="reference internal" href="#do-download-download" id="id20">do_download -&gt; download:</a></p>
+<li><p><a class="reference internal" href="#on-line-poll-subclassing" id="id19">on_line -&gt; poll subclassing</a></p></li>
+<li><p><a class="reference internal" href="#do-send-send" id="id20">do_send -&gt; send:</a></p></li>
+<li><p><a class="reference internal" href="#do-download-download" id="id21">do_download -&gt; download:</a></p>
 <ul>
-<li><p><a class="reference internal" href="#destfnscript" id="id21">DESTFNSCRIPT</a></p></li>
+<li><p><a class="reference internal" href="#destfnscript" id="id22">DESTFNSCRIPT</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#v3-only-post-gather" id="id22">v3 only: post,gather</a></p></li>
-<li><p><a class="reference internal" href="#v3-complex-examples" id="id23">v3 Complex Examples</a></p>
+<li><p><a class="reference internal" href="#v3-only-post-gather" id="id23">v3 only: post,gather</a></p></li>
+<li><p><a class="reference internal" href="#v3-complex-examples" id="id24">v3 Complex Examples</a></p>
 <ul>
-<li><p><a class="reference internal" href="#flowcb-nodupe" id="id24">flowcb/nodupe</a></p></li>
-<li><p><a class="reference internal" href="#flowcb-retry" id="id25">flowcb/retry</a></p></li>
+<li><p><a class="reference internal" href="#flowcb-nodupe" id="id25">flowcb/nodupe</a></p></li>
+<li><p><a class="reference internal" href="#flowcb-retry" id="id26">flowcb/retry</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#table-of-v2-and-sr3-equivalents" id="id26">Table of v2 and sr3 Equivalents</a></p></li>
+<li><p><a class="reference internal" href="#table-of-v2-and-sr3-equivalents" id="id27">Table of v2 and sr3 Equivalents</a></p></li>
 </ul>
 </li>
 </ul>
@@ -729,7 +731,7 @@ and sr3 supports alternate message encodings which may be different again. Setti
 fields manually is actively counter-productive. The same applies with checksum logic found in v2 plugins.
 The checksum is already performed when the new notification message is being generated so most likely
 any message fields such as <strong>sumalgo</strong> and other <strong>algo</strong> fields can be discarded.</p>
-<p>For an example of using the message builder, look at  <a class="reference internal" href="#do-poll-poll">do_poll -&gt; poll</a></p>
+<p>For an example of using the message builder, look at  <a class="reference internal" href="#do-poll-poll-or-gather">do_poll -&gt; poll or gather</a></p>
 </li>
 <li><p>v3 plugins <strong>rarely, involve subclassing of moth or transfer classes.</strong>
 The sarracenia.moth class implements support for notification message queueing protocols
@@ -889,8 +891,8 @@ See: <a class="reference internal" href="#table-of-v2-and-sr3-equivalents">Table
 </ul>
 </div></blockquote>
 </section>
-<section id="do-poll-poll">
-<h3><a class="toc-backref" href="#id15" role="doc-backlink">do_poll -&gt; poll</a><a class="headerlink" href="#do-poll-poll" title="Link to this heading"></a></h3>
+<section id="do-poll-poll-or-gather">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">do_poll -&gt; poll or gather</a><a class="headerlink" href="#do-poll-poll-or-gather" title="Link to this heading"></a></h3>
 <p>v2: call do_poll from plugin.</p>
 <blockquote>
 <div><ul class="simple">
@@ -910,6 +912,9 @@ to do in each plugin.</p></li>
 and the download one is specialized to to the actual download.</p></li>
 </ul>
 </div></blockquote>
+<p>There is a common pattern in v2 polls where, rather than querying a remote server to find out what new products
+are available, in sr3 we have the concept of a scheduled flow, where there is a fixed list of requests done
+periodically. See <cite>Scheduled Flow</cite> for more on that. For typical polls, the migration to sr3 follows:</p>
 <p>v3: define poll in a flowcb class.</p>
 <blockquote>
 <div><ul class="simple">
@@ -981,8 +986,18 @@ to update their recent_files cache.</p>
 </dd>
 </dl>
 </section>
+<section id="scheduled-flow">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">Scheduled Flow</a><a class="headerlink" href="#scheduled-flow" title="Link to this heading"></a></h3>
+<p>If there is a WISKIS ( <a class="reference external" href="https://www.kisters.net/wiski">https://www.kisters.net/wiski</a> ) server, one needs to issue
+time centric queries are regular intervals. so a gather() entry point is implmented
+which returns a list of messages that a downloader will use to obtain the data.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf</a> an example flow configuration for polling Ontario Power Generation sensors.</p></li>
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py</a>  The plugin used by the OPG configuration using the gather() entry point.</p></li>
+</ul>
+</section>
 <section id="on-html-page-subclass-flowcb-poll">
-<h3><a class="toc-backref" href="#id17" role="doc-backlink">on_html_page -&gt; subclass flowcb/poll</a><a class="headerlink" href="#on-html-page-subclass-flowcb-poll" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">on_html_page -&gt; subclass flowcb/poll</a><a class="headerlink" href="#on-html-page-subclass-flowcb-poll" title="Link to this heading"></a></h3>
 <p>Here is a v2 plugin nsa_mls_nrt.py:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
@@ -1114,7 +1129,7 @@ of the poll class.</p>
 </section>
 </section>
 <section id="on-line-poll-subclassing">
-<h2><a class="toc-backref" href="#id18" role="doc-backlink">on_line -&gt; poll subclassing</a><a class="headerlink" href="#on-line-poll-subclassing" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">on_line -&gt; poll subclassing</a><a class="headerlink" href="#on-line-poll-subclassing" title="Link to this heading"></a></h2>
 <p>Similarly to on_html_page above, all uses of on_line in the previous version
 were about re-formatting lines to be parseable. the on_line routine can be
 similarly sub-classed to replace it.  One had to modify the parent.line
@@ -1125,7 +1140,7 @@ With the more flexible date parsing in sr3, there has been no identified need fo
 on which to build an example.</p>
 </section>
 <section id="do-send-send">
-<h2><a class="toc-backref" href="#id19" role="doc-backlink">do_send -&gt; send:</a><a class="headerlink" href="#do-send-send" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">do_send -&gt; send:</a><a class="headerlink" href="#do-send-send" title="Link to this heading"></a></h2>
 <p>v2: do_send could be either a standalone routine, or associated with a protocol type</p>
 <ul class="simple">
 <li><p>based on registered_as()  so the destination determines whether it is used or not.</p></li>
@@ -1149,7 +1164,7 @@ To add support for new protocols, subclass sarracenia.transfer instead.</p></li>
 </dl>
 </section>
 <section id="do-download-download">
-<h2><a class="toc-backref" href="#id20" role="doc-backlink">do_download -&gt; download:</a><a class="headerlink" href="#do-download-download" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">do_download -&gt; download:</a><a class="headerlink" href="#do-download-download" title="Link to this heading"></a></h2>
 <p>create a flowCallback class with a <em>download</em> entry point.</p>
 <ul>
 <li><p>accepts a single notification message as an argument.</p></li>
@@ -1184,7 +1199,7 @@ plugin required.</p>
 </li>
 </ul>
 <section id="destfnscript">
-<h3><a class="toc-backref" href="#id21" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
 <p>DESTFNSCRIPT is re-cast as a flowcb entry point, where the directive is now formatted
 similarly to the flowcallback in the configuration</p>
 <p>v2 configuration:</p>
@@ -1262,7 +1277,7 @@ statement <em>from sender_renamer_add_date import Sender_Renamer_Add_Date</em></
 </section>
 </section>
 <section id="v3-only-post-gather">
-<h2><a class="toc-backref" href="#id22" role="doc-backlink">v3 only: post,gather</a><a class="headerlink" href="#v3-only-post-gather" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">v3 only: post,gather</a><a class="headerlink" href="#v3-only-post-gather" title="Link to this heading"></a></h2>
 <p>The polling/posting is actually done in flow callback (flowcb) classes.
 The exit status does not matter, all such routines will be called in order.</p>
 <p>The return of a gather is a list of notification messages to be appended to worklist.incoming</p>
@@ -1280,9 +1295,9 @@ install a configuration to use it with <em>sr3 add poll/aws-nexrad.conf</em></p>
 </dl>
 </section>
 <section id="v3-complex-examples">
-<h2><a class="toc-backref" href="#id23" role="doc-backlink">v3 Complex Examples</a><a class="headerlink" href="#v3-complex-examples" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">v3 Complex Examples</a><a class="headerlink" href="#v3-complex-examples" title="Link to this heading"></a></h2>
 <section id="flowcb-nodupe">
-<h3><a class="toc-backref" href="#id24" role="doc-backlink">flowcb/nodupe</a><a class="headerlink" href="#flowcb-nodupe" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">flowcb/nodupe</a><a class="headerlink" href="#flowcb-nodupe" title="Link to this heading"></a></h3>
 <p>duplicate suppression in v3, has:</p>
 <ul class="simple">
 <li><p>an after_accept routing the prunes duplicates from worklist.incoming.
@@ -1290,7 +1305,7 @@ install a configuration to use it with <em>sr3 add poll/aws-nexrad.conf</em></p>
 </ul>
 </section>
 <section id="flowcb-retry">
-<h3><a class="toc-backref" href="#id25" role="doc-backlink">flowcb/retry</a><a class="headerlink" href="#flowcb-retry" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id26" role="doc-backlink">flowcb/retry</a><a class="headerlink" href="#flowcb-retry" title="Link to this heading"></a></h3>
 <blockquote>
 <div><ul class="simple">
 <li><p>has an after_accept function to append notification messages to the
@@ -1303,7 +1318,7 @@ on the retry list for later consideration.</p></li>
 </section>
 </section>
 <section id="table-of-v2-and-sr3-equivalents">
-<h2><a class="toc-backref" href="#id26" role="doc-backlink">Table of v2 and sr3 Equivalents</a><a class="headerlink" href="#table-of-v2-and-sr3-equivalents" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id27" role="doc-backlink">Table of v2 and sr3 Equivalents</a><a class="headerlink" href="#table-of-v2-and-sr3-equivalents" title="Link to this heading"></a></h2>
 <p>Here is an overview of plugins included in Sarracenia,
 One can browse the two trees, and using the table below,
 can review, compare and contrast the implementations.</p>

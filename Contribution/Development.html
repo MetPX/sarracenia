@@ -276,6 +276,9 @@ A gate for merging to development is for a second developer to run the flow_test
 <div><ul class="simple">
 <li><p>stable will be merged from (version 3) development, so the default version for new work is sr3.</p></li>
 <li><p>launchpad has recipes to produce metpx-sr3 packages from the stable branch.</p></li>
+<li><p>The <em>MetPX Daily</em> repository is a snapshot of the development branch.</p></li>
+<li><p>The <em>MetPX Pre-Release</em> repository should receive versions ending in rcX (release candidate)</p></li>
+<li><p>The <em>MetPX</em> repository should only contain stable releases that have graduated from the rcX series.</p></li>
 </ul>
 </div></blockquote>
 </section>
@@ -1553,6 +1556,12 @@ occurs that is identified as the released version.</p>
 </section>
 <section id="pypi">
 <h3>PyPi<a class="headerlink" href="#pypi" title="Link to this heading"></a></h3>
+<p>Pypi does not distinguish between older and newer python releases. There is only one package
+version for all supported versions. When uploading from a new OS, the versions in use on the
+OS are inferred to be the minimum, and so installation on older operating systems may be blocked
+by generated dependencies on overly modern versions.</p>
+<p>So when uploading to pypi, always do so from the oldest operating system where it needs to work.
+upward compatibility is more likely than downward.</p>
 <p>Pypi Credentials go in ~/.pypirc.  Sample Content:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pypi</span><span class="p">]</span>
 <span class="n">username</span><span class="p">:</span> <span class="n">SupercomputingGCCA</span>
@@ -1563,7 +1572,7 @@ occurs that is identified as the released version.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_wheel</span> <span class="n">upload</span>
 </pre></div>
 </div>
-<p>on older systems, or on newer ones:</p>
+<p>on older systems, or on (python &gt;= 3.7) newer ones:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">isolation</span>
 <span class="n">twine</span> <span class="n">upload</span> <span class="n">dist</span><span class="o">/</span><span class="n">metpx_sarracenia</span><span class="o">-</span><span class="mf">2.22.6</span><span class="o">-</span><span class="n">py3</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span> <span class="n">dist</span><span class="o">/</span><span class="n">metpx_sarracenia</span><span class="o">-</span><span class="mf">2.22.6</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
 </pre></div>
