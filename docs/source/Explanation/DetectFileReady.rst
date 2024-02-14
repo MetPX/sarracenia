@@ -111,7 +111,7 @@ File Detection Strategy Table
 sr_watch is sr3_post with the added *sleep* option that will cause it to loop
 over directories given as arguments.  sr3_cpost is a C version that functions
 identically, except it is faster and uses much less memory, at the cost of the
-loss of plugin support.  With sr3_watch (and sr3_cpost) The default method of
+loss of plugin support.  With a watch (and sr3_cpost), the default method of
 noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
 to recognize changes without having to scan the entire directory tree manually.
 Once primed, file changes are noticed instantaneously, but requires an
@@ -135,8 +135,8 @@ be used if timeliness is a concern.
 
 In supercomputing clusters, distributed files systems are used, and the OS
 optimized methods for recognizing file modifications (INOTIFY on Linux) do not
-cross node boundaries. To use sr3_watch with the default strategy on a
-directory in a compute cluster, one usually must have an sr3_watch process
+cross node boundaries. To use watch with the default strategy on a
+directory in a compute cluster, one usually must have a watch process
 running on every node. If that is undesirable, then one can deploy it on a
 single node with *force_polling* but the timing will be constrained by the
 directory size.
@@ -186,7 +186,7 @@ the entire file, such as *N* (SHA-512 of the file name only), but then one
 loses the ability to differentiate between versions of the file.
 
 note ::
-  should think about using N on the sr_watch, and having multi-instance shovels
+  should think about using N on the watch, and having multi-instance shovels
   recalculate checksums so that part becomes easily parallellizable. Should be
   straightforward, but not yet explored as a result of use of shim library. FIXME.
 
@@ -194,7 +194,7 @@ A last consideration is that in many cases, other processes are writing files
 to directories being monitored by sr_watch. Failing to properly set file
 completion protocols is a common source of intermittent and difficult to
 diagnose file transfer issues. For reliable file transfers, it is critical
-that both the writer and sr3_watch agree on how to represent a file that
+that both the writer and watch agree on how to represent a file that
 isn't complete.
 
 
