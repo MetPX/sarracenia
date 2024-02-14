@@ -123,6 +123,11 @@ Planned by 2022/04/11:
 
  * launchpad has recipes to produce metpx-sr3 packages from the stable branch. 
 
+ * The *MetPX Daily* repository is a snapshot of the development branch. 
+
+ * The *MetPX Pre-Release* repository should receive versions ending in rcX (release candidate) 
+
+ * The *MetPX* repository should only contain stable releases that have graduated from the rcX series.
 
 
 sr_insects
@@ -1467,6 +1472,14 @@ occurs that is identified as the released version.
 PyPi
 ~~~~
 
+Pypi does not distinguish between older and newer python releases. There is only one package
+version for all supported versions. When uploading from a new OS, the versions in use on the 
+OS are inferred to be the minimum, and so installation on older operating systems may be blocked
+by generated dependencies on overly modern versions.
+
+So when uploading to pypi, always do so from the oldest operating system where it needs to work.
+upward compatibility is more likely than downward.
+
 Pypi Credentials go in ~/.pypirc.  Sample Content::
 
   [pypi]
@@ -1477,7 +1490,7 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
     python3 setup.py bdist_wheel upload
 
-on older systems, or on newer ones::
+on older systems, or on (python >= 3.7) newer ones::
 
    python3 -m build --no-isolation
    twine upload dist/metpx_sarracenia-2.22.6-py3-none-any.whl dist/metpx_sarracenia-2.22.6.tar.gz
