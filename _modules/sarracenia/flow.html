@@ -902,7 +902,8 @@
             <span class="n">relPath</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">relPath</span>
 
         <span class="c1"># FIXME... why the % ? why not just assign it to copy the value?</span>
-        <span class="k">if</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span> <span class="n">relPath</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">download</span> <span class="ow">and</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span> 
+            <span class="n">relPath</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span>
 
         <span class="n">token</span> <span class="o">=</span> <span class="n">relPath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">token</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
