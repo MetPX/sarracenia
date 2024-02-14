@@ -14,7 +14,7 @@ Initialize the credentials storage in the `~/.config/sr3/credentials.conf` file:
 
 The format is a complete url on each line (`amqps://<user>:<password>@<target.url>`).
 This credentials.conf file should be private (linux octal permissions: 0600).  
-.conf files placed in the ``~/.config/sr3/subscribe_directory`` will be automatically found by ``sr_subscribe``, rather than giving the full path.
+.conf files placed in the ``~/.config/sr3/subscribe_directory`` will be automatically found by ``subscribe``, rather than giving the full path.
 
 The *edit* command starts the user's configured editor on the file to be created, in the correct directory::
 
@@ -25,7 +25,7 @@ The *edit* command starts the user's configured editor on the file to be created
     accept .*
   $ mkdir /tmp/swob_downloads
   $ sr3 status subscribe/swob
-    2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 01 is stopped
+    2017-12-14 06:54:54,010 [INFO] subscribe swob 01 is stopped
 
 .. ERROR::
   
@@ -62,20 +62,20 @@ Activity can be monitored via log files in ``~/.cache/sr3/log/`` or with the *lo
 
   $ sr3 log swob
     
-    2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+    2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
     2015-12-03 17:32:01,834 [INFO] user_config = 1 ../swob.conf
-    2015-12-03 17:32:01,835 [INFO] sr_subscribe start
-    2015-12-03 17:32:01,835 [INFO] sr_subscribe run
+    2015-12-03 17:32:01,835 [INFO] subscribe start
+    2015-12-03 17:32:01,835 [INFO] subscribe run
     2015-12-03 17:32:01,835 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
     2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
     2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.report.#)
     
-    2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+    2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
 
 
 ``[Ctrl] + [C]`` to exit watching the logs.
 The startup log appears normal, indicating the authentication information was accepted.
-``sr_subscribe`` will get the notification and download the file into the present working directory
+``Subscribe`` will get the notification and download the file into the present working directory
 (unless otherwise specified in the configuration file).
 
 ----
@@ -94,7 +94,7 @@ Here is a failure::
   2015-12-03 17:32:30,786 [ERROR] Download failed http://dd2.weather.gc.ca/observations/swob-ml/20151203/CXFB/2015-12-03-2200-CXFB-AUTO-swob.xml
   2015-12-03 17:32:30,787 [ERROR] Server couldn't fulfill the request. Error code: 404, Not Found
 
-This message is not always a failure as ``sr_subscribe`` retries a few times before giving up.
+This message is not always a failure as ``subscribe`` retries a few times before giving up.
 After a few minutes, here is what the download directory looks like::
 
   $ ls -al | tail
@@ -107,25 +107,25 @@ After a few minutes, here is what the download directory looks like::
     -rw-rw-rw-  1 peter peter   7873 Dec  3 17:37 2015-12-03-2237-CL3G-AUTO-minute-swob.xml
     -rw-rw-rw-  1 peter peter   7037 Dec  3 17:37 2015-12-03-2237-CTBF-AUTO-minute-swob.xml
     -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2237-CTRY-AUTO-minute-swob.xml
-    -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 sr_subscribe_dd_swob_0001.log
+    -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 subscribe_dd_swob_0001.log
 
 Cleanup
 ~~~~~~~
 
 To not download more files, stop the subscriber::
   
-  $ sr_subscribe stop swob
-    2015-12-03 17:32:22,219 [INFO] sr_subscribe swob 01 stopped
+  $ sr3 stop subscribe/swob
+    2015-12-03 17:32:22,219 [INFO] subscribe swob 01 stopped
 
-This however leaves the queue that ``sr_subscribe start`` setup on the broker active,
+This however leaves the queue that ``sr3 start subscribe/swob`` setup on the broker active,
 as to allow a failed subscriber to attempt reconnecting without loosing progress.
 That is until the broker times out the queue and removes it.
 To tell the broker that we are finished with the queue, tell the subscriber to cleanup::
 
-  $ sr_subscribe cleanup swob
-  2015-12-03 17:32:22,008 [INFO] sr_subscribe swob cleanup
+  $ sr3 cleanup subscribe/swob
+  2015-12-03 17:32:22,008 [INFO] subscribe swob cleanup
   2015-12-03 17:32:22,008 [INFO] AMQP broker(dd.weatheer.gc.ca) user(anonymous) vhost()
   2015-12-03 17:32:22,008 [INFO] Using amqp module (AMQP 0-9-1)
-  2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.sr_subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
+  2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
 
 Best practice is to clear the queue when done as to lessen the load on the broker.
