@@ -155,7 +155,7 @@ Those hubs run the directory watching component (sr_watch) and determine
 checksums for the volume scans as they arrive. The Unified RADAR Processing 
 (URP) systems sr_subscribes to a hub, listening for new volume scans, and 
 downloads new data as soon as they are posted. URP systems then derive new 
-products and advertise them to the local hub using the sr3_post component.
+products and advertise them to the local hub using the sr_post component.
 In time, we hope to have a second URP fully at the western hub.
 
 In regional offices, the NinJo visualization servers download volume scans and
@@ -203,7 +203,7 @@ Expanded use cases explored:
   Having all user codes invoke a Python3 script is complete nonsense in an HPC environment, so 
   it was necessary to implement a C version of Sarracenia posting code for use by the shim library.  
   Once the C implementation was begun, it was only a little additional work to implement a C version 
-  of sr3_watch (called sr_cpost) which was much more memory and CPU efficient than the Python original.
+  of sr_watch (called sr_cpost) which was much more memory and CPU efficient than the Python original.
 
 * Node.js implementation: A client of the public datamart decided to implement enough of Sarracenia 
   to download warnings in real-time.
