@@ -51,7 +51,8 @@ Improvements:
 from sarracenia.flowcb import FlowCB
 import logging
 from base64 import b64encode
-import time
+import time, datetime
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +95,6 @@ class Raw2bulletin(FlowCB):
             #first_line  = first_line.strip('\t')
             first_line  = lines[0].split(' ')
 
-            ddhhmm = None
-
             # Build header from bulletin
             header = self.buildHeader(first_line)
             if header == None:
@@ -106,9 +105,7 @@ class Raw2bulletin(FlowCB):
             # Get the station timestamp from bulletin
             ddhhmm = self.getTime(data)
             if ddhhmm == None:
-                logger.error("Unable to get julian time. Skipping message")
-                worklist.rejected.append(msg)
-                continue
+                logger.error("Unable to get julian time.")
             
             # Get the BBB from bulletin
             BBB = self.getBBB(first_line)
@@ -121,7 +118,25 @@ class Raw2bulletin(FlowCB):
 
             # Rename file with data fetched
             try:
-                new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
+                # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
+                # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
+                if ddhhmm == None:
+                    timehandler = datetime.datetime.now()
+
+                    # Add current time as new timestamp to filename
+                    new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
+
+                    # Write the file manually as the messages don't get posted downstream.
+                    # The message won't also get downloaded further downstream
+                    msg['new_file'] = new_file
+                    new_path = msg['new_dir'] + '/' + msg['new_file']
+
+                    with open(new_path, 'w') as f: f.write(data)
+
+                    logger.error(f"New filename (for problem file): {new_file}")
+                    raise Exception
+                else:
+                    new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
 
                 msg['new_file'] = new_file
                 new_path = msg['new_dir'] + '/' + msg['new_file']
@@ -131,7 +146,7 @@ class Raw2bulletin(FlowCB):
                 good_msgs.append(msg)
 
             except Exception as e:
-                logger.error(f"Unable to rename filename. Error message: {e}")
+                logger.error(f"Error in renaming. Error message: {e}")
                 worklist.rejected.append(msg)
                 continue
 
@@ -302,41 +317,44 @@ class Raw2bulletin(FlowCB):
             hhmm = hour and mins
         """
 
-        parts = data.split(',')
+        try:
+            parts = data.split(',')
 
-        if len(parts) < 4: return None
+            if len(parts) < 4: return None
 
-        year = parts[1]
-        jul = parts[2]
-        hhmm = parts[3]
+            year = parts[1]
+            jul = parts[2]
+            hhmm = parts[3]
 
-        # passe-passe pour le jour julien en float parfois ?
-        f = float(jul)
-        i = int(f)
-        jul = '%s' % i
-        # fin de la passe-passe
+            # passe-passe pour le jour julien en float parfois ?
+            f = float(jul)
+            i = int(f)
+            jul = '%s' % i
+            # fin de la passe-passe
 
-        # strange 0 filler
+            # strange 0 filler
 
-        while len(hhmm) < 4:
-            hhmm = '0' + hhmm
-        while len(jul) < 3:
-            jul = '0' + jul
+            while len(hhmm) < 4:
+                hhmm = '0' + hhmm
+            while len(jul) < 3:
+                jul = '0' + jul
 
-        # problematic 2400 for 00z
+            # problematic 2400 for 00z
 
-        if hhmm != '2400':
-            emissionStr = year + jul + hhmm
-            timeStruct = time.strptime(emissionStr, '%Y%j%H%M')
-            ddHHMM = time.strftime("%d%H%M", timeStruct)
+            if hhmm != '2400':
+                emissionStr = year + jul + hhmm
+                timeStruct = time.strptime(emissionStr, '%Y%j%H%M')
+                ddHHMM = time.strftime("%d%H%M", timeStruct)
+                return ddHHMM
+
+            # sometime hhmm is 2400, to avoid exception
+            # set time to 00, increase by 24 hr
+
+            jul00 = year + jul + '0000'
+            timeStruct = time.strptime(jul00, '%Y%j%H%M')
+            ep_emission = time.mktime(timeStruct) + 24 * 60 * 60
+            timeStruct = time.localtime(self.ep_emission)
+            ddHHMM = time.strftime('%d%H%M', timeStruct)
             return ddHHMM
-
-        # sometime hhmm is 2400, to avoid exception
-        # set time to 00, increase by 24 hr
-
-        jul00 = year + jul + '0000'
-        timeStruct = time.strptime(jul00, '%Y%j%H%M')
-        ep_emission = time.mktime(timeStruct) + 24 * 60 * 60
-        timeStruct = time.localtime(self.ep_emission)
-        ddHHMM = time.strftime('%d%H%M', timeStruct)
-        return ddHHMM
+        except Exception as e:
+            return None
