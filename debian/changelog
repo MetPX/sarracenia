@@ -7,6 +7,8 @@ metpx-sr3 (3.00.52rc1) UNRELEASED; urgency=medium
   * fix #920 replaced nodupe_fileAge(Min and Max) with fileAge(Min and Max)
   * fix #920 inflight mtime merged with fileMinAge
   * fix #922 sr3 showing wrong exchange on status/show.
+  * processing of rename field in messages suppressed when download=False
+  * (required for common processing of messages.)
 
  -- peter <peter@bsqt.homeip.net>  Fri, 02 Feb 2024 09:00:18 -0500
 
