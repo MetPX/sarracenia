@@ -333,6 +333,7 @@ In general, v3 plugins:
   msg.parts        msg['size']                        just omit, use sarracenia.Message constructor.
   msg.sumflg       msg['identity']                    just omit, use sarracenia.Message constructor.
   msg.sumstr       v2wrapper.sumstrFromMessage(msg)   the literal string for a v2 checksum field.     
+  msg.rename       msg['rename']                      In sr3, often better to use retrievePath and relPath
   parent.msg       worklist.incoming                  v2 is 1 message at a time, sr3 has lists or messages.
   ================ ================================== ==========================================================
 
@@ -940,6 +941,11 @@ create a flowCallback class with a *download* entry point.
   The ported result sets the new field *retrievePath* ( retrieval path ) instead of new_dir and new_file 
   fields, and normal processing of the *retrievePath* field in the notification message will do a good download, no
   plugin required. 
+
+* In many poll situations (typically a plugin with a do_poll and do_download entry point), the sr3 
+  built-in downloading often "just works", the sr3 poll() or gather() entry point is typically configured
+  with a *retrievePath* to indicate the URL to get, and the relPath is set to indicate the file name
+  to download into. 
 
 
 DESTFNSCRIPT

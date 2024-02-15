@@ -590,7 +590,11 @@ fields from the v2 sarra representation to the one in sr3:</p>
 <td><p>v2wrapper.sumstrFromMessage(msg)</p></td>
 <td><p>the literal string for a v2 checksum field.</p></td>
 </tr>
-<tr class="row-even"><td><p>parent.msg</p></td>
+<tr class="row-even"><td><p>msg.rename</p></td>
+<td><p>msg[‘rename’]</p></td>
+<td><p>In sr3, often better to use retrievePath and relPath</p></td>
+</tr>
+<tr class="row-odd"><td><p>parent.msg</p></td>
 <td><p>worklist.incoming</p></td>
 <td><p>v2 is 1 message at a time, sr3 has lists or messages.</p></td>
 </tr>
@@ -1197,6 +1201,10 @@ can be used to eliminate the need for download plugins.  Example:</p>
 fields, and normal processing of the <em>retrievePath</em> field in the notification message will do a good download, no
 plugin required.</p>
 </li>
+<li><p>In many poll situations (typically a plugin with a do_poll and do_download entry point), the sr3
+built-in downloading often “just works”, the sr3 poll() or gather() entry point is typically configured
+with a <em>retrievePath</em> to indicate the URL to get, and the relPath is set to indicate the file name
+to download into.</p></li>
 </ul>
 <section id="destfnscript">
 <h3><a class="toc-backref" href="#id22" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
