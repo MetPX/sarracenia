@@ -14,6 +14,7 @@ Description:
 
     Decoding of the data is done in the same way of the encoder in flowcb/gather/am.py
 
+
 Examples:
 
     RAW Ninjo file (4 letter station ID)
@@ -61,6 +62,7 @@ class Raw2bulletin(FlowCB):
     def __init__(self,options) :
         super().__init__(options,logger)
         self.seq = 0
+        self.binary = 0
         # Need to redeclare these options to have their default values be initialized.
         self.o.add_option('inputCharset', 'str', 'utf-8')
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
@@ -74,16 +76,14 @@ class Raw2bulletin(FlowCB):
 
             path = msg['new_dir'] + '/' + msg['new_file']
 
-            filenameFirstChars = msg['new_file'].split('_')[0]
+            data = self.getData(msg, path)
 
             # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
             # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
             # These messages are still good, so we will add them to the good_msgs list
-            if len(filenameFirstChars) != 2:
-                good_msgs.append(msg)
-                continue
-
-            data = self.getData(msg, path)
+            # if len(filenameFirstChars) != 2 and self.binary: 
+            #     good_msgs.append(msg)
+            #     continue
 
             if data == None:
                 worklist.rejected.append(msg)
@@ -103,9 +103,12 @@ class Raw2bulletin(FlowCB):
                 continue
             
             # Get the station timestamp from bulletin
-            ddhhmm = self.getTime(data)
-            if ddhhmm == None:
-                logger.error("Unable to get julian time.")
+            if len(header.split('_')) == 2:
+                ddhhmm = self.getTime(data)
+                if ddhhmm == None:
+                    logger.error("Unable to get julian time.")
+            else:
+                ddhhmm = ''
             
             # Get the BBB from bulletin
             BBB = self.getBBB(first_line)
@@ -135,6 +138,8 @@ class Raw2bulletin(FlowCB):
 
                     logger.error(f"New filename (for problem file): {new_file}")
                     raise Exception
+                elif ddhhmm == '':
+                    new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
                 else:
                     new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
 
@@ -163,9 +168,12 @@ class Raw2bulletin(FlowCB):
         # Read file data from message or from file path directly if message content not found.
         try:
 
-            binary = 0
+            self.binary = 0
             if msg['content']:
                 data = msg['content']['value']
+
+                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                    self.binary = 1
             else:
 
                 fp = open(path, 'rb')
@@ -175,9 +183,9 @@ class Raw2bulletin(FlowCB):
 
                 # Decode data, binary and text. Integrate inputCharset
                 if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                    binary = 1
+                    self.binary = 1
 
-                if not binary:
+                if not self.binary:
                     data = data.decode(self.o.inputCharset)
                 else:
                     data = b64encode(data).decode('ascii')
@@ -298,9 +306,12 @@ class Raw2bulletin(FlowCB):
         try:
             T1T2A1A2ii = first_line[0]
             CCCC       = first_line[1]
-            # YYGGgg     = parts[2]
 
-            header = T1T2A1A2ii + "_" + CCCC # + "_" + YYGGgg
+            if len(first_line) >= 3:
+                YYGGgg = first_line[2]
+                header = T1T2A1A2ii + "_" + CCCC + "_" + YYGGgg
+            else:  
+                header = T1T2A1A2ii + "_" + CCCC # + "_" + YYGGgg
 
         except Exception:
             header = None
