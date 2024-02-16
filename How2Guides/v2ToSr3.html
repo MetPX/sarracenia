@@ -221,7 +221,7 @@ and implement, and are more flexible and powerful than the v2 mechanism.</p>
 <div><ul class="simple">
 <li><p>v3 uses standard python syntax, not v2’s strange <em>self.plugins</em>, <em>parent.logger</em>,
 and oh gee why doesn’t <em>import</em> work?</p></li>
-<li><p>Standard python imports; Syntax errors are detected and reported <em>the normal way</em></p></li>
+<li><p>Standard python imports: In v3, syntax errors are detected and reported <em>the normal way</em></p></li>
 <li><p>v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
 callable by application programmers in their own code, like any other python library.</p></li>
 <li><p>v3 classes can be sub-classed to add core functionality, like new notification message or file
@@ -912,13 +912,21 @@ See: <a class="reference internal" href="#table-of-v2-and-sr3-equivalents">Table
 to do in each plugin.</p></li>
 <li><p>poll_without_vip setting available.</p></li>
 <li><p>parent.pulls is a list of <em>get</em> directives (which are different from accept)</p></li>
-<li><p>often paired with download_something plugins where a partial message is built with the poll
-and the download one is specialized to to the actual download.</p></li>
 </ul>
 </div></blockquote>
-<p>There is a common pattern in v2 polls where, rather than querying a remote server to find out what new products
-are available, in sr3 we have the concept of a scheduled flow, where there is a fixed list of requests done
-periodically. See <cite>Scheduled Flow</cite> for more on that. For typical polls, the migration to sr3 follows:</p>
+<p>There is a common pattern in v2 polls, where a do_poll is paired with download_something plugins
+where a partial message is built with the poll and the download (or do_download) one is specialized
+to do the actual download. Often in sr3 one can craft a message that will be successfully downloaded
+with the built-in processing.</p>
+<p>An example of custom download processing is to build the directory tree to download into, combined with
+the use of a <em>rename</em> header (in v2 parent.msg.rename) One can now use “retrievePath” to define the url
+to issue to the server, and “relPath” to define where it will be downloaded to. <em>RelPath</em> includes
+the whole directory tree, where <em>rename</em> is only for the filename. The combination of <em>relPath</em> and
+<em>retrievePath</em> often provides enough functionality to obviate the need for a download entry point.</p>
+<p>There is another common pattern in v2 polls where, rather than querying a remote server to find out
+what new products are available, in sr3 we have the concept of a scheduled flow, where there is a fixed
+list of requests done periodically. See <cite>Scheduled Flow</cite> for more on that. For typical polls, the migration
+to sr3 follows:</p>
 <p>v3: define poll in a flowcb class.</p>
 <blockquote>
 <div><ul class="simple">
@@ -932,6 +940,8 @@ allowing the nodupe cache to be kept uptodate.</p></li>
 <li><p>the combination with download plugins is generally replaced by a single plugin that implements
 alternate naming using <em>retrievePath</em> field. so it is all done in one plugin.</p></li>
 <li><p>returns a list of notification messages to be filtered and posted.</p></li>
+<li><p>the <em>download</em> setting allows a poll to download in a single configuration without
+requiring combination with a separate downloading configuration.</p></li>
 </ul>
 </div></blockquote>
 <p>To build a notification message, without a local file, use fromFileInfo sarracenia.message factory:</p>
@@ -989,16 +999,24 @@ to update their recent_files cache.</p>
 </ul>
 </dd>
 </dl>
+<p>In a v2 poll, output exchanges were sometimes quite popular exchanges (e.g. xpublic)
+which would cause the duplicate_suppression queues in an sr3 poll to be much
+larger than necessary.</p>
+<p>When using a poll in sr3, ideally the post_exchange is one dedicated to this
+poll, so that the vip participants prime their duplicate suppression cache with
+only items published by the poll.</p>
 </section>
 <section id="scheduled-flow">
 <h3><a class="toc-backref" href="#id17" role="doc-backlink">Scheduled Flow</a><a class="headerlink" href="#scheduled-flow" title="Link to this heading"></a></h3>
 <p>If there is a WISKIS ( <a class="reference external" href="https://www.kisters.net/wiski">https://www.kisters.net/wiski</a> ) server, one needs to issue
-time centric queries are regular intervals. so a gather() entry point is implmented
+time centric queries are regular intervals. so a <em>gather()</em> entry point is implemented
 which returns a list of messages that a downloader will use to obtain the data.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf</a> an example flow configuration for polling Ontario Power Generation sensors.</p></li>
 <li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py</a>  The plugin used by the OPG configuration using the gather() entry point.</p></li>
 </ul>
+<p>Like a poll, one can use the <em>download</em> option to consume the messages by downloading in the same configuration,
+or publish to an exchange for downloading by a separate subscriber or sarra to scale downloading.</p>
 </section>
 <section id="on-html-page-subclass-flowcb-poll">
 <h3><a class="toc-backref" href="#id18" role="doc-backlink">on_html_page -&gt; subclass flowcb/poll</a><a class="headerlink" href="#on-html-page-subclass-flowcb-poll" title="Link to this heading"></a></h3>

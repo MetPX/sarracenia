@@ -281,9 +281,9 @@ En général, les plugins v3:
   Chaque message de notification v3 agit comme un dictionnaire python. Ci-dessous un mappage de table
   champs de la représentation sarra v2 à celle de sr3 :
 
-  ================ =================== ===========================================================
+  ================ =================== =============================================================
   v2               sr3                 Notes
-  ================ =================== ===========================================================
+  ================ =================== =============================================================
   msg.pubtime      msg['pubTime']      quand le message a été initialement publié 
   msg.baseurl      msg['baseUrl']      racine de l'arborescence url du fichier annoncé.
   msg.relpath      msg['relPath']      chemin relatif concaténé à baseUrl pour le chemin canonique
@@ -299,8 +299,9 @@ En général, les plugins v3:
   msg.logger       logger              les journeaux fonctionnent ¨normalement" pour python
   msg.parts        msg['size']         oublie ca, utilise une constructeur de sarracenia.Message
   msg.sumflg       msg['identity']     oublie ca, utilise une constructeur de sarracenia.Message
+  msg.rename       msg['rename']       En sr3, souvent mieux d'utiliser: *retrievePath* et *relPath*
   parent.msg       worklist.incoming   sr3 traite des groupe des messages, pas individuelement
-  ================ =================== ===========================================================
+  ================ =================== =============================================================
 
 * pubTime, baseUrl, relPath, retrievePath, size, identity, sont tous des champs de message standard
   mieux décrit dans `sr_post(7) <../Reference/sr_post.7.html>`_
@@ -570,19 +571,40 @@ v2: appelez do_poll à partir du plugin.
    à faire dans chaque plugin.
  * paramètre poll_without_vip disponible.
 
+Dans plusieurs sondages v2, un do_poll est associé à un point d'entrée download\_quelquechose
+où un message partiel est construit avec le sondage et celui du téléchargement (ou do_download) est spécialisé
+pour effectuer le téléchargement proprement dit. Souvent, dans SR3, on peut créer un message qui sera téléchargé avec succès
+avec le traitement de téléchargement intégré.
+
+Un exemple de traitement de téléchargement personnalisé consiste à créer l'arborescence de répertoires dans laquelle télécharger, combinée avec
+l'utilisation d'un en-tête *rename* (en v2 parent.msg.rename) On peut désormais utiliser "retrievePath" pour définir l'url
+pour soumettre au serveur, et "relPath" pour définir où il sera placé localment. *RelPath* inclut
+toute l'arborescence des répertoires, où *rename* est uniquement pour le nom du fichier. La combinaison de *relPath* et
+*retrievePath* fournit souvent suffisamment de fonctionnalités pour éviter le besoin d'un point d'entrée de téléchargement.
+
+Il existe un autre modèle courant dans les sondages v2 où, plutôt que d'interroger un serveur distant pour le savoir
+quels nouveaux produits sont disponibles, dans sr3 nous avons le concept de flux programmé, où il y a un délai fixe
+liste des demandes effectuées périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration
+à sr3 suit :
+
 
 v3: définir poll dans une classe flowcb.
 
  * le sondage n’est exécuté que lorsque has_vip est true.
 
- * le point d’entrée registered_as() est discutable
+ * le point d’entrée registered_as() est inutile.
 
  * toujours rassembler les exécutions, et est utilisé pour s’abonner à post effectuée par le nœud qui a le vip,
    permettant a la cache nodupe d’être maintenu à jour.
 
  * API définie pour créer des messages de notification à partir de données de fichier, quel que soit le format du message de notification.
 
+ * get est disparu, les *poll* utilisent accept/reject comme les autres composants.
+
  * renvoie une liste de messages de notification à filtrer et à publier.
+
+ * l´option *download* permet un sondage (poll ou flow) de télécharger les données dans une seul configuration.
+   En v2, il faullt combiner avec une autre configuration pour effectuer le téléchargement.
 
 Pour créer un message de notification, sans fichier local, utilisez fromFileInfo sarracenia.message factory::
 
@@ -641,6 +663,31 @@ pour mettre à jour leur cache recent_files.
 
 exemples:
  * flowcb/poll/airnow.py
+
+ 
+Dans un sondage v2, les échanges de sortie étaient parfois des échanges assez populaires (par exemple xpublic)
+ce qui rendrait les files d'attente duplicate_suppression dans un sondage sr3 plus grand que nécessaire.
+
+Lorsque vous utilisez un sondage dans sr3, idéalement, le post_exchange est dédié à cet
+sondage, afin que les participants VIP minimisent la taille de leur cache de suppression des doublons 
+en le chargeant uniquement des éléments publiés par le sondage.
+
+
+
+Flux programmé
+~~~~~~~~~~~~~~
+
+S'il existe un serveur WISKIS ( https://www.kisters.net/wiski ), il faut émettre
+Les requêtes, souvent centrées sur le temps sont à intervalles réguliers. donc un point d'entrée *gather()* 
+est implémenté qui renvoie une liste de messages qu'un téléchargeur utilisera pour obtenir les données.
+
+* https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf un exemple de configuration de flux pour interroger les capteurs d'Ontario Power Generation.
+
+* https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py Le plugin utilisé par la configuration OPG utilisant le point d'entrée rassemble().
+
+Comme un sondage, on peut utiliser l'option *download* pour consommer les messages en les 
+téléchargeant dans la même configuration, ou publier sur un échange pour téléchargement 
+par un *subscribe* ou *sarra* pour plus de performance.
 
 on_html_page -> sous-classement de flowcb/poll
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -860,6 +907,10 @@ créer une classe flowCallback avec un point d’entrée *download*.
   Le résultat porté définit le nouveau champ *retrievePath* (chemin de récupération) au lieu de new_dir et new_file
   et le traitement normal du champ *retrievePath* dans le message de notification fera un bon téléchargement, aucun
   plugin est requis.
+
+* Souvent, dans les sondages v2, plutôt que d'interroger un serveur distant pour savoir quels nouveaux produits
+  sont disponibles, dans sr3 nous avons le concept de flux planifié, où il y a une liste fixe de requêtes effectuées
+   périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration vers sr3 suit :
 
 DESTFNSCRIPT
 ~~~~~~~~~~~~

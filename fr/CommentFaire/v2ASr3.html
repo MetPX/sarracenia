@@ -160,24 +160,25 @@ Sarracenia version 3.x (metpx-sr3)</p>
 <li><p><a class="reference internal" href="#on-heartbeat-on-housekeeping" id="id13">on_heartbeat -&gt; on_housekeeping</a></p></li>
 <li><p><a class="reference internal" href="#do-poll-poll" id="id14">do_poll -&gt; poll</a></p></li>
 <li><p><a class="reference internal" href="#traitement-ip-virtuel-dans-le-poll" id="id15">Traitement IP virtuel dans le poll</a></p></li>
-<li><p><a class="reference internal" href="#on-html-page-sous-classement-de-flowcb-poll" id="id16">on_html_page -&gt; sous-classement de flowcb/poll</a></p></li>
+<li><p><a class="reference internal" href="#flux-programme" id="id16">Flux programmé</a></p></li>
+<li><p><a class="reference internal" href="#on-html-page-sous-classement-de-flowcb-poll" id="id17">on_html_page -&gt; sous-classement de flowcb/poll</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#on-line-sous-classement-de-poll" id="id17">on_line -&gt; sous-classement de poll</a></p></li>
-<li><p><a class="reference internal" href="#do-send-send" id="id18">do_send -&gt; send:</a></p></li>
-<li><p><a class="reference internal" href="#do-download-download" id="id19">do_download -&gt; download:</a></p>
+<li><p><a class="reference internal" href="#on-line-sous-classement-de-poll" id="id18">on_line -&gt; sous-classement de poll</a></p></li>
+<li><p><a class="reference internal" href="#do-send-send" id="id19">do_send -&gt; send:</a></p></li>
+<li><p><a class="reference internal" href="#do-download-download" id="id20">do_download -&gt; download:</a></p>
 <ul>
-<li><p><a class="reference internal" href="#destfnscript" id="id20">DESTFNSCRIPT</a></p></li>
+<li><p><a class="reference internal" href="#destfnscript" id="id21">DESTFNSCRIPT</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#v3-seulement-post-gather" id="id21">v3 seulement: post,gather</a></p></li>
-<li><p><a class="reference internal" href="#v3-exemples-complexes" id="id22">v3 Exemples complexes</a></p>
+<li><p><a class="reference internal" href="#v3-seulement-post-gather" id="id22">v3 seulement: post,gather</a></p></li>
+<li><p><a class="reference internal" href="#v3-exemples-complexes" id="id23">v3 Exemples complexes</a></p>
 <ul>
-<li><p><a class="reference internal" href="#flowcb-nodupe" id="id23">flowcb/nodupe</a></p></li>
-<li><p><a class="reference internal" href="#flowcb-retry" id="id24">flowcb/retry</a></p></li>
+<li><p><a class="reference internal" href="#flowcb-nodupe" id="id24">flowcb/nodupe</a></p></li>
+<li><p><a class="reference internal" href="#flowcb-retry" id="id25">flowcb/retry</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#table-of-v2-and-sr3-equivalents" id="id25">Table of v2 and sr3 Equivalents</a></p></li>
+<li><p><a class="reference internal" href="#table-of-v2-and-sr3-equivalents" id="id26">Table of v2 and sr3 Equivalents</a></p></li>
 </ul>
 </li>
 </ul>
@@ -550,7 +551,11 @@ champs de la représentation sarra v2 à celle de sr3 :</p>
 <td><p>msg[‘identity’]</p></td>
 <td><p>oublie ca, utilise une constructeur de sarracenia.Message</p></td>
 </tr>
-<tr class="row-odd"><td><p>parent.msg</p></td>
+<tr class="row-odd"><td><p>msg.rename</p></td>
+<td><p>msg[‘rename’]</p></td>
+<td><p>En sr3, souvent mieux d’utiliser: <em>retrievePath</em> et <em>relPath</em></p></td>
+</tr>
+<tr class="row-even"><td><p>parent.msg</p></td>
 <td><p>worklist.incoming</p></td>
 <td><p>sr3 traite des groupe des messages, pas individuelement</p></td>
 </tr>
@@ -850,15 +855,31 @@ TODO: ajouter quelques exemples</p>
 <li><p>paramètre poll_without_vip disponible.</p></li>
 </ul>
 </div></blockquote>
+<p>Dans plusieurs sondages v2, un do_poll est associé à un point d’entrée download_quelquechose
+où un message partiel est construit avec le sondage et celui du téléchargement (ou do_download) est spécialisé
+pour effectuer le téléchargement proprement dit. Souvent, dans SR3, on peut créer un message qui sera téléchargé avec succès
+avec le traitement de téléchargement intégré.</p>
+<p>Un exemple de traitement de téléchargement personnalisé consiste à créer l’arborescence de répertoires dans laquelle télécharger, combinée avec
+l’utilisation d’un en-tête <em>rename</em> (en v2 parent.msg.rename) On peut désormais utiliser “retrievePath” pour définir l’url
+pour soumettre au serveur, et “relPath” pour définir où il sera placé localment. <em>RelPath</em> inclut
+toute l’arborescence des répertoires, où <em>rename</em> est uniquement pour le nom du fichier. La combinaison de <em>relPath</em> et
+<em>retrievePath</em> fournit souvent suffisamment de fonctionnalités pour éviter le besoin d’un point d’entrée de téléchargement.</p>
+<p>Il existe un autre modèle courant dans les sondages v2 où, plutôt que d’interroger un serveur distant pour le savoir
+quels nouveaux produits sont disponibles, dans sr3 nous avons le concept de flux programmé, où il y a un délai fixe
+liste des demandes effectuées périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration
+à sr3 suit :</p>
 <p>v3: définir poll dans une classe flowcb.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>le sondage n’est exécuté que lorsque has_vip est true.</p></li>
-<li><p>le point d’entrée registered_as() est discutable</p></li>
+<li><p>le point d’entrée registered_as() est inutile.</p></li>
 <li><p>toujours rassembler les exécutions, et est utilisé pour s’abonner à post effectuée par le nœud qui a le vip,
 permettant a la cache nodupe d’être maintenu à jour.</p></li>
 <li><p>API définie pour créer des messages de notification à partir de données de fichier, quel que soit le format du message de notification.</p></li>
+<li><p>get est disparu, les <em>poll</em> utilisent accept/reject comme les autres composants.</p></li>
 <li><p>renvoie une liste de messages de notification à filtrer et à publier.</p></li>
+<li><p>l´option <em>download</em> permet un sondage (poll ou flow) de télécharger les données dans une seul configuration.
+En v2, il faullt combiner avec une autre configuration pour effectuer le téléchargement.</p></li>
 </ul>
 </div></blockquote>
 <p>Pour créer un message de notification, sans fichier local, utilisez fromFileInfo sarracenia.message factory:</p>
@@ -916,9 +937,27 @@ pour mettre à jour leur cache recent_files.</p>
 </ul>
 </dd>
 </dl>
+<p>Dans un sondage v2, les échanges de sortie étaient parfois des échanges assez populaires (par exemple xpublic)
+ce qui rendrait les files d’attente duplicate_suppression dans un sondage sr3 plus grand que nécessaire.</p>
+<p>Lorsque vous utilisez un sondage dans sr3, idéalement, le post_exchange est dédié à cet
+sondage, afin que les participants VIP minimisent la taille de leur cache de suppression des doublons
+en le chargeant uniquement des éléments publiés par le sondage.</p>
+</section>
+<section id="flux-programme">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Flux programmé</a><a class="headerlink" href="#flux-programme" title="Link to this heading"></a></h3>
+<p>S’il existe un serveur WISKIS ( <a class="reference external" href="https://www.kisters.net/wiski">https://www.kisters.net/wiski</a> ), il faut émettre
+Les requêtes, souvent centrées sur le temps sont à intervalles réguliers. donc un point d’entrée <em>gather()</em>
+est implémenté qui renvoie une liste de messages qu’un téléchargeur utilisera pour obtenir les données.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf</a> un exemple de configuration de flux pour interroger les capteurs d’Ontario Power Generation.</p></li>
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py</a> Le plugin utilisé par la configuration OPG utilisant le point d’entrée rassemble().</p></li>
+</ul>
+<p>Comme un sondage, on peut utiliser l’option <em>download</em> pour consommer les messages en les
+téléchargeant dans la même configuration, ou publier sur un échange pour téléchargement
+par un <em>subscribe</em> ou <em>sarra</em> pour plus de performance.</p>
 </section>
 <section id="on-html-page-sous-classement-de-flowcb-poll">
-<h3><a class="toc-backref" href="#id16" role="doc-backlink">on_html_page -&gt; sous-classement de flowcb/poll</a><a class="headerlink" href="#on-html-page-sous-classement-de-flowcb-poll" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">on_html_page -&gt; sous-classement de flowcb/poll</a><a class="headerlink" href="#on-html-page-sous-classement-de-flowcb-poll" title="Link to this heading"></a></h3>
 <p>Voici un plugin v2 nsa_mls_nrt.py:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
@@ -1050,7 +1089,7 @@ de la classe de poll.</p>
 </section>
 </section>
 <section id="on-line-sous-classement-de-poll">
-<h2><a class="toc-backref" href="#id17" role="doc-backlink">on_line -&gt; sous-classement de poll</a><a class="headerlink" href="#on-line-sous-classement-de-poll" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">on_line -&gt; sous-classement de poll</a><a class="headerlink" href="#on-line-sous-classement-de-poll" title="Link to this heading"></a></h2>
 <p>Comme on_html_page ci-dessus, toutes les utilisations de on_line dans la version précédente
 concernaient le reformatage des lignes pour qu’elles puissent être analysées. La routine on_line peut être
 sous-classé de la même manière pour le remplacer.  Il fallait modifier la chaîne parent.line
@@ -1061,7 +1100,7 @@ Avec l’analyse de date plus flexible dans sr3, il n’y a pas le besoin d’id
 sur lequel construire un exemple.</p>
 </section>
 <section id="do-send-send">
-<h2><a class="toc-backref" href="#id18" role="doc-backlink">do_send -&gt; send:</a><a class="headerlink" href="#do-send-send" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">do_send -&gt; send:</a><a class="headerlink" href="#do-send-send" title="Link to this heading"></a></h2>
 <p>v2 : do_send peut être une routine autonome ou associée à un type de protocole</p>
 <ul class="simple">
 <li><p>basé sur registered_as() afin que la destination détermine si elle est utilisée ou non.</p></li>
@@ -1085,7 +1124,7 @@ Pour ajouter la prise en charge de nouveaux protocoles, il faut sous-classer sar
 </dl>
 </section>
 <section id="do-download-download">
-<h2><a class="toc-backref" href="#id19" role="doc-backlink">do_download -&gt; download:</a><a class="headerlink" href="#do-download-download" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">do_download -&gt; download:</a><a class="headerlink" href="#do-download-download" title="Link to this heading"></a></h2>
 <p>créer une classe flowCallback avec un point d’entrée <em>download</em>.</p>
 <ul>
 <li><p>accepte un seul message de notification comme argument.</p></li>
@@ -1118,9 +1157,15 @@ peut être utilisé pour éliminer le besoin de plugins de téléchargement.  Ex
 et le traitement normal du champ <em>retrievePath</em> dans le message de notification fera un bon téléchargement, aucun
 plugin est requis.</p>
 </li>
+<li><p>Souvent, dans les sondages v2, plutôt que d’interroger un serveur distant pour savoir quels nouveaux produits
+sont disponibles, dans sr3 nous avons le concept de flux planifié, où il y a une liste fixe de requêtes effectuées</p>
+<blockquote>
+<div><p>périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration vers sr3 suit :</p>
+</div></blockquote>
+</li>
 </ul>
 <section id="destfnscript">
-<h3><a class="toc-backref" href="#id20" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
 <p>DESTFNSCRIPT est refondu en tant que point d’entrée flowcb, où la directive est maintenant formatée d’une manière
 similaire au flowcallback dans la configuration</p>
 <p>configuration V2:</p>
@@ -1197,7 +1242,7 @@ Type “help”, “copyright”, “credits” or “license” for more inform
 </section>
 </section>
 <section id="v3-seulement-post-gather">
-<h2><a class="toc-backref" href="#id21" role="doc-backlink">v3 seulement: post,gather</a><a class="headerlink" href="#v3-seulement-post-gather" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">v3 seulement: post,gather</a><a class="headerlink" href="#v3-seulement-post-gather" title="Link to this heading"></a></h2>
 <p>Le polling/posting est en fait effectuée dans des classes de rappel de flux (flowcb).
 Le statut de sortie n’a pas d’importance, toutes ces routines seront appelées dans l’ordre.</p>
 <p>Le retour d’un gather est une liste de messages de notification à ajouter à worklist.incoming</p>
@@ -1215,9 +1260,9 @@ installer une configuration pour l’utiliser avec <em>sr3 add poll/aws-nexrad.c
 </dl>
 </section>
 <section id="v3-exemples-complexes">
-<h2><a class="toc-backref" href="#id22" role="doc-backlink">v3 Exemples complexes</a><a class="headerlink" href="#v3-exemples-complexes" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">v3 Exemples complexes</a><a class="headerlink" href="#v3-exemples-complexes" title="Link to this heading"></a></h2>
 <section id="flowcb-nodupe">
-<h3><a class="toc-backref" href="#id23" role="doc-backlink">flowcb/nodupe</a><a class="headerlink" href="#flowcb-nodupe" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">flowcb/nodupe</a><a class="headerlink" href="#flowcb-nodupe" title="Link to this heading"></a></h3>
 <p>suppression des doublons dans la v3, a:</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -1228,7 +1273,7 @@ installer une configuration pour l’utiliser avec <em>sr3 add poll/aws-nexrad.c
 </ul>
 </section>
 <section id="flowcb-retry">
-<h3><a class="toc-backref" href="#id24" role="doc-backlink">flowcb/retry</a><a class="headerlink" href="#flowcb-retry" title="Link to this heading"></a></h3>
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">flowcb/retry</a><a class="headerlink" href="#flowcb-retry" title="Link to this heading"></a></h3>
 <blockquote>
 <div><ul class="simple">
 <li><p>dispose d’une fonction after_accept pour ajouter des messages de notification à la
@@ -1241,7 +1286,7 @@ sur la liste des nouvelles tentatives pour un examen ultérieur.</p></li>
 </section>
 </section>
 <section id="table-of-v2-and-sr3-equivalents">
-<h2><a class="toc-backref" href="#id25" role="doc-backlink">Table of v2 and sr3 Equivalents</a><a class="headerlink" href="#table-of-v2-and-sr3-equivalents" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">Table of v2 and sr3 Equivalents</a><a class="headerlink" href="#table-of-v2-and-sr3-equivalents" title="Link to this heading"></a></h2>
 <p>Voici un aperçu des plugins inclus dans Sarracenia,
 On peut parcourir les deux arbres, et à l’aide du tableau ci-dessous,
 peut examiner, comparer et contraster les implémentations.</p>
