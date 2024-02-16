@@ -554,6 +554,11 @@ class Flow:
                         # restore adjustment to fileOp
                         if 'post_fileOp' in m:
                             m['fileOp'] = m['post_fileOp']
+
+                        if self.o.download and 'retrievePath' in m:
+                            # retrieve paths do not propagate after download.
+                            del m['retrievePath'] 
+
                         
                     self._runCallbacksWorklist('after_work')
 
