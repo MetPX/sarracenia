@@ -805,10 +805,16 @@ class Flow:
             u = sarracenia.baseUrlParse(msg['baseUrl'])
             relPath = u.path[1:] + '/' + relPath
 
-        # FIXME... why the % ? why not just assign it to copy the value?
         if self.o.download and 'rename' in msg: 
+            # FIXME... why the % ? why not just assign it to copy the value?
             relPath = '%s' % msg['rename']
+
+            # after download we dont propagate renaming... once used, get rid of it
             del msg['rename']
+            # FIXME: worry about publishing after a rename.
+            # the relpath should be replaced by rename value for downstream
+            # because the file was written to rename.
+            # not sure if this happens or not.
 
 
         token = relPath.split('/')
