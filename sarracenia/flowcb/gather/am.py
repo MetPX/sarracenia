@@ -265,7 +265,7 @@ class Am(FlowCB):
             return '', 0
 
 
-    def gather(self):
+    def gather(self, messageCountMax):
 
         self.AddBuffer()
 
