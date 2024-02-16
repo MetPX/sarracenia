@@ -2806,7 +2806,7 @@ class sr_GlobalState:
             elif len(status['running']) == (len(self.configs[c]) -
                                             len(status['disabled'])):
                 print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \
-                    (len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] ))) )
+                    len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] )))
             else:
                 print('%-10s %-10s %-6s %3d' %
                       (c, 'mixed', 'mult', len(self.configs[c])))
