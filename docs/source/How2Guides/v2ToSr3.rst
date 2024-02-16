@@ -37,7 +37,7 @@ and implement, and are more flexible and powerful than the v2 mechanism.
 
  * v3 uses standard python syntax, not v2's strange *self.plugins*, *parent.logger*,
    and oh gee why doesn't *import* work?
- * Standard python imports; Syntax errors are detected and reported *the normal way*
+ * Standard python imports: In v3, syntax errors are detected and reported *the normal way*
  * v3 classes are designed to be usable outside the CLI itself (see jupyter notebook examples)
    callable by application programmers in their own code, like any other python library.
  * v3 classes can be sub-classed to add core functionality, like new notification message or file 
@@ -618,12 +618,23 @@ v2: call do_poll from plugin.
    to do in each plugin.
  * poll_without_vip setting available.
  * parent.pulls is a list of *get* directives (which are different from accept)
- * often paired with download\_something plugins where a partial message is built with the poll
-   and the download one is specialized to to the actual download.
 
-There is a common pattern in v2 polls where, rather than querying a remote server to find out what new products
-are available, in sr3 we have the concept of a scheduled flow, where there is a fixed list of requests done
-periodically. See `Scheduled Flow` for more on that. For typical polls, the migration to sr3 follows:
+There is a common pattern in v2 polls, where a do_poll is paired with download\_something plugins 
+where a partial message is built with the poll and the download (or do_download) one is specialized 
+to do the actual download. Often in sr3 one can craft a message that will be successfully downloaded
+with the built-in processing.
+
+An example of custom download processing is to build the directory tree to download into, combined with 
+the use of a *rename* header (in v2 parent.msg.rename) One can now use "retrievePath" to define the url
+to issue to the server, and "relPath" to define where it will be downloaded to. *RelPath* includes
+the whole directory tree, where *rename* is only for the filename. The combination of *relPath* and 
+*retrievePath* often provides enough functionality to obviate the need for a download entry point.
+
+There is another common pattern in v2 polls where, rather than querying a remote server to find out 
+what new products are available, in sr3 we have the concept of a scheduled flow, where there is a fixed 
+list of requests done periodically. See `Scheduled Flow` for more on that. For typical polls, the migration 
+to sr3 follows:
+
 
 v3: define poll in a flowcb class.
 
@@ -644,6 +655,8 @@ v3: define poll in a flowcb class.
 
  * returns a list of notification messages to be filtered and posted.
 
+ * the *download* setting allows a poll to download in a single configuration without
+   requiring combination with a separate downloading configuration.
 
 To build a notification message, without a local file, use fromFileInfo sarracenia.message factory::
   
@@ -703,18 +716,29 @@ to update their recent_files cache.
 examples:
  * flowcb/poll/airnow.py
 
+In a v2 poll, output exchanges were sometimes quite popular exchanges (e.g. xpublic)
+which would cause the duplicate_suppression queues in an sr3 poll to be much
+larger than necessary.
+
+When using a poll in sr3, ideally the post_exchange is one dedicated to this
+poll, so that the vip participants prime their duplicate suppression cache with
+only items published by the poll.
+
+
+
 Scheduled Flow
 ~~~~~~~~~~~~~~
 
 If there is a WISKIS ( https://www.kisters.net/wiski ) server, one needs to issue
-time centric queries are regular intervals. so a gather() entry point is implmented
+time centric queries are regular intervals. so a *gather()* entry point is implemented
 which returns a list of messages that a downloader will use to obtain the data.
 
 * https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf an example flow configuration for polling Ontario Power Generation sensors.
 
 * https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py  The plugin used by the OPG configuration using the gather() entry point.
 
-
+Like a poll, one can use the *download* option to consume the messages by downloading in the same configuration,
+or publish to an exchange for downloading by a separate subscriber or sarra to scale downloading.
 
 
 on_html_page -> subclass flowcb/poll
