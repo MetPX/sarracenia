@@ -808,6 +808,8 @@ class Flow:
         # FIXME... why the % ? why not just assign it to copy the value?
         if self.o.download and 'rename' in msg: 
             relPath = '%s' % msg['rename']
+            del msg['rename']
+
 
         token = relPath.split('/')
         filename = token[-1]
