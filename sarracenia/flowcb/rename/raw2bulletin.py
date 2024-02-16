@@ -51,9 +51,8 @@ Improvements:
 
 from sarracenia.flowcb import FlowCB
 import logging
-from base64 import b64encode
+from base64 import b64decode
 import time, datetime
-import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -166,29 +165,32 @@ class Raw2bulletin(FlowCB):
         """
 
         # Read file data from message or from file path directly if message content not found.
+        # For the binary data, only extract first line (header) as that is all we need. The ascii decoding fails with the rest of the bulletin (usually).
         try:
 
             self.binary = 0
             if msg['content']:
                 data = msg['content']['value']
 
-                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
+                # Change from b64. We want to get the header from the raw binary data. Not retrievable in b64 format
+                if msg['content']['encoding'] == 'base64':
+                    data = b64decode(data).splitlines()[0].decode('ascii')
                     self.binary = 1
+
             else:
 
                 fp = open(path, 'rb')
                 data = fp.read()
-                # bulletin = Bulletin(data)
                 fp.close()
 
-                # Decode data, binary and text. Integrate inputCharset
-                if data.splitlines()[1][:4] in self.o.binaryInitialCharacters:
-                    self.binary = 1
-
-                if not self.binary:
+                # Decode data, only text. The raw binary data contains the header in which we're interested.
+                # Integrate inputCharset
+                if data.splitlines()[1][:4] not in self.o.binaryInitialCharacters:
                     data = data.decode(self.o.inputCharset)
                 else:
-                    data = b64encode(data).decode('ascii')
+                    data = data.splitlines()[0].decode('ascii')
+                    self.binary = 1
+
 
             return data
 
@@ -215,6 +217,11 @@ class Raw2bulletin(FlowCB):
         """
 
         station = ''
+
+        # There is no station in a binary bulletin
+        if self.binary:
+            return station
+
         data = data.lstrip('\n')
         data = data.split('\n')
 
