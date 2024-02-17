@@ -56,7 +56,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
-<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr_post</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr3_post</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
 </ul>
 </li>
@@ -185,13 +185,13 @@ Format de l’argument pour les option <em>path</em></p>
 <span class="n">relative_path_to_the</span><span class="o">/</span><span class="n">filename</span>
 </pre></div>
 </div>
-<p>L’option <em>-pipe</em> peut être spécifiée pour que sr_post lise les noms de chemin des fichiers également à partir
+<p>L’option <em>-pipe</em> peut être spécifiée pour que sr3_post lise les noms de chemin des fichiers également à partir
 de l’entrée standard.</p>
 <p>Un exemple d’invocation de <em>sr3_post</em></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseUrl</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span>
 </pre></div>
 </div>
-<p>Par défaut, sr_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle (checksum).
+<p>Par défaut, sr3_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle (checksum).
 Il crée ensuite un message de publication, se connecte à broker.com en tant qu’utilisateur “invité” (informations d’identification par défaut)
 et envoie l’article au vhost par défaut ‘/’ et à l’échange par défaut. L’échange par défaut
 est le préfixe <em>xs_</em> suivi du nom d’utilisateur du courtier, donc par défaut ‘xs_guest’.
@@ -218,7 +218,7 @@ est la valeur de la somme de contrôle. Le <em>parts=1,4574,1,0,0</em> indiquent
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseDir</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">public_data</span> <span class="o">--</span><span class="n">postBaseUrl</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="n">SACN32_CWAO_123456</span>
 </pre></div>
 </div>
-<p>Par défaut, sr_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+<p>Par défaut, sr3_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (en concaténant le post_base_dir et le chemin relatif de l’url source pour obtenir le chemin du fichier local)
 et calcule sa somme de contrôle. Il crée ensuite un message d’article, se connecte à broker.com en tant qu’utilisateur “invité”
 (informations d’identification par défaut) et envoie l’article au vhost par défaut ‘/’ et échange ‘xs_guest’, résultant
@@ -433,7 +433,7 @@ You can overwrite the topicPrefix by setting this option.</p>
 </section>
 <section id="utilisation-de-la-librairie-shim">
 <h3>UTILISATION DE LA LIBRAIRIE SHIM<a class="headerlink" href="#utilisation-de-la-librairie-shim" title="Link to this heading"></a></h3>
-<p>Plutôt qu’invoquer un sr_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
+<p>Plutôt qu’invoquer un sr3_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
 publiez les fichiers qu’ils écrivent en leur faisant utiliser une bibliothèque de shim interceptant certains appels d’i/o de fichiers vers la libc
 et le noyau. Pour activer la bibliothèque shim, dans l’environnement shell, ajoutez</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SR_POST_CONFIG</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>

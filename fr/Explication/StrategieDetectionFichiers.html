@@ -125,7 +125,7 @@
 </style>
 <section id="file-detection-strategies">
 <h1>File Detection Strategies<a class="headerlink" href="#file-detection-strategies" title="Link to this heading"></a></h1>
-<p>Le travail fondamental de sr_watch est de remarquer quand les fichiers sont
+<p>Le travail fondamental de watch est de remarquer quand les fichiers sont
 disponibles pour être transférés. La stratégie appropriée varie en fonction de:</p>
 <blockquote>
 <div><ul class="simple">
@@ -139,7 +139,7 @@ affiche un message pour un composant <em>sr_sarra</em>, alors l’utilisation de
 le nombre minimale de fichiers dans le répertoire et minimisera le temps de remarquer les nouveaux. Dans ces
 conditions optimales, l’observation des fichiers dans un centième de seconde, c’est raisonnable
 de s’y attendre. N’importe quelle méthode fonctionnera bien pour de tels arbres, mais…  les charge imposé
-sur l´ordinateur par la méthode par défaut de sr_watch (inotify) sont généralement les plus basses.</p>
+sur l´ordinateur par la méthode par défaut de watch (inotify) sont généralement les plus basses.</p>
 <p>Lorsque l’arborescence devient grande, la décision peut changer en fonction d’un certain nombre de facteurs,
 décrit dans le tableau suivant. Il décrit les approches qui seront les plus basses en
 latence et en débit le plus élevé d’abord, et éventuellement l’option la moins efficace
@@ -236,9 +236,9 @@ dans ces scripts/jobs.</p></li>
 <div><ul class="simple">
 <li><p>plus vite que sr_watch.</p></li>
 <li><p>utilise moins de mémoire vive que
-sr_watch</p></li>
+watch</p></li>
 <li><p>peut marcher avec des arbres
-plus grand que sr_watch</p></li>
+plus grand que watch</p></li>
 </ul>
 </div></blockquote>
 </td>
@@ -247,7 +247,7 @@ plus grand que sr_watch</p></li>
 <li><p>ou la vitesse est important.</p></li>
 <li><p>ou on n´a pas besoin de plugins.</p></li>
 <li><p>limité sues with tree size
-as sr_watch, just a little later.
+as watch, just a little later.
 (see following methods)</p></li>
 </ul>
 </td>
@@ -273,7 +273,7 @@ suffix. Suffix est programmable.</p>
 au démarrage</p></li>
 <li><p>chaque noeud dans un grappe a besoin
 de tourner un instance.</p></li>
-<li><p>chaque sr_watch est une seul tâche.</p></li>
+<li><p>chaque watch est une seul tâche.</p></li>
 </ul>
 </div></blockquote>
 </td>
@@ -356,7 +356,7 @@ en parallèle.</p>
 </tr>
 </tbody>
 </table>
-<p>sr_watch est sr_post avec l’option <em>sleep</em> qui lui permettra de boucler les répertoires donnés en arguments.
+<p>sr_watch est sr3_post avec l’option <em>sleep</em> qui lui permettra de boucler les répertoires donnés en arguments.
 sr_cpost est une version C qui fonctionne de manière identique, sauf qu’elle est plus rapide et
 utilise beaucoup moins de mémoire, à l’adresse le coût de la perte du support des plugins.  Avec
 sr_watch (et sr_cpost) La méthode par défaut de la remarque les changements dans les répertoires
@@ -380,7 +380,7 @@ fichiers, <em>force_polling</em> est beaucoup plus lente sur des arbres de taill
 défaut et ne devrait pas être utilisé si la rapidité d’exécution est une préoccupation.</p>
 <p>Dans les clusters de supercalculateurs, des systèmes de fichiers distribués sont utilisés, et les
 méthodes optimisées pour le système d’exploitation les modifications de fichiers (INOTIFY sous Linux)
-ne franchissent pas les limites des nœuds. Pour utiliser sr_watch avec la stratégie par défaut
+ne franchissent pas les limites des nœuds. Pour utiliser watch avec la stratégie par défaut
 sur un répertoire dans un cluster de calcul, on doit généralement avoir un processus sr_watch
 sr_watch s’exécutant sur chaque noeud. Si cela n’est pas souhaitable, alors on peut le déployer sur
 un seul nœud avec <em>force_polling</em> mais le timing sera le suivant être limité par la taille du répertoire.</p>
@@ -432,7 +432,7 @@ d’écrire des fichiers dans des répertoires surveillés par sr_watch. Le fait
 correctement les protocoles de complétion de fichiers est une source commune de
 problèmes intermittents et difficiles à diagnostiquer en matière de transfert de fichiers.
 Pour des transferts de fichiers fiables, Il est essentiel que les processus qui écrivent
-des fichiers et sr_watch s’entendent sur la façon de représenter un fichier qui n’est pas complet.</p>
+des fichiers et watch s’entendent sur la façon de représenter un fichier qui n’est pas complet.</p>
 </section>
 <section id="shim-library-usage">
 <h2>SHIM LIBRARY USAGE<a class="headerlink" href="#shim-library-usage" title="Link to this heading"></a></h2>

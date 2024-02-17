@@ -111,7 +111,9 @@
 </style>
 <section id="server-admin-a-local-subscriber">
 <h1>Server Admin: A Local Subscriber<a class="headerlink" href="#server-admin-a-local-subscriber" title="Link to this heading"></a></h1>
-<p>This example goes over how to subscribe to the swob files from the Environment Canada Weather office.</p>
+<p>This example goes over how to build a local pump, with a local broker,
+subscribe to the swob files from the Environment Canada Weather office,
+and republish them locally.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install rabbitmq-server
 $ sudo rabbitmqctl list_users
   Listing users ...
@@ -136,7 +138,7 @@ $ sudo rabbitmqctl set_user_tags bob management
   Setting tags for user &quot;bob&quot; to [management] ...
 
 $ sudo rabbitmq-plugins enable rabbitmq_management
-$ /etc/init.d/rabbitmq-server restart
+$ systemctl restart rabbitmq-server
 </pre></div>
 </div>
 <p>For more on the different kinds of user tags, see <a class="reference external" href="https://www.rabbitmq.com/management.html#permissions">rabbitmq access and permissions.</a>
@@ -144,7 +146,7 @@ Open <a class="reference external" href="http://localhost:15672/">http://localho
 Log in with the username/password created above.
 Click the <code class="docutils literal notranslate"><span class="pre">Queues</span></code> tab to monitor the progress from the broker’s perspective.
 Back in terminal:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir .config/sarra/subscribe
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir -p .config/sarra/subscribe
 $ vi .config/sarra/subscribe/test-subscribe.conf
   broker amqp://bob:robert@localhost/
   exchange xs_bob
@@ -153,7 +155,7 @@ $ vi .config/sarra/subscribe/test-subscribe.conf
 </pre></div>
 </div>
 <p>Setup the bits that post changes to the exchange:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir .config/sarra/watch
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir -p .config/sarra/watch
 $ vi $_/test-watch.conf
   post_broker amqp://bob:robert@localhost/
   post_exchange xs_bob
@@ -161,12 +163,12 @@ $ vi $_/test-watch.conf
   events modify,create
 
 $ mkdir -p /tmp/sarra/{in,out}put
-$ sr start
-$ sr_watch log test-watch
+$ sr3 start
+$ sr3 log watch/test-watch
 </pre></div>
 </div>
 <p>–&gt; All reporting normal.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe log test-subscribe
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 log subscribe/test-subscribe
   .
   .
   2020-08-20 16:29:26,111 [ERROR] standard queue name based on:
@@ -177,21 +179,21 @@ $ sr_watch log test-watch
 </pre></div>
 </div>
 <p>–&gt; Note the line with <strong>[ERROR]</strong>, it was unable to find the queue.
-this is because the queue needs to first be created by sr_watch and since we started the
+this is because the queue needs to first be created by the watch and since we started the
 subscriber and watch at the same time with ‘<code class="docutils literal notranslate"><span class="pre">sr</span> <span class="pre">start</span></code>’ we ran into a small race condition.
 This was soon after resolved as the sr_subscribe has a 1 second retry time.
-This can be confirmed with the ‘RabbitMQ Queues’ page showing a <code class="docutils literal notranslate"><span class="pre">q_bob.sr_subscribe.test_subscribe.</span> <span class="pre">...</span></code> queue in the list.:</p>
+This can be confirmed with the ‘RabbitMQ Queues’ page showing a <code class="docutils literal notranslate"><span class="pre">q_bob.subscribe.test-subscribe.</span> <span class="pre">...</span></code> queue in the list.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ touch /tmp/sarra/input/testfile1.txt
 $ ls /tmp/sarra/input/
   testfile1.txt
 $ ls /tmp/sarra/output/
     testfile1.txt
-$ sr_subscribe log test-subscribe
+$ sr3 log subscribe/test-subscribe
   .
   .
   2020-08-20 16:29:26,078 [INFO] file_log downloaded to: /tmp/sarra/output/testfile1.txt
 
-$ sr_watch log test-watch
+$ sr3 log watch/test-watch
   2020-08-20 16:29:20,612 [INFO] post_log notice=20200820212920.611807823 file:/ /tmp/sarra/input/testfile1.txt headers={&#39;to_clusters&#39;:&#39;localhost&#39;, &#39;mtime&#39;:&#39;20200820212920.0259232521&#39;, &#39;atime&#39;: &#39;20200820212920.0259232521&#39;, &#39;mode&#39;: &#39;644&#39;, &#39;parts&#39;: &#39;1,0,1,0,0&#39;, &#39;sum&#39;:&#39;d,d41d8cd98f00b204e9800998ecf8427e&#39;}
 
 $ touch /tmp/sarra/input/testfile{2..9}.txt
@@ -202,9 +204,9 @@ $ watch -n 1 ls /tmp/sarra/output/
 <p>Now you can watch the files trickle into the output folder,
 also watch the ‘RabbitMQ Queues’ page receive and process AMQP messages.
 When all is completed you can shut down both the subscriber and watcher with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr stop
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 stop
   ...
-$ sr_subscribe cleanup test-subscribe
+$ sr3 cleanup subscribe/test-subscribe
   ...
 </pre></div>
 </div>

@@ -70,7 +70,7 @@ Dans sr3, on peut également utiliser des spécifications de style de globbing d
 soit invoqué sur un groupe de configurations, alors que dans la v2, on ne pouvait fonctionner que sur une à la fois.
 
 .. note::
-  **sr3_post** est une exception à ce changement parce qu'il fonctionne comme sr_post de la v2, étant
+  **sr3_post** est une exception à ce changement parce qu'il fonctionne comme sr3_post de la v2, étant
   un outil d’affichage interactif.
 
 Ce qui fonctionnera sans changement

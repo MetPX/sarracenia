@@ -127,9 +127,9 @@
 <h1>Réassemblage de fichiers<a class="headerlink" href="#reassemblage-de-fichiers" title="Link to this heading"></a></h1>
 <section id="composants">
 <h2>Composants<a class="headerlink" href="#composants" title="Link to this heading"></a></h2>
-<p><strong>sr_watch:</strong> Vous pouvez utiliser sr_watch pour surveiller un répertoire pour les fichiers
+<p><strong>sr_watch:</strong> Vous pouvez utiliser sr3_watch pour surveiller un répertoire pour les fichiers
 de partition entrants (.Part) de sr_subscribe ou sr_sender, les deux ont la possibilité d’envoyer
-un fichier dans des partitions. Dans le fichier de configuration pour sr_watch les paramètres
+un fichier dans des partitions. Dans le fichier de configuration pour sr3_watch les paramètres
 importants à inclure sont les suivants :</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -191,7 +191,7 @@ importants à inclure sont les suivants :</p>
 </section>
 <section id="test">
 <h2>Test<a class="headerlink" href="#test" title="Link to this heading"></a></h2>
-<p>Créer un fichier de configuration sr_watch selon le modèle ci-dessus.
+<p>Créer un fichier de configuration sr3_watch selon le modèle ci-dessus.
 Démarrez le processus en tapant la commande suivante : <code class="docutils literal notranslate"><span class="pre">`sr_watch</span> <span class="pre">foreground</span> <span class="pre">path/to/config_file.cfg`</span></code></p>
 <p>Ensuite, créez un fichier de configuration d’abonné et incluez <code class="docutils literal notranslate"><span class="pre">`inplace</span> <span class="pre">off`</span></code> afin que le fichier
 soit téléchargé en plusieurs parties.

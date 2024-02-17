@@ -59,7 +59,7 @@ Maintenant, démarrez l’abonné nouvellement créé::
   $ sr3 start swob
     2015-12-03 06:53:35,268 [INFO] user_config = 0 ../swob.conf
     2015-12-03 06:53:35,269 [INFO] instances 1 
-    2015-12-03 06:53:35,270 [INFO] sr subscribe swob 0001 started
+    2015-12-03 06:53:35,270 [INFO] sr3 subscribe swob 0001 started
 
 
 L’activité peut être surveillée via des fichiers journaux dans  ``~/.cache/sarra/log/`` ou avec la commande *log* ::

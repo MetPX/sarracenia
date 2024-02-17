@@ -1530,7 +1530,7 @@ signifie de supprimer un fichier.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">post_baseDir</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">public_data</span> <span class="o">--</span><span class="n">post_baseUrl</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="n">SACN32_CWAO_123456</span> <span class="o">-</span><span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="n">start</span> <span class="n">watch</span><span class="o">/</span><span class="n">myflow</span>
 </pre></div>
 </div>
-<p>Par défaut, sr_watch vérifie le fichier /data/web/public_data/bulletins/alphanumériques/SACN32_CWAO_123456
+<p>Par défaut, sr3_watch vérifie le fichier /data/web/public_data/bulletins/alphanumériques/SACN32_CWAO_123456
 (concaténer le répertoire base_dir et le chemin relatif de l’url source pour obtenir le chemin du fichier local).
 Si le fichier change, il calcule sa somme de contrôle. Il construit ensuite un message, se connecte à broker.com en tant qu’utilisateur’guest’.
 (informations d’identification par défaut) et envoie le message aux valeurs par défaut vhost’/’ et exchange’sx_guest’ (échange par défaut)</p>
@@ -1540,9 +1540,9 @@ sans authentification sur dd.weather.gc.ca.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">-</span><span class="n">post_baseDir</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">public_data</span> <span class="o">-</span><span class="n">post_baseUrl</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="n">start</span> <span class="n">watch</span><span class="o">/</span><span class="n">myflow</span>
 </pre></div>
 </div>
-<p>Ici, sr_watch vérifie la création de fichiers (modification) dans /data/web/public_data/bulletins/alphanumérique.
+<p>Ici, sr3_watch vérifie la création de fichiers (modification) dans /data/web/public_data/bulletins/alphanumérique.
 (concaténer le répertoire base_dir et le chemin relatif de l’url source pour obtenir le chemin du répertoire).
-Si le fichier SACN32_CWAO_123456 est créé dans ce répertoire, sr_watch calcule sa somme de contrôle.
+Si le fichier SACN32_CWAO_123456 est créé dans ce répertoire, sr3_watch calcule sa somme de contrôle.
 Il construit ensuite un message, se connecte à broker.com en tant qu’utilisateur’guest’.
 (informations d’identification par défaut) et envoie le message à exchange’amq.topic’ (échange par défaut)</p>
 <p>Un abonné peut télécharger le fichier créé/modifié <a class="reference external" href="http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_CWAO_123456">http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_CWAO_123456</a> en utilisant http.

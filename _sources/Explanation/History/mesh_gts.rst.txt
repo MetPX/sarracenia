@@ -48,10 +48,10 @@ data using standardized open methods, with a straightforward mapping
 from the metadata. As the proposed implementation uses
 existing standards, the WMO does not need to define any additional ones, 
 and interoperability and access for other players in the broader
-society should be straightforward. The sr_post protocol, and
+society should be straightforward. The sr3_post protocol, and
 a number of existing implementations of it, are a great fit.
 
-While it is believed that sr_post protocol has great potential
+While it is believed that sr3_post protocol has great potential
 to improve WMO data exchange, it will take a few years to adopt it,
 and prior to adoption, there needs to be agreement on the file tree content.
 Today, the next step would be to find some partner countries with which 
@@ -759,7 +759,7 @@ work or cost as they are inherent to the technologies proposed.
 Programmability/Interoperability
 --------------------------------
 
-A new application to process sr_post messages can be re-implemented if there
+A new application to process sr3_post messages can be re-implemented if there
 is a desire to do so, as in addition to full documentation, source code
 for a handful of `implementations <../Overview.html#implementations>`_
 (Python, C, Go, node.js), is readily publically available. 

@@ -121,7 +121,7 @@
 <h1>File Re-assembling<a class="headerlink" href="#file-re-assembling" title="Link to this heading"></a></h1>
 <section id="components">
 <h2>Components<a class="headerlink" href="#components" title="Link to this heading"></a></h2>
-<p><strong>sr_watch:</strong> You can use sr_watch to watch a directory for incoming partition files (.Part) from sr_subscribe or sr_sender, both have the ability to send a file in partitions. In the config file for sr_watch the important parameters to include are:</p>
+<p><strong>sr_watch:</strong> You can use sr3_watch to watch a directory for incoming partition files (.Part) from sr_subscribe or sr_sender, both have the ability to send a file in partitions. In the config file for sr3_watch the important parameters to include are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>path &lt;path of directory to watch&gt;</p></li>
@@ -173,7 +173,7 @@
 </section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
-<p>Create an sr_watch config file according to the template above
+<p>Create an sr3_watch config file according to the template above
 Start the process by typing the following command: <code class="docutils literal notranslate"><span class="pre">`sr_watch</span> <span class="pre">foreground</span> <span class="pre">path/to/config_file.cfg`</span></code></p>
 <p>Then create a subcriber config file and include <code class="docutils literal notranslate"><span class="pre">`inplace</span> <span class="pre">off`</span></code> so the file will be downloaded in parts
 Start the subscriber by typring <code class="docutils literal notranslate"><span class="pre">`sr_subscribe</span> <span class="pre">foreground</span> <span class="pre">path/to/config_file.cfg`</span></code></p>

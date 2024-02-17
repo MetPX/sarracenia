@@ -644,6 +644,11 @@
                         <span class="c1"># restore adjustment to fileOp</span>
                         <span class="k">if</span> <span class="s1">&#39;post_fileOp&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
                             <span class="n">m</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;post_fileOp&#39;</span><span class="p">]</span>
+
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">download</span> <span class="ow">and</span> <span class="s1">&#39;retrievePath&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                            <span class="c1"># retrieve paths do not propagate after download.</span>
+                            <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span> 
+
                         
                     <span class="bp">self</span><span class="o">.</span><span class="n">_runCallbacksWorklist</span><span class="p">(</span><span class="s1">&#39;after_work&#39;</span><span class="p">)</span>
 
@@ -901,9 +906,17 @@
             <span class="n">u</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">baseUrlParse</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">])</span>
             <span class="n">relPath</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">relPath</span>
 
-        <span class="c1"># FIXME... why the % ? why not just assign it to copy the value?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">download</span> <span class="ow">and</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span> 
+            <span class="c1"># FIXME... why the % ? why not just assign it to copy the value?</span>
             <span class="n">relPath</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span>
+
+            <span class="c1"># after download we dont propagate renaming... once used, get rid of it</span>
+            <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span>
+            <span class="c1"># FIXME: worry about publishing after a rename.</span>
+            <span class="c1"># the relpath should be replaced by rename value for downstream</span>
+            <span class="c1"># because the file was written to rename.</span>
+            <span class="c1"># not sure if this happens or not.</span>
+
 
         <span class="n">token</span> <span class="o">=</span> <span class="n">relPath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">token</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>

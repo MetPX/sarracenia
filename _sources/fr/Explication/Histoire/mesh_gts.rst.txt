@@ -51,7 +51,7 @@ et l’accès pour d’autres acteurs de la société au sens large devraient ê
 Le protocole sr_post, et un certain nombre d’implémentations existantes de celui-ci,
 conviennent parfaitement.
 
-Bien que l’on pense que le protocole sr_post a un grand potentiel pour améliorer l’échange
+Bien que l’on pense que le protocole sr3_post a un grand potentiel pour améliorer l’échange
 de données de WMO, il faudra quelques années pour l’adopter, et avant son adoption, il faut
 s’entendre sur le contenu de l’arborescence des fichiers. Aujourd’hui, la prochaine étape
 consisterait à trouver des pays partenaires avec lesquels s’engager dans des échanges de
@@ -751,7 +751,7 @@ proposées.
 Programmabilité/interopérabilité
 --------------------------------
 
-Une nouvelle application pour traiter sr_post messages peut être réimplémentée s’il y a un désir
+Une nouvelle application pour traiter sr3_post messages peut être réimplémentée s’il y a un désir
 de le faire, car en plus de la documentation complète, le code source d’une poignée `d’implémentations <../Aperçu.html#implémentations>`_
 (Python, C, Go, node.js), est facilement accessible au public. L’implémentation python dispose
 d’une interface de plug-in étendue disponible pour personnaliser le traitement de différentes

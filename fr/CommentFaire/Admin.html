@@ -212,7 +212,7 @@ pas s´abonner à la pompe locale (généralement à cause des pare-feu).</p></l
 <p>Comme pour tout autre utilisateur, il peut y avoir un nombre illimité de configurations.
 à mettre en place, et il se peut qu’ils aient tous besoin de courir en même temps.
 Pour le faire facilement, on peut invoquer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr</span> <span class="n">start</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">start</span>
 </pre></div>
 </div>
 <p>pour démarrer tous les fichiers avec les configurations nommées de chaque
@@ -698,7 +698,7 @@ En bref, voici les permissions et les échanges <em>sr_audit</em> gère:</p>
 </div>
 <p>puis ajoutez une entrée amqp appropriée dans ~/.config/sarra/credentials.conf pour définir le mot de passe,
 puis lancez:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
 </pre></div>
 </div>
 <p>Pour supprimer des utilisateurs, il suffit de supprimer <em>declare source Alice</em>
@@ -779,7 +779,7 @@ poster vers le courtier en aval. Le compte d’alimentation du courtier est
 utilisé pour ce travail, et est un utilisateur semi-administratif, capable
 de publier des avis à n’importe quel échange. Supposons qu’Apache est
 configuré (non couvert ici) avec un racine du document /var/www/html. Le
-compte linux que nous avons créé pour exécuter tous les processus sr est’<em>sarra</em>’.
+compte linux que nous avons créé pour exécuter tous les processus sr3 est’<em>sarra</em>’.
 la racine du document est inscriptible dans ces processus:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ cd ~/.config/sarra/sarra
 sarra@boule:~/.config/sarra/sarra$ sudo chown sarra.sarra /var/www/html

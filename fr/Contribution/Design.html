@@ -274,13 +274,13 @@ ce protocole suppose un courtier standard antérieur à 1.0, comme le fournissen
 gratuits, tels que RabbitMQ, souvent appelé 0,8, mais 0,9 et post 0,9.
 Les courtiers sont également susceptibles de bien interopérer.</p>
 <p>Dans AMQP, de nombreux acteurs différents peuvent définir des paramètres de communication. Pour créer un
-modèle de sécurité, Sarracenia contraint ce modèle : les clients sr_post ne sont pas censés déclarer
+modèle de sécurité, Sarracenia contraint ce modèle : les clients sr3_post ne sont pas censés déclarer
 des échanges.  Tous les clients sont censés utiliser les échanges existants qui ont été déclarés par
 les administrateurs de courtiers.  Les autorisations client sont limitées à la création de files
 d’attente pour leur propre usage,
 en utilisant des schémas de nommage convenus.  File d’attente pour le client : qc_&lt;user&gt;.????</p>
 <p>Les échanges topic-based sont utilisés exclusivement. AMQP prend en charge de nombreux autres types d’échanges,
-mais sr_post envoye la rubrique afin de prendre en charge le filtrage côté serveur à l’aide du topic
+mais sr3_post envoye la rubrique afin de prendre en charge le filtrage côté serveur à l’aide du topic
 basé sur le filtrage.  Les rubriques reflètent le chemin d’accès des fichiers annoncés, ce qui permet un
 filtrage direct côté serveur, complété par un filtrage côté client à la réception des messages.</p>
 <p>La racine de l’arborescence des topics est la version de la charge utile du message. Cela permet aux courtiers uniques
@@ -745,7 +745,7 @@ est fait.</p>
 </section>
 <section id="dd-configuration-de-la-diffusion-des-donnees-aka-data-mart">
 <h3><a class="toc-backref" href="#id21" role="doc-backlink"><span class="sectnum">1.7.5 </span>DD : Configuration de la diffusion des données (AKA : Data Mart)</a><a class="headerlink" href="#dd-configuration-de-la-diffusion-des-donnees-aka-data-mart" title="Link to this heading"></a></h3>
-<p>La configuration de déploiement sr est davantage une configuration de point de terminaison.  Chaque nœud est censé :
+<p>La configuration de déploiement sr3 est davantage une configuration de point de terminaison.  Chaque nœud est censé :
 Avoir une copie complète de toutes les données téléchargées par tous les nœuds.   Donner une vue unifiée rend
 ca beaucoup plus compatible avec une variété de méthodes d’accès, telles qu’un navigateur de fichiers (sur HTTP,
 ou sftp) plutôt que de se limiter aux messages de notification AMQP.  C’est le type de vue présenté par

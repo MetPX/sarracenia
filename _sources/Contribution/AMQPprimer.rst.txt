@@ -84,7 +84,7 @@ Topic-based Exchanges
 ~~~~~~~~~~~~~~~~~~~~~
 
 Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
-but sr_post have the topic sent in order to support server side filtering by using topic
+but sr3_post have the topic sent in order to support server side filtering by using topic
 based filtering. At AMQP 1.0, topic-based exchanges (indeed all exchanges, are no
 longer defined.) Server-side filtering allows for much fewer topic hierarchies to be used,
 and for much more efficient subsciptions.

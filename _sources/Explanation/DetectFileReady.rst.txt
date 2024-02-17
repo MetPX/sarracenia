@@ -4,7 +4,7 @@ File Detection Strategies
 =========================
 
 
-The fundamental job of sr_watch is to notice when files are available to be transferred.
+The fundamental job of watch is to notice when files are available to be transferred.
 The appropriate strategy varies according to:
 
  - the **number of files in the tree** to be monitored,
@@ -16,7 +16,7 @@ watch where one is posting for an *sr_sarra* component, then use of the
 *delete* option will keep the number of files in directory at any one point
 small and minimize the time to notice new ones. In such optimal conditions,
 noticing files in a hundredth of a second is reasonable to expect. Any method
-will work well for such trees, but the sr_watch defaults (inotify) are usually
+will work well for such trees, but the watch defaults (inotify) are usually
 the lowest overhead.
 
 When the tree gets large, the decision can change based on a number of factors,
@@ -43,7 +43,7 @@ File Detection Strategy Table
 |library      |   might be posted.                    | - most efficient.                    |
 |             | - works on any size file tree.        | - more complicated to setup.         |
 |(LD_PRELOAD) | - very multi-threaded.                | - use where python3 not available.   |
-|             | - I/O by writer (better localized)    | - no sr_watch needed.                |
+|             | - I/O by writer (better localized)    | - no watch needed.                   |
 |(in C)       | - very multi-threaded (user processes)| - no plugins.                        |
 |             |                                       |                                      |
 +-------------+---------------------------------------+--------------------------------------+
@@ -60,7 +60,7 @@ File Detection Strategy Table
 +-------------+---------------------------------------+--------------------------------------+
 |sr_cpost     |works like watch if sleep > 0          | - where python3 is hard to get.      |
 |             |                                       | - where speed is critical.           |
-|(in C)       | - faster than sr_watch                | - where plugins not needed.          |
+|(in C)       | - faster than watch                   | - where plugins not needed.          |
 |             | - uses less memory than sr_watch.     | - same issues with tree size         |
 |             | - practical with a bit bigger trees.  |   as sr_watch, just a little later.  |
 |             |                                       |   (see following methods)            |
@@ -76,7 +76,7 @@ File Detection Strategy Table
 |             | - Large trees mean long startup.      |works great with 10000 files          |
 |(in Python)  | - each node in a cluster may need     |only a few seconds startup.           |
 |             |   to run an instance                  |                                      |
-|             | - each sr_watch single threaded.      |too slow for millions of files.       |
+|             | - each watch single threaded.         |too slow for millions of files.       |
 +-------------+---------------------------------------+--------------------------------------+
 |sr_watch with|                                       |                                      |
 |reject       |Use Linux convention to *hide* files.  |Sending to systems that               |
@@ -108,10 +108,10 @@ File Detection Strategy Table
 +-------------+---------------------------------------+--------------------------------------+
 
 
-sr_watch is sr_post with the added *sleep* option that will cause it to loop
+sr_watch is sr3_post with the added *sleep* option that will cause it to loop
 over directories given as arguments.  sr3_cpost is a C version that functions
 identically, except it is faster and uses much less memory, at the cost of the
-loss of plugin support.  With sr_watch (and sr3_cpost) The default method of
+loss of plugin support.  With a watch (and sr3_cpost), the default method of
 noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
 to recognize changes without having to scan the entire directory tree manually.
 Once primed, file changes are noticed instantaneously, but requires an
@@ -135,8 +135,8 @@ be used if timeliness is a concern.
 
 In supercomputing clusters, distributed files systems are used, and the OS
 optimized methods for recognizing file modifications (INOTIFY on Linux) do not
-cross node boundaries. To use sr_watch with the default strategy on a
-directory in a compute cluster, one usually must have an sr_watch process
+cross node boundaries. To use watch with the default strategy on a
+directory in a compute cluster, one usually must have a watch process
 running on every node. If that is undesirable, then one can deploy it on a
 single node with *force_polling* but the timing will be constrained by the
 directory size.
@@ -157,7 +157,7 @@ need to be posted to call it::
 
 where *shimpost.conf* is an sr_cpost configuration file in
 the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
-as an sr_post one, except that plugins are not supported.  With the shim
+as an sr3_post one, except that plugins are not supported.  With the shim
 library in place, whenever a file is written, the *accept/reject* clauses of
 the shimpost.conf file are consulted, and if accepted, the file is posted just
 as it would be by sr_watch.
@@ -186,7 +186,7 @@ the entire file, such as *N* (SHA-512 of the file name only), but then one
 loses the ability to differentiate between versions of the file.
 
 note ::
-  should think about using N on the sr_watch, and having multi-instance shovels
+  should think about using N on the watch, and having multi-instance shovels
   recalculate checksums so that part becomes easily parallellizable. Should be
   straightforward, but not yet explored as a result of use of shim library. FIXME.
 
@@ -194,7 +194,7 @@ A last consideration is that in many cases, other processes are writing files
 to directories being monitored by sr_watch. Failing to properly set file
 completion protocols is a common source of intermittent and difficult to
 diagnose file transfer issues. For reliable file transfers, it is critical
-that both the writer and sr_watch agree on how to represent a file that
+that both the writer and watch agree on how to represent a file that
 isn't complete.
 
 

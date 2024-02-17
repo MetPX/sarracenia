@@ -53,7 +53,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#operations">Operations</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#housekeeping-sr-audit">Housekeeping - sr_audit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#housekeeping-sr3-sanity">Housekeeping - sr3 sanity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#excess-queueing-performance">Excess Queueing/Performance</a></li>
 </ul>
 </li>
@@ -217,16 +217,16 @@ configuration files have the .conf suffix.</p>
 they are validated, forward the postings to the public exchanges for subscribers to access.
 The processes that are typically run on a broker:</p>
 <ul class="simple">
-<li><p>sr_audit  - purge useless queues, create exchanges and users, set user permissions according to their roles.</p></li>
-<li><p>sr_poll   - for sources without notification messages, revert to explicit polling for initial injection.</p></li>
-<li><p>sr_sarra  - various configurations to pull data from other pumps to make it available from the local pump.</p></li>
-<li><p>sr_sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)</p></li>
-<li><p>sr_winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sr_sarra.</p></li>
-<li><p>sr_shovel - copy notification messages from pump to another, usually to feed sr_winnow.</p></li>
+<li><p>poll   - for sources without notification messages, revert to explicit polling for initial injection.</p></li>
+<li><p>sarra  - various configurations to pull data from other pumps to make it available from the local pump.</p></li>
+<li><p>sender - send data to clients or other pumps that cannot pull data (usually because of firewalls.)</p></li>
+<li><p>winnow - when there are multiple redundant sources of data, select the first one to arrive, and feed sarra.</p></li>
+<li><p>shovel - copy notification messages from pump to another, usually to feed winnow.</p></li>
+<li><p>flow   - for gathering from different sorts of sources.</p></li>
 </ul>
 <p>As for any other user, there may be any number of configurations
 to set up, and all of them may need to run at once. To do so easily, one can invoke:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr</span> <span class="n">start</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">start</span>
 </pre></div>
 </div>
 <p>to start all the files with named configurations of each component (sarra, subscribe, winnow, log, etc…)
@@ -241,8 +241,8 @@ AMQP user for administrative tasks, such as exchange or user creation, which are
 user, from data flow tasks, such as pulling and posting data, performed by the feeder user.
 Normally one would place credentials in ~/.config/sarra/credentials.conf
 for each account, and the various configuration files would use the appropriate account.</p>
-<section id="housekeeping-sr-audit">
-<h3>Housekeeping - sr_audit<a class="headerlink" href="#housekeeping-sr-audit" title="Link to this heading"></a></h3>
+<section id="housekeeping-sr3-sanity">
+<h3>Housekeeping - sr3 sanity<a class="headerlink" href="#housekeeping-sr3-sanity" title="Link to this heading"></a></h3>
 <p>When a client connects to a broker, it creates a queue which is then bound to an exchange. The user
 can choose to have the client self-destruct when disconnected (<em>auto-delete</em>), or it can make
 it <em>durable</em> which means it should remain, waiting for the client to connect again, even across
@@ -272,11 +272,11 @@ adding instances gives no improvement in the overall throughput. For example, ra
 only a single cpu to serve a queue. In such cases, creating multiple configurations,
 (each with their own queue) dividing the traffic among them will allow further improvements
 in throughput.</p>
-<p>sr_winnow is used to suppress duplicates.
+<p>winnow is used to suppress duplicates.
 <strong>Note that the duplicate suppresion cache is local to each instance</strong>. When N instances share a queue, the
 first time a posting is received, it could be picked by one instance, and if a duplicate one is received
 it would likely be picked up by another instance. <strong>For effective duplicate suppression with instances</strong>,
-one must <strong>deploy two layers of subscribers</strong>. Use a <strong>first layer of subscribers (sr_shovels)</strong> with duplicate
+one must <strong>deploy two layers of subscribers</strong>. Use a <strong>first layer of subscribers (shovels)</strong> with duplicate
 suppression turned off and output with <em>post_exchangeSplit</em>, which route posts by checksum to
 a <strong>second layer of subscribers (sr_winnow) whose duplicate suppression caches are active.</strong></p>
 </section>
@@ -284,24 +284,24 @@ a <strong>second layer of subscribers (sr_winnow) whose duplicate suppression ca
 <section id="routing">
 <h2>Routing<a class="headerlink" href="#routing" title="Link to this heading"></a></h2>
 <p>The inter-connection of multiple pumps is done, on the data side, by daisy-chaining
-sr_sarra and/or sr_sender configurations from one pump to the next.</p>
+sarra and/or sender configurations from one pump to the next.</p>
 <p>The <em>to_clusters</em>, and <em>source</em>  headers are used for routing decisions
 implemented in the <em>msg_to_clusters</em>, and <em>msg_by_source</em> plugins respectively
 to be user by sender or sarra components to limit data transfers between pumps.</p>
 <p>For report routing, the <em>from_cluster</em> header is interpreted by the
-<em>msg_from_cluster</em> plugin. Report messages are defined in the sr_report(7) man
+<em>msg_from_cluster</em> plugin. Report messages are defined in the report(7) man
 page. They are emitted by <em>consumers</em> at the end, as well as <em>feeders</em> as the
 notification messages traverse pumps. Report messages are posted to the xs_&lt;user&gt; exchange,
 and after validation sent to the xreport exchange by the shovel component
-configurations created by sr_audit.</p>
+configurations created by <em>sr3 declare.</em></p>
 <p>Messages in xreports destined for other clusters are routed to destinations by
 manually configured shovels. See the <a class="reference internal" href="#reports">Reports</a> section for more details.</p>
 </section>
 <section id="what-is-going-on">
 <h2>What is Going On?<a class="headerlink" href="#what-is-going-on" title="Link to this heading"></a></h2>
-<p>The sr_report command can be invoked to bind to ‘xreport’ instead of the
+<p>The sr3 declare report command can be invoked to bind to ‘xreport’ instead of the
 default user exchange to get report information for an entire broker.</p>
-<p>Canned sr_report configuration with an <em>on_message</em> action can be configured to
+<p>Canned report configuration with an <em>on_message</em> action can be configured to
 gather statisical information.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -672,7 +672,7 @@ In short, here are the permissions and exchanges <em>sr_audit</em> manages:</p>
 </div>
 <p>then add an appropriate amqp entry in ~/.config/sarra/credentials.conf to set the password,
 then run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
 </pre></div>
 </div>
 <p>To remove users, just remove <em>declare source Alice</em> from the admin.conf file, and run:</p>
@@ -746,7 +746,7 @@ want the server to discard the queue:</p>
 <p>Sarra works by having a downstream pump re-advertise products from an upstream one. Sarra needs all the configuration of a subscription,
 but also needs the configuration to post to the downstream broker. The feeder account on the broker is used for this sort
 of work, and is a semi-administrative user, able to publish data to any exchange. Assume apache is set up (not covered here) with a
-document root of /var/www/html. The linux account we have created to run all the sr processes is ‘<em>sarra</em>’, so we make sure
+document root of /var/www/html. The linux account we have created to run all the sr3 processes is ‘<em>sarra</em>’, so we make sure
 the document root is writable to those processes:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ cd ~/.config/sarra/sarra
 sarra@boule:~/.config/sarra/sarra$ sudo chown sarra.sarra /var/www/html

@@ -176,6 +176,8 @@
             <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;relPath: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
         <span class="k">if</span> <span class="s1">&#39;retrievePath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
             <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;retrievePath: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;rename: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
         <span class="k">return</span> <span class="n">s</span>
         
     <span class="k">def</span> <span class="nf">_messagePostStr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span>
@@ -204,6 +206,8 @@
             <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;relPath: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
         <span class="k">if</span> <span class="s1">&#39;retrievePath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
             <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;retrievePath: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;rename: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
         <span class="k">return</span> <span class="n">s</span>
 
     <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>

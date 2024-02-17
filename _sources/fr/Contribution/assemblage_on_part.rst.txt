@@ -5,9 +5,9 @@ Réassemblage de fichiers
 Composants
 ----------
 
-**sr_watch:** Vous pouvez utiliser sr_watch pour surveiller un répertoire pour les fichiers
+**sr_watch:** Vous pouvez utiliser sr3_watch pour surveiller un répertoire pour les fichiers
 de partition entrants (.Part) de sr_subscribe ou sr_sender, les deux ont la possibilité d’envoyer
-un fichier dans des partitions. Dans le fichier de configuration pour sr_watch les paramètres
+un fichier dans des partitions. Dans le fichier de configuration pour sr3_watch les paramètres
 importants à inclure sont les suivants :
 
 - chemin <chemin du répertoire à surveiller>
@@ -46,7 +46,7 @@ Après avoir été déclenché par un fichier de pièce téléchargé :
 Test
 ----
 
-Créer un fichier de configuration sr_watch selon le modèle ci-dessus.
+Créer un fichier de configuration sr3_watch selon le modèle ci-dessus.
 Démarrez le processus en tapant la commande suivante : ```sr_watch foreground path/to/config_file.cfg```
 
 Ensuite, créez un fichier de configuration d’abonné et incluez ```inplace off``` afin que le fichier

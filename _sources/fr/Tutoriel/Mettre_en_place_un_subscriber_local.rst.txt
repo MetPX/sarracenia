@@ -56,8 +56,8 @@ Configurez les bits qui publient les modifications apportées à l’échange ::
     events modify,create
   
   $ mkdir -p /tmp/sarra/{in,out}put
-  $ sr start
-  $ sr_watch log test-watch
+  $ sr3 start
+  $ sr3_watch log test-watch
 
 --> Tous les rapports normaux.::
 
@@ -71,7 +71,7 @@ Configurez les bits qui publient les modifications apportées à l’échange ::
       no=1
 
 --> Notez la ligne avec **[ERROR]**,  elle n’a pas pu trouver la fil d’attente.
-c’est parce que la fil d’attente doit d’abord être créée par sr_watch et puis que que nous avons commencé l'abonné et
+c’est parce que la fil d’attente doit d’abord être créée par sr3_watch et puis que que nous avons commencé l'abonné et
 watch en même temps avec '``sr start``' nous sommes tombés dans une petite condition de course.
 Cela a été résolu peu de temps après car le sr_subscribe a un temps de nouvelle tentative de 1 seconde.
 Cela peut être confirmé avec la page 'RabbitMQ Queues' affichant une ``q_bob.sr_subscribe.test_subscribe. ...`` fil d’attente dans la liste.::
@@ -87,7 +87,7 @@ Cela peut être confirmé avec la page 'RabbitMQ Queues' affichant une ``q_bob.s
     .
     2020-08-20 16:29:26,078 [INFO] file_log downloaded to: /tmp/sarra/output/testfile1.txt
 
-  $ sr_watch log test-watch
+  $ sr3_watch log test-watch
     2020-08-20 16:29:20,612 [INFO] post_log notice=20200820212920.611807823 file:/ /tmp/sarra/input/testfile1.txt headers={'to_clusters':'localhost', 'mtime':'20200820212920.0259232521', 'atime': '20200820212920.0259232521', 'mode': '644', 'parts': '1,0,1,0,0', 'sum':'d,d41d8cd98f00b204e9800998ecf8427e'}
     
   $ touch /tmp/sarra/input/testfile{2..9}.txt
@@ -98,7 +98,7 @@ Maintenant, vous pouvez regarder les fichiers ruisseler dans le dossier de sorti
 Regardez également la page 'RabbitMQ Queues' qui recoit et traite les messages AMQP.
 Lorsque tout est terminé, vous pouvez arrêter à la fois l’abonné et le watcher avec::
 
-  $ sr stop
+  $ sr3 stop
     ...
   $ sr_subscribe cleanup test-subscribe
     ...

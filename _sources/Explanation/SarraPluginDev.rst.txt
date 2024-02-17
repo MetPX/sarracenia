@@ -1075,4 +1075,4 @@ which have some examples of such use.
 
 
 .. warning::
-    **FIXME**, link to amqplib, or java bindings, and a pointer to the sr_post and sr_report section 7 man pages.
+    **FIXME**, link to amqplib, or java bindings, and a pointer to the sr3_post and sr_report section 7 man pages.

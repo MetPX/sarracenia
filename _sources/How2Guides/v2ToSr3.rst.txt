@@ -71,7 +71,7 @@ In sr3, one can also use file globbing style specifications to ask for a command
 to be invoked on a group of configurations, wheras in v2, one could only operate on one at a time.
 
 .. caution::
-  **sr3_post** is an exception to this change in that it works like v2's sr_post did, being
+  **sr3_post** is an exception to this change in that it works like v2's sr3_post did, being
   a tool for interactive posting.
 
 

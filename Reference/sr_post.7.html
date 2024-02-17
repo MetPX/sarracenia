@@ -164,7 +164,7 @@ See <a class="reference external" href="../Explanations/History/messages_v03.htm
 <section id="synopsis">
 <h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
 <p>Version 03 format of file change notification messages for sr_post.</p>
-<p>An sr_post notification message consists of a topic, and the <em>BODY</em></p>
+<p>An sr3_post notification message consists of a topic, and the <em>BODY</em></p>
 <section id="amqp-topic-version-dir">
 <h4><strong>AMQP Topic:</strong> <em>&lt;version&gt;.{&lt;dir&gt;.}</em><a class="headerlink" href="#amqp-topic-version-dir" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">version</span><span class="o">&gt;</span> <span class="o">=</span> <span class="s2">&quot;v03&quot;</span> <span class="n">the</span> <span class="n">version</span> <span class="n">of</span> <span class="n">the</span> <span class="n">protocol</span> <span class="ow">or</span> <span class="nb">format</span><span class="o">.</span>
@@ -713,8 +713,8 @@ but they should not be stripped, as some consumers may understand and process th
 </section>
 <section id="another-example">
 <h3>Another example<a class="headerlink" href="#another-example" title="Link to this heading"></a></h3>
-<p>The post resulting from the following sr_watch command, noticing creation of the file ‘foo’:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr_watch</span> <span class="o">-</span><span class="n">pbu</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">-</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span> <span class="o">-</span><span class="n">pb</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span>
+<p>The post resulting from the following sr3 watch command, noticing creation of the file ‘foo’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">sleep</span> <span class="mi">10</span> <span class="o">--</span><span class="n">pbu</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span> <span class="o">--</span><span class="n">pb</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span>
 </pre></div>
 </div>
 <p>Here, <em>sr_watch</em> checks if the file /data/shared/products/foo is modified.

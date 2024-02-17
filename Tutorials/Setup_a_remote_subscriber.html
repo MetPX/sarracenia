@@ -126,7 +126,7 @@
 </div>
 <p>The format is a complete url on each line (<cite>amqps://&lt;user&gt;:&lt;password&gt;&#64;&lt;target.url&gt;</cite>).
 This credentials.conf file should be private (linux octal permissions: 0600).
-.conf files placed in the <code class="docutils literal notranslate"><span class="pre">~/.config/sr3/subscribe_directory</span></code> will be automatically found by <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code>, rather than giving the full path.</p>
+.conf files placed in the <code class="docutils literal notranslate"><span class="pre">~/.config/sr3/subscribe_directory</span></code> will be automatically found by <code class="docutils literal notranslate"><span class="pre">subscribe</span></code>, rather than giving the full path.</p>
 <p>The <em>edit</em> command starts the user’s configured editor on the file to be created, in the correct directory:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob.conf
   broker amqps://anonymous@dd.weather.gc.ca
@@ -135,7 +135,7 @@ This credentials.conf file should be private (linux octal permissions: 0600).
   accept .*
 $ mkdir /tmp/swob_downloads
 $ sr3 status subscribe/swob
-  2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 01 is stopped
+  2017-12-14 06:54:54,010 [INFO] subscribe swob 01 is stopped
 </pre></div>
 </div>
 <div class="admonition error">
@@ -165,26 +165,26 @@ Given how quickly they arrive, be prepared to clean up.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 start swob
   2015-12-03 06:53:35,268 [INFO] user_config = 0 ../swob.conf
   2015-12-03 06:53:35,269 [INFO] instances 1
-  2015-12-03 06:53:35,270 [INFO] sr subscribe swob 0001 started
+  2015-12-03 06:53:35,270 [INFO] sr3 subscribe swob 0001 started
 </pre></div>
 </div>
 <p>Activity can be monitored via log files in <code class="docutils literal notranslate"><span class="pre">~/.cache/sr3/log/</span></code> or with the <em>log</em> command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 log swob
 
-  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
   2015-12-03 17:32:01,834 [INFO] user_config = 1 ../swob.conf
-  2015-12-03 17:32:01,835 [INFO] sr_subscribe start
-  2015-12-03 17:32:01,835 [INFO] sr_subscribe run
+  2015-12-03 17:32:01,835 [INFO] subscribe start
+  2015-12-03 17:32:01,835 [INFO] subscribe run
   2015-12-03 17:32:01,835 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
   2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
   2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.report.#)
 
-  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">[Ctrl]</span> <span class="pre">+</span> <span class="pre">[C]</span></code> to exit watching the logs.
 The startup log appears normal, indicating the authentication information was accepted.
-<code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> will get the notification and download the file into the present working directory
+<code class="docutils literal notranslate"><span class="pre">Subscribe</span></code> will get the notification and download the file into the present working directory
 (unless otherwise specified in the configuration file).</p>
 <hr class="docutils" />
 <p>A normal download looks like this:</p>
@@ -201,7 +201,7 @@ Here is a failure:</p>
 <span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">787</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">Server</span> <span class="n">couldn</span><span class="s1">&#39;t fulfill the request. Error code: 404, Not Found</span>
 </pre></div>
 </div>
-<p>This message is not always a failure as <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> retries a few times before giving up.
+<p>This message is not always a failure as <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> retries a few times before giving up.
 After a few minutes, here is what the download directory looks like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls -al | tail
   -rw-rw-rw-  1 peter peter   7875 Dec  3 17:36 2015-12-03-2236-CL3D-AUTO-minute-swob.xml
@@ -213,26 +213,26 @@ After a few minutes, here is what the download directory looks like:</p>
   -rw-rw-rw-  1 peter peter   7873 Dec  3 17:37 2015-12-03-2237-CL3G-AUTO-minute-swob.xml
   -rw-rw-rw-  1 peter peter   7037 Dec  3 17:37 2015-12-03-2237-CTBF-AUTO-minute-swob.xml
   -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2237-CTRY-AUTO-minute-swob.xml
-  -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 sr_subscribe_dd_swob_0001.log
+  -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 subscribe_dd_swob_0001.log
 </pre></div>
 </div>
 </section>
 <section id="cleanup">
 <h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
 <p>To not download more files, stop the subscriber:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe stop swob
-  2015-12-03 17:32:22,219 [INFO] sr_subscribe swob 01 stopped
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 stop subscribe/swob
+  2015-12-03 17:32:22,219 [INFO] subscribe swob 01 stopped
 </pre></div>
 </div>
-<p>This however leaves the queue that <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span> <span class="pre">start</span></code> setup on the broker active,
+<p>This however leaves the queue that <code class="docutils literal notranslate"><span class="pre">sr3</span> <span class="pre">start</span> <span class="pre">subscribe/swob</span></code> setup on the broker active,
 as to allow a failed subscriber to attempt reconnecting without loosing progress.
 That is until the broker times out the queue and removes it.
 To tell the broker that we are finished with the queue, tell the subscriber to cleanup:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe cleanup swob
-2015-12-03 17:32:22,008 [INFO] sr_subscribe swob cleanup
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 cleanup subscribe/swob
+2015-12-03 17:32:22,008 [INFO] subscribe swob cleanup
 2015-12-03 17:32:22,008 [INFO] AMQP broker(dd.weatheer.gc.ca) user(anonymous) vhost()
 2015-12-03 17:32:22,008 [INFO] Using amqp module (AMQP 0-9-1)
-2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.sr_subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
+2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
 </pre></div>
 </div>
 <p>Best practice is to clear the queue when done as to lessen the load on the broker.</p>

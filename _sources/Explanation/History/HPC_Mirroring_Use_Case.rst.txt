@@ -155,11 +155,11 @@ run against the file system database at as high a rhythm as can be sustained (ar
 query) combined with sr_poll to announce the files modified (and thus eligible for copying). This is 
 completely non-portable, but was expected to be much faster than file tree traversal.
  
-Over the winter 2016/2017, both of these methods were implemented. The INOTIFY-based sr_watch was the 
+Over the winter 2016/2017, both of these methods were implemented. The INOTIFY-based sr3_watch was the 
 fastest method (instantaneous), but the daemons were having stability and memory consumption problems, 
 and they also took too long to startup (requires an initial tree traversal, which takes the same time 
 as the rsync). While slower (taking longer to notice a file was modified), the GPFS policy had *acceptable* 
-performance and was far more reliable than the parallel sr_watch method, and by the spring, with deployment 
+performance and was far more reliable than the parallel sr3_watch method, and by the spring, with deployment 
 expected for early July 2017, the GPFS policy approach was selected.
  
 As the migration progressed, the file systems grew in that they had more files in the trees, and the GPFS-policy 

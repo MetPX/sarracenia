@@ -635,7 +635,7 @@ Installez un courtier localhost minimal et configurez les utilisateurs de test r
     sudo wget http://localhost:15672/cli/rabbitmqadmin
     sudo chmod 755 rabbitmqadmin
 
-    sr --users declare
+    sr3 --users declare
 
 .. Note::
 
@@ -679,7 +679,7 @@ Besoin du package suivant pour cela::
 
     sudo apt-get install python3-pyftpdlib python3-paramiko
 
-Le script d’installation démarre un serveur Web trivial, un serveur ftp et un démon que sr_post appelle.
+Le script d’installation démarre un serveur Web trivial, un serveur ftp et un démon que sr3_post appelle.
 Il teste également les composants C, qui doivent également avoir déjà été installés.
 et définit certains clients de test fixes qui seront utilisés lors des auto-tests ::
 
@@ -764,7 +764,7 @@ et définit certains clients de test fixes qui seront utilisés lors des auto-te
     Starting flow_post on: /home/peter/sarra_devdocroot, saving pid in .flowpostpid
     Starting up all components (sr start)...
     done.
-    OK: sr start was successful
+    OK: sr3 start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
 
@@ -813,7 +813,7 @@ Ensuite, vérifiez avec flow_check.sh::
     test  4 success: max shovel (1022) and subscriber t_f30 (1022) should have about the same number of items
     test  5 success: count of truncated headers (1022) and subscribed messages (1022) should have about the same number of items
     test  6 success: count of downloads by subscribe t_f30 (1022) and messages received (1022) should be about the same
-    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr_watch (1022) should be about the same
+    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr3_watch (1022) should be about the same
     test  8 success: posted by watch(1022) and sent by sr_sender (1022) should be about the same
     test  9 success: 1022 of 1022: files sent with identical content to those downloaded by subscribe
     test 10 success: 1022 of 1022: poll test1_f62 and subscribe q_f71 run together. Should have equal results.
@@ -834,7 +834,7 @@ approfondie, il est bon de savoir que les flux fonctionnent.
 
 Notez que l’abonné *fclean* examine les fichiers et les conserve suffisamment longtemps pour qu’ils puissent
 parcourir tous les autres tests.  Il le fait en attendant un délai raisonnable (45 secondes, la dernière fois
-vérifiée), puis il compare le fichier qui a été posté par sr_watch aux fichiers créés en téléchargeant à partir
+vérifiée), puis il compare le fichier qui a été posté par sr3_watch aux fichiers créés en téléchargeant à partir
 de celui-ci.  Au fur et à mesure que le dénombrement *sample now* progresse, il imprime "OK" si les fichiers
 téléchargés sont identiques à ceux postés par sr_watch. L’ajout de fclean et cfclean correspondant pour les
 cflow_test sont cassés.  La configuration par défaut qui utilise *fclean* et *cfclean* garantit que seulement
@@ -877,9 +877,9 @@ d’attente, les échanges et les journaux. Cela doit également être fait entr
   2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
   2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
   2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
-  2018-02-10 09:17:35,115 [INFO] sr_post shim_f63 cleanup
+  2018-02-10 09:17:35,115 [INFO] sr3_post shim_f63 cleanup
   2018-02-10 09:17:35,122 [INFO] deleting exchange xs_tsource_shim (tsource@localhost)
-  2018-02-10 09:17:35,394 [INFO] sr_post test2_f61 cleanup
+  2018-02-10 09:17:35,394 [INFO] sr3_post test2_f61 cleanup
   2018-02-10 09:17:35,402 [INFO] deleting exchange xs_tsource_post (tsource@localhost)
   2018-02-10 09:17:35,659 [INFO] sr_report tsarra_f20 cleanup
   2018-02-10 09:17:35,659 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -941,7 +941,7 @@ d’attente, les échanges et les journaux. Cela doit également être fait entr
   2018-02-10 09:17:39,927 [INFO] deleting queue q_tsource.sr_subscribe.u_sftp_f60.81353341.03950190 (tsource@localhost)
   2018-02-10 09:17:40,196 [WARNING] option url deprecated please use post_base_url
   2018-02-10 09:17:40,196 [WARNING] use post_broker to set broker
-  2018-02-10 09:17:40,197 [INFO] sr_watch f40 cleanup
+  2018-02-10 09:17:40,197 [INFO] sr3_watch f40 cleanup
   2018-02-10 09:17:40,207 [INFO] deleting exchange xs_tsource (tsource@localhost)
   2018-02-10 09:17:40,471 [INFO] sr_winnow t00_f10 cleanup
   2018-02-10 09:17:40,471 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -1043,7 +1043,7 @@ While it is runnig one can run flow_check.sh at any time::
   test  4 success: max shovel (100008) and subscriber t_f30 (99953) should have about the same number of items
   test  5 success: count of truncated headers (100008) and subscribed messages (100008) should have about the same number of items
   test  6 success: count of downloads by subscribe t_f30 (99953) and messages received (100008) should be about the same
-  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by sr_watch (199620) should be about the same
+  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by sr3_watch (199620) should be about the same
   test  8 success: posted by watch(199620) and subscribed cp_f60 (99966) should be about half as many
   test  9 success: posted by watch(199620) and sent by sr_sender (199549) should be about the same
   test 10 success: 0 messages received that we don't know what happenned.
@@ -1100,14 +1100,14 @@ mais continue de réessayer pour toujours avec un nombre variable d’éléments
 Pour récupérer de cet état sans rejeter les résultats d’un test long, procédez comme suit::
 
   ^C to interrupt the flow_check.sh 100000
-  blacklab% sr stop
+  blacklab% sr3 stop
   blacklab% cd ~/.cache/sarra
   blacklab% ls */*/*retry*
   shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
   blacklab% rm */*/*retry*
-  blacklab% sr start
+  blacklab% sr3 start
   blacklab% 
   blacklab%  ./flow_check.sh 100000
   Sufficient!
@@ -1137,9 +1137,9 @@ Pour récupérer de cet état sans rejeter les résultats d’un test long, proc
   test  4 success: sr_subscribe (98068) should have the same number of
   items as sarra (98075)
                    | watch      routing |
-  test  5 success: sr_watch (397354) should be 4 times subscribe t_f30 (98068)
+  test  5 success: sr3_watch (397354) should be 4 times subscribe t_f30 (98068)
   test  6 success: sr_sender (392737) should have about the same number
-  of items as sr_watch (397354)
+  of items as sr3_watch (397354)
   test  7 success: sr_subscribe u_sftp_f60 (361172) should have the same
   number of items as sr_sender (392737)
   test  8 success: sr_subscribe cp_f61 (361172) should have the same
@@ -1150,11 +1150,11 @@ Pour récupérer de cet état sans rejeter les résultats d’un test long, proc
   test 10 success: sr_subscribe q_f71 (195406) should have about the
   same number of items as sr_poll test1_f62(195408)
                    | flow_post  routing |
-  test 11 success: sr_post test2_f61 (193541) should have half the same
+  test 11 success: sr3_post test2_f61 (193541) should have half the same
   number of items of sr_sender(196368)
   test 12 success: sr_subscribe ftp_f70 (193541) should have about the
-  same number of items as sr_post test2_f61(193541)
-  test 13 success: sr_post test2_f61 (193541) should have about the same
+  same number of items as sr3_post test2_f61(193541)
+  test 13 success: sr3_post test2_f61 (193541) should have about the same
   number of items as shim_f63 195055
                    | py infos   routing |
   test 14 success: sr_shovel pclean_f90 (97019) should have the same

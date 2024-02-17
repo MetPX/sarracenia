@@ -53,7 +53,7 @@
 <li class="toctree-l3"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">format de message d´annonce sr_post</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">format de message d´annonce sr3_post</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#format-protocole-de-messages-d-annonce-sarracenia">Format/Protocole de messages d’annonce Sarracenia</a></li>
 </ul>
 </li>
@@ -158,7 +158,7 @@ Voir <a class="reference external" href=".../Explications/History/messages_v03.h
 <section id="synopsis">
 <h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
 <p>Version 03 du format des annonces de modification d’un fichier pour sr_post.</p>
-<p>Un message sr_post se compose d’un sujet et du <em>BODY</em></p>
+<p>Un message sr3_post se compose d’un sujet et du <em>BODY</em></p>
 <section id="amqp-topic">
 <h4><strong>AMQP Topic:</strong><a class="headerlink" href="#amqp-topic" title="Link to this heading"></a></h4>
 <dl class="simple">
@@ -690,8 +690,8 @@ mais ils ne devraient pas être dépouillés, car certains consommateurs peuvent
 </section>
 <section id="un-autre-exemple">
 <h3>Un Autre Exemple<a class="headerlink" href="#un-autre-exemple" title="Link to this heading"></a></h3>
-<p>Le post résultant de la commande de sr_watch suivante, a noter la création du fichier ‘foo’:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr_watch</span> <span class="o">-</span><span class="n">pbu</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">-</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span> <span class="o">-</span><span class="n">pb</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span>
+<p>Le post résultant de la commande de sr3_watch suivante, a noter la création du fichier ‘foo’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_watch</span> <span class="o">-</span><span class="n">pbu</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">-</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span> <span class="o">-</span><span class="n">pb</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span>
 </pre></div>
 </div>
 <p>Ici, <em>sr_watch</em> vérifie si le fichier /data/shared/products/foo est modifié.

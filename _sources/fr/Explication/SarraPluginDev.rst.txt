@@ -1001,6 +1001,6 @@ Pour l’instant, il est préférable de consulter le `Tutoriels <../Tutoriels>`
 qui ont quelques exemples d’une telle utilisation.
 
 .. Note::
-    **FIXME**, lien vers amqplib ou liaisons java, et pointeur vers les pages de manuel sr_post et sr_report section 7.
+    **FIXME**, lien vers amqplib ou liaisons java, et pointeur vers les pages de manuel sr3_post et sr_report section 7.
 
 

@@ -295,7 +295,7 @@ Abonnés
 
 Afficher, Avis, Notification, publication,
   Ce sont des messages AMQP construits par sr_post, sr_poll, sr_poll, ou
-  sr_watch pour laisser les utilisateurs savoir qu'un fichier particulier est
+  sr3_watch pour laisser les utilisateurs savoir qu'un fichier particulier est
   prêt. Le format de ces messages AMQP est le suivant décrit par la page manuel
   `sr_post(7) <../Reference/sr3.1.html#post>`_ . Tous ces les mots sont utilisés de façon
   interchangeable. Les avis à chaque étape préservent l´origine d'origine

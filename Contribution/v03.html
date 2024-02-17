@@ -595,7 +595,7 @@ cache and retry v2plugins as sr3 callbacks themselves.</p>
 <p>With shovel and winnow replaced by new implementations, it passes
 the dynamic flow test, including the Retry module ported to sr3, and
 a number of v2 modules used as-is.</p>
-<p>Completed an initial version of the sr_post component now (in sr3: flowcb.gather.file.File)
+<p>Completed an initial version of the sr3_post component now (in sr3: flowcb.gather.file.File)
 Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp into the transfer module</p>
 <p>Mostly done sr_subscribe, which, in the old version, is a base class for all other components,
@@ -760,7 +760,7 @@ so could avoid needing a winnow, but just having a subscriber connect to
 multiple upstreams directly.
 likely equivalent to async, and multi-gather.</p></li>
 <li><p>think about API by sub-classing flow… and having it auto-integrate
-with sr entry point… hmm… likely look at this when updating
+with sr3 entry point… hmm… likely look at this when updating
 Programmer’s Guide.</p></li>
 <li><p>more worklists? rename failed -&gt; retry or deferred.  Add a new failed
 where failed represents a permanent failure. and the other represents
@@ -776,7 +776,7 @@ This section includes a mix of tasks that can hopefully be assigned,</p>
 <p>FIXME are things left to the side that need to be seen to.</p>
 <ul>
 <li><p><strong>RELEASE BLOCKER</strong> hairy. #403
-sr_watch does not batch things. It just dumps an entire tree.
+watch does not batch things. It just dumps an entire tree.
 This will need to be re-wored before release into an iterator style approach.
 so if you start in a tree with a million files, it will scan the entire million
 and present them as a single in memory worklist.  This will have performance
@@ -786,7 +786,7 @@ at a time.</p>
 impact and delay to producing the first file is still there, but at least
 returns one batch at a time.</p>
 </li>
-<li><p><strong>RELEASE BLOCKER</strong> logs of sr_poll and sr_watch tend to get humungous way too quickly. #389</p></li>
+<li><p><strong>RELEASE BLOCKER</strong> logs of sr_poll and watch tend to get humungous way too quickly. #389</p></li>
 <li><p>try out jsonfile for building notification messages to post. can build json incrementally, #402
 so you do not need to delete the _deleteOnPost elements (can just skip over them)</p></li>
 <li><p>um… add the protocols.   mqtt and qpid-proton (amq1) #389</p></li>
@@ -822,7 +822,7 @@ when you are done.)</p>
 retry files have different formats? validate. ) So one can copy configurations from old to
 new and run both versions in parallel. The central entry point would be sr3 (rather than
 sr), and to avoid confusion the other entry points (sr_subscribe etc…) would be omitted
-so that v2 code would work unchanged. Might require some tweaks to have the sr classes
+so that v2 code would work unchanged. Might require some tweaks to have the sr3 classes
 ignore instances from the other versions.</p>
 <p>This is similar to python2 to python3 transition. Allows deployment of sr3 without having
 to convert entirely to it. Allows running some components, and building maturity slowly
@@ -905,9 +905,9 @@ easier to add additional protocols for transport and messages, as well checksum 
 <li><p>use the sarracenia/ prefix (already present) to replace sr_ prefix on modules.</p></li>
 <li><p>API access to flows. (so can build entirely new programs in python by subclassing.)</p></li>
 <li><p>properties/options for classes are now hierarchical, so can set debug to specific classes within app.</p></li>
-<li><p>sr ability to select multiple components and configurations to operate on.</p></li>
-<li><p>sr list examples is now used to display examples separate from the installed ones.</p></li>
-<li><p>sr show is now used to display the parsed configuration.</p></li>
+<li><p>sr3 ability to select multiple components and configurations to operate on.</p></li>
+<li><p>sr3 list examples is now used to display examples separate from the installed ones.</p></li>
+<li><p>sr3 show is now used to display the parsed configuration.</p></li>
 <li><p>notification messages are acknowledged more quickly, should help with throughput.</p></li>
 <li><p>FlowCB plugin entry_points are now based on groups of notification messages, rather than individual ones, allowing people
 to organize concurrent work.</p></li>

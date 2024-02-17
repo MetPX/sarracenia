@@ -162,12 +162,12 @@ possible (environ cinq à dix minutes par requête) combiné avec sr_poll pour a
 modifiés (et donc éligibles à la copie). C’est complètement non portable, mais on s’attendait à
 ce qu’il soit beaucoup plus rapide que la traversée de l’arborescence des fichiers.
 
-Au cours de l’hiver 2016-2017, ces deux méthodes ont été mises en œuvre. Le sr_watch basé sur
+Au cours de l’hiver 2016-2017, ces deux méthodes ont été mises en œuvre. Le sr3_watch basé sur
 INOTIFY était la méthode la plus rapide (instantanée), mais les démons avaient des problèmes de
 stabilité et de consommation de mémoire, et ils ont également pris trop de temps à démarrer
 (nécessite une traversée initiale de l’arbre, qui prend le même temps que rsync). Bien que plus
 lent (prenant plus de temps pour remarquer qu’un fichier a été modifié), la politique GPFS avait
-une performance *acceptable* et était beaucoup plus fiable que la méthode de sr_watch parallèle,
+une performance *acceptable* et était beaucoup plus fiable que la méthode de sr3_watch parallèle,
 et au printemps, avec un déploiement prévu pour le début de juillet 2017, l’approche stratégique
 du GPFS a été choisie.
 

@@ -242,8 +242,8 @@ ce répertoire : dd_amis.conf et hpfx_amis.conf, on pourrait alors exécuter ::
     fractal%
 
 pour démarrer la configuration de téléchargement CMC. On peut utiliser
-la commande sr pour démarrer/arrêter plusieurs configurations à la fois.
-La commande sr passera par les répertoires par défaut et démarrera
+la commande sr3 pour démarrer/arrêter plusieurs configurations à la fois.
+La commande sr3 passera par les répertoires par défaut et démarrera
 toutes les configurations qu’y si trouve ::
 
     fractal% sr3 status

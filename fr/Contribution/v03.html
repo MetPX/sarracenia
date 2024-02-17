@@ -585,7 +585,7 @@ cache et le réessayez des plug-ins v2 en tant que rappels sr3 eux-mêmes.</p>
 <p>Avec le shovel et le winnow remplacés par de nouvelles implémentations, il passe
 le test de flux dynamique, y compris le module Retry porté sur sr3, et
 un certain nombre de modules v2 utilisés tels quels.</p>
-<p>Terminé une version initiale du composant sr_post maintenant (dans sr3 : flowcb.gather.file.File)
+<p>Terminé une version initiale du composant sr3_post maintenant (dans sr3 : flowcb.gather.file.File)
 Maintenant, on travaille sur sr_poll, ce qui prendra un certain temps car il implique un refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp dans le module de transfert.</p>
 <p>Principalement effectué sr_subscribe, qui, dans l’ancienne version, est une classe de base pour tous les autres composants,
@@ -767,7 +767,7 @@ Cette section comprend un mélange de tâches qui, espérons-le, peuvent être a
 <p>FIXME sont des choses laissées de côté qui doivent être vues.</p>
 <ul>
 <li><p><strong>RELEASE BLOCKER</strong> poilu. #403
-sr_watch ne fait pas de lot par lots. Il jette juste un arbre entier.
+watch ne fait pas de lot par lots. Il jette juste un arbre entier.
 Cela devra être re-écrit avec une approche de style itérateur.
 Donc si vous commencez dans une arborescence avec un million de fichiers, il analysera le million entier
 et les présentera comme une liste de travail unique en mémoire.  Cela aura des problèmes performances.
@@ -777,7 +777,7 @@ Vous souhaitez procéder de manière incrémentielle à l’aide de listes d’u
 l’impacte de la mémoire et le retard de production du premier fichier sont toujours là, mais au moins
 renvoie un lot à la fois.</p>
 </li>
-<li><p><strong>RELEASE BLOCKER</strong> journaux de sr_poll et sr_watch ont tendance à devenir énormes beaucoup trop rapidement. #389</p></li>
+<li><p><strong>RELEASE BLOCKER</strong> journaux de poll et watch ont tendance à devenir énormes beaucoup trop rapidement. #389</p></li>
 <li><p>essayez jsonfile pour créer des messages de notification à publier. peut construire json de manière incrémentielle, # 402
 vous n’avez donc pas besoin de supprimer les éléments _deleteOnPost (vous pouvez simplement les ignorer)</p></li>
 <li><p>euh… ajouter les protocoles. mqtt et qpid-proton (amq1) #389</p></li>
@@ -904,9 +904,9 @@ contrôle pour les nouveaux types de données.</p></li>
 <li><p>utiliser le préfixe sarracenia/ (déjà présent) pour remplacer le préfixe sr_ sur les modules.</p></li>
 <li><p>Un accès API aux flux. (ainsi on peut construire des programmes entièrement nouveaux en python en sous-classant.)</p></li>
 <li><p>les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.</p></li>
-<li><p>sr ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.</p></li>
-<li><p>sr list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.</p></li>
-<li><p>sr show est maintenant utilisé pour afficher la configuration analysée.</p></li>
+<li><p>sr3 ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.</p></li>
+<li><p>sr3 list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.</p></li>
+<li><p>sr3 show est maintenant utilisé pour afficher la configuration analysée.</p></li>
 <li><p>les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.</p></li>
 <li><p>Les entry_points de plug-in FlowCB sont désormais basées sur des groupes de messages de notification, plutôt que sur des messages individuels, permettant aux gens
 d’organiser le travail simultané.</p></li>
