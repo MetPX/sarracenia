@@ -1526,7 +1526,7 @@ Un autre exemple avec un fichier::
 
  sr3 --post_baseDir /data/web/public_data --post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456 -post_broker amqp://broker.com start watch/myflow
 
-Par défaut, sr_watch vérifie le fichier /data/web/public_data/bulletins/alphanumériques/SACN32_CWAO_123456
+Par défaut, sr3_watch vérifie le fichier /data/web/public_data/bulletins/alphanumériques/SACN32_CWAO_123456
 (concaténer le répertoire base_dir et le chemin relatif de l'url source pour obtenir le chemin du fichier local).
 Si le fichier change, il calcule sa somme de contrôle. Il construit ensuite un message, se connecte à broker.com en tant qu'utilisateur'guest'.
 (informations d'identification par défaut) et envoie le message aux valeurs par défaut vhost'/' et exchange'sx_guest' (échange par défaut)
@@ -1538,9 +1538,9 @@ Un exemple de vérification d'un répertoire::
 
  sr3 -post_baseDir /data/web/public_data -post_baseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric --post_broker amqp://broker.com start watch/myflow
 
-Ici, sr_watch vérifie la création de fichiers (modification) dans /data/web/public_data/bulletins/alphanumérique.
+Ici, sr3_watch vérifie la création de fichiers (modification) dans /data/web/public_data/bulletins/alphanumérique.
 (concaténer le répertoire base_dir et le chemin relatif de l'url source pour obtenir le chemin du répertoire).
-Si le fichier SACN32_CWAO_123456 est créé dans ce répertoire, sr_watch calcule sa somme de contrôle.
+Si le fichier SACN32_CWAO_123456 est créé dans ce répertoire, sr3_watch calcule sa somme de contrôle.
 Il construit ensuite un message, se connecte à broker.com en tant qu'utilisateur'guest'.
 (informations d'identification par défaut) et envoie le message à exchange'amq.topic' (échange par défaut)
 

@@ -27,13 +27,13 @@ Web du même serveur, mais cela n'est pas nécessaire. Le courtier pourrait
 La meilleure façon d'effectuer des transferts de données est d'éviter les
 sondages (examination récurrente de répertoires afin de détecter des
 changements de fichiers.) C'est plus efficace si les rédacteurs peuvent
-être amenés à émettre des messages d'annonce en format sr_post appropriés. De même,
+être amenés à émettre des messages d'annonce en format sr3_post appropriés. De même,
 lors de la livraison, il est idéal si les destinataires utilisent
 sr_subscribe, et un plugin on_file pour déclencher leur traitement ultérieur,
 de sorte que le fichier est qui leur a été remis sans sondage. C'est la façon
 la plus efficace de travailler, mais... il est entendu que pas tous les logiciels
 ne seront coopératifs. Pour démarrer le flot en Sarracenia dans ces cas,
-ca prend des outils de sondage:  sr_poll (à distance), et sr_watch (locale.)
+ca prend des outils de sondage:  sr_poll (à distance), et sr3_watch (locale.)
 
 D'une manière générale, Linux est la principale cible de déploiement et la
 seule plate-forme sur laquelle les configurations de serveur sont déployées.

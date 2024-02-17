@@ -61,7 +61,7 @@ Format de l'argument pour les option *path* ::
        ou
        relative_path_to_the/filename
 
-L'option *-pipe* peut être spécifiée pour que sr_post lise les noms de chemin des fichiers également à partir 
+L'option *-pipe* peut être spécifiée pour que sr3_post lise les noms de chemin des fichiers également à partir 
 de l'entrée standard.
 
 Un exemple d'invocation de *sr3_post* ::
@@ -69,7 +69,7 @@ Un exemple d'invocation de *sr3_post* ::
  sr3_post --post_broker amqp://broker.com --post_baseUrl sftp://stanley@mysftpserver.com/ --path /data/shared/products/foo 
 
 
-Par défaut, sr_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle (checksum).
+Par défaut, sr3_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle (checksum).
 Il crée ensuite un message de publication, se connecte à broker.com en tant qu'utilisateur "invité" (informations d'identification par défaut)
 et envoie l'article au vhost par défaut '/' et à l'échange par défaut. L'échange par défaut
 est le préfixe *xs_* suivi du nom d'utilisateur du courtier, donc par défaut 'xs_guest'.
@@ -100,7 +100,7 @@ Un autre exemple::
 
  sr3_post --post_broker mqtt://broker.com --post_baseDir /data/web/public_data --postBaseUrl http://dd.weather.gc.ca/ --path bulletins/alphanumeric/SACN32_CWAO_123456
 
-Par défaut, sr_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+Par défaut, sr3_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
 (en concaténant le post_base_dir et le chemin relatif de l'url source pour obtenir le chemin du fichier local)
 et calcule sa somme de contrôle. Il crée ensuite un message d'article, se connecte à broker.com en tant qu'utilisateur "invité"
 (informations d'identification par défaut) et envoie l'article au vhost par défaut '/' et échange 'xs_guest', résultant
@@ -324,7 +324,7 @@ header <name>=<value>
 UTILISATION DE LA LIBRAIRIE SHIM
 ================================
 
-Plutôt qu'invoquer un sr_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
+Plutôt qu'invoquer un sr3_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
 publiez les fichiers qu'ils écrivent en leur faisant utiliser une bibliothèque de shim interceptant certains appels d'i/o de fichiers vers la libc
 et le noyau. Pour activer la bibliothèque shim, dans l'environnement shell, ajoutez ::
 
