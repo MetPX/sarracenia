@@ -78,6 +78,8 @@ def sumstrFromMessage( msg ) -> str:
                 sumstr = 'r,%s' % hash.hexdigest()
             else:
                 sumstr = 'm,%s' % hash.hexdigest()
+        elif 'rename' in msg['fileOp']:
+            pass
         else:
             logger.error('unknown fileOp: %s' % msg['fileOp'] )
     return sumstr
