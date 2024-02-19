@@ -38,6 +38,15 @@ Examples:
 
        Output filename: CACN00_CWAO_141600_PQU__00003
 
+    A ISA binary bulletin
+       Input filename: ISAA41_CYZX_162000__00035 
+
+       Contents:
+        ISAA41_CYZX_162000
+        BUFR
+
+       Output filename: ISAA41_CYZX_162000___00035  
+
 Usage:
    callback rename.raw2bulletin
 
@@ -46,7 +55,6 @@ Contributions:
 
 Improvements:
     Delegate some of the generalized methods to a parent class. To be callable by other plugins.
-    Add more Sundew logic if ever some bulletins end up failing when implemented
 """
 
 from sarracenia.flowcb import FlowCB
