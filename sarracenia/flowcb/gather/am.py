@@ -278,6 +278,7 @@ class Am(FlowCB):
         """ Correct the bulletin contents, either of two ways
             1. Add missing AHL headers for CA,MA,RA bulletins
             2. Add missing AHL headers by mapping station codes
+            3. Add an extra line for SM/SI bulletins
         """
 
         # We need to get the BBB from the header, to properly rewrite it.
@@ -323,6 +324,19 @@ class Am(FlowCB):
                     # We found the station. We can leave the loop now.
                     reconstruct = 1
                     break
+
+        # From Sundew ->  https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L114-L115
+        # AddSMHeader is set to True on all operational Sundew configs so no need to add an option
+        if bulletin_firstchars in ["SM", "SI"]:
+
+            logger.debug("Adding missing line in SI/SM bulletin")
+
+            ddhh = lines[0].split(b' ')[2][0:4]
+            line2add = b"AAXX " + ddhh + b"4"
+            lines.insert(1, line2add)
+
+            reconstruct = 1
+
 
         if reconstruct == 1:
             # Reconstruct the bulletin
