@@ -64,6 +64,7 @@ import logging, socket, struct, time, sys, os, signal, ipaddress
 from base64 import b64encode
 import urllib.parse
 import sarracenia
+from sarracenia.bulletin import Bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
@@ -75,6 +76,7 @@ class Am(FlowCB):
     def __init__(self, options):
         
         super().__init__(options,logger)
+        self.bulletinHandler = Bulletin()
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
@@ -274,7 +276,7 @@ class Am(FlowCB):
             return '', 0
 
 
-    def correctContents(self, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
+    def correctContents(self, bulletin, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
         """ Correct the bulletin contents, either of two ways
             1. Add missing AHL headers for CA,MA,RA bulletins
             2. Add missing AHL headers by mapping station codes
@@ -285,12 +287,19 @@ class Am(FlowCB):
         # FIXME: Does this only apply for the station mapping? (Not sure - ANL, 2024/02/19)
 
         reconstruct = 0
+        ddhhmm = ''
         new_bulletin = b''
 
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
 
             logger.debug("Adding missing headers in file contents for CA,RA or MA bulletin")
+
+            # We also need to get the timestamp to complete the CA,RA,MA headers
+            ddhhmm = self.bulletinHandler.getTime(bulletin.decode(charset))
+            # If None is returned, the bulletin is invalid
+            if ddhhmm != None:
+                missing_ahl += " " + ddhhmm
 
             lines[0] += missing_ahl.encode(charset)
             reconstruct = 1
@@ -394,7 +403,7 @@ class Am(FlowCB):
                     binary = 0
                     missing_ahl = self.o.MissingAMHeaders
 
-
+                    # Fill in temporary filename for the timebeing
                     filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
                     filepath = self.o.directory + os.sep + filename
 
@@ -408,7 +417,7 @@ class Am(FlowCB):
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
                         station = lines[1].split()[0].decode(charset)
-                        new_bulletin = self.correctContents(firstchars, lines, missing_ahl, station, charset)
+                        new_bulletin = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
                     
