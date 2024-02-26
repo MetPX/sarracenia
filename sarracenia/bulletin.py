@@ -237,7 +237,7 @@ class Bulletin:
             jul00 = year + jul + '0000'
             timeStruct = time.strptime(jul00, '%Y%j%H%M')
             ep_emission = time.mktime(timeStruct) + 24 * 60 * 60
-            timeStruct = time.localtime(self.ep_emission)
+            timeStruct = time.localtime(ep_emission)
             ddHHMM = time.strftime('%d%H%M', timeStruct)
             return ddHHMM
         except Exception as e:
