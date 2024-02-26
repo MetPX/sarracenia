@@ -1,8 +1,11 @@
-metpx-sr3 (3.00.52rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.52rc2) unstable; urgency=medium
 
   * fix #934 found references to v2 documentation. Modernized.
   * fix #942, #943 processing of rename and retrievePath headers.
   * fix #940 display crash in sr3 overview
+  * fix #920 add _isRetry for duplicate suppression support in new retry
+    logic.
+  * more #918 bug fixes for AM renaming now matches Sundew perfectly.
 
  -- peter <peter@bsqt.homeip.net>  Wed, 14 Feb 2024 21:15:59 -0500
 
