@@ -45,10 +45,16 @@ Examples:
         ISAA41_CYZX_162000
         BUFR
 
-       Output filename: ISAA41_CYZX_162000___00035  
+       Output filename: ISAA41_CYZX_162000___00004  
 
 Usage:
-   callback rename.raw2bulletin
+    callback rename.raw2bulletin
+    --- OR (inside callback) ---
+    from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
+    def __init__():
+        super().__init__(options,logger)
+        self.renamer = Raw2bulletin(self.o)
+
 
 Contributions:
     Andre LeBlanc - First author (2024/02)
@@ -76,91 +82,86 @@ class Raw2bulletin(FlowCB):
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
-    def after_accept(self,worklist):
+    def rename(self,msg):
 
-        good_msgs = []
+        path = msg['new_dir'] + '/' + msg['new_file']
 
-        for msg in worklist.incoming:
+        data = self.bulletinHandler.getData(msg, path)
 
-            path = msg['new_dir'] + '/' + msg['new_file']
+        # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
+        # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
+        # These messages are still good, so we will add them to the good_msgs list
+        # if len(filenameFirstChars) != 2 and self.binary: 
+        #     good_msgs.append(msg)
+        #     continue
 
-            data = self.bulletinHandler.getData(msg, path)
+        if data == None:
+            return None
+        
+        lines  = data.split('\n')
+        #first_line  = lines[0].strip('\r')
+        #first_line  = first_line.strip(' ')
+        #first_line  = first_line.strip('\t')
+        first_line  = lines[0].split(' ')
 
-            # AM bulletins that need their filename rewritten with data should only have two chars before the first underscore
-            # This is in concordance with Sundew logic -> https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L70-L71
-            # These messages are still good, so we will add them to the good_msgs list
-            # if len(filenameFirstChars) != 2 and self.binary: 
-            #     good_msgs.append(msg)
-            #     continue
+        # Build header from bulletin
+        header = self.bulletinHandler.buildHeader(first_line)
+        if header == None:
+            logger.error("Unable to fetch header contents. Skipping message")
+            return None
+        
+        # Get the station timestamp from bulletin
+        if len(header.split('_')) == 2:
+            ddhhmm = self.bulletinHandler.getTime(data)
+            if ddhhmm == None:
+                logger.error("Unable to get julian time.")
+        else:
+            ddhhmm = ''
+        
+        # Get the BBB from bulletin
+        BBB = self.bulletinHandler.getBBB(first_line)
 
-            if data == None:
-                worklist.rejected.append(msg)
-                continue
-            
-            lines  = data.split('\n')
-            #first_line  = lines[0].strip('\r')
-            #first_line  = first_line.strip(' ')
-            #first_line  = first_line.strip('\t')
-            first_line  = lines[0].split(' ')
+        # Get the station ID from bulletin
+        stn_id = self.bulletinHandler.getStation(data)
 
-            # Build header from bulletin
-            header = self.bulletinHandler.buildHeader(first_line)
-            if header == None:
-                logger.error("Unable to fetch header contents. Skipping message")
-                worklist.rejected.append(msg)
-                continue
-            
-            # Get the station timestamp from bulletin
-            if len(header.split('_')) == 2:
-                ddhhmm = self.bulletinHandler.getTime(data)
-                if ddhhmm == None:
-                    logger.error("Unable to get julian time.")
-            else:
-                ddhhmm = ''
-            
-            # Get the BBB from bulletin
-            BBB = self.bulletinHandler.getBBB(first_line)
+        # Generate a sequence (random ints)
+        seq = self.bulletinHandler.getSequence()
 
-            # Get the station ID from bulletin
-            stn_id = self.bulletinHandler.getStation(data)
+        
 
-            # Generate a sequence (random ints)
-            seq = self.bulletinHandler.getSequence()
+        # Rename file with data fetched
+        try:
+            # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
+            # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
+            if ddhhmm == None:
+                timehandler = datetime.datetime.now()
 
-            # Rename file with data fetched
-            try:
-                # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
-                # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
-                if ddhhmm == None:
-                    timehandler = datetime.datetime.now()
+                # Add current time as new timestamp to filename
+                new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
 
-                    # Add current time as new timestamp to filename
-                    new_file = header + "_" + timehandler.strftime('%d%H%M') + "_" + BBB + "_" + stn_id + "_" + seq + "_PROBLEM"
-
-                    # Write the file manually as the messages don't get posted downstream.
-                    # The message won't also get downloaded further downstream
-                    msg['new_file'] = new_file
-                    new_path = msg['new_dir'] + '/' + msg['new_file']
-
-                    with open(new_path, 'w') as f: f.write(data)
-
-                    logger.error(f"New filename (for problem file): {new_file}")
-                    raise Exception
-                elif ddhhmm == '':
-                    new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
-                else:
-                    new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
-
+                # Write the file manually as the messages don't get posted downstream.
+                # The message won't also get downloaded further downstream
                 msg['new_file'] = new_file
                 new_path = msg['new_dir'] + '/' + msg['new_file']
 
-                logger.info(f"New filename (with path): {new_path}")
+                # with open(new_path, 'w') as f: f.write(data)
 
-                good_msgs.append(msg)
+                logger.error(f"New filename (for problem file): {new_file}")
+            elif ddhhmm == '':
+                new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
+            else:
+                new_file = header + "_" + ddhhmm + "_" + BBB + "_" + stn_id + "_" + seq
 
-            except Exception as e:
-                logger.error(f"Error in renaming. Error message: {e}")
-                worklist.rejected.append(msg)
-                continue
+            msg['new_file'] = new_file
+            # We need the rest of the fields to be also updated
+            del(msg['relPath'])
+            msg.updatePaths(self.o, msg['new_dir'], msg['new_file'])
 
-        worklist.incoming = good_msgs
+            logger.info(f"New filename (with path): {msg['relPath']}")
+
+            return msg
+
+        except Exception as e:
+            logger.error(f"Error in renaming. Error message: {e}")
+
+            return None

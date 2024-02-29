@@ -65,6 +65,7 @@ from base64 import b64encode
 import urllib.parse
 import sarracenia
 from sarracenia.bulletin import Bulletin
+from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
@@ -77,6 +78,7 @@ class Am(FlowCB):
         
         super().__init__(options,logger)
         self.bulletinHandler = Bulletin()
+        self.renamer = Raw2bulletin(self.o)
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
@@ -464,6 +466,10 @@ class Am(FlowCB):
                     ident.update(bulletin)
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
+                    # Call renamer
+                    msg = self.renamer.rename(msg)
+                    if msg == None:
+                        continue
                     logger.debug(f"New sarracenia message: {msg}")
 
                     newmsg.append(msg)
