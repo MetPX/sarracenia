@@ -26,11 +26,10 @@ view the tree with a web browser.
 For simple immediate needs, one can download data using the 
 browser itself, or a standard tool such as wget.
 
-The usual intent is to automatically download the data 
-wanted to a directory on a subscriber
+The usual intent is to automatically download the dsesired data to a directory on a subscriber
 machine where other software can process it.  Please note:
 
-- The tool is entirely command line driven (there is no GUI) More accurately, it is mostly configuration file driven.
+- The tool is entirely command line driven (there is no GUI). More accurately, it is mostly configuration file driven.
   Most of the *interface* involves using a text editor to modify configuration files.
 - While written to be compatible with other environments, the focus is on Linux usage. 
 - The tool can be used as either an end-user tool, or a system-wide transfer engine.
@@ -47,13 +46,13 @@ A data pump's web server will just expose web accessible folders
 and the root of the tree is the date, in YYYYMMDD format.
 These dates do not represent anything about the data other than 
 when it was put into the pumping network, and since Sarracenia 
-always uses Universal Co-ordinated Time, the dates might not correspond
+always uses Universal Co-ordinated Time, the dates might not correspond to 
 the current date/time in the location of the subscriber::
 
   Index of /
 
   Name                    Last modified      Size  Description
-  Parent Directory                             -   
+  Parent Directory                            -   
   20151105/               2015-11-27 06:44    -   
   20151106/               2015-11-27 06:44    -   
   20151107/               2015-11-27 06:44    -   
@@ -61,7 +60,7 @@ the current date/time in the location of the subscriber::
   20151109/               2015-11-27 06:44    -   
   20151110/               2015-11-27 06:44    -  
 
-A variable number of days are stored on each data pump, for those
+A variable number of days are stored on each data pump; for those
 with an emphasis on real-time reliable delivery, the number of days
 will be shorter.  For other pumps, where long term outages need
 to be tolerated, more days will be kept.  
@@ -74,7 +73,7 @@ way to the visible ones::
   Index of /20151110
   
   Name                    Last modified      Size  Description
-  Parent Directory                             -   
+  Parent Directory                            -   
   UNIDATA-UCAR/           2015-11-27 06:44    -   
   NOAAPORT/               2015-11-27 06:44    -   
   MSC-CMC/                2015-11-27 06:44    -   
@@ -83,22 +82,22 @@ way to the visible ones::
   NWS-OPSNET/             2015-11-27 06:44    -  
   
 The data under each of these directories was obtained from the named
-source. In these examples, it is actually injected by DataInterchange
+source. In these examples, it is actually injected by Data Interchange
 staff, and the names are chosen to represent the origin of the data.
 
-The original Environment and Climate Change Canada data mart, is
+The original Environment and Climate Change Canada data mart is
 one "source" in this sense, showing up on hpfx as WXO-DD, or the same
 tree being available at the root of::
 
   https://dd.weather.gc.ca
 
 
-once down to the viewing the content from a given source,
+Once down to the viewing the content from a given source,
 products are organized in a way defined by the source::
 
 
    Icon  Name                    Last modified      Size  Description
-   [TXT] about_dd_apropos.txt    2021-05-17 13:23  1.0K  
+   [TXT] about_dd_apropos.txt    2021-05-17 13:23   1.0K  
    [DIR] air_quality/            2020-12-10 14:47    -   
    [DIR] alerts/                 2022-07-13 12:00    -   
    [DIR] analysis/               2022-07-13 13:17    -   
@@ -122,7 +121,7 @@ The configuration files are a few lines of configuration, and sr3
 includes some examples.
 
 
-To list the available configurations with *sr3 list* ::
+You can list the available configurations with *sr3 list*::
 
   $ sr3 list examples
     Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
@@ -142,7 +141,7 @@ broadcast system for weather data in the 1980's. It is a continuous stream of te
 and each message is limited to 14000 bytes. The service was transitioned to an internet streaming feed in the early 2000's,
 and the streaming version is still fed to those interested in air and maritime navigation across the country.
 
-One can download a continuous feed of such traditional weather bulletins from the original datamart using the subscribe/dd_amis.conf 
+One can download a continuous feed of such traditional weather bulletins from the original data mart using the subscribe/dd_amis.conf 
 configuration example::
 
     $ sr3 add subscribe/dd_amis.conf
@@ -174,24 +173,24 @@ To view a configuration, give it to `sr3 list` as an argument::
     directory /tmp/dd_amis
     accept .*
 
-Then it can be run interactively *sr3 foreground subscribe/dd_amis* or as a service
-with *sr3 start subscribe/dd_amis*  in both cases, files will be downloaded from
+Then it can be run interactively with *sr3 foreground subscribe/dd_amis* or as a service
+with *sr3 start subscribe/dd_amis*.  In both cases, files will be downloaded from
 dd.weather.gc.ca into the local machine's /tmp/dd_amis directory.
 
-more:
+More information:
 
 * `CLI Introduction (Jupyter Notebook) <../Tutorials/1_CLI_introduction.html>`_
-* `Setup a Remote Subscriber <../Tutorials/Setup_a_remote_subscriber.html>`_
+* `Set up a Remote Subscriber <../Tutorials/Setup_a_remote_subscriber.html>`_
 * `Options in the configuration file <../Reference/sr3_options.7.rst>`_
 
-Server Side Resources Allocated for Subscribers
+Server-Side Resources Allocated for Subscribers
 -----------------------------------------------
 
 Every configuration results in corresponding resources being declared on the broker,
 whose lifetime is controlled by the *expire* setting. The default *expire* is set
 to 300 seconds to avoid cluttering up servers with small experiments.  Set *expire*
-the the value that makes the most sense for your application (long enough to cover
-outages you may experience.) In a configuration file, something like::
+to the value that makes the most sense for your application (long enough to cover
+outages you may experience). In a configuration file, something like::
 
   expire 3h
 
@@ -209,7 +208,7 @@ subscriber starts up again, the queued notification messages are forwarded to th
 So when the *subtopic* option is changed, since it is already defined on the 
 server, one ends up adding a binding rather than replacing it.  For example,
 if one has a subtopic that contains SATELLITE, and then stops the subscriber, 
-edit the file and now the topic contains only RADAR, when the subscriber is 
+edits the file and now the topic contains only RADAR, when the subscriber is 
 restarted, not only will all the queued satellite files be sent to the consumer, 
 but the RADAR is added to the bindings, rather than replacing them, so the 
 subscriber will get both the SATELLITE and RADAR data even though the configuration 
@@ -219,7 +218,7 @@ Also, if one is experimenting, and a queue is to be stopped for a very long
 time, it may accumulate a large number of notification messages. The total number of notification messages 
 on a data pump has an effect on the pump performance for all users. It is therefore 
 advisable to have the pump de-allocate resources when they will not be needed 
-for an extended periods, or when experimenting with different settings.
+for an extended period, or when experimenting with different settings.
 
 
 Working with Multiple Configurations
@@ -234,8 +233,7 @@ that directory: dd_amis.conf and hpfx_amis.conf, one could then run::
 
     fractal%
 
-to start the CMC downloading configuration. One can use by
-using the sr3 command to start/stop multiple configurations at once. 
+to start the CMC downloading configuration. One can use the sr3 command to start/stop multiple configurations at once. 
 The sr3 command will go through the default directories and start up 
 all the configurations it finds::
 
@@ -263,11 +261,11 @@ all the configurations it finds::
 
 will start up some sr3 processes as configured by CMC.conf and others 
 to match hpfx_amis.conf. Sr3 stop will also do what you would expect. As will sr3 status.  
-Note that there are 5 sr_subscribe processes start with the CMC 
+Note that there are 5 sr_subscribe processes that start with the CMC 
 configuration and 3 NWS ones. These are *instances* and share the same 
 download queue. 
 
-more:
+More information:
 
 * `Command line Guide <../Explanation/CommandLineGuide.html>`_
 * `Sr3 Manual page <../Reference/sr3.1.html>`_
