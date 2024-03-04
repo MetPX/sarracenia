@@ -252,7 +252,7 @@ class AMQP(Moth):
             next_time = self.last_qDeclare + 30
             now=time.time()
             if next_time <= now:
-                self._queueDeclare(passive=True)
+                #self._queueDeclare(passive=True)
                 self.last_qDeclare=now
 
         super().metricsReport()
