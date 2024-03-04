@@ -119,6 +119,7 @@ class AMQP(Moth):
                     logger.error(
                         'ignoring message. UTF8 encoding expected. raw message received: %s' % ex)
                     logger.debug('Exception details: ', exc_info=True)
+                    self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
                     return None
 
             if 'content_type' in raw_msg.properties:
@@ -129,6 +130,7 @@ class AMQP(Moth):
             msg = PostFormat.importAny( body, raw_msg.headers, content_type, self.o )
             if not msg:
                 logger.error('Decode failed, discarding message')
+                self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
                 return None
 
             topic = raw_msg.delivery_info['routing_key'].replace(
