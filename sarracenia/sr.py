@@ -1353,7 +1353,7 @@ class sr_GlobalState:
                                     u_url.username, u_url.password, self.options.dry_run )
 
         # declare admin exchanges.
-        if hasattr(self,'default_cfg'):
+        if hasattr(self,'default_cfg') and self.default_cfg.admin:
             logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
