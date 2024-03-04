@@ -237,8 +237,8 @@ class AMQP(Moth):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
             self.connection.connect()
 
-        self.channel = self.connection.channel()
-        self.management_channel = self.connection.channel()
+        self.management_channel = self.connection.channel(1)
+        self.channel = self.connection.channel(2)
         return True
 
     def _amqp_setup_signal_handler(self, signum, stack):
