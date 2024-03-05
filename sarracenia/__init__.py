@@ -773,8 +773,11 @@ class Message(dict):
             msg['new_file'] = new_file
 
         relPath = new_dir + '/' + new_file
-
-        if options.post_baseUrl:
+        
+        # post_baseUrl option set in msg overrides other possible options
+        if 'post_baseUrl' in msg:
+            baseUrl_str = msg['post_baseUrl']
+        elif options.post_baseUrl:
             baseUrl_str = options.variableExpansion(options.post_baseUrl, msg)
         else:
             if 'baseUrl' in msg:
