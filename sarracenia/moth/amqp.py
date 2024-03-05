@@ -34,6 +34,7 @@ import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import signal
+import os
 
 import time
 from urllib.parse import unquote
@@ -406,7 +407,7 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
     def putSetup(self) -> None:
 
@@ -480,7 +481,7 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
 
     def putCleanUp(self) -> None:
