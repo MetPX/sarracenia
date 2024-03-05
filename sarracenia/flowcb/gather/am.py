@@ -29,7 +29,8 @@ Description:
             Default value is utf-8
 
         MissingAMHeaders (string):
-            Specify headers to be added inside of the file contents.
+            Specify headers to be added inside of the file contents. Applies only for CA,MA,RA first chars of bulletin.
+            Default is CN00 CWAO
 
         binaryInitialCharacters (list):
             Binary bulletins are characterised by having certain sets of characters on its second line.
@@ -279,7 +280,8 @@ class Am(FlowCB):
 
 
     def correctContents(self, bulletin, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
-        """ Correct the bulletin contents, either of two ways
+        """ Correct the bulletin contents, either of these ways
+            1. Remove trailing space in bulletin header
             1. Add missing AHL headers for CA,MA,RA bulletins
             2. Add missing AHL headers by mapping station codes
             3. Add an extra line for SM/SI bulletins
@@ -291,6 +293,11 @@ class Am(FlowCB):
         reconstruct = 0
         ddhhmm = ''
         new_bulletin = b''
+        
+        # If there's a trailing space at the end of the bulletin header. Remove it.
+        if lines[0][-1:] == b' ':
+            lines[0] = lines[0].rstrip()
+            reconstruct = 1
 
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
