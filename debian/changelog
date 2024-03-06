@@ -1,3 +1,13 @@
+metpx-sr3 (3.00.52rc3) UNRELEASED; urgency=medium
+
+  * fix #953 PRECONDITION FAILED error on busy winnows
+  * above fix breaks/reopens #649 (cannot see queue size anymore.)
+  * AM renamer moved to gather for simplicity, also fixes there.
+  * fix: sr3 declare would fail when no admin.conf configured.
+  * misc. fixes with AMQP message acknowledgement.
+
+ -- peter <peter@bsqt.homeip.net>  Wed, 06 Mar 2024 09:42:57 -0500
+
 metpx-sr3 (3.00.52rc2) unstable; urgency=medium
 
   * fix #934 found references to v2 documentation. Modernized.
