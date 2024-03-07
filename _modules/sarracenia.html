@@ -892,8 +892,11 @@
             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_file</span>
 
         <span class="n">relPath</span> <span class="o">=</span> <span class="n">new_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">new_file</span>
-
-        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">:</span>
+        
+        <span class="c1"># post_baseUrl option set in msg overrides other possible options</span>
+        <span class="k">if</span> <span class="s1">&#39;post_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_baseUrl&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">:</span>
             <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
