@@ -1,4 +1,12 @@
-metpx-sr3 (3.00.52rc3) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.52rc4) UNRELEASED; urgency=medium
+
+  * copernicus marine data store polling support ( #959 )
+  * override baseUrl with message field ( for #951 )
+  * os.kill for older python version instead of raise_signal #948
+
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 07 Mar 2024 16:28:26 -0500
+
+metpx-sr3 (3.00.52rc3) unstable; urgency=medium
 
   * fix #953 PRECONDITION FAILED error on busy winnows
   * above fix breaks/reopens #649 (cannot see queue size anymore.)
