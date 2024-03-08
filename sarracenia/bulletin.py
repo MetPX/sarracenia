@@ -1,5 +1,6 @@
 import logging
 import time 
+import re
 from base64 import b64decode
 
 logger = logging.getLogger(__name__)
@@ -155,6 +156,11 @@ class Bulletin:
                 station = station.split('?')[0]
                 if station[-1] == '=' : station = station[:-1]
             else :
+                station = ''
+
+            # Added to SR3
+            # The station needs to be alphanumeric, between 3 and 5 characters. If not, don't assign a station
+            if re.search('^[a-zA-Z0-9]{3,5}$', station) == None:
                 station = ''
 
         return station
