@@ -1717,21 +1717,22 @@ class sr_GlobalState:
             if self.please_stop:
                 break
             cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
-            for state_file in os.listdir(cache_dir):
-                if self.please_stop:
-                    break
-                if state_file[0] == '.':
-                    continue
+            if os.path.isdir(cache_dir):
+                for state_file in os.listdir(cache_dir):
+                    if self.please_stop:
+                        break
+                    if state_file[0] == '.':
+                        continue
 
-                if state_file in [ 'disabled' ]:
-                    continue
+                    if state_file in [ 'disabled' ]:
+                        continue
 
-                asf = cache_dir + os.sep + state_file
-                if self.options.dry_run:
-                    print('removing state file (dry run): %s' % asf)
-                else:
-                    print('removing state file: %s' % asf)
-                    os.unlink(asf)
+                    asf = cache_dir + os.sep + state_file
+                    if self.options.dry_run:
+                        print('removing state file (dry run): %s' % asf)
+                    else:
+                        print('removing state file: %s' % asf)
+                        os.unlink(asf)
 
     print_column = 0
 
