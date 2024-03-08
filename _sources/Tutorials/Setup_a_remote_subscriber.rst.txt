@@ -21,6 +21,7 @@ The *edit* command starts the user's configured editor on the file to be created
   $ sr3 edit subscribe/swob.conf
     broker amqps://anonymous@dd.weather.gc.ca
     subtopic observations.swob-ml.#
+    topicPrefix v02.post
     directory /tmp/swob_downloads
     accept .*
   $ mkdir /tmp/swob_downloads

@@ -280,6 +280,7 @@ logs are in: /home/peter/.cache/sr3/log
 # this is a feed of wmo bulletin (a set called AMIS in the old times)
 
 broker amqps://dd.weather.gc.ca/
+topicPrefix v02.post
 
 # instances: number of downloading processes to run at once.  defaults to 1. Not enough for this case
 instances 5
@@ -493,6 +494,7 @@ variety of matching possible with regular expressions:</p>
 </div>
 <blockquote>
 <div><p>broker amqps://anonymous&#64;dd.weather.gc.ca
+topicPrefix v02.post
 accept .*/observations/swob-ml/.*</p>
 <p>#write all SWOBS into the current working directory
 #BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE
@@ -515,6 +517,7 @@ then the option mirror should be set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
+  topicPrefix v02.post
   subtopic observations.swob-ml.#
   directory /tmp
   mirror True
@@ -531,6 +534,7 @@ it will cause files to be placed relative to that directory:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/ddi_ninjo_part1.conf
 
 broker amqps://ddi.cmc.ec.gc.ca/
+topicPrefix v02.post
 subtopic ec.ops.*.*.ninjo-a.#
 
 directory /tmp/apps/ninjo/import/point/reports/in
@@ -872,6 +876,7 @@ $ sr3 edit subscribe/swob
 </div>
 <blockquote>
 <div><p>broker amqps://anonymous&#64;dd.weather.gc.ca
+topicPrefix v02.post
 subtopic observations.swob-ml.#</p>
 <p>rxpipe_name /home/peter/test/.rxpipe</p>
 <p>callback work.rxpipe</p>
@@ -898,7 +903,7 @@ Assuming that ClamAV-daemon is installed, as well as the python3-pyclamd
 package, then one can add the following to a subscriber
 configuration file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
-<span class="n">topicPredix</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span>
 <span class="n">batch</span> <span class="mi">1</span>
 <span class="n">callback</span> <span class="n">clamav</span>
 <span class="n">subtopic</span> <span class="n">observations</span><span class="o">.</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">.</span><span class="c1">#</span>

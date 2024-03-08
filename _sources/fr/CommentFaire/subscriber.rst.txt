@@ -167,7 +167,8 @@ Pour afficher une configuration, donnez-la à `sr3 list` comme argument::
     # il s’agit d’un flux de bulletin wmo (un ensemble appelé AMIS dans les temps anciens)
     
     broker amqps://dd.weather.gc.ca/
-    
+    topicPrefix v02.post
+
     # instances: nombre de processus de téléchargement à exécuter à la fois.  la valeur par défaut est 1. Pas assez pour ce cas
     instances 5
     
@@ -388,6 +389,7 @@ Notez ce qui suit ::
 $ sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
+  topicPrefix v02.post
   accept .*/observations/swob-ml/.*
 
   #écrire tous les SWOBS dans le répertoire de travail actuel
@@ -414,6 +416,7 @@ alors l’option miroir doit être définie::
 $ sr3 edit subscribe/swob
 
   broker amqps://anonymous@dd.weather.gc.ca
+  topicPrefix v02.post
   subtopic observations.swob-ml.#
   directory /tmp
   mirror True
@@ -431,6 +434,7 @@ celles la entraîneront le placement de fichiers par rapport à ce répertoire :
 $ sr3 edit subscribe/ddi_ninjo_part1.conf 
 
   broker amqps://ddi.cmc.ec.gc.ca/
+  topicPrefix v02.post
   subtopic ec.ops.*.*.ninjo-a.#
 
   directory /tmp/apps/ninjo/import/point/reports/in
@@ -778,6 +782,7 @@ un fichier de configuration sr3 ::
   $ sr3 edit subscribe/swob 
 
   broker amqps://anonymous@dd.weather.gc.ca
+  topicPrefix v02.post
   subtopic observations.swob-ml.#
 
   rxpipe_name /home/peter/test/.rxpipe
@@ -811,7 +816,7 @@ package, alors on peut ajouter ce qui suit à un
 fichier de configuration d'un abonné::
 
   broker amqps://dd.weather.gc.ca
-  topicPredix v02.post
+  topicPrefix v02.post
   batch 1
   callback clamav
   subtopic observations.swob-ml.#

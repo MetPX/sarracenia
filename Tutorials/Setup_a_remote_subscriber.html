@@ -130,6 +130,7 @@ This credentials.conf file should be private (linux octal permissions: 0600).
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob.conf
   broker amqps://anonymous@dd.weather.gc.ca
   subtopic observations.swob-ml.#
+  topicPrefix v02.post
   directory /tmp/swob_downloads
   accept .*
 $ mkdir /tmp/swob_downloads
