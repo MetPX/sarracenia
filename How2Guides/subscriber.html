@@ -46,7 +46,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#receiving-data-from-a-metpx-sarracenia-data-pump">Receiving Data from a MetPX-Sarracenia Data Pump</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#revision-record">Revision Record</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#server-side-resources-allocated-for-subscribers">Server Side Resources Allocated for Subscribers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#server-side-resources-allocated-for-subscribers">Server-Side Resources Allocated for Subscribers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#working-with-multiple-configurations">Working with Multiple Configurations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#high-priority-delivery">High Priority Delivery</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#refining-selection">Refining Selection</a></li>
@@ -155,11 +155,10 @@ To find out what data is already available on a pump,
 view the tree with a web browser.
 For simple immediate needs, one can download data using the
 browser itself, or a standard tool such as wget.</p>
-<p>The usual intent is to automatically download the data
-wanted to a directory on a subscriber
+<p>The usual intent is to automatically download the dsesired data to a directory on a subscriber
 machine where other software can process it.  Please note:</p>
 <ul class="simple">
-<li><p>The tool is entirely command line driven (there is no GUI) More accurately, it is mostly configuration file driven.
+<li><p>The tool is entirely command line driven (there is no GUI). More accurately, it is mostly configuration file driven.
 Most of the <em>interface</em> involves using a text editor to modify configuration files.</p></li>
 <li><p>While written to be compatible with other environments, the focus is on Linux usage.</p></li>
 <li><p>The tool can be used as either an end-user tool, or a system-wide transfer engine.
@@ -176,12 +175,12 @@ that sources choose to post, there is a conventional layout, for example at:</p>
 and the root of the tree is the date, in YYYYMMDD format.
 These dates do not represent anything about the data other than
 when it was put into the pumping network, and since Sarracenia
-always uses Universal Co-ordinated Time, the dates might not correspond
+always uses Universal Co-ordinated Time, the dates might not correspond to
 the current date/time in the location of the subscriber:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span> <span class="n">of</span> <span class="o">/</span>
 
 <span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
-<span class="n">Parent</span> <span class="n">Directory</span>                             <span class="o">-</span>
+<span class="n">Parent</span> <span class="n">Directory</span>                            <span class="o">-</span>
 <span class="mi">20151105</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
 <span class="mi">20151106</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
 <span class="mi">20151107</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
@@ -190,7 +189,7 @@ the current date/time in the location of the subscriber:</p>
 <span class="mi">20151110</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
 </pre></div>
 </div>
-<p>A variable number of days are stored on each data pump, for those
+<p>A variable number of days are stored on each data pump; for those
 with an emphasis on real-time reliable delivery, the number of days
 will be shorter.  For other pumps, where long term outages need
 to be tolerated, more days will be kept.</p>
@@ -201,7 +200,7 @@ way to the visible ones:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span> <span class="n">of</span> <span class="o">/</span><span class="mi">20151110</span>
 
 <span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
-<span class="n">Parent</span> <span class="n">Directory</span>                             <span class="o">-</span>
+<span class="n">Parent</span> <span class="n">Directory</span>                            <span class="o">-</span>
 <span class="n">UNIDATA</span><span class="o">-</span><span class="n">UCAR</span><span class="o">/</span>           <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
 <span class="n">NOAAPORT</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
 <span class="n">MSC</span><span class="o">-</span><span class="n">CMC</span><span class="o">/</span>                <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
@@ -211,18 +210,18 @@ way to the visible ones:</p>
 </pre></div>
 </div>
 <p>The data under each of these directories was obtained from the named
-source. In these examples, it is actually injected by DataInterchange
+source. In these examples, it is actually injected by Data Interchange
 staff, and the names are chosen to represent the origin of the data.</p>
-<p>The original Environment and Climate Change Canada data mart, is
+<p>The original Environment and Climate Change Canada data mart is
 one “source” in this sense, showing up on hpfx as WXO-DD, or the same
 tree being available at the root of:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
 </pre></div>
 </div>
-<p>once down to the viewing the content from a given source,
+<p>Once down to the viewing the content from a given source,
 products are organized in a way defined by the source:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Icon</span>  <span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
-<span class="p">[</span><span class="n">TXT</span><span class="p">]</span> <span class="n">about_dd_apropos</span><span class="o">.</span><span class="n">txt</span>    <span class="mi">2021</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">13</span><span class="p">:</span><span class="mi">23</span>  <span class="mf">1.0</span><span class="n">K</span>
+<span class="p">[</span><span class="n">TXT</span><span class="p">]</span> <span class="n">about_dd_apropos</span><span class="o">.</span><span class="n">txt</span>    <span class="mi">2021</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">13</span><span class="p">:</span><span class="mi">23</span>   <span class="mf">1.0</span><span class="n">K</span>
 <span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">air_quality</span><span class="o">/</span>            <span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">10</span> <span class="mi">14</span><span class="p">:</span><span class="mi">47</span>    <span class="o">-</span>
 <span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">alerts</span><span class="o">/</span>                 <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">12</span><span class="p">:</span><span class="mi">00</span>    <span class="o">-</span>
 <span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">analysis</span><span class="o">/</span>               <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">17</span>    <span class="o">-</span>
@@ -243,7 +242,7 @@ products are organized in a way defined by the source:</p>
 <p>One can run sr3 to download selected products from Data pumps like these.
 The configuration files are a few lines of configuration, and sr3
 includes some examples.</p>
-<p>To list the available configurations with <em>sr3 list</em></p>
+<p>You can list the available configurations with <em>sr3 list</em>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 list examples
   Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
   cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             poll/pollnoaa.conf               poll/pollsoapshc.conf
@@ -262,7 +261,7 @@ includes some examples.</p>
 broadcast system for weather data in the 1980’s. It is a continuous stream of text messages (originally at 4800 bps!)
 and each message is limited to 14000 bytes. The service was transitioned to an internet streaming feed in the early 2000’s,
 and the streaming version is still fed to those interested in air and maritime navigation across the country.</p>
-<p>One can download a continuous feed of such traditional weather bulletins from the original datamart using the subscribe/dd_amis.conf
+<p>One can download a continuous feed of such traditional weather bulletins from the original data mart using the subscribe/dd_amis.conf
 configuration example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 add subscribe/dd_amis.conf
 add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf
@@ -294,23 +293,23 @@ directory /tmp/dd_amis
 accept .*
 </pre></div>
 </div>
-<p>Then it can be run interactively <em>sr3 foreground subscribe/dd_amis</em> or as a service
-with <em>sr3 start subscribe/dd_amis</em>  in both cases, files will be downloaded from
+<p>Then it can be run interactively with <em>sr3 foreground subscribe/dd_amis</em> or as a service
+with <em>sr3 start subscribe/dd_amis</em>.  In both cases, files will be downloaded from
 dd.weather.gc.ca into the local machine’s /tmp/dd_amis directory.</p>
-<p>more:</p>
+<p>More information:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../Tutorials/1_CLI_introduction.html">CLI Introduction (Jupyter Notebook)</a></p></li>
-<li><p><a class="reference external" href="../Tutorials/Setup_a_remote_subscriber.html">Setup a Remote Subscriber</a></p></li>
+<li><p><a class="reference external" href="../Tutorials/Setup_a_remote_subscriber.html">Set up a Remote Subscriber</a></p></li>
 <li><p><a class="reference internal" href="../Reference/sr3_options.7.html"><span class="doc">Options in the configuration file</span></a></p></li>
 </ul>
 </section>
 <section id="server-side-resources-allocated-for-subscribers">
-<h3>Server Side Resources Allocated for Subscribers<a class="headerlink" href="#server-side-resources-allocated-for-subscribers" title="Link to this heading"></a></h3>
+<h3>Server-Side Resources Allocated for Subscribers<a class="headerlink" href="#server-side-resources-allocated-for-subscribers" title="Link to this heading"></a></h3>
 <p>Every configuration results in corresponding resources being declared on the broker,
 whose lifetime is controlled by the <em>expire</em> setting. The default <em>expire</em> is set
 to 300 seconds to avoid cluttering up servers with small experiments.  Set <em>expire</em>
-the the value that makes the most sense for your application (long enough to cover
-outages you may experience.) In a configuration file, something like:</p>
+to the value that makes the most sense for your application (long enough to cover
+outages you may experience). In a configuration file, something like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expire</span> <span class="mi">3</span><span class="n">h</span>
 </pre></div>
 </div>
@@ -327,7 +326,7 @@ subscriber starts up again, the queued notification messages are forwarded to th
 So when the <em>subtopic</em> option is changed, since it is already defined on the
 server, one ends up adding a binding rather than replacing it.  For example,
 if one has a subtopic that contains SATELLITE, and then stops the subscriber,
-edit the file and now the topic contains only RADAR, when the subscriber is
+edits the file and now the topic contains only RADAR, when the subscriber is
 restarted, not only will all the queued satellite files be sent to the consumer,
 but the RADAR is added to the bindings, rather than replacing them, so the
 subscriber will get both the SATELLITE and RADAR data even though the configuration
@@ -336,7 +335,7 @@ no longer contains the former.</p>
 time, it may accumulate a large number of notification messages. The total number of notification messages
 on a data pump has an effect on the pump performance for all users. It is therefore
 advisable to have the pump de-allocate resources when they will not be needed
-for an extended periods, or when experimenting with different settings.</p>
+for an extended period, or when experimenting with different settings.</p>
 </section>
 <section id="working-with-multiple-configurations">
 <h3>Working with Multiple Configurations<a class="headerlink" href="#working-with-multiple-configurations" title="Link to this heading"></a></h3>
@@ -349,8 +348,7 @@ that directory: dd_amis.conf and hpfx_amis.conf, one could then run:</p>
 <span class="n">fractal</span><span class="o">%</span>
 </pre></div>
 </div>
-<p>to start the CMC downloading configuration. One can use by
-using the sr3 command to start/stop multiple configurations at once.
+<p>to start the CMC downloading configuration. One can use the sr3 command to start/stop multiple configurations at once.
 The sr3 command will go through the default directories and start up
 all the configurations it finds:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">status</span>
@@ -377,10 +375,10 @@ all the configurations it finds:</p>
 </div>
 <p>will start up some sr3 processes as configured by CMC.conf and others
 to match hpfx_amis.conf. Sr3 stop will also do what you would expect. As will sr3 status.
-Note that there are 5 sr_subscribe processes start with the CMC
+Note that there are 5 sr_subscribe processes that start with the CMC
 configuration and 3 NWS ones. These are <em>instances</em> and share the same
 download queue.</p>
-<p>more:</p>
+<p>More information:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="../Explanation/CommandLineGuide.html">Command line Guide</a></p></li>
 <li><p><a class="reference external" href="../Reference/sr3.1.html">Sr3 Manual page</a></p></li>
