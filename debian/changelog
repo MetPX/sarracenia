@@ -1,8 +1,10 @@
-metpx-sr3 (3.00.52rc4) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.52rc4) unstable; urgency=medium
 
   * copernicus marine data store polling support ( #959 )
   * override baseUrl with message field ( for #951 )
   * os.kill for older python version instead of raise_signal #948
+  * fix #955 error on cleanup when cache dir missing.
+  * gather/am fix to handle improperly parsed station names from getStation
 
  -- Peter Silva <peter@bsqt.homeip.net>  Thu, 07 Mar 2024 16:28:26 -0500
 
