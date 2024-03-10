@@ -26,6 +26,7 @@ import logging
 import sarracenia
 from sarracenia.moth.amqp import AMQP, amqp_ss_maxlen, default_options
 
+import socket
 import time
 import queue
 
@@ -102,6 +103,10 @@ class AMQPConsumer(AMQP):
             try:
                 self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
             except TimeoutError:
+                pass
+            # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
+            # older versions (3.6) and needs to be handled separately
+            except socket.timeout:
                 pass
 
             try:
