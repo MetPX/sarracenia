@@ -325,6 +325,18 @@ class Flow:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
+    def _runHousekeeping(self, now) -> float:
+        """ Run housekeeping callbacks
+            Return the time when housekeeping should be run next
+        """
+        logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
+        self.runCallbacksTime('on_housekeeping')
+        self.metricsFlowReset()
+        self.metrics['flow']['last_housekeeping'] = now
+
+        next_housekeeping = now + self.o.housekeeping
+        self.metrics['flow']['next_housekeeping'] = next_housekeeping
+        return next_housekeeping
 
     def has_vip(self) -> list:
         """
@@ -627,15 +639,7 @@ class Flow:
 
             # Run housekeeping based on time, and before stopping to ensure it's run at least once
             if now > next_housekeeping or stopping:
-                logger.info(
-                    f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
-                )
-                self.runCallbacksTime('on_housekeeping')
-                self.metricsFlowReset()
-                self.metrics['flow']['last_housekeeping'] = now
-
-                next_housekeeping = now + self.o.housekeeping
-                self.metrics['flow']['next_housekeeping'] = next_housekeeping
+                next_housekeeping = self._runHousekeeping(now)
 
             if (self.o.messageRateMin > 0) and (current_rate <
                                                 self.o.messageRateMin):
@@ -678,6 +682,10 @@ class Flow:
                         break
                     else:
                         stime -= 5 
+                    # Run housekeeping during long sleeps
+                    now_for_hk = nowflt()
+                    if now_for_hk > next_housekeeping:
+                        next_housekeeping = self._runHousekeeping(now_for_hk)
 
                 last_time = now
 
