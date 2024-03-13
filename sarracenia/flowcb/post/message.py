@@ -23,9 +23,6 @@ class Message(FlowCB):
             props = sarracenia.moth.default_options
             props.update(self.o.dictify())
 
-            if hasattr(self.o, 'topic' ):
-                del self.o['topic']
-
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
             for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic' ]:
                 post_one='post_'+k
