@@ -1182,7 +1182,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         self.status_values = [
-            'disabled', 'hung', 'include', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
+            'disabled', 'hung', 'include', 'missing', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
         ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
