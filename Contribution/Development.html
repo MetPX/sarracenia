@@ -271,14 +271,17 @@ is one criterion for acceptance into development.</p>
 <p>To run the sr_insects tests, the repository must be cloned with the development branch.
 A gate for merging to development is for a second developer to run the flow_tests.
 <strong>For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow</strong></p>
-<p>Planned by 2022/04/11:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>stable will be merged from (version 3) development, so the default version for new work is sr3.</p></li>
-<li><p>launchpad has recipes to produce metpx-sr3 packages from the stable branch.</p></li>
+<li><p>launchpad has recipes to produce metpx-sr3 packages from various branches.</p></li>
 <li><p>The <em>MetPX Daily</em> repository is a snapshot of the development branch.</p></li>
-<li><p>The <em>MetPX Pre-Release</em> repository should receive versions ending in rcX (release candidate)</p></li>
-<li><p>The <em>MetPX</em> repository should only contain stable releases that have graduated from the rcX series.</p></li>
+<li><p>The <em>MetPX Pre-Release</em> repository should receive versions ending in rcX (release candidate)
+The packages here from from pre-release branch which comes from snapshots of the development branch.
+There is also a pre-release-py36 branch for building pre-release packages for older operating systems.</p></li>
+<li><p>stable comes from on snapshots of (version 3) pre-release branch.</p></li>
+<li><p>The <em>MetPX</em> repository should only contain stable releases that have graduated from the rcX series.
+there is a stable_py36 branch to build packages for older operating systems that have
+python 3.6 (redhat 8, ubuntu 18, ubuntu 20) or are too old to use hatchling installer.</p></li>
 </ul>
 </div></blockquote>
 </section>
@@ -470,17 +473,17 @@ The options are detailed below:</p>
 </section>
 <section id="committing-code">
 <h3>Committing Code<a class="headerlink" href="#committing-code" title="Link to this heading"></a></h3>
-<p>What should be done prior to committing to the stable branch?
+<p>What should be done prior to committing to the development branch?
 Checklist:</p>
 <ul class="simple">
 <li><p>do development on some other branch. Usually the branch will be named after the issue being
 addressed. Example: issue240, if we give up on an initial approach and start another one,
 there may be issue240_2 for a second attempt. There may also be feature branches, such as v03.</p></li>
-<li><p><strong>sr_insects tests works</strong> (See Testing) The stable branch should always be functional, do not commit code if the sr_insects tests are not working.</p></li>
+<li><p><strong>sr_insects tests works</strong> (See Testing) The development branch should always be functional, do not commit code if the sr_insects tests are not working.</p></li>
 <li><p>Natural consequence: if the code changes means tests need to change, include the test change in the commit.</p></li>
 <li><p><strong>update doc/</strong> manual pages should get their updates ideally at the same time as the code.</p></li>
 </ul>
-<p>Usually there will be many such cycles on a development branch before one is ready
+<p>Usually there will be many such cycles on an issueXXX  branch before one is ready
 to issue a pull request. Eventually, we get to <a class="reference internal" href="#commits-to-the-development-branch">Commits to the Development Branch</a></p>
 </section>
 </section>
@@ -717,7 +720,7 @@ flows defined:</p>
 <h2>Running Flow Tests<a class="headerlink" href="#running-flow-tests" title="Link to this heading"></a></h2>
 <p>This section documents these steps in much more detail.
 Before one can run the sr_insects tests, some pre-requisites must be taken care of.
-Note that there is Github Actions integration for at least the stable branch
+Note that there is Github Actions integration for at least the development branch
 to verify functionality on a variety of python version.  Consult:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">actions</span>
 </pre></div>
@@ -967,7 +970,7 @@ blacklab%
 </div>
 <p>If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the
 python application, but the test coverage is not exhaustive. This is the lowest gate for committing
-changes to thy python code into the stable branch. It is more qualitative sampling of the most
+changes to thy python code into the development branch. It is more qualitative sampling of the most
 common use cases rather than a thorough examination of all functionality. While not
 thorough, it is good to know the flows are working.</p>
 <p>Note that the <em>fclean</em> subscriber looks at files in and keeps files around long enough for them to go through all the other
@@ -1347,11 +1350,13 @@ environment one can approve a merge in spite of Github Actions’ complaints.</p
 <p>There is a long running discussion about <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">Which Version is stable</a>
 The current set up is that there are four principal branches:</p>
 <ul class="simple">
-<li><p>stable branch is the release version of sr3, merging from development. used to build sr3 packages in the
+<li><p>stable branch is the release version of sr3, merging from pre-release. used to build sr3 packages in the
 <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">MetPX</a> repository.</p></li>
-<li><p>development … The <a class="reference internal" href="v03.html"><span class="doc">version 3</span></a> work in progress branch is a next version of sarracenia in development.
+<li><p>development … The <a class="reference internal" href="v03.html"><span class="doc">version 3</span></a> work in progress branch is a next version of sarracenia.
 the development branch is used to build sr3 packages for the <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">Daily</a>
 and <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release">Pre-Release</a> repositories on launchpad.net.</p></li>
+<li><p>stable_py36 and pre-relrease-36 are branched from stable and pre_release respectively to adjust for building
+packages on older operating systems that have older versions of python (and no support for hatchling.)</p></li>
 <li><p>issue branches to be merged to development, it should be start with issueXXX or suggested branch names from github are ok also.</p></li>
 <li><p>sometimes, multiple branches are needed for a single issue, say for variations of a fix, eg. issueXXX_2_do_it_this_way .</p></li>
 <li><p>v2_dev … the integration branch for v2 maintenance used prior to promotion to v2_stable.</p></li>
