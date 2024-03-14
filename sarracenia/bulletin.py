@@ -14,6 +14,8 @@ class Bulletin:
             Modifying bulletin file contents
             Modifying bulletin filenames
 
+        Also holds some code used in CA bulletins uniquely.
+
         Spawned from analysts realizing that lots of bulletin handlers/plugins use the same methods repeatedly.
         This is in turn will reduce duplicate code throughout.
 
@@ -210,11 +212,17 @@ class Bulletin:
         try:
             parts = data.split(',')
 
-            if len(parts) < 4: return None
-
             year = parts[1]
             jul = parts[2]
             hhmm = parts[3]
+
+            if parts[0][:2] == "CA":
+                # Need to verify time for CA bulletins.
+                if not self._verifyYear(year):
+                    logger.error("Unable to verify year from julian time.")
+                    return None
+
+            if len(parts) < 4: return None
 
             # passe-passe pour le jour julien en float parfois ?
             f = float(jul)
@@ -248,3 +256,21 @@ class Bulletin:
             return ddHHMM
         except Exception as e:
             return None
+        
+
+    def _verifyYear(self, bulletin_year):
+        """ Derived from missing https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py -> tokIsYear
+            Checks if the year that was appended to the bulletin contents is valid or not.
+            This is only applicable for CA type bulletins (based on Sundew code).
+        """
+
+        ltime = time.localtime()
+        current_year  = time.strftime("%Y",ltime )
+
+        if bulletin_year == current_year    : return True
+        if len(bulletin_year) !=    4       : return False
+        if bulletin_year[:1]  !=  '2'       : return False
+
+        return True
+
+
