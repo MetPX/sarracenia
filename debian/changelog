@@ -1,6 +1,10 @@
 metpx-sr3 (3.00.53rc1) UNRELEASED; urgency=medium
 
-  * increment away from release
+  * fix #967 define hostname as a string option (was defaulting to list.)
+  * docs: Add topicPrefix for #961
+  * docs: some revisions for clarity/syntax. 
+  * some fixes for misnaming of some (rare) files received by gather/am
+
 
  -- Peter Silva <peter@bsqt.homeip.net>  Thu, 14 Mar 2024 17:01:04 -0400
 
