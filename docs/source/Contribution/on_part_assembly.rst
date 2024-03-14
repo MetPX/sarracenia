@@ -6,7 +6,7 @@ File Re-assembling
 Components
 ----------
 
-**sr_watch:** You can use sr_watch to watch a directory for incoming partition files (.Part) from sr_subscribe or sr_sender, both have the ability to send a file in partitions. In the config file for sr_watch the important parameters to include are:  
+**sr_watch:** You can use sr3_watch to watch a directory for incoming partition files (.Part) from sr_subscribe or sr_sender, both have the ability to send a file in partitions. In the config file for sr3_watch the important parameters to include are:  
 
 		- path <path of directory to watch>
 		- on_part /usr/lib/python3/dist-packages/sarra/plugins/part_file_assemble.py
@@ -45,7 +45,7 @@ After being triggered by a downloaded part file:
 Testing
 -------
 
-Create an sr_watch config file according to the template above
+Create an sr3_watch config file according to the template above
 Start the process by typing the following command: ```sr_watch foreground path/to/config_file.cfg```
 
 Then create a subcriber config file and include ```inplace off``` so the file will be downloaded in parts

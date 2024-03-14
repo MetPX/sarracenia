@@ -96,7 +96,7 @@ Comme pour tout autre utilisateur, il peut y avoir un nombre illimité de config
 à mettre en place, et il se peut qu'ils aient tous besoin de courir en même temps.
 Pour le faire facilement, on peut invoquer::
 
-  sr start
+  sr3 start
 
 pour démarrer tous les fichiers avec les configurations nommées de chaque
 composant (sarra, subscribe, winnow, log, log, etc....) Il y a deux
@@ -628,7 +628,7 @@ Pour ajouter Alice en utilisant sr_audit, on ajouterait ce qui suit à ~/.config
 puis ajoutez une entrée amqp appropriée dans ~/.config/sarra/credentials.conf pour définir le mot de passe,
 puis lancez::
 
-  sr --users declare
+  sr3 --users declare
 
 Pour supprimer des utilisateurs, il suffit de supprimer *declare source Alice*
 du fichier admin.conf, et d'exécuter::
@@ -713,7 +713,7 @@ poster vers le courtier en aval. Le compte d'alimentation du courtier est
 utilisé pour ce travail, et est un utilisateur semi-administratif, capable
 de publier des avis à n'importe quel échange. Supposons qu'Apache est
 configuré (non couvert ici) avec un racine du document /var/www/html. Le
-compte linux que nous avons créé pour exécuter tous les processus sr est'*sarra*'.
+compte linux que nous avons créé pour exécuter tous les processus sr3 est'*sarra*'.
 la racine du document est inscriptible dans ces processus::
 
   sarra@boule:~$ cd ~/.config/sarra/sarra

@@ -123,6 +123,11 @@ Planned by 2022/04/11:
 
  * launchpad has recipes to produce metpx-sr3 packages from the stable branch. 
 
+ * The *MetPX Daily* repository is a snapshot of the development branch. 
+
+ * The *MetPX Pre-Release* repository should receive versions ending in rcX (release candidate) 
+
+ * The *MetPX* repository should only contain stable releases that have graduated from the rcX series.
 
 
 sr_insects
@@ -633,7 +638,7 @@ Install a minimal localhost broker and configure rabbitmq test users::
     sudo wget http://localhost:15672/cli/rabbitmqadmin
     sudo chmod 755 rabbitmqadmin
 
-    sr --users declare
+    sr3 --users declare
 
 .. Note::
 
@@ -761,7 +766,7 @@ and defines some fixed test clients that will be used during self-tests::
     Starting flow_post on: /home/peter/sarra_devdocroot, saving pid in .flowpostpid
     Starting up all components (sr start)...
     done.
-    OK: sr start was successful
+    OK: sr3 start was successful
     Overall PASSED 4/4 checks passed!
     blacklab% 
 
@@ -809,7 +814,7 @@ Then check show it went with flow_check.sh::
     test  4 success: max shovel (1022) and subscriber t_f30 (1022) should have about the same number of items
     test  5 success: count of truncated headers (1022) and subscribed messages (1022) should have about the same number of items
     test  6 success: count of downloads by subscribe t_f30 (1022) and messages received (1022) should be about the same
-    test  7 success: downloads by subscribe t_f30 (1022) and files posted by sr_watch (1022) should be about the same
+    test  7 success: downloads by subscribe t_f30 (1022) and files posted by watch (1022) should be about the same
     test  8 success: posted by watch(1022) and sent by sr_sender (1022) should be about the same
     test  9 success: 1022 of 1022: files sent with identical content to those downloaded by subscribe
     test 10 success: 1022 of 1022: poll test1_f62 and subscribe q_f71 run together. Should have equal results.
@@ -830,7 +835,7 @@ thorough, it is good to know the flows are working.
 
 Note that the *fclean* subscriber looks at files in and keeps files around long enough for them to go through all the other
 tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
-that have been posted by sr_watch to the files created by downloading from it.  As the *sample now* count proceeds,
+that have been posted by watch to the files created by downloading from it.  As the *sample now* count proceeds,
 it prints "OK" if the files downloaded are identical to the ones posted by sr_watch.   The addition of fclean and
 the corresponding cfclean for the cflow_test, are broken.  The default setup which uses *fclean* and *cfclean* ensures
 that only a few minutes worth of disk space is used at a given time, and allows for much longer tests.
@@ -872,9 +877,9 @@ between each run of the flow test::
   2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
   2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
   2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
-  2018-02-10 09:17:35,115 [INFO] sr_post shim_f63 cleanup
+  2018-02-10 09:17:35,115 [INFO] sr3_post shim_f63 cleanup
   2018-02-10 09:17:35,122 [INFO] deleting exchange xs_tsource_shim (tsource@localhost)
-  2018-02-10 09:17:35,394 [INFO] sr_post test2_f61 cleanup
+  2018-02-10 09:17:35,394 [INFO] sr3_post test2_f61 cleanup
   2018-02-10 09:17:35,402 [INFO] deleting exchange xs_tsource_post (tsource@localhost)
   2018-02-10 09:17:35,659 [INFO] sr_report tsarra_f20 cleanup
   2018-02-10 09:17:35,659 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -936,7 +941,7 @@ between each run of the flow test::
   2018-02-10 09:17:39,927 [INFO] deleting queue q_tsource.sr_subscribe.u_sftp_f60.81353341.03950190 (tsource@localhost)
   2018-02-10 09:17:40,196 [WARNING] option url deprecated please use post_base_url
   2018-02-10 09:17:40,196 [WARNING] use post_broker to set broker
-  2018-02-10 09:17:40,197 [INFO] sr_watch f40 cleanup
+  2018-02-10 09:17:40,197 [INFO] watch f40 cleanup
   2018-02-10 09:17:40,207 [INFO] deleting exchange xs_tsource (tsource@localhost)
   2018-02-10 09:17:40,471 [INFO] sr_winnow t00_f10 cleanup
   2018-02-10 09:17:40,471 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
@@ -1038,7 +1043,7 @@ While it is running one can run flow_check.sh at any time::
   test  4 success: max shovel (100008) and subscriber t_f30 (99953) should have about the same number of items
   test  5 success: count of truncated headers (100008) and subscribed messages (100008) should have about the same number of items
   test  6 success: count of downloads by subscribe t_f30 (99953) and messages received (100008) should be about the same
-  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by sr_watch (199620) should be about the same
+  test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by watch (199620) should be about the same
   test  8 success: posted by watch(199620) and subscribed cp_f60 (99966) should be about half as many
   test  9 success: posted by watch(199620) and sent by sr_sender (199549) should be about the same
   test 10 success: 0 messages received that we don't know what happenned.
@@ -1087,14 +1092,14 @@ Sometimes flow tests (especially for large numbers) get stuck because of problem
 To recover from this state without discarding the results of a long test, do::
 
   ^C to interrupt the flow_check.sh 100000
-  blacklab% sr stop
+  blacklab% sr3 stop
   blacklab% cd ~/.cache/sarra
   blacklab% ls */*/*retry*
   shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
   shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
   blacklab% rm */*/*retry*
-  blacklab% sr start
+  blacklab% sr3 start
   blacklab% 
   blacklab%  ./flow_check.sh 100000
   Sufficient!
@@ -1124,9 +1129,9 @@ To recover from this state without discarding the results of a long test, do::
   test  4 success: sr_subscribe (98068) should have the same number of
   items as sarra (98075)
                    | watch      routing |
-  test  5 success: sr_watch (397354) should be 4 times subscribe t_f30 (98068)
+  test  5 success: watch (397354) should be 4 times subscribe t_f30 (98068)
   test  6 success: sr_sender (392737) should have about the same number
-  of items as sr_watch (397354)
+  of items as watch (397354)
   test  7 success: sr_subscribe u_sftp_f60 (361172) should have the same
   number of items as sr_sender (392737)
   test  8 success: sr_subscribe cp_f61 (361172) should have the same
@@ -1137,11 +1142,11 @@ To recover from this state without discarding the results of a long test, do::
   test 10 success: sr_subscribe q_f71 (195406) should have about the
   same number of items as sr_poll test1_f62(195408)
                    | flow_post  routing |
-  test 11 success: sr_post test2_f61 (193541) should have half the same
+  test 11 success: sr3_post test2_f61 (193541) should have half the same
   number of items of sr_sender(196368)
   test 12 success: sr_subscribe ftp_f70 (193541) should have about the
-  same number of items as sr_post test2_f61(193541)
-  test 13 success: sr_post test2_f61 (193541) should have about the same
+  same number of items as sr3_post test2_f61(193541)
+  test 13 success: sr3_post test2_f61 (193541) should have about the same
   number of items as shim_f63 195055
                    | py infos   routing |
   test 14 success: sr_shovel pclean_f90 (97019) should have the same
@@ -1467,6 +1472,14 @@ occurs that is identified as the released version.
 PyPi
 ~~~~
 
+Pypi does not distinguish between older and newer python releases. There is only one package
+version for all supported versions. When uploading from a new OS, the versions in use on the 
+OS are inferred to be the minimum, and so installation on older operating systems may be blocked
+by generated dependencies on overly modern versions.
+
+So when uploading to pypi, always do so from the oldest operating system where it needs to work.
+upward compatibility is more likely than downward.
+
 Pypi Credentials go in ~/.pypirc.  Sample Content::
 
   [pypi]
@@ -1477,7 +1490,7 @@ Assuming pypi upload credentials are in place, uploading a new release used to b
 
     python3 setup.py bdist_wheel upload
 
-on older systems, or on newer ones::
+on older systems, or on (python >= 3.7) newer ones::
 
    python3 -m build --no-isolation
    twine upload dist/metpx_sarracenia-2.22.6-py3-none-any.whl dist/metpx_sarracenia-2.22.6.tar.gz

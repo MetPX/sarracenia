@@ -42,9 +42,9 @@ For data feeds, we need to feed both the site store 1 (ss1) and site store 2 (ss
 The sarracenia package has a tool called sr_watch, that uses the Linux kernel inotify feature to efficiently report on when a file has been modified or created.  We encountered a few problems:
 
 
- -- While sr_watch works well for dozens of hundreds of directories, and a few thousand files, when it gets into many thousands of directories, the memory usage can climb to over a gigabyte.
+ -- While sr3_watch works well for dozens of hundreds of directories, and a few thousand files, when it gets into many thousands of directories, the memory usage can climb to over a gigabyte.
 
- -- The cluster file system in use, IBM's General Parallel File System, does not propagate inotify events to all nodes.  In order to monitor a directory on a system with one hundred compute nodes, one must run an sr_watch on every node (consuming one hundred nodes, 1 gigabyte of RAM on each one... blech!)
+ -- The cluster file system in use, IBM's General Parallel File System, does not propagate inotify events to all nodes.  In order to monitor a directory on a system with one hundred compute nodes, one must run an sr3_watch on every node (consuming one hundred nodes, 1 gigabyte of RAM on each one... blech!)
 
 
 While there are some approaches that could be taken to reduce memory usage, we ran out of time, and used an alternate approach.    The GPFS has a number of hooks that allow us run queries of the number of files modified in a given tree since at given point in time.  The API method for this is termed ''GPFS policies".  So we periodically run a GPFS policy script and announce the results with sr_post.

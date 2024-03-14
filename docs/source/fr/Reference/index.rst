@@ -10,5 +10,5 @@ Référence
    sr3_post CLI poster <sr3_post.1>
    sr3_credentials.7
    sr3_options.7
-   format de message d´annonce sr_post <sr_post.7>
+   format de message d´annonce sr3_post <sr_post.7>
    glossary

@@ -1,5 +1,21 @@
-metpx-sr3 (3.00.52rc1) unstable; urgency=medium
+metpx-sr3 (3.00.52) unstable; urgency=medium
 
+  * copernicus marine data store polling support ( #959 )
+  * override baseUrl with message field ( for #951 )
+  * os.kill for older python version instead of raise_signal #948
+  * fix #955 error on cleanup when cache dir missing.
+  * gather/am fix to handle improperly parsed station names from getStation
+  * fix #953 PRECONDITION FAILED error on busy winnows
+  * above fix breaks/reopens #649 (cannot see queue size anymore.)
+  * AM renamer moved to gather for simplicity, also fixes there.
+  * fix: sr3 declare would fail when no admin.conf configured.
+  * misc. fixes with AMQP message acknowledgement.
+  * fix #934 found references to v2 documentation. Modernized.
+  * fix #942, #943 processing of rename and retrievePath headers.
+  * fix #940 display crash in sr3 overview
+  * fix #920 add _isRetry for duplicate suppression support in new retry
+    logic.
+  * more #918 bug fixes for AM renaming now matches Sundew perfectly.
   * nodupe_fileAgeX (X=Min or Max) name change to fileAgeX replacing inflight.
   * fix #907 declare exchange in admin.conf wasn't working.
   * fix #912 enable v2 style retry processing with new --retry_refilter flag.

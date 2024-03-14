@@ -29,11 +29,20 @@ Description:
             Default value is utf-8
 
         MissingAMHeaders (string):
-            Specify headers to be added inside of the file contents.
+            Specify headers to be added inside of the file contents. Applies only for CA,MA,RA first chars of bulletin.
+            Default is CN00 CWAO
 
         binaryInitialCharacters (list):
             Binary bulletins are characterised by having certain sets of characters on its second line.
             This option allows to customise which binary strings to look for to determine if a bulletin is binary or not.
+
+        mapStations2AHL (list):
+            Some bulletins need to get their header constructed based on a bulletin station mapping file. In sr3, this file would normally be included as stations.inc.
+            The format of a station mapping is the following, and is in relation to what was found on Sundew
+
+            mapStations2AHL T1T2A1A2ii CCCC station1 station2 station3 ...
+            i.e.
+            mapStations2AHL USCN21 CTST 71126 71156 71396 ...
 
         directory (string): 
             Specifies the directory where the bulletin files are to be stored. 
@@ -56,6 +65,8 @@ import logging, socket, struct, time, sys, os, signal, ipaddress
 from base64 import b64encode
 import urllib.parse
 import sarracenia
+from sarracenia.bulletin import Bulletin
+from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
 from random import randint
@@ -67,6 +78,8 @@ class Am(FlowCB):
     def __init__(self, options):
         
         super().__init__(options,logger)
+        self.bulletinHandler = Bulletin()
+        self.renamer = Raw2bulletin(self.o)
 
         self.url = urllib.parse.urlparse(self.o.sendTo)
 
@@ -78,6 +91,7 @@ class Am(FlowCB):
         self.o.add_option('AllowIPs', 'list', [])
         self.o.add_option('inputCharset', 'str', 'utf-8')
         self.o.add_option('MissingAMHeaders', 'str', 'CN00 CWAO')
+        self.o.add_option('mapStations2AHL', 'list', [])
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
         self.host = self.url.netloc.split(':')[0]
@@ -265,7 +279,94 @@ class Am(FlowCB):
             return '', 0
 
 
-    def gather(self):
+    def correctContents(self, bulletin, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
+        """ Correct the bulletin contents, either of these ways
+            1. Remove trailing space in bulletin header
+            1. Add missing AHL headers for CA,MA,RA bulletins
+            2. Add missing AHL headers by mapping station codes
+            3. Add an extra line for SM/SI bulletins
+        """
+
+        # We need to get the BBB from the header, to properly rewrite it.
+        # FIXME: Does this only apply for the station mapping? (Not sure - ANL, 2024/02/19)
+
+        reconstruct = 0
+        ddhhmm = ''
+        new_bulletin = b''
+        
+        # If there's a trailing space at the end of the bulletin header. Remove it.
+        if lines[0][-1:] == b' ':
+            lines[0] = lines[0].rstrip()
+            reconstruct = 1
+
+        # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
+        if bulletin_firstchars in [ "CA", "RA", "MA" ]:
+
+            logger.debug("Adding missing headers in file contents for CA,RA or MA bulletin")
+
+            # We also need to get the timestamp to complete the CA,RA,MA headers
+            ddhhmm = self.bulletinHandler.getTime(bulletin.decode(charset))
+            # If None is returned, the bulletin is invalid
+            if ddhhmm != None:
+                missing_ahl += " " + ddhhmm
+
+            lines[0] += missing_ahl.encode(charset)
+            reconstruct = 1
+
+        # FIXME: Is this too expensive in time?
+        if self.o.mapStations2AHL:
+            for map in self.o.mapStations2AHL:
+                
+                map_elements = map.split(' ')
+                # First two elements of the list are the missing AHL headers that we would want to add.
+                ahl_from_station = map_elements[:2] 
+
+                # Check if the bulletin station is included in the mapStations2AHL options
+                # Also we need the first characters of the bulletin to match the ones from the mapping header.
+                if bulletin_station in map_elements[2:] and bulletin_firstchars == map_elements[0][:2]:
+
+                    # We want to append the new AHL without removing the timestamp nor the BBB.
+                    bulletin_ahl = lines[0].split(b' ')
+                    bulletin_ahl[0] = ahl_from_station[0] + ' ' + ahl_from_station[1]
+                    
+                    logger.debug("Adding missing headers in file contents for station mappings") 
+
+                    # These bulletins should already have two elements of the header. Maybe three if the BBB is there.
+                    if len(bulletin_ahl) == 2:
+                        lines[0] = bulletin_ahl[0].encode(charset) + b" " + bulletin_ahl[1]
+                    elif len(bulletin_ahl) == 3:
+                        lines[0] = bulletin_ahl[0].encode(charset) + b" " + bulletin_ahl[1] + b" " + bulletin_ahl[2]
+                    else:
+                        logger.error("Not able to add new station AHLs.")
+
+                    # We found the station. We can leave the loop now.
+                    reconstruct = 1
+                    break
+
+        # From Sundew ->  https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py#L114-L115
+        # AddSMHeader is set to True on all operational Sundew configs so no need to add an option
+        if bulletin_firstchars in ["SM", "SI"]:
+
+            logger.debug("Adding missing line in SI/SM bulletin")
+
+            ddhh = lines[0].split(b' ')[2][0:4]
+            line2add = b"AAXX " + ddhh + b"4"
+            lines.insert(1, line2add)
+
+            reconstruct = 1
+
+
+        if reconstruct == 1:
+            # Reconstruct the bulletin
+            for i in lines:
+                    new_bulletin += i + b'\n'
+
+            logger.debug("Missing contents added")
+
+        return new_bulletin 
+
+
+    def gather(self, messageCountMax):
 
         self.AddBuffer()
 
@@ -291,7 +392,7 @@ class Am(FlowCB):
                 # We only want the first two letters of the bulletin.
                 bulletinHeader = parse[0].decode(charset).replace(' ', '_')
                 firstchars = bulletinHeader[0:2]
-
+                
                 # Treat bulletin contents and compose file name
                 try:
                     ## NOTE: Bulletin filenames have the following naming scheme
@@ -311,7 +412,7 @@ class Am(FlowCB):
                     binary = 0
                     missing_ahl = self.o.MissingAMHeaders
 
-
+                    # Fill in temporary filename for the timebeing
                     filename = bulletinHeader + '__' +  f"{randint(self.minnum, self.maxnum)}".zfill(len(str(self.maxnum)))
                     filepath = self.o.directory + os.sep + filename
 
@@ -321,21 +422,14 @@ class Am(FlowCB):
                     # From sundew source code
                     if lines[1][:4] in self.o.binaryInitialCharacters:
                         binary = 1
-
-                    # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
-                    if firstchars in [ "CA", "RA", "MA" ]:
-
-                        logger.debug("Adding missing headers in file contents")
-
-                        lines[0] += missing_ahl.encode(charset)
-                        
-                        # Reconstruct the bulletin
-                        new_bulletin = b''
-                        for i in lines:
-                                new_bulletin += i + b'\n'
-                        bulletin = new_bulletin
-
-                        logger.debug("Missing contents added")
+                    
+                    # Correct the bulletin contents, the Sundew way
+                    if not binary:
+                        station = lines[1].split()[0].decode(charset)
+                        new_bulletin = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+                        if new_bulletin != b'':
+                            bulletin = new_bulletin
+                    
 
                 except Exception as e:
                     logger.error(f"Unable to add AHL headers. Error message: {e}")
@@ -379,6 +473,10 @@ class Am(FlowCB):
                     ident.update(bulletin)
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
+                    # Call renamer
+                    msg = self.renamer.rename(msg)
+                    if msg == None:
+                        continue
                     logger.debug(f"New sarracenia message: {msg}")
 
                     newmsg.append(msg)

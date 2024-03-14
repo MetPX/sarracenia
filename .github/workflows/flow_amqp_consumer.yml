@@ -5,8 +5,6 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - development
-      - stable
       - issue_457_amqp_consumer
 
     paths-ignore:

@@ -487,7 +487,7 @@ With shovel and winnow replaced by new implementations, it passes
 the dynamic flow test, including the Retry module ported to sr3, and
 a number of v2 modules used as-is.
 
-Completed an initial version of the sr_post component now (in sr3: flowcb.gather.file.File)
+Completed an initial version of the sr3_post component now (in sr3: flowcb.gather.file.File)
 Now working on sr_poll, which will take a while because it involve refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp into the transfer module
 
@@ -705,7 +705,7 @@ Probably need to be settled before having anyone else dive in.
   likely equivalent to async, and multi-gather.
 
 * think about API by sub-classing flow... and having it auto-integrate
-  with sr entry point... hmm... likely look at this when updating
+  with sr3 entry point... hmm... likely look at this when updating
   Programmer's Guide. 
 
 * more worklists? rename failed -> retry or deferred.  Add a new failed
@@ -726,7 +726,7 @@ FIXME are things left to the side that need to be seen to.
 
 
 * **RELEASE BLOCKER** hairy. #403
-  sr_watch does not batch things. It just dumps an entire tree.
+  watch does not batch things. It just dumps an entire tree.
   This will need to be re-wored before release into an iterator style approach.
   so if you start in a tree with a million files, it will scan the entire million
   and present them as a single in memory worklist.  This will have performance
@@ -737,7 +737,7 @@ FIXME are things left to the side that need to be seen to.
   impact and delay to producing the first file is still there, but at least
   returns one batch at a time.
 
-* **RELEASE BLOCKER** logs of sr_poll and sr_watch tend to get humungous way too quickly. #389
+* **RELEASE BLOCKER** logs of sr_poll and watch tend to get humungous way too quickly. #389
 
 * try out jsonfile for building notification messages to post. can build json incrementally, #402
   so you do not need to delete the _deleteOnPost elements (can just skip over them)
@@ -784,7 +784,7 @@ Name the package metpx-sarra3 and have the python class directory be sarra3 (ins
 retry files have different formats? validate. ) So one can copy configurations from old to
 new and run both versions in parallel. The central entry point would be sr3 (rather than
 sr), and to avoid confusion the other entry points (sr_subscribe etc...) would be omitted
-so that v2 code would work unchanged. Might require some tweaks to have the sr classes
+so that v2 code would work unchanged. Might require some tweaks to have the sr3 classes
 ignore instances from the other versions.
 
 This is similar to python2 to python3 transition. Allows deployment of sr3 without having
@@ -889,11 +889,11 @@ Features
 
 * properties/options for classes are now hierarchical, so can set debug to specific classes within app.
 
-* sr ability to select multiple components and configurations to operate on.
+* sr3 ability to select multiple components and configurations to operate on.
 
-* sr list examples is now used to display examples separate from the installed ones.
+* sr3 list examples is now used to display examples separate from the installed ones.
 
-* sr show is now used to display the parsed configuration.
+* sr3 show is now used to display the parsed configuration.
 
 * notification messages are acknowledged more quickly, should help with throughput.
 
