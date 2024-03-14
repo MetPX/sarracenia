@@ -96,6 +96,8 @@ class Log(FlowCB):
             s+= f"relPath: {msg['relPath']} "
         if 'retrievePath' in msg:
             s+= f"retrievePath: {msg['retrievePath']} "
+        if 'rename' in msg:
+            s+= f"rename: {msg['rename']} "
         return s
         
     def _messagePostStr(self,msg):
@@ -124,6 +126,8 @@ class Log(FlowCB):
             s+= f"relPath: {msg['relPath']} "
         if 'retrievePath' in msg:
             s+= f"retrievePath: {msg['retrievePath']} "
+        if 'rename' in msg:
+            s+= f"rename: {msg['rename']} "
         return s
 
     def after_accept(self, worklist):

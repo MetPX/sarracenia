@@ -1353,7 +1353,7 @@ class sr_GlobalState:
                                     u_url.username, u_url.password, self.options.dry_run )
 
         # declare admin exchanges.
-        if hasattr(self,'default_cfg'):
+        if hasattr(self,'default_cfg') and self.default_cfg.admin:
             logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
@@ -1717,21 +1717,22 @@ class sr_GlobalState:
             if self.please_stop:
                 break
             cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
-            for state_file in os.listdir(cache_dir):
-                if self.please_stop:
-                    break
-                if state_file[0] == '.':
-                    continue
+            if os.path.isdir(cache_dir):
+                for state_file in os.listdir(cache_dir):
+                    if self.please_stop:
+                        break
+                    if state_file[0] == '.':
+                        continue
 
-                if state_file in [ 'disabled' ]:
-                    continue
+                    if state_file in [ 'disabled' ]:
+                        continue
 
-                asf = cache_dir + os.sep + state_file
-                if self.options.dry_run:
-                    print('removing state file (dry run): %s' % asf)
-                else:
-                    print('removing state file: %s' % asf)
-                    os.unlink(asf)
+                    asf = cache_dir + os.sep + state_file
+                    if self.options.dry_run:
+                        print('removing state file (dry run): %s' % asf)
+                    else:
+                        print('removing state file: %s' % asf)
+                        os.unlink(asf)
 
     print_column = 0
 
@@ -2806,7 +2807,7 @@ class sr_GlobalState:
             elif len(status['running']) == (len(self.configs[c]) -
                                             len(status['disabled'])):
                 print('%-10s %-10s %-6s %-3d %s' % (c, 'most', 'OKd', \
-                    (len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] ))) )
+                    len(self.configs[c]) - len(status['disabled']),  ', '.join(status['running'] )))
             else:
                 print('%-10s %-10s %-6s %3d' %
                       (c, 'mixed', 'mult', len(self.configs[c])))

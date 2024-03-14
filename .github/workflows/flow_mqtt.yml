@@ -5,7 +5,7 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - development
+      - never
     paths-ignore:
       - '.github/**'
       - 'debian/changelog'

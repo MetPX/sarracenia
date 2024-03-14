@@ -8,7 +8,7 @@ of internals.
 
 Let´s say someone wants to inject an image into the data pumping network.
 
-We call people who inject data ´sources´, and a source runs the sr_post command, 
+We call people who inject data ´sources´, and a source runs the sr3_post command, 
 which creates a message like the following and sends it to the AMQP broker running 
 on a data pump:
 

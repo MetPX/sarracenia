@@ -34,6 +34,7 @@ import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import signal
+import os
 
 import time
 from urllib.parse import unquote
@@ -119,6 +120,7 @@ class AMQP(Moth):
                     logger.error(
                         'ignoring message. UTF8 encoding expected. raw message received: %s' % ex)
                     logger.debug('Exception details: ', exc_info=True)
+                    self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
                     return None
 
             if 'content_type' in raw_msg.properties:
@@ -129,6 +131,7 @@ class AMQP(Moth):
             msg = PostFormat.importAny( body, raw_msg.headers, content_type, self.o )
             if not msg:
                 logger.error('Decode failed, discarding message')
+                self.channel.basic_ack( raw_msg.delivery_info['delivery_tag'])
                 return None
 
             topic = raw_msg.delivery_info['routing_key'].replace(
@@ -237,8 +240,8 @@ class AMQP(Moth):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
             self.connection.connect()
 
-        self.channel = self.connection.channel()
-        self.management_channel = self.connection.channel()
+        self.management_channel = self.connection.channel(1)
+        self.channel = self.connection.channel(2)
         return True
 
     def _amqp_setup_signal_handler(self, signum, stack):
@@ -252,7 +255,7 @@ class AMQP(Moth):
             next_time = self.last_qDeclare + 30
             now=time.time()
             if next_time <= now:
-                self._queueDeclare(passive=True)
+                #self._queueDeclare(passive=True)
                 self.last_qDeclare=now
 
         super().metricsReport()
@@ -404,7 +407,7 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
     def putSetup(self) -> None:
 
@@ -478,7 +481,7 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
 
     def putCleanUp(self) -> None:

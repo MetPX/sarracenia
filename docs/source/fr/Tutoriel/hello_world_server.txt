@@ -25,7 +25,7 @@ cat >rawall.conf <<EOT
 
 host localhost
 
-# AMQP Exchange pour se connecter, sr_post le crée nommé d’après l’utilisateur qu’il utilise pour se connecter.
+# AMQP Exchange pour se connecter, sr3_post le crée nommé d’après l’utilisateur qu’il utilise pour se connecter.
 exchange guest
 
 amqp-user guest

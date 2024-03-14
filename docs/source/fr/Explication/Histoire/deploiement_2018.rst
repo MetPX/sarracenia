@@ -213,7 +213,7 @@ Exploration des cas d'utilisation élargie :
   Il était nécessaire d'implémenter une version C du code d'affichage Sarracenia
   pour l'utilisation par la bibliothèque shim. Une fois l'implémentation C
   commencée, ce n'était qu'un petit travail supplémentaire pour implémenter
-  une version C de sr_watch (appelé sr_cpost) qui était beaucoup plus efficace
+  une version C de sr3_watch (appelé sr_cpost) qui était beaucoup plus efficace
   en mémoire et en CPU que l'original python.
 
 * Implantation de client Node.js : Un client du datamart public a décidé d'implémenter

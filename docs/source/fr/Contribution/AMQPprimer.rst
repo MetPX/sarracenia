@@ -86,7 +86,7 @@ les travailleurs, mais pas exactement la fil d’attente partagée auto-équilib
 ~~~~~~~~~~~~~~~~~~~~
 
 Les échanges thématiques sont utilisés exclusivement. AMQP prend en charge de nombreux autres
-types d’échanges, mais la rubrique de sr_post est envoyée afin de prendre en charge le filtrage
+types d’échanges, mais la rubrique de sr3_post est envoyée afin de prendre en charge le filtrage
 côté serveur à l’aide du filtrage par rubrique. À l’AMQP 1.0, les échanges thématiques
 (en fait, tous les échanges ne sont plus définis). Le filtrage côté serveur permet d’utiliser
 beaucoup moins de hiérarchies de rubriques et d’utiliser des sous-divisions beaucoup plus efficaces.

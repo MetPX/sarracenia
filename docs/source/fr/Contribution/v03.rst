@@ -474,7 +474,7 @@ Avec le shovel et le winnow remplacés par de nouvelles implémentations, il pas
 le test de flux dynamique, y compris le module Retry porté sur sr3, et
 un certain nombre de modules v2 utilisés tels quels.
 
-Terminé une version initiale du composant sr_post maintenant (dans sr3 : flowcb.gather.file.File)
+Terminé une version initiale du composant sr3_post maintenant (dans sr3 : flowcb.gather.file.File)
 Maintenant, on travaille sur sr_poll, ce qui prendra un certain temps car il implique un refactoring: sr_file, sr_http,
 sr_ftp, sr_sftp dans le module de transfert.
 
@@ -713,7 +713,7 @@ Cette section comprend un mélange de tâches qui, espérons-le, peuvent être a
 FIXME sont des choses laissées de côté qui doivent être vues.
 
 * **RELEASE BLOCKER** poilu. #403
-  sr_watch ne fait pas de lot par lots. Il jette juste un arbre entier.
+  watch ne fait pas de lot par lots. Il jette juste un arbre entier.
   Cela devra être re-écrit avec une approche de style itérateur.
   Donc si vous commencez dans une arborescence avec un million de fichiers, il analysera le million entier
   et les présentera comme une liste de travail unique en mémoire.  Cela aura des problèmes performances.
@@ -724,7 +724,7 @@ FIXME sont des choses laissées de côté qui doivent être vues.
   l’impacte de la mémoire et le retard de production du premier fichier sont toujours là, mais au moins
   renvoie un lot à la fois.
 
-* **RELEASE BLOCKER** journaux de sr_poll et sr_watch ont tendance à devenir énormes beaucoup trop rapidement. #389
+* **RELEASE BLOCKER** journaux de poll et watch ont tendance à devenir énormes beaucoup trop rapidement. #389
 
 * essayez jsonfile pour créer des messages de notification à publier. peut construire json de manière incrémentielle, # 402
   vous n’avez donc pas besoin de supprimer les éléments _deleteOnPost (vous pouvez simplement les ignorer)
@@ -879,11 +879,11 @@ Fonctionnalités
 
 * les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.
 
-* sr ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
+* sr3 ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
 
-* sr list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
+* sr3 list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
 
-* sr show est maintenant utilisé pour afficher la configuration analysée.
+* sr3 show est maintenant utilisé pour afficher la configuration analysée.
 
 * les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.
 

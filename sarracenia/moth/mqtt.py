@@ -34,6 +34,7 @@ import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
 import signal
+import os
 import ssl
 import threading
 import time
@@ -417,7 +418,7 @@ class MQTT(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
 
 
@@ -498,7 +499,7 @@ class MQTT(Moth):
         signal.signal(signal.SIGINT, original_sigint)
         signal.signal(signal.SIGTERM, original_sigterm)
         if self.please_stop:
-            signal.raise_signal(signal.SIGINT)
+            os.kill(os.getpid(), signal.SIGINT)
 
 
     def __sub_on_message(client, userdata, msg):

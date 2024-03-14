@@ -261,7 +261,7 @@ Subscribers
 
 
 Post, Notice, Notification, Advertisement, Announcement
-  These are AMQP messages build by sr_post, sr_poll, or sr_watch to let users
+  These are AMQP messages build by sr_post, sr_poll, or sr3_watch to let users
   know that a particular file is ready. The format of these AMQP messages is 
   described by the `sr_post(7) <../Reference/sr3.1.html#post>`_ manual page. All of these 
   words are used interchangeably. Advertisements at each step preserve the

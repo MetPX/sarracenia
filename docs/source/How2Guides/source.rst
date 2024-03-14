@@ -35,14 +35,14 @@ this one.
 
 Regardless of how it is done, injecting data means telling the pump where the data
 is so that it can be forwarded to and/or by the pump. This can be done by either
-using the active and explicit sr_post command, or just using sr_watch on a directory.
+using the active and explicit sr3_post command, or just using sr3 watch on a directory.
 Where there are large numbers of files, and/or tight timeliness constraints, invocation
-of sr_post directly by the producer of the file is optimal, as sr_watch may provide
+of sr3_post directly by the producer of the file is optimal, as sr3 watch may provide
 disappointing performance. Another explicit, but low frequency approach is the
 sr_poll command, which allows one to query remote systems to pull data
 into the network efficiently.
 
-While sr_watch is written as an optimal directory watching system, there simply is no
+While sr3 watch is written as an optimal directory watching system, there simply is no
 quick way to watch large (say, more than 100,000 files) directory trees. On
 dd.weather.gc.ca, as an example, there are 60 million files in about a million
 directories. To walk that directory tree once takes several hours. To find new files,
@@ -104,10 +104,10 @@ credentials safely::
   looking at ssh configuration files. just configure ssh to work, and sarracenia
   will as well.
 
-So now the command line for sr_post is just the url for ddsr to retrieve the
+So now the command line for sr3_post is just the url for ddsr to retrieve the
 file on grumpy::
 
-  sr_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
+  sr3_post -post_broker amqp://guest:guest@localhost/ -post_base_dir /var/www/posts/ \
   -post_base_url http://localhost:81/frog.dna
 
   2016-01-20 14:53:49,014 [INFO] Output AMQP  broker(localhost) user(guest) vhost(/)
@@ -145,28 +145,28 @@ The command asks ddsr to retrieve the treefrog/frog.dna file by logging
 in to grumpy as peter (using the pump's private key) to retrieve it, and posting it
 on the pump, for forwarding to the other pump destinations.
 
-Similar to sr_subscribe, one can also place configuration files in an sr_post specific directory::
+Similar to sr_subscribe, one can also place configuration files in an sr3_post specific directory::
 
-  blacklab% sr_post edit dissem.conf
+  blacklab% sr3_post edit dissem.conf
 
   post_broker amqps://rnd@ddsr.cmc.ec.gc.ca/
   post_base_url sftp://peter@grumpy
 
 and then::
 
-  sr_post -c dissem -url treefrog/frog.dna
+  sr3_post -c dissem -url treefrog/frog.dna
 
 If there are different varieties of posting used, configurations can be saved for each one.
 
 .. warning::
    **FIXME**: Need to do a real example. this made up stuff isn´t sufficiently helpful.
 
-   **FIXME**: sr_post does not accept config files right now, says the man page.  True/False?
+   **FIXME**: sr3_post does not accept config files right now, says the man page.  True/False?
 
-   sr_post command lines can be a lot simpler if it did.
+   sr3_post command lines can be a lot simpler if it did.
 
 sr_post typically returns immediately as its only job is to advise the pump of the availability
-of files. The files are not transferred when sr_post returns, so one should not delete files
+of files. The files are not transferred when sr3_post returns, so one should not delete files
 after posting without being sure the pump actually picked them up.
 
 .. NOTE::
@@ -197,7 +197,7 @@ is called *blacklab*, and the user on the server is *peter* running as peter on 
 a directory is created under /var/www/project/outgoing, writable by peter,
 which results in a configuration like so::
 
-  sr_watch edit project.conf 
+  sr3 edit watch/project.conf 
 
   broker amqp://feeder@localhost/
   url http://blacklab/
@@ -206,15 +206,10 @@ which results in a configuration like so::
 
 Then a watch is started::
 
-  sr_watch start project 
+  sr3 start watch/project 
 
-.. warning::
-  **FIXME**: real example.
 
-  **FIXME**: sr_watch was supposed to take configuration files, but might not have
-   been modified to that effect yet.
-
-While sr_watch is running, any time a file is created in the *document_root* directory,
+While watch is running, any time a file is created in the *document_root* directory,
 it will be announced to the pump (on localhost, ie. the server blacklab itself).::
 
  cp frog.dna  /var/www/project/outgoing
@@ -251,7 +246,7 @@ to use it.
 Report Messages
 ---------------
 
-If the sr_post worked, that means the pump accepted to take a look at your file.
+If the sr3_post worked, that means the pump accepted to take a look at your file.
 To find out where your data goes to afterward, one needs to examine source
 log messages. It is also important to note that the initial pump, or any other pump
 downstream, may refuse to forward your data for various reasons, that will only
@@ -423,7 +418,7 @@ to the C library like so::
     export SR_POST_CONFIG=somepost.conf
     export LD_PRELOAD=libsrshim.so.1.0.0
 
-Where *somepost.conf* is a valid configuration that can be tested with sr_post to manually post a file.
+Where *somepost.conf* is a valid configuration that can be tested with sr3_post to manually post a file.
 Any process invoked from a shell with these settings will have all calls to routines like close(2)
 intercepted by libsrshim. Libsrshim will check if the file is being written, and then apply the
 somepost configuration (accept/reject clauses) and post the file if it is appropriate.
@@ -461,31 +456,31 @@ Example::
     +++ echo 'FIXME: exec above fixes ... builtin i/o like redirection not being posted!'
     FIXME: exec above fixes ... builtin i/o like redirection not being posted!
     +++ bash -c 'echo "hoho" >>~/test/hoho'
-    2017-10-21 20:20:44,092 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,092 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,092 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,092 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,094 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,095 [DEBUG] isMatchingPattern: /home/peter/test/hoho matched mask: accept .*
     2017-10-21 20:20:44,096 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,096 [DEBUG] sr_post file2message called with: /home/peter/test/hoho sb=0x7ffef2aae2f0 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,096 [DEBUG] sr3_post file2message called with: /home/peter/test/hoho sb=0x7ffef2aae2f0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,096 [INFO] published: 20171021202044.096 sftp://peter@localhost /home/peter/test/hoho topic=v02.post.home.peter.test sum=s,a0bcb70b771de1f614c724a86169288ee9dc749a6c0bbb9dd0f863c2b66531d21b65b81bd3d3ec4e345c2fea59032a1b4f3fe52317da3bf075374f7b699b10aa source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202002.304 atime=20171021202002.308 mode=0644 parts=1,2,1,0,0
     +++ /usr/bin/python2.7 pyiotest
-    2017-10-21 20:20:44,105 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,105 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,105 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,105 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,107 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,107 [DEBUG] isMatchingPattern: /home/peter/src/sarracenia/c/hoho matched mask: accept .*
     2017-10-21 20:20:44,108 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,108 [DEBUG] sr_post file2message called with: /home/peter/src/sarracenia/c/hoho sb=0x7ffeb02838b0 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,108 [DEBUG] sr3_post file2message called with: /home/peter/src/sarracenia/c/hoho sb=0x7ffeb02838b0 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,108 [INFO] published: 20171021202044.108 sftp://peter@localhost /c/hoho topic=v02.post.c sum=s,9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043 source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202044.101 atime=20171021202002.320 mode=0644 parts=1,5,1,0,0
     +++ cp libsrshim.c /home/peter/test/hoho_my_darling.txt
-    2017-10-21 20:20:44,112 [INFO] sr_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
+    2017-10-21 20:20:44,112 [INFO] sr3_post settings: action=foreground log_level=1 follow_symlinks=no sleep=0 heartbeat=300 cache=0 cache_file=off
     2017-10-21 20:20:44,112 [DEBUG] setting to_cluster: localhost
     2017-10-21 20:20:44,112 [DEBUG] post_broker: amqp://tsource:<pw>@localhost:5672
     2017-10-21 20:20:44,114 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
     2017-10-21 20:20:44,114 [DEBUG] isMatchingPattern: /home/peter/test/hoho_my_darling.txt matched mask: accept .*
     2017-10-21 20:20:44,115 [DEBUG] connected to post broker amqp://tsource@localhost:5672/#xs_tsource_cpost_watch
-    2017-10-21 20:20:44,115 [DEBUG] sr_post file2message called with: /home/peter/test/hoho_my_darling.txt sb=0x7ffc8250d950 islnk=0, isdir=0, isreg=1
+    2017-10-21 20:20:44,115 [DEBUG] sr3_post file2message called with: /home/peter/test/hoho_my_darling.txt sb=0x7ffc8250d950 islnk=0, isdir=0, isreg=1
     2017-10-21 20:20:44,116 [INFO] published: 20171021202044.115 sftp://peter@localhost /home/peter/test/hoho_my_darling.txt topic=v02.post.home.peter.test sum=s,f5595a47339197c9e03e7b3c374d4f13e53e819b44f7f47b67bf1112e4bd6e01f2af2122e85eda5da633469dbfb0eaf2367314c32736ae8aa7819743f1772935 source=tsource to_clusters=localhost from_cluster=localhost mtime=20171021202044.109 atime=20171021202002.328 mode=0644 parts=1,15117,1,0,0
     blacklab% 
     
