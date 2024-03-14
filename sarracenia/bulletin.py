@@ -266,8 +266,10 @@ class Bulletin:
 
         ltime = time.localtime()
         current_year  = time.strftime("%Y",ltime )
+        previous_year = str(int(current_year) - 1)
 
-        if bulletin_year == current_year    : return True
+        # Prevent all bulletins being rejected on a new year for a couple of minutes. Check for previous year as well
+        if bulletin_year == current_year or bulletin_year == previous_year    : return True
         if len(bulletin_year) !=    4       : return False
         if bulletin_year[:1]  !=  '2'       : return False
 
