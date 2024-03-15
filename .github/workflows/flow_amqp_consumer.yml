@@ -5,7 +5,8 @@ on:
     types: [opened, edited, reopened]
   push:
     branches:
-      - issue_457_amqp_consumer
+      - development
+      - stable
 
     paths-ignore:
       - '.github/**'
@@ -48,7 +49,7 @@ jobs:
           sudo sh -c 'echo "MaxStartups 750" >> /etc/ssh/sshd_config'
           sudo systemctl restart ssh
           echo "amqp_consumer True" >> ${HOME}/.config/sr3/default.conf
-          echo "set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug" >> ${HOME}/.config/sr3/default.conf
+          #echo "set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug" >> ${HOME}/.config/sr3/default.conf
       
       - name: Setup ${{ matrix.which_test }} test.
         run: |
