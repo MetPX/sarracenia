@@ -359,7 +359,7 @@ class DiskQueue():
            remove .new
            rename housekeeping to queue for next period.
         """
-        logger.info("%s on_housekeeping" % self.name)
+        logger.debug("%s on_housekeeping" % self.name)
 
         # finish retry before reshuffling all retries entries
 
@@ -440,7 +440,7 @@ class DiskQueue():
 
         self.msg_count = N
         if N == 0:
-            logger.info("No retry in list")
+            logger.info("%s No retry in list" % self.name)
             try:
                 os.unlink(self.housekeeping_path)
             except:
@@ -449,7 +449,7 @@ class DiskQueue():
         # housekeeping file becomes new retry
 
         else:
-            logger.info("Number of messages in retry list %d" % N)
+            logger.info("%s Number of messages in retry list %d" % (self.name, N))
             try:
                 os.rename(self.housekeeping_path, self.queue_file)
             except:
@@ -463,4 +463,4 @@ class DiskQueue():
             pass
 
         elapse = sarracenia.nowflt() - self.now
-        logger.info("on_housekeeping elapse %f" % elapse)
+        logger.debug("on_housekeeping elapse %f" % elapse)

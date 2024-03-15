@@ -171,7 +171,7 @@ class Retry(FlowCB):
         self.post_retry.cleanup()
 
     def on_housekeeping(self) -> None:
-        logger.info("on_housekeeping")
+        logger.debug("on_housekeeping")
 
         self.download_retry.on_housekeeping()
         self.post_retry.on_housekeeping()

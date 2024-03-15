@@ -244,5 +244,5 @@ class Log(FlowCB):
     def on_housekeeping(self):
         if set(['on_housekeeping']) & self.o.logEvents:
             self.stats()
-            logger.info("housekeeping")
+            logger.debug("housekeeping")
         self.__reset()
