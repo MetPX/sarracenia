@@ -176,6 +176,9 @@ class Log(FlowCB):
         for msg in worklist.ok:
             if 'size' in msg:
                 self.fileBytes += msg['size']
+                
+            if not self.o.download:
+                continue
 
             if set(['after_work']) & self.o.logEvents:
                 if 'fileOp' in msg :
