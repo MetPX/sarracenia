@@ -138,7 +138,7 @@ class Wiski(Scheduled):
         self.wait_until_next()
 
         while (1):
-            if self.stop_requested:
+            if self.stop_requested or self.housekeeping_needed:
                 return messages
         
             self.token = self.submit_tokenization_request()
