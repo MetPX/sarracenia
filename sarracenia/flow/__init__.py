@@ -329,7 +329,7 @@ class Flow:
         """ Run housekeeping callbacks
             Return the time when housekeeping should be run next
         """
-        logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
+        logger.debug(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
