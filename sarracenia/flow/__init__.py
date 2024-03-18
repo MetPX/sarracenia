@@ -1093,9 +1093,18 @@ class Flow:
 
     def gather(self) -> None:
         so_far=0
+        keep_going=True
         for p in self.plugins["gather"]:
             try:
-                new_incoming = p(self.o.batch-so_far)
+                retval = p(self.o.batch-so_far)
+
+                # To avoid having to modify all existing gathers, support old API.
+                if type(retval) == tuple:
+                    keep_going, new_incoming = retval
+                elif type(retval) == list:
+                    new_incoming = retval
+                else:
+                    logger.error( f"flowCallback plugin gather routine {p} returned unexpected type: {type(retval)}. Expected tuple of boolean and list of new messages" )
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
@@ -1106,7 +1115,7 @@ class Flow:
                 so_far += len(new_incoming) 
 
             # if we gathered enough with a subset of plugins then return.
-            if so_far >= self.o.batch:
+            if not keep_going or so_far >= self.o.batch:
                 return
 
 
