@@ -64,7 +64,7 @@ class Poll(Flow):
                 logger.info( f"Good! post_exchange: {px} and exchange: {self.o.exchange} match so multiple instances to share a poll." )
 
         if not 'scheduled' in ','.join(self.plugins['load']):
-            self.plugins['load'].append('sarracenia.flowcb.scheduled.Scheduled')
+            self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')
 
         if not 'poll' in ','.join(self.plugins['load']):
             logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
