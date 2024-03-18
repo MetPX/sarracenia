@@ -39,8 +39,6 @@ from sarracenia.flowcb import FlowCB
 from sarracenia import naturalSize, naturalTime
 from sarracenia.featuredetection import features
 
-logger = logging.getLogger(__name__)
-
 if features['process']['present']:
     import psutil
 
