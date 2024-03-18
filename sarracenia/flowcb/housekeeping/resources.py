@@ -35,19 +35,16 @@ Returns:
 import logging
 
 import os
-import psutil
 from sarracenia.flowcb import FlowCB
 from sarracenia import naturalSize, naturalTime
 from sarracenia.featuredetection import features
 
-logger = logging.getLogger(__name__)
-
 if features['process']['present']:
     import psutil
-else:
-    logger.error("missing psutil class cannot monitor process memory usage")
 
 import sys
+
+logger = logging.getLogger(__name__)
 
 class Resources(FlowCB):
     def __init__(self, options):
