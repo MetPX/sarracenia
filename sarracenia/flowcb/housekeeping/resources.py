@@ -40,16 +40,14 @@ from sarracenia.flowcb import FlowCB
 from sarracenia import naturalSize, naturalTime
 from sarracenia.featuredetection import features
 
+logger = logging.getLogger(__name__)
+
 if features['process']['present']:
     import psutil
 else:
     logger.error("missing psutil class cannot monitor process memory usage")
 
-
 import sys
-
-logger = logging.getLogger(__name__)
-
 
 class Resources(FlowCB):
     def __init__(self, options):
@@ -71,8 +69,7 @@ class Resources(FlowCB):
             mem = 0
 
         ost = os.times()
-        logger.info(
-            f"Current Memory cpu_times: user={ost.user} system={ost.system}")
+        logger.info(f"Current cpu_times: user={ost.user} system={ost.system}")
 
         # We must set a threshold **after** the config file has been parsed.
         if self.threshold is None:
@@ -94,9 +91,7 @@ class Resources(FlowCB):
 
                 self.threshold = int(self.o.MemoryMultiplier * mem)
 
-            logger.info(
-                f"Memory threshold set to: {naturalSize(self.threshold)}"
-            )
+            logger.info(f"Memory threshold set to: {naturalSize(self.threshold)}")
 
         logger.info(
             f"Current Memory usage: {naturalSize(mem)} / "
