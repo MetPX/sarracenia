@@ -692,19 +692,19 @@ class File(FlowCB):
         if len(self.queued_messages) > self.o.batch:
             messages = self.queued_messages[0:self.o.batch]
             self.queued_messages = self.queued_messages[self.o.batch:]
-            return messages
+            return (True, messages)
 
         elif len(self.queued_messages) > 0:
             messages = self.queued_messages
             self.queued_messages = []
 
             if self.o.sleep < 0:
-                return messages
+                return (True, messages)
         else:
             messages = []
 
         if self.primed:
-            return self.wakeup()
+            return (True, self.wakeup())
 
         cwd = os.getcwd()
 
@@ -740,4 +740,4 @@ class File(FlowCB):
             messages = messages[0:self.o.batch]
 
         self.primed = True
-        return messages
+        return (True, messages)

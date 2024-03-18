@@ -76,7 +76,7 @@ class Run(FlowCB):
         if hasattr(self.o,
                    'run_gather') and self.o.run_gather is not None:
             self.run_script(self.o.run_gather)
-        return []
+        return (True, [])
 
     def after_accept(self, worklist):
         """
