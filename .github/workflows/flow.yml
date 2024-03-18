@@ -1,4 +1,4 @@
-name: sr_insects Flow Tests.
+name: Flow Tests / AMQP
 
 on:
   pull_request:
@@ -36,7 +36,7 @@ jobs:
 
     runs-on: ${{ matrix.osver }}
   
-    name: ${{ matrix.which_test }} test on ${{ matrix.osver }}
+    name: ${{ matrix.which_test }} on ${{ matrix.osver }}
     timeout-minutes: 40
     
     steps:
