@@ -1094,6 +1094,7 @@ class Flow:
     def gather(self) -> None:
         so_far=0
         keep_going=True
+        logger.info( f"FIXME: {self.plugins['gather']=} " )
         for p in self.plugins["gather"]:
             try:
                 retval = p(self.o.batch-so_far)
@@ -1117,6 +1118,32 @@ class Flow:
             # if we gathered enough with a subset of plugins then return.
             if not keep_going or so_far >= self.o.batch:
                 return
+
+        # if the last gather (often scheduled) said we should stop, then return.
+        if not keep_going:
+            return
+
+        logger.info("FIXME, ok! run a poll now") 
+
+        # gather is an extended version of poll.
+        if self.o.component != 'poll':
+            return
+
+
+        if len(self.worklist.incoming) > 0:
+            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            self.worklist.poll_catching_up = True
+            return
+        else:
+            self.worklist.poll_catching_up = False
+
+        if self.have_vip:
+            logger.info( f"yup, have vip... FIXME: {self.plugins['poll']=} " )
+            for plugin in self.plugins['poll']:
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+
 
 
     def do(self) -> None:
