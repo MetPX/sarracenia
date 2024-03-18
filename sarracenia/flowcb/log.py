@@ -64,7 +64,7 @@ class Log(FlowCB):
         if set(['gather']) & self.o.logEvents:
             logger.info( f' messageCountMax: {messageCountMax} ')
 
-        return []
+        return (True, [])
 
     def _messageStr(self, msg):
         if self.o.logMessageDump:

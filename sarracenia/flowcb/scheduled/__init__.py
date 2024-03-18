@@ -93,7 +93,7 @@ class Scheduled(FlowCB):
         self.wait_until_next()
 
         if self.stop_requested or self.housekeeping_needed:
-            return []
+            return (True, [])
 
         logger.info('time to run')
 
@@ -105,7 +105,7 @@ class Scheduled(FlowCB):
             m = sarracenia.Message.fromFileInfo(relPath, self.o, st)
             gathered_messages.append(m)
 
-        return gathered_messages
+        return (True, gathered_messages)
 
     def on_housekeeping(self):
 
