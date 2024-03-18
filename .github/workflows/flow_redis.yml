@@ -1,4 +1,4 @@
-name: Flow Tests (with Redis).
+name: Flow Tests / Redis
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - v03_disabled
+    
     paths-ignore:
       - '.github/**'
       - 'debian/changelog'
