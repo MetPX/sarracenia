@@ -224,11 +224,10 @@ class Bulletin:
 
             if len(parts) < 4: return None
 
-            # passe-passe pour le jour julien en float parfois ?
-            f = float(jul)
-            i = int(f)
-            jul = '%s' % i
-            # fin de la passe-passe
+            # Julian days shouldn't be float type. Reject them when found. They should only be integers.
+            if '.' in jul:
+                logger.error("Julian days can't be of float type.")
+                return None
 
             # strange 0 filler
 
