@@ -440,7 +440,7 @@ class DiskQueue():
 
         self.msg_count = N
         if N == 0:
-            logger.info("%s No retry in list" % self.name)
+            logger.debug("%s No retry in list" % self.name)
             try:
                 os.unlink(self.housekeeping_path)
             except:
