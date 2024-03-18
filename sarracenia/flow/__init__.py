@@ -1119,10 +1119,6 @@ class Flow:
             if not keep_going or so_far >= self.o.batch:
                 return
 
-        # if the last gather (often scheduled) said we should stop, then return.
-        if not keep_going:
-            return
-
         logger.info("FIXME, ok! run a poll now") 
 
         # gather is an extended version of poll.
