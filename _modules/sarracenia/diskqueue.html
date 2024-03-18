@@ -470,7 +470,7 @@
 <span class="sd">           remove .new</span>
 <span class="sd">           rename housekeeping to queue for next period.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> on_housekeeping&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> on_housekeeping&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># finish retry before reshuffling all retries entries</span>
 
@@ -551,7 +551,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="n">N</span>
         <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No retry in list&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> No retry in list&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
@@ -560,7 +560,7 @@
         <span class="c1"># housekeeping file becomes new retry</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Number of messages in retry list </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> Number of messages in retry list </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
@@ -574,7 +574,7 @@
             <span class="k">pass</span>
 
         <span class="n">elapse</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;on_housekeeping elapse </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">elapse</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_housekeeping elapse </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">elapse</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

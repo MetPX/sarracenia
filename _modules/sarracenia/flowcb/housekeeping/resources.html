@@ -110,21 +110,16 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">psutil</span>
 <span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
 <span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">naturalSize</span><span class="p">,</span> <span class="n">naturalTime</span>
 <span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
 
 <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
     <span class="kn">import</span> <span class="nn">psutil</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;missing psutil class cannot monitor process memory usage&quot;</span><span class="p">)</span>
-
 
 <span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
 
 <div class="viewcode-block" id="Resources">
 <a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources">[docs]</a>
@@ -151,8 +146,7 @@
             <span class="n">mem</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">ost</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">times</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Current Memory cpu_times: user=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2"> system=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">system</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current cpu_times: user=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2"> system=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">system</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># We must set a threshold **after** the config file has been parsed.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -174,9 +168,7 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryMultiplier</span> <span class="o">*</span> <span class="n">mem</span><span class="p">)</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Memory threshold set to: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory threshold set to: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Current Memory usage: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span><span class="si">}</span><span class="s2"> / &quot;</span>

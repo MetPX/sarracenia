@@ -266,7 +266,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;on_housekeeping&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_housekeeping&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">on_housekeeping</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">on_housekeeping</span><span class="p">()</span>
