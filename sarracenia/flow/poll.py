@@ -66,13 +66,14 @@ class Poll(Flow):
         if not 'scheduled' in ','.join(self.plugins['load']):
             self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')
 
-        if not 'poll' in ','.join(self.plugins['load']):
+        if not 'flowcb.poll.Poll' in ','.join(self.plugins['load']):
             logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
             self.plugins['load'].insert( 0, 'sarracenia.flowcb.gather.message.Message')
 
+        self.plugins['load'].insert( 0, 'sarracenia.flowcb.post.message.Message')
 
         if self.o.nodupe_ttl < self.o.fileAgeMax:
             logger.warning( f"nodupe_ttl < fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904")
