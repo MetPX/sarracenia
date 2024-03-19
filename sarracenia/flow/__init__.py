@@ -473,6 +473,15 @@ class Flow:
                 else:
                     self.worklist.incoming = []
 
+                logger.critical( f"FIXME back from gather, {len(self.worklist.incoming)=}  ")
+
+                if len(self.worklist.incoming) > 0:
+                    logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+                    self.worklist.poll_catching_up = True
+                    return
+                else:
+                    self.worklist.poll_catching_up = False
+
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
                     spamming = True
@@ -481,9 +490,11 @@ class Flow:
                     spamming = False
 
                 self.filter()
+                logger.critical( f"FIXME back from filter, {len(self.worklist.incoming)=}  ")
 
                 self._runCallbacksWorklist('after_accept')
 
+                logger.critical( f"FIXME back from after_accept, {len(self.worklist.incoming)=}  ")
                 logger.debug(
                         'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
                     % (len(self.worklist.incoming), len(
@@ -500,11 +511,14 @@ class Flow:
 
                 # this for duplicate cache synchronization.
                 if self.worklist.poll_catching_up:
+                    logger.info( f"FIXME: catching up... {len(self.worklist.incoming)=}")
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
                     continue
 
+                logger.critical( f"FIXME not catching up., {len(self.worklist.incoming)=}  ")
                 if (self.o.component == 'poll') and not self.have_vip:
+                    logger.critical( f"FIXME poll with no vip  ")
                     if had_vip:
                         logger.info("now passive on vips %s" % self.o.vip )
                         with open( self.o.novipFilename, 'w' ) as f:
@@ -611,6 +625,7 @@ class Flow:
                     self.worklist.directories_ok = []
                     self.worklist.failed = []
 
+            logger.critical( f"FIXME calculating next sleep .. ")
             now = nowflt()
             run_time = now - start_time
             total_messages += last_gather_len
@@ -636,6 +651,8 @@ class Flow:
                 current_sleep *= 2
 
             self.metrics['flow']['current_sleep'] = current_sleep
+
+            logger.critical( f"FIXME {current_sleep=}.. ")
 
             # Run housekeeping based on time, and before stopping to ensure it's run at least once
             if now > next_housekeeping or stopping:
@@ -1116,25 +1133,17 @@ class Flow:
                 so_far += len(new_incoming) 
 
             # if we gathered enough with a subset of plugins then return.
-            if not keep_going or so_far >= self.o.batch:
+            if not keep_going or (so_far >= self.o.batch):
                 return
 
-        logger.info("FIXME, ok! run a poll now") 
 
         # gather is an extended version of poll.
         if self.o.component != 'poll':
             return
 
 
-        if len(self.worklist.incoming) > 0:
-            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-            self.worklist.poll_catching_up = True
-            return
-        else:
-            self.worklist.poll_catching_up = False
-
         if self.have_vip:
-            logger.info( f"yup, have vip... FIXME: {self.plugins['poll']=} " )
+            logger.info( f"yup, have vip... ok run poll now FIXME: {self.plugins['poll']=} " )
             for plugin in self.plugins['poll']:
                 new_incoming = plugin()
                 if len(new_incoming) > 0:
