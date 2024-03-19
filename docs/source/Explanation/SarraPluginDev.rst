@@ -585,12 +585,17 @@ for detailed information about call signatures and return values, etc...
 |                     | permanent name.                                    |
 |                     |                                                    |
 |                     | return the new name for the downloaded/sent file.  |
+|                     |                                                    |
 +---------------------+----------------------------------------------------+
 | download(self,msg)  | replace built-in downloader return true on success |
 |                     | takes message as argument.                         |
 +---------------------+----------------------------------------------------+
 | gather(self)        | gather messages from a source, returns a list of   |
 |                     | messages.                                          |
+|                     | can also return a tuple where the first element    |
+|                     | is a boolean flag keep_going indicating whether    |
+|                     | to stop gather processing.                         |
+|                     |                                                    |
 +---------------------+----------------------------------------------------+
 |                     | Called every housekeeping interval (minutes)       |
 |                     | used to clean cache, check for occasional issues.  |
