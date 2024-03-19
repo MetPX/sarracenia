@@ -475,13 +475,6 @@ class Flow:
 
                 logger.critical( f"FIXME back from gather, {len(self.worklist.incoming)=}  ")
 
-                if len(self.worklist.incoming) > 0:
-                    logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-                    self.worklist.poll_catching_up = True
-                    return
-                else:
-                    self.worklist.poll_catching_up = False
-
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
                     spamming = True
@@ -1141,6 +1134,12 @@ class Flow:
         if self.o.component != 'poll':
             return
 
+        if len(self.worklist.incoming) > 0:
+            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            self.worklist.poll_catching_up = True
+            return
+        else:
+            self.worklist.poll_catching_up = False
 
         if self.have_vip:
             logger.info( f"yup, have vip... ok run poll now FIXME: {self.plugins['poll']=} " )
