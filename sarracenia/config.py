@@ -1447,8 +1447,6 @@ class Config:
                     k = 'sendTo'
             elif k == 'broker' and component == 'poll' :
                 k = 'post_broker'
-            elif k == 'directory' and component == 'poll' :
-                k = 'path'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
