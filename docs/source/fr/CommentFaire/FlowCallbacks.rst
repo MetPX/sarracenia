@@ -182,6 +182,8 @@ Autres entry_points, extraits de sarracenia/flowcb/__init__.py ::
 
     def gather(self):
         Task: gather notification messages from a source... return a list of notification messages.
+              can also return tuple (keep_going, new_messages) where keep_going is a flag 
+              that when False stops processing of further gather routines.
         return []
 
     """
