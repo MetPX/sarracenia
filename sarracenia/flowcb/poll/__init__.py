@@ -422,12 +422,11 @@ class Poll(FlowCB):
         return False, {}, {}
 
     def poll_directory(self, pdir):
+
         #logger.debug("poll_directory %s %s" % (pdir))
-        npost = 0
         msgs = []
 
         # cd to that directory
-
         logger.debug(" cd %s" % pdir)
         ok = self.cd(pdir)
         if not ok: return []
@@ -462,12 +461,6 @@ class Poll(FlowCB):
         return msgs
 
     def poll_file_post(self, desc, destDir, remote_file):
-
-        FileOption = None
-        for mask in self.pulllst:
-            pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask
-            if mask_regexp.match(remote_file) and accepting:
-                FileOption = maskFileOption
 
         path = destDir + '/' + remote_file
 
@@ -539,25 +532,10 @@ class Poll(FlowCB):
 
         # If there is a file operation, and it isn't a rename, then some fields are irrelevant/wrong.
         if 'fileOp' in msg and 'rename' not in msg['fileOp']: 
-            if 'Identity' in msg:
-                del msg['Indentity']
+            if 'identity' in msg:
+                del msg['identity']
             if 'size' in msg:
                 del msg['size']
-
-        this_rename = self.o.rename
-
-        # FIX ME generalized fileOption
-        if FileOption is not None:
-            parts = FileOption.split('=')
-            option = parts[0].strip()
-            if option == 'rename' and len(parts) == 2:
-                this_rename = parts[1].strip()
-
-        if this_rename is not None and this_rename[-1] == '/':
-            this_rename += remote_file
-
-        if this_rename is not None:
-            msg['rename'] = this_rename
 
         return [msg]
 
@@ -582,20 +560,12 @@ class Poll(FlowCB):
 
     def poll(self) -> list:
 
-        # General Attributes
-
-        self.pulllst = []
-
         msgs = []
-        # number of post files
-
-        npost = 0
-
-        # connection did not work
 
         try:
             self.dest.connect()
         except:
+            # connection did not work
             logger.error("sr_poll/post_new_url: unable to connect to %s" %
                          self.o.pollUrl)
             logger.debug('Exception details: ', exc_info=True)
@@ -604,19 +574,7 @@ class Poll(FlowCB):
             time.sleep(nap)
             return []
 
-        # loop on all directories where there are pulls to do
-
         for destDir in self.o.path:
-
-            # setup of poll directory info
-
-            #self.pulllst = self.pulls[destDir]
-
-            #path = destDir
-            #path = path.replace('${', '')
-            #path = path.replace('}', '')
-            #path = path.replace('/', '_')
-            #lsPath = self.o.cfg_run_dir + os.sep + 'ls' + path
 
             currentDir = self.o.variableExpansion(destDir)
 
