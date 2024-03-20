@@ -184,7 +184,7 @@ class Scheduled(FlowCB):
 
             if next_appointment is None:
                 # done for the day...
-                tomorrow = datetime.date.today()+datetime.timedelta(days=1)
+                tomorrow = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)+datetime.timedelta(days=1)
                 midnight = datetime.time(0,0,tzinfo=datetime.timezone.utc)
                 midnight = datetime.datetime.combine(tomorrow,midnight)
                 self.update_appointments(midnight)
