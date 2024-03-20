@@ -86,6 +86,7 @@ class Scheduled(FlowCB):
 
         now=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         self.update_appointments(now)
+        self.first_interval=True
 
     def gather(self,messageCountMax):
 
@@ -166,6 +167,10 @@ class Scheduled(FlowCB):
     def wait_until_next( self ):
 
         if self.o.scheduled_interval > 0:
+            if self.first_interval:
+                self.first_interval=False
+                return
+
             self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
