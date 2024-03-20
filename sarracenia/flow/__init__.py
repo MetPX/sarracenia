@@ -470,8 +470,6 @@ class Flow:
 
                 if not stopping:
                     self.gather()
-                else:
-                    self.worklist.incoming = []
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -481,21 +479,6 @@ class Flow:
                     spamming = False
 
                 self.filter()
-                self._runCallbacksWorklist('after_accept')
-
-                logger.debug(
-                        'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
-                    % (len(self.worklist.incoming), len(
-                        self.worklist.ok), len(self.worklist.directories_ok),
-                       len(self.worklist.rejected), len(
-                           self.worklist.failed), self._stop_requested,
-                           self.have_vip))
-
-                self.ack(self.worklist.ok)
-                self.worklist.ok = []
-                self.ack(self.worklist.rejected)
-                self.worklist.rejected = []
-                self.ack(self.worklist.failed)
 
                 # this for duplicate cache synchronization.
                 if self.worklist.poll_catching_up:
@@ -517,65 +500,7 @@ class Flow:
                             os.unlink( self.o.novipFilename )
 
                     # normal processing, when you are active.
-                    self.do()
-
-                    # need to acknowledge here, because posting will delete message-id
-                    self.ack(self.worklist.ok)
-                    self.ack(self.worklist.rejected)
-                    self.ack(self.worklist.failed)
-
-                    # adjust message after action is done, but before 'after_work' so adjustment is possible.
-                    for m in self.worklist.ok:
-                        if ('new_baseUrl' in m) and (m['baseUrl'] !=
-                                                     m['new_baseUrl']):
-                            m['old_baseUrl'] = m['baseUrl']
-                            m['_deleteOnPost'] |= set(['old_baseUrl'])
-                            m['baseUrl'] = m['new_baseUrl']
-                        if ('new_retrievePath' in m) :
-                            m['old_retrievePath'] = m['retrievePath']
-                            m['retrievePath'] = m['new_retrievePath']
-                            m['_deleteOnPost'] |= set(['old_retrievePath'])
-
-                        # if new_file does not match relPath, then adjust relPath so it does.
-                        if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
-                            if not 'new_relPath' in m:
-                                if len(m['relPath']) > 1:
-                                    m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
-                                else:
-                                    m['new_relPath'] = m['new_file']
-                            else:
-                                if len(m['new_relPath']) > 1:
-                                    m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
-                                else:
-                                    m['new_relPath'] = m['new_file']
-
-                        if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
-                            m['old_relPath'] = m['relPath']
-                            m['_deleteOnPost'] |= set(['old_relPath'])
-                            m['relPath'] = m['new_relPath']
-                            m['old_subtopic'] = m['subtopic']
-                            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
-                            m['subtopic'] = m['new_subtopic']
-
-                        if '_format' in m:
-                            m['old_format'] = m['_format']
-                            m['_deleteOnPost'] |= set(['old_format'])
-                        m['_format'] = m['post_format']
-
-                        # restore adjustment to fileOp
-                        if 'post_fileOp' in m:
-                            m['fileOp'] = m['post_fileOp']
-
-                        if self.o.download and 'retrievePath' in m:
-                            # retrieve paths do not propagate after download.
-                            del m['retrievePath'] 
-
-                        
-                    self._runCallbacksWorklist('after_work')
-
-                    self.ack(self.worklist.rejected)
-                    self.worklist.rejected = []
-                    self.ack(self.worklist.failed)
+                    self.work()
 
                     if len(self.plugins["post"]) > 0:
                         self.post()
@@ -1086,9 +1011,21 @@ class Flow:
                     self.reject(m, 304, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
-        logger.debug(
-            'end len(incoming)=%d, rejected=%d' %
-            (len(self.worklist.incoming), len(self.worklist.rejected)))
+
+        logger.debug( 'end len(incoming)=%d, rejected=%d' % (len(self.worklist.incoming), len(self.worklist.rejected)))
+
+        self._runCallbacksWorklist('after_accept')
+
+        logger.debug( 'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
+            % (len(self.worklist.incoming), len(self.worklist.ok), len(self.worklist.directories_ok),
+               len(self.worklist.rejected), len(self.worklist.failed), self._stop_requested, self.have_vip))
+
+        self.ack(self.worklist.ok)
+        self.worklist.ok = []
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected = []
+        self.ack(self.worklist.failed)
+
 
     def gather(self) -> None:
         so_far=0
@@ -1149,6 +1086,69 @@ class Flow:
             self.worklist.incoming = []
 
         logger.debug('processing %d messages worked!' % len(self.worklist.ok))
+
+    def work(self) -> None:
+
+        self.do()
+
+        # need to acknowledge here, because posting will delete message-id
+        self.ack(self.worklist.ok)
+        self.ack(self.worklist.rejected)
+        self.ack(self.worklist.failed)
+
+        # adjust message after action is done, but before 'after_work' so adjustment is possible.
+        for m in self.worklist.ok:
+            if ('new_baseUrl' in m) and (m['baseUrl'] !=
+                                         m['new_baseUrl']):
+                m['old_baseUrl'] = m['baseUrl']
+                m['_deleteOnPost'] |= set(['old_baseUrl'])
+                m['baseUrl'] = m['new_baseUrl']
+            if ('new_retrievePath' in m) :
+                m['old_retrievePath'] = m['retrievePath']
+                m['retrievePath'] = m['new_retrievePath']
+                m['_deleteOnPost'] |= set(['old_retrievePath'])
+
+            # if new_file does not match relPath, then adjust relPath so it does.
+            if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
+                if not 'new_relPath' in m:
+                    if len(m['relPath']) > 1:
+                        m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
+                    else:
+                        m['new_relPath'] = m['new_file']
+                else:
+                    if len(m['new_relPath']) > 1:
+                        m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
+                    else:
+                        m['new_relPath'] = m['new_file']
+
+            if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
+                m['old_relPath'] = m['relPath']
+                m['_deleteOnPost'] |= set(['old_relPath'])
+                m['relPath'] = m['new_relPath']
+                m['old_subtopic'] = m['subtopic']
+                m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
+                m['subtopic'] = m['new_subtopic']
+
+            if '_format' in m:
+                m['old_format'] = m['_format']
+                m['_deleteOnPost'] |= set(['old_format'])
+            m['_format'] = m['post_format']
+
+            # restore adjustment to fileOp
+            if 'post_fileOp' in m:
+                m['fileOp'] = m['post_fileOp']
+
+            if self.o.download and 'retrievePath' in m:
+                # retrieve paths do not propagate after download.
+                del m['retrievePath'] 
+
+        self._runCallbacksWorklist('after_work')
+
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected = []
+        self.ack(self.worklist.failed)
+
+
 
     def post(self) -> None:
 
