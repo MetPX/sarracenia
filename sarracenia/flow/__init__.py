@@ -452,25 +452,22 @@ class Flow:
             if self._stop_requested:
                 if stopping:
                     logger.info('clean stop from run loop')
-
                     self.close()
                     break
                 else:
-                    logger.info(
-                        'starting last pass (without gather) through loop for cleanup.'
-                    )
+                    logger.info( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
             if now > next_housekeeping or stopping:
                 next_housekeeping = self._runHousekeeping(now)
 
             self.have_vip = self.has_vip()
+            self.worklist.incoming = []
+
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
                     logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
-
-                self.worklist.incoming = []
 
                 if not stopping:
                     self.gather()
@@ -505,39 +502,7 @@ class Flow:
 
                     # normal processing, when you are active.
                     self.work()
-
-                    if len(self.plugins["post"]) > 0:
-                        self.post()
-                        self._runCallbacksWorklist('after_post')
-
-                    self._runCallbacksWorklist('report')
-                    self._runCallbackMetrics()
-
-                    if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
-                        metrics=json.dumps(self.metrics)
-                        with open(self.o.metricsFilename, 'w') as mfn:
-                             mfn.write(metrics+"\n")
-                        if self.o.logMetrics:
-                            if self.o.logRotateInterval >= 24*60*60:
-                                tslen=8
-                            elif self.o.logRotateInterval > 60:
-                                tslen=14
-                            else:
-                                tslen=16
-                            timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
-                            with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
-                                mfn.write( f'\"{timestamp}\" : {metrics},\n')
-
-                            # removing old metrics files
-                            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-                            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-                            for o in old_metrics:
-                                logger.info( f"removing old metrics file: {o} " )
-                                os.unlink(o)
-
-                    self.worklist.ok = []
-                    self.worklist.directories_ok = []
-                    self.worklist.failed = []
+                    self.post()
 
             now = nowflt()
             run_time = now - start_time
@@ -1156,19 +1121,51 @@ class Flow:
 
     def post(self) -> None:
 
-        # work-around for python3.5 not being able to copy re.match issue: 
-        # https://github.com/MetPX/sarracenia/issues/857 
-        if sys.version_info.major == 3 and sys.version_info.minor <= 6:
-            for m in self.worklist.ok:
-                if '_matches' in m:
-                    del m['_matches']
+        if len(self.plugins["post"]) > 0:
 
-        for p in self.plugins["post"]:
-            try:
-                p(self.worklist)
-            except Exception as ex:
-                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
-                logger.debug( "details:", exc_info=True )
+            # work-around for python3.5 not being able to copy re.match issue: 
+            # https://github.com/MetPX/sarracenia/issues/857 
+            if sys.version_info.major == 3 and sys.version_info.minor <= 6:
+                for m in self.worklist.ok:
+                    if '_matches' in m:
+                        del m['_matches']
+
+            for p in self.plugins["post"]:
+                try:
+                    p(self.worklist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
+        self._runCallbacksWorklist('after_post')
+        self._runCallbacksWorklist('report')
+        self._runCallbackMetrics()
+
+        if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
+            metrics=json.dumps(self.metrics)
+            with open(self.o.metricsFilename, 'w') as mfn:
+                 mfn.write(metrics+"\n")
+            if self.o.logMetrics:
+                if self.o.logRotateInterval >= 24*60*60:
+                    tslen=8
+                elif self.o.logRotateInterval > 60:
+                    tslen=14
+                else:
+                    tslen=16
+                timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+                with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
+                    mfn.write( f'\"{timestamp}\" : {metrics},\n')
+
+                # removing old metrics files
+                logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+                old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+                for o in old_metrics:
+                    logger.info( f"removing old metrics file: {o} " )
+                    os.unlink(o)
+
+        self.worklist.ok = []
+        self.worklist.directories_ok = []
+        self.worklist.failed = []
 
     def write_inline_file(self, msg) -> bool:
         """
