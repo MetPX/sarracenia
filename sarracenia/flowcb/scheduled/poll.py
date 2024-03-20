@@ -52,4 +52,6 @@ if __name__ == '__main__':
 
     me = Poll(flow.o)
     me.gather(flow.o.batch)
-    logger.info("Done")
+    logger.info("first done")
+    me.gather(flow.o.batch)
+    logger.info("Second Done")
