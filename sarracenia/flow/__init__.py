@@ -211,6 +211,7 @@ class Flow:
 
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
+        self.had_vip = False
 
     def metricsFlowReset(self) -> None:
 
@@ -402,23 +403,21 @@ class Flow:
                         logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
                         logger.debug( "details:", exc_info=True )
 
-    def _run_vip_update(self, had_vip) -> bool:
+    def _run_vip_update(self) -> bool:
 
             self.have_vip = self.has_vip()
-            retval=had_vip
             if (self.o.component == 'poll') and not self.have_vip:
-                if had_vip:
+                if self.had_vip:
                     logger.info("now passive on vips %s" % self.o.vip )
                     with open( self.o.novipFilename, 'w' ) as f:
                         f.write(str(nowflt()) + '\n' )
-                    retval=False
+                    self.had_vip=False
             else:
-                if not had_vip:
+                if not self.had_vip:
                     logger.info("now active on vip %s" % self.have_vip )
-                    retval=True
+                    self.had_vip=True
                     if os.path.exists( self.o.novipFilename ):
                         os.unlink( self.o.novipFilename )
-            return retval
 
 
 
@@ -441,7 +440,6 @@ class Flow:
         total_messages = 1
         start_time = nowflt()
         now=start_time
-        had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
         self.metrics['flow']['last_housekeeping'] = start_time
@@ -454,15 +452,6 @@ class Flow:
         logger.info(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
-        if not self.has_vip():
-            logger.info( f'starting up passive, as do not possess any vip from: {self.o.vip}' )
-            with open( self.o.novipFilename, 'w' ) as f:
-                f.write(str(start_time) + '\n' )
-        else:
-            if os.path.exists( self.o.novipFilename ):
-                os.unlink( self.o.novipFilename )
-
-        self.runCallbacksTime(f'on_start')
 
         spamming = True
         last_gather_len = 0
@@ -479,10 +468,12 @@ class Flow:
                     logger.info( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
+            self._run_vip_update()
+
             if now > next_housekeeping or stopping:
                 next_housekeeping = self._runHousekeeping(now)
-
-            had_vip = self._run_vip_update(had_vip)
+            elif now == start_time:
+                self.runCallbacksTime(f'on_start')
 
             self.worklist.incoming = []
 
@@ -508,7 +499,6 @@ class Flow:
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
                     continue
-
 
                 # normal processing, when you are active.
                 self.work()
