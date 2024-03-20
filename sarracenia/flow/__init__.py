@@ -419,6 +419,7 @@ class Flow:
         current_rate = 0
         total_messages = 1
         start_time = nowflt()
+        now=start_time
         had_vip = False
         current_sleep = self.o.sleep
         last_time = start_time
@@ -459,6 +460,9 @@ class Flow:
                         'starting last pass (without gather) through loop for cleanup.'
                     )
                     stopping = True
+
+            if now > next_housekeeping or stopping:
+                next_housekeeping = self._runHousekeeping(now)
 
             self.have_vip = self.has_vip()
             if (self.o.component == 'poll') or self.have_vip:
