@@ -177,10 +177,18 @@ class Scheduled(FlowCB):
         if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
             next_appointment=None
+            missed_appointments=[]
             for t in self.appointments: 
                 if now < t: 
                     next_appointment=t
                     break
+                else:
+                    logger.info( f'already too late to {t} skipping' )
+                    missed_appointments.append(t)
+
+            if missed_appointments:
+                for ma in missed_appointments:
+                    self.appointments.remove(ma)
 
             if next_appointment is None:
                 # done for the day...
