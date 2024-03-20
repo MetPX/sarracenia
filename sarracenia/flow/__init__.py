@@ -402,6 +402,27 @@ class Flow:
                         logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
                         logger.debug( "details:", exc_info=True )
 
+    def _run_vip_update(self, had_vip) -> bool:
+
+            self.have_vip = self.has_vip()
+            retval=had_vip
+            if (self.o.component == 'poll') and not self.have_vip:
+                if had_vip:
+                    logger.info("now passive on vips %s" % self.o.vip )
+                    with open( self.o.novipFilename, 'w' ) as f:
+                        f.write(str(nowflt()) + '\n' )
+                    retval=False
+            else:
+                if not had_vip:
+                    logger.info("now active on vip %s" % self.have_vip )
+                    retval=True
+                    if os.path.exists( self.o.novipFilename ):
+                        os.unlink( self.o.novipFilename )
+            return retval
+
+
+
+
     def run(self):
         """
           This is the core routine of the algorithm, with most important data driven
@@ -457,7 +478,11 @@ class Flow:
                     logger.info( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
-            self.have_vip = self.has_vip()
+            if now > next_housekeeping or stopping:
+                next_housekeeping = self._runHousekeeping(now)
+
+            had_vip = self._run_vip_update(had_vip)
+
             self.worklist.incoming = []
 
             if (self.o.component == 'poll') or self.have_vip:
@@ -483,22 +508,10 @@ class Flow:
                     self.worklist.incoming = []
                     continue
 
-                if (self.o.component == 'poll') and not self.have_vip:
-                    if had_vip:
-                        logger.info("now passive on vips %s" % self.o.vip )
-                        with open( self.o.novipFilename, 'w' ) as f:
-                            f.write(str(nowflt()) + '\n' )
-                        had_vip=False
-                else:
-                    if not had_vip:
-                        logger.info("now active on vip %s" % self.have_vip )
-                        had_vip=True
-                        if os.path.exists( self.o.novipFilename ):
-                            os.unlink( self.o.novipFilename )
 
-                    # normal processing, when you are active.
-                    self.work()
-                    self.post()
+                # normal processing, when you are active.
+                self.work()
+                self.post()
 
             now = nowflt()
             run_time = now - start_time
