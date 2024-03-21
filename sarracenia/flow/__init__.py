@@ -481,7 +481,6 @@ class Flow:
                     spamming = False
 
                 self.filter()
-
                 self._runCallbacksWorklist('after_accept')
 
                 logger.debug(
@@ -1115,8 +1114,29 @@ class Flow:
                 so_far += len(new_incoming) 
 
             # if we gathered enough with a subset of plugins then return.
-            if not keep_going or so_far >= self.o.batch:
+            if not keep_going or (so_far >= self.o.batch):
+                if (self.o.component == 'poll' ):
+                    self.worklist.poll_catching_up=True
+
                 return
+
+        # gather is an extended version of poll.
+        if self.o.component != 'poll':
+            return
+
+        if len(self.worklist.incoming) > 0:
+            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            self.worklist.poll_catching_up = True
+            return
+        else:
+            self.worklist.poll_catching_up = False
+
+        if self.have_vip:
+            for plugin in self.plugins['poll']:
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+
 
 
     def do(self) -> None:
