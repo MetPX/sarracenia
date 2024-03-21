@@ -946,6 +946,17 @@ par fichier. La taille du fichier est prise dans le répertoire « ls »... mais
 de contrôle ne peut pas être déterminée, alors la stratégie de calcul de est ¨cod¨ qui signifie
 que ca devrait être calculé lors du transfert.
 
+Pour définir la fréquence de sondage, on se sert de *scheduled_*, tel que::
+
+    scheduled_interal 30m
+
+pour sonder à toute les trente minutes, ou bien::
+
+    scheduled_hour 1,13,19
+    scheduled_minute 27
+
+pour sonder trois fois par jour à 1h27, 13h27 et 19h27.
+    
 Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
 (le préfixe *xs_* suivi du nom d’utilisateur du courtier). Le *post_broker* est obligatoire.
 Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.
@@ -1104,8 +1115,9 @@ informe qu'il y a nouveau produit.
 
 Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
-**poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
+**poll** se connecte à un *broker*. À toutes les secondes de *scheduled_interval* (où bien à des moment spécifié par *scheduled_hour* et *scheduled_minute*), il se connecte à
 une *pollUrl* (sftp, ftp, ftps). Pour chacun des *path* définis, les contenus sont listés.
+
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option *fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.

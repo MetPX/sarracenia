@@ -1578,6 +1578,25 @@ sanity_log_dead <interval> (default: 1.5*housekeeping)
 The **sanity_log_dead** option sets how long to consider too long before restarting
 a component.
 
+scheduled_interval,scheduled_hour,scheduled_minute
+--------------------------------------------------
+
+When working with scheduled flows, such as polls, one can configure a duration
+(no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a 
+given activity::
+
+  scheduled_interval 30
+
+run the flow or poll every 30 seconds.  If no duration is set, then the 
+flowcb.scheduled.Scheduled class will look for the other two time specifiers::
+
+  scheduled_hour 1,4,5,23
+  scheduled_minute 14,17,29
+
+
+which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
+after each of 4h, 5h and 23h.
+
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
@@ -1613,10 +1632,13 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 sleep <time>
 ------------
 
-The time to wait between generating events.  When files are written frequently, it is counter productive
+The time to wait between generating events. When files are written frequently, it is counter productive
 to produce a post for every change, as it can produce a continuous stream of changes where the transfers
-cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
+cannot be done quickly enough to keep up. In such circumstances, one can group all changes made to a file
 in *sleep* time, and produce a single post.
+
+When sleep is set > 0 for use with a *poll* it has the effect to setting *scheduled_interval*  to that value
+for compatibility reasons.  It is better for poll to use *scheduled* settings explicitly going forward.
 
 statehost <False|True> ( default: False )
 -----------------------------------------
