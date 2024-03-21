@@ -1088,8 +1088,8 @@ by re-announcing it on the xpublic exchange.</p>
 <h2>POLLING<a class="headerlink" href="#polling" title="Link to this heading"></a></h2>
 <p>Polling is doing the same job as a post, except for files on a remote server.
 In the case of a poll, the post will have its url built from the <em>pollUrl</em>
-option, with the product’s path (<em>directory</em>/”matched file”).  There is one
-post per file.  The file’s size is taken from the directory “ls”… but its
+option, with the product’s path (<em>path</em>/”matched file”).  There is one
+post per file. The file’s size is taken from the directory “ls”… but its
 checksum cannot be determined, so the default identity method is “cod”, asking
 clients to calculate the identity Checksum On Download.</p>
 <p>By default, sr_poll sends its post notification message to the broker with default exchange
@@ -1102,7 +1102,7 @@ Refer to <a class="reference external" href="../Reference/sr_post.7.html">sr_pos
 </dd>
 </dl>
 <ul class="simple">
-<li><p><strong>directory &lt;path&gt;           (default: .)</strong></p></li>
+<li><p><strong>path &lt;path&gt;           (default: .)</strong></p></li>
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (must be set)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (optional)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (default: 0o400)</strong></p></li>
@@ -1110,23 +1110,14 @@ Refer to <a class="reference external" href="../Reference/sr_post.7.html">sr_pos
 </ul>
 <p>nodupe_fileAgeMax should be less than nodupe_ttl when using duplicate suppression,
 to avoid re-ingesting of files that have aged out of the nodupe cache.</p>
-<p>The option <em>filename</em> can be used to set a global rename to the products.
-Ex.:</p>
-<p><strong>filename  rename=/naefs/grib2/</strong></p>
-<p>For all posts created, the <em>rename</em> option would be set to ‘/naefs/grib2/filename’
-because I specified a directory (path that ends with /).</p>
-<p>The option <em>directory</em>  defines where to get the files on the server.
+<p>The option <em>path</em>  defines where to get the files on the server.
 Combined with  <strong>accept</strong> / <strong>reject</strong>  options, the user can select the
 files of interest and their directories of residence.</p>
 <p>The  <strong>accept</strong>  and  <strong>reject</strong>  options use regular expressions (regexp) to match URL.
 These options are processed sequentially.
 The URL of a file that matches a  <strong>reject</strong>  pattern is not published.
-Files matching an  <strong>accept</strong>  pattern are published.
-Again a <em>rename</em>  can be added to the <em>accept</em> option… matching products
-for that <em>accept</em> option would get renamed as described… unless the <em>accept</em> matches
-one file, the <em>rename</em> option should describe a directory into which the files
-will be placed (prepending instead of replacing the file name).</p>
-<p>The directory can have some patterns. These supported patterns concern date/time .
+Files matching an  <strong>accept</strong>  pattern are published.</p>
+<p>The path can have some patterns. These supported patterns concern date/time .
 They are fixed…</p>
 <p><strong>${YYYY}         current year</strong>
 <strong>${MM}           current month</strong>
@@ -1136,14 +1127,13 @@ They are fixed…</p>
 <strong>${MM-1D}        current month  - 1 day</strong>
 <strong>${JJJ-1D}       current julian - 1 day</strong>
 <strong>${YYYYMMDD-1D}  current date   - 1 day</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ex.   directory /mylocaldirectory/myradars
-      accept    .*RADAR.*
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ex.   path /mylocaldirectory/myradars
+      path /mylocaldirectory/mygribs
+      path /mylocaldirectory/${YYYYMMDD}/mydailies
 
-      directory /mylocaldirectory/mygribs
+      accept    .*RADAR.*
       reject    .*Reg.*
       accept    .*GRIB.*
-
-      directory /mylocaldirectory/${YYYYMMDD}/mydailies
       accept    .*observations.*
 </pre></div>
 </div>

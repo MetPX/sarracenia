@@ -38,6 +38,15 @@ Instructions d’installation
 git
 ---
 
+3.0.53
+------
+
+*CHANGEMENT* : l'option *directory* dans le sondage ne sera plus convertie en *path* silencieusement.
+Utilisez *path* explicitement à la place. Il est toujours converti lors de la mise à niveau depuis la v2 avec
+*sr3 convert*, mais dans les configurations v3, *directory* agit désormais comme dans tous les autres
+composants comme spécificateur de chemin de destination de téléchargement.
+
+
 3.0.52
 ------
 

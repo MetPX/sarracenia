@@ -941,9 +941,9 @@ SONDAGE (POLLING)
 
 On peut faire le même travail que post, sauf que les fichiers sont sur un serveur distant.
 Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option *pollUrl*,
-avec le chemin d’accès du produit (*directory*/« fichier correspondant »).  Il y en a une publication
+avec le chemin d’accès du produit (*path* « fichier correspondant »).  Il y en a une publication
 par fichier. La taille du fichier est prise dans le répertoire « ls »... mais sa somme
-de contrôle ne peut pas être déterminée, lors la stratégie de calcul de est ¨cod¨ qui signifie
+de contrôle ne peut pas être déterminée, alors la stratégie de calcul de est ¨cod¨ qui signifie
 que ca devrait être calculé lors du transfert.
 
 Par défaut, sr_poll envoie son message de publication au courtier avec l'échange par défaut
@@ -956,7 +956,7 @@ Référez `sr3_post(7) <../Reference/sr3_post.7.html>`_ - pour comprendre le for
 Ces options définissent les fichiers pour lesquels l’utilisateur souhaite être averti et où
  il sera placé, et sous quel nom.
 
-- **directory <path>           (par défaut: .)**
+- **path <path>           (par défaut: .)**
 - **accept    <regexp pattern> [rename=] (doit être défini)**
 - **reject    <regexp pattern> (facultatif)**
 - **permDefault     <integer>        (par défaut: 0o400)**
@@ -965,15 +965,7 @@ Ces options définissent les fichiers pour lesquels l’utilisateur souhaite êt
 fileAgeMax doit être inférieur à nodupe_ttl lors de l'utilisation de la suppression des doublons,
 pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.
 
-L’option *filename* peut être utilisée pour définir un changement de nom global pour les produits.
-Ex.:
-
-**filename  rename=/naefs/grib2/**
-
-Pour tous les messages créés, l’option *rename* serait définie à '/naefs/grib2/filename'
-parce que j’ai spécifié un répertoire (chemin qui se termine par /).
-
-L’option *directory* définit où obtenir les fichiers sur le serveur.
+L’option *path* définit où obtenir les fichiers sur le serveur.
 Combiné avec les options **accept** / **reject**, l’utilisateur peut sélectionner
 les fichiers d’intérêt et leurs répertoires de résidence.
 
@@ -982,10 +974,6 @@ une correspondance avec l’URL.
 Ces options sont traitées séquentiellement.
 L’URL d’un fichier qui correspond à un modèle **reject** n’est pas publiée.
 Les fichiers correspondant à un modèle **accept** sont publiés.
-Encore une fois, un *rename* peut être ajouté à l’option *accept*... les produits qui correspondent
-a l'option *accept* seront renommé comme décrit... à moins que le *accept* corresponde à
-un fichier, l’option *rename* doit décrire un répertoire dans lequel les fichiers
-seront placé (en préfix au lieu de remplacer le nom du fichier).
 
 Le répertoire peut avoir des modèles. Ces modèles pris en charge concernent la date/l’heure.
 Ils sont fixes...
@@ -1002,14 +990,14 @@ Ils sont fixes...
 
 ::
 
-  ex.   directory /mylocaldirectory/myradars
-        accept    .*RADAR.*
+  ex.   path /mylocaldirectory/myradars
+        path /mylocaldirectory/mygribs
+        path /mylocaldirectory/${YYYYMMDD}/mydailies
 
-        directory /mylocaldirectory/mygribs
+
+        accept    .*RADAR.*
         reject    .*Reg.*
         accept    .*GRIB.*
-
-        directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
 L’option **permDefault** permet aux utilisateurs de spécifier un masque d'autorisation octal numérique
@@ -1023,10 +1011,9 @@ Les options **permDefault** spécifient un masque, c’est-à-dire que les autor
 au moins ce qui est spécifié.
 
 Comme pour tous les autres composants, l’option **vip** peut être utilisée pour indiquer
-qu’un poll doit être actif sur seulement un seul nœud d’un cluster. Notez que quand
-d’autres nœuds participant au poll et wu’ils n’ont pas le vip, ils
+qu’un poll doit être actif sur seulement un seul nœud d’un cluster. 
 
-les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
+Les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
 peut être modifié à n’importe quelle limite de temps spécifiée dans les configurations en utilisant
 l’option *fileAgeMax <duration>*. Par défaut, dans les composants
 autre que poll, cette option est désactivé en étant défini à zéro (0). Comme il s’agit d’une
@@ -1118,7 +1105,7 @@ informe qu'il y a nouveau produit.
 Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.7.html>`_
 
 **poll** se connecte à un *broker*.  À toutes les secondes de *sleep*, il se connecte à
-une *pollUrl* (sftp, ftp, ftps). Pour chacun des *directory* définis, les contenus sont listés.
+une *pollUrl* (sftp, ftp, ftps). Pour chacun des *path* définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option *fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.

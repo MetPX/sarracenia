@@ -934,8 +934,8 @@ POLLING
 
 Polling is doing the same job as a post, except for files on a remote server.
 In the case of a poll, the post will have its url built from the *pollUrl* 
-option, with the product's path (*directory*/"matched file").  There is one 
-post per file.  The file's size is taken from the directory "ls"... but its 
+option, with the product's path (*path*/"matched file").  There is one 
+post per file. The file's size is taken from the directory "ls"... but its 
 checksum cannot be determined, so the default identity method is "cod", asking
 clients to calculate the identity Checksum On Download.
 
@@ -946,11 +946,10 @@ It can be given incomplete if it is well defined in the credentials.conf file.
 Refer to `sr3_post(1) <../Reference/sr3_post.1.html>`_ - to understand the complete notification process.
 Refer to `sr_post(7) <../Reference/sr_post.7.html>`_ - to understand the complete notification format.
 
-
 These options set what files the user wants to be notified for and where
  it will be placed, and under which name.
 
-- **directory <path>           (default: .)**
+- **path <path>           (default: .)**
 - **accept    <regexp pattern> [rename=] (must be set)**
 - **reject    <regexp pattern> (optional)**
 - **permDefault     <integer>        (default: 0o400)**
@@ -959,15 +958,7 @@ These options set what files the user wants to be notified for and where
 nodupe_fileAgeMax should be less than nodupe_ttl when using duplicate suppression,
 to avoid re-ingesting of files that have aged out of the nodupe cache.
 
-The option *filename* can be used to set a global rename to the products.
-Ex.:
-
-**filename  rename=/naefs/grib2/**
-
-For all posts created, the *rename* option would be set to '/naefs/grib2/filename'
-because I specified a directory (path that ends with /).
-
-The option *directory*  defines where to get the files on the server.
+The option *path*  defines where to get the files on the server.
 Combined with  **accept** / **reject**  options, the user can select the
 files of interest and their directories of residence.
 
@@ -975,12 +966,8 @@ The  **accept**  and  **reject**  options use regular expressions (regexp) to ma
 These options are processed sequentially.
 The URL of a file that matches a  **reject**  pattern is not published.
 Files matching an  **accept**  pattern are published.
-Again a *rename*  can be added to the *accept* option... matching products
-for that *accept* option would get renamed as described... unless the *accept* matches
-one file, the *rename* option should describe a directory into which the files
-will be placed (prepending instead of replacing the file name).
 
-The directory can have some patterns. These supported patterns concern date/time .
+The path can have some patterns. These supported patterns concern date/time .
 They are fixed...
 
 **${YYYY}         current year**
@@ -995,14 +982,13 @@ They are fixed...
 
 ::
 
-  ex.   directory /mylocaldirectory/myradars
-        accept    .*RADAR.*
+  ex.   path /mylocaldirectory/myradars
+        path /mylocaldirectory/mygribs
+        path /mylocaldirectory/${YYYYMMDD}/mydailies
 
-        directory /mylocaldirectory/mygribs
+        accept    .*RADAR.*
         reject    .*Reg.*
         accept    .*GRIB.*
-
-        directory /mylocaldirectory/${YYYYMMDD}/mydailies
         accept    .*observations.*
 
 The **permDefault** option allows users to specify a linux-style numeric octal

@@ -1044,9 +1044,9 @@ en le ré-annonçant sur l’échange xpublic.</p>
 <h2>SONDAGE (POLLING)<a class="headerlink" href="#sondage-polling" title="Link to this heading"></a></h2>
 <p>On peut faire le même travail que post, sauf que les fichiers sont sur un serveur distant.
 Dans le cas d’un sondage (en anglais: poll), l’URL de la publication sera générée à partir de l´option <em>pollUrl</em>,
-avec le chemin d’accès du produit (<em>directory</em>/« fichier correspondant »).  Il y en a une publication
+avec le chemin d’accès du produit (<em>path</em> « fichier correspondant »).  Il y en a une publication
 par fichier. La taille du fichier est prise dans le répertoire « ls »… mais sa somme
-de contrôle ne peut pas être déterminée, lors la stratégie de calcul de est ¨cod¨ qui signifie
+de contrôle ne peut pas être déterminée, alors la stratégie de calcul de est ¨cod¨ qui signifie
 que ca devrait être calculé lors du transfert.</p>
 <p>Par défaut, sr_poll envoie son message de publication au courtier avec l’échange par défaut
 (le préfixe <em>xs_</em> suivi du nom d’utilisateur du courtier). Le <em>post_broker</em> est obligatoire.
@@ -1058,7 +1058,7 @@ Référez <a class="reference external" href="../Reference/sr3_post.7.html">sr3_
 </dd>
 </dl>
 <ul class="simple">
-<li><p><strong>directory &lt;path&gt;           (par défaut: .)</strong></p></li>
+<li><p><strong>path &lt;path&gt;           (par défaut: .)</strong></p></li>
 <li><p><strong>accept    &lt;regexp pattern&gt; [rename=] (doit être défini)</strong></p></li>
 <li><p><strong>reject    &lt;regexp pattern&gt; (facultatif)</strong></p></li>
 <li><p><strong>permDefault     &lt;integer&gt;        (par défaut: 0o400)</strong></p></li>
@@ -1066,23 +1066,14 @@ Référez <a class="reference external" href="../Reference/sr3_post.7.html">sr3_
 </ul>
 <p>fileAgeMax doit être inférieur à nodupe_ttl lors de l’utilisation de la suppression des doublons,
 pour éviter la réingestion de fichiers obsolètes une fois partie du cache nodupe.</p>
-<p>L’option <em>filename</em> peut être utilisée pour définir un changement de nom global pour les produits.
-Ex.:</p>
-<p><strong>filename  rename=/naefs/grib2/</strong></p>
-<p>Pour tous les messages créés, l’option <em>rename</em> serait définie à ‘/naefs/grib2/filename’
-parce que j’ai spécifié un répertoire (chemin qui se termine par /).</p>
-<p>L’option <em>directory</em> définit où obtenir les fichiers sur le serveur.
+<p>L’option <em>path</em> définit où obtenir les fichiers sur le serveur.
 Combiné avec les options <strong>accept</strong> / <strong>reject</strong>, l’utilisateur peut sélectionner
 les fichiers d’intérêt et leurs répertoires de résidence.</p>
 <p>Les options <strong>accept</strong> et <strong>reject</strong> utilisent des expressions régulières (regexp) pour trouver
 une correspondance avec l’URL.
 Ces options sont traitées séquentiellement.
 L’URL d’un fichier qui correspond à un modèle <strong>reject</strong> n’est pas publiée.
-Les fichiers correspondant à un modèle <strong>accept</strong> sont publiés.
-Encore une fois, un <em>rename</em> peut être ajouté à l’option <em>accept</em>… les produits qui correspondent
-a l’option <em>accept</em> seront renommé comme décrit… à moins que le <em>accept</em> corresponde à
-un fichier, l’option <em>rename</em> doit décrire un répertoire dans lequel les fichiers
-seront placé (en préfix au lieu de remplacer le nom du fichier).</p>
+Les fichiers correspondant à un modèle <strong>accept</strong> sont publiés.</p>
 <p>Le répertoire peut avoir des modèles. Ces modèles pris en charge concernent la date/l’heure.
 Ils sont fixes…</p>
 <p><strong>${YYYY}         année actuelle</strong>
@@ -1093,14 +1084,14 @@ Ils sont fixes…</p>
 <strong>${MM-1D}        mois actuel - 1 jour</strong>
 <strong>${JJJ-1D}       julian actuelle - 1 jour</strong>
 <strong>${YYYYMMDD-1D}  date actuelle   - 1 jour</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ex.   directory /mylocaldirectory/myradars
-      accept    .*RADAR.*
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ex.   path /mylocaldirectory/myradars
+      path /mylocaldirectory/mygribs
+      path /mylocaldirectory/${YYYYMMDD}/mydailies
 
-      directory /mylocaldirectory/mygribs
+
+      accept    .*RADAR.*
       reject    .*Reg.*
       accept    .*GRIB.*
-
-      directory /mylocaldirectory/${YYYYMMDD}/mydailies
       accept    .*observations.*
 </pre></div>
 </div>
@@ -1114,9 +1105,8 @@ de style Linux:</p>
 Les options <strong>permDefault</strong> spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.</p>
 <p>Comme pour tous les autres composants, l’option <strong>vip</strong> peut être utilisée pour indiquer
-qu’un poll doit être actif sur seulement un seul nœud d’un cluster. Notez que quand
-d’autres nœuds participant au poll et wu’ils n’ont pas le vip, ils</p>
-<p>les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
+qu’un poll doit être actif sur seulement un seul nœud d’un cluster.</p>
+<p>Les fichiers qui sont plus vieux que fileAgeMax sont ignorés. Cela
 peut être modifié à n’importe quelle limite de temps spécifiée dans les configurations en utilisant
 l’option <em>fileAgeMax &lt;duration&gt;</em>. Par défaut, dans les composants
 autre que poll, cette option est désactivé en étant défini à zéro (0). Comme il s’agit d’une
@@ -1196,7 +1186,7 @@ présent, modifié, ou créé dans le répertoire distant, le programme
 informe qu’il y a nouveau produit.</p>
 <p>Le protocle de notification est défini ici <a class="reference external" href="../Reference/sr3_post.7.html">sr3_post(7)</a></p>
 <p><strong>poll</strong> se connecte à un <em>broker</em>.  À toutes les secondes de <em>sleep</em>, il se connecte à
-une <em>pollUrl</em> (sftp, ftp, ftps). Pour chacun des <em>directory</em> définis, les contenus sont listés.
+une <em>pollUrl</em> (sftp, ftp, ftps). Pour chacun des <em>path</em> définis, les contenus sont listés.
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option <em>fileAgeMax</em> élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by <em>accept</em>, <strong>poll</strong> crée un message de notification pour ce produit.</p>
