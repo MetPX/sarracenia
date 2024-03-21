@@ -82,11 +82,17 @@ class Scheduled(FlowCB):
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
         self.minutes = list(map( lambda x: int(x), sched_min))
         self.minutes.sort()
+
+        self.default_wait=300
+
         logger.debug( f'minutes: {self.minutes}')
 
         now=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         self.update_appointments(now)
         self.first_interval=True
+
+        if self.o.scheduled_interval <= 0 and not self.appointments:
+            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait} seconds" )
 
     def gather(self,messageCountMax):
 
@@ -160,7 +166,7 @@ class Scheduled(FlowCB):
 
         sleepfor=appointment-now
 
-        logger.info( f"{appointment} duration: {sleepfor}" )
+        logger.info( f"appointment at: {appointment}, need to wait: {sleepfor})" )
         self.wait_seconds( sleepfor )
 
 
@@ -204,7 +210,15 @@ class Scheduled(FlowCB):
             else:
                 self.appointments.remove(next_appointment)
                 logger.info( f"ok {len(self.appointments)} appointments left today" )
+            return
 
+        # default wait...
+
+        if self.first_interval:
+            self.first_interval=False
+            return
+
+        self.wait_seconds(self.default_wait)
 
 if __name__ == '__main__':
     
