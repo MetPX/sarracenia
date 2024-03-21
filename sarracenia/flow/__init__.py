@@ -405,22 +405,19 @@ class Flow:
 
     def _run_vip_update(self) -> bool:
 
-            self.have_vip = self.has_vip()
-            if (self.o.component == 'poll') and not self.have_vip:
-                if self.had_vip:
-                    logger.info("now passive on vips %s" % self.o.vip )
-                    with open( self.o.novipFilename, 'w' ) as f:
-                        f.write(str(nowflt()) + '\n' )
-                    self.had_vip=False
-            else:
-                if not self.had_vip:
-                    logger.info("now active on vip %s" % self.have_vip )
-                    self.had_vip=True
-                    if os.path.exists( self.o.novipFilename ):
-                        os.unlink( self.o.novipFilename )
-
-
-
+        self.have_vip = self.has_vip()
+        if (self.o.component == 'poll') and not self.have_vip:
+            if self.had_vip:
+                logger.info("now passive on vips %s" % self.o.vip )
+                with open( self.o.novipFilename, 'w' ) as f:
+                    f.write(str(nowflt()) + '\n' )
+                self.had_vip=False
+        else:
+            if not self.had_vip:
+                logger.info("now active on vip %s" % self.have_vip )
+                self.had_vip=True
+                if os.path.exists( self.o.novipFilename ):
+                    os.unlink( self.o.novipFilename )
 
     def run(self):
         """
