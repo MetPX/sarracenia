@@ -81,20 +81,3 @@ class Poll(Flow):
         if not features['ftppoll']['present']:
             if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
                 logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(features['ftppoll']['modules_needed'])}" )
-
-    def do(self):
-        """
-            stub to do the work: does nothing, marking everything done.
-            to be replaced in child classes that do transforms or transfers.
-        """
-
-        # mark all remaining messages as rejected.
-        if self.worklist.poll_catching_up:
-            # in catchup mode, just reading previously posted messages.
-            self.worklist.rejected = self.worklist.incoming
-        else:
-            self.worklist.ok = self.worklist.incoming
-
-        logger.debug('processing %d messages worked! (stop requested: %s)' %
-                     (len(self.worklist.incoming), self._stop_requested))
-        self.worklist.incoming = []
