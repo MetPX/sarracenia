@@ -63,16 +63,17 @@ class Poll(Flow):
             else:
                 logger.info( f"Good! post_exchange: {px} and exchange: {self.o.exchange} match so multiple instances to share a poll." )
 
-        if not 'poll' in ','.join(self.plugins['load']):
+        if not 'scheduled' in ','.join(self.plugins['load']):
+            self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')
+
+        if not 'flowcb.poll.Poll' in ','.join(self.plugins['load']):
             logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
             self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
 
         if options.vip:
-            self.plugins['load'].insert(
-                0, 'sarracenia.flowcb.gather.message.Message')
+            self.plugins['load'].insert( 0, 'sarracenia.flowcb.gather.message.Message')
 
-        self.plugins['load'].insert(0,
-                                    'sarracenia.flowcb.post.message.Message')
+        self.plugins['load'].insert( 0, 'sarracenia.flowcb.post.message.Message')
 
         if self.o.nodupe_ttl < self.o.fileAgeMax:
             logger.warning( f"nodupe_ttl < fileAgeMax means some files could age out of the cache and be re-ingested ( see : https://github.com/MetPX/sarracenia/issues/904")
@@ -97,22 +98,3 @@ class Poll(Flow):
         logger.debug('processing %d messages worked! (stop requested: %s)' %
                      (len(self.worklist.incoming), self._stop_requested))
         self.worklist.incoming = []
-
-
-    def gather(self):
-
-        super().gather()
-
-        if len(self.worklist.incoming) > 0:
-            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
-            self.worklist.poll_catching_up = True
-            return 
-        else:
-            self.worklist.poll_catching_up = False
-
-        if self.have_vip:
-            for plugin in self.plugins['poll']:
-                new_incoming = plugin()
-                if len(new_incoming) > 0:
-                    self.worklist.incoming.extend(new_incoming)
-

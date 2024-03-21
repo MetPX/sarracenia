@@ -1984,6 +1984,11 @@ class Config:
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
+        else:
+            if self.sleep > 1:
+                self.scheduled_interval = self.sleep
+                self.sleep=1
+
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
