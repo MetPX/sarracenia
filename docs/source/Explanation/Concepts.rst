@@ -89,7 +89,9 @@ The components just have different default settings:
  | Download file from a   | Filter                   |                        |
  | pump                   |                          |                        |
  |                        |                          |                        |
- | publish it.            |                          |                        |
+ | Publish a message      |                          |                        |
+ | downstream for         |                          |                        |                     
+ | consumers              |                          |                        |    
  |                        |                          |                        |
  | Subscribers to         | Work = Download          |                        |
  | this pump can          |                          |                        |
@@ -119,11 +121,13 @@ The components just have different default settings:
  | *winnow*               | Gather = gather.message  | acceptUnmatched True   |
  |                        |                          |                        |
  |                        |                          | nodupe_ttl 300         |
- | Move notification      | Filter (shovel cache=off)|                        |
+ | Move notification      | Filter (shovel cache=on) |                        |
  | messages around        |                          | callback gather.message|
  |                        |                          |                        |
  |                        | Work = nil               | callback post.message  |
- | suppress duplicates    |                          |                        |
+ | Suppress duplicates    |                          |                        |
+ | through caching and    |                          |                        | 
+ | a shared VIP           |                          |                        |
  |                        | Post = yes               |                        |
  +------------------------+--------------------------+------------------------+
  | *post/watch*           | Gather = gather.file     | <a number of default   |
@@ -131,7 +135,7 @@ The components just have different default settings:
  |                        |                          |                        |
  | Find file on a         | Filter                   | sleep -1 # for post    |
  |                        |                          |                        |
- | local server to        |                          | sleep 5 # for watch    |
+ | **local** server to    |                          | sleep 5 # for watch    |
  | publish                | Work = nil               |                        |
  |                        |                          | callback gather.file   |
  |                        |                          |                        |
@@ -141,9 +145,10 @@ The components just have different default settings:
  | *sender*               | Gather = gather.message  | flowMain sender        |
  |                        |                          |                        |
  | Send files from a      | Filter                   |                        |
- | pump.                  |                          |                        |
+ | pump somewhere else    |                          |                        |
  |                        |                          |                        |
- | publish message after  |                          |                        |
+ | Optional:              |                          |                        |
+ | Publish message after  |                          |                        |
  |                        | Do = sendfile            |                        |
  |                        |                          |                        |
  |                        | Outlet = optional        |                        |
