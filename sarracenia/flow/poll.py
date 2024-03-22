@@ -31,7 +31,6 @@ default_options = {
     'timeCopy': True,
     'randomize': False,
     'post_on_start': False,
-    'sleep': -1,
     'nodupe_ttl': 7 * 60 * 60,
     'fileAgeMax': 30 * 24 * 60 * 60,
 }

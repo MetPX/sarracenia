@@ -2696,6 +2696,8 @@ class sr_GlobalState:
                     elif ( k == 'post_baseUrl' ) and line[1][-1] != '/':
                             line[1]+='/'
                             # see: https://github.com/MetPX/sarracenia/issues/841
+                    elif (k == 'sleep' ) and (component == 'poll'):
+                        k = 'scheduled_interval'
                     if k in convert_to_v3:
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
