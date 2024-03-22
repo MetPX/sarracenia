@@ -152,7 +152,7 @@ list_options = [ 'path', 'vip' ]
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents' : sarracenia.flowcb.entry_points + [ 'reject' ],
+    'logEvents' : set(sarracenia.flowcb.entry_points + [ 'reject' ]),
     'fileEvents' : set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
@@ -1039,8 +1039,6 @@ class Config:
                     sv= old_value | sv
                 elif op == '-' :
                     sv= old_value - sv
-                else:
-                    sv=set([v])
         return sv
 
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
