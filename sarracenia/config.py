@@ -1010,6 +1010,39 @@ class Config:
         w = 'with ' if fn or flatten or strip else ''
         return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
+    def _parse_set_string( self, v:str, old_value: set ) -> set:
+        """
+           given a set string, return a python set.
+        """
+        sv=set()
+        if type(v) is list:
+            sv=set(v)
+        elif type(v) is set:
+            sv=v
+        elif type(v) is str:
+            v=v.replace('|',',')
+            if v == 'None': 
+                sv=set([])
+            else:
+                if v[0] in [ '+', '-']:
+                    op=v[0]
+                    v=v[1:]
+                else:
+                    op='r'
+
+                if ',' in v: 
+                    sv=set(v.split(','))
+                else: 
+                    sv=set([v])
+
+                if op == '+':
+                    sv= old_value | sv
+                elif op == '-' :
+                    sv= old_value - sv
+                else:
+                    sv=set([v])
+        return sv
+
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
         r"""
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
@@ -1080,32 +1113,7 @@ class Config:
                 setattr(self, option, octal_number(int(v,base=8)))
         elif kind == 'set':  
             set_options.append(option)
-            sv=set()
-            if type(v) is list:
-                sv=set(v)
-            elif type(v) is set:
-                sv=v
-            elif type(v) is str:
-                if v == 'None': 
-                    sv=set([])
-                else:
-                    if v[0] in [ '+', '-']:
-                        op=v[0]
-                        v=v[1:]
-                    else:
-                        op='r'
-
-                    if ',' in v: 
-                        sv=set(v[1:].split(','))
-                    else: 
-                        sv=set([v[1:]])
-
-                    if op == '+':
-                        sv= getattr(self,option) | sv
-                    elif op == '-' :
-                        sv= getattr(self,option) - sv
-                    else:
-                        sv=set([v])
+            sv = self._parse_set_string(v,set())
             setattr(self, option, sv)
             if all_values:
                 set_choices[option] = all_values
@@ -1617,25 +1625,13 @@ class Config:
                         setattr(self,k,set_choices[k])
                     continue
                 v=v.replace('|',',')
-                if v[0] in ['-','+']:
-                    op=v[0]
-                    v=v[1:]
-                else:
-                    op='r'
-
-                if op == '+':
-                    vs = getattr(self,k) | set(v.split(','))
-                elif op == '-':
-                    vs = getattr(self,k) - set(v.split(','))
-                else:
-                    vs = set( v.split(',') )
-
+                vs = self._parse_set_string(v,getattr(self,k))
                 setattr(self, k, vs )
 
                 if k in set_choices :
                     for i in getattr(self,k):
                         if i not in set_choices[k]:
-                            logger.error( f'{self.files}:{lineno} invalid entry for {k}:  {i}. Must be one of: {set_choices[k]}' )
+                            logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
 
             elif k in str_options:
                 if ( k == 'directory' ) and not self.download:
@@ -1997,6 +1993,28 @@ class Config:
         for f,l,u in self.undeclared:
             if u not in alloptions:
                 logger.error( f"{f}:{l} undeclared option: {u}")
+            elif u in flag_options:
+                if type( getattr(self,u) ) is not bool:
+                    setattr(self,u,isTrue(getattr(self,u)))
+            elif u in float_options:
+                if type( getattr(self,u) ) is not float:
+                    setattr(self,u,float(getattr(self,u)))
+            elif u in set_options:
+                if type( getattr(self,u) ) is not set:
+                    setattr(self,u,self._parse_set_string(getattr(self,u),set()))
+            elif u in str_options:
+                if type( getattr(self,u) ) is not str:
+                    setattr(self,u,str(getattr(self,u)))
+            elif u in count_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+            elif u in size_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+            elif u in duration_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,durationToSeconds(getattr(self,u)))
+            # list options are the default, so no need to regularize
 
         no_defaults=set()
         for u in alloptions:
