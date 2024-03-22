@@ -1447,8 +1447,6 @@ class Config:
                     k = 'sendTo'
             elif k == 'broker' and component == 'poll' :
                 k = 'post_broker'
-            elif k == 'directory' and component == 'poll' :
-                k = 'path'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1640,6 +1638,9 @@ class Config:
                             logger.error( f'{self.files}:{lineno} invalid entry for {k}:  {i}. Must be one of: {set_choices[k]}' )
 
             elif k in str_options:
+                if ( k == 'directory' ) and not self.download:
+                    logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
+
                 v = ' '.join(line[1:])
                 if v == 'None':
                     v=None

@@ -39,6 +39,14 @@ Installation Instructions
 git
 ---
 
+3.0.53
+------
+
+*CHANGE*: *directory* option in poll will no longer be converted to *path* silently.
+Use *path* explicitly instead. It is still converted when upgrading from v2 with
+*sr3 convert*, but in v3 configurations, *directory* now acts as it does in all other
+components as a download specifier.
+
 3.0.52
 ------
 
