@@ -738,6 +738,10 @@ class MQTT(Moth):
                     logger.info( f"UserProperty:{props.UserProperty}" )
                     
 
+            if not topic:
+                logger.error(f"message without topic will not be received - publish aborted")
+                return False
+            
             info = self.client.publish(topic=topic, payload=raw_body, qos=self.o['qos'], properties=props)
                
             if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:

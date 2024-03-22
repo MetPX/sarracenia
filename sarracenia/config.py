@@ -1077,7 +1077,7 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"{self.files}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{self.files}{self.lineno} multiple declarations of {kind} {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
@@ -1490,7 +1490,6 @@ class Config:
                     setattr(self, k, True)
                 else:
                     setattr(self, k, isTrue(v))
-            
                 if k in ['logReject'] and self.logReject:
                     self.logEvents = self.logEvents | set(['reject'])
                 continue
@@ -1975,7 +1974,7 @@ class Config:
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( 'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
