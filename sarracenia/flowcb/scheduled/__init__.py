@@ -100,7 +100,7 @@ class Scheduled(FlowCB):
         self.wait_until_next()
 
         if self.stop_requested or self.housekeeping_needed:
-            return (True, [])
+            return (False, [])
 
         logger.info('time to run')
 

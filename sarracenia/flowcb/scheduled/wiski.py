@@ -139,7 +139,7 @@ class Wiski(Scheduled):
 
         while (1):
             if self.stop_requested or self.housekeeping_needed:
-                return (True, messages)
+                return (False, messages)
         
             self.token = self.submit_tokenization_request()
             authenticated_url = self.main_url
