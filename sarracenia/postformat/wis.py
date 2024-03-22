@@ -125,7 +125,9 @@ class Wis(PostFormat):
                 if literal in body:
                     GeoJSONBody[literal] = body[literal]
 
-            if 'topic' in options:
+            if 'topic' in body:
+                topic = body['topic'].split('/')
+            elif 'topic' in options:
                 topic=options['topic'].split('/')
             else:
                 topic= []
@@ -136,7 +138,7 @@ class Wis(PostFormat):
 
             """
             for h in body:
-                if h not in [ 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime' ]:
+                if h not in [ 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime', 'mode', 'identity', 'topic' ]:
                     GeoJSONBody['properties'][h] = body[h]
 
             t=body['pubTime']
