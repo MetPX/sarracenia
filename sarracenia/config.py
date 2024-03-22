@@ -322,9 +322,9 @@ r"""
 
 
 def isTrue(S):
-    s = S.lower()
-    if s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
-    return False
+    if type(S) is list:
+        S = S[-1]
+    return S.lower() in ['true', 'yes', 'on', '1']
 
 
 def get_package_lib_dir():
