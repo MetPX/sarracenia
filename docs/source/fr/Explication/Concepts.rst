@@ -111,23 +111,25 @@ Les composants ont juste des paramètres par défaut différents:
  :align: center
 
  +------------------------+------------------------------+------------------------+
- | Composant              | Utilisation de l’algorithme  | equiv. en fichier. cfg |
+ | Composant              | Utilisation de l’algorithme  | options clé            |
  +------------------------+------------------------------+------------------------+
  +------------------------+------------------------------+------------------------+
  | *subscribe*            | Gather = gather.message      | flowMain subscribe     |
  |                        |                              |                        |
- |   Télécharger un       | Filter                       |                        |
- |   fichier d'une pompe  |                              |                        |
- |                        | Work = Télécharger           |                        |
- |   défaut mirror=False  |                              |                        |
- |   (True pour tous les  |                              |                        |
- |   autres)              | Post = faculatif             |                        |
+ |   Télécharger un       | Filter                       | mirror off             |
+ |   fichier d'une pompe  |                              | (dans les autres       |
+ |                        | Work = Télécharger           |  composants, c'est     |
+ |                        |                              |  mirror on )           |
+ |   défaut mirror=False  | Post = facultatif            |                        |
+ |   (True pour tous les  |                              | download on            |
+ |   autres)              |                              |                        |
+ |                        |                              |                        |
  +------------------------+------------------------------+------------------------+
  | *sarra*                | Gather = gather.message      |                        |
  |                        |                              | flowMain sarra         |
  | Utilisé sur des        |                              |                        |
- | pompes.                |                              |                        |
- |                        |                              |                        |
+ | pompes.                |                              | mirror on              |
+ |                        |                              | download on            |
  | Télécharge un fichier  |                              |                        |
  |                        |                              |                        |
  | Publié un message par  |                              |                        |
@@ -143,7 +145,7 @@ Les composants ont juste des paramètres par défaut différents:
  | *poll*                 | Gather                       |                        |
  |                        | if has_vip: poll             | flowMain poll          |
  | Trouver des fichiers   |                              |                        |
- | sur d'autre serveurs   | Filter                       |                        |
+ | sur d'autre serveurs   | Filter                       | pollUrl                |
  | pour publier.          |                              |                        |
  |                        | if has_vip:                  |                        |
  |                        |     Work = nil               |                        |
@@ -153,11 +155,11 @@ Les composants ont juste des paramètres par défaut différents:
  | *shovel*               | Gather = gather.message      | acceptUnmatched True   |
  |                        |                              |                        |
  |                        |                              | nodupe_ttl 0           |
- | Déplacer les messages  | Filter (shovel cache=off)    |                        |
- | de place.              |                              | callback gather.message|
- |                        |                              |                        |
- |                        | Work = nil                   | callback post.message  |
- |                        |                              |                        |
+ | Déplacer les messages  | Filter (shovel cache=off)    | download off           |
+ | de place.              |                              |                        |
+ |                        |                              | callback gather.message|
+ |                        | Work = nil                   |                        |
+ |                        |                              | callback post.message  |
  |                        | Post = oui                   |                        |
  +------------------------+------------------------------+------------------------+
  | *winnow*               | Gather = gather.message      |                        |
@@ -172,12 +174,10 @@ Les composants ont juste des paramètres par défaut différents:
  | du cache et d'un VIP   |                              |                        |
  | partagé                |                              |                        |
  +------------------------+------------------------------+------------------------+
- | *post/watch*           | Gather = gather.file         |                        |
- |                        |                              | <plusieurs options de  |
- | Trouve un fichier sur  | Filter                       |  défaut>               |
+ | *post/watch*           | Gather = gather.file         | path /file/a/afficher  |
  |                        |                              |                        |
- | un serveur **local**   |                              | sleep -1 # pour post   |
- |                        |                              |                        |
+ | Trouve un fichier sur  | Filter                       | sleep -1 # pour post   |
+ | un serveur **local**   |                              |                        |
  | pour le publier        | Work = nil                   | sleep 5  # pour watch  |
  |                        |                              |                        |
  |                        | Post = oui                   | callback gather.file   |
@@ -187,7 +187,7 @@ Les composants ont juste des paramètres par défaut différents:
  | *sender*               | Gather = gather.message      |                        |
  |                        |                              | flowMain sender        |
  | Enovoyer des fichiers  | Filter                       |                        |
- |                        |                              |                        |
+ |                        |                              | sendTo                 |
  | Optionnel              | Do = sendfile                |                        |
  | Publie un message après|                              |                        |
  | l'envoie               |                              |                        |
