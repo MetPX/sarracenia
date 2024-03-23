@@ -23,6 +23,9 @@ class Options:
         self.config = "foobar.conf"
         self.pid_filename = "/tmp/sarracenia/diskqueue_test/pid_filename"
         self.housekeeping = float(39)
+        self.fileAgeMin = 0
+        self.fileAgeMax = 0
+
     def add_option(self, option, type, default = None):
         if not hasattr(self, option):
             setattr(self, option, default)
