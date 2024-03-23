@@ -1713,10 +1713,16 @@ class sr_GlobalState:
                 del flow
                 flow=None
         
+        # cleanup statefiles
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+
+            if self.configs[c][cfg]['options'].statehost:
+                cache_dir = self.user_cache_dir + os.sep + self.hostname + os.sep + f.replace('/', os.sep)
+            else:
+                cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
+
             if os.path.isdir(cache_dir):
                 for state_file in os.listdir(cache_dir):
                     if self.please_stop:
@@ -1732,7 +1738,8 @@ class sr_GlobalState:
                         print('removing state file (dry run): %s' % asf)
                     else:
                         print('removing state file: %s' % asf)
-                        os.unlink(asf)
+                        if os.path.exists(asf):
+                            os.unlink(asf)
 
     print_column = 0
 
