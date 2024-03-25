@@ -225,7 +225,7 @@ dériver des classes de flux, d’intégrité ou de transfert.</p>
 <tbody>
 <tr class="row-odd"><td><p>Composant</p></td>
 <td><p>Utilisation de l’algorithme</p></td>
-<td><p>equiv. en fichier. cfg</p></td>
+<td><p>options clé</p></td>
 </tr>
 <tr class="row-even"><td></td>
 <td></td>
@@ -243,16 +243,26 @@ autres)</p>
 <td><p>Gather = gather.message</p>
 <p>Filter</p>
 <p>Work = Télécharger</p>
-<p>Post = faculatif</p>
+<p>Post = facultatif</p>
 </td>
-<td><p>flowMain subscribe</p></td>
+<td><p>flowMain subscribe</p>
+<p>mirror off
+(dans les autres</p>
+<blockquote>
+<div><p>composants, c’est
+mirror on )</p>
+</div></blockquote>
+<p>download on</p>
+</td>
 </tr>
 <tr class="row-even"><td><p><em>sarra</em></p>
 <p>Utilisé sur des
 pompes.</p>
 <p>Télécharge un fichier</p>
-<p>publie-le</p>
-<p>abonnés de la pomple
+<p>Publié un message par
+la suite aux consom-
+mateurs.</p>
+<p>Abonnés de la pompe
 locale puissent
 télécharer à leur
 tour</p>
@@ -261,7 +271,10 @@ tour</p>
 <p>Work = Télécharger</p>
 <p>Post = publier</p>
 </td>
-<td><p>flowMain sarra</p></td>
+<td><p>flowMain sarra</p>
+<p>mirror on
+download on</p>
+</td>
 </tr>
 <tr class="row-odd"><td><p><em>poll</em></p>
 <p>Trouver des fichiers
@@ -279,11 +292,13 @@ if has_vip: poll</p>
 </dd>
 </dl>
 </td>
-<td><p>flowMain poll</p></td>
+<td><p>flowMain poll</p>
+<p>pollUrl</p>
+</td>
 </tr>
 <tr class="row-even"><td><p><em>shovel</em></p>
-<p>manutention de
-messages d´annonce.</p>
+<p>Déplacer les messages
+de place.</p>
 </td>
 <td><p>Gather = gather.message</p>
 <p>Filter (shovel cache=off)</p>
@@ -291,32 +306,35 @@ messages d´annonce.</p>
 <p>Post = oui</p>
 </td>
 <td><p>acceptUnmatched True</p>
-<p>nodupe_ttl 0</p>
+<p>nodupe_ttl 0
+download off</p>
 <p>callback gather.message</p>
 <p>callback post.message</p>
 </td>
 </tr>
 <tr class="row-odd"><td><p><em>winnow</em></p>
-<p>Bouge les posts ou
-rapports de place.</p>
-<p>suppression de
-doublons</p>
+<p>Déplacer les messages
+de place.</p>
+<p>Suppression de
+doublons à l’aide
+du cache et d’un VIP
+partagé</p>
 </td>
 <td><p>Gather = gather.message</p>
-<p>Filter (shovel cache=off)</p>
+<p>Filter (shovel cache=on)</p>
 <p>Work = nil</p>
 <p>Post = oui</p>
 </td>
 <td><p>acceptUnmatched true</p>
-<p>nodupe_ttle 300</p>
+<p>nodupe_ttl 300</p>
 <p>callback gather.message</p>
 <p>callback post.message</p>
 </td>
 </tr>
 <tr class="row-even"><td><p><em>post/watch</em></p>
-<p>Trouve un fichier sur</p>
-<p>un serveur local pour</p>
-<p>le publier</p>
+<p>Trouve un fichier sur
+un serveur <strong>local</strong>
+pour le publier</p>
 </td>
 <td><p>Gather = gather.file</p>
 <p>Filter</p>
@@ -326,10 +344,7 @@ doublons</p>
 <div><p>Message?, File?</p>
 </div></blockquote>
 </td>
-<td><dl class="simple">
-<dt>&lt;plusieurs options de</dt><dd><p>défaut&gt;</p>
-</dd>
-</dl>
+<td><p>path /file/a/afficher</p>
 <p>sleep -1 # pour post</p>
 <p>sleep 5  # pour watch</p>
 <p>callback gather.file</p>
@@ -338,14 +353,18 @@ doublons</p>
 </tr>
 <tr class="row-odd"><td><p><em>sender</em></p>
 <p>Enovoyer des fichiers</p>
-<p>publier après envoi</p>
+<p>Optionnel
+Publie un message après
+l’envoie</p>
 </td>
 <td><p>Gather = gather.message</p>
 <p>Filter</p>
 <p>Do = sendfile</p>
 <p>Outlet = facultatif</p>
 </td>
-<td><p>flowMain sender</p></td>
+<td><p>flowMain sender</p>
+<p>sendTo</p>
+</td>
 </tr>
 </tbody>
 </table>

@@ -183,30 +183,33 @@ or deriving classes from flow, identity, or transfer classes.</p>
 <tbody>
 <tr class="row-odd"><td><p>Component</p></td>
 <td><p>Use of the algorithm</p></td>
-<td><p>Config File Equivalent</p></td>
+<td><p>Key Option Settings</p></td>
 </tr>
 <tr class="row-even"><td></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="row-odd"><td><p><em>subscribe</em></p>
-<p>Download file from a
+<p>Download files from a
 pump.</p>
-<p>default mirror=False
-All others it is True</p>
 </td>
 <td><p>Gather = gather.message</p>
 <p>Filter</p>
-<p>Work = Download</p>
-<p>Post = optional</p>
+<p>Work = Download
+Post = optional</p>
 </td>
-<td><p>flowMain subscribe</p></td>
+<td><p>flowMain subscribe</p>
+<p>mirror off
+(all others it is on)</p>
+</td>
 </tr>
 <tr class="row-even"><td><p><em>sarra</em></p>
 <p>Used on pumps.</p>
-<p>Download file from a
+<p>Download files from a
 pump</p>
-<p>publish it.</p>
+<p>Publish a message
+downstream for
+consumers</p>
 <p>Subscribers to
 this pump can
 download in turn.</p>
@@ -216,7 +219,10 @@ download in turn.</p>
 <p>Work = Download</p>
 <p>Post = post</p>
 </td>
-<td><p>flowMain sarra</p></td>
+<td><p>flowMain sarra</p>
+<p>mirror on
+download on</p>
+</td>
 </tr>
 <tr class="row-odd"><td><p><em>poll</em></p>
 <p>Find files on other
@@ -229,12 +235,20 @@ a pump.</p>
 if has_vip: poll</p>
 <p>Filter</p>
 <dl>
-<dt>if has_vip:</dt><dd><p>Work = nil</p>
+<dt>if has_vip:</dt><dd><p>Work = Download</p>
 <p>Post = yes</p>
 </dd>
 </dl>
 </td>
-<td><p>flowMain poll</p></td>
+<td><p>flowMain poll</p>
+<p>pollUrl
+path</p>
+<p>download off
+mirror on</p>
+<p>scheduled_interval
+scheduled_hour
+schedules_minute</p>
+</td>
 </tr>
 <tr class="row-even"><td><p><em>shovel</em></p>
 <p>Move notification
@@ -246,7 +260,8 @@ messages around.</p>
 <p>Post = yes</p>
 </td>
 <td><p>acceptUnmatched True</p>
-<p>nodupe_ttl 0</p>
+<p>nodupe_ttl 0
+download off</p>
 <p>callback gather.message</p>
 <p>callback post.message</p>
 </td>
@@ -254,10 +269,12 @@ messages around.</p>
 <tr class="row-odd"><td><p><em>winnow</em></p>
 <p>Move notification
 messages around</p>
-<p>suppress duplicates</p>
+<p>Suppress duplicates
+through caching and
+a shared VIP</p>
 </td>
 <td><p>Gather = gather.message</p>
-<p>Filter (shovel cache=off)</p>
+<p>Filter (shovel cache=on)</p>
 <p>Work = nil</p>
 <p>Post = yes</p>
 </td>
@@ -268,8 +285,8 @@ messages around</p>
 </td>
 </tr>
 <tr class="row-even"><td><p><em>post/watch</em></p>
-<p>Find file on a</p>
-<p>local server to
+<p>Find file on a
+<strong>local</strong> server to
 publish</p>
 </td>
 <td><p>Gather = gather.file</p>
@@ -280,8 +297,7 @@ publish</p>
 </dd>
 </dl>
 </td>
-<td><p>&lt;a number of default
-settings.&gt;</p>
+<td><p>path /file/to/post</p>
 <p>sleep -1 # for post</p>
 <p>sleep 5 # for watch</p>
 <p>callback gather.file</p>
@@ -290,15 +306,17 @@ settings.&gt;</p>
 </tr>
 <tr class="row-odd"><td><p><em>sender</em></p>
 <p>Send files from a
-pump.</p>
-<p>publish message after</p>
+pump somewhere else</p>
+<p>Optional:
+Publish message after</p>
 </td>
 <td><p>Gather = gather.message</p>
 <p>Filter</p>
 <p>Do = sendfile</p>
-<p>Outlet = optional</p>
 </td>
-<td><p>flowMain sender</p></td>
+<td><p>flowMain sender</p>
+<p>sendTo</p>
+</td>
 </tr>
 </tbody>
 </table>

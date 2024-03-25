@@ -71,25 +71,27 @@ The components just have different default settings:
  :align: center
 
  +------------------------+--------------------------+------------------------+
- | Component              | Use of the algorithm     | Config File Equivalent |
+ | Component              | Use of the algorithm     | Key Option Settings    |
  +------------------------+--------------------------+------------------------+
  +------------------------+--------------------------+------------------------+
  | *subscribe*            | Gather = gather.message  | flowMain subscribe     |
  |                        |                          |                        |
- | Download file from a   | Filter                   |                        |
- | pump.                  |                          |                        |
+ | Download files from a  | Filter                   | mirror off             |
+ | pump.                  |                          | (all others it is on)  |
  |                        | Work = Download          |                        |
- | default mirror=False   |                          |                        |
- | All others it is True  | Post = optional          |                        |
+ |                        | Post = optional          |                        |
+ |                        |                          |                        |
  +------------------------+--------------------------+------------------------+
  | *sarra*                | Gather = gather.message  | flowMain sarra         |
  |                        |                          |                        |
- | Used on pumps.         |                          |                        |
- |                        |                          |                        |
- | Download file from a   | Filter                   |                        |
+ | Used on pumps.         |                          | mirror on              |
+ |                        |                          | download on            |
+ | Download files from a  | Filter                   |                        |
  | pump                   |                          |                        |
  |                        |                          |                        |
- | publish it.            |                          |                        |
+ | Publish a message      |                          |                        |
+ | downstream for         |                          |                        |                     
+ | consumers              |                          |                        |    
  |                        |                          |                        |
  | Subscribers to         | Work = Download          |                        |
  | this pump can          |                          |                        |
@@ -98,55 +100,59 @@ The components just have different default settings:
  +------------------------+--------------------------+------------------------+
  | *poll*                 | Gather                   | flowMain poll          |
  |                        | if has_vip: poll         |                        |
+ |                        |                          | pollUrl                |
+ |                        |                          | path                   |
  |                        |                          |                        |
- | Find files on other    | Filter                   |                        |
- | servers to post to     |                          |                        |
+ | Find files on other    | Filter                   | download off           |
+ | servers to post to     |                          | mirror on              |
  | a pump.                | if has_vip:              |                        |
- |                        |     Work = nil           |                        |
- | Uses has_vip*          |                          |                        |
- | (see notes below)      |     Post = yes           |                        |
+ |                        |     Work = Download      | scheduled_interval     |
+ | Uses has_vip*          |                          | scheduled_hour         |
+ | (see notes below)      |     Post = yes           | schedules_minute       |
+ |                        |                          |                        |
  +------------------------+--------------------------+------------------------+
  | *shovel*               | Gather = gather.message  | acceptUnmatched True   |
  |                        |                          |                        |
  |                        |                          | nodupe_ttl 0           |
- | Move notification      | Filter (shovel cache=off)|                        |
- | messages around.       |                          | callback gather.message|
+ | Move notification      | Filter (shovel cache=off)| download off           |
+ | messages around.       |                          |                        |
+ |                        | Work = nil               | callback gather.message|
  |                        |                          |                        |
- |                        | Work = nil               | callback post.message  |
+ |                        | Post = yes               | callback post.message  |
  |                        |                          |                        |
- |                        | Post = yes               |                        |
  +------------------------+--------------------------+------------------------+
  | *winnow*               | Gather = gather.message  | acceptUnmatched True   |
  |                        |                          |                        |
  |                        |                          | nodupe_ttl 300         |
- | Move notification      | Filter (shovel cache=off)|                        |
+ | Move notification      | Filter (shovel cache=on) |                        |
  | messages around        |                          | callback gather.message|
  |                        |                          |                        |
  |                        | Work = nil               | callback post.message  |
- | suppress duplicates    |                          |                        |
- |                        | Post = yes               |                        |
+ | Suppress duplicates    |                          |                        |
+ | through caching and    |                          |                        | 
+ | a shared VIP           | Post = yes               |                        |
+ |                        |                          |                        |
  +------------------------+--------------------------+------------------------+
- | *post/watch*           | Gather = gather.file     | <a number of default   |
- |                        |                          | settings.>             |
+ | *post/watch*           | Gather = gather.file     | path /file/to/post     |
  |                        |                          |                        |
  | Find file on a         | Filter                   | sleep -1 # for post    |
- |                        |                          |                        |
- | local server to        |                          | sleep 5 # for watch    |
- | publish                | Work = nil               |                        |
+ | **local** server to    |                          |                        |
+ | publish                |                          | sleep 5 # for watch    |
+ |                        | Work = nil               |                        |
  |                        |                          | callback gather.file   |
  |                        |                          |                        |
  |                        | Post = yes               | callback post.message  |
  |                        |   Message?, File?        |                        |
+ |                        |                          |                        |
  +------------------------+--------------------------+------------------------+
  | *sender*               | Gather = gather.message  | flowMain sender        |
  |                        |                          |                        |
- | Send files from a      | Filter                   |                        |
- | pump.                  |                          |                        |
- |                        |                          |                        |
- | publish message after  |                          |                        |
+ | Send files from a      | Filter                   | sendTo                 |
+ | pump somewhere else    |                          |                        |
  |                        | Do = sendfile            |                        |
+ | Optional:              |                          |                        |
+ | Publish message after  |                          |                        |
  |                        |                          |                        |
- |                        | Outlet = optional        |                        |
  +------------------------+--------------------------+------------------------+
 
 In the left hand column, one can see the name and general description of each component.
