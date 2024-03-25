@@ -238,7 +238,7 @@
 <span class="n">set_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;logEvents&#39;</span><span class="p">,</span> <span class="s1">&#39;fileEvents&#39;</span> <span class="p">]</span>
 
 <span class="n">set_choices</span> <span class="o">=</span> <span class="p">{</span> 
-    <span class="s1">&#39;logEvents&#39;</span> <span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">entry_points</span> <span class="o">+</span> <span class="p">[</span> <span class="s1">&#39;reject&#39;</span> <span class="p">],</span>
+    <span class="s1">&#39;logEvents&#39;</span> <span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">entry_points</span> <span class="o">+</span> <span class="p">[</span> <span class="s1">&#39;reject&#39;</span> <span class="p">]),</span>
     <span class="s1">&#39;fileEvents&#39;</span> <span class="p">:</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span> <span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="s1">&#39;mkdir&#39;</span><span class="p">,</span> <span class="s1">&#39;modify&#39;</span><span class="p">,</span> <span class="s1">&#39;rmdir&#39;</span> <span class="p">]</span> <span class="p">)</span>
  <span class="p">}</span>
 <span class="c1"># FIXME: doesn&#39;t work... wonder why?</span>
@@ -408,9 +408,9 @@
 
 
 <span class="k">def</span> <span class="nf">isTrue</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;on&#39;</span> <span class="ow">or</span> <span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">S</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">get_package_lib_dir</span><span class="p">():</span>
@@ -1134,6 +1134,40 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">pattern</span><span class="si">}</span><span class="s1"> into </span><span class="si">{</span><span class="n">maskDir</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s1">mirror:</span><span class="si">{</span><span class="n">mirror</span><span class="si">}{</span><span class="n">strip</span><span class="si">}{</span><span class="n">flatten</span><span class="si">}{</span><span class="n">fn</span><span class="si">}</span><span class="s1">&#39;</span></div>
 
 
+<div class="viewcode-block" id="Config._parse_set_string">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.config.Config._parse_set_string">[docs]</a>
+    <span class="k">def</span> <span class="nf">_parse_set_string</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">old_value</span><span class="p">:</span> <span class="nb">set</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           given a set string, return a python set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">set</span><span class="p">:</span>
+            <span class="n">sv</span><span class="o">=</span><span class="n">v</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span> 
+                <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">([])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">]:</span>
+                    <span class="n">op</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">op</span><span class="o">=</span><span class="s1">&#39;r&#39;</span>
+
+                <span class="k">if</span> <span class="s1">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span> 
+                    <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+                    <span class="n">sv</span><span class="o">=</span> <span class="n">old_value</span> <span class="o">|</span> <span class="n">sv</span>
+                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span> <span class="p">:</span>
+                    <span class="n">sv</span><span class="o">=</span> <span class="n">old_value</span> <span class="o">-</span> <span class="n">sv</span>
+        <span class="k">return</span> <span class="n">sv</span></div>
+
+
 <div class="viewcode-block" id="Config.add_option">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.Config.add_option">[docs]</a>
     <span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">all_values</span><span class="o">=</span><span class="kc">None</span> <span class="p">):</span>
@@ -1206,32 +1240,7 @@
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">octal_number</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">base</span><span class="o">=</span><span class="mi">8</span><span class="p">)))</span>
         <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;set&#39;</span><span class="p">:</span>  
             <span class="n">set_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>
-            <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
-                <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">set</span><span class="p">:</span>
-                <span class="n">sv</span><span class="o">=</span><span class="n">v</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span> 
-                    <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">([])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">]:</span>
-                        <span class="n">op</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">op</span><span class="o">=</span><span class="s1">&#39;r&#39;</span>
-
-                    <span class="k">if</span> <span class="s1">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span> 
-                        <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span> 
-                        <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
-
-                    <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
-                        <span class="n">sv</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">option</span><span class="p">)</span> <span class="o">|</span> <span class="n">sv</span>
-                    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span> <span class="p">:</span>
-                        <span class="n">sv</span><span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">option</span><span class="p">)</span> <span class="o">-</span> <span class="n">sv</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">sv</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+            <span class="n">sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_set_string</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="nb">set</span><span class="p">())</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">sv</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">all_values</span><span class="p">:</span>
                 <span class="n">set_choices</span><span class="p">[</span><span class="n">option</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_values</span>
@@ -1770,25 +1779,13 @@
                         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">set_choices</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
                     <span class="k">continue</span>
                 <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;+&#39;</span><span class="p">]:</span>
-                    <span class="n">op</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">op</span><span class="o">=</span><span class="s1">&#39;r&#39;</span>
-
-                <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
-                    <span class="n">vs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">:</span>
-                    <span class="n">vs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">vs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="p">)</span>
-
+                <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_set_string</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">))</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">vs</span> <span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">set_choices</span> <span class="p">:</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">set_choices</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">lineno</span><span class="si">}</span><span class="s1"> invalid entry for </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">:  </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">. Must be one of: </span><span class="si">{</span><span class="n">set_choices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">lineno</span><span class="si">}</span><span class="s1"> invalid entry </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">. Must be one of: </span><span class="si">{</span><span class="n">set_choices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">str_options</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;directory&#39;</span> <span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">:</span>
@@ -2154,6 +2151,28 @@
         <span class="k">for</span> <span class="n">f</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">undeclared</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">u</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alloptions</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="s2"> undeclared option: </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">flag_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">isTrue</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">float_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">float</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">set_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_set_string</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">),</span><span class="nb">set</span><span class="p">()))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">str_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">count_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="p">]:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">humanfriendly</span><span class="o">.</span><span class="n">parse_size</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">size_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="p">]:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">humanfriendly</span><span class="o">.</span><span class="n">parse_size</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="k">elif</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">duration_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)</span> <span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="p">]:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">durationToSeconds</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">u</span><span class="p">)))</span>
+            <span class="c1"># list options are the default, so no need to regularize</span>
 
         <span class="n">no_defaults</span><span class="o">=</span><span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">alloptions</span><span class="p">:</span>
