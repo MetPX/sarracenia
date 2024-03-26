@@ -977,7 +977,7 @@ class Config:
         try:
             regex = re.compile(arguments[0])
         except:
-            logger.critical( f"{self.files}{self.lineno} invalid regular expression: {arguments[0]}, ignored." )
+            logger.critical( f"{','.join(self.files)}{self.lineno} invalid regular expression: {arguments[0]}, ignored." )
             return None
 
         if len(arguments) > 1:
@@ -1077,7 +1077,7 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"{self.files}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{','.join(elf.files)}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
@@ -1128,10 +1128,11 @@ class Config:
             elif type(v) is not str:
                 setattr(self, option, str(v))
         else:
-            logger.error( f'{self.files}{self.lineno} invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            logger.error( f"{','.join(self.files)}{self.lineno} invalid {kind=} for {option=} ignored" )
             return
 
-        logger.debug( f'{self.files}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}' )
+        logger.debug( f"{','.join(self.files)}{self.lineno} {option=} declared as "\
+            f"type:{type(getattr(self,option))} value: {v}" )
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -1281,7 +1282,7 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f'{self.files}:{self.lineno} broker needed before subtopic' )
+                logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
                 return
 
             if self.broker.url.scheme == 'amq' :
@@ -1496,7 +1497,7 @@ class Config:
                 continue
 
             if len(line) < 2:
-                logger.error( f'{self.files}:{lineno} {k} missing argument(s) ' )
+                logger.error( f"{','.join(self.files)}:{lineno} {k} missing argument(s)" )
                 continue
             if k in ['accept', 'reject' ]:
                 self.masks.append(self._build_mask(k, line[1:]))
@@ -1522,7 +1523,7 @@ class Config:
                 try:
                     self.parse_file(v)
                 except Exception as ex:
-                    logger.error( f'{self.files}:{self.lineno} file {v} failed to parse:  {ex}' )
+                    logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                     logger.debug('Exception details: ', exc_info=True)
             elif k in ['subtopic']:
                 self._parse_binding(v)
@@ -1598,12 +1599,12 @@ class Config:
                 try:
                     setattr(self, k, float(v))
                 except (ValueError, TypeError) as e:
-                    logger.error(f'{self.files}:{self.lineno} Ignored "{i}": {e}')
+                    logger.error(f"{','.join(self.files)}:{self.lineno} Ignored \"{i}\": {e}")
             elif k in perm_options:
                 if v.isdigit():
                     setattr(self, k, octal_number(int(v, base=8)))
                 else:
-                    logger.error( f'{self.files}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
+                    logger.error( f"{','.join(self.files)}:{lineno} {k} setting to {v} ignored: only numberic modes supported" )
             elif k in size_options:
                 setattr(self, k, humanfriendly.parse_size(v))
             elif k in count_options:
@@ -1629,11 +1630,11 @@ class Config:
                 if k in set_choices :
                     for i in getattr(self,k):
                         if i not in set_choices[k]:
-                            logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
+                            logger.error( f"{','.join(self.files)}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}" )
 
             elif k in str_options:
                 if ( k == 'directory' ) and not self.download:
-                    logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
+                    logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
 
                 v = ' '.join(line[1:])
                 if v == 'None':
@@ -1642,7 +1643,7 @@ class Config:
             else:
                 #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
                 if k not in self.undeclared:
-                    logger.debug( f'{self.files}:{self.lineno} possibly undeclared option: {line}' )
+                    logger.debug( f"{','.join(self.files)}:{self.lineno} possibly undeclared option: {line}" )
                 v = ' '.join(line[1:])
                 if hasattr(self, k):
                     if type(getattr(self, k)) is float:
