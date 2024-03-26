@@ -82,6 +82,9 @@ features = {
    'retry': { 'modules_needed': ['jsonpickle'], 'present': False,
            'lament': 'unable to use local queues on the side (disk or redis) to retry messages later',
            'rejoice': 'can write messages to local queues to retry failed publishes/sends/downloads'},
+    's3' : { 'modules_needed': [ 'boto3' ], 'present': False, 
+        'lament' : 'cannot connect natively to S3-compatible locations (AWS S3, Minio, etc..)', 
+        'rejoice': 'able to connect natively to S3-compatible locations (AWS S3, Minio, etc..)', },
    'sftp' : { 'modules_needed': [ 'paramiko' ],
         'lament': 'cannot use or access sftp/ssh based services',
         'rejoice': 'can use sftp or ssh based services'
