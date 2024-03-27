@@ -29,7 +29,7 @@ import sys
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
-import boto3
+import boto3, botocore
 
 logger = logging.getLogger(__name__)
 
@@ -44,44 +44,111 @@ class S3(Transfer):
     """
 
     #  ----------------------- MAGIC METHODS ----------------------
+
     def __init__(self, proto, options):
 
         super().__init__(proto, options)
 
         logger.debug("sr_s3 __init__")
 
-        self.s3_config = boto3.s3.transfer.S3TransferConfig()
+        self.s3_client_config = botocore.config.Config(
+                user_agent_extra= 'Sarracenia/' + sarracenia.__version__
+            )
+
+        self.s3_transfer_config = boto3.s3.transfer.S3TransferConfig()
         if hasattr(self.o, 'byteRateMax'):
-            self.s3_config.max_bandwidth = self.o.byteRateMax
+            self.s3_transfer_config.max_bandwidth = self.o.byteRateMax
+
 
         self.__init()
     
-    ##  --------------------- PRIVATE METHODS ---------------------
 
-    # init
+    ##  --------------------- PRIVATE METHODS ---------------------
+        
     def __init(self):
         Transfer.init(self)
 
         logger.debug("sr_s3 __init")
         self.connected = False
-        self.client = boto3.client('s3')
+        self.client = None
         self.details = None
         self.seek = True
 
-        self.bucket = 's3transfer'
+        self.bucket = None
+        self.client_args = {}
+
         self.cwd = ''
 
         self.entries = {}
 
-    ##  ---------------------- PUBLIC METHODS ---------------------
-    def registered_as():
-        return ['s3']
+    def __credentials(self):
+        logger.debug("sr_s3 __credentials %s" % self.sendTo)
+
+        try:
+            ok, details = self.o.credentials.get(self.sendTo)
+            if details: url = details.url
+
+            if url.username != '':
+                self.client_args['aws_access_key_id'] = url.username
+            if url.password != '':
+                self.client_args['aws_secret_access_key'] = url.password
+            if hasattr(details, 's3_session_token'):
+                self.client_args['aws_session_token'] = details.s3_session_token
+            if hasattr(details, 's3_endpoint'):
+                self.client_args['endpoint'] = details.s3_endpoint
+
+            return True
+
+        except:
+            logger.error("sr_s3/credentials: unable to get credentials for %s" % self.sendTo)
+            logger.debug('Exception details: ', exc_info=True)
+
+        return False
     
+
+    ##  ---------------------- PUBLIC METHODS ---------------------
+
     def cd(self, path):
         logger.debug("sr_s3 cd %s" % path)
         self.cwd = os.path.dirname(path)
         self.path = path
-    
+
+    def check_is_connected(self):
+        logger.debug("sr_s3 check_is_connected")
+
+        if not self.connected : return False
+
+        if self.sendTo != self.o.sendTo:
+            self.close()
+            return False
+
+        return True
+
+    def chmod(self, perms):
+        logger.debug(f"sr_s3 chmod {perms}")
+        return
+        
+    def close(self):
+        logger.debug("sr_s3 close")
+        self.connected = False
+        self.client = None
+        return
+
+    def connect(self):
+        logger.debug("sr_s3 connect %s" % self.o.sendTo)
+
+        self.__credentials()
+
+        self.client = boto3.client('s3', Config=self.s3_client_config, **self.client_args)
+        self.connected = True
+
+        return True
+        
+    def delete(self, path):
+        logger.debug("sr_s3 delete %s" % path)
+        # if delete does not work (file not found) run pwd to see if connection is ok
+        self.client.delete_object(Bucket=self.bucket, Key=path)
+
     def get(self,
             msg,
             remote_file,
@@ -89,8 +156,9 @@ class S3(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
+        logger.debug("sr_s3 get; self.path %s" % self.path)
         logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
-        logger.debug("sr_s3 self.path %s" % self.path)
+
 
         # open local file
         dst = self.local_write_open(local_file, local_offset)
@@ -101,7 +169,7 @@ class S3(Transfer):
         # download
         self.write_chunk_init(dst)
 
-        self.client.download_file(Bucket=self.bucket, Key=remote_file, Filename=local_file, Callback=self.write_chunk, Config=self.s3_config)
+        self.client.download_file(Bucket=self.bucket, Key=remote_file, Filename=local_file, Callback=self.write_chunk, Config=self.s3_transfer_config)
 
         rw_length = self.write_chunk_end()
 
@@ -110,6 +178,24 @@ class S3(Transfer):
 
         return rw_length
     
+    def getAccelerated (self, msg, remote_file, local_file, length=0 ):
+        return self.get(msg, remote_file, local_file, 0, 0, length, False)
+    
+    def ls(self):
+        logger.debug("sr_s3 ls")
+
+        self.entries = {}
+
+        paginator = self.client.get_paginator('list_objects_v2')
+        page_iterator  = paginator.paginate(Bucket=self.bucket, Prefix=self.path)
+
+        for page in page_iterator:
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    self.entries += obj['Key'].replace(self.path, "")
+
+        return self.entries
+    
     def put(self,
             msg,
             local_file,
@@ -117,13 +203,13 @@ class S3(Transfer):
             local_offset=0,
             remote_offset=0,
             length=0):
-        logger.debug("sr_s3 put %s %s" % (local_file, remote_file))
+        logger.debug("sr_s3 put; %s %s" % (local_file, remote_file))
 
         # open
         src = self.local_read_open(local_file, local_offset)
 
         # upload
-        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=remote_file, Callback=self.write_chunk, Config=self.s3_config)
+        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=remote_file, Callback=self.write_chunk, Config=self.s3_transfer_config)
 
         rw_length = self.write_chunk_end()
 
@@ -132,34 +218,16 @@ class S3(Transfer):
 
         return rw_length
 
-    def ls(self):
-        logger.debug("sr_s3 ls")
+    def putAccelerated (self, msg, remote_file, local_file, length=0 ):
+        return self.put(msg,local_file, remote_file, 0, 0, length)
 
-        self.entries = {}
-
-        #objects = self.s3_client.list_objects_v2(Bucket=self.bucket, Prefix=self.cwd)
-
-        paginator = self.client.get_paginator('list_objects_v2')
-        page_iterator  = paginator.paginate(Bucket=self.bucket, Prefix=self.path)
-
-        for page in page_iterator:
-            for obj in page['Contents']:
-                self.entries += obj['Key'].replace(self.path, "")
-
-        return self.entries
+    def registered_as():
+        return ['s3']
     
-        # delete
-    def delete(self, path):
-        logger.debug("sr_s3 delete %s" % path)
-        # if delete does not work (file not found) run pwd to see if connection is ok
-        self.client.delete_object(Bucket=self.bucket, Key=path)
-
-
     def rename(self, remote_old, remote_new):
         self.client.copy_object(Bucket=self.bucket, CopySource=remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
     
-    # rmdir
     def rmdir(self, path):
         logger.debug("sr_s3 rmdir %s" % path)
         paginator = self.client.get_paginator('list_objects_v2')
@@ -170,10 +238,14 @@ class S3(Transfer):
             delete_us['Objects'].append(dict(Key=item['Key']))
 
             # flush once aws limit reached
-            if len(delete_us['Objects']) >= 1000:
+            if len(delete_us['Objects']) >= 500:
                 self.client.delete_objects(Bucket=self.bucket, Delete=delete_us)
                 delete_us = dict(Objects=[])
 
         # flush rest
         if len(delete_us['Objects']):
             self.client.delete_objects(Bucket=self.bucket, Delete=delete_us)
+
+    def umask(self):
+        logger.debug("sr_s3 umask")
+        return
