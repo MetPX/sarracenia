@@ -458,3 +458,6 @@ import sarracenia.transfer.https
 if features['sftp']['present']:
     import sarracenia.transfer.sftp
 
+if features['s3']['present']:
+    import sarracenia.transfer.s3
+
