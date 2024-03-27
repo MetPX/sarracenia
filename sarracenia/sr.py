@@ -447,19 +447,25 @@ class sr_GlobalState:
         self._save_state_dir(savename,
                              self.user_cache_dir + os.sep + self.hostdir)
 
-    def _read_state_dir(self, dir1):
+    def _read_state_dir(self):
 
         # read in state files
+        dir1 = self.user_cache_dir
         if not os.path.isdir(dir1):
             return
         os.chdir(dir1)
 
         for c in self.components:
-            if os.path.isdir(c):
-                os.chdir(c)
-                for cfg in os.listdir():
-                    if os.path.isdir(cfg):
-                        os.chdir(cfg)
+            for cfg in self.configs[c]:
+                    #print( f" {self.configs[c][cfg]['statehost']=} " )
+                    if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
+                        print('statehost')
+                        state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
+                    else:
+                        state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
+
+                    if os.path.isdir(state_dir):
+                        os.chdir(state_dir)
                         self.states[c][cfg] = {}
                         self.states[c][cfg]['instance_pids'] = {}
                         self.states[c][cfg]['queueName'] = None
@@ -502,8 +508,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
-                        os.chdir('..')
-                os.chdir('..')
+
 
     def _read_metrics_dir(self,metrics_parent_dir):
         # read in metrics files
@@ -549,8 +554,8 @@ class sr_GlobalState:
         for c in self.components:
             self.states[c] = {}
 
-        self._read_state_dir(self.user_cache_dir)
-        self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
+        self._read_state_dir()
+        #self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
         self._read_metrics_dir(self.user_cache_dir)
         self._read_metrics_dir(self.user_cache_dir + os.sep + self.hostdir)
 
