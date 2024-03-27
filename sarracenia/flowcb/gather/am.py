@@ -134,6 +134,8 @@ class Am(FlowCB):
 
                     try:
                         conn, self.remoteHost = self.s.accept()
+
+                        # Write out file descriptor of the connected socket so that the child can pick it up.
                         child_inst += 1
                         conn_filename = sarracenia.config.get_pid_filename(
                              None, self.o.component, self.o.config, child_inst)
@@ -212,6 +214,7 @@ class Am(FlowCB):
             conn_fd_str = conn_fd.read()
             conn_fd.close()
             self.conn = socket.fromfd(int(conn_fd_str), socket.AF_INET, socket.SOCK_STREAM) 
+            self.conn.settimeout(0.1)
 
     def on_stop(self):
         logger.info("On stop called. Exiting.")
@@ -230,13 +233,20 @@ class Am(FlowCB):
         try:
             tmp = self.conn.recv(self.limit)
 
-        except Exception as e:
-            tmp = ''
-            logger.error(f"Reception has been interrupted. Closing connection and exiting. Error message: {e}")
+            # Socket returns b'' on disconnect.
+            if tmp == b'':
+                raise Exception()
 
-        if tmp == '':
+        # We don't want to wait on a hanging connection. We use the timeout error to exit out of the reception if there is nothing.
+        # This in turn makes the whole flow the same as any other sarracenia flow.
+        except TimeoutError:
+            return
+
+        except Exception as e:
+            logger.error(f"Reception has been interrupted. Closing connection and exiting. Error message: {e}")
+            self.stop_requested = True
             self.conn.close()
-            raise Exception()
+            sys.exit(1)
         
         self.inBuffer = self.inBuffer + tmp
 
