@@ -198,13 +198,13 @@ class Am(FlowCB):
 
         return conn                       
 
-
     def on_start(self):
 
         if self.o.no == 1:
             # Set ipadresses in proper format
             for IP in self.o.AllowIPs:
                 IP = ipaddress.ip_address(IP)
+
             self.conn = self.__WaitForRemoteConnection__()
         else:
             # Recreate the socket from the connection state file, created by the parent.
@@ -213,6 +213,8 @@ class Am(FlowCB):
             conn_fd = open(conn_filename)
             conn_fd_str = conn_fd.read()
             conn_fd.close()
+            # Remove the .conn file as we don't need it anymore
+            os.unlink(conn_filename)
             self.conn = socket.fromfd(int(conn_fd_str), socket.AF_INET, socket.SOCK_STREAM) 
             self.conn.settimeout(0.1)
 
