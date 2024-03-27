@@ -476,7 +476,7 @@ class sr_GlobalState:
                                 if pathname[-4:] == '.pid':
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
-                                        print( "%s/%s instance: %s, pid: %d" % ( c, cfg, i, int(t) ) )
+                                        #print( "%s/%s instance: %s, pid: %d" % ( c, cfg, i, int(t) ) )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
@@ -491,7 +491,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
-                        print( f" {os.getcwd()=}, {c=}, {cfg=}, {self.states[c][cfg]['instance_pids']=}  " )
+                        #print( f" {os.getcwd()=}, {c=}, {cfg=}, {self.states[c][cfg]['instance_pids']=}  " )
                         os.chdir('..')
                 os.chdir('..')
 
