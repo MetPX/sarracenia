@@ -124,7 +124,7 @@ class Am(FlowCB):
                 logger.error(f"Bind failed. Retrying. Error message: {e.args}")
                 time.sleep(5)
         
-        child_inst = 2
+        child_inst = 1
 
         while True:
             
@@ -134,6 +134,15 @@ class Am(FlowCB):
 
                     try:
                         conn, self.remoteHost = self.s.accept()
+                        child_inst += 1
+                        conn_filename = sarracenia.config.get_pid_filename(
+                             None, self.o.component, self.o.config, child_inst)
+                        conn_filename = conn_filename.replace('pid','conn')
+                        conn_fd = open(conn_filename, 'w')
+                        conn_fd.write(str(conn.fileno()))
+                        conn_fd.close()
+
+                        os.set_inheritable(conn.fileno(), True)
                         time.sleep(1)
 
                     except Exception as e:
@@ -148,20 +157,24 @@ class Am(FlowCB):
                     
                     # Instance forks
                     ## Instance 1 (Parent, pid=child_pid): Stays in the loop trying to accept other connections. 
-                    ## Instance 2 (Child, pid=0): Exits loop. Proceeds to initialise the service with the remote host.
+                    ## Insys.argv[2] = str(child_instance)
+                    sys.argv[2] = str(child_inst)
                     pid = os.fork()
 
                     if pid == 0:
                         ## Close the unconnected socket instance as it is unused in the service.
                         self.s.close()
 
+                        self.o.no = child_inst
+
                         ## Set the logfiles properly
                         sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
 
-                        self.o.no = child_inst
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
-                        break                    
 
+                        os.execl(sys.executable , sys.executable , *sys.argv )   
+                        logger.critical(f"Failed to launch child! {sys.argv=}")
+                        
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
         
@@ -175,14 +188,8 @@ class Am(FlowCB):
                         ## Close the connected socket instance as it is unused in the parent
                         conn.close()
                         logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
-
-                        child_inst += 1
-                        pass
-                   
                 except Exception:
                     logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
-                    # self.s.close()
-                    # conn.close()
                     time.sleep(1)
                 
         logger.info("Connection accepted with IP %s on port %d. Starting service.", self.remoteHost[0], self.port)     
@@ -191,19 +198,20 @@ class Am(FlowCB):
 
 
     def on_start(self):
-        # Set ipadresses in proper format
-        for IP in self.o.AllowIPs:
-            IP = ipaddress.ip_address(IP)
 
-        # If there are remaining instances, delete their filepaths and exit.
-        if self.o.no != 1:
-            pidfilename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
-            if os.path.exists(pidfilename):
-                os.unlink(pidfilename)
-            sys.exit(0)
-        
-        self.conn = self.__WaitForRemoteConnection__()
-    
+        if self.o.no == 1:
+            # Set ipadresses in proper format
+            for IP in self.o.AllowIPs:
+                IP = ipaddress.ip_address(IP)
+            self.conn = self.__WaitForRemoteConnection__()
+        else:
+            # Recreate the socket from the connection state file, created by the parent.
+            conn_filename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
+            conn_filename = conn_filename.replace('pid','conn')
+            conn_fd = open(conn_filename)
+            conn_fd_str = conn_fd.read()
+            conn_fd.close()
+            self.conn = socket.fromfd(int(conn_fd_str), socket.AF_INET, socket.SOCK_STREAM) 
 
     def on_stop(self):
         logger.info("On stop called. Exiting.")
