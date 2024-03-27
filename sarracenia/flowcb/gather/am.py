@@ -225,7 +225,7 @@ class Am(FlowCB):
         sys.exit(0)
         
 
-    def AddBuffer(self):
+    def addBuffer(self):
         # try:
         try:
             tmp = self.conn.recv(self.limit)
@@ -245,7 +245,7 @@ class Am(FlowCB):
             # logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
             
             
-    def CheckNextMsgStatus(self):
+    def checkNextMsgStatus(self):
 
         # Only unpack data if a bulletin is received
         ## When unpacking, the length of the header is vital since it allows the receiver to extract the bulletin contents from the buffer.
@@ -268,7 +268,7 @@ class Am(FlowCB):
 
     def unwrapmsg(self):
 
-        status = self.CheckNextMsgStatus()
+        status = self.checkNextMsgStatus()
 
         if status == 'OK':
             (self.header,src_inet,dst_inet,threads,start,length,firsttime,timestamp,future) = \
@@ -376,12 +376,12 @@ class Am(FlowCB):
 
     def gather(self, messageCountMax):
 
-        self.AddBuffer()
+        self.addBuffer()
 
         newmsg = []
 
         while True:
-            status = self.CheckNextMsgStatus()
+            status = self.checkNextMsgStatus()
             
             if status == 'INCOMPLETE':
                 break
