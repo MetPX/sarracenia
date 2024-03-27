@@ -98,6 +98,8 @@ class Credential:
         self.prot_p = False
         self.bearer_token = None
         self.login_method = None
+        self.s3_endpoint = None
+        self.s3_session_token = None
 
     def __str__(self):
         """Returns attributes of the Credential object as a readable string.
@@ -126,6 +128,9 @@ class Credential:
         s += " %s" % self.prot_p
         s += " %s" % self.bearer_token
         s += " %s" % self.login_method
+        s += " %s" % self.s3_endpoint
+        #want to show they provided a session token, but not leak it (like passwords above)
+        s += " %s" % 'Yes' if self.s3_session_token != None else 'No'
         return s
 
 
@@ -275,7 +280,7 @@ class CredentialDB:
 
         # we have no user and no pasw (http normal, https... no cert,  sftp hope for .ssh/config)
         if not user and not pasw:
-            if url.scheme in ['http', 'https', 'sftp']: return True
+            if url.scheme in ['http', 'https', 'sftp', 's3']: return True
             logger.error( f'unknown scheme: {url.scheme}')
             return False
 
@@ -363,6 +368,10 @@ class CredentialDB:
                     details.bearer_token = parts[1].strip()
                 elif keyword == 'login_method':
                     details.login_method = parts[1].strip()
+                elif keyword == 's3_session_token':
+                    details.s3_session_token = urllib.parse.unquote(parts[1].strip())
+                elif keyword == 's3_endpoint':
+                    details.s3_endpoint = parts[1].strip()
                 else:
                     logger.warning("bad credential option (%s)" % keyword)
 
