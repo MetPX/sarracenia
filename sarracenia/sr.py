@@ -460,17 +460,6 @@ class sr_GlobalState:
                 for cfg in os.listdir():
                     if os.path.isdir(cfg):
                         os.chdir(cfg)
-                        self.states[c][cfg] = {}
-                        self.states[c][cfg]['instance_pids'] = {}
-                        self.states[c][cfg]['queueName'] = None
-                        if c in self.configs:
-                            if cfg not in self.configs[c]:
-                                self.states[c][cfg]['status'] = 'removed'
-
-                        self.states[c][cfg]['has_state'] = False
-                        self.states[c][cfg]['noVip'] = None
-                        
-
                         for pathname in os.listdir():
                             p = pathlib.Path(pathname)
                             if p.suffix in ['.pid', '.qname', '.state', '.noVip']:
@@ -487,7 +476,7 @@ class sr_GlobalState:
                                 if pathname[-4:] == '.pid':
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
-                                        #print( "%s/%s instance: %s, pid: %s" % ( c, cfg, i, t ) )
+                                        print( "%s/%s instance: %s, pid: %d" % ( c, cfg, i, int(t) ) )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
@@ -502,6 +491,7 @@ class sr_GlobalState:
                                         self.states[c][cfg]['instance_metrics'][i]['status'] = { 'mtime':os.stat(p).st_mtime }
                                     except:
                                         logger.error( f"corrupt metrics file {pathname}: {t}" )
+                        print( f" {os.getcwd()=}, {c=}, {cfg=}, {self.states[c][cfg]['instance_pids']=}  " )
                         os.chdir('..')
                 os.chdir('..')
 
@@ -543,11 +533,41 @@ class sr_GlobalState:
             except:
                 logger.error( f"corrupt metrics file {dir1+os.sep+l}: {t}" )
 
+    def _clean_state_dir(self, dir1):
+        # read in state files
+        if not os.path.isdir(dir1):
+            return
+
+        os.chdir(dir1)
+
+        for c in self.components:
+            if os.path.isdir(c):
+                os.chdir(c)
+                for cfg in os.listdir():
+                    if os.path.isdir(cfg):
+                        os.chdir(cfg)
+                        self.states[c][cfg] = {}
+                        self.states[c][cfg]['instance_pids'] = {}
+                        self.states[c][cfg]['queueName'] = None
+                        if c in self.configs:
+                            if cfg not in self.configs[c]:
+                                self.states[c][cfg]['status'] = 'removed'
+
+                        self.states[c][cfg]['has_state'] = False
+                        self.states[c][cfg]['noVip'] = None
+                        os.chdir('..')
+                os.chdir('..')
+                        
+
 
     def _read_states(self):
+
         self.states = {}
         for c in self.components:
             self.states[c] = {}
+
+        self._clean_state_dir(self.user_cache_dir)
+        self._clean_state_dir(self.user_cache_dir + os.sep + self.hostdir)
 
         self._read_state_dir(self.user_cache_dir)
         self._read_state_dir(self.user_cache_dir + os.sep + self.hostdir)
