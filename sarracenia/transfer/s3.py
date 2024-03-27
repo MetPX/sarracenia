@@ -50,6 +50,10 @@ class S3(Transfer):
 
         logger.debug("sr_s3 __init__")
 
+        self.s3_config = boto3.s3.transfer.S3TransferConfig()
+        if hasattr(self.o, 'byteRateMax'):
+            self.s3_config.max_bandwidth = self.o.byteRateMax
+
         self.__init()
     
     ##  --------------------- PRIVATE METHODS ---------------------
@@ -97,7 +101,7 @@ class S3(Transfer):
         # download
         self.write_chunk_init(dst)
 
-        self.client.download_file(Bucket=self.bucket, Key=remote_file, Filename=local_file, Callback=self.write_chunk)
+        self.client.download_file(Bucket=self.bucket, Key=remote_file, Filename=local_file, Callback=self.write_chunk, Config=self.s3_config)
 
         rw_length = self.write_chunk_end()
 
@@ -119,7 +123,7 @@ class S3(Transfer):
         src = self.local_read_open(local_file, local_offset)
 
         # upload
-        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=remote_file, Callback=self.write_chunk)
+        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=remote_file, Callback=self.write_chunk, Config=self.s3_config)
 
         rw_length = self.write_chunk_end()
 
