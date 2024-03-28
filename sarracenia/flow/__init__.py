@@ -211,7 +211,7 @@ class Flow:
 
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
-        self.had_vip = False
+        self.had_vip = True
 
     def metricsFlowReset(self) -> None:
 
