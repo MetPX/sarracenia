@@ -495,11 +495,10 @@ class Flow:
                 if self.worklist.poll_catching_up:
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
-                    continue
 
-                # normal processing, when you are active.
-                self.work()
-                self.post()
+                else: # normal processing, when you are active.
+                    self.work()
+                    self.post()
 
             now = nowflt()
             run_time = now - start_time
