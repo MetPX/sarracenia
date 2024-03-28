@@ -30,6 +30,7 @@ from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
 import boto3, botocore
+from boto3.s3.transfer import TransferConfig
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class S3(Transfer):
                 user_agent_extra= 'Sarracenia/' + sarracenia.__version__
             )
 
-        self.s3_transfer_config = boto3.s3.transfer.S3TransferConfig()
+        self.s3_transfer_config = TransferConfig()
         if hasattr(self.o, 'byteRateMax'):
             self.s3_transfer_config.max_bandwidth = self.o.byteRateMax
 
@@ -97,6 +98,7 @@ class S3(Transfer):
             if hasattr(details, 's3_endpoint'):
                 self.client_args['endpoint'] = details.s3_endpoint
 
+
             return True
 
         except:
@@ -135,11 +137,17 @@ class S3(Transfer):
         return
 
     def connect(self):
-        logger.debug("sr_s3 connect %s" % self.o.sendTo)
+        logger.debug("creating boto3 client")
 
-        self.__credentials()
+        if self.__credentials():
+            logger.debug(f"found credentials?")
 
         self.client = boto3.client('s3', Config=self.s3_client_config, **self.client_args)
+        try:
+            buckets = self.client.list_buckets()
+        except botocore.exceptions.ClientError as e:
+            logger.warning(f"unable to establish boto3 connection: {e}")
+            
         self.connected = True
 
         return True
