@@ -365,7 +365,7 @@ class Sftp(Transfer):
             base_url = base_url[0:-1]
         arg1 = base_url + ':' + self.pwd + os.sep + remote_file
         arg1 = arg1.replace(' ', '\\ ')
-        arg2 = local_file
+        arg2 = '.' + os.sep + local_file
 
         cmd = self.o.accelScpCommand.replace('%s', arg1)
         cmd = cmd.replace('%d', arg2).split()
