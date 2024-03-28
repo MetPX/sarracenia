@@ -115,7 +115,6 @@ class Poll(FlowCB):
 
       * options are passed to sarracenia.Transfer classes for their use as well.
 
-
       Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to 
       requests lists of files using those protocols using built-in logic.  
 

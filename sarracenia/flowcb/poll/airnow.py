@@ -27,7 +27,7 @@ class Airnow(FlowCB):
 
     def poll(self):
 
-        sleep = self.o.sleep
+        sleep = self.o.scheduled_interval
 
         gathered_messages = []
         for Hours in range(1, 3):

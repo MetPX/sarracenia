@@ -1551,6 +1551,25 @@ sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
+scheduled_interval,scheduled_hour,scheduled_minute
+--------------------------------------------------
+
+Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
+(unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
+sondage devrait être lancer::
+
+  scheduled_interval 30
+
+Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune *scheduled_interval* n'est 
+définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres 
+spécificateurs de temps ::
+
+  scheduled_hour 1,4,5,23
+  scheduled_minute 14,17,29
+
+afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+après chacune des 4h, 5h et 23h.
+
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
 
@@ -1587,6 +1606,11 @@ Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréq
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
 ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
 les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul poste.
+
+Lorsque *sleep* est donné une valeur >0 pour être utilisé avec un *poll*, cela a pour effet de 
+définir *scheduled_interval*, pour des raisons de compatibilité. 
+Il est préférable que le sondage utilise explicitement les paramètres  *scheduled_interval*,
+*scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
 
 statehost <booléen> ( défaut: False )
 -------------------------------------

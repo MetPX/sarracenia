@@ -138,8 +138,8 @@ class Wiski(Scheduled):
         self.wait_until_next()
 
         while (1):
-            if self.stop_requested:
-                return messages
+            if self.stop_requested or self.housekeeping_needed:
+                return (False, messages)
         
             self.token = self.submit_tokenization_request()
             authenticated_url = self.main_url
@@ -172,7 +172,7 @@ class Wiski(Scheduled):
         for station_id in k.get_station_list().station_id:
 
             if self.stop_requested:
-                return messages
+                return (False, messages)
 
             timeseries = k.get_timeseries_list(station_id = station_id ).ts_id
             #logger.info( f"looping over the timeseries: {timeseries}" )
@@ -197,7 +197,7 @@ class Wiski(Scheduled):
                 f.close() 
                 messages.append( sarracenia.Message.fromFileData( fname, self.o, os.stat(fname) ) )
     
-        return messages
+        return (True, messages)
 
 if __name__ == '__main__':
 

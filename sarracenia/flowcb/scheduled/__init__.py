@@ -82,10 +82,17 @@ class Scheduled(FlowCB):
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
         self.minutes = list(map( lambda x: int(x), sched_min))
         self.minutes.sort()
+
+        self.default_wait=300
+
         logger.debug( f'minutes: {self.minutes}')
 
         now=datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         self.update_appointments(now)
+        self.first_interval=True
+
+        if self.o.scheduled_interval <= 0 and not self.appointments:
+            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait} seconds" )
 
     def gather(self,messageCountMax):
 
@@ -93,7 +100,7 @@ class Scheduled(FlowCB):
         self.wait_until_next()
 
         if self.stop_requested or self.housekeeping_needed:
-            return []
+            return (False, [])
 
         logger.info('time to run')
 
@@ -105,7 +112,7 @@ class Scheduled(FlowCB):
             m = sarracenia.Message.fromFileInfo(relPath, self.o, st)
             gathered_messages.append(m)
 
-        return gathered_messages
+        return (True, gathered_messages)
 
     def on_housekeeping(self):
 
@@ -159,27 +166,39 @@ class Scheduled(FlowCB):
 
         sleepfor=appointment-now
 
-        logger.info( f"{appointment} duration: {sleepfor}" )
+        logger.info( f"appointment at: {appointment}, need to wait: {sleepfor})" )
         self.wait_seconds( sleepfor )
 
 
     def wait_until_next( self ):
 
         if self.o.scheduled_interval > 0:
+            if self.first_interval:
+                self.first_interval=False
+                return
+
             self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
         if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
             next_appointment=None
+            missed_appointments=[]
             for t in self.appointments: 
                 if now < t: 
                     next_appointment=t
                     break
+                else:
+                    logger.info( f'already too late to {t} skipping' )
+                    missed_appointments.append(t)
+
+            if missed_appointments:
+                for ma in missed_appointments:
+                    self.appointments.remove(ma)
 
             if next_appointment is None:
                 # done for the day...
-                tomorrow = datetime.date.today()+datetime.timedelta(days=1)
+                tomorrow = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)+datetime.timedelta(days=1)
                 midnight = datetime.time(0,0,tzinfo=datetime.timezone.utc)
                 midnight = datetime.datetime.combine(tomorrow,midnight)
                 self.update_appointments(midnight)
@@ -191,7 +210,15 @@ class Scheduled(FlowCB):
             else:
                 self.appointments.remove(next_appointment)
                 logger.info( f"ok {len(self.appointments)} appointments left today" )
+            return
 
+        # default wait...
+
+        if self.first_interval:
+            self.first_interval=False
+            return
+
+        self.wait_seconds(self.default_wait)
 
 if __name__ == '__main__':
     

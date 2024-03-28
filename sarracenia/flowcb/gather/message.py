@@ -30,14 +30,16 @@ class Message(FlowCB):
 
     def gather(self, messageCountMax) -> list:
         """
-           return a current list of messages.
+           return:
+              True ... you can gather from other sources. and:
+              a list of messages obtained from this source.
         """
         if hasattr(self,'consumer') and hasattr(self.consumer,'newMessages'):
-            return self.consumer.newMessages()
+            return (True, self.consumer.newMessages())
         else:
             logger.warning( f'not connected. Trying to connect to {self.o.broker}')
             self.consumer = sarracenia.moth.Moth.subFactory(self.od)
-            return []
+            return (True, [])
 
     def ack(self, mlist) -> None:
 

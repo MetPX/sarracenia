@@ -215,7 +215,11 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
 
     def gather(self):
-        Task: gather notification messages from a source... return a list of notification messages.
+        Task: gather notification messages from a source... return either:
+              * a list of notification messages, or
+              * a tuple, (bool:keep_going, list of messages)
+              * to curtail further gathers in this cycle.
+                
         return []
 
     def metrics_report(self) -> dict:
