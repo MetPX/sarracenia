@@ -390,9 +390,10 @@ class Publisher:
                 if mexp:
                     expms = '%s' % mexp
                     msg = amqp.Message(message, content_type=ct, application_headers=mheaders,
-                                       expiration=expms)
+                                       expiration=expms, delivery_mode=2)
                 else:
-                    msg = amqp.Message(message, content_type=ct, application_headers=mheaders)
+                    msg = amqp.Message(message, content_type=ct, application_headers=mheaders,
+                                       delivery_mode=2)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_amqplib:
@@ -400,19 +401,20 @@ class Publisher:
                 if mexp:
                     expms = '%s' % mexp
                     msg = amqplib_0_8.Message(message, content_type=ct, application_headers=mheaders,
-                                              expiration=expms)
+                                              expiration=expms, delivery_mode=2)
                 else:
-                    msg = amqplib_0_8.Message(message, content_type=ct, application_headers=mheaders)
+                    msg = amqplib_0_8.Message(message, content_type=ct, application_headers=mheaders,
+                                              delivery_mode=2)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_pika:
                 self.logger.debug("publish PIKA is used")
                 if mexp:
                     expms = '%s' % mexp
-                    properties = pika.BasicProperties(content_type=ct, delivery_mode=1, headers=mheaders,
+                    properties = pika.BasicProperties(content_type=ct, delivery_mode=2, headers=mheaders,
                                                       expiration=expms)
                 else:
-                    properties = pika.BasicProperties(content_type=ct, delivery_mode=1, headers=mheaders)
+                    properties = pika.BasicProperties(content_type=ct, delivery_mode=2, headers=mheaders)
                 self.channel.basic_publish(exchange_name, exchange_key, message, properties, True)
             else:
                 self.logger.debug("Couldn't choose an AMQP client library, setting it back to default amqp")
