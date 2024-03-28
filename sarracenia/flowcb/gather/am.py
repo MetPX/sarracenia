@@ -99,6 +99,7 @@ class Am(FlowCB):
         self.minnum = 00000
         self.maxnum = 99999 
         self.remoteHost = None
+        self.timeout = 0.1
 
         # Initialise socket
         ## Create a TCP socket
@@ -119,23 +120,27 @@ class Am(FlowCB):
             # Bind socket to specified host and listen
             self.s.bind((self.host, self.port)) 
             self.s.listen(1)
+            # Set timeout higher so that exponential backoff isn't triggered on startup.
+            self.s.settimeout(self.timeout*100)
             logger.info("Socket listening on host %s and port %d.", self.host, self.port)
+            logger.info("Trying to accept connection.")
         except socket.error as e:
                 logger.error(f"Bind failed. Retrying. Error message: {e.args}")
                 time.sleep(5)
         
         child_inst = 1
+        n = 1
 
         while True:
             
                 try:
                     # Accept the connection from socket
-                    logger.info("Trying to accept connection.")
 
                     try:
                         conn, self.remoteHost = self.s.accept()
 
                         # Write out file descriptor of the connected socket so that the child can pick it up.
+                        n = 1
                         child_inst += 1
                         conn_filename = sarracenia.config.get_pid_filename(
                              None, self.o.component, self.o.config, child_inst)
@@ -146,6 +151,13 @@ class Am(FlowCB):
 
                         os.set_inheritable(conn.fileno(), True)
                         time.sleep(1)
+
+                    except TimeoutError:
+                        n = n * 2 
+                        if n > 64: n = 64
+                        logger.info(f"No new connections. Waiting {n} seconds.")
+                        time.sleep(n)
+                        continue
 
                     except Exception as e:
                         logger.error(f"Stopping accept. Exiting. Error message: {e}")
@@ -216,7 +228,7 @@ class Am(FlowCB):
             # Remove the .conn file as we don't need it anymore
             os.unlink(conn_filename)
             self.conn = socket.fromfd(int(conn_fd_str), socket.AF_INET, socket.SOCK_STREAM) 
-            self.conn.settimeout(0.1)
+            self.conn.settimeout(self.timeout)
 
     def on_stop(self):
         logger.info("On stop called. Exiting.")
