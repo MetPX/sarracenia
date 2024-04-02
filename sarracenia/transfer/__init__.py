@@ -79,7 +79,7 @@ def alarm_set(time):
 
 class Transfer():
     """
-     This is a sort of abstract base classe for implementing transfer protocols.
+     This is a sort of abstract base class for implementing transfer protocols.
      Implemented subclasses include support for: local files, https, sftp, and ftp. 
 
      This class has routines that do i/o given descriptors opened by the sub-classes,
@@ -95,6 +95,11 @@ class Transfer():
          cd     (dir)
          delete (path)
     
+     Note that the ls() call returns a dictionary where the key is the name of the file in the directory,
+     and the value is an SFTPAttributes structure for if (from paramiko.)
+
+     Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
+
      if sending:: 
 
          put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )

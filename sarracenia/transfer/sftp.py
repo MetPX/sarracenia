@@ -385,7 +385,7 @@ class Sftp(Transfer):
         return cwd
 
     # ls
-    def ls(self):
+    def ls(self) -> dict:
         logger.debug("sr_sftp ls")
         self.entries = {}
         # timeout is at least 30 secs, say we wait for max 5 mins
