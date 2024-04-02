@@ -517,4 +517,4 @@ class Am(FlowCB):
                 except Exception as e:
                     logger.error(f"Unable to generate bulletin file. Error message: {e}")
 
-        return newmsg 
+        return (True, newmsg) 

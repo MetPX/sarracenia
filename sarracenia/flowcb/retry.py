@@ -73,9 +73,9 @@ class Retry(FlowCB):
 
         """
         if not features['retry']['present'] or not self.o.retry_refilter:
-            return []
+            return (True, [])
 
-        if qty <= 0: return []
+        if qty <= 0: return (True, [])
 
         message_list = self.download_retry.get(qty)
 
@@ -88,7 +88,7 @@ class Retry(FlowCB):
              m['_deleteOnPost'] = set( [ '_isRetry' ] )
 
 
-        return message_list
+        return (True, message_list)
 
 
     def after_accept(self, worklist) -> None:

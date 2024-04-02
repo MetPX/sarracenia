@@ -211,6 +211,7 @@ class Flow:
 
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
+        self.had_vip = True
 
     def metricsFlowReset(self) -> None:
 
@@ -402,6 +403,22 @@ class Flow:
                         logger.error( f'flowCallback plugin {p}/ack crashed: {ex}' )
                         logger.debug( "details:", exc_info=True )
 
+    def _run_vip_update(self) -> bool:
+
+        self.have_vip = self.has_vip()
+        if (self.o.component == 'poll') and not self.have_vip:
+            if self.had_vip:
+                logger.info("now passive on vips %s" % self.o.vip )
+                with open( self.o.novipFilename, 'w' ) as f:
+                    f.write(str(nowflt()) + '\n' )
+                self.had_vip=False
+        else:
+            if not self.had_vip:
+                logger.info("now active on vip %s" % self.have_vip )
+                self.had_vip=True
+                if os.path.exists( self.o.novipFilename ):
+                    os.unlink( self.o.novipFilename )
+
     def run(self):
         """
           This is the core routine of the algorithm, with most important data driven
@@ -419,7 +436,7 @@ class Flow:
         current_rate = 0
         total_messages = 1
         start_time = nowflt()
-        had_vip = False
+        now=start_time
         current_sleep = self.o.sleep
         last_time = start_time
         self.metrics['flow']['last_housekeeping'] = start_time
@@ -432,15 +449,6 @@ class Flow:
         logger.info(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
-        if not self.has_vip():
-            logger.info( f'starting up passive, as do not possess any vip from: {self.o.vip}' )
-            with open( self.o.novipFilename, 'w' ) as f:
-                f.write(str(start_time) + '\n' )
-        else:
-            if os.path.exists( self.o.novipFilename ):
-                os.unlink( self.o.novipFilename )
-
-        self.runCallbacksTime(f'on_start')
 
         spamming = True
         last_gather_len = 0
@@ -451,27 +459,28 @@ class Flow:
             if self._stop_requested:
                 if stopping:
                     logger.info('clean stop from run loop')
-
                     self.close()
                     break
                 else:
-                    logger.info(
-                        'starting last pass (without gather) through loop for cleanup.'
-                    )
+                    logger.info( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
-            self.have_vip = self.has_vip()
+            self._run_vip_update()
+
+            if now > next_housekeeping or stopping:
+                next_housekeeping = self._runHousekeeping(now)
+            elif now == start_time:
+                self.runCallbacksTime(f'on_start')
+
+            self.worklist.incoming = []
+
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
                     logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
 
-                self.worklist.incoming = []
-
                 if not stopping:
                     self.gather()
-                else:
-                    self.worklist.incoming = []
 
                 last_gather_len = len(self.worklist.incoming)
                 if (last_gather_len == 0):
@@ -482,134 +491,14 @@ class Flow:
 
                 self.filter()
 
-                self._runCallbacksWorklist('after_accept')
-
-                logger.debug(
-                        'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
-                    % (len(self.worklist.incoming), len(
-                        self.worklist.ok), len(self.worklist.directories_ok),
-                       len(self.worklist.rejected), len(
-                           self.worklist.failed), self._stop_requested,
-                           self.have_vip))
-
-                self.ack(self.worklist.ok)
-                self.worklist.ok = []
-                self.ack(self.worklist.rejected)
-                self.worklist.rejected = []
-                self.ack(self.worklist.failed)
-
                 # this for duplicate cache synchronization.
                 if self.worklist.poll_catching_up:
                     self.ack(self.worklist.incoming)
                     self.worklist.incoming = []
-                    continue
 
-                if (self.o.component == 'poll') and not self.have_vip:
-                    if had_vip:
-                        logger.info("now passive on vips %s" % self.o.vip )
-                        with open( self.o.novipFilename, 'w' ) as f:
-                            f.write(str(nowflt()) + '\n' )
-                        had_vip=False
-                else:
-                    if not had_vip:
-                        logger.info("now active on vip %s" % self.have_vip )
-                        had_vip=True
-                        if os.path.exists( self.o.novipFilename ):
-                            os.unlink( self.o.novipFilename )
-
-                    # normal processing, when you are active.
-                    self.do()
-
-                    # need to acknowledge here, because posting will delete message-id
-                    self.ack(self.worklist.ok)
-                    self.ack(self.worklist.rejected)
-                    self.ack(self.worklist.failed)
-
-                    # adjust message after action is done, but before 'after_work' so adjustment is possible.
-                    for m in self.worklist.ok:
-                        if ('new_baseUrl' in m) and (m['baseUrl'] !=
-                                                     m['new_baseUrl']):
-                            m['old_baseUrl'] = m['baseUrl']
-                            m['_deleteOnPost'] |= set(['old_baseUrl'])
-                            m['baseUrl'] = m['new_baseUrl']
-                        if ('new_retrievePath' in m) :
-                            m['old_retrievePath'] = m['retrievePath']
-                            m['retrievePath'] = m['new_retrievePath']
-                            m['_deleteOnPost'] |= set(['old_retrievePath'])
-
-                        # if new_file does not match relPath, then adjust relPath so it does.
-                        if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
-                            if not 'new_relPath' in m:
-                                if len(m['relPath']) > 1:
-                                    m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
-                                else:
-                                    m['new_relPath'] = m['new_file']
-                            else:
-                                if len(m['new_relPath']) > 1:
-                                    m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
-                                else:
-                                    m['new_relPath'] = m['new_file']
-
-                        if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
-                            m['old_relPath'] = m['relPath']
-                            m['_deleteOnPost'] |= set(['old_relPath'])
-                            m['relPath'] = m['new_relPath']
-                            m['old_subtopic'] = m['subtopic']
-                            m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
-                            m['subtopic'] = m['new_subtopic']
-
-                        if '_format' in m:
-                            m['old_format'] = m['_format']
-                            m['_deleteOnPost'] |= set(['old_format'])
-                        m['_format'] = m['post_format']
-
-                        # restore adjustment to fileOp
-                        if 'post_fileOp' in m:
-                            m['fileOp'] = m['post_fileOp']
-
-                        if self.o.download and 'retrievePath' in m:
-                            # retrieve paths do not propagate after download.
-                            del m['retrievePath'] 
-
-                        
-                    self._runCallbacksWorklist('after_work')
-
-                    self.ack(self.worklist.rejected)
-                    self.worklist.rejected = []
-                    self.ack(self.worklist.failed)
-
-                    if len(self.plugins["post"]) > 0:
-                        self.post()
-                        self._runCallbacksWorklist('after_post')
-
-                    self._runCallbacksWorklist('report')
-                    self._runCallbackMetrics()
-
-                    if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
-                        metrics=json.dumps(self.metrics)
-                        with open(self.o.metricsFilename, 'w') as mfn:
-                             mfn.write(metrics+"\n")
-                        if self.o.logMetrics:
-                            if self.o.logRotateInterval >= 24*60*60:
-                                tslen=8
-                            elif self.o.logRotateInterval > 60:
-                                tslen=14
-                            else:
-                                tslen=16
-                            timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
-                            with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
-                                mfn.write( f'\"{timestamp}\" : {metrics},\n')
-
-                            # removing old metrics files
-                            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-                            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-                            for o in old_metrics:
-                                logger.info( f"removing old metrics file: {o} " )
-                                os.unlink(o)
-
-                    self.worklist.ok = []
-                    self.worklist.directories_ok = []
-                    self.worklist.failed = []
+                else: # normal processing, when you are active.
+                    self.work()
+                    self.post()
 
             now = nowflt()
             run_time = now - start_time
@@ -1087,15 +976,36 @@ class Flow:
                     self.reject(m, 304, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
-        logger.debug(
-            'end len(incoming)=%d, rejected=%d' %
-            (len(self.worklist.incoming), len(self.worklist.rejected)))
+
+        logger.debug( 'end len(incoming)=%d, rejected=%d' % (len(self.worklist.incoming), len(self.worklist.rejected)))
+
+        self._runCallbacksWorklist('after_accept')
+
+        logger.debug( 'B filtered incoming: %d, ok: %d (directories: %d), rejected: %d, failed: %d stop_requested: %s have_vip: %s'
+            % (len(self.worklist.incoming), len(self.worklist.ok), len(self.worklist.directories_ok),
+               len(self.worklist.rejected), len(self.worklist.failed), self._stop_requested, self.have_vip))
+
+        self.ack(self.worklist.ok)
+        self.worklist.ok = []
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected = []
+        self.ack(self.worklist.failed)
+
 
     def gather(self) -> None:
         so_far=0
+        keep_going=True
         for p in self.plugins["gather"]:
             try:
-                new_incoming = p(self.o.batch-so_far)
+                retval = p(self.o.batch-so_far)
+
+                # To avoid having to modify all existing gathers, support old API.
+                if type(retval) == tuple:
+                    keep_going, new_incoming = retval
+                elif type(retval) == list:
+                    new_incoming = retval
+                else:
+                    logger.error( f"flowCallback plugin gather routine {p} returned unexpected type: {type(retval)}. Expected tuple of boolean and list of new messages" )
             except Exception as ex:
                 logger.error( f'flowCallback plugin {p} crashed: {ex}' )
                 logger.debug( "details:", exc_info=True )
@@ -1106,8 +1016,29 @@ class Flow:
                 so_far += len(new_incoming) 
 
             # if we gathered enough with a subset of plugins then return.
-            if so_far >= self.o.batch:
+            if not keep_going or (so_far >= self.o.batch):
+                if (self.o.component == 'poll' ):
+                    self.worklist.poll_catching_up=True
+
                 return
+
+        # gather is an extended version of poll.
+        if self.o.component != 'poll':
+            return
+
+        if len(self.worklist.incoming) > 0:
+            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            self.worklist.poll_catching_up = True
+            return
+        else:
+            self.worklist.poll_catching_up = False
+
+        if self.have_vip:
+            for plugin in self.plugins['poll']:
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+
 
 
     def do(self) -> None:
@@ -1121,21 +1052,116 @@ class Flow:
 
         logger.debug('processing %d messages worked!' % len(self.worklist.ok))
 
+    def work(self) -> None:
+
+        self.do()
+
+        # need to acknowledge here, because posting will delete message-id
+        self.ack(self.worklist.ok)
+        self.ack(self.worklist.rejected)
+        self.ack(self.worklist.failed)
+
+        # adjust message after action is done, but before 'after_work' so adjustment is possible.
+        for m in self.worklist.ok:
+            if ('new_baseUrl' in m) and (m['baseUrl'] !=
+                                         m['new_baseUrl']):
+                m['old_baseUrl'] = m['baseUrl']
+                m['_deleteOnPost'] |= set(['old_baseUrl'])
+                m['baseUrl'] = m['new_baseUrl']
+            if ('new_retrievePath' in m) :
+                m['old_retrievePath'] = m['retrievePath']
+                m['retrievePath'] = m['new_retrievePath']
+                m['_deleteOnPost'] |= set(['old_retrievePath'])
+
+            # if new_file does not match relPath, then adjust relPath so it does.
+            if 'relPath' in m and m['new_file'] != m['relPath'].split('/')[-1]:
+                if not 'new_relPath' in m:
+                    if len(m['relPath']) > 1:
+                        m['new_relPath'] = '/'.join( m['relPath'].split('/')[0:-1] + [ m['new_file'] ])
+                    else:
+                        m['new_relPath'] = m['new_file']
+                else:
+                    if len(m['new_relPath']) > 1:
+                        m['new_relPath'] = '/'.join( m['new_relPath'].split('/')[0:-1] + [ m['new_file'] ] )
+                    else:
+                        m['new_relPath'] = m['new_file']
+
+            if ('new_relPath' in m) and (m['relPath'] != m['new_relPath']):
+                m['old_relPath'] = m['relPath']
+                m['_deleteOnPost'] |= set(['old_relPath'])
+                m['relPath'] = m['new_relPath']
+                m['old_subtopic'] = m['subtopic']
+                m['_deleteOnPost'] |= set(['old_subtopic','subtopic'])
+                m['subtopic'] = m['new_subtopic']
+
+            if '_format' in m:
+                m['old_format'] = m['_format']
+                m['_deleteOnPost'] |= set(['old_format'])
+            m['_format'] = m['post_format']
+
+            # restore adjustment to fileOp
+            if 'post_fileOp' in m:
+                m['fileOp'] = m['post_fileOp']
+
+            if self.o.download and 'retrievePath' in m:
+                # retrieve paths do not propagate after download.
+                del m['retrievePath'] 
+
+        self._runCallbacksWorklist('after_work')
+
+        self.ack(self.worklist.rejected)
+        self.worklist.rejected = []
+        self.ack(self.worklist.failed)
+
+
+
     def post(self) -> None:
 
-        # work-around for python3.5 not being able to copy re.match issue: 
-        # https://github.com/MetPX/sarracenia/issues/857 
-        if sys.version_info.major == 3 and sys.version_info.minor <= 6:
-            for m in self.worklist.ok:
-                if '_matches' in m:
-                    del m['_matches']
+        if len(self.plugins["post"]) > 0:
 
-        for p in self.plugins["post"]:
-            try:
-                p(self.worklist)
-            except Exception as ex:
-                logger.error( f'flowCallback plugin {p} crashed: {ex}' )
-                logger.debug( "details:", exc_info=True )
+            # work-around for python3.5 not being able to copy re.match issue: 
+            # https://github.com/MetPX/sarracenia/issues/857 
+            if sys.version_info.major == 3 and sys.version_info.minor <= 6:
+                for m in self.worklist.ok:
+                    if '_matches' in m:
+                        del m['_matches']
+
+            for p in self.plugins["post"]:
+                try:
+                    p(self.worklist)
+                except Exception as ex:
+                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
+        self._runCallbacksWorklist('after_post')
+        self._runCallbacksWorklist('report')
+        self._runCallbackMetrics()
+
+        if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
+            metrics=json.dumps(self.metrics)
+            with open(self.o.metricsFilename, 'w') as mfn:
+                 mfn.write(metrics+"\n")
+            if self.o.logMetrics:
+                if self.o.logRotateInterval >= 24*60*60:
+                    tslen=8
+                elif self.o.logRotateInterval > 60:
+                    tslen=14
+                else:
+                    tslen=16
+                timestamp=time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+                with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
+                    mfn.write( f'\"{timestamp}\" : {metrics},\n')
+
+                # removing old metrics files
+                logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+                old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+                for o in old_metrics:
+                    logger.info( f"removing old metrics file: {o} " )
+                    os.unlink(o)
+
+        self.worklist.ok = []
+        self.worklist.directories_ok = []
+        self.worklist.failed = []
 
     def write_inline_file(self, msg) -> bool:
         """
