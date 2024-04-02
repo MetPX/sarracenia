@@ -95,10 +95,6 @@ class Transfer():
          cd     (dir)
          delete (path)
     
-     Note that the ls() call returns a dictionary where the key is the name of the file in the directory,
-     and the value is an SFTPAttributes structure for if (from paramiko.)
-
-     Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
 
      if sending:: 
 
@@ -109,7 +105,27 @@ class Transfer():
          umask  ()
          chmod  (perm)
          rename (old,new)
-    
+
+     Note that the ls() call returns either:
+
+     * a dictionary where the key is the name of the file in the directory,
+       and the value is an SFTPAttributes structure for if (from paramiko.)
+     * a dictionary where the key is the name of the file, and the value is a string
+       that looks like the output of a linux ls command.
+     * a seqeence of bytes... will be parsed as an html page.
+
+     The first format is the vastly preferred one. The others are inferior.
+     The flowcb/poll/__init__.py lsdir() routing will turn ls tries to transform any of 
+     these return values into the first form (a dictionary of SFTPAttributes)
+     Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
+
+     if the lsdir() routine gets a sequence of bytes, the on_html_page() and on_html_parser_init(,
+     or perhaps handle_starttag(..) and handle_data() routines) will be used to turn them into
+     the first form.
+
+     web services with different such formats can be accommodated by subclassing and overriding
+     the handle_* entry points.
+
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
      * sendTo  - server to connect to.
