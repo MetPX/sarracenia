@@ -25,6 +25,8 @@ import logging
 import os
 import sarracenia
 import sys
+import paramiko
+import stat
 
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -83,12 +85,13 @@ class S3(Transfer):
         self.entries = {}
 
     def __credentials(self):
-        logger.debug("sr_s3 __credentials %s" % self.sendTo)
+        logger.debug("%s" % self.sendTo)
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
             if details: url = details.url
 
+            self.bucket = details.url.hostname
             if url.username != '':
                 self.client_args['aws_access_key_id'] = url.username
             if url.password != '':
@@ -96,7 +99,7 @@ class S3(Transfer):
             if hasattr(details, 's3_session_token'):
                 self.client_args['aws_session_token'] = details.s3_session_token
             if hasattr(details, 's3_endpoint'):
-                self.client_args['endpoint'] = details.s3_endpoint
+                self.client_args['endpoint_url'] = details.s3_endpoint
 
 
             return True
@@ -113,7 +116,7 @@ class S3(Transfer):
     def cd(self, path):
         logger.debug("sr_s3 cd %s" % path)
         self.cwd = os.path.dirname(path)
-        self.path = path
+        self.path = path.strip('/') + "/"
 
     def check_is_connected(self):
         logger.debug("sr_s3 check_is_connected")
@@ -139,18 +142,27 @@ class S3(Transfer):
     def connect(self):
         logger.debug("creating boto3 client")
 
-        if self.__credentials():
-            logger.debug(f"found credentials?")
+        self.sendTo = self.o.sendTo
 
-        self.client = boto3.client('s3', Config=self.s3_client_config, **self.client_args)
+
+        if self.__credentials():
+            logger.debug(f"found credentials? {self.client_args}")
+
+        
         try:
+            self.client = boto3.client('s3', config=self.s3_client_config, **self.client_args)
             buckets = self.client.list_buckets()
+            self.connected = True
+            logger.debug("Connected to S3!!")
+            return True
         except botocore.exceptions.ClientError as e:
             logger.warning(f"unable to establish boto3 connection: {e}")
+        except botocore.exceptions.NoCredentialsError as e:
+            logger.warning(f"unable to establish boto3 connection, no credentials: {e}")
+        except Exception as e:
+            logger.warning(f"Something else happened: {e}", exc_info=True)
             
-        self.connected = True
-
-        return True
+        return False
         
     def delete(self, path):
         logger.debug("sr_s3 delete %s" % path)
@@ -186,22 +198,56 @@ class S3(Transfer):
 
         return rw_length
     
-    def getAccelerated (self, msg, remote_file, local_file, length=0 ):
-        return self.get(msg, remote_file, local_file, 0, 0, length, False)
-    
     def ls(self):
-        logger.debug("sr_s3 ls")
+        logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
 
         self.entries = {}
 
         paginator = self.client.get_paginator('list_objects_v2')
-        page_iterator  = paginator.paginate(Bucket=self.bucket, Prefix=self.path)
+        page_iterator  = paginator.paginate(Bucket=self.bucket, Prefix=self.path, Delimiter='/')
 
         for page in page_iterator:
             if 'Contents' in page:
                 for obj in page['Contents']:
-                    self.entries += obj['Key'].replace(self.path, "")
+                    # Only do stuff with objects that aren't "folders"
+                    #if not obj['Key'][-1] == "/":
 
+                    filename = obj['Key'].replace(self.path, "")
+                    if filename == "":
+                        continue
+                    entry = paramiko.SFTPAttributes()
+                    if 'LastModified' in obj:
+                        t = obj["LastModified"].timestamp()
+                        entry.st_atime = t
+                        entry.st_mtime = t
+                    if 'Size' in obj:
+                        entry.st_size = obj['Size']
+                    
+                    entry.st_mode = 0o644
+                    
+                    #entry.filename = filename
+                    #entry.longname = filename
+                    
+                    self.entries[filename] = entry
+
+            if 'CommonPrefixes' in page:
+                for prefix in page['CommonPrefixes']:
+                    logger.debug(f"Found folder {prefix['Prefix']}")
+
+                    filename = prefix['Prefix'].replace(self.path, '').rstrip("/")
+                    if filename == "":
+                        continue
+
+                    entry = paramiko.SFTPAttributes()
+                    
+                    entry.st_mode = 0o644 | stat.S_IFDIR
+                    
+                    #entry.filename = filename
+                    #entry.longname = filename
+                    
+                    self.entries[filename] = entry
+
+        logger.debug(f"{self.entries=}")
         return self.entries
     
     def put(self,
@@ -225,9 +271,6 @@ class S3(Transfer):
         self.local_read_close(src)
 
         return rw_length
-
-    def putAccelerated (self, msg, remote_file, local_file, length=0 ):
-        return self.put(msg,local_file, remote_file, 0, 0, length)
 
     def registered_as():
         return ['s3']
