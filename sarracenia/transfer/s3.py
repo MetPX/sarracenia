@@ -118,6 +118,11 @@ class S3(Transfer):
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
+    def cd_forced(self, perm, path):
+        logger.debug("sr_s3 cd %s" % path)
+        self.cwd = os.path.dirname(path)
+        self.path = path.strip('/') + "/"
+
     def check_is_connected(self):
         logger.debug("sr_s3 check_is_connected")
 
@@ -144,28 +149,30 @@ class S3(Transfer):
 
         self.sendTo = self.o.sendTo
 
+        self.__credentials()
+            #logger.debug(f"found credentials {self.client_args=}")
 
-        if self.__credentials():
-            logger.debug(f"found credentials? {self.client_args}")
-
-        
         try:
             self.client = boto3.client('s3', config=self.s3_client_config, **self.client_args)
             buckets = self.client.list_buckets()
-            self.connected = True
-            logger.debug("Connected to S3!!")
-            return True
+            if self.bucket in [b['Name'] for b in buckets['Buckets']]:
+                self.connected = True
+                logger.debug(f"Connected to bucket {self.bucket} in {self.client.get_bucket_location(Bucket=self.bucket)['LocationConstraint']}")
+                return True
+            else:
+                logger.error(f"Can't find bucket called {self.bucket}")
+
         except botocore.exceptions.ClientError as e:
-            logger.warning(f"unable to establish boto3 connection: {e}")
+            logger.error(f"unable to establish boto3 connection: {e}")
         except botocore.exceptions.NoCredentialsError as e:
-            logger.warning(f"unable to establish boto3 connection, no credentials: {e}")
+            logger.error(f"unable to establish boto3 connection, no credentials: {e}")
         except Exception as e:
-            logger.warning(f"Something else happened: {e}", exc_info=True)
+            logger.error(f"Something else happened: {e}", exc_info=True)
             
         return False
-        
+
     def delete(self, path):
-        logger.debug("sr_s3 delete %s" % path)
+        logger.debug("deleting %s" % path)
         # if delete does not work (file not found) run pwd to see if connection is ok
         self.client.delete_object(Bucket=self.bucket, Key=path)
 
@@ -177,26 +184,23 @@ class S3(Transfer):
             local_offset=0,
             length=0, exactLength=False):
         logger.debug("sr_s3 get; self.path %s" % self.path)
-        logger.debug("get %s %s %d" % (remote_file, local_file, local_offset))
 
-
-        # open local file
-        dst = self.local_write_open(local_file, local_offset)
+        file_key = self.path + remote_file
+        logger.debug(f"get s3://{self.bucket}/{file_key} to {local_file}")
 
         # initialize sumalgo
-        if self.sumalgo: self.sumalgo.set_path(remote_file)
+        #if self.sumalgo: self.sumalgo.set_path(remote_file)
 
-        # download
-        self.write_chunk_init(dst)
+        self.client.download_file(Bucket=self.bucket, Key=file_key, Filename=local_file, Config=self.s3_transfer_config)
 
-        self.client.download_file(Bucket=self.bucket, Key=remote_file, Filename=local_file, Callback=self.write_chunk, Config=self.s3_transfer_config)
-
-        rw_length = self.write_chunk_end()
-
-        # close
-        self.local_write_close(dst)
+        rw_length = os.stat(local_file).st_size
 
         return rw_length
+
+    def getcwd(self):
+        cwd = self.cwd if self.client else None
+        alarm_cancel()
+        return cwd
     
     def ls(self):
         logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
@@ -212,7 +216,7 @@ class S3(Transfer):
                     # Only do stuff with objects that aren't "folders"
                     #if not obj['Key'][-1] == "/":
 
-                    filename = obj['Key'].replace(self.path, "")
+                    filename = obj['Key'].replace(self.path, '', 1)
                     if filename == "":
                         continue
                     entry = paramiko.SFTPAttributes()
@@ -234,13 +238,13 @@ class S3(Transfer):
                 for prefix in page['CommonPrefixes']:
                     logger.debug(f"Found folder {prefix['Prefix']}")
 
-                    filename = prefix['Prefix'].replace(self.path, '').rstrip("/")
+                    filename = prefix['Prefix'].replace(self.path, '', 1).rstrip("/")
                     if filename == "":
                         continue
 
                     entry = paramiko.SFTPAttributes()
                     
-                    entry.st_mode = 0o644 | stat.S_IFDIR
+                    entry.st_mode = 0o755 | stat.S_IFDIR
                     
                     #entry.filename = filename
                     #entry.longname = filename
@@ -250,6 +254,10 @@ class S3(Transfer):
         logger.debug(f"{self.entries=}")
         return self.entries
     
+    def mkdir(self, remote_dir):
+        logger.debug(f"mkdir {remote_dir=}; {self.path=}")
+        return
+
     def put(self,
             msg,
             local_file,
@@ -259,28 +267,27 @@ class S3(Transfer):
             length=0):
         logger.debug("sr_s3 put; %s %s" % (local_file, remote_file))
 
-        # open
-        src = self.local_read_open(local_file, local_offset)
+        file_key = self.path + remote_file
+        logger.debug(f"put {local_file} to s3://{self.bucket}/{file_key}")
+        logger.debug(f"{msg=}")
+
 
         # upload
-        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=remote_file, Callback=self.write_chunk, Config=self.s3_transfer_config)
+        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config)
 
-        rw_length = self.write_chunk_end()
-
-        # close
-        self.local_read_close(src)
-
-        return rw_length
+        write_size = self.client.get_object_attributes(Bucket='s3transfer', Key='foobar/amesii.csv', ObjectAttributes=['ObjectSize'])['ObjectSize']
+        return write_size
 
     def registered_as():
         return ['s3']
     
     def rename(self, remote_old, remote_new):
+        logger.debug(f"{remote_old=}; {remote_new=}")
         self.client.copy_object(Bucket=self.bucket, CopySource=remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
     
     def rmdir(self, path):
-        logger.debug("sr_s3 rmdir %s" % path)
+        logger.debug("%s" % path)
         paginator = self.client.get_paginator('list_objects_v2')
         pages = paginator.paginate(Bucket=self.bucket, Prefix=path + "/")
 
@@ -298,5 +305,5 @@ class S3(Transfer):
             self.client.delete_objects(Bucket=self.bucket, Delete=delete_us)
 
     def umask(self):
-        logger.debug("sr_s3 umask")
+        logger.debug("umask")
         return
