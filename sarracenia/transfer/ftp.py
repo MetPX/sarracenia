@@ -318,7 +318,7 @@ class Ftp(Transfer):
         return pwd
 
     # ls
-    def ls(self):
+    def ls(self) -> dict:
         logger.debug("sr_ftp ls")
         self.entries = {}
         alarm_set(self.o.timeout)

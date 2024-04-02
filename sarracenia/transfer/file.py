@@ -162,7 +162,7 @@ class File(Transfer):
         return self.cwd
 
     # ls
-    def ls(self):
+    def ls(self) -> dict:
         logger.debug("sr_file ls")
         self.entries = {}
         self.root = self.path
