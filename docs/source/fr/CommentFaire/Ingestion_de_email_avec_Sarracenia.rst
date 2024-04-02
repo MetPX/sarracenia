@@ -50,7 +50,7 @@ Qu’avons-nous obtenu?::
    post_broker amqp://tsource@${FLOWBROKER}
    post_exchange xs_tsource
    
-   sleep 60
+   scheduled_interval 60
    
    pollUrl <scheme>://<user>@<host>:<port>/
    
