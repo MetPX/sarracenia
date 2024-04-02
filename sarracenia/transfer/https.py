@@ -219,7 +219,7 @@ class Https(Transfer):
 
 # ls
 
-    def ls(self) -> dict:
+    def ls(self) -> str:
         logger.debug("sr_http ls")
 
         # open self.http
