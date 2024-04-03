@@ -27,6 +27,7 @@ import sarracenia
 import sys
 import paramiko
 import stat
+import json
 
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -89,9 +90,11 @@ class S3(Transfer):
 
         try:
             ok, details = self.o.credentials.get(self.sendTo)
-            if details: url = details.url
+            if details:
+                url = details.url
 
             self.bucket = details.url.hostname
+
             if url.username != '':
                 self.client_args['aws_access_key_id'] = url.username
             if url.password != '':
@@ -100,7 +103,6 @@ class S3(Transfer):
                 self.client_args['aws_session_token'] = details.s3_session_token
             if hasattr(details, 's3_endpoint'):
                 self.client_args['endpoint_url'] = details.s3_endpoint
-
 
             return True
 
@@ -126,7 +128,8 @@ class S3(Transfer):
     def check_is_connected(self):
         logger.debug("sr_s3 check_is_connected")
 
-        if not self.connected : return False
+        if not self.connected:
+            return False
 
         if self.sendTo != self.o.sendTo:
             self.close()
@@ -150,7 +153,6 @@ class S3(Transfer):
         self.sendTo = self.o.sendTo
 
         self.__credentials()
-            #logger.debug(f"found credentials {self.client_args=}")
 
         try:
             self.client = boto3.client('s3', config=self.s3_client_config, **self.client_args)
@@ -173,7 +175,6 @@ class S3(Transfer):
 
     def delete(self, path):
         logger.debug("deleting %s" % path)
-        # if delete does not work (file not found) run pwd to see if connection is ok
         self.client.delete_object(Bucket=self.bucket, Key=path)
 
     def get(self,
@@ -183,13 +184,11 @@ class S3(Transfer):
             remote_offset=0,
             local_offset=0,
             length=0, exactLength=False):
+        
         logger.debug("sr_s3 get; self.path %s" % self.path)
 
         file_key = self.path + remote_file
         logger.debug(f"get s3://{self.bucket}/{file_key} to {local_file}")
-
-        # initialize sumalgo
-        #if self.sumalgo: self.sumalgo.set_path(remote_file)
 
         self.client.download_file(Bucket=self.bucket, Key=file_key, Filename=local_file, Config=self.s3_transfer_config)
 
@@ -213,13 +212,12 @@ class S3(Transfer):
         for page in page_iterator:
             if 'Contents' in page:
                 for obj in page['Contents']:
-                    # Only do stuff with objects that aren't "folders"
-                    #if not obj['Key'][-1] == "/":
-
                     filename = obj['Key'].replace(self.path, '', 1)
                     if filename == "":
                         continue
+                    
                     entry = paramiko.SFTPAttributes()
+
                     if 'LastModified' in obj:
                         t = obj["LastModified"].timestamp()
                         entry.st_atime = t
@@ -228,10 +226,7 @@ class S3(Transfer):
                         entry.st_size = obj['Size']
                     
                     entry.st_mode = 0o644
-                    
-                    #entry.filename = filename
-                    #entry.longname = filename
-                    
+
                     self.entries[filename] = entry
 
             if 'CommonPrefixes' in page:
@@ -243,12 +238,8 @@ class S3(Transfer):
                         continue
 
                     entry = paramiko.SFTPAttributes()
-                    
                     entry.st_mode = 0o755 | stat.S_IFDIR
-                    
-                    #entry.filename = filename
-                    #entry.longname = filename
-                    
+        
                     self.entries[filename] = entry
 
         logger.debug(f"{self.entries=}")
@@ -271,12 +262,24 @@ class S3(Transfer):
         logger.debug(f"put {local_file} to s3://{self.bucket}/{file_key}")
         logger.debug(f"{msg=}")
 
+        extra_args = {
+            'Metadata': {
+                'sarracenia': json.dumps({
+                        'identity': msg['identity'],
+                        'mtime': msg['mtime'],
+                    })
+            }
+        }
 
         # upload
-        self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config)
+        try:
+            self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
 
-        write_size = self.client.get_object_attributes(Bucket='s3transfer', Key='foobar/amesii.csv', ObjectAttributes=['ObjectSize'])['ObjectSize']
-        return write_size
+            write_size = self.client.get_object_attributes(Bucket='s3transfer', Key='foobar/amesii.csv', ObjectAttributes=['ObjectSize'])['ObjectSize']
+            return write_size
+        except Exception as e:
+            logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
+            return -1
 
     def registered_as():
         return ['s3']
