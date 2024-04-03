@@ -85,6 +85,8 @@ class S3(Transfer):
 
         self.entries = {}
 
+        self._Metadata_Key = 'sarracenia_v3'
+
     def __credentials(self):
         logger.debug("%s" % self.sendTo)
 
@@ -218,12 +220,20 @@ class S3(Transfer):
                     
                     entry = paramiko.SFTPAttributes()
 
+                    obj_metadata = self.client.head_object(Bucket=self.bucket, Key=obj['Key'])['Metadata']
+
+                    if self._Metadata_Key in obj_metadata:
+                        sr_metadata = json.loads(obj_metadata[self._Metadata_Key])
+                        entry.sr_mtime = sr_metadata['mtime']
+                        entry.sr_identity = sr_metadata['identity']
+                    
                     if 'LastModified' in obj:
                         t = obj["LastModified"].timestamp()
                         entry.st_atime = t
                         entry.st_mtime = t
                     if 'Size' in obj:
                         entry.st_size = obj['Size']
+                        
                     
                     entry.st_mode = 0o644
 
@@ -264,7 +274,7 @@ class S3(Transfer):
 
         extra_args = {
             'Metadata': {
-                'sarracenia': json.dumps({
+                self._Metadata_Key: json.dumps({
                         'identity': msg['identity'],
                         'mtime': msg['mtime'],
                     })
@@ -275,7 +285,7 @@ class S3(Transfer):
         try:
             self.client.upload_file( Filename=local_file, Bucket=self.bucket, Key=file_key, Config=self.s3_transfer_config, ExtraArgs=extra_args)
 
-            write_size = self.client.get_object_attributes(Bucket='s3transfer', Key='foobar/amesii.csv', ObjectAttributes=['ObjectSize'])['ObjectSize']
+            write_size = self.client.get_object_attributes(Bucket=self.bucket, Key=file_key, ObjectAttributes=['ObjectSize'])['ObjectSize']
             return write_size
         except Exception as e:
             logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
