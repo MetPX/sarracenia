@@ -81,7 +81,8 @@ class S3(Transfer):
         self.bucket = None
         self.client_args = {}
 
-        self.cwd = ''
+        self.path = ""
+        self.cwd = ""
 
         self.entries = {}
 
@@ -199,9 +200,10 @@ class S3(Transfer):
         return rw_length
 
     def getcwd(self):
-        cwd = self.cwd if self.client else None
-        alarm_cancel()
-        return cwd
+        if self.client:
+            return self.cwd
+        else:
+            return None
     
     def ls(self):
         logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
