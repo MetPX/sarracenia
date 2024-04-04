@@ -73,6 +73,7 @@ def test_cleanup(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
 
         BaseOptions_redis = Options()
@@ -80,6 +81,7 @@ def test_cleanup(tmp_path):
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_cleanup"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -107,12 +109,14 @@ def test_metricsReport(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_metricsReport"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -134,12 +138,14 @@ def test_after_post(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_post"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -160,12 +166,14 @@ def test_after_work__WLFailed(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_work__WLFailed"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -188,6 +196,7 @@ def test_after_work__SmallQty(tmp_path):
         BaseOptions_disk.batch = 2
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.batch = 2
@@ -195,6 +204,7 @@ def test_after_work__SmallQty(tmp_path):
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_work__SmallQty"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -217,12 +227,14 @@ def test_after_work(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_work"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -249,6 +261,7 @@ def test_after_accept__SmallQty(tmp_path):
         BaseOptions_disk.batch = 2
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.batch = 2
@@ -256,6 +269,7 @@ def test_after_accept__SmallQty(tmp_path):
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_accept__SmallQty"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -277,12 +291,14 @@ def test_after_accept(tmp_path):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_after_accept"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
@@ -308,12 +324,14 @@ def test_on_housekeeping(tmp_path, caplog):
         BaseOptions_disk.retry_driver = 'disk'
         BaseOptions_disk.pid_filename = str(tmp_path) + os.sep + "pidfilename.txt"
         retry_disk = Retry(BaseOptions_disk)
+        retry_disk.on_start()
 
         BaseOptions_redis = Options()
         BaseOptions_redis.retry_driver = 'redis'
         BaseOptions_redis.redisqueue_serverurl = "redis://Never.Going.To.Resolve:6379/0"
         BaseOptions_redis.queueName = "test_on_housekeeping"
         retry_redis = Retry(BaseOptions_redis)
+        retry_redis.on_start()
 
         message = make_message()
 
