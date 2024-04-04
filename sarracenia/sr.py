@@ -456,6 +456,8 @@ class sr_GlobalState:
         os.chdir(dir1)
 
         for c in self.components:
+            if c not in self.configs:
+                continue
             for cfg in self.configs[c]:
                     #print( f" {self.configs[c][cfg]['statehost']=} " )
                     if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
