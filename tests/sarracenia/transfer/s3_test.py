@@ -14,6 +14,11 @@ import sarracenia.transfer.s3
 
 import boto3, botocore
 
+from moto import mock_aws
+import base64
+import json
+import stat
+
 #useful for debugging tests
 import pprint
 pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
@@ -21,6 +26,49 @@ pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
+
+
+TEST_BUCKET_NAME = 'NotARealBucket'
+TEST_BUCKET_KEYS = {
+    'RootFile.txt': {
+        'value': 'Lorem ipsum',
+        'meta': json.dumps({'mtime': '20240402T161825', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+    'Folder1/NestedFile.jpg': {
+        'value': base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjuG8t/x8ABW8COSh+5hMAAAAASUVORK5CYII='),
+        'meta': json.dumps({'mtime': '20240401T161825', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+    'Folder1/NestedFolder/DoubleNestedFile.txt': {
+        'value': 'This is the contents of DoubleNestedFile.txt',
+        'meta': json.dumps({ 'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+    'Folder2/AlsoNestedFile.dat': {
+        'value': 'o28934ua;loifgja908024hf;oiau4fhj298yao;uih43wap98w4fiuaghw3oufiywag3fhjklawgv2873RTY23ILUGHli&tyl&uiGHUU',
+        'meta': json.dumps({'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+    'FolderToDelete/ThisFileWillBeGone.txt': {
+        'value': 'ThisIsNotTheFileYouAreLookingFor',
+        'meta': json.dumps({ 'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+    'FileToRename.txt': {
+        'value': 'This file used to be called FileToRename.txt',
+        'meta': json.dumps({ 'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
+}
+
+@pytest.fixture(scope="function")
+def build_client():
+    """Mocked AWS Credentials for moto."""
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_SECURITY_TOKEN"] = "testing"
+    os.environ["AWS_SESSION_TOKEN"] = "testing"
+    os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
+
+    with mock_aws():
+        client = boto3.client("s3", region_name="us-east-1")
+        client.create_bucket(Bucket=TEST_BUCKET_NAME)
+        for key, details in TEST_BUCKET_KEYS.items():
+            client.put_object(Bucket=TEST_BUCKET_NAME, Key=key, Body=details['value'], Metadata={'sarracenia_v3': details['meta']})
+        
+        yield client
+
+def _list_keys(client):
+    return [item['Key'] for item in client.list_objects_v2(Bucket=TEST_BUCKET_NAME)['Contents']]
 
 def test___init__():
     options = sarracenia.config.default_config()
@@ -56,7 +104,7 @@ def test_cd_forced():
     assert transfer.path == ""
     assert transfer.cwd == ""
 
-    transfer.cd("/this/Is/A/Path/")
+    transfer.cd_forced('777', "/this/Is/A/Path/")
 
     assert transfer.path == "this/Is/A/Path/"
     assert transfer.cwd == "/this/Is/A/Path"
@@ -64,9 +112,19 @@ def test_cd_forced():
 @pytest.mark.depends(on=['test_close'])
 def test_check_is_connected():
     options = sarracenia.config.default_config()
+    options.sendTo = 's3://foobar'
     transfer = sarracenia.transfer.s3.S3('s3', options)
-    
-    assert True
+
+    assert transfer.check_is_connected() == False
+    assert transfer.connected == False
+
+    # This will still return False because of the sendto checks
+    transfer.connected = True
+    assert transfer.check_is_connected() == False
+
+    transfer.connected = True
+    transfer.sendTo = options.sendTo
+    assert transfer.check_is_connected() == True
 
 def test_chmod():
     options = sarracenia.config.default_config()
@@ -94,32 +152,58 @@ def test_connect():
     
     assert True
 
-def test_delete():
+def test_delete(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
-    
-    assert True
 
-def test_get():
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
+
+    assert 'RootFile.txt' in _list_keys(transfer.client)
+
+    transfer.delete('RootFile.txt')
+    assert 'RootFile.txt' not in _list_keys(transfer.client)
+
+def test_get(build_client, tmp_path):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
-    
-    assert True
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
+    transfer.path = 'Folder2/'
 
-def test_getcwd():
+    filename = str(tmp_path) + os.sep + "DownloadedFile.txt"
+
+    # This isn't a valid message, but it serves our purposes here.
+    msg = {'identity': {'method': 'cod', 'value': 'sha512'}, 'mtime': '20240326T182732'}
+
+    size = transfer.get(msg, 'AlsoNestedFile.dat', filename)
+
+    assert size == len(TEST_BUCKET_KEYS['Folder2/AlsoNestedFile.dat']['value']) # This is the size of the "content" string
+    assert os.path.isfile(filename)
+    assert open(filename, 'r').read() == TEST_BUCKET_KEYS['Folder2/AlsoNestedFile.dat']['value']
+
+def test_getcwd(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
     
     assert transfer.getcwd() == None
 
-    transfer.client = boto3.client('s3')
+    transfer.client = build_client
     assert transfer.getcwd() == ''
 
-def test_ls():
+def test_ls(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
     
-    assert True
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
+    entries = transfer.ls()
+    
+    assert len(entries) == 5
+    assert 'FolderToDelete' in entries
+    assert entries['Folder1'].st_mode == 0o755 | stat.S_IFDIR
+    assert entries['FileToRename.txt'].st_mode == 0o644
+    assert entries['RootFile.txt'].st_size == 11
 
 def test_mkdir():
     options = sarracenia.config.default_config()
@@ -128,29 +212,56 @@ def test_mkdir():
     transfer.mkdir('ThisMeansNothing')
     assert True
 
-def test_put():
+def test_put(build_client, tmp_path):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
-    
-    assert True
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
+    transfer.path = 'NewFolder/'
 
-def test_registered_as():
-    #options = sarracenia.config.default_config()
-    #transfer = sarracenia.transfer.s3.S3('s3', options)
+    filename = str(tmp_path) + os.sep + "FileToUpload.txt"
+    fp = open(filename, 'a')
+    fp.write('ThisIsMyBody\n')
+    fp.flush()
+    fp.close()
+
+    # This isn't a valid message, but it serves our purposes here.
+    msg = {'identity': {'method': 'cod', 'value': 'sha512'}, 'mtime': '20240326T182732'}
+
+    size = transfer.put(msg, filename, "FileToUpload.txt", 0,0)
     
+    assert size == 13
+    assert "NewFolder/FileToUpload.txt" in _list_keys(transfer.client)
+
+def test_registered_as():    
     assert sarracenia.transfer.s3.S3.registered_as() == ['s3']
 
-def test_rename():
+def test_rename(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
     
-    assert True
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
 
-def test_rmdir():
+    assert 'FileToRename.txt' in _list_keys(transfer.client)
+
+    transfer.rename('FileToRename.txt', 'FileNewName.txt')
+
+    assert 'FileToRename.txt' not in _list_keys(transfer.client)
+    assert 'FileNewName.txt' in _list_keys(transfer.client)
+
+def test_rmdir(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
+
+    transfer.client = build_client
+    transfer.bucket = TEST_BUCKET_NAME
+
+    assert 'FolderToDelete/ThisFileWillBeGone.txt' in _list_keys(transfer.client)
     
-    assert True
+    transfer.rmdir('FolderToDelete')
+
+    assert 'FolderToDelete/ThisFileWillBeGone.txt' not in _list_keys(transfer.client)
 
 def test_umask():
     options = sarracenia.config.default_config()
