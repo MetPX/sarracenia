@@ -106,15 +106,19 @@ class Transfer():
          chmod  (perm)
          rename (old,new)
 
-     Note that the ls() call returns either:
+     Note that the ls() call returns are polymorphic. One of:
 
      * a dictionary where the key is the name of the file in the directory,
        and the value is an SFTPAttributes structure for if (from paramiko.)
+       (sftp.py as an example)
      * a dictionary where the key is the name of the file, and the value is a string
        that looks like the output of a linux ls command.
+       (ftp.py as an example.)
      * a seqeence of bytes... will be parsed as an html page.
+       (https.py as an example)
 
-     The first format is the vastly preferred one. The others are inferior.
+     The first format is the vastly preferred one. The others are fallbacks when the first
+     is not available.
      The flowcb/poll/__init__.py lsdir() routing will turn ls tries to transform any of 
      these return values into the first form (a dictionary of SFTPAttributes)
      Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
