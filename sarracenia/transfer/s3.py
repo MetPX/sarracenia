@@ -77,6 +77,7 @@ class S3(Transfer):
         self.client = None
         self.details = None
         self.seek = True
+        self.sendTo = None
 
         self.bucket = None
         self.client_args = {}
@@ -148,6 +149,7 @@ class S3(Transfer):
         logger.debug("sr_s3 close")
         self.connected = False
         self.client = None
+        self.sendTo = None
         return
 
     def connect(self):
@@ -298,7 +300,7 @@ class S3(Transfer):
     
     def rename(self, remote_old, remote_new):
         logger.debug(f"{remote_old=}; {remote_new=}")
-        self.client.copy_object(Bucket=self.bucket, CopySource=remote_old, Key=remote_new)
+        self.client.copy_object(Bucket=self.bucket, CopySource=self.bucket + "/" + remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
     
     def rmdir(self, path):
