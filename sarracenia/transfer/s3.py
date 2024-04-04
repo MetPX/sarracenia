@@ -89,7 +89,7 @@ class S3(Transfer):
 
         self._Metadata_Key = 'sarracenia_v3'
 
-    def __credentials(self):
+    def __credentials(self) -> bool:
         logger.debug("%s" % self.sendTo)
 
         try:
@@ -129,7 +129,7 @@ class S3(Transfer):
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
-    def check_is_connected(self):
+    def check_is_connected(self) -> bool:
         logger.debug("sr_s3 check_is_connected")
 
         if not self.connected:
@@ -152,7 +152,7 @@ class S3(Transfer):
         self.sendTo = None
         return
 
-    def connect(self):
+    def connect(self) -> bool:
         logger.debug("creating boto3 client")
 
         self.sendTo = self.o.sendTo
@@ -188,7 +188,7 @@ class S3(Transfer):
             local_file,
             remote_offset=0,
             local_offset=0,
-            length=0, exactLength=False):
+            length=0, exactLength=False) -> int:
         
         logger.debug("sr_s3 get; self.path %s" % self.path)
 
@@ -207,7 +207,7 @@ class S3(Transfer):
         else:
             return None
     
-    def ls(self):
+    def ls(self) -> dict[ str, paramiko.SFTPAttributes ]:
         logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
 
         self.entries = {}
@@ -269,7 +269,7 @@ class S3(Transfer):
             remote_file,
             local_offset=0,
             remote_offset=0,
-            length=0):
+            length=0) -> int:
         logger.debug("sr_s3 put; %s %s" % (local_file, remote_file))
 
         file_key = self.path + remote_file
@@ -295,7 +295,7 @@ class S3(Transfer):
             logger.error(f"Something went wrong with the upload: {e}", exc_info=True)
             return -1
 
-    def registered_as():
+    def registered_as() -> list:
         return ['s3']
     
     def rename(self, remote_old, remote_new):
