@@ -28,7 +28,7 @@ logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
 
 
-TEST_BUCKET_NAME = 'NotARealBucket'
+TEST_BUCKET_NAME = 'notarealbucket'
 TEST_BUCKET_KEYS = {
     'RootFile.txt': {
         'value': 'Lorem ipsum',
@@ -80,10 +80,32 @@ def test___init__():
     assert hasattr(transfer.s3_client_config, 'user_agent_extra')
 
 def test___credentials():
-    options = sarracenia.config.default_config()
-    transfer = sarracenia.transfer.s3.S3('s3', options)
+    transfer = sarracenia.transfer.s3.S3('s3', sarracenia.config.default_config())
 
-    assert True
+    #simple path
+    transfer.o.credentials._parse('s3://testing_simple_bucket_creds')
+    transfer.sendTo = 's3://testing_simple_bucket_creds'
+    transfer._S3__credentials()
+    assert transfer.bucket == 'testing_simple_bucket_creds'
+    assert transfer.client_args == {
+            'aws_access_key_id': None,
+            'aws_secret_access_key': None,
+            'aws_session_token': None,
+            'endpoint_url': None
+            }
+
+    #Complex, with all options/details
+    transfer = sarracenia.transfer.s3.S3('s3', sarracenia.config.default_config())
+    transfer.o.credentials._parse('s3://testing__access_key_id:testing__secret_access_key@testing_full_bucket_creds s3_session_token=testing_session_token,s3_endpoint=https://testing_endpoint:5000')
+    transfer.sendTo = 's3://testing_full_bucket_creds'
+    transfer._S3__credentials()
+    assert transfer.bucket == 'testing_full_bucket_creds'
+    assert transfer.client_args == {
+            'aws_access_key_id': 'testing__access_key_id',
+            'aws_secret_access_key': 'testing__secret_access_key',
+            'aws_session_token': 'testing_session_token',
+            'endpoint_url': 'https://testing_endpoint:5000'
+            }
 
 def test_cd():
     options = sarracenia.config.default_config()
@@ -146,11 +168,19 @@ def test_close():
     assert transfer.client == None
 
 @pytest.mark.depends(on=['test___credentials'])
-def test_connect():
+def test_connect(build_client):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.s3.S3('s3', options)
-    
-    assert True
+
+    transfer.o.credentials._parse('s3://testing_simple_bucket_creds')
+    transfer.o.sendTo = 's3://testing_simple_bucket_creds'
+
+    assert transfer.connect() == False
+
+    transfer.o.sendTo = 's3://' + TEST_BUCKET_NAME
+    assert transfer.connect() == True
+
+    # Probably need to test exception handling here, but... that sounds like a lot of work.
 
 def test_delete(build_client):
     options = sarracenia.config.default_config()
