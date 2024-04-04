@@ -156,6 +156,10 @@ class Retry(FlowCB):
 
     def on_cleanup(self) -> None:
         logger.debug('starting retry cleanup')
+
+        if not hasattr(self,'download_retry'):
+            self.on_start()
+
         self.download_retry.cleanup()
         self.post_retry.cleanup()
 
