@@ -671,6 +671,9 @@ L’option AMQP **durable**, sur les déclarations de fil d’attente. Si la val
 le courtier conservera la fil d’attente lors des redémarrages du courtier.
 Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.
 
+Remarque: seuls les messages *persistants* resteront dans une file d'attente durable après le redémarrage du courtier.
+Les messages persistants peuvent être publiés en activant l'option **persistant** (elle est activée par défaut).
+
 
 fileEvents <évènement, évènement,...>
 -------------------------------------
@@ -1279,6 +1282,20 @@ qu'un dossier puis être accepté.
 (sur une sortie ls qui ressemble à : ---r-----, comme une commande chmod 040 <fichier> ).
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
+
+persistent <flag> (défaut: True)
+----------------------------------
+
+L'option **persistent** définit le *delivery_mode* pour un message AMQP. Lorsqu'il
+est choisi, les messages persistants seront publiés (``delivery_mode=2``). Lorsqu'ils
+ne le sont pas, ils seront placés en mode transitoire (non durables, ``delivery_mode=1``).
+
+Les messages persistants sont écrits sur le disque par le courtier et survivront au 
+redémarrage du courtier. Tous les messages transitoires dans une file d’attente seront
+perdus au redémarrage d’un courtier. Une remarque : les messages persistants ne survivront
+pas le redémarrage du courtier *quand ils résident dans une file d'attente durable*. 
+Non-durable les files d'attente, y compris tous les messages qu'elles contiennent, 
+seront perdues au redémarrage d'un courtier.
 
 pollUrl
 -------

@@ -686,7 +686,10 @@ durable <flag> (default: True)
 
 The AMQP **durable** option, on queue declarations. If set to True, 
 the broker will preserve the queue across broker reboots.
-It means writes the queue is on disk if the broker is restarted.
+The queue will be written to and recovered from disk if the broker is restarted.
+
+Note: only *persistent* messages will remain in a durable queue after a broker restart. 
+Persistent messages can be published by enabling the **persistent** option (it is enabled by default).
 
 fileEvents <event,event,...>
 ----------------------------
@@ -1304,6 +1307,18 @@ a file to be accepted.
 (on an ls output that looks like: ---r-----, like a chmod 040 <file> command).
 The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
+
+persistent <flag> (default: True)
+----------------------------------
+
+The **persistent** option sets the *delivery_mode* for an AMQP message. When True,
+persistent messages will be published (``delivery_mode=2``), when False, transient
+(non-durable, ``delivery_mode=1``) messages will be published.
+
+Persistent messages are written to disk by the broker, and will survive a broker restart.
+Any transient messages in a queue will be lost when a broker is restarted. Note: persistent
+messages will only survive a broker restart *when they reside in a durable queue*. Non-durable
+queues, including all messages inside them, will be lost when a broker is restarted.
 
 pollUrl <url>
 -------------
