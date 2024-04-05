@@ -207,7 +207,7 @@ class S3(Transfer):
         else:
             return None
     
-    def ls(self) -> dict[ str, paramiko.SFTPAttributes ]:
+    def ls(self):
         logger.debug(f"ls-ing items in {self.bucket}/{self.path}")
 
         self.entries = {}
