@@ -256,11 +256,11 @@ class S3(Transfer):
         
                     self.entries[filename] = entry
 
-        logger.debug(f"{self.entries=}")
+        logger.debug(f"self.entries={self.entries}")
         return self.entries
     
     def mkdir(self, remote_dir):
-        logger.debug(f"mkdir {remote_dir=}; {self.path=}")
+        logger.debug(f"mkdir {remote_dir}; {self.path}")
         return
 
     def put(self,
@@ -274,7 +274,7 @@ class S3(Transfer):
 
         file_key = self.path + remote_file
         logger.debug(f"put {local_file} to s3://{self.bucket}/{file_key}")
-        logger.debug(f"{msg=}")
+        logger.debug(f"msg={msg}")
 
         extra_args = {
             'Metadata': {
@@ -299,7 +299,7 @@ class S3(Transfer):
         return ['s3']
     
     def rename(self, remote_old, remote_new):
-        logger.debug(f"{remote_old=}; {remote_new=}")
+        logger.debug(f"remote_old={remote_old}; remote_new={remote_new}")
         self.client.copy_object(Bucket=self.bucket, CopySource=self.bucket + "/" + remote_old, Key=remote_new)
         self.client.delete_object(Bucket=self.bucket, Key=remote_old)
     

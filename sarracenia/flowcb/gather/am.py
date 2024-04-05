@@ -187,7 +187,7 @@ class Am(FlowCB):
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
 
                         os.execl(sys.executable , sys.executable , *sys.argv )   
-                        logger.critical(f"Failed to launch child! {sys.argv=}")
+                        logger.critical(f"Failed to launch child! sys.argv={sys.argv}")
                         
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
