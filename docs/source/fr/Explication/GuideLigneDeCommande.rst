@@ -1118,6 +1118,7 @@ Le protocle de notification est défini ici `sr3_post(7) <../Reference/sr3_post.
 **poll** se connecte à un *broker*. À toutes les secondes de *scheduled_interval* (où bien 
 à des moment spécifié par *scheduled_hour* et *scheduled_minute*), il se connecte à
 une *pollUrl* (sftp, ftp, ftps). Pour chacun des *path* définis, les contenus sont listés.
+
 Le poll est seulement destinée à être utilisée pour les fichiers récemment modifiés.
 L’option *fileAgeMax* élimine les fichiers trop anciens. Lorsqu’un fichier correspondant
 à un modèle donné est trouvé by *accept*, **poll** crée un message de notification pour ce produit.
