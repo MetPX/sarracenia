@@ -1,8 +1,9 @@
-metpx-sarracenia (2.23.12) UNRELEASED; urgency=medium
+metpx-sarracenia (2.24.04) unstable; urgency=medium
 
+  * #1004 add persistence of messages across broker restarts
   * #639 take the root of paths from the baseUrl, for compatibility with sr3
   * #639 add ability to ignore unimplemented mkdir and rmdir events without errors
-  * correcting msg_fdelay.
+  * correcting msg_fdelay plugin
 
  -- peter <peter@bsqt.homeip.net>  Fri, 02 Dec 2023 21:46:44 -0500
 
