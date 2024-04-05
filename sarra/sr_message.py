@@ -72,6 +72,7 @@ class sr_message():
         self.log_reject  = parent.log_reject
         self.post_topic_prefix  = parent.post_topic_prefix
         self.post_version  = parent.post_version
+        self.persistent    = parent.persistent
         self.report_publisher = None
         self.publisher     = None
         self.pub_exchange  = None
@@ -488,7 +489,7 @@ class sr_message():
            # publish
            if ok:
                self.report_publisher.publish(self.report_exchange,self.report_topic,
-                                             self.report_notice,self.headers,self.persistent)
+                                             self.report_notice,self.headers,persistent=self.persistent)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.report_topic,self.report_notice,self.hdrstr))
 
@@ -732,7 +733,7 @@ class sr_message():
                     ok= True
                else:
                     ok = self.publisher.publish(self.exchange+suffix, self.topic, body,
-                                                None, self.message_ttl, self.persistent)
+                                                None, self.message_ttl, persistent=self.persistent)
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'identity' in self.headers.keys(): 
@@ -775,7 +776,7 @@ class sr_message():
                     ok=True
                else:
                     ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,
-                                                self.headers,self.message_ttl,self.persistent)
+                                                self.headers,self.message_ttl,persistent=self.persistent)
 
         self.set_hdrstr()
 
