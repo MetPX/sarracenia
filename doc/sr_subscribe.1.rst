@@ -564,6 +564,7 @@ Setting the queue on broker :
 - **durable       <boolean>      (default: True)**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message_ttl   <duration>      (default: None)**
+- **persistent    <boolean>      (default: True)**
 - **prefetch      <N>            (default: 1)**
 - **reset         <boolean>      (default: False)**
 - **restore       <boolean>      (default: False)**
@@ -615,7 +616,9 @@ durable <boolean> (default: True)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The  **durable** option, if set to True, means writes the queue
-on disk if the broker is restarted.
+on disk if the broker is restarted. Note: only persistent messages in a
+queue will be retained in a durable queue after a broker restart. Persistent messages
+can be published by enabling the **persistent** option (it is enabled by default).
 
 expire <duration> (default: 5m  == five minutes. RECOMMEND OVERRIDING)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -640,6 +643,18 @@ message_ttl <duration>  (default: None)
 
 The  **message_ttl**  option set the time a message can live in the queue.
 Past that time, the message is taken out of the queue by the broker.
+
+persistent <boolean> (default: True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The **persistent** option sets the *delivery_mode* for an AMQP message. When True,
+persistent messages will be published (``delivery_mode=2``), when False, transient
+(non-durable, ``delivery_mode=1``) messages will be published.
+
+Persistent messages are written to disk by the broker, and will survive a broker restart.
+Any transient messages in a queue will be lost when a broker is restarted. Note: persistent
+messages will only survive a broker restart *when they reside in a durable queue*. Non-durable
+queues, including all messages inside them, will be lost when a broker is restarted.
 
 prefetch <N> (default: 1)
 ~~~~~~~~~~~~~~~~~~~~~~~~~

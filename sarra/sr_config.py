@@ -337,7 +337,8 @@ class sr_config:
            ( self.expire, self.reset, self.message_ttl, self.prefetch, self.accept_unmatch, self.delete, self.poll_without_vip ) )
         self.logger.info( "\theartbeat=%s sanity_log_dead=%s default_mode=%03o default_mode_dir=%03o default_mode_log=%03o discard=%s durable=%s" % \
            ( self.heartbeat, self.sanity_log_dead, self.chmod, self.chmod_dir, self.chmod_log, self.discard, self.durable ) )
-        self.logger.info( "\tdeclare_queue=%s declare_exchange=%s bind_queue=%s" % ( self.declare_queue, self.declare_exchange, self.bind_queue ) )
+        self.logger.info( "\tpersistent=%s declare_queue=%s" % ( self.persistent, self.declare_queue) )
+        self.logger.info( "\tdeclare_exchange=%s bind_queue=%s" % ( self.declare_exchange, self.bind_queue ) )
         self.logger.info( "\tpost_on_start=%s preserve_mode=%s preserve_time=%s realpath_post=%s base_dir=%s follow_symlinks=%s" % \
            ( self.post_on_start, self.preserve_mode, self.preserve_time, self.realpath_post, self.base_dir, self.follow_symlinks ) )
         self.logger.info( "\tmirror=%s flatten=%s realpath_post=%s strip=%s base_dir=%s report_back=%s log_reject=%s" % \
@@ -719,6 +720,7 @@ class sr_config:
         self.prefetch             = 25
         self.max_queue_size       = 25000
         self.set_passwords        = True
+        self.persistent           = True
 
         self.accept_unmatch       = None     # default changes depending on program
         self.masks                = []       # All the masks (accept and reject)
@@ -1868,6 +1870,14 @@ class sr_config:
                         n = 1
                      else :
                         self.durable = self.isTrue(words1)
+                        n = 2
+                
+                elif words0 == 'persistent'   : # See sr_config.7 ++
+                     if (words1 is None) or words[0][0:1] == '-' : 
+                        self.persistent = True
+                        n = 1
+                     else :
+                        self.persistent = self.isTrue(words1)
                         n = 2
 
                 elif words0 in ['events','e']:  # See sr_watch.1

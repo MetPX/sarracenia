@@ -375,8 +375,14 @@ class Publisher:
         alarm_cancel()
         return True
 
-    def publish(self, exchange_name, exchange_key, message, mheaders, mexp=0):
+    def publish(self, exchange_name, exchange_key, message, mheaders, mexp=0, persistent=True):
+      """ Args:
+            persistent (boolean): Whether the message should be published as persistent 
+              (``True``, ``delivery_mode=2``) or non-persistent (``False``, ``delivery_mode=1``). 
+              Default is ``True``. 
+      """
 
+      deliv_mode = 2 if persistent else 1
       ebo=2
       connected=True
       while True:
@@ -390,10 +396,10 @@ class Publisher:
                 if mexp:
                     expms = '%s' % mexp
                     msg = amqp.Message(message, content_type=ct, application_headers=mheaders,
-                                       expiration=expms, delivery_mode=2)
+                                       expiration=expms, delivery_mode=deliv_mode)
                 else:
                     msg = amqp.Message(message, content_type=ct, application_headers=mheaders,
-                                       delivery_mode=2)
+                                       delivery_mode=deliv_mode)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_amqplib:
@@ -401,20 +407,20 @@ class Publisher:
                 if mexp:
                     expms = '%s' % mexp
                     msg = amqplib_0_8.Message(message, content_type=ct, application_headers=mheaders,
-                                              expiration=expms, delivery_mode=2)
+                                              expiration=expms, delivery_mode=deliv_mode)
                 else:
                     msg = amqplib_0_8.Message(message, content_type=ct, application_headers=mheaders,
-                                              delivery_mode=2)
+                                              delivery_mode=deliv_mode)
                 self.channel.basic_publish(msg, exchange_name, exchange_key)
                 self.channel.tx_commit()
             elif self.hc.use_pika:
                 self.logger.debug("publish PIKA is used")
                 if mexp:
                     expms = '%s' % mexp
-                    properties = pika.BasicProperties(content_type=ct, delivery_mode=2, headers=mheaders,
+                    properties = pika.BasicProperties(content_type=ct, delivery_mode=deliv_mode, headers=mheaders,
                                                       expiration=expms)
                 else:
-                    properties = pika.BasicProperties(content_type=ct, delivery_mode=2, headers=mheaders)
+                    properties = pika.BasicProperties(content_type=ct, delivery_mode=deliv_mode, headers=mheaders)
                 self.channel.basic_publish(exchange_name, exchange_key, message, properties, True)
             else:
                 self.logger.debug("Couldn't choose an AMQP client library, setting it back to default amqp")

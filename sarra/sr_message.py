@@ -487,7 +487,8 @@ class sr_message():
 
            # publish
            if ok:
-               self.report_publisher.publish(self.report_exchange,self.report_topic,self.report_notice,self.headers)
+               self.report_publisher.publish(self.report_exchange,self.report_topic,
+                                             self.report_notice,self.headers,self.persistent)
 
         self.logger.debug("%d %s : %s %s %s" % (code,message,self.report_topic,self.report_notice,self.hdrstr))
 
@@ -730,7 +731,8 @@ class sr_message():
                     print( "%s/%s" % ( self.base_url, self.relpath ) )
                     ok= True
                else:
-                    ok = self.publisher.publish(self.exchange+suffix, self.topic, body, None, self.message_ttl)
+                    ok = self.publisher.publish(self.exchange+suffix, self.topic, body,
+                                                None, self.message_ttl, self.persistent)
            else:
                #in v02, sum is the correct header. FIXME: roundtripping not quite right yet.
                if 'identity' in self.headers.keys(): 
@@ -772,7 +774,8 @@ class sr_message():
                     print( "%s/%s" % ( self.base_url, self.relpath ) )
                     ok=True
                else:
-                    ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,self.headers,self.message_ttl)
+                    ok = self.publisher.publish(self.exchange+suffix,self.topic,self.notice,
+                                                self.headers,self.message_ttl,self.persistent)
 
         self.set_hdrstr()
 
