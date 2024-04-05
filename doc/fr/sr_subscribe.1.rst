@@ -547,10 +547,11 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une file d'att
 
 Mise en file d'attente sur broker :
 
-- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
-- **durable <booléen> (par défaut : False)**
+- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>)**
+- **durable <booléen> (par défaut : True)**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message_ttl <durée> (par défaut : Aucun)**
+- **persistent    <boolean>      (default: True)**
 - **prefetch <N> (par défaut : 1)**
 - **reset <booléen> (par défaut : False)**
 - **restore <booléen> (par défaut : False)**
@@ -565,15 +566,15 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La file d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-[ queue|queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>) ]
+[ queue|queue_name <nom> (par défaut : q_<brokerUser>.<programName>.<configName>) ]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Par défaut, les composants créent un nom de file d'attente qui doit être unique.
 Le nom_de_la_files_d'attente par défaut composants créent suit.. :  
-**q_<brokerUser>.<programName>.<configName><configName>** . Les utilisateurs 
+**q_<brokerUser>.<programName>.<configName>** . Les utilisateurs 
 peuvent remplacer la valeur par défaut à condition qu'elle commence par 
 **q_<brokerUser>**. Certaines variables peuvent aussi être utilisées dans 
-le nom_de_la_file d'attente comme **${BROKER_USER},${PROGRAMME},${CONFIG},${HOSTNAME}**
+le nom_de_la_file d'attente comme **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
 
 Quand plusieurs processus (*instances*) roulent sur un même serveurs, ils 
 partagent le même *home* alors ils vont tous partager le même fil.  On peut
@@ -582,7 +583,7 @@ dans les cas ou on veut que le même queue soit partagé en dépit de ne pas
 avoir de *home* partagé.
 
 
-durable <booléen> (par défaut : False)
+durable <booléen> (par défaut : True)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'option **durable**, si elle est définie sur True, signifie que la file d'attente est écrite.
@@ -613,6 +614,20 @@ message_ttl <durée> (par défaut : Aucun)
 L'option **message_ttl** (*message time to live*) définit la durée de vie
 d´un message dans la file d'attente. Passé ce délai, le message est retiré de 
 la file d'attente par le courtier.
+
+persistent <boolean> (par défaut : True)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+L'option **persistent** définit le *delivery_mode* pour un message AMQP. Lorsqu'il
+est choisi, les messages persistants seront publiés (``delivery_mode=2``). Lorsqu'ils
+ne le sont pas, ils seront placés en mode transitoire (non durables, ``delivery_mode=1``).
+ 
+Les messages persistants sont écrits sur le disque par le courtier et survivront au 
+redémarrage du courtier. Tous les messages transitoires dans une file d’attente seront
+perdus au redémarrage d’un courtier. Une remarque : les messages persistants ne survivront
+pas le redémarrage du courtier *quand ils résident dans une file d'attente durable*. 
+Non-durable les files d'attente, y compris tous les messages qu'elles contiennent, 
+seront perdues au redémarrage d'un courtier.
 
 prefetch <N> (par défaut : 1)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
