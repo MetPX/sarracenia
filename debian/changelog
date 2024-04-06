@@ -1,13 +1,32 @@
-metpx-sr3 (3.00.53rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.53rc1) unstable; urgency=medium
 
+  * NEW! merge PR #1010 S3 Transfer protocol driver (experimental)
+  * fix #1004 make persistence an option (was always persistent until now.)
+  * fix #1002 sftp accellerator failure when colons in the destination name.
+  * fix #997 flowcb/gather/am refactor to fix many issues.
+  * fix #994 resolved issues with unit tests.
+  * fix #992 parsing of module declared options to ensure correct type.
+  * fix #988 flowcb/poll/NASA_CMR podack checksum calculation changed.
+  * fix #986 poll stop re-writing "directory" as path for poll.
+  * fix #984 refactored flow/run routine 288lines -> 159. more
+    logical/readable.
+  * fix #983 add S3 sender plugin.
+  * fix #982 no cleanup when statehost set.
+  * fix #979, #980 AM fixes.
+  * fix #978 housekeeping log messages reduuced 16 lines less than 5.
+  * fix #976 remove "downloaded" log message when nothing was downloaded.
+  * fix #971 sr3 overview crash.
   * fix #967 define hostname as a string option (was defaulting to list.)
+  * fix #974 refactor poll to consume messages more frequently in wVip.
+  *   #974 poll implement 5 minute default interval
+  * fix #973 AM ... add missing tokIsYear better AM message filtering.
   * fix #971 Add missing to list of possible process status
   * docs: Add topicPrefix for #961
   * docs: some revisions for clarity/syntax. 
   * some fixes for misnaming of some (rare) files received by gather/am
 
 
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 14 Mar 2024 17:01:04 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 06 Apr 2024 16:31:04 -0400
 
 metpx-sr3 (3.00.52) unstable; urgency=medium
 
