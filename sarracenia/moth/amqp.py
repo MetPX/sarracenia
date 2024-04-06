@@ -56,6 +56,7 @@ default_options = {
     'exchangeDeclare': True,
     'expire': None,
     'logLevel': 'info',
+    'persistent': True,
     'prefetch': 25,
     'queueName': None,
     'queueBind': True,
@@ -685,6 +686,11 @@ class AMQP(Moth):
                 sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
         else:
             ttl = "0"
+        
+        if 'persistent' in self.o:
+            deliv_mode = 2 if self.o['persistent'] else 1
+        else:
+            deliv_mode = 2
 
         raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
 
@@ -720,7 +726,7 @@ class AMQP(Moth):
                                         content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
-                                        delivery_mode=2)
+                                        delivery_mode=deliv_mode)
         self.metrics['txByteCount'] += len(raw_body) 
         if headers:
             self.metrics['txByteCount'] += len(''.join(str(headers)))
