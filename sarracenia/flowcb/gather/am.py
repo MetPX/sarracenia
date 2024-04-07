@@ -61,15 +61,16 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, os, signal, ipaddress
+import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse
 from base64 import b64encode
-import urllib.parse
+from random import randint
+from typing import NoReturn
+
 import sarracenia
 from sarracenia.bulletin import Bulletin
 from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
-from random import randint
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class Am(FlowCB):
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
  
-    def __WaitForRemoteConnection__(self):
+    def __WaitForRemoteConnections__(self) -> NoReturn:
 
         if self.host == 'None':
             raise Exception("No host was specified. Exiting.")
@@ -187,7 +188,8 @@ class Am(FlowCB):
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
 
                         os.execl(sys.executable , sys.executable , *sys.argv )   
-                        logger.critical(f"Failed to launch child! {sys.argv=}")
+                        logger.critical(f"Failed to launch child! {sys.argv=}. Exiting")
+                        sys.exit(1)
                         
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
@@ -205,10 +207,10 @@ class Am(FlowCB):
                 except Exception:
                     logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
                     time.sleep(1)
-                
-        logger.info("Connection accepted with IP %s on port %d. Starting service.", self.remoteHost[0], self.port)     
 
-        return conn                       
+        logger.critical("Exited infinite server forking loop! Exiting.")
+        sys.exit(1)
+
 
     def on_start(self):
 
@@ -217,7 +219,7 @@ class Am(FlowCB):
             for IP in self.o.AllowIPs:
                 IP = ipaddress.ip_address(IP)
 
-            self.conn = self.__WaitForRemoteConnection__()
+            self.conn = self.__WaitForRemoteConnections__()
         else:
             # Recreate the socket from the connection state file, created by the parent.
             conn_filename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
