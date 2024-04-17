@@ -54,8 +54,8 @@ def build_client():
     
     yield client
 
-def _list_keys(client):
-    return [item['Key'] for item in client.list_blob_names()]
+def _list_blobs(client):
+    return [b for b in client.list_blob_names()]
 
 def test___init__():
     options = sarracenia.config.default_config()
@@ -175,19 +175,23 @@ def test_delete(build_client):
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
 
-    assert 'RootFile.txt' in _list_keys(transfer.client)
+    assert 'RootFile.txt' in _list_blobs(transfer.client)
 
     transfer.delete('RootFile.txt')
-    assert 'RootFile.txt' not in _list_keys(transfer.client)
+    assert 'RootFile.txt' not in _list_blobs(transfer.client)
 
 @pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_get(build_client, tmp_path):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
     transfer.path = 'Folder2/'
 
     filename = str(tmp_path) + os.sep + "DownloadedFile.txt"
@@ -197,9 +201,9 @@ def test_get(build_client, tmp_path):
 
     size = transfer.get(msg, 'AlsoNestedFile.dat', filename)
 
-    assert size == len(TEST_BUCKET_KEYS['Folder2/AlsoNestedFile.dat']['value']) # This is the size of the "content" string
+    assert size == len(TEST_CONTAINER_FILES['Folder2/AlsoNestedFile.dat']['value']) # This is the size of the "content" string
     assert os.path.isfile(filename)
-    assert open(filename, 'r').read() == TEST_BUCKET_KEYS['Folder2/AlsoNestedFile.dat']['value']
+    assert open(filename, 'r').read() == TEST_CONTAINER_FILES['Folder2/AlsoNestedFile.dat']['value']
 
 def test_getcwd(build_client):
     options = sarracenia.config.default_config()
@@ -216,7 +220,9 @@ def test_ls(build_client):
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
     entries = transfer.ls()
     
     assert len(entries) == 5
@@ -237,7 +243,10 @@ def test_put(build_client, tmp_path):
     options = sarracenia.config.default_config()
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+
     transfer.path = 'NewFolder/'
 
     filename = str(tmp_path) + os.sep + "FileToUpload.txt"
@@ -252,7 +261,7 @@ def test_put(build_client, tmp_path):
     size = transfer.put(msg, filename, "FileToUpload.txt", 0,0)
     
     assert size == 13
-    assert "NewFolder/FileToUpload.txt" in _list_keys(transfer.client)
+    assert "NewFolder/FileToUpload.txt" in _list_blobs(transfer.client)
 
 def test_registered_as():    
     assert sarracenia.transfer.azure.Azure.registered_as() == ['azure', 'azblob']
@@ -263,14 +272,16 @@ def test_rename(build_client):
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
 
-    assert 'FileToRename.txt' in _list_keys(transfer.client)
+    assert 'FileToRename.txt' in _list_blobs(transfer.client)
 
     transfer.rename('FileToRename.txt', 'FileNewName.txt')
 
-    assert 'FileToRename.txt' not in _list_keys(transfer.client)
-    assert 'FileNewName.txt' in _list_keys(transfer.client)
+    assert 'FileToRename.txt' not in _list_blobs(transfer.client)
+    assert 'FileNewName.txt' in _list_blobs(transfer.client)
 
 @pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_rmdir(build_client):
@@ -278,13 +289,15 @@ def test_rmdir(build_client):
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     transfer.client = build_client
-    transfer.bucket = TEST_BUCKET_NAME
+    transfer.account = TEST_ACCOUNT_NAME
+    transfer.container = TEST_CONTAINER_NAME
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
 
-    assert 'FolderToDelete/ThisFileWillBeGone.txt' in _list_keys(transfer.client)
+    assert 'FolderToDelete/ThisFileWillBeGone.txt' in _list_blobs(transfer.client)
     
     transfer.rmdir('FolderToDelete')
 
-    assert 'FolderToDelete/ThisFileWillBeGone.txt' not in _list_keys(transfer.client)
+    assert 'FolderToDelete/ThisFileWillBeGone.txt' not in _list_blobs(transfer.client)
 
 def test_umask():
     options = sarracenia.config.default_config()
