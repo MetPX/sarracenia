@@ -2080,7 +2080,7 @@ class Flow:
                                  remote_file)
                     logger.debug('Exception details: ', exc_info=True)
 
-            if (block_length == 0) and (len_written > 0):
+            if (self.o.acceptSizeWrong or (block_length == 0)) and (len_written > 0):
                 return True
 
             if (len_written != block_length):
