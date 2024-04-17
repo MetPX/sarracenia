@@ -1849,9 +1849,10 @@ class Config:
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
                 self.plugins_early.append( 'nodupe.data' )
+                delattr( self, 'nodupe_basis' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-            delattr( self, 'nodupe_basis' )
+                delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
