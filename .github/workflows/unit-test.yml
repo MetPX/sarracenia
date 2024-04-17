@@ -10,19 +10,13 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-22.04
 
-    strategy:
-      fail-fast: false
-      matrix:
-        osver: [ "ubuntu-22.04" ]
-    
-    runs-on: ${{ matrix.osver }}
-  
-    name: Unit test on ${{ matrix.osver }}
+    name: Unit test
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -38,18 +32,43 @@ jobs:
             --cov-config=tests/.coveragerc --cov=sarracenia --cov-report=html --cov-report=lcov --cov-report=xml \
             --html=tests/report.html --self-contained-html
 
-      - name: Upload pytest junit results
-        uses: actions/upload-artifact@v3
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: ${{ always() && github.event_name == 'pull_request' }}
         with:
-          name: results-junit-${{ matrix.osver }}
+          files: |
+            tests/junit/test-results.xml
+      
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        with:
+          #pytest-coverage-path: tests/coverage/coverage.lcov
+          pytest-xml-coverage-path: tests/coverage/coverage.xml
+          #title: My Coverage Report Title
+          #badge-title: My Badge Coverage Title
+          #hide-badge: false
+          #hide-report: false
+          create-new-comment: false
+          hide-comment: false
+          report-only-changed-files: false
+          remove-link-from-badge: false
+          #unique-id-for-comment: python3.8
+          junitxml-path: tests/junit/test-results.xml
+          junitxml-title: Test Results
+
+      - name: Upload pytest junit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-junit
           path: tests/junit/test-results.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
       
       - name: Upload pytest HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: results-report-${{ matrix.osver }}
+          name: results-report
           path: tests/report.html
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -57,7 +76,7 @@ jobs:
       - name: Upload code coverage report (HTML)
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-report-${{ matrix.osver }}
+          name: coverage-report
           path: tests/coverage/html_report
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -65,7 +84,7 @@ jobs:
       - name: Upload code coverage report (LCOV)
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-lcov-${{ matrix.osver }}
+          name: coverage-lcov
           path: tests/coverage/coverage.lcov
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
@@ -73,7 +92,7 @@ jobs:
       - name: Upload code coverage report (XML)
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-xml-${{ matrix.osver }}
+          name: coverage-xml
           path: tests/coverage/coverage.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
