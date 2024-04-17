@@ -136,7 +136,6 @@ class Azure(Transfer):
     def close(self):
         logger.debug("closing down connection")
         self.connected = False
-        self.client.close()
         self.client = None
         self.sendTo = None
         return
@@ -219,7 +218,6 @@ class Azure(Transfer):
                 entry = paramiko.SFTPAttributes()
 
                 entry.sr_httpsUrl = self.container_url + '/' + self.path + filename
-                print(entry.sr_httpsUrl)
 
                 if self._Metadata_Key in b.metadata:
                     sr_metadata = json.loads(b.metadata[self._Metadata_Key])
