@@ -116,8 +116,8 @@ default_options = {
     'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
-    'sourceFromExchange': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
@@ -136,7 +136,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'sourceFromExchange', 'sourceFromMessage', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
