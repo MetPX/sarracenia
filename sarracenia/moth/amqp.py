@@ -149,8 +149,9 @@ class AMQP(Moth):
                     itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
                     if itisthere:
                         source = itisthere[1]
-
-            if source:
+            if 'source' in msg and self.o['sourceFromMessage']:
+                pass
+            elif source:
                 msg['source'] = source
                 msg['_deleteOnPost'] |= set(['source'])
 
