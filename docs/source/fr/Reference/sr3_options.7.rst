@@ -1693,6 +1693,18 @@ les rapports à l’origine des données injectées. Cela est généralement com
 
 Pour que les données arrivent dans l’arborescence de format standard.
 
+sourceFromMessage <flag> (défaut: off)
+--------------------------------------
+
+L'option **sourceFromMessage** est principalement destinée aux administrateurs.
+Normalement, le champ *source* d'un message entrant est ignoré.
+Lorsque cette option est définie, le champ du message est accepté et utilisé
+pour le traitement. (remplace *source* et *sourceFromExchange* )
+
+Il est désactivé par défaut car les messages malveillants peuvent déformer les données
+origine. À utiliser uniquement avec des flux de données fiables et organisés de manière responsable.
+
+
 subtopic <modèle  amqp> (défaut: #)
 -----------------------------------
 
