@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.53rc2) UNRELEASED; urgency=medium
+
+  * version increment
+
+ -- peter <peter@bsqt.homeip.net>  Wed, 17 Apr 2024 14:31:12 -0400
+
 metpx-sr3 (3.00.53rc1) unstable; urgency=medium
 
   * NEW! merge PR #1010 S3 Transfer protocol driver (experimental)
