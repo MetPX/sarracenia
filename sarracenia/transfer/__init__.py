@@ -450,6 +450,9 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
+    def gethttpsUrl(self, path):
+        return None
+
 # batteries included.
 import sarracenia.transfer.file
 import sarracenia.transfer.ftp

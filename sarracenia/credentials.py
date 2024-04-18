@@ -100,6 +100,7 @@ class Credential:
         self.login_method = None
         self.s3_endpoint = None
         self.s3_session_token = None
+        self.azure_credentials = None
 
     def __str__(self):
         """Returns attributes of the Credential object as a readable string.
@@ -131,6 +132,8 @@ class Credential:
         s += " %s" % self.s3_endpoint
         #want to show they provided a session token, but not leak it (like passwords above)
         s += " %s" % 'Yes' if self.s3_session_token != None else 'No'
+        s += " %s" % 'Yes' if self.azure_credentials != None else 'No'
+
         return s
 
 
@@ -280,7 +283,7 @@ class CredentialDB:
 
         # we have no user and no pasw (http normal, https... no cert,  sftp hope for .ssh/config)
         if not user and not pasw:
-            if url.scheme in ['http', 'https', 'sftp', 's3']: return True
+            if url.scheme in ['http', 'https', 'sftp', 's3', 'azure', 'azblob']: return True
             logger.error( f'unknown scheme: {url.scheme}')
             return False
 
@@ -372,6 +375,8 @@ class CredentialDB:
                     details.s3_session_token = urllib.parse.unquote(parts[1].strip())
                 elif keyword == 's3_endpoint':
                     details.s3_endpoint = parts[1].strip()
+                elif keyword == 'azure_storage_credentials':
+                    details.azure_credentials = urllib.parse.unquote(parts[1].strip())
                 else:
                     logger.warning("bad credential option (%s)" % keyword)
 
