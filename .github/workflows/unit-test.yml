@@ -34,14 +34,14 @@ jobs:
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: ${{ always() && github.event_name == 'pull_request' }}
+        if: ${{ always() }}
         with:
           files: |
             tests/junit/test-results.xml
       
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
-        if: ${{ always() && github.event_name == 'pull_request' }}
+        if: ${{ always() }}
         with:
           #pytest-coverage-path: tests/coverage/coverage.lcov
           pytest-xml-coverage-path: tests/coverage/coverage.xml
@@ -74,7 +74,7 @@ jobs:
         if: ${{ always() }}
       
       - name: Upload code coverage report (HTML)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: tests/coverage/html_report
@@ -82,7 +82,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Upload code coverage report (LCOV)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-lcov
           path: tests/coverage/coverage.lcov
@@ -90,7 +90,7 @@ jobs:
         if: ${{ always() }}
         
       - name: Upload code coverage report (XML)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: tests/coverage/coverage.xml
