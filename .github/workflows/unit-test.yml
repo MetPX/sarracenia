@@ -3,10 +3,17 @@ name: Unit Testing
 on:
   pull_request:
     types: [opened, edited, reopened]
+    paths:
+      - '**.py'
   push:
     paths-ignore:
       - '.github/**'
+  workflow_dispatch:
 
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
 
 jobs:
   build:
