@@ -2659,8 +2659,13 @@ class sr_GlobalState:
                 v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
                 v3_cfg.write('#topicCopy on\n')
 
-            v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:')
-            v3_cfg.write('#flowcb accept.sftp_absolute')
+            if component in [ 'sarra', 'subscribe' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:\n')
+                v3_cfg.write('flowcb accept.sftp_absolute\n')
+            if component in [ 'sender' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write('#flowcb accept.sftp_absolute\n')
+
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
