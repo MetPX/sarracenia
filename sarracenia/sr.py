@@ -2656,8 +2656,13 @@ class sr_GlobalState:
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
-            v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:\n')
-            v3_cfg.write('flowcb accept.sftp_absolute\n')
+            if component in [ 'sarra', 'subscribe' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:\n')
+                v3_cfg.write('flowcb accept.sftp_absolute\n')
+            if component in [ 'sender' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write('#flowcb accept.sftp_absolute\n')
+
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
