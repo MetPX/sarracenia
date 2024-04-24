@@ -2658,6 +2658,7 @@ class sr_GlobalState:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
 
             if component in [ 'shovel', 'winnow' ]:
+                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
                 v3_cfg.write('topicCopy on\n')
 
             with open(v2_config_path, 'r') as v2_cfg:
