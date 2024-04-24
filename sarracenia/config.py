@@ -2757,7 +2757,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         cfg_preparse.metricsFilename = metricsfilename
 
@@ -2773,7 +2773,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
         if logging.getLogger().hasHandlers():
