@@ -148,7 +148,7 @@ class sr_GlobalState:
                     except Exception as ex:
                         logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
                         logging.debug("Exception details:", exc_info=True)
-                        os.sleep(1)
+                        time.sleep(0.1)
                 
         if c in [ 'flow',
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
