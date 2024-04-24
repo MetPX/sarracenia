@@ -61,6 +61,7 @@ default_options = {
     'messageRateMin': 0,
     'sleep': 0.1,
     'topicPrefix': ['v03'],
+    'topicCopy': False,
     'vip': []
 }
 

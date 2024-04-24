@@ -1826,6 +1826,15 @@ When set in a posting component, it has the effect of eliding the *atime* and *m
 headers from the messages.
 
 
+topicCopy (default: off)
+------------------------
+
+Setting *topicCopy* to true tells sarracenia pass topics through unaltered.
+Sarracenia has a convention for how topics for products should be organized. There is
+a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
+Some networks may choose to use different topic conventions, external to sarracenia.
+
+
 timeout <interval> (default: 0)
 -------------------------------
 

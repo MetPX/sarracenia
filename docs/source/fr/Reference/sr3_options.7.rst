@@ -1840,6 +1840,14 @@ rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
 
+topicCopy (défaut: False)
+-------------------------
+
+Définir *topicCopy* à *true* indique à sarracenia de transmettre les *topic* des messages sans modification.
+Sarracenia a une convention sur la manière dont les *topic* des produits sont organisés. Il y a
+un *topicPrefix*, suivi de *subtopic* (sous-thèmes) dérivés du champ *relPath* du message.
+Certains réseaux peuvent choisir d'utiliser des conventions thématiques différentes, externes à la sarracenia.
+
 users <flag> (défaut: false)
 ----------------------------
 

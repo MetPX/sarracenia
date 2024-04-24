@@ -118,6 +118,7 @@ default_options = {
     'sourceFromExchange': False,
     'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
+    'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
@@ -136,7 +137,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'sourceFromExchange', 'statehost', 'topicCopy', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
