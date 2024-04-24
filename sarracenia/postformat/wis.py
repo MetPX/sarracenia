@@ -138,7 +138,7 @@ class Wis(PostFormat):
 
             """
             for h in body:
-                if h not in [ 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime', 'mode', 'identity', 'topic' ]:
+                if h not in [ 'contentType', 'geometry', 'properties', 'size', 'baseUrl', 'relPath', 'retrievePath', 'subtopic', 'pubTime', 'to_clusters', 'from_cluster', 'filename', 'sundew_extension', 'mtime', 'atime', 'mode', 'identity', 'topic' ]:
                     GeoJSONBody['properties'][h] = body[h]
 
             t=body['pubTime']
@@ -148,7 +148,7 @@ class Wis(PostFormat):
                 GeoJSONBody['geometry'] = body['geometry']
 
             if 'id' not in body:
-                GeoJSONBody['properties']['id'] =  str(uuid.uuid4())
+                GeoJSONBody['id'] =  str(uuid.uuid4())
 
             if 'retrievePath' in body :
                 url = body['baseUrl'] + "/" + body['retrievePath']
