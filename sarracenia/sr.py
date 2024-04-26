@@ -319,8 +319,7 @@ class sr_GlobalState:
                         state = 'include'
                         continue
                     else:
-                        cbase = cfg
-                        state = 'unknown'
+                        continue
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
@@ -2656,12 +2655,16 @@ class sr_GlobalState:
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
+
             if component in [ 'sarra', 'subscribe' ]:
                 v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:\n')
                 v3_cfg.write('flowcb accept.sftp_absolute\n')
             if component in [ 'sender' ]:
                 v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
                 v3_cfg.write('#flowcb accept.sftp_absolute\n')
+            if component in [ 'shovel', 'winnow' ]:
+                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
+                v3_cfg.write('topicCopy on\n')
 
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
