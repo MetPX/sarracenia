@@ -319,8 +319,7 @@ class sr_GlobalState:
                         state = 'include'
                         continue
                     else:
-                        cbase = cfg
-                        state = 'unknown'
+                        continue
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
