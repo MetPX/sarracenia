@@ -878,7 +878,7 @@ class Message(dict):
                 return msg['content']['value'].encode('utf-8')
 
         # local file shortcut
-        if options and hasattr(options,baseDir) and options.baseDir:
+        if options and hasattr(options,'baseDir') and options.baseDir:
             path=options.baseDir + '/' + msg['relPath']
             if os.path.exists(path):
                 logger.info( f"path: {path} exists?: {os.path.exists(path)}" )
