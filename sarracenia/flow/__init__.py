@@ -1098,7 +1098,9 @@ class Flow:
             if '_format' in m:
                 m['old_format'] = m['_format']
                 m['_deleteOnPost'] |= set(['old_format'])
-            m['_format'] = m['post_format']
+
+            if 'post_format' in m:
+                m['_format'] = m['post_format']
 
             # restore adjustment to fileOp
             if 'post_fileOp' in m:
