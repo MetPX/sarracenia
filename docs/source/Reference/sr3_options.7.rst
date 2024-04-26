@@ -1696,7 +1696,7 @@ NOTE::
     whereas the expression: .*GIF matches the entire name.
 
 sourceFromExchange <flag> (default: off)
-------------------------------------------
+----------------------------------------
 
 The **sourceFromExchange** option is mainly for use by administrators.
 If messages received are posted directly from a source, the exchange used
@@ -1718,6 +1718,21 @@ It is commonly combined with::
        *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
 
 To have data arrive in the standard format tree.
+
+
+sourceFromMessage <flag> (default: off)
+---------------------------------------
+
+The **sourceFromMessage** option is mainly for use by administrators.
+Normally the *source* field from an inbound message is ignored.
+When this option is set, the field in the message is accepted and used
+for processing. (overrides *source*, and *sourceFromExchange* )
+
+It defaults to off because malicious messages can misrepresent data
+origin. To be used only with flows of responsibly curated, trustable 
+message flows.
+
+
 
 
 subtopic <amqp pattern> (default: #)

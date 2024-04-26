@@ -141,7 +141,7 @@ class AMQP(Moth):
             source=None
             if 'source' in self.o:
                 source = self.o['source']
-            elif self.o['sourceFromExchange']:
+            elif 'sourceFromExchange' in self.o and self.o['sourceFromExchange']:
                 itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
                 if itisthere:
                     source = itisthere[1]
@@ -149,8 +149,9 @@ class AMQP(Moth):
                     itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
                     if itisthere:
                         source = itisthere[1]
-
-            if source:
+            if 'source' in msg and 'sourceFromMessage' in self.o and self.o['sourceFromMessage']:
+                pass
+            elif source:
                 msg['source'] = source
                 msg['_deleteOnPost'] |= set(['source'])
 
