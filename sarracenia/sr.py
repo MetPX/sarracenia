@@ -1589,7 +1589,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['stopped','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
