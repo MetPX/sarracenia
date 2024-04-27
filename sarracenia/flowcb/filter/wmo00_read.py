@@ -15,9 +15,9 @@ arguments:
 
     wmo00_encapsulate includes the inner header of WMO files::
 
-    keep SOH + nnnnn header + payload + ETX
+    keep SOH + \r\r\n nnnnn \r\r\n AHL \r\r\n payload ETX
     
-    When off, the files start with TTAAii as the first bytes.
+    When off, the files start with TTAAii (the AHL) as the first bytes.
 
 
     The tree is: TT/CCCC/GG
