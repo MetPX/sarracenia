@@ -105,7 +105,7 @@ class Wmo00_write(FlowCB):
 
             # the len on the inner and outer headers is the same afaict.
             # the \0 is a format identifier.
-            output_record = f"{len(input_data):08d}\0".encode('ascii') + input_data
+            output_record = f"{len(input_data):08d}\0\0".encode('ascii') + input_data
             output_file.write( output_record )
             record_no+=1
 
