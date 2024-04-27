@@ -92,7 +92,11 @@ class Wmo00_write(FlowCB):
         # FIXME: does starting point matter?
         self.sequence_file=os.path.dirname(self.o.pid_filename) + f"/sequence_{self.o.no:02d}.txt"
 
-        logger.info( f"sequence number second digit matches instance number: {self.o.no} ") 
+        self.sequence_second_digit=self.o.no%10
+        if self.o.no > 10:
+            logger.info( f"instance numbers > 10 grouping file names can clash. {self.sequence_second_digit} ") 
+
+        logger.info( f"sequence number second digit matches instance number: {self.sequence_second_digit} ") 
 
         self.thisday=time.gmtime().tm_mday
 
@@ -108,7 +112,7 @@ class Wmo00_write(FlowCB):
 
     def open_grouped_file(self):
 
-        self.grouped_file=f"{self.o.wmo00_work_directory}/{self.o.wmo00_origin_CCCC}{self.sequence_first_digit}{self.o.no:02d}{self.sequence:06d}.{self.o.wmo00_type_marker}"
+        self.grouped_file=f"{self.o.wmo00_work_directory}/{self.o.wmo00_origin_CCCC}{self.sequence_first_digit}{self.sequence_second_digit:01d}{self.sequence:06d}.{self.o.wmo00_type_marker}"
 
         self.sequence += 1
         if self.sequence > 999999:
