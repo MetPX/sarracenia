@@ -75,6 +75,10 @@ class Wmo00_write(FlowCB):
         self.o.add_option(option='wmo00_origin_CCCC', kind='str', default_value="XXXX")
         self.o.add_option(option='wmo00_type_marker', kind='str', default_value="a")
 
+        if self.o.batch > 100:
+            logger.warning( f"batch limits how many products fit into one grouping file.")
+            logger.warning( f"WMO says this should not exceed 100: batch: {batch} ")
+
         # FIXME: note for later, assign first digit based on node number in cluster.
         logger.info( f" hostname: {self.o.hostname} ")
         hostname_end = self.o.hostname.split('.')[0][-1]
