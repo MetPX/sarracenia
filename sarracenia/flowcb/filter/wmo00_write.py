@@ -1,20 +1,54 @@
 """
 Usage:
-    callback convert.wmo00_write
+    callback filter.wmo00_write
+
+    takes input WMO bulletins, and puts them in a grouping file suitable 
+    sending to a GTS peer that expects WMO-00 format messages.
+
+    There is a corresponding filter.wmo00_read module for reception of such data.
+
+    batch --> sets how many messages per grouping file, WMO standard says 100 max.
+    sleep --> can use used to produce collections once every *sleep* seconds.
+
+    maximum message rate = sleep*batch
+
+    options:
+
+    wmo00_work_directory  setting is the directory where the grouping file will be assembled.
+    wmo00_origin_CCCC the WMO Origin code for the centre emitting the file.
+    wmo00_type_marker typically just 'a' for alphanumeric or 'b' for binary, or 'ua' 'ub'
+                    for urgent bulletins of either type. used as a filename suffix.
+
+
+references:
 
     WMO-386 manual SFTP/FTP file naming convention
 
     https://library.wmo.int/viewer/35800/?offset=#page=157&viewer=picture&o=bookmark&n=0&q=
 
-    takes input WMO bulletins, and puts them in a grouping file.
+implementation notes:
 
-    batch --> sets how many messages per grouping file, WMO standard says 100 max.
+    This module calculates checksums for data with all WMO headers removed, and writes them to the log.
+    The companion filter.wmo00_read puts checksums on the same basis as the end of the filenames.
+    
+    for rountrip testing, just call both from the same module.  the output of one, is good as input
+    for the other.
 
-    sleep --> can use used to produce collections once every *sleep* seconds.
+    encountered "WMO" bulletins with three different formats:
 
-    maximum message rate = sleep*batch
+    just starting with the header UANT32 CWAO ...
+    with an inner WMO header    SOH\r\r\nnnnnn\r\rnUANT32 CWAO ...  ETX
+       * note: nnn is also a permitted value.
+       * value of nnn is unknown... sometimes it matches length, sometimes an unknown number
+       * does not appear to be a sequence number.
+    with an outer WMO header    999999999\0\0SOH ... 
 
+    * The WMO00 output file has to have both headers for each item.
+    * Since the presence/absence of the headers on input cannot be recorded 
+      the corresponding wmo00_read module just has to pick a format to write out.
 
+FIXME: 
+    * if the grouped_file is too big and sequence must be incremented, there is no check for rollover.
 
 """
 
@@ -27,6 +61,9 @@ import random
 import sarracenia
 import time
 
+# WMO standard says 500,000 ... only checking afterward...
+WMO00_MAXIMUM_FILE_SIZE=470000
+
 logger = logging.getLogger(__name__)
 
 class Wmo00_write(FlowCB):
@@ -34,9 +71,9 @@ class Wmo00_write(FlowCB):
 
     def __init__(self,options) :
         super().__init__(options,logger)
-        self.o.add_option(option='work_directory', kind='str', default_value="/tmp")
-        self.o.add_option(option='wmo_origin_CCCC', kind='str', default_value="XXXX")
-        self.o.add_option(option='wmo_type_marker', kind='str', default_value="a")
+        self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
+        self.o.add_option(option='wmo00_origin_CCCC', kind='str', default_value="XXXX")
+        self.o.add_option(option='wmo00_type_marker', kind='str', default_value="a")
 
         # FIXME: note for later, assign first digit based on node number in cluster.
         logger.info( f" hostname: {self.o.hostname} ")
@@ -65,6 +102,15 @@ class Wmo00_write(FlowCB):
             self.sequence=0
             logger.info( f"main sequence initialized: {self.sequence} ") 
 
+    def open_grouped_file(self):
+
+        self.grouped_file=f"{self.o.wmo00_work_directory}/{self.o.wmo00_origin_CCCC}{self.sequence_first_digit}{self.o.no:02d}{self.sequence:06d}.{self.o.wmo00_type_marker}"
+
+        self.sequence += 1
+        if self.sequence > 999999:
+            self.sequence == 0
+
+        return open(self.grouped_file,"wb")
 
 
     def after_accept(self,worklist):
@@ -75,10 +121,9 @@ class Wmo00_write(FlowCB):
         today=time.gmtime().tm_mday
         if today != self.thisday:
             self.thisday=today
-            self.sequence=1
+            self.sequence=0
 
-        grouped_file=f"{self.o.work_directory}/{self.o.wmo_origin_CCCC}{self.sequence_first_digit}{self.o.no:02d}{self.sequence:06d}.{self.o.wmo_type_marker}"
-        output_file=open(grouped_file,"wb")
+        output_file=self.open_grouped_file()
         output_length=0
         record_no=1
         old_incoming=worklist.incoming
@@ -116,11 +161,11 @@ class Wmo00_write(FlowCB):
                        #   how many bytes needed for envelope:   1     4        9    12 ....      13.
                        input_data= (f"\1\r\r\n{len(input_data)+13:05d}\r\r\n").encode('ascii') + input_data + "\3".encode('ascii')
                 else:
-                    logger.info( "looks like a valid WMO inner envelope." )
+                    logger.debug( "looks like a valid WMO inner envelope." )
                     n5hdr = ( input_data[1:4] == b'\r\r\n' ) and input_data[4:9].decode('ascii').isnumeric() \
                             and ( input_data[9:12] == b'\r\r\n'  )
                     payload_start = 12 if n5hdr else 10 
-                    logger.info( f" n5hdr={n5hdr} to be checksummed: {input_data[payload_start:-1]}" )
+                    #logger.debug( f" n5hdr={n5hdr} to be checksummed: {input_data[payload_start:-1]}" )
                     data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
 
                 # the len on the inner and outer headers is the same afaict.
@@ -129,7 +174,7 @@ class Wmo00_write(FlowCB):
 
 
             else:
-                logger.info("valid WMO outer envelope")
+                logger.debug("valid WMO outer envelope")
                 output_record=input_data
                 n5hdr = ( input_data[11:14] == b'\r\r\n' ) and input_data[14:19].decode('ascii').isnumeric() \
                         and ( input_data[19:22] == b'\r\r\n'  )
@@ -137,19 +182,20 @@ class Wmo00_write(FlowCB):
                 data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
 
             output_file.write( output_record )
-            output_length+=len(input_data)+10
-            logger.info( f"appended {len(input_data)} to {grouped_file}, offset now: {output_length} sum: {data_sum}")
+            output_length += len(input_data)+10
+            logger.info( f"appended {len(input_data)} to {self.grouped_file}, offset now: {output_length} sum: {data_sum}")
             record_no+=1
+            if output_length > WMO00_MAXIMUM_FILE_SIZE:
+                output_file=self.open_grouped_file()
+                output_length=0
+                record_no=1
+
 
         output_file.close()
-        msg = sarracenia.Message.fromFileData(grouped_file, self.o, os.stat(grouped_file))
+        msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
 
-        logger.info( f" grouped_file {grouped_file} {msg['size']} bytes, {record_no-1} records" )
+        logger.info( f"WMO-00 grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
         worklist.incoming=[ msg ]
-
-        self.sequence+=1
-        if self.sequence > 999999:
-            self.sequence == 0
 
       
 

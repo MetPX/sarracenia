@@ -1,18 +1,35 @@
 """
 Usage:
-    callback convert.wmo00_write
+    callback convert.wmo00_read
 
+    For use on reception of GTS WMO-00 format files from GTS nodes.
+
+    Takes input WMO-00 grouping files, and outputs individual bulletins.
+    Such files are produced by convert.wmo00_write.
+
+arguments:
+
+    wmo00_work_directory   ... root of the tree to place the files in.
+    wmo00_tree             ... flag write a tree or just flat? (default True)
+
+    The tree is: TT/CCCC/GG
+
+    e.g. wmo00_work_directory=/tmp/wmo00, tree=on
+
+    writes:
+
+    /tmp/wmo00/SA/CWAO/16/SACN88_CWAO_271630_02b49e5de0a3197a2a1c8d6f588ed585
+
+
+Output:
+    data without any WMO encapsulation (no SOH/ETX) 
+    This means the first characters in the file is the AHL.
+    
+    
+references:
     WMO-386 manual SFTP/FTP file naming convention
 
     https://library.wmo.int/viewer/35800/?offset=#page=157&viewer=picture&o=bookmark&n=0&q=
-
-    takes input WMO bulletins, and puts them in a grouping file.
-
-    batch --> sets how many messages per grouping file, WMO standard says 100 max.
-
-    sleep --> can use used to produce collections once every *sleep* seconds.
-
-    maximum message rate = sleep*batch
 
 
 
@@ -33,8 +50,9 @@ class Wmo00_read(FlowCB):
 
     def __init__(self,options) :
         super().__init__(options,logger)
-        self.o.add_option(option='work_directory', kind='str', default_value="/tmp")
-        self.o.baseDir=self.o.work_directory
+        self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
+        self.o.add_option(option='wmo00_tree', kind='flag', default_value=True)
+        self.o.baseDir=self.o.wmo00_work_directory
 
     def after_accept(self,worklist):
 
@@ -44,17 +62,17 @@ class Wmo00_read(FlowCB):
         old_incoming=worklist.incoming
         worklist.incoming=[]
         for m in old_incoming:
-            logger.info( f" getting: {m['baseUrl']}{m['relPath']} " )
+            logger.info( f"getting: {m['baseUrl']}{m['relPath']} " )
             input_data =m.getContent(self.o)
 
             if len(input_data) < 12:
-                logger.error( f" file only {len(input_data)} bytes long, too small for a valid WMO message" )
+                logger.error( f"file only {len(input_data)} bytes long, too small for a valid WMO message" )
                 continue
 
             record_count=1
             current=0
             while current+13 < len(input_data):
-                logger.info( f"at byte {current} record {record_count} in stream" )
+                logger.debug( f"at byte {current} record {record_count} in stream" )
                 # should be at start of record, 8 bytes recordlength.
                 try:
                     payload_len_str = input_data[current:current+8]
@@ -71,17 +89,15 @@ class Wmo00_read(FlowCB):
                     continue
 
                 # skip first len header.
-                logger.info( f"consuming 10 byte initial header, payload length is: {payload_len}" )
+                logger.debug( f"consuming 10 byte outer header, payload length is: {payload_len}" )
                 current += 10 
 
                 # skip second nnn wrapper.
-                if input_data[current+9] == '\r': # 3 digit len header
-                    # type.SOH\r\r\n nnn \r\r\n  -->11 bytes
-                    logger.info("consuming 3 digit nnn header")
-                    payload=input_data[current+10:current+payload_len-1]
-                else: # 5 digit length header
-                    logger.info("consuming 5 digit nnnnn header")
-                    payload=input_data[current+12:current+payload_len-1]
+
+                # type.SOH\r\r\n nnn \r\r\n  -->11 bytes
+                payload_start= 10 if input_data[current+9] == b'\r' else 12
+                logger.debug("consuming n-digit inner digit header")
+                payload=input_data[current+payload_start:current+payload_len-1]
                      
                 current += payload_len
 
@@ -93,7 +109,7 @@ class Wmo00_read(FlowCB):
                     logger.error( f"invalid AHL {ahl} could not build file name, skipping...")
                     continue
 
-                filename=ahl.replace(' ','_') + '_' + hashlib.md5(payload).hexdigest()
+                filename=ahl.replace(' ','_') 
                 TT=ahl[0:2] 
                 AA=ahl[2:4]
                 ii=ahl[4:6]
@@ -107,25 +123,28 @@ class Wmo00_read(FlowCB):
                     RRR=ahl[19:22]
                 else:
                     RRR=None
+                    filename += '_'
 
-                logger.info( f" ready to write {len(payload)} bytes to {filename} " )
-                logger.info( f" TT={TT}, AA={AA}, ii={ii}, YY={YY}, GG={GG}, gg={gg} RRR={RRR}" )
+                filename += '_' + hashlib.md5(payload).hexdigest()
 
-                directory=f"{self.o.work_directory}/{TT}/{CCCC}/{GG}"
+                logger.debug( f"TT={TT}, AA={AA}, ii={ii}, YY={YY}, GG={GG}, gg={gg} RRR={RRR}" )
+
+                if self.o.wmo00_tree:
+                    directory=f"{self.o.wmo00_work_directory}/{TT}/{CCCC}/{GG}"
+                else:
+                    directory=self.o.wmo00_work_directory
+
                 fname=f"{directory}/{filename}"
 
-                logger.info( f" fname={fname}" )
 
                 if not os.path.isdir(directory):
                     os.makedirs(directory, self.o.permDirDefault, True)
                  
                 with open(fname,"wb") as f:
                      f.write(payload)
+                logger.info( f"wrote {len(payload)} bytes to {fname} " )
                 msg = sarracenia.Message.fromFileData(fname, self.o, os.stat(fname))
                 worklist.incoming.append(msg)
                 record_count += 1
 
-            logger.info( f" done with: {m['baseUrl']}{m['relPath']} records: {record_count}" )
-        logger.info( f"Done." )
-      
-
+            logger.info( f"done with: {m['baseUrl']}{m['relPath']} records: {record_count}" )
