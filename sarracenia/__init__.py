@@ -43,6 +43,7 @@ import sys
 import time
 import types
 import urllib
+import urllib.parse
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -877,13 +878,19 @@ class Message(dict):
             else:
                 return msg['content']['value'].encode('utf-8')
 
-        # local file shortcut
-        if options and hasattr(options,'baseDir') and options.baseDir:
-            path=options.baseDir + '/' + msg['relPath']
-            if os.path.exists(path):
-                logger.info( f"path: {path} exists?: {os.path.exists(path)}" )
-                with open(path,'rb') as f:
-                    return f.read()
+        path=''
+        if msg['baseUrl'].startswith('file:'):
+            pu = urllib.parse.urlparse(msg['baseUrl'])
+            path=pu.path + msg['relPath']
+            logger.info( f"path: {path}")
+        elif options and hasattr(options,'baseDir') and options.baseDir:
+            # local file shortcut
+            path=options.baseDir + os.sep + msg['relPath']
+        
+        if os.path.exists(path):
+            logger.info( f"reading local file path: {path} exists?: {os.path.exists(path)}" )
+            with open(path,'rb') as f:
+                return f.read()
 
         # case requiring resolution.
         if 'retrievePath' in msg:
@@ -891,6 +898,7 @@ class Message(dict):
         else:
             retUrl = msg['baseUrl'] + '/' + msg['relPath']
 
+        logger.info( f"retrieving from: {retUrl}" )
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
