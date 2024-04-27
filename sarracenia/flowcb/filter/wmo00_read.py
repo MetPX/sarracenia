@@ -51,9 +51,10 @@ class Wmo00_read(FlowCB):
                 logger.error( f" file only {len(input_data)} bytes long, too small for a valid WMO message" )
                 continue
 
+            record_count=1
             current=0
             while current+13 < len(input_data):
-                logger.info( f"at byte {current} in stream" )
+                logger.info( f"at byte {current} record {record_count} in stream" )
                 # should be at start of record, 8 bytes recordlength.
                 try:
                     payload_len_str = input_data[current:current+8]
@@ -70,16 +71,16 @@ class Wmo00_read(FlowCB):
                     continue
 
                 # skip first len header.
-                logger.info( f"skipping 10 byte initial header, payload length is: {payload_len}" )
+                logger.info( f"consuming 10 byte initial header, payload length is: {payload_len}" )
                 current += 10 
 
-                # skip second len wrapper.
+                # skip second nnn wrapper.
                 if input_data[current+9] == '\r': # 3 digit len header
                     # type.SOH\r\r\n nnn \r\r\n  -->11 bytes
-                    logger.info("skipping over 3 digit len header")
+                    logger.info("consuming 3 digit nnn header")
                     payload=input_data[current+10:current+payload_len-1]
                 else: # 5 digit length header
-                    logger.info("skipping over 5 digit len header")
+                    logger.info("consuming 5 digit nnnnn header")
                     payload=input_data[current+12:current+payload_len-1]
                      
                 current += payload_len
@@ -89,7 +90,7 @@ class Wmo00_read(FlowCB):
                 ahl=payload[0:firstCr].decode('ascii')
 
                 if len(ahl) < 18:
-                    logger.info( f"invalid AHL {ahl} could not build file name, skipping...")
+                    logger.error( f"invalid AHL {ahl} could not build file name, skipping...")
                     continue
 
                 filename=ahl.replace(' ','_') + '_' + hashlib.md5(payload).hexdigest()
@@ -122,14 +123,9 @@ class Wmo00_read(FlowCB):
                      f.write(payload)
                 msg = sarracenia.Message.fromFileData(fname, self.o, os.stat(fname))
                 worklist.incoming.append(msg)
+                record_count += 1
+
+            logger.info( f" done with: {m['baseUrl']}{m['relPath']} records: {record_count}" )
+        logger.info( f"Done." )
       
-
-    def on_stop(self):
-
-        with open(self.sequence_file, "w") as sf:
-            sf.write( f"{self.sequence}" )
-
-        pass
-
-
 
