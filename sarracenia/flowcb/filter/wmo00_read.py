@@ -11,6 +11,14 @@ arguments:
 
     wmo00_work_directory   ... root of the tree to place the files in.
     wmo00_tree             ... flag write a tree or just flat? (default True)
+    wmo00_encapsulate      ... write files with more headers.
+
+    wmo00_encapsulate includes the inner header of WMO files::
+
+    keep SOH + nnnnn header + payload + ETX
+    
+    When off, the files start with TTAAii as the first bytes.
+
 
     The tree is: TT/CCCC/GG
 
@@ -52,6 +60,7 @@ class Wmo00_read(FlowCB):
         super().__init__(options,logger)
         self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
         self.o.add_option(option='wmo00_tree', kind='flag', default_value=True)
+        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=False)
         self.o.baseDir=self.o.wmo00_work_directory
 
     def after_accept(self,worklist):
@@ -92,6 +101,9 @@ class Wmo00_read(FlowCB):
                 logger.debug( f"consuming 10 byte outer header, payload length is: {payload_len}" )
                 current += 10 
 
+                if self.o.wmo00_encapsulate:
+                    encapsulated_payload = input_data[current:current+payload_len]
+
                 # skip second nnn wrapper.
 
                 # type.SOH\r\r\n nnn \r\r\n  -->11 bytes
@@ -125,7 +137,10 @@ class Wmo00_read(FlowCB):
                     RRR=None
                     filename += '_'
 
-                filename += '_' + hashlib.md5(payload).hexdigest()
+                if self.o.wmo00_encapsulate:
+                    filename += '_' + hashlib.md5(encapsulated_payload).hexdigest()
+                else:
+                    filename += '_' + hashlib.md5(payload).hexdigest()
 
                 logger.debug( f"TT={TT}, AA={AA}, ii={ii}, YY={YY}, GG={GG}, gg={gg} RRR={RRR}" )
 
@@ -141,8 +156,12 @@ class Wmo00_read(FlowCB):
                     os.makedirs(directory, self.o.permDirDefault, True)
                  
                 with open(fname,"wb") as f:
-                     f.write(payload)
-                logger.info( f"wrote {len(payload)} bytes to {fname} " )
+                    if self.o.wmo00_encapsulate:
+                        f.write(encapsulated_payload)
+                        logger.info( f"wrote {len(encapsulated_payload)} bytes to {fname} " )
+                    else:
+                        f.write(payload)
+                        logger.info( f"wrote {len(payload)} bytes to {fname} " )
                 msg = sarracenia.Message.fromFileData(fname, self.o, os.stat(fname))
                 worklist.incoming.append(msg)
                 record_count += 1

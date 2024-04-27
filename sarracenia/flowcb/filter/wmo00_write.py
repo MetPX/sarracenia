@@ -74,6 +74,7 @@ class Wmo00_write(FlowCB):
         self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
         self.o.add_option(option='wmo00_origin_CCCC', kind='str', default_value="XXXX")
         self.o.add_option(option='wmo00_type_marker', kind='str', default_value="a")
+        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=False)
 
         if self.o.batch > 100:
             logger.warning( f"batch limits how many products fit into one grouping file.")
@@ -157,10 +158,11 @@ class Wmo00_write(FlowCB):
                    # Add length header if missing.
                    # length is the length of the payload + the SOH and ETX chars.
                    if n3hdr or n5hdr:
-                       if n3hdr:
-                           data_sum=hashlib.md5(input_data[10:-1]).hexdigest()
+                       offset = 2 if n5hdr else 0
+                       if self.o.wmo00_encapsulate:
+                           data_sum=hashlib.md5(input_data[offset:]).hexdigest()
                        else:
-                           data_sum=hashlib.md5(input_data[12:-1]).hexdigest()
+                           data_sum=hashlib.md5(input_data[10+offset:-1]).hexdigest()
 
                        input_data="\1".encode('ascii') + input_data + "\3".encode('ascii')
                    else:
@@ -174,7 +176,10 @@ class Wmo00_write(FlowCB):
                             and ( input_data[9:12] == b'\r\r\n'  )
                     payload_start = 12 if n5hdr else 10 
                     #logger.debug( f" n5hdr={n5hdr} to be checksummed: {input_data[payload_start:-1]}" )
-                    data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
+                    if self.o.wmo00_encapsulate:
+                        data_sum=hashlib.md5(input_data).hexdigest()
+                    else:
+                        data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
 
                 # the len on the inner and outer headers is the same afaict.
                 # the \0 is a format identifier.
@@ -187,7 +192,10 @@ class Wmo00_write(FlowCB):
                 n5hdr = ( input_data[11:14] == b'\r\r\n' ) and input_data[14:19].decode('ascii').isnumeric() \
                         and ( input_data[19:22] == b'\r\r\n'  )
                 payload_start = 22 if n5hdr else 20
-                data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
+                if self.o.wmo00_encapsulate:
+                    data_sum=hashlib.md5(input_data[10:]).hexdigest()
+                else:
+                    data_sum=hashlib.md5(input_data[payload_start:-1]).hexdigest()
 
             output_file.write( output_record )
             output_length += len(input_data)+10
