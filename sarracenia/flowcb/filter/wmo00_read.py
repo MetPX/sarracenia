@@ -60,7 +60,7 @@ class Wmo00_read(FlowCB):
         super().__init__(options,logger)
         self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
         self.o.add_option(option='wmo00_tree', kind='flag', default_value=True)
-        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=False)
+        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=True)
         self.o.baseDir=self.o.wmo00_work_directory
 
     def after_accept(self,worklist):

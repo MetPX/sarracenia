@@ -74,7 +74,7 @@ class Wmo00_write(FlowCB):
         self.o.add_option(option='wmo00_work_directory', kind='str', default_value="/tmp")
         self.o.add_option(option='wmo00_origin_CCCC', kind='str', default_value="XXXX")
         self.o.add_option(option='wmo00_type_marker', kind='str', default_value="a")
-        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=False)
+        self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=True)
 
         if self.o.batch > 100:
             logger.warning( f"batch limits how many products fit into one grouping file.")
