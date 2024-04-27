@@ -24,6 +24,7 @@ import logging, random, subprocess, os
 import os
 import random
 import sarracenia
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +59,18 @@ class Wmo00_write(FlowCB):
             self.sequence=0
             logger.info( f"main sequence initialized: {self.sequence} ") 
 
+        self.thisday=time.gmtime().tm_mday
+
+
     def after_accept(self,worklist):
 
         if len(worklist.incoming) == 0:
             return
+
+        today=time.gmtime().tm_mday
+        if today != self.thisday:
+            self.thisday=today
+            self.sequence=1
 
         grouped_file=f"{self.o.work_directory}/{self.o.wmo_origin_CCCC}{self.sequence_first_digit}{self.o.no:02d}{self.sequence:06d}.{self.o.wmo_type_marker}"
         output_file=open(grouped_file,"wb")
@@ -110,7 +119,7 @@ class Wmo00_write(FlowCB):
         if self.sequence > 999999:
             self.sequence == 0
 
-
+      
 
     def on_stop(self):
 
