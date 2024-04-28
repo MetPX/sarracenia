@@ -119,6 +119,7 @@ default_options = {
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
