@@ -163,6 +163,7 @@ class Wmo00_write(FlowCB):
             if output_length + len(input_data)  > self.o.wmo00_accumulatedByteCountMax :
                 output_file.close()
                 msg = sarracenia.Message.fromFileData(self.accumulated_file, self.o, os.stat(self.accumulated_file))
+                logger.info( f"accumulated file {self.accumulated_file} written {msg['size']} bytes, {record_no-1} records" )
                 worklist.incoming.append(msg)
                 output_file=self.open_accumulated_file()
                 output_length=0
