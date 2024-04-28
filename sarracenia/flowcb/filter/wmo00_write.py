@@ -214,7 +214,7 @@ class Wmo00_write(FlowCB):
             logger.info( f"grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
             worklist.incoming=[ msg ]
         else:
-            logger.error( f"empty grouping file being ignored and removed." )
+            logger.error( f"empty grouping file {self.grouped_file} being ignored and removed." )
             os.unlink( self.grouped_file )
 
       
