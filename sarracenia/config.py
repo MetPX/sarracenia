@@ -139,7 +139,6 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'topicCopy', 'users', 'v2compatRenameDoublePost'
     'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
