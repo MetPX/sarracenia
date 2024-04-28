@@ -1,11 +1,11 @@
 """
 Usage:
-    callback convert.wmo00_read
+    callback convert.wmo00_split
 
     For use on reception of GTS WMO-00 format files from GTS nodes.
 
     Takes input WMO-00 grouping files, and outputs individual bulletins.
-    Such files are produced by convert.wmo00_write.
+    Such files are produced by convert.wmo00_accumulate.
 
 arguments:
 
@@ -54,7 +54,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-class Wmo00_read(FlowCB):
+class Wmo00_split(FlowCB):
 
     def __init__(self,options) :
         super().__init__(options,logger)

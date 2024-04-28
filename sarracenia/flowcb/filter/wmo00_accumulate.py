@@ -1,11 +1,11 @@
 """
 Usage:
-    callback filter.wmo00_write
+    callback filter.wmo00_accumulate
 
     takes input WMO bulletins, and puts them in a accumulated file suitable 
     sending to a GTS peer that expects WMO-00 format messages.
 
-    There is a corresponding filter.wmo00_read module for reception of such data.
+    There is a corresponding filter.wmo00_split module for reception of such data.
 
     batch --> sets how many messages per accumulated file, WMO standard says 100 max.
     sleep --> can use used to produce collections once every *sleep* seconds.
@@ -43,7 +43,7 @@ references:
 implementation notes:
 
     This module calculates checksums for data with all WMO headers removed, and writes them to the log.
-    The companion filter.wmo00_read puts checksums on the same basis as the end of the filenames.
+    The companion filter.wmo00_split puts checksums on the same basis as the end of the filenames.
     
     for rountrip testing, just call both from the same module.  the output of one, is good as input
     for the other.
@@ -59,7 +59,7 @@ implementation notes:
 
     * The WMO00 output file has to have both headers for each item.
     * Since the presence/absence of the headers on input cannot be recorded 
-      the corresponding wmo00_read module just has to pick a format to write out.
+      the corresponding wmo00_split module just has to pick a format to write out.
 
 """
 
@@ -74,7 +74,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-class Wmo00_write(FlowCB):
+class Wmo00_accumulate(FlowCB):
 
 
     def __init__(self,options) :
