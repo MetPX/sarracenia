@@ -160,7 +160,8 @@ class Wmo00_write(FlowCB):
                 logger.error( f"files must be smaller than {self.o.wmo00_byteCountMax}" )
                 continue
 
-            if output_length + len(input_data)  > self.o.wmo00_accumulatedByteCountMax :
+            # 22 is the maximum size of an envelope that might be added to the input if it doesn't have it.
+            if output_length + len(input_data) + 22  > self.o.wmo00_accumulatedByteCountMax :
                 output_file.close()
                 msg = sarracenia.Message.fromFileData(self.accumulated_file, self.o, os.stat(self.accumulated_file))
                 logger.info( f"accumulated file {self.accumulated_file} written {msg['size']} bytes, {record_no-1} records" )
