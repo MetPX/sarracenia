@@ -210,8 +210,12 @@ class Wmo00_write(FlowCB):
         output_file.close()
         msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
 
-        logger.info( f"WMO-00 grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
-        worklist.incoming=[ msg ]
+        if msg['size'] > 0 : 
+            logger.info( f"grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
+            worklist.incoming=[ msg ]
+        else:
+            logger.error( f"empty grouping file being ignored and removed." )
+            os.unlink( self.grouped_file )
 
       
 
