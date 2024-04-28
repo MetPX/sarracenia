@@ -2,29 +2,37 @@
 Usage:
     callback filter.wmo00_write
 
-    takes input WMO bulletins, and puts them in a grouping file suitable 
+    takes input WMO bulletins, and puts them in a accumulated file suitable 
     sending to a GTS peer that expects WMO-00 format messages.
 
     There is a corresponding filter.wmo00_read module for reception of such data.
 
-    batch --> sets how many messages per grouping file, WMO standard says 100 max.
+    batch --> sets how many messages per accumulated file, WMO standard says 100 max.
     sleep --> can use used to produce collections once every *sleep* seconds.
 
     maximum message rate = sleep*batch
 
     options:
 
-    wmo00_work_directory  setting is the directory where the grouping file will be assembled.
+    wmo00_work_directory  setting is the directory where the accumulated file will be assembled.
     wmo00_origin_CCCC the WMO Origin code for the centre emitting the file.
     wmo00_type_marker typically just 'a' for alphanumeric or 'b' for binary, or 'ua' 'ub'
                     for urgent bulletins of either type. used as a filename suffix.
     
+    Usage note: about type_marker, historically, there was a division between alphanumeric 
+    and binary bulletins. As time has progressed, it has become increasingly unclear what 
+    the distinction means. It seems most people just ship everything over the alphanumeric 
+    channel. so 'a'' seems to be ok for everybody. It isn't worth the hassle to set up 
+    separate channels for alpha and binary, which looks like an obsolete practice on the GTS.
+
+
     options not usually set:
-    wmo00_byteCountMax ... maximum size for an individual product to be inserted into a grouping file.
-    (WMO standard says 500,000 bytes)
+
+    wmo00_byteCountMax ... maximum size for an individual product to be inserted into a accumulated file.
+                           (default from: WMO standard says 500,000 bytes)
 
     wmo00_accumulatedByteCountMax ... maximum size for the group file.
-    (WMO standard says 100 products * 500,000 bytes each ?) 
+                          (default from: WMO standard says 100 products * 500,000 bytes each ?) 
 
 references:
 
@@ -53,9 +61,6 @@ implementation notes:
     * Since the presence/absence of the headers on input cannot be recorded 
       the corresponding wmo00_read module just has to pick a format to write out.
 
-FIXME: 
-    * if the grouped_file is too big and sequence must be incremented, there is no check for rollover.
-
 """
 
 from curses.ascii import SOH,ETX
@@ -82,7 +87,7 @@ class Wmo00_write(FlowCB):
         self.o.add_option(option='wmo00_accumulatedByteCountMax', kind='size', default_value=50000000)
 
         if self.o.batch > 100:
-            logger.warning( f"batch limits how many products fit into one grouping file.")
+            logger.warning( f"batch limits how many products fit into one accumulated file.")
             logger.warning( f"WMO says this should not exceed 100: batch: {batch} ")
 
         # FIXME: note for later, assign first digit based on node number in cluster.
@@ -100,7 +105,7 @@ class Wmo00_write(FlowCB):
 
         self.sequence_second_digit=self.o.no%10
         if self.o.no > 10:
-            logger.info( f"instance numbers > 10 grouping file names can clash. {self.sequence_second_digit} ") 
+            logger.info( f"instance numbers > 10 accumulated file names can clash. {self.sequence_second_digit} ") 
 
         logger.info( f"sequence number second digit matches instance number: {self.sequence_second_digit} ") 
 
@@ -116,15 +121,15 @@ class Wmo00_write(FlowCB):
             self.sequence=0
             logger.info( f"main sequence initialized: {self.sequence} ") 
 
-    def open_grouped_file(self):
+    def open_accumulated_file(self):
 
-        self.grouped_file=f"{self.o.wmo00_work_directory}/{self.o.wmo00_origin_CCCC}{self.sequence_first_digit}{self.sequence_second_digit:01d}{self.sequence:06d}.{self.o.wmo00_type_marker}"
+        self.accumulated_file=f"{self.o.wmo00_work_directory}/{self.o.wmo00_origin_CCCC}{self.sequence_first_digit}{self.sequence_second_digit:01d}{self.sequence:06d}.{self.o.wmo00_type_marker}"
 
         self.sequence += 1
         if self.sequence > 999999:
             self.sequence == 0
 
-        return open(self.grouped_file,"wb")
+        return open(self.accumulated_file,"wb")
 
 
     def after_accept(self,worklist):
@@ -137,7 +142,7 @@ class Wmo00_write(FlowCB):
             self.thisday=today
             self.sequence=0
 
-        output_file=self.open_grouped_file()
+        output_file=self.open_accumulated_file()
         output_length=0
         record_no=1
         old_incoming=worklist.incoming
@@ -148,18 +153,18 @@ class Wmo00_write(FlowCB):
             input_data =m.getContent(self.o)
 
             if len(input_data) < 12:
-                logger.error( f" file only {len(input_data)} bytes long, too small for a valid WMO message" )
+                logger.error( f"file only {len(input_data)} bytes long, too small for a valid WMO message" )
                 continue
 
             if len(input_data) > self.o.wmo00_byteCountMax:
-                logger.error( f" files must be smaller than {self.o.wmo00_byteCountMax}" )
+                logger.error( f"files must be smaller than {self.o.wmo00_byteCountMax}" )
                 continue
 
             if output_length + len(input_data)  > self.o.wmo00_accumulatedByteCountMax :
                 output_file.close()
-                msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
+                msg = sarracenia.Message.fromFileData(self.accumulated_file, self.o, os.stat(self.accumulated_file))
                 worklist.incoming.append(msg)
-                output_file=self.open_grouped_file()
+                output_file=self.open_accumulated_file()
                 output_length=0
                 record_no=1
 
@@ -216,18 +221,18 @@ class Wmo00_write(FlowCB):
 
             output_file.write( output_record )
             output_length += len(input_data)+10
-            logger.info( f"appended {len(input_data)} to {self.grouped_file}, offset now: {output_length} sum: {data_sum}")
+            logger.info( f"appended {len(input_data)} to {self.accumulated_file}, offset now: {output_length} sum: {data_sum}")
             record_no+=1
 
         output_file.close()
-        msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
+        msg = sarracenia.Message.fromFileData(self.accumulated_file, self.o, os.stat(self.accumulated_file))
 
         if msg['size'] > 0 : 
-            logger.info( f"grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
+            logger.info( f"accumulated file {self.accumulated_file} written {msg['size']} bytes, {record_no-1} records" )
             worklist.incoming.append(msg)
         else:
-            logger.debug( f"empty grouping file {self.grouped_file} being removed and reused." )
-            os.unlink( self.grouped_file )
+            logger.debug( f"empty accumulated file {self.accumulated_file} being removed and reused." )
+            os.unlink( self.accumulated_file )
             #re-use the sequence number.
             if self.sequence > 0:
                 self.sequence -= 1
