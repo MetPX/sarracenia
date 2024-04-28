@@ -18,7 +18,13 @@ Usage:
     wmo00_origin_CCCC the WMO Origin code for the centre emitting the file.
     wmo00_type_marker typically just 'a' for alphanumeric or 'b' for binary, or 'ua' 'ub'
                     for urgent bulletins of either type. used as a filename suffix.
+    
+    options not usually set:
+    wmo00_byteCountMax ... maximum size for an individual product to be inserted into a grouping file.
+    (WMO standard says 500,000 bytes)
 
+    wmo00_accumulatedByteCountMax ... maximum size for the group file.
+    (WMO standard says 100 products * 500,000 bytes each ?) 
 
 references:
 
@@ -61,9 +67,6 @@ import random
 import sarracenia
 import time
 
-# WMO standard says 500,000 ... only checking afterward...
-WMO00_MAXIMUM_FILE_SIZE=470000
-
 logger = logging.getLogger(__name__)
 
 class Wmo00_write(FlowCB):
@@ -75,6 +78,8 @@ class Wmo00_write(FlowCB):
         self.o.add_option(option='wmo00_origin_CCCC', kind='str', default_value="XXXX")
         self.o.add_option(option='wmo00_type_marker', kind='str', default_value="a")
         self.o.add_option(option='wmo00_encapsulate', kind='flag', default_value=True)
+        self.o.add_option(option='wmo00_byteCountMax', kind='size', default_value=500000)
+        self.o.add_option(option='wmo00_accumulatedByteCountMax', kind='size', default_value=50000000)
 
         if self.o.batch > 100:
             logger.warning( f"batch limits how many products fit into one grouping file.")
@@ -146,6 +151,18 @@ class Wmo00_write(FlowCB):
                 logger.error( f" file only {len(input_data)} bytes long, too small for a valid WMO message" )
                 continue
 
+            if len(input_data) > self.o.wmo00_byteCountMax:
+                logger.error( f" files must be smaller than {self.o.wmo00_byteCountMax}" )
+                continue
+
+            if output_length + len(input_data)  > self.o.wmo00_accumulatedByteCountMax :
+                output_file.close()
+                msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
+                worklist.incoming.append(msg)
+                output_file=self.open_grouped_file()
+                output_length=0
+                record_no=1
+
             # if it starts with SOH already, assume valid, otherwise encapsulate.
             data_sum='unknown'
             if input_data[8:11] !=  b'00\x01' :
@@ -201,18 +218,13 @@ class Wmo00_write(FlowCB):
             output_length += len(input_data)+10
             logger.info( f"appended {len(input_data)} to {self.grouped_file}, offset now: {output_length} sum: {data_sum}")
             record_no+=1
-            if output_length > WMO00_MAXIMUM_FILE_SIZE:
-                output_file=self.open_grouped_file()
-                output_length=0
-                record_no=1
-
 
         output_file.close()
         msg = sarracenia.Message.fromFileData(self.grouped_file, self.o, os.stat(self.grouped_file))
 
         if msg['size'] > 0 : 
             logger.info( f"grouping file {self.grouped_file} written {msg['size']} bytes, {record_no-1} records" )
-            worklist.incoming=[ msg ]
+            worklist.incoming.append(msg)
         else:
             logger.debug( f"empty grouping file {self.grouped_file} being removed and reused." )
             os.unlink( self.grouped_file )
