@@ -132,7 +132,7 @@ class Log(FlowCB):
         else:
             s+= f"a file "
 
-        if 'baseURl' in msg:
+        if 'baseUrl' in msg:
             s+= f"with baseUrl: {msg['baseUrl']} "
 
         if 'relPath' in msg:
