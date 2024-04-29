@@ -1,6 +1,14 @@
 metpx-sr3 (3.00.53rc2) UNRELEASED; urgency=medium
 
-  * version increment
+  * NEW! merge PR #1019 Azure Transfer protocol driver (experimental)
+  * NEW! merge PR #1030 WMO-00 Accumulated file support (experimental.)
+  * part of above, Message.getContent() now works for local files.
+  * fix #1027 Eumetsat Poll plugin improvements.
+  * fix #1023,#1025 topic processing improvements, topicCopy option added.
+  * fix #1022 various fixes to work better with DMS.
+  * fix #1020 Added sourceFromMessage option for v2 compatibility.
+  * fix #1012 *persist* is now a configurable option (was always on.)
+  * fix #947 sr3 status should ignore files if not .inc or .conf
 
  -- peter <peter@bsqt.homeip.net>  Wed, 17 Apr 2024 14:31:12 -0400
 
