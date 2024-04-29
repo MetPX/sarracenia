@@ -82,7 +82,7 @@ class Raw2bulletin(FlowCB):
         self.o.add_option('binaryInitialCharacters', 'list', [b'BUFR' , b'GRIB', b'\211PNG'])
 
     # If file was converted, get rid of extensions it had
-    def rename(self,msg):
+    def rename(self,msg,isProblem):
 
         path = msg['new_dir'] + '/' + msg['new_file']
 
@@ -133,7 +133,7 @@ class Raw2bulletin(FlowCB):
         try:
             # We can't disseminate bulletins downstream if they're missing the timestamp, but we want to keep the bulletins to troubleshoot source problems
             # We'll append "_PROBLEM" to the filename to be able to identify erronous bulletins
-            if ddhhmm == None:
+            if ddhhmm == None or isProblem:
                 timehandler = datetime.datetime.now()
 
                 # Add current time as new timestamp to filename

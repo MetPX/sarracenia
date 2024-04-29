@@ -326,15 +326,6 @@ class Am(FlowCB):
         ddhhmm = ''
         new_bulletin = b''
         
-        # Check if the header is okay before proceeding to correcting rest of bulletin.
-        verified_header , failed = self.bulletinHandler.verifyHeader(lines[0]) 
-        if failed:
-            logger.critical(f"Bulletin header (after failure): {lines[0]}")
-            raise Exception
-        if verified_header != lines[0]:
-            lines[0] = verified_header
-            reconstruct = 1
-
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
 
@@ -391,6 +382,11 @@ class Am(FlowCB):
 
             reconstruct = 1
 
+        # Check if the header is okay before proceeding to correcting rest of bulletin.
+        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0]) 
+        if verified_header != lines[0]:
+            lines[0] = verified_header
+            reconstruct = 1
 
         if reconstruct == 1:
             # Reconstruct the bulletin
@@ -399,7 +395,7 @@ class Am(FlowCB):
 
             logger.debug("Missing contents added")
 
-        return new_bulletin 
+        return new_bulletin , isProblem
 
 
     def gather(self, messageCountMax):
@@ -462,7 +458,7 @@ class Am(FlowCB):
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
                         station = lines[1].split()[0].decode(charset)
-                        new_bulletin = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+                        new_bulletin, isProblem = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
                     
@@ -510,7 +506,7 @@ class Am(FlowCB):
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
                     # Call renamer
-                    msg = self.renamer.rename(msg)
+                    msg = self.renamer.rename(msg,isProblem)
                     if msg == None:
                         continue
                     logger.debug(f"New sarracenia message: {msg}")

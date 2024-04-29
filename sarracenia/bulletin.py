@@ -50,7 +50,7 @@ class Bulletin:
            Called by the buildHeader method.
         """
 
-        failed = False
+        isProblem = False
         rebuild = 0
 
         # Remove duplicate spaces
@@ -59,15 +59,15 @@ class Bulletin:
 
         if header==b'':
             logger.error("Header is empty when it shouldn't be.")
-            failed = True
-            return header, failed
+            isProblem = True
+            return header, isProblem
  
         tokens = header.split(b' ')
 
+        # Header can't miss the timestamp. Don't raise an error however, as we want these bulletins added as a PROBLEM file locally. 
         if len(tokens) < 3:
             logger.error('Incomplete header (less than 3 fields)')
-            failed = True
-            return header, failed
+            return header, isProblem
 
         # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
         if len(tokens[2]) > 6: 
@@ -82,8 +82,14 @@ class Bulletin:
            not (0 <  int(tokens[2][:2]) <= 31) or not(00 <= int(tokens[2][2:4]) <= 23) or \
            not(00 <= int(tokens[2][4:]) <= 59):
             logger.error('Malformed header (some of the first 3 fields corrupt).')
-            failed = True
-            return header, failed
+            isProblem = True
+            return header, isProblem
+
+        # If there is no BBB or more, return to prevent error
+        if len(tokens) == 3:
+            if rebuild:
+                header = b' '.join(tokens)
+            return header, isProblem
 
         # Verify BBB field(s) -> https://www.weather.gov/tg/headef. Remove it if it's corrupted.
         if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3][0] not in ['C','A','R','P']:
@@ -105,7 +111,7 @@ class Bulletin:
         if rebuild:
             header = b' '.join(tokens)
 
-        return header,failed
+        return header,isProblem
 
     def getData(self, msg, path):
         """Get the bulletin data.
