@@ -27,6 +27,86 @@ class Bulletin:
         self.seq = 0
         self.binary = 0
 
+    def _verifyYear(self, bulletin_year):
+        """ Derived from missing https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py -> tokIsYear
+            Checks if the year that was appended to the bulletin contents is valid or not.
+            This is only applicable for CA type bulletins (based on Sundew code).
+        """
+
+        ltime = time.localtime()
+        current_year  = time.strftime("%Y",ltime )
+        previous_year = str(int(current_year) - 1)
+
+        # Prevent all bulletins being rejected on a new year for a couple of minutes. Check for previous year as well
+        if bulletin_year == current_year or bulletin_year == previous_year    : return True
+        if len(bulletin_year) !=    4       : return False
+        if bulletin_year[:1]  !=  '2'       : return False
+
+        return True
+
+    def verifyHeader(self, header):
+        """Derived from Sundew -> https://github.com/MetPX/Sundew/blob/main/lib/bulletin.py#L601-L671.
+           Verifies the integrity of the bulletin header. Flag if there is an error in the header.
+           Called by the buildHeader method.
+        """
+
+        failed = False
+        rebuild = 0
+
+        # Remove duplicate spaces
+        tokens = header.split(b' ')
+        header = b' '.join(tokens)
+
+        if header==b'':
+            logger.error("Header is empty when it shouldn't be.")
+            failed = True
+            return header, failed
+ 
+        tokens = header.split(b' ')
+
+        if len(tokens) < 3:
+            logger.error('Incomplete header (less than 3 fields)')
+            failed = True
+            return header, failed
+
+        # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
+        if len(tokens[2]) > 6: 
+            tokens[2] = tokens[2][0:6]
+            logger.info("Header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
+            rebuild = 1
+
+        # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef 
+        if not tokens[0].isalnum() or len(tokens[0]) not in [4,5,6] or \
+           not tokens[1].isalnum() or len(tokens[1]) not in [4,5,6] or \
+           not tokens[2].isdigit() or len(tokens[2]) != 6 or \
+           not (0 <  int(tokens[2][:2]) <= 31) or not(00 <= int(tokens[2][2:4]) <= 23) or \
+           not(00 <= int(tokens[2][4:]) <= 59):
+            logger.error('Malformed header (some of the first 3 fields corrupt).')
+            failed = True
+            return header, failed
+
+        # Verify BBB field(s) -> https://www.weather.gov/tg/headef. Remove it if it's corrupted.
+        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3][0] not in ['C','A','R','P']:
+            logger.info("Header normalized: fourth and later fields removed.") 
+            del tokens[3:]
+            rebuild = 1
+
+        if len(tokens) == 5 and \
+                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4][0] not in ['C','A','R','P']):
+            logger.info("Header normalized: fifth and later fields removed")
+            del tokens[4:]
+            rebuild = 1
+
+        if len(tokens) > 5:
+            logger.info("Header normalized: sixth and later fields removed")
+            del tokens[5:]
+            rebuild = 1
+
+        if rebuild:
+            header = b' '.join(tokens)
+
+        return header,failed
+
     def getData(self, msg, path):
         """Get the bulletin data.
            We can either get the bulletin data via
@@ -167,7 +247,6 @@ class Bulletin:
 
         return station
 
-
     def getBBB(self, first_line):
         """Get the BBB. If none found, return empty string.
            The BBB is the field of the bulletin header that states if it was amended or not.
@@ -193,7 +272,7 @@ class Bulletin:
                 header = T1T2A1A2ii + "_" + CCCC + "_" + YYGGgg
             else:  
                 header = T1T2A1A2ii + "_" + CCCC # + "_" + YYGGgg
-
+            
         except Exception:
             header = None
 
@@ -255,23 +334,3 @@ class Bulletin:
             return ddHHMM
         except Exception as e:
             return None
-        
-
-    def _verifyYear(self, bulletin_year):
-        """ Derived from missing https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py -> tokIsYear
-            Checks if the year that was appended to the bulletin contents is valid or not.
-            This is only applicable for CA type bulletins (based on Sundew code).
-        """
-
-        ltime = time.localtime()
-        current_year  = time.strftime("%Y",ltime )
-        previous_year = str(int(current_year) - 1)
-
-        # Prevent all bulletins being rejected on a new year for a couple of minutes. Check for previous year as well
-        if bulletin_year == current_year or bulletin_year == previous_year    : return True
-        if len(bulletin_year) !=    4       : return False
-        if bulletin_year[:1]  !=  '2'       : return False
-
-        return True
-
-
