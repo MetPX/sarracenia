@@ -204,6 +204,10 @@ class Am(FlowCB):
                         ## Close the connected socket instance as it is unused in the parent
                         conn.close()
                         logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
+
+                        # Check if any children processes are zombies (children are killed and waiting to be terminated by parent)
+                        os.waitpid(-1, os.WNOHANG)
+
                 except Exception:
                     logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
                     time.sleep(1)
