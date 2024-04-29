@@ -224,7 +224,6 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
-
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
