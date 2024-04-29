@@ -116,8 +116,9 @@ default_options = {
     'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
-    'sourceFromExchange': False,
+    'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
@@ -136,7 +137,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'sourceFromExchange', 'sourceFromMessage', 'statehost', 'topicCopy', 'users', 'v2compatRenameDoublePost' \
                 ]
 
 float_options = [ ]
@@ -1846,9 +1847,10 @@ class Config:
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
                 self.plugins_early.append( 'nodupe.data' )
+                delattr( self, 'nodupe_basis' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-            delattr( self, 'nodupe_basis' )
+                delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
@@ -2756,7 +2758,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         cfg_preparse.metricsFilename = metricsfilename
 
@@ -2772,7 +2774,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
         if logging.getLogger().hasHandlers():

@@ -1693,6 +1693,18 @@ les rapports à l’origine des données injectées. Cela est généralement com
 
 Pour que les données arrivent dans l’arborescence de format standard.
 
+sourceFromMessage <flag> (défaut: off)
+--------------------------------------
+
+L'option **sourceFromMessage** est principalement destinée aux administrateurs.
+Normalement, le champ *source* d'un message entrant est ignoré.
+Lorsque cette option est définie, le champ du message est accepté et utilisé
+pour le traitement. (remplace *source* et *sourceFromExchange* )
+
+Il est désactivé par défaut car les messages malveillants peuvent déformer les données
+origine. À utiliser uniquement avec des flux de données fiables et organisés de manière responsable.
+
+
 subtopic <modèle  amqp> (défaut: #)
 -----------------------------------
 
@@ -1839,6 +1851,14 @@ topicPrefix (défaut: v03)
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
+
+topicCopy (défaut: False)
+-------------------------
+
+Définir *topicCopy* à *true* indique à sarracenia de transmettre les *topic* des messages sans modification.
+Sarracenia a une convention sur la manière dont les *topic* des produits sont organisés. Il y a
+un *topicPrefix*, suivi de *subtopic* (sous-thèmes) dérivés du champ *relPath* du message.
+Certains réseaux peuvent choisir d'utiliser des conventions thématiques différentes, externes à la sarracenia.
 
 users <flag> (défaut: false)
 ----------------------------

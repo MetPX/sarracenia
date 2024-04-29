@@ -1696,7 +1696,7 @@ NOTE::
     whereas the expression: .*GIF matches the entire name.
 
 sourceFromExchange <flag> (default: off)
-------------------------------------------
+----------------------------------------
 
 The **sourceFromExchange** option is mainly for use by administrators.
 If messages received are posted directly from a source, the exchange used
@@ -1718,6 +1718,21 @@ It is commonly combined with::
        *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
 
 To have data arrive in the standard format tree.
+
+
+sourceFromMessage <flag> (default: off)
+---------------------------------------
+
+The **sourceFromMessage** option is mainly for use by administrators.
+Normally the *source* field from an inbound message is ignored.
+When this option is set, the field in the message is accepted and used
+for processing. (overrides *source*, and *sourceFromExchange* )
+
+It defaults to off because malicious messages can misrepresent data
+origin. To be used only with flows of responsibly curated, trustable 
+message flows.
+
+
 
 
 subtopic <amqp pattern> (default: #)
@@ -1824,6 +1839,15 @@ this option can be turned off, and then file times on source and destination com
 
 When set in a posting component, it has the effect of eliding the *atime* and *mtime*
 headers from the messages.
+
+
+topicCopy (default: off)
+------------------------
+
+Setting *topicCopy* to true tells sarracenia pass topics through unaltered.
+Sarracenia has a convention for how topics for products should be organized. There is
+a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
+Some networks may choose to use different topic conventions, external to sarracenia.
 
 
 timeout <interval> (default: 0)
