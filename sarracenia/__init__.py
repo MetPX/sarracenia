@@ -43,6 +43,7 @@ import sys
 import time
 import types
 import urllib
+import urllib.parse
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -853,7 +854,7 @@ class Message(dict):
 
         return res
 
-    def getContent(msg):
+    def getContent(msg,options=None):
         """
            Retrieve the data referred to by a message.  The data may be embedded
            in the messate, or this routine may resolve a link to an external server 
@@ -864,6 +865,10 @@ class Message(dict):
            large files may be very inefficient. Untested in that use-case.
 
            Return value is the data.
+
+           often on server where one is publishing data, the file is available as
+           a local file, and one can avoid the network usage by using a options.baseDir setting.
+           this behaviour can be disabled by not providing the options or not setting baseDir.
         """
 
         # inlined/embedded case.
@@ -872,12 +877,28 @@ class Message(dict):
                 return b64decode(msg['content']['value'])
             else:
                 return msg['content']['value'].encode('utf-8')
+
+        path=''
+        if msg['baseUrl'].startswith('file:'):
+            pu = urllib.parse.urlparse(msg['baseUrl'])
+            path=pu.path + msg['relPath']
+            logger.info( f"path: {path}")
+        elif options and hasattr(options,'baseDir') and options.baseDir:
+            # local file shortcut
+            path=options.baseDir + os.sep + msg['relPath']
+        
+        if os.path.exists(path):
+            logger.info( f"reading local file path: {path} exists?: {os.path.exists(path)}" )
+            with open(path,'rb') as f:
+                return f.read()
+
         # case requiring resolution.
         if 'retrievePath' in msg:
             retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
         else:
             retUrl = msg['baseUrl'] + '/' + msg['relPath']
 
+        logger.info( f"retrieving from: {retUrl}" )
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
