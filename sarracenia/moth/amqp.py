@@ -56,6 +56,7 @@ default_options = {
     'exchangeDeclare': True,
     'expire': None,
     'logLevel': 'info',
+    'persistent': True,
     'prefetch': 25,
     'queueName': None,
     'queueBind': True,
@@ -140,7 +141,7 @@ class AMQP(Moth):
             source=None
             if 'source' in self.o:
                 source = self.o['source']
-            elif self.o['sourceFromExchange']:
+            elif 'sourceFromExchange' in self.o and self.o['sourceFromExchange']:
                 itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
                 if itisthere:
                     source = itisthere[1]
@@ -148,12 +149,35 @@ class AMQP(Moth):
                     itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
                     if itisthere:
                         source = itisthere[1]
-
-            if source:
+            if 'source' in msg and 'sourceFromMessage' in self.o and self.o['sourceFromMessage']:
+                pass
+            elif source:
                 msg['source'] = source
                 msg['_deleteOnPost'] |= set(['source'])
 
-            msg['subtopic'] = topic.split('.')[len(self.o['topicPrefix']):]
+            msg_topic = topic.split('.')
+
+            # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
+            if 'topicCopy' in self.o and self.o['topicCopy']:
+                topicOverride=True
+            else:
+                topicOverride=False
+                if 'relPath' in msg:
+                    path_topic = self.o['topicPrefix'] + os.path.dirname(msg['relPath']).split('/')
+
+                    if msg_topic != path_topic:
+                        topicOverride=True
+                
+                # set subtopic if possible.
+                if msg_topic[0:len(self.o['topicPrefix'])] == self.o['topicPrefix']:
+                    msg['subtopic'] = msg_topic[len(self.o['topicPrefix']):]
+                else:
+                    topicOverride=True
+
+            if topicOverride:
+                msg['topic'] = topic
+                msg['_deleteOnPost'] |= set( ['topic'] )
+
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
             msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
@@ -200,7 +224,6 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
-
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
@@ -685,6 +708,11 @@ class AMQP(Moth):
                 sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
         else:
             ttl = "0"
+        
+        if 'persistent' in self.o:
+            deliv_mode = 2 if self.o['persistent'] else 1
+        else:
+            deliv_mode = 2
 
         raw_body, headers, content_type = PostFormat.exportAny( body, version, self.o['topicPrefix'], self.o )
 
@@ -720,7 +748,7 @@ class AMQP(Moth):
                                         content_type=content_type,
                                         application_headers=headers,
                                         expire=ttl,
-                                        delivery_mode=2)
+                                        delivery_mode=deliv_mode)
         self.metrics['txByteCount'] += len(raw_body) 
         if headers:
             self.metrics['txByteCount'] += len(''.join(str(headers)))

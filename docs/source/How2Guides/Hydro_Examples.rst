@@ -40,7 +40,7 @@ station observations and predictions data through a GET RESTful web service, ava
 and Currents website <https://tidesandcurrents.noaa.gov/api/>`_. For example, if you want to access the 
 water temperature data from the last hour in Honolulu, you can navigate to `https://tidesandcurrents.noaa.gov/api/datagetter?range=1&station=1612340&product=water_temperature&units=metric&time_zone=gmt&application=web_services&format=csv`.
 A new observation gets recorded every six minutes, so if you wanted to advertise solely new data through
-Sarracenia, you would configure an sr_poll instance to connect to the API, sleep every hour, and build
+Sarracenia, you would configure an sr_poll instance to connect to the API, set a one hour *scheduled_interval* , and build
 it a GET request to announce every time it woke up (this operates under the potentially misguided assumption 
 that the data source is maintaining their end of the bargain). To download this shiny new file, you would connect
 an sr_subscribe to the same exchange it got announced on, and it would retrieve the URL, which a *do_download*

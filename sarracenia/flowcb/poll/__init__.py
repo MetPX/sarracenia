@@ -115,7 +115,6 @@ class Poll(FlowCB):
 
       * options are passed to sarracenia.Transfer classes for their use as well.
 
-
       Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to 
       requests lists of files using those protocols using built-in logic.  
 
@@ -380,6 +379,7 @@ class Poll(FlowCB):
 
 
         # assert at this point we have an sftp_obj...
+        # filter out files we don't have the necessary permissions for.
         if 'sftp_obj' in locals() and ((sftp_obj.st_mode
                                         & self.o.permDefault) == self.o.permDefault):
             return sftp_obj

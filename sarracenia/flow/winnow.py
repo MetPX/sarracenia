@@ -3,7 +3,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-default_options = {'acceptUnmatched': True, 'nodupe_ttl': 300}
+default_options = {
+        'acceptUnmatched': True, 
+        'nodupe_ttl': 300,
+}
 
 
 class Winnow(Flow):

@@ -188,6 +188,7 @@ class Am(FlowCB):
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
 
                         os.execl(sys.executable , sys.executable , *sys.argv )   
+
                         logger.critical(f"Failed to launch child! {sys.argv=}. Exiting")
                         sys.exit(1)
                         
@@ -523,4 +524,4 @@ class Am(FlowCB):
                 except Exception as e:
                     logger.error(f"Unable to generate bulletin file. Error message: {e}")
 
-        return newmsg 
+        return (True, newmsg) 

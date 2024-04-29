@@ -686,7 +686,10 @@ durable <flag> (default: True)
 
 The AMQP **durable** option, on queue declarations. If set to True, 
 the broker will preserve the queue across broker reboots.
-It means writes the queue is on disk if the broker is restarted.
+The queue will be written to and recovered from disk if the broker is restarted.
+
+Note: only *persistent* messages will remain in a durable queue after a broker restart. 
+Persistent messages can be published by enabling the **persistent** option (it is enabled by default).
 
 fileEvents <event,event,...>
 ----------------------------
@@ -1305,6 +1308,18 @@ a file to be accepted.
 The **permDefault** options specifies a mask, that is the permissions must be
 at least what is specified.
 
+persistent <flag> (default: True)
+----------------------------------
+
+The **persistent** option sets the *delivery_mode* for an AMQP message. When True,
+persistent messages will be published (``delivery_mode=2``), when False, transient
+(non-durable, ``delivery_mode=1``) messages will be published.
+
+Persistent messages are written to disk by the broker, and will survive a broker restart.
+Any transient messages in a queue will be lost when a broker is restarted. Note: persistent
+messages will only survive a broker restart *when they reside in a durable queue*. Non-durable
+queues, including all messages inside them, will be lost when a broker is restarted.
+
 pollUrl <url>
 -------------
 
@@ -1578,6 +1593,25 @@ sanity_log_dead <interval> (default: 1.5*housekeeping)
 The **sanity_log_dead** option sets how long to consider too long before restarting
 a component.
 
+scheduled_interval,scheduled_hour,scheduled_minute
+--------------------------------------------------
+
+When working with scheduled flows, such as polls, one can configure a duration
+(no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a 
+given activity::
+
+  scheduled_interval 30
+
+run the flow or poll every 30 seconds.  If no duration is set, then the 
+flowcb.scheduled.Scheduled class will look for the other two time specifiers::
+
+  scheduled_hour 1,4,5,23
+  scheduled_minute 14,17,29
+
+
+which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
+after each of 4h, 5h and 23h.
+
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
@@ -1613,10 +1647,13 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 sleep <time>
 ------------
 
-The time to wait between generating events.  When files are written frequently, it is counter productive
+The time to wait between generating events. When files are written frequently, it is counter productive
 to produce a post for every change, as it can produce a continuous stream of changes where the transfers
-cannot be done quickly enough to keep up.  In such circumstances, one can group all changes made to a file
+cannot be done quickly enough to keep up. In such circumstances, one can group all changes made to a file
 in *sleep* time, and produce a single post.
+
+When sleep is set > 0 for use with a *poll* it has the effect to setting *scheduled_interval*  to that value
+for compatibility reasons.  It is better for poll to use *scheduled* settings explicitly going forward.
 
 statehost <False|True> ( default: False )
 -----------------------------------------
@@ -1659,7 +1696,7 @@ NOTE::
     whereas the expression: .*GIF matches the entire name.
 
 sourceFromExchange <flag> (default: off)
-------------------------------------------
+----------------------------------------
 
 The **sourceFromExchange** option is mainly for use by administrators.
 If messages received are posted directly from a source, the exchange used
@@ -1681,6 +1718,21 @@ It is commonly combined with::
        *directory ${PBD}/${YYYYMMDD}/${SOURCE}*
 
 To have data arrive in the standard format tree.
+
+
+sourceFromMessage <flag> (default: off)
+---------------------------------------
+
+The **sourceFromMessage** option is mainly for use by administrators.
+Normally the *source* field from an inbound message is ignored.
+When this option is set, the field in the message is accepted and used
+for processing. (overrides *source*, and *sourceFromExchange* )
+
+It defaults to off because malicious messages can misrepresent data
+origin. To be used only with flows of responsibly curated, trustable 
+message flows.
+
+
 
 
 subtopic <amqp pattern> (default: #)
@@ -1787,6 +1839,15 @@ this option can be turned off, and then file times on source and destination com
 
 When set in a posting component, it has the effect of eliding the *atime* and *mtime*
 headers from the messages.
+
+
+topicCopy (default: off)
+------------------------
+
+Setting *topicCopy* to true tells sarracenia pass topics through unaltered.
+Sarracenia has a convention for how topics for products should be organized. There is
+a topicPrefix, followed by subtopics derived from the *relPath* field of the message.
+Some networks may choose to use different topic conventions, external to sarracenia.
 
 
 timeout <interval> (default: 0)

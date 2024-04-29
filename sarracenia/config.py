@@ -116,8 +116,11 @@ default_options = {
     'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
+    'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
@@ -134,9 +137,9 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
+    'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
@@ -1077,7 +1080,7 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"{self.files}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{self.files}{self.lineno} multiple declarations of {kind} {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
@@ -1490,7 +1493,6 @@ class Config:
                     setattr(self, k, True)
                 else:
                     setattr(self, k, isTrue(v))
-            
                 if k in ['logReject'] and self.logReject:
                     self.logEvents = self.logEvents | set(['reject'])
                 continue
@@ -1846,9 +1848,10 @@ class Config:
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
                 self.plugins_early.append( 'nodupe.data' )
+                delattr( self, 'nodupe_basis' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-            delattr( self, 'nodupe_basis' )
+                delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
@@ -1975,10 +1978,16 @@ class Config:
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( 'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
+        else:
+            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute')):
+                if self.sleep > 1:
+                    self.scheduled_interval = self.sleep
+                    self.sleep=1
+
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
@@ -2750,7 +2759,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         cfg_preparse.metricsFilename = metricsfilename
 
@@ -2766,7 +2775,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
         if logging.getLogger().hasHandlers():

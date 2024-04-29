@@ -939,6 +939,18 @@ post per file. The file's size is taken from the directory "ls"... but its
 checksum cannot be determined, so the default identity method is "cod", asking
 clients to calculate the identity Checksum On Download.
 
+To set when to poll, use the *scheduled_interval* or *scheduled_hour* and *scheduled_minute*
+settings. for example::
+
+   scheduled_interval 30m
+
+to poll the remote resources every thirty minutes. Alternatively::
+
+   scheduled_hour 1,13,19
+   scheduled_minute 27
+
+specifies that poll be run at 1:27, 13:27, and 19:27 each day.
+ 
 By default, sr_poll sends its post notification message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *post_broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
@@ -1101,7 +1113,8 @@ notify about the new product.
 
 The notification protocol is defined here `sr_post(7) <../Reference/sr_post.7.html>`_
 
-**poll** connects to a *broker*.  Every *sleep* seconds, it connects to
+**poll** connects to a *broker*.  Every *scheduled_interval* seconds (or can used
+combination of *scheduled_hour* and *scheduled_minute*) , it connects to
 a *pollUrl* (sftp, ftp, ftps). For each of the *directory* defined, it lists
 the contents.  Polling is only intended to be used for recently modified
 files. The *fileAgeMax* option eliminates files that are too old 
