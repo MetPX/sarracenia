@@ -1222,6 +1222,8 @@ A Second developer will review the pull request and the reviewer will decide on 
 merging is appropriate. The developer is expected to examine each commit, and 
 understand it to some degree.
 
+If the pull-request has one of the following (substantial changes, new functionality, modifications to critical code structure) , it is recommended to have a Third developer also review the pull request. The expectation from this developer are the same as from the previous.
+
 The github Actions looks at pull requests and will flow tests on them.
 If the tests pass, then that is good qualitative indicator, however the tests are a bit
 fragile at the moment, so if they fail, it would be ideal for the reviewer to run
