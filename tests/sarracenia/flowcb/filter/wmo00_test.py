@@ -71,7 +71,7 @@ def test___init__(tmp_path):
 
     options.batch=500
     options.no=14
-    yesterday=accumulator.thisday-1 if accumulator.thisday > 1 else 1
+    yesterday=accumulator.thisday-1 if accumulator.thisday > 1 else 31
 
     with open( str(tmp_path) + os.sep + f"sequence_{options.no:02d}.txt", "w" ) as sf:
         sf.write( f"{yesterday} 99999" )
