@@ -1,11 +1,12 @@
 import base64
-import pytest
+import hashlib
 #from unittest.mock import Mock
 
-import os
 #import urllib.request
 import logging
+import os
 import pprint
+import pytest
 
 import sarracenia
 import sarracenia.config
@@ -23,8 +24,8 @@ logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
 
 
-TEST_WMO00_SampleWMO_individual = b'''\01\r\r\n00237\r\r\nFDCN02 CWAO 282015 AMD\r\r\nFCST BASED ON 281800 DATA VALID 290000 FOR USE 21-06\r\r\n    3000 6000    9000    12000   18000\r\r\nYXS      3124-04 2922-11 2211-17 1827-31=\r\r\nXDD 75N 110W\r\r\n    3512 3520-22 3522-26 3614-30 0611-39=\r\r\n\3'''
-TEST_WMO00_SampleWMO_accumulated = b'''00000237\0\0\01\r\r\n00237\r\r\nFDCN02 CWAO 282015 AMD\r\r\nFCST BASED ON 281800 DATA VALID 290000 FOR USE 21-06\r\r\n    3000 6000    9000    12000   18000\r\r\nYXS      3124-04 2922-11 2211-17 1827-31=\r\r\nXDD 75N 110W\r\r\n    3512 3520-22 3522-26 3614-30 0611-39=\r\r\n\3'''
+TEST_WMO00_SampleWMO_individual = b'''\01\r\r\n00237\r\r\nFDCN02 CWQQ 282015 AMD\r\r\nFCST BASED ON 281800 DATA VALID 290000 FOR USE 21-06\r\r\n    3000 6000    9000    12000   18000\r\r\nYXS      3124-04 2922-11 2211-17 1827-31=\r\r\nXDD 75N 110W\r\r\n    3512 3520-22 3522-26 3614-30 0611-39=\r\r\n\3'''
+TEST_WMO00_SampleWMO_accumulated = b'''00000237\0\0\01\r\r\n00237\r\r\nFDCN02 CWQQ 282015 AMD\r\r\nFCST BASED ON 281800 DATA VALID 290000 FOR USE 21-06\r\r\n    3000 6000    9000    12000   18000\r\r\nYXS      3124-04 2922-11 2211-17 1827-31=\r\r\nXDD 75N 110W\r\r\n    3512 3520-22 3522-26 3614-30 0611-39=\r\r\n\3'''
 
 def make_message():
     m = sarracenia.Message()
@@ -151,4 +152,14 @@ def test_after_accept(tmp_path):
 
     assert afdata == TEST_WMO00_SampleWMO_accumulated
 
+    splitter = sarracenia.flowcb.filter.wmo00_split.Wmo00_split(options)
 
+    datahash =  hashlib.md5(TEST_WMO00_SampleWMO_individual).hexdigest()
+    print(' {datahash=}' )
+    splitter.after_accept( worklist )
+
+    assert datahash == '9e87a9155b446dac46417f548a808c7a'
+    assert os.path.isdir(str(tmp_path)+ os.sep + 'FD' )
+    assert os.path.isdir(str(tmp_path)+ os.sep + 'FD/CWQQ'  )
+    assert os.path.isdir(str(tmp_path)+ os.sep + 'FD/CWQQ/20'  )
+    assert os.path.isfile(str(tmp_path)+ os.sep + f'FD/CWQQ/20/FDCN02_CWQQ_282015_AMD_9e87a9155b446dac46417f548a808c7a' )
