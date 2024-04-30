@@ -58,14 +58,14 @@ def test___init__(tmp_path):
     accumulator = sarracenia.flowcb.filter.wmo00_accumulate.Wmo00_accumulate(options)
 
     assert type(accumulator) is sarracenia.flowcb.filter.wmo00_accumulate.Wmo00_accumulate 
-    assert accumulator.sequence_first_digit in range(0,9)
-    assert accumulator.sequence_second_digit in range(0,9)
+    assert accumulator.sequence_first_digit in range(0,10)
+    assert accumulator.sequence_second_digit in range(0,10)
     assert accumulator.o.wmo00_work_directory == str(tmp_path)
     assert accumulator.o.wmo00_origin_CCCC == 'CYKK'
     assert accumulator.o.wmo00_type_marker == 'a'
     assert accumulator.o.wmo00_encapsulate
     assert accumulator.o.wmo00_byteCountMax == 500000
-    assert accumulator.thisday in range(1,31)
+    assert accumulator.thisday in range(1,32)
     assert type(accumulator.sequence_file) is str
     assert accumulator.sequence == 0
 
