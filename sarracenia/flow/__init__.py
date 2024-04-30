@@ -1925,7 +1925,11 @@ class Flow:
                 if self.o.dry_run:
                     cwd = cdir
                 else:
-                    self.proto[self.scheme].cd(cdir)
+                    try:
+                         self.proto[self.scheme].cd(cdir)
+                    except Exception as ex:
+                         logger.error("chdir %s: %s" % (cdir, ex))
+                         return False
 
             remote_offset = 0
             exactLength=False
