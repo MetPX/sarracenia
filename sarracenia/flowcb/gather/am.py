@@ -325,6 +325,7 @@ class Am(FlowCB):
         reconstruct = 0
         ddhhmm = ''
         new_bulletin = b''
+        isProblem = False
         
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
