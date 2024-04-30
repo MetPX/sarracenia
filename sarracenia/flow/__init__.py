@@ -212,7 +212,8 @@ class Flow:
 
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
-        self.had_vip = True
+
+        self.had_vip = not os.path.exists( self.o.novipFilename )
 
     def metricsFlowReset(self) -> None:
 
@@ -426,6 +427,7 @@ class Flow:
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
+
 
         if not self.loadCallbacks(self.plugins['load']):
            return
