@@ -773,7 +773,7 @@ class Message(dict):
         if new_file or new_file == '':
             msg['new_file'] = new_file
 
-        relPath = new_dir + '/' + new_file
+        newFullPath = new_dir + '/' + new_file
         
         # post_baseUrl option set in msg overrides other possible options
         if 'post_baseUrl' in msg:
@@ -802,23 +802,23 @@ class Message(dict):
             pbd_str = options.variableExpansion(options.post_baseDir, msg)
             parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
-            if relPath.startswith(pbd_str):
-                relPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
+            if newFullPath.startswith(pbd_str):
+                newFullPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
 
-            if (len(parsed_baseUrl.path) > 1) and relPath.startswith(
+            if (len(parsed_baseUrl.path) > 1) and newFullPath.startswith(
                     parsed_baseUrl.path):
-                relPath = relPath.replace(parsed_baseUrl.path, '', 1)
+                newFullPath = newFullPath.replace(parsed_baseUrl.path, '', 1)
 
         if ('new_dir' not in msg) and options.post_baseDir:
             msg['new_dir'] = options.post_baseDir
             
         msg['new_baseUrl'] = baseUrl_str
 
-        if len(relPath) > 0 and relPath[0] == '/':
-            relPath = relPath[1:]
+        if len(newFullPath) > 0 and newFullPath[0] == '/':
+            newFullPath = newFullPath[1:]
 
-        msg['new_relPath'] = relPath
-        msg['new_subtopic'] = relPath.split('/')[0:-1]
+        msg['new_relPath'] = newFullPath
+        msg['new_subtopic'] = newFullPath.split('/')[0:-1]
 
         for i in ['relPath', 'subtopic', 'baseUrl']:
             if not i in msg:
