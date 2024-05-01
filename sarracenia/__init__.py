@@ -769,10 +769,22 @@ class Message(dict):
         ])
         if new_dir:
             msg['new_dir'] = new_dir
+        elif 'new_dir' in msg:
+            new_dir = msg['new_dir']
+        else:
+            new_dir = ''
 
         if new_file or new_file == '':
             msg['new_file'] = new_file
-
+        elif 'new_file' in msg:
+            new_file = msg['new_file']
+        elif 'new_relPath' in msg:
+            new_file = os.path.basename(msg['rel_relPath'])
+        elif 'relPath' in msg:
+            new_file = os.path.basename(msg['relPath'])
+        else:
+            new_file = 'ErrorInSarraceniaMessageUpdatePaths.txt'
+    
         newFullPath = new_dir + '/' + new_file
         
         # post_baseUrl option set in msg overrides other possible options
