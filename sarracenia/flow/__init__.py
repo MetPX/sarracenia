@@ -1997,15 +1997,20 @@ class Flow:
                 (remote_offset == 0) and ( msg['local_offset'] == 0)
 
             if not self.o.dry_run:
-                if accelerated:
-                    len_written = self.proto[self.scheme].getAccelerated(
-                        msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
-                    #FIXME: no onfly_checksum calculation during download.
-                else:
-                    self.proto[self.scheme].set_path(new_inflight_path)
-                    len_written = self.proto[self.scheme].get(
-                        msg, remote_file, new_inflight_path, remote_offset,
-                        msg['local_offset'], block_length, exactLength)
+                try:
+                    if accelerated:
+                        len_written = self.proto[self.scheme].getAccelerated(
+                            msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
+                        #FIXME: no onfly_checksum calculation during download.
+                    else:
+                        self.proto[self.scheme].set_path(new_inflight_path)
+                        len_written = self.proto[self.scheme].get(
+                            msg, remote_file, new_inflight_path, remote_offset,
+                            msg['local_offset'], block_length, exactLength)
+                except Exception as ex:
+                    logger.error( f"could not get {remote_file}: {ex}" )
+                    return False
+
             else:
                 len_written = block_length
 
@@ -2084,9 +2089,8 @@ class Flow:
                         self.proto[self.scheme].delete(remote_file)
                     logger.debug('file deleted on remote site %s' %
                                  remote_file)
-                except:
-                    logger.error('unable to delete remote file %s' %
-                                 remote_file)
+                except Exception as ex:
+                    logger.error( f'unable to delete remote file {remote_file}: {ex}' )
                     logger.debug('Exception details: ', exc_info=True)
 
             if (self.o.acceptSizeWrong or (block_length == 0)) and (len_written > 0):
