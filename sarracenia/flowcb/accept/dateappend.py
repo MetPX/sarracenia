@@ -36,4 +36,5 @@ class Dateappend(FlowCB):
     def after_accept(self, worklist):
         for message in worklist.incoming:
             datestr = time.strftime('_%Y%m%d%H%M%S', time.localtime())
-            message['new_file'] += datestr
+            if not message['new_file'].endswith( datestr ):
+                message['new_file'] += datestr
