@@ -231,6 +231,107 @@ Autres entry_points, extraits de sarracenia/flowcb/__init__.py ::
 
     def on_stop(self):
 
+new_* Champs
+------------
+
+Pendant le traitement des messages de notification, les valeurs des champs standard d'origine restent généralement inchangées (telles que lues).
+Pour modifier les champs des messages de notification transmis aux consommateurs en aval, on modifie plutôt new_field
+de celui du message, car l'original est nécessaire pour une récupération réussie en amont
+:
+
+* msg['new_baseUrl'] ... baseUrl à transmettre aux consommateurs en aval.
+
+* msg['new_dir'] ... le répertoire dans lequel un fichier sera téléchargé ou envoyé.
+
+* msg['new_file'] .... nom final du fichier à écrire.
+
+* msg['new_inflight_path'] ... nom calculé du fichier temporaire à écrire avant de le renommer en msg['new_file'] ... ne pas modifier manuellement.
+
+* msg['new_relPath'] ... calculé à partir de 'new_baseUrl', 'post_baseDir', 'new_dir', 'new_file'... ne pas modifier manuellement. 
+
+* msg['post_version'] ... le format d'encodage du message à poster (à partir des paramètres)
+
+* msg['new_subtopic'] ... la hiérarchie des sous-thèmes qui sera codée dans le message de notification destiné aux consommateurs en aval.
+
+Les champs override
+-------------------
+
+Pour modifier le traitement des messages, on peut définir des remplacements pour modifier le fonctionnement des algorithmes intégrés.
+Par exemple:
+
+* msg['nodupe_override'] = { 'key': ..., 'path': ... } modifie le fonctionnement de la détection des doublons.
+* msg['topic'] ... définit le sujet d'un message publié (au lieu d'être calculé à partir d'autres champs.)
+* msg['exchangeSplitOverride'] = int ... change la façon dont post_ExchangeSplit choisit parmi plusieurs postExchanges
+
+
+Personnalisation de la suppression des doublons
+---------------------------------
+
+Le traitement intégré des doublons consiste à utiliser le champ d'identité comme clé et à stocker le chemin (path) comme valeur.
+Ainsi, si un fichier est reçu avec la même clé et que le path est déjà présent, il est alors considéré comme un doublon.
+et laissé tomber.
+
+Dans certains cas, nous pouvons souhaiter que seul le nom du fichier soit utilisé, donc si un fichier portant le même nom est reçu deux fois,
+quel que soit le contenu, il doit alors être considéré comme un doublon et supprimé. Ceci est utile lorsque plusieurs systèmes
+produisent les mêmes produits, mais ils ne sont pas identiques au niveau des bits. Le flowcb intégré qui implémente
+cette fonctionnalité est ci-dessous ::
+
+
+   import logging
+   from sarracenia.flowcb import FlowCB
+
+   logger = logging.getLogger(__name__)
+
+
+   class Name(FlowCB):
+       """
+         Remplacez la comparaison afin que les fichiers portant le même nom, quel que soit 
+         le répertoire dans lequel ils se trouvent, sont considérés comme identiques.
+         Ceci est utile lors de la réception de données provenant de deux sources différentes 
+         (deux arbres différents) et vanner entre eux.
+       """
+       def after_accept(self, worklist):
+           for m in worklist.incoming:
+               if not 'nodupe_override' in m:
+                   m['_deleteOnPost'] \|= set(['nodupe_override'])
+                   m['nodupe_override'] = {}
+
+               m['nodupe_override']['path'] = m['relPath'].split('/')[-1]
+               m['nodupe_override']['key'] = m['relPath'].split('/')[-1]
+
+
+
+Personnalisation de post_exchangeSplit
+-------------------------------
+
+La fonction ExchangeSplit permet à un seul flux d'envoyer des sorties à différents échanges,
+numérotés 1...n pour assurer la répartition de la charge. Le traitement intégré le fait de manière
+manière fixe basée sur le hachage du champ d'identification. Le but d'exchangeSplit est de
+permettre à un ensemble commun de chemins en aval de recevoir un sous-ensemble du flux total, et pour
+les produits avec un « routage » similaire atterrissent sur le même nœud en aval. Par exemple, un fichier
+avec une somme de contrôle donnée, pour que le vannage fonctionne, il doit atterrir sur le même nœud en aval.
+
+Il se pourrait que, plutôt que d'utiliser une somme de contrôle, on préfère utiliser une autre somme de contrôle.
+méthode pour décider quel échange est utilisé::
+
+
+  import logging
+  from sarracenia.flowcb import FlowCB
+  import hashlib
+  logger = logging.getLogger(__name__)
+
+
+  class Distbydir(FlowCB):
+    """
+      Remplacer l'utilisation du champ d'identité afin que les produits puissent 
+      être regroupés par répertoire dans le relPath. Cela garantit que tous les produits 
+      reçus du même répertoire sont publiés dans le même exchange lorsque post_exchangeSplit est actif.
+    """
+    def after_accept(self, worklist):
+        for m in worklist.incoming:
+            m['_deleteOnPost'] |= set(['exchangeSplitOverride'])
+            m['exchangeSplitOverride'] = int(hashlib.md5(m['relPath'].split(os.sep)[-2]).hexdigest()[0])
+
 
 
 Exemple de sous-classe Flowcb
