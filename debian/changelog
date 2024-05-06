@@ -1,7 +1,11 @@
-metpx-sr3 (3.00.53rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.53rc2) unstable; urgency=medium
 
   * NEW! merge PR #1019 Azure Transfer protocol driver (experimental)
   * NEW! merge PR #1030 WMO-00 Accumulated file support (experimental.)
+  * NEW! PR #1040 #1041 exchangeSplitOverride + documentation of overrides.
+  * PR #1038 prefer local plugins over app provided ones.
+  * PR #1037 clearer, more succinct error messages for sender.
+  * api improvement Message.updatePaths() with no paths has defaults.
   * api improvement part of above, Message.getContent() now works for local files.
   * api improvement Message.updatePaths() now makes reasonable guesses about missing arguments.
   * improved support for WMO WIS2 messages.
