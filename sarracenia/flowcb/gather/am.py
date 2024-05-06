@@ -189,7 +189,7 @@ class Am(FlowCB):
 
                         os.execl(sys.executable , sys.executable , *sys.argv )   
 
-                        logger.critical(f"Failed to launch child! {sys.argv=}. Exiting")
+                        logger.critical(f"Failed to launch child! sys.argv={sys.argv}. Exiting")
                         sys.exit(1)
                         
                     elif pid == -1:
