@@ -71,6 +71,7 @@ Change log:
     - 2023-12: updated sr3 plugin, split into separate poll and auth plugins, made a lot more universal (old code
                would only post NetCDF files, this allows any type, configurable time range, multiple collection IDs
                in one config, includes mtime, md5sum, GeoJSON, contentType in messages when available)
+    - 2024-04: un-URL-encode the posted relPath
 """
 import requests
 import datetime
@@ -184,7 +185,13 @@ class Eumetsat(sarracenia.flowcb.FlowCB):
             # The download links in .../entry?name=FILENAME which would download files named entry?name=FILENAME
             # Override this by changing relPath (used to name the file) and setting retrievePath (used to download)
             m['retrievePath'] = m['relPath']
-            m['relPath'] = m['relPath'].replace('entry?name=', '')
+            temp_relPath = requests.utils.unquote(m['relPath'].replace('entry?name=', '')).split('/')
+            relPath = []
+            # remove duplicates from the path
+            for i in range(len(temp_relPath)):
+                if i == 0 or temp_relPath[i] != temp_relPath[i-1]:
+                    relPath.append(temp_relPath[i])
+            m['relPath'] = '/'.join(relPath)
         except Exception as e:
             logger.error(f"Failed to create message from {link_info}")
             logger.debug("Exception details", exc_info=True)

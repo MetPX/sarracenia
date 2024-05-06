@@ -61,6 +61,7 @@ default_options = {
     'messageRateMin': 0,
     'sleep': 0.1,
     'topicPrefix': ['v03'],
+    'topicCopy': False,
     'vip': []
 }
 
@@ -211,7 +212,8 @@ class Flow:
 
         # metrics - dictionary with names of plugins as the keys
         self.metricsFlowReset()
-        self.had_vip = True
+
+        self.had_vip = not os.path.exists( self.o.novipFilename )
 
     def metricsFlowReset(self) -> None:
 
@@ -425,6 +427,7 @@ class Flow:
           loop in it. This implements the General Algorithm (as described in the Concepts Explanation Guide) 
           check if stop_requested once in a while, but never return otherwise.
         """
+
 
         if not self.loadCallbacks(self.plugins['load']):
            return
@@ -1097,7 +1100,9 @@ class Flow:
             if '_format' in m:
                 m['old_format'] = m['_format']
                 m['_deleteOnPost'] |= set(['old_format'])
-            m['_format'] = m['post_format']
+
+            if 'post_format' in m:
+                m['_format'] = m['post_format']
 
             # restore adjustment to fileOp
             if 'post_fileOp' in m:
@@ -1922,7 +1927,11 @@ class Flow:
                 if self.o.dry_run:
                     cwd = cdir
                 else:
-                    self.proto[self.scheme].cd(cdir)
+                    try:
+                         self.proto[self.scheme].cd(cdir)
+                    except Exception as ex:
+                         logger.error("chdir %s: %s" % (cdir, ex))
+                         return False
 
             remote_offset = 0
             exactLength=False
@@ -1988,15 +1997,20 @@ class Flow:
                 (remote_offset == 0) and ( msg['local_offset'] == 0)
 
             if not self.o.dry_run:
-                if accelerated:
-                    len_written = self.proto[self.scheme].getAccelerated(
-                        msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
-                    #FIXME: no onfly_checksum calculation during download.
-                else:
-                    self.proto[self.scheme].set_path(new_inflight_path)
-                    len_written = self.proto[self.scheme].get(
-                        msg, remote_file, new_inflight_path, remote_offset,
-                        msg['local_offset'], block_length, exactLength)
+                try:
+                    if accelerated:
+                        len_written = self.proto[self.scheme].getAccelerated(
+                            msg, remote_file, new_inflight_path, block_length, remote_offset, exactLength)
+                        #FIXME: no onfly_checksum calculation during download.
+                    else:
+                        self.proto[self.scheme].set_path(new_inflight_path)
+                        len_written = self.proto[self.scheme].get(
+                            msg, remote_file, new_inflight_path, remote_offset,
+                            msg['local_offset'], block_length, exactLength)
+                except Exception as ex:
+                    logger.error( f"could not get {remote_file}: {ex}" )
+                    return False
+
             else:
                 len_written = block_length
 
@@ -2075,12 +2089,11 @@ class Flow:
                         self.proto[self.scheme].delete(remote_file)
                     logger.debug('file deleted on remote site %s' %
                                  remote_file)
-                except:
-                    logger.error('unable to delete remote file %s' %
-                                 remote_file)
+                except Exception as ex:
+                    logger.error( f'unable to delete remote file {remote_file}: {ex}' )
                     logger.debug('Exception details: ', exc_info=True)
 
-            if (block_length == 0) and (len_written > 0):
+            if (self.o.acceptSizeWrong or (block_length == 0)) and (len_written > 0):
                 return True
 
             if (len_written != block_length):
@@ -2221,13 +2234,21 @@ class Flow:
             cwd = None
             if hasattr(self.proto[self.scheme], 'getcwd'):
                 if not self.o.dry_run:
-                    cwd = self.proto[self.scheme].getcwd()
+                    try:
+                        cwd = self.proto[self.scheme].getcwd()
+                    except Exception as ex:
+                        logger.error( f"could not getcwd: {ex}" )
+                        return False
 
             if cwd != new_dir:
                 logger.debug("%s_transport send cd to %s" %
                              (self.scheme, new_dir))
                 if not self.o.dry_run:
-                    self.proto[self.scheme].cd_forced(775, new_dir)
+                    try:
+                        self.proto[self.scheme].cd_forced(775, new_dir)
+                    except Exception as ex:
+                        logger.error( f"could not chdir to {new_dir}: {ex}" )
+                        return False
 
             #=================================
             # delete event
@@ -2239,9 +2260,18 @@ class Flow:
                         logger.debug("message is to remove %s" % new_file)
                         if not self.o.dry_run:
                             if 'directory' in msg['fileOp']: 
-                                self.proto[self.scheme].rmdir(new_file)
+                                try:
+                                    self.proto[self.scheme].rmdir(new_file)
+                                except Exception as ex:
+                                    logger.error( f"could not rmdir {new_file}: {ex}" )
+                                    return False
                             else:
-                                self.proto[self.scheme].delete(new_file)
+                                try:
+                                    self.proto[self.scheme].delete(new_file)
+                                except Exception as ex:
+                                    logger.error( f"could not delete {new_file}: {ex}" )
+                                    return False
+
                         msg.setReport(201, f'file or directory removed')
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
@@ -2253,7 +2283,12 @@ class Flow:
                     if hasattr(self.proto[self.scheme], 'delete'):
                         logger.debug( f"message is to rename {msg['fileOp']['rename']} to {new_file}" )
                         if not self.o.dry_run:
-                            self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                            try:
+                                self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
+                            except Exception as ex:
+                                logger.error( f"could not rename {new_file}: {ex}" )
+                                return False
+
                         msg.setReport(201, f'file renamed')
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
@@ -2267,7 +2302,11 @@ class Flow:
                     if hasattr(self.proto[self.scheme], 'mkdir'):
                         logger.debug( f"message is to mkdir {new_file}")
                         if not self.o.dry_run:
-                            self.proto[self.scheme].mkdir(new_file)
+                            try:
+                                self.proto[self.scheme].mkdir(new_file)
+                            except Exception as ex:
+                                logger.error( f"could not mkdir {new_file}: {ex}" )
+                                return False
                         msg.setReport(201, f'directory created')
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
@@ -2286,7 +2325,11 @@ class Flow:
                     if hasattr(self.proto[self.scheme], 'link'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['hlink']))
                         if not self.o.dry_run:
-                            self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
+                            try:
+                                self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
+                            except Exception as ex:
+                                logger.error( f"could not link {new_file}: {ex}" )
+                                return False
                         return True
                     logger.error("%s, hardlinks not supported" % self.scheme)
                     return False
@@ -2296,7 +2339,11 @@ class Flow:
                     if hasattr(self.proto[self.scheme], 'symlink'):
                         logger.debug("message is to link %s to: %s" % (new_file, msg['fileOp']['link']))
                         if not self.o.dry_run:
-                             self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                            try:
+                                self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
+                            except Exception as ex:
+                                logger.error( f"could not symlink {new_file}: {ex}" )
+                                return False
                         msg.setReport(201, f'file linked')
                         self.metrics['flow']['transferTxFiles'] += 1
                         self.metrics['flow']['transferTxLast'] = msg['report']['timeCompleted']
@@ -2347,38 +2394,64 @@ class Flow:
 
             if inflight == None or (('blocks' in msg) and
                                     (msg['blocks']['method'] != 'inplace')):
-                if not self.o.dry_run:
-                    if accelerated:
-                        len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
-                    else:
-                        len_written = self.proto[self.scheme].put( msg, local_file, new_file)
+                try:
+                    if not self.o.dry_run:
+                        if accelerated:
+                            len_written = self.proto[self.scheme].putAccelerated( msg, local_file, new_file)
+                        else:
+                            len_written = self.proto[self.scheme].put( msg, local_file, new_file)
+                except Exception as ex:
+                    logger.error( f"could not send inflight=None {new_file}: {ex}" )
+                    return False
+                
             elif (('blocks' in msg)
                   and (msg['blocks']['method'] == 'inplace')):
                 if not self.o.dry_run:
-                    self.proto[self.scheme].put(msg, local_file, new_file, offset,
+                    try:
+                        self.proto[self.scheme].put(msg, local_file, new_file, offset,
                                             new_offset, msg['size'])
+                    except Exception as ex:
+                        logger.error( f"could not send inplace {new_file}: {ex}" )
+                        return False
+
             elif inflight == '.':
                 new_inflight_path = '.' + new_file
                 if not self.o.dry_run:
-                    if accelerated:
-                        len_written = self.proto[self.scheme].putAccelerated(
-                            msg, local_file, new_inflight_path)
-                    else:
-                        len_written = self.proto[self.scheme].put(
-                            msg, local_file, new_inflight_path)
-                    self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    try:
+                        if accelerated:
+                            len_written = self.proto[self.scheme].putAccelerated(
+                                msg, local_file, new_inflight_path)
+                        else:
+                            len_written = self.proto[self.scheme].put(
+                                msg, local_file, new_inflight_path)
+                    except Exception as ex:
+                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        return False
+                    try:
+                        self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    except Exception as ex:
+                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        return False
                 else:
                     len_written = msg['size']
 
             elif inflight[0] == '.':
                 new_inflight_path = new_file + inflight
                 if not self.o.dry_run:
-                    if accelerated:
-                        len_written = self.proto[self.scheme].putAccelerated(
-                            msg, local_file, new_inflight_path)
-                    else:
-                        len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
-                    self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    try:
+                        if accelerated:
+                            len_written = self.proto[self.scheme].putAccelerated(
+                                msg, local_file, new_inflight_path)
+                        else:
+                            len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
+                    except Exception as ex:
+                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        return False
+                    try:
+                        self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    except Exception as ex:
+                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        return False
             elif options.inflight[-1] == '/':
                 if not self.o.dry_run:
                     try:
@@ -2389,25 +2462,41 @@ class Flow:
                         pass
                 new_inflight_path = options.inflight + new_file
                 if not self.o.dry_run:
-                    if accelerated:
-                        len_written = self.proto[self.scheme].putAccelerated(
-                            msg, local_file, new_inflight_path)
-                    else:
-                        len_written = self.proto[self.scheme].put(
-                            msg, local_file, new_inflight_path)
-                    self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    try:
+                        if accelerated:
+                            len_written = self.proto[self.scheme].putAccelerated(
+                                msg, local_file, new_inflight_path)
+                        else:
+                            len_written = self.proto[self.scheme].put(
+                                msg, local_file, new_inflight_path)
+                    except Exception as ex:
+                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        return False
+                    try:
+                        self.proto[self.scheme].rename(new_inflight_path, new_file)
+                    except Exception as ex:
+                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        return False
                 else:
                     len_written = msg['size']
             elif inflight == 'umask':
                 if not self.o.dry_run:
                     self.proto[self.scheme].umask()
-                    if accelerated:
-                        len_written = self.proto[self.scheme].putAccelerated(
-                            msg, local_file, new_file)
-                    else:
-                        len_written = self.proto[self.scheme].put(
-                            msg, local_file, new_file)
-                    self.proto[self.scheme].put(msg, local_file, new_file)
+                    try:
+                        if accelerated:
+                            len_written = self.proto[self.scheme].putAccelerated(
+                                msg, local_file, new_file)
+                        else:
+                            len_written = self.proto[self.scheme].put(
+                                msg, local_file, new_file)
+                    except Exception as ex:
+                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        return False
+                    try:
+                        self.proto[self.scheme].put(msg, local_file, new_file)
+                    except Exception as ex:
+                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        return False
                 else:
                     len_written = msg['size']
 

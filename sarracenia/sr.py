@@ -148,7 +148,7 @@ class sr_GlobalState:
                     except Exception as ex:
                         logging.error( "makedirs {} failed err={}".format(os.path.dirname(lfn),ex))
                         logging.debug("Exception details:", exc_info=True)
-                        os.sleep(1)
+                        time.sleep(0.1)
                 
         if c in [ 'flow',
                 'poll', 'post', 'report', 'sarra', 'sender', 'shovel',
@@ -319,8 +319,7 @@ class sr_GlobalState:
                         state = 'include'
                         continue
                     else:
-                        cbase = cfg
-                        state = 'unknown'
+                        continue
 
                     self.configs[c][cbase] = {}
                     self.configs[c][cbase]['status'] = state
@@ -1590,7 +1589,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['stopped','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -2656,6 +2655,14 @@ class sr_GlobalState:
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
+            if component in [ 'shovel', 'winnow' ]:
+                v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
+                v3_cfg.write('#topicCopy on\n')
+
+            if component in [ 'sarra', 'sender', 'subscribe' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write('#flowcb accept.sftp_absolute\n')
+
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
                     if len(line.strip()) < 1:
