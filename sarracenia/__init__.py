@@ -391,7 +391,7 @@ class Message(dict):
         self['_deleteOnPost'] = set(['_format'])
 
 
-    def computeIdentity(msg, path, o, offset=0):
+    def computeIdentity(msg, path, o, offset=0, data=None) -> None:
         """
            check extended attributes for a cached identity sum calculation.
            if extended attributes are present, and 
@@ -400,6 +400,10 @@ class Message(dict):
            then use the cached value.
 
            otherwise, calculate a checksum. 
+           If the data is provided, use that as the file content, otherwise 
+           read the file form the file system.  
+
+           Once the checksum is determined,
            set the file's extended attributes for the new value.
            the method of checksum calculation is from options.identity.
            
@@ -453,22 +457,24 @@ class Message(dict):
             sumalgo.set_path(path)
 
             # compute checksum
-
             if calc_method in ['md5', 'sha512']:
 
-                fp = open(path, 'rb')
-                i = 0
+                if data:
+                    sumalgo.update(data)
+                else:
+                    fp = open(path, 'rb')
+                    i = 0
 
-                #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
-                if offset:
-                    fp.seek( offset )
+                    #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
+                    if offset:
+                        fp.seek( offset )
 
-                while i < offset+msg['size']:
-                    buf = fp.read(o.bufsize)
-                    if not buf: break
-                    sumalgo.update(buf)
-                    i += len(buf)
-                fp.close()
+                    while i < offset+msg['size']:
+                        buf = fp.read(o.bufsize)
+                        if not buf: break
+                        sumalgo.update(buf)
+                        i += len(buf)
+                    fp.close()
 
             # setting sumstr
             checksum = sumalgo.value
@@ -866,6 +872,7 @@ class Message(dict):
 
         return res
 
+
     def getContent(msg,options=None):
         """
            Retrieve the data referred to by a message.  The data may be embedded
@@ -914,3 +921,27 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
+    def new_pathWrite(msg,options,data):
+        """
+           expects: msg['new_dir'] and msg['new_file'] to be set.
+           given the byte stream of data.
+
+           write the local file based on the given message, options and data.  
+           update the message to match same (recalculating checksum.)
+        """
+        opath=msg['new_dir'] + os.sep + msg['new_file']
+
+        if not os.path.isdir(msg['new_dir']):
+            if self.o.permDirDefault != 0:
+                os.makedirs(msg['new_dir'],mode=self.o.permDirDefault, exist_ok=True)
+            else:
+                os.makedirs(msg['new_dir'], exist_ok=True)
+
+        try:
+            with open(opath, 'wb') as f:
+               f.write(data)
+            if self.o.permDefault != 0:
+                os.chmod(opath,mode=self.o.permDefault)
+            msg.computeIdentity(opath,self.o,data=data)
+        except Exception as ex:
+            logger.error( f"problem with {opath}: {ex}" )
