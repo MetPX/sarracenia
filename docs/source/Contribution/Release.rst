@@ -40,7 +40,7 @@ To publish a pre-release one needs to:
       * pre-release_py36 branch ready.
   * update git repository (Import now): https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk
       * do: **Import Now**
-  * run the recipe for old OS (18.04, 20.04) https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-old
+  * run the recipe for old OS (18.04, 20.04) https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release-old
       * do: **Request Build** (on Focal and Bionic )
   * run the recipe for new OS (22.04, 24.04) https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release 
       * do: **Request Build** (on Jammy and Noble at least)
@@ -75,14 +75,14 @@ the stable release does not require any explicit testing.
   git checkout stable
   git merge pre-release
   git tag -a v3.xx.yy -m "v3.xx.yy"
-  git push
+  git push origin v3.xx.yy
 
 * merge from pre-release_py36 to stable_focal_bionic::
 
   git checkout stable_focal_bionic
   git merge pre-release_py36
   git tag -a o3.xx.yy -m "o3.xx.yy"
-  git push
+  git push origin v3.xx.yy
 
 * go on Launchpad, 
 
@@ -230,7 +230,7 @@ A tag should be created to identify the end of the cycle::
    git checkout development
    git tag -a v3.16.01rc1 -m "release 3.16.01rc1"
    git push
-   git push origin v3.16.01a01
+   git push origin v3.16.01rc1
 
 Once the tag is in the development branch, promote it to stable::
 
@@ -562,13 +562,15 @@ The final package will be generated into build/nsis directory.
 github
 ------
 
-Click on Releases, Edit the release:
-
-* should we have release names?
-* copy/paste of changes from CHANGES.rst
+* Click on Releases
+* Click on tags, pick the tag for the new release vXX.yy.zzrcw
+* Click on Pre-Release tag at the bottom if appropriate.
+* Click on Generate Release notes... Review.
 * copy/paste of Installation bit at the end from a previous release.
+* Save as Draft.
 * build packages locally or download from other sources.
   drag and drop into the release.
+* Publish.
 
 This will give us the ability to have old versions available.
 launchpad.net doesn't seem to keep old versions around.
