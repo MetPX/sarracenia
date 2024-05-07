@@ -89,8 +89,10 @@ def _get_bulletin_info(message):
 # For unit testing, we mostly want to check how the bulletins get corrected.
 # We have lots of use cases where bulletin get corrected so it's important to test all of these cases
 
-# Test 1: Check a regular binary bulletin
+
 # @pytest.mark.depends(on=['test___init__'])
+
+# Test 1: Check a regular binary bulletin. 
 def test_am_binary_bulletin():
     from base64 import b64encode
 
@@ -108,23 +110,64 @@ def test_am_binary_bulletin():
     message_test1['new_dir'] = BaseOptions.directory
     message_test1['content']['value'] = b64encode(message_test1['content']['value']).decode('ascii')
 
+    # Check renamer.
     message_test1 = renamer.rename(message_test1, False)
     assert message_test1['new_file'] == 'ISAA41_CYWA_030000___00001'
 
 
 # Test 2: Check a regular CACN bulletin
-# def test_cacn_regular(self):
-#     message_test2 = make_message()
-#     message_test2['content']['encoding'] = 'iso-8859-1'
-#     message_test2['content']['value'] = b'CA\nWVO\n100,2024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
-#     bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test2)
-#     response = self.bulletin(bulletin, firstchars, lines, missing_ahl, station, charset)
-# 
-#     # Test 3: Check an erronous CACN bulletin (missing timestamp in bulletin contents)
-#     message_test3 = make_message()
-#     message_test3['content']['encoding'] = 'iso-8859-1'
-#     message_test3['content']['value'] = b'CA\nWPK\n0.379033,325.078,1.13338\n'
-# 
+def test_cacn_regular():
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test2 = make_message()
+    message_test2['content']['encoding'] = 'iso-8859-1'
+    message_test2['content']['value'] = b'CA\nWVO\n100,2024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test2)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test2['new_file'] = bulletinHeader + '__12345'
+    message_test2['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of a CACN
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'CACN00 CWAO 021600\nWVO\n100,2024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
+
+    # Check renamer.
+    message_test2['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test2 = renamer.rename(message_test2, False)
+    assert message_test2['new_file'] == 'CACN00_CWAO_021600__WVO_00001'
+
+# Test 3: Check an erronous CACN bulletin (missing timestamp in bulletin contents)
+def test_cacn_erronous():
+    import re
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test3 = make_message()
+    message_test3['content']['encoding'] = 'iso-8859-1'
+    message_test3['content']['value'] = b'CA\nWPK\n0.379033,325.078,1.13338\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test3)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test3['new_file'] = bulletinHeader + '__12345'
+    message_test3['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of a CACN
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'CACN00 CWAO\nWPK\n0.379033,325.078,1.13338\n'
+
+    # Check renamer.
+    message_test3['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test3 = renamer.rename(message_test3, False)
+    assert re.match('CACN00_CWAO_......__WPK_00001_PROBLEM' , message_test3['new_file'])
+
 #     # Test 4: Bulletin with double line separator after header (my-header\n\n)
 #     message_test4 = make_message()
 #     message_test4['content']['encoding'] = 'iso-8859-1'
