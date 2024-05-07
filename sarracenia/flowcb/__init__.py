@@ -255,10 +255,10 @@ def load_library(factory_path, options):
             packagename, classname = factory_path.rsplit('.', 1)
 
     try:
-        module = importlib.import_module('sarracenia.flowcb.' + packagename)
+        module = importlib.import_module(packagename)
         class_ = getattr(module, classname)
     except ModuleNotFoundError:
-        module = importlib.import_module(packagename)
+        module = importlib.import_module('sarracenia.flowcb.' + packagename)
         class_ = getattr(module, classname)
  
     if hasattr(options, 'settings'):

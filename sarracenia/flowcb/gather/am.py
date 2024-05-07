@@ -61,15 +61,16 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, os, signal, ipaddress
+import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse
 from base64 import b64encode
-import urllib.parse
+from random import randint
+from typing import NoReturn
+
 import sarracenia
 from sarracenia.bulletin import Bulletin
 from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
-from random import randint
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class Am(FlowCB):
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
  
-    def __WaitForRemoteConnection__(self):
+    def __WaitForRemoteConnections__(self) -> NoReturn:
 
         if self.host == 'None':
             raise Exception("No host was specified. Exiting.")
@@ -187,7 +188,9 @@ class Am(FlowCB):
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
 
                         os.execl(sys.executable , sys.executable , *sys.argv )   
-                        logger.critical(f"Failed to launch child! sys.argv={sys.argv}")
+
+                        logger.critical(f"Failed to launch child! sys.argv={sys.argv}. Exiting")
+                        sys.exit(1)
                         
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
@@ -202,13 +205,17 @@ class Am(FlowCB):
                         ## Close the connected socket instance as it is unused in the parent
                         conn.close()
                         logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
+
+                        # Check if any children processes are zombies (children are killed and waiting to be terminated by parent)
+                        os.waitpid(-1, os.WNOHANG)
+
                 except Exception:
                     logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
                     time.sleep(1)
-                
-        logger.info("Connection accepted with IP %s on port %d. Starting service.", self.remoteHost[0], self.port)     
 
-        return conn                       
+        logger.critical("Exited infinite server forking loop! Exiting.")
+        sys.exit(1)
+
 
     def on_start(self):
 
@@ -217,7 +224,7 @@ class Am(FlowCB):
             for IP in self.o.AllowIPs:
                 IP = ipaddress.ip_address(IP)
 
-            self.conn = self.__WaitForRemoteConnection__()
+            self.conn = self.__WaitForRemoteConnections__()
         else:
             # Recreate the socket from the connection state file, created by the parent.
             conn_filename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
@@ -313,10 +320,10 @@ class Am(FlowCB):
 
     def correctContents(self, bulletin, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
         """ Correct the bulletin contents, either of these ways
-            1. Remove trailing space in bulletin header
-            1. Add missing AHL headers for CA,MA,RA bulletins
-            2. Add missing AHL headers by mapping station codes
-            3. Add an extra line for SM/SI bulletins
+            1. Verify the received bulletin header.
+            2. Add missing AHL headers for CA,MA,RA bulletins
+            3. Add missing AHL headers by mapping station codes
+            4. Add an extra line for SM/SI bulletins
         """
 
         # We need to get the BBB from the header, to properly rewrite it.
@@ -325,12 +332,8 @@ class Am(FlowCB):
         reconstruct = 0
         ddhhmm = ''
         new_bulletin = b''
+        isProblem = False
         
-        # If there's a trailing space at the end of the bulletin header. Remove it.
-        if lines[0][-1:] == b' ':
-            lines[0] = lines[0].rstrip()
-            reconstruct = 1
-
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
 
@@ -387,6 +390,11 @@ class Am(FlowCB):
 
             reconstruct = 1
 
+        # Check if the header is okay before proceeding to correcting rest of bulletin.
+        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0]) 
+        if verified_header != lines[0]:
+            lines[0] = verified_header
+            reconstruct = 1
 
         if reconstruct == 1:
             # Reconstruct the bulletin
@@ -395,7 +403,7 @@ class Am(FlowCB):
 
             logger.debug("Missing contents added")
 
-        return new_bulletin 
+        return new_bulletin , isProblem
 
 
     def gather(self, messageCountMax):
@@ -458,7 +466,7 @@ class Am(FlowCB):
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
                         station = lines[1].split()[0].decode(charset)
-                        new_bulletin = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+                        new_bulletin, isProblem = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
                     
@@ -506,7 +514,7 @@ class Am(FlowCB):
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
                     # Call renamer
-                    msg = self.renamer.rename(msg)
+                    msg = self.renamer.rename(msg,isProblem)
                     if msg == None:
                         continue
                     logger.debug(f"New sarracenia message: {msg}")

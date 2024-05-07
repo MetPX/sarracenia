@@ -48,10 +48,10 @@ jobs:
           files: |
             tests/junit/test-results.xml
 
-      - name: Publish Coverage Results 
-        uses: orgoro/coverage@v3.1
-        with:
-          coverageFile: tests/coverage/coverage.xml
+      # - name: Publish Coverage Results 
+      #   uses: orgoro/coverage@v3.1
+      #   with:
+      #     coverageFile: tests/coverage/coverage.xml
       
       # - name: Pytest coverage comment
       #   uses: MishaKav/pytest-coverage-comment@main
