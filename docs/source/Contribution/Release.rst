@@ -289,7 +289,8 @@ PyPi
 ~~~~
 
 Because python packages are upward compatible, but not downward, build them on ubuntu 18.04
-(oldest supported python & OS version.)
+(oldest supported python & OS version.) in order for pip installs to work on the widest number
+of systems.
 
 for local installation on a computer with a python 3.6 for testing and development::
 
@@ -572,4 +573,26 @@ Click on Releases, Edit the release:
 This will give us the ability to have old versions available.
 launchpad.net doesn't seem to keep old versions around.
 
+
+Troubleshooting
+---------------
+
+
+
+ubuntu 18
+---------
+
+trying to upload from ubuntu 18 vm::
+
+  buntu@canny-tick:~/sr3$ twine upload dist/metpx_sr3-3.0.53rc2-py3-none-any.whl
+  /usr/lib/python3/dist-packages/requests/__init__.py:80: RequestsDependencyWarning: urllib3 (1.26.18) or chardet (3.0.4) doesn't match a supported version!
+    RequestsDependencyWarning)
+  Uploading distributions to https://upload.pypi.org/legacy/
+  Uploading metpx_sr3-3.0.53rc2-py3-none-any.whl
+  100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 408k/408k [00:00<00:00, 120kB/s]
+  HTTPError: 400 Client Error: '2.0' is not a valid metadata version. See https://packaging.python.org/specifications/core-metadata for more information. for url: https://upload.pypi.org/legacy/
+  ubuntu@canny-tick:~/sr3$ 
+
+I uploaded from redhat8 instead. used pip3 to install twine on redhat, and that was ok.  This could be a result
+of running the system provided python3-twine on ubuntu.
 
