@@ -1325,6 +1325,11 @@ class sr_GlobalState:
                     f.write('')
 
     def declare(self):
+        '''
+        creates users, exchanges, and queues in that order - each one is needed to create
+        the subsequent one
+
+        '''
 
         if self.users:
             for h in self.brokers:
@@ -1360,7 +1365,7 @@ class sr_GlobalState:
 
         # declare admin exchanges.
         if hasattr(self,'default_cfg') and self.default_cfg.admin:
-            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            logger.info( f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
                     {
