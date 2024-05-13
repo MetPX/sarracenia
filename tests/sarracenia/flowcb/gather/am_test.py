@@ -79,7 +79,10 @@ def _get_bulletin_info(message):
     lines = bulletin.splitlines()
     if message['content']['encoding'] != 'base64':
         firstchars = bulletin[0:2].decode(charset)
-        station = lines[1].split()[0].decode(charset)
+        if list(lines[1].split()):
+            station = lines[1].split()[0].decode(charset)
+        else:
+            station = lines[1].decode(charset)
     else:
         firstchars = "XX"
         station = "XXX"
@@ -168,54 +171,195 @@ def test_cacn_erronous():
     message_test3 = renamer.rename(message_test3, False)
     assert re.match('CACN00_CWAO_......__WPK_00001_PROBLEM' , message_test3['new_file'])
 
-#     # Test 4: Bulletin with double line separator after header (my-header\n\n)
-#     message_test4 = make_message()
-#     message_test4['content']['encoding'] = 'iso-8859-1'
-#     message_test4['content']['value'] = b'SXCN35 CWVR 021100\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
-# 
-#     # Test 5: Bulletin with invalid year in timestamp (Fix: https://github.com/MetPX/sarracenia/pull/973)
-#     message_test5 = make_message()
-#     message_test5['content']['encoding'] = 'iso-8859-1'
-#     message_test5['content']['value'] = b'CA\nWVO\n100,1024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
-# 
-#     # Test 6: Bulletin with trailing spaces at the end of the header (Fix: https://github.com/MetPX/sarracenia/pull/956)
-#     message_test6 = make_message()
-#     message_test6['content']['encoding'] = 'iso-8859-1'
-#     message_test6['content']['value'] = b'SXCN35 CWVR 021100 \n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
-# 
-#     # Test 7: Bulletin with a wrong station name (Fix: https://github.com/MetPX/sarracenia/pull/963/files)
-#     message_test7 = make_message()
-#     message_test7['content']['encoding'] = 'iso-8859-1'
-#     message_test7['content']['value'] = b'UECN99 CYCX 071200\nTTDD21 /// 5712/ 71701 NIL=\n\n\n\n' 
-# 
-#     # Test 8: SM Bulletin - Add station mapping + SM/SI bulletin accomodities 
-#     message_test8 = make_message()
-#     message_test8['content']['encoding'] = 'iso-8859-1'
-#     message_test8['content']['value'] = b'SM 030000\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
-# 
-#     # Test 9: Bulletin with 5 fields in header (invalid)
-#     message_test9 = make_message()
-#     message_test9['content']['encoding'] = 'iso-8859-1'
-#     message_test9['content']['value'] = b'SXCN35 CWVR 021100 BBB OOPS\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
-# 
-#     # Test 10: Bulletin with 6 fields in header (invalid)
-#     message_test10 = make_message()
-#     message_test10['content']['encoding'] = 'iso-8859-1'
-#     message_test10['content']['value'] = b'SXCN35 CWVR 021100 BBB OOPS OHNO\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
-# 
-#     # Test 11: Bulletin with a timestamp (DDHHmm) bigger then 6 chars
-#     message_test11 = make_message()
-#     message_test11['content']['encoding'] = 'iso-8859-1'
-#     message_test11['content']['value'] = b'SXCN35 CWVR 021100Z\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
+# Test 4: Bulletin with double line separator after header (my-header\n\n)
+def test_bulletin_double_linesep():
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test4 = make_message()
+    message_test4['content']['encoding'] = 'iso-8859-1'
+    message_test4['content']['value'] = b'SXCN35 CWVR 021100\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test4)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test4['new_file'] = bulletinHeader + '__12345'
+    message_test4['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    # Checking for b'' because this is what returns when correctContents has no problems to report correcting.
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b''
+
+    # Check renamer.
+    message_test4['content']['value'] = message_test4['content']['value'].decode('iso-8859-1')
+    message_test4 = renamer.rename(message_test4, False)
+    assert message_test4['new_file'] == 'SXCN35_CWVR_021100___00001'
+
+# Test 5: Bulletin with invalid year in timestamp (Fix: https://github.com/MetPX/sarracenia/pull/973)
+def test_bulletin_invalid_timestamp(caplog):
+    import re, datetime
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)    
+
+    message_test5 = make_message()
+    message_test5['content']['encoding'] = 'iso-8859-1'
+    message_test5['content']['value'] = b'CA\nWVO\n100,1024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test5)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test5['new_file'] = bulletinHeader + '__12345'
+    message_test5['new_dir'] = BaseOptions.directory
+
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'CACN00 CWAO\nWVO\n100,1024,123,1600,0,100,13.5,5.6,79.4,0.722,11.81,11.74,1.855,6.54,16.76,1544,2.344,14.26,0,375.6,375.6,375.5,375.5,0,11.58,11.24,3.709,13.89,13.16,11.22,11,9.45,11.39,5.033,79.4,0.694,-6999,41.19,5.967,5.887,5.93,6.184,5.64,5.066,5.253,-6999,7.3,0.058,0,5.715,4.569,0,0,1.942,-6999,57.4,0,0.531,-6999,1419,1604,1787,-6999,-6999,-6999,-6999,-6999,1601,-6999,-6999,6,5.921,5.956,6.177,5.643,5.07,5.256,-6999,9.53,11.22,10.09,10.61,125.4,9.1\n'
+
+    message_test5['content']['value'] = message_test5['content']['value'].decode('iso-8859-1')
+    message_test5 = renamer.rename(message_test5, False)
+    # We want to make sure the proper errors are raised from the logs
+    assert 'Unable to fetch header contents. Skipping message' in caplog.text and 'Unable to verify year from julian time.' in caplog.text
 
 
-    #TODO: Test for: bulletin.py methods , flowcb/gather/am/Am/correctContents method.
+# Test 6: Bulletin with trailing spaces at the end of the header (Fix: https://github.com/MetPX/sarracenia/pull/956)
+def test_bulletin_header_trailing_space():
 
-    # wl_test_after_accept = copy.deepcopy(WorkList)
-    # wl_test_after_accept.incoming = [message_with_nodupe, message_without_nodupe]
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
 
-    # nodupe.after_accept(wl_test_after_accept)
+    message_test6 = make_message()
+    message_test6['content']['encoding'] = 'iso-8859-1'
+    message_test6['content']['value'] = b'SXCN35 CWVR 021100 \n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
 
-    # assert len(wl_test_after_accept.incoming) == 2
-    # assert wl_test_after_accept.incoming[0]['nodupe_override']['path'] == 'data'
-    # assert 'nodupe_override' in wl_test_after_accept.incoming[1]['_deleteOnPost']
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test6)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test6['new_file'] = bulletinHeader + '__12345'
+    message_test6['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SXCN35 CWVR 021100\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+
+# Test 7: Bulletin with a wrong station name (Fix: https://github.com/MetPX/sarracenia/pull/963/files)
+def test_bulletin_wrong_station():
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test7 = make_message()
+    message_test7['content']['encoding'] = 'iso-8859-1'
+    message_test7['content']['value'] = b'UECN99 CYCX 071200\nTTDD21 /// 5712/ 71701 NIL=\n\n\n\n' 
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test7)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test7['new_file'] = bulletinHeader + '__12345'
+    message_test7['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    # Checking for b'' because this is what returns when correctContents has no problems to report correcting
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b''
+
+    # Check renamer.
+    message_test7['content']['value'] = message_test7['content']['value'].decode('iso-8859-1')
+    message_test7 = renamer.rename(message_test7, False)
+    assert message_test7['new_file'] == 'UECN99_CYCX_071200___00001_PROBLEM'
+
+# Test 8: SM Bulletin - Add station mapping + SM/SI bulletin accomodities 
+def test_SM_bulletin():
+    
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test8 = make_message()
+    message_test8['content']['encoding'] = 'iso-8859-1'
+    message_test8['content']['value'] = b'SM 030000\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test8)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test8['new_file'] = bulletinHeader + '__12345'
+    message_test8['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    am_instance.o.mapStations2AHL = ['SMCN06 CWAO COLL 71816 71818 71821 71825 71827 71828 71831 71832 71834 71841 71842 71845 71850 71854']
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SMCN06 CWAO 030000\nAAXX 03004\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    message_test8['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test8 = renamer.rename(message_test8, False)
+    assert message_test8['new_file'] == 'SMCN06_CWAO_030000__71816_00001'
+
+# Test 9: Bulletin with 5 fields in header (invalid)
+def test_bulletin_header_five_fileds():
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test9 = make_message()
+    message_test9['content']['encoding'] = 'iso-8859-1'
+    message_test9['content']['value'] = b'SXCN35 CWVR 021100 AAA OOPS\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test9)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test9['new_file'] = bulletinHeader + '__12345'
+    message_test9['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SXCN35 CWVR 021100 AAA\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+# Test 10: Bulletin with 6 fields in header (invalid)
+def test_bulletin_header_six_fileds():
+
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test10 = make_message()
+    message_test10['content']['encoding'] = 'iso-8859-1'
+    message_test10['content']['value'] = b'SXCN35 CWVR 021100 AAA OTHER OHNO\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test10)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test10['new_file'] = bulletinHeader + '__12345'
+    message_test10['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SXCN35 CWVR 021100 AAA OTHER\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+
+# Test 11: Bulletin with a timestamp (DDHHmm) bigger then 6 chars
+def test_bulletin_timestamp_6chars_plus():
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test11 = make_message()
+    message_test11['content']['encoding'] = 'iso-8859-1'
+    message_test11['content']['value'] = b'SXCN35 CWVR 021100Z\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test11)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test11['new_file'] = bulletinHeader + '__12345'
+    message_test11['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SXCN35 CWVR 021100\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
