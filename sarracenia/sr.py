@@ -2649,7 +2649,7 @@ class sr_GlobalState:
             logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
             return
         
-        logging.info( f'(づ◔-◔)づ Wololo' )
+        logger.info( f'(づ◔-◔)づ Wololo' )
         synonyms = sarracenia.config.Config.synonyms
         accept_all_seen=False
         acceptUnmatched_explicit=False
