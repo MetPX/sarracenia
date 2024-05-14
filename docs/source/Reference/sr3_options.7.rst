@@ -575,7 +575,7 @@ declare
 -------
 
 env NAME=Value
-  On can also reference environment variables in configuration files,
+  One can also reference environment variables in configuration files,
   using the *${ENV}* syntax.  If Sarracenia routines needs to make use
   of an environment variable, then they can be set in configuration files::
 
