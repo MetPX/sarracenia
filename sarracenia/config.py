@@ -1403,6 +1403,9 @@ class Config:
         self.identity_method = 'invalid'
         #logger.error('returning 4: invalid' )
 
+
+
+
     def parse_file(self, cfg, component=None):
         """ add settings from a given config file to self 
        """
@@ -1434,237 +1437,241 @@ class Config:
         self.files.append(cfgfilepath)
 
         for l in open(cfgfilepath, "r").readlines():
-            l = l.strip()
             lineno+=1
             if self.lineno > 0:
-                saved_lineno = self.lineno
-            self.lineno = lineno
-            line = l.split()
+               saved_lineno = self.lineno
+            self.parse_line( component, cfg, cfname, lineno, l.strip() )
 
-            #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
-
-            if (len(line) < 1) or (line[0].startswith('#')):
-                continue
-
-            k = line[0]
-            if k in Config.synonyms:
-                k = Config.synonyms[k]
-            elif k == 'destination':
-                if component == 'poll':
-                    k = 'pollUrl'
-                else:
-                    k = 'sendTo'
-            elif k == 'broker' and component == 'poll' :
-                k = 'post_broker'
-
-            if (k in convert_to_v3): 
-                self.log_flowcb_needed |= '_log' in k
-                   
-                if (len(line) > 1):
-                    v = line[1].replace('.py', '', 1)
-                    if (v in convert_to_v3[k]):
-                        line = convert_to_v3[k][v]
-                        k = line[0]
-                        if 'continue' in line:
-                            logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
-                        else:
-                            logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
-                else:
-                    line = convert_to_v3[k]
-                    k=line[0]
-                    v=line[1] 
-
-            if k == 'continue':
-                continue
-            
-            #FIXME: note for Clea, line conversion to v3 complete here.
-
-            line = list(map(lambda x: self._varsub(x), line))
-
-            if len(line) == 1:
-                v = True
-            else:
-                v = line[1]
-
-            # FIXME... I think synonym check should happen here, but no time to check right now.
-
-            if k in flag_options:
-                if len(line) == 1:
-                    setattr(self, k, True)
-                else:
-                    setattr(self, k, isTrue(v))
-                if k in ['logReject'] and self.logReject:
-                    self.logEvents = self.logEvents | set(['reject'])
-                continue
-
-            if len(line) < 2:
-                logger.error( f'{self.files}:{lineno} {k} missing argument(s) ' )
-                continue
-            if k in ['accept', 'reject' ]:
-                self.masks.append(self._build_mask(k, line[1:]))
-            elif k in [ 'callback', 'cb' ]:
-                #vv = v.split('.')
-                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                if v not in self.plugins_late:
-                    self.plugins_late.append(v)
-            elif k in [ 'callback_prepend', 'cbp' ]:
-                #vv = v.split('.')
-                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                if v not in self.plugins_early:
-                    self.plugins_early.insert(0,v)
-            elif k in ['declare']:
-                self._parse_declare(line[1:])
-            elif k in ['feeder', 'manager']:
-                self.feeder = urllib.parse.urlparse(line[1])
-                self.declared_users[self.feeder.username] = 'feeder'
-            elif k in ['header', 'h']:
-                (kk, vv) = line[1].split('=')
-                self.fixed_headers[kk] = vv
-            elif k in ['include', 'config']:
-                try:
-                    self.parse_file(v)
-                except Exception as ex:
-                    logger.error( f'{self.files}:{self.lineno} file {v} failed to parse:  {ex}' )
-                    logger.debug('Exception details: ', exc_info=True)
-            elif k in ['subtopic']:
-                self._parse_binding(v)
-            elif k in ['topicPrefix']:
-                if '/' in v :
-                    self.topicPrefix = v.split('/')
-                else:
-                    self.topicPrefix = v.split('.')
-            elif k in ['post_topicPrefix']:
-                #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-                if '/' in v :
-                    self.post_topicPrefix = v.split('/')
-                else:
-                    self.post_topicPrefix = v.split('.')
-            elif k in ['import']:
-                self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
-                if v not in self.plugins_late:
-                    self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
-                if v not in self.plugins_early:
-                    self.plugins_early.insert(0, v)
-            elif k in ['set', 'setting', 's']:
-                self._parse_setting(line[1], line[2:])
-            elif k in ['identity', 'integrity']:
-                self._parse_sum(v)
-            elif k in Config.port_required:
-                logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
-                logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
-                continue
-            elif k in Config.v2entry_points:
-                #if k in self.plugins:
-                #    self.plugins.remove(v)
-                self._parse_v2plugin(k, v)
-            elif k in ['no-import']:
-                self._parse_v3unplugin(v)
-            elif k in ['inflight', 'lock']:
-                if v[:-1].isnumeric():
-                    vv = durationToSeconds(v)
-                    setattr(self, k, vv)
-                    self.fileAgeMin = vv
-                else:
-                    if line[1].lower() in ['none', 'off', 'false']:
-                        setattr(self, k, None)
-                    else:
-                        setattr(self, k, v)
-            elif k in ['strip']:
-                """
-               2020/08/26 - PAS
-               strip in config file gets translated into two separate attributes: strip and pstrip.
-                 strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
-                 then instead pstrip is set, and strip is set to 0.
-
-               I don't know why it is done this way... just documenting/conforming to existing state.
-               """
-                if v.isdigit():
-                    self.strip = int(v)
-                    self.pstrip = None
-                else:
-                    if v[0] == '/':
-                        self.pstrip = v[1:]
-                    else:
-                        self.pstrip = v
-                    self.strip = 0
-            elif k in duration_options:
-                if len(line) == 1:
-                    logger.error( 
-                        '%s:%d  %s is a duration option requiring a decimal number of seconds value'
-                        % ( cfname, lineno, line[0]) )
-                    continue
-                setattr(self, k, durationToSeconds(v))
-            elif k in float_options:
-                try:
-                    setattr(self, k, float(v))
-                except (ValueError, TypeError) as e:
-                    logger.error(f'{self.files}:{self.lineno} Ignored "{i}": {e}')
-            elif k in perm_options:
-                if v.isdigit():
-                    setattr(self, k, octal_number(int(v, base=8)))
-                else:
-                    logger.error( f'{self.files}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
-            elif k in size_options:
-                setattr(self, k, humanfriendly.parse_size(v))
-            elif k in count_options:
-                setattr(self, k, humanfriendly.parse_size(v))
-            elif k in list_options:
-                if not hasattr(self, k) or not getattr(self,k):
-                    setattr(self, k, [' '.join(line[1:])])
-                else:
-                    l = getattr(self, k)
-                    l.append(' '.join(line[1:]))
-            elif k in set_options:
-                if v.lower() == 'none':
-                    setattr(self, k, set([]))
-                    continue
-                if v.lower() in [ 'all' , '+all' ]:
-                    if k in set_choices:
-                        setattr(self,k,set_choices[k])
-                    continue
-                v=v.replace('|',',')
-                vs = self._parse_set_string(v,getattr(self,k))
-                setattr(self, k, vs )
-
-                if k in set_choices :
-                    for i in getattr(self,k):
-                        if i not in set_choices[k]:
-                            logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
-
-            elif k in str_options:
-                if ( k == 'directory' ) and not self.download:
-                    logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
-
-                v = ' '.join(line[1:])
-                if v == 'None':
-                    v=None
-                setattr(self, k, v)
-            else:
-                #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                if k not in self.undeclared:
-                    logger.debug( f'{self.files}:{self.lineno} possibly undeclared option: {line}' )
-                v = ' '.join(line[1:])
-                if hasattr(self, k):
-                    if type(getattr(self, k)) is float:
-                        setattr(self, k, float(v))
-                    elif type(getattr(self, k)) is int:
-                        # the only integers that have units are durations.
-                        # integers without units will come out unchanged.
-                        setattr(self, k, durationToSeconds(v))
-                    elif type(getattr(self, k)) is str:
-                        setattr(self, k, [getattr(self, k), v])
-                    elif type(getattr(self, k)) is list:
-                        newv=getattr(self,k)
-                        newv.append(v)
-                        setattr(self, k, newv)
-                else:
-                    # FIXME:
-                    setattr(self, k, v)
-                    self.undeclared.append( (cfname, lineno, k) )
         self.files.pop()
         self.lineno = saved_lineno
+
+
+    def parse_line(self, component, cfg, cfname, lineno, l ):
+        self.lineno = lineno
+        line = l.split()
+
+        #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
+
+        if (len(line) < 1) or (line[0].startswith('#')):
+            return
+
+        k = line[0]
+        if k in Config.synonyms:
+            k = Config.synonyms[k]
+        elif k == 'destination':
+            if component == 'poll':
+                k = 'pollUrl'
+            else:
+                k = 'sendTo'
+        elif k == 'broker' and component == 'poll' :
+            k = 'post_broker'
+
+        if (k in convert_to_v3): 
+            self.log_flowcb_needed |= '_log' in k
+                   
+            if (len(line) > 1):
+                v = line[1].replace('.py', '', 1)
+                if (v in convert_to_v3[k]):
+                    line = convert_to_v3[k][v]
+                    k = line[0]
+                    if 'continue' in line:
+                        logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
+                    else:
+                        logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+            else:
+                line = convert_to_v3[k]
+                k=line[0]
+                v=line[1] 
+
+        if k == 'continue':
+            return
+            
+        #FIXME: note for Clea, line conversion to v3 complete here.
+
+        line = list(map(lambda x: self._varsub(x), line))
+
+        if len(line) == 1:
+            v = True
+        else:
+            v = line[1]
+
+        # FIXME... I think synonym check should happen here, but no time to check right now.
+
+        if k in flag_options:
+            if len(line) == 1:
+                setattr(self, k, True)
+            else:
+                setattr(self, k, isTrue(v))
+            if k in ['logReject'] and self.logReject:
+                self.logEvents = self.logEvents | set(['reject'])
+            return
+
+        if len(line) < 2:
+            logger.error( f'{self.files}:{lineno} {k} missing argument(s) ' )
+            return
+        if k in ['accept', 'reject' ]:
+            self.masks.append(self._build_mask(k, line[1:]))
+        elif k in [ 'callback', 'cb' ]:
+            #vv = v.split('.')
+            #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+            if v not in self.plugins_late:
+                self.plugins_late.append(v)
+        elif k in [ 'callback_prepend', 'cbp' ]:
+            #vv = v.split('.')
+            #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+            if v not in self.plugins_early:
+                self.plugins_early.insert(0,v)
+        elif k in ['declare']:
+            self._parse_declare(line[1:])
+        elif k in ['feeder', 'manager']:
+            self.feeder = urllib.parse.urlparse(line[1])
+            self.declared_users[self.feeder.username] = 'feeder'
+        elif k in ['header', 'h']:
+            (kk, vv) = line[1].split('=')
+            self.fixed_headers[kk] = vv
+        elif k in ['include', 'config']:
+            try:
+                self.parse_file(v)
+            except Exception as ex:
+                logger.error( f'{self.files}:{self.lineno} file {v} failed to parse:  {ex}' )
+                logger.debug('Exception details: ', exc_info=True)
+        elif k in ['subtopic']:
+            self._parse_binding(v)
+        elif k in ['topicPrefix']:
+            if '/' in v :
+                self.topicPrefix = v.split('/')
+            else:
+                self.topicPrefix = v.split('.')
+        elif k in ['post_topicPrefix']:
+            #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
+            if '/' in v :
+                self.post_topicPrefix = v.split('/')
+            else:
+                self.post_topicPrefix = v.split('.')
+        elif k in ['import']:
+            self.imports.append(v)
+        elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
+            if v not in self.plugins_late:
+                self.plugins_late.append(v)
+        elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
+            if v not in self.plugins_early:
+                self.plugins_early.insert(0, v)
+        elif k in ['set', 'setting', 's']:
+            self._parse_setting(line[1], line[2:])
+        elif k in ['identity', 'integrity']:
+            self._parse_sum(v)
+        elif k in Config.port_required:
+            logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
+            logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
+            return
+        elif k in Config.v2entry_points:
+            #if k in self.plugins:
+            #    self.plugins.remove(v)
+            self._parse_v2plugin(k, v)
+        elif k in ['no-import']:
+            self._parse_v3unplugin(v)
+        elif k in ['inflight', 'lock']:
+            if v[:-1].isnumeric():
+                vv = durationToSeconds(v)
+                setattr(self, k, vv)
+                self.fileAgeMin = vv
+            else:
+                if line[1].lower() in ['none', 'off', 'false']:
+                    setattr(self, k, None)
+                else:
+                    setattr(self, k, v)
+        elif k in ['strip']:
+            """
+           2020/08/26 - PAS
+           strip in config file gets translated into two separate attributes: strip and pstrip.
+             strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
+             then instead pstrip is set, and strip is set to 0.
+
+           I don't know why it is done this way... just documenting/conforming to existing state.
+           """
+            if v.isdigit():
+                self.strip = int(v)
+                self.pstrip = None
+            else:
+                if v[0] == '/':
+                    self.pstrip = v[1:]
+                else:
+                    self.pstrip = v
+                self.strip = 0
+        elif k in duration_options:
+            if len(line) == 1:
+                logger.error( 
+                    '%s:%d  %s is a duration option requiring a decimal number of seconds value'
+                    % ( cfname, lineno, line[0]) )
+                return
+            setattr(self, k, durationToSeconds(v))
+        elif k in float_options:
+            try:
+                setattr(self, k, float(v))
+            except (ValueError, TypeError) as e:
+                logger.error(f'{self.files}:{self.lineno} Ignored "{i}": {e}')
+        elif k in perm_options:
+            if v.isdigit():
+                setattr(self, k, octal_number(int(v, base=8)))
+            else:
+                logger.error( f'{self.files}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
+        elif k in size_options:
+            setattr(self, k, humanfriendly.parse_size(v))
+        elif k in count_options:
+            setattr(self, k, humanfriendly.parse_size(v))
+        elif k in list_options:
+            if not hasattr(self, k) or not getattr(self,k):
+                setattr(self, k, [' '.join(line[1:])])
+            else:
+                l = getattr(self, k)
+                l.append(' '.join(line[1:]))
+        elif k in set_options:
+            if v.lower() == 'none':
+                setattr(self, k, set([]))
+                return
+            if v.lower() in [ 'all' , '+all' ]:
+                if k in set_choices:
+                    setattr(self,k,set_choices[k])
+                return
+            v=v.replace('|',',')
+            vs = self._parse_set_string(v,getattr(self,k))
+            setattr(self, k, vs )
+
+            if k in set_choices :
+                for i in getattr(self,k):
+                    if i not in set_choices[k]:
+                        logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
+
+        elif k in str_options:
+            if ( k == 'directory' ) and not self.download:
+                logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
+
+            v = ' '.join(line[1:])
+            if v == 'None':
+                v=None
+            setattr(self, k, v)
+        else:
+            #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
+            if k not in self.undeclared:
+                logger.debug( f'{self.files}:{self.lineno} possibly undeclared option: {line}' )
+            v = ' '.join(line[1:])
+            if hasattr(self, k):
+                if type(getattr(self, k)) is float:
+                    setattr(self, k, float(v))
+                elif type(getattr(self, k)) is int:
+                    # the only integers that have units are durations.
+                    # integers without units will come out unchanged.
+                    setattr(self, k, durationToSeconds(v))
+                elif type(getattr(self, k)) is str:
+                    setattr(self, k, [getattr(self, k), v])
+                elif type(getattr(self, k)) is list:
+                    newv=getattr(self,k)
+                    newv.append(v)
+                    setattr(self, k, newv)
+            else:
+                # FIXME:
+                setattr(self, k, v)
+                self.undeclared.append( (cfname, lineno, k) )
 
     def _resolveQueueName(self,component,cfg):
 

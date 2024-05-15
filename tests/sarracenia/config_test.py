@@ -90,6 +90,5 @@ def test_variableExpansion():
      assert( try_pattern( options, None, '${PBD}/${%Y%m%d}' , r'/apps/sarra/public_data/[0-9]{8}' ))
 
 
-
-     # to get stuff to print out, make it fail.
-     #assert False 
+def test_read_line():
+    pass
