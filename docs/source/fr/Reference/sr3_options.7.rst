@@ -226,7 +226,7 @@ TYPES D'OPTIONS
 Les options de sr3 ont plusieurs types :
 
 count
-    type de nombre entier.
+    type de nombre entier. Même format que *size* détaillé plus bas.
 
 duration
     un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
@@ -246,7 +246,8 @@ set
     un assortissement de chaîne de caractères, chaque occurrence successive s'unionise au total.
 
 size
-    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 2).
+    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 10).
+    si on rajoute ´b' ... c´est base 2 :   1k=1000, 1kb=1024
 
 str
     une chaîne de caractères.

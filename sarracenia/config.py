@@ -329,6 +329,8 @@ def isTrue(S):
         S = S[-1]
     return S.lower() in ['true', 'yes', 'on', '1']
 
+def parse_count(cstr):
+    return humanfriendly.parse_size(cstr, binary=cstr[-1].lower() in ['i','b'] )
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
@@ -1086,7 +1088,7 @@ class Config:
         if kind == 'count':
             count_options.append(option)
             if type(v) is not int:
-                setattr(self, option, humanfriendly.parse_size(v))
+                setattr(self, option, parse_count(v))
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
@@ -1122,7 +1124,7 @@ class Config:
         elif kind == 'size':
             size_options.append(option)
             if type(v) is not int:
-                setattr(self, option, humanfriendly.parse_size(v))
+                setattr(self, option, parse_count(v))
 
         elif kind == 'str':
             str_options.append(option)
@@ -1616,9 +1618,9 @@ class Config:
             else:
                 logger.error( f'{",".join(self.files)}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
         elif k in size_options:
-            setattr(self, k, humanfriendly.parse_size(v))
+            setattr(self, k, parse_count(v))
         elif k in count_options:
-            setattr(self, k, humanfriendly.parse_size(v))
+            setattr(self, k, parse_count(v))
         elif k in list_options:
             if not hasattr(self, k) or not getattr(self,k):
                 setattr(self, k, [' '.join(line[1:])])
@@ -1820,14 +1822,14 @@ class Config:
                 setattr(self, d, durationToSeconds(getattr(self, d)))
 
         if hasattr(self, 'kbytes_ps'):
-            bytes_ps = humanfriendly.parse_size(self.kbytes_ps)
+            bytes_ps = parse_count(self.kbytes_ps)
             if not self.kbytes_ps[-1].isalpha():
                 bytes_ps *= 1024
             setattr(self, 'byteRateMax', bytes_ps)
 
         for d in count_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
-                setattr(self, d, humanfriendly.parse_size(getattr(self, d)))
+                setattr(self, d, parse_count(getattr(self, d)))
 
         for d in size_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
@@ -2021,10 +2023,10 @@ class Config:
                     setattr(self,u,str(getattr(self,u)))
             elif u in count_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
-                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+                    setattr(self,u,parse_count(getattr(self,u)))
             elif u in size_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
-                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+                    setattr(self,u,parse_count(getattr(self,u)))
             elif u in duration_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
                     setattr(self,u,durationToSeconds(getattr(self,u)))
