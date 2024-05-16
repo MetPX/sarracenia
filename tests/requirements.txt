@@ -18,3 +18,4 @@ GTStoWIS2 @ git+https://github.com/wmo-im/GTStoWIS2.git@a29ec7818c9a65a9bbba30bb
 pandas>=2.2.2
 paho.mqtt>=2.1.0
 amqp>=5.2.0
+testcontainers>=4.4.1
