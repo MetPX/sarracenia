@@ -330,7 +330,12 @@ def isTrue(S):
     return S.lower() in ['true', 'yes', 'on', '1']
 
 def parse_count(cstr):
-    return humanfriendly.parse_size(cstr, binary=cstr[-1].lower() in ['i','b'] )
+    if cstr[0] == '-':
+        offset=1
+    else:
+        offset=0
+    count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
+    return -count if offset else count
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
@@ -1093,15 +1098,15 @@ class Config:
             duration_options.append(option)
             if type(v) is not float:
                 setattr(self, option, durationToSeconds(v,default_value))
-        elif kind == 'flag':
+        elif kind == 'flag' or kind == bool:
             flag_options.append(option)
             if type(v) is not bool:
                 setattr(self, option, isTrue(v))
-        elif kind == 'float':
+        elif kind == 'float' or kind == float :
             float_options.append(option)
             if type(v) is not float:
                 setattr(self, option, float(v))
-        elif kind == 'list':  
+        elif kind == 'list' or kind == list:  
             list_options.append( option )
             if type(v) is not list:
                 #subtlety... None means: has not been set, 
@@ -1121,12 +1126,12 @@ class Config:
             if all_values:
                 set_choices[option] = all_values
 
-        elif kind == 'size':
+        elif kind == 'size' or kind == int:
             size_options.append(option)
             if type(v) is not int:
                 setattr(self, option, parse_count(v))
 
-        elif kind == 'str':
+        elif kind == 'str' or kind == str:
             str_options.append(option)
             if v is None:
                 setattr(self, option, None)
