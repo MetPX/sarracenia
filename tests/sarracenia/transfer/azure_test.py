@@ -44,18 +44,21 @@ TEST_CONTAINER_FILES = {
         'meta': json.dumps({ 'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
 }
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def build_client():
     with AzuriteContainer(account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
         connection_string = azurite_container.get_connection_string()
-        client_acc = BlobServiceClient.from_connection_string(connection_string, api_version="2019-12-12")
-        client_acc.create_container(TEST_CONTAINER_NAME)
-        client_cont = client_acc.get_container_client(TEST_CONTAINER_NAME)
-        for key, details in TEST_CONTAINER_FILES.items():
-            client_cont.upload_blob(name=key, data=details['value'], metadata={'sarracenia_v3': details['meta']})
-        #return a dict of the connection string k:v pairs
-        #yield azurite_container, dict((key, val) for key, val in [s.split("=", 1) for s in connection_string[:-1].split(";")])
-        yield client_cont
+        blobClient = BlobServiceClient.from_connection_string(connection_string, api_version="2019-12-12")
+        yield blobClient
+        
+def build_container(blobClient, containerName):
+    blobClient.create_container(containerName)
+    containerClient = blobClient.get_container_client(containerName)
+    for key, details in TEST_CONTAINER_FILES.items():
+        containerClient.upload_blob(name=key, data=details['value'], metadata={'sarracenia_v3': details['meta']})
+    #return a dict of the connection string k:v pairs
+    #yield azurite_container, dict((key, val) for key, val in [s.split("=", 1) for s in connection_string[:-1].split(";")])
+    return containerClient
 
 def _list_blobs(client):
     return [b for b in client.list_blob_names()]
@@ -194,10 +197,10 @@ def test_delete(build_client):
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testdelete")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testdelete"
+    transfer.container_url = transfer.client.url
 
     assert 'RootFile.txt' in _list_blobs(transfer.client)
 
@@ -209,10 +212,10 @@ def test_get(build_client, tmp_path):
     options = sarracenia.config.default_config()
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testget")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testget"
+    transfer.container_url = transfer.client.url
     transfer.path = 'Folder2/'
 
     filename = str(tmp_path) + os.sep + "DownloadedFile.txt"
@@ -236,16 +239,24 @@ def test_getcwd():
     transfer.client = ContainerClient.from_container_url(f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}')
     assert transfer.getcwd() == ''
 
+def test_gethttpsUrl():
+    options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
+    transfer = sarracenia.transfer.azure.Azure('azure', options)
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}'
+    
+    assert transfer.gethttpsUrl("folder/nestedFolder/File.txt") ==  f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}/folder/nestedFolder/File.txt'
+
 #@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_ls(build_client):
     options = sarracenia.config.default_config()
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testls")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testls"
+    transfer.container_url = transfer.client.url
     entries = transfer.ls()
     
     assert len(entries) == 5
@@ -267,10 +278,10 @@ def test_put(build_client, tmp_path):
     options = sarracenia.config.default_config()
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testput")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testput"
+    transfer.container_url = transfer.client.url
 
     transfer.path = 'NewFolder/'
 
@@ -297,10 +308,10 @@ def test_rename(build_client):
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testrename")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testrename"
+    transfer.container_url = transfer.client.url
     transfer.credentials = TEST_ACCOUNT_KEY
 
     assert 'FileToRename.txt' in _list_blobs(transfer.client)
@@ -319,7 +330,7 @@ def test_rmdir(build_client, mocker):
     
     def delete_azure_blobs(self, *blobs, **kwargs):
         for blob in blobs:
-            self.delete_blob(blob)
+            self.delete_blob(blob.name)
 
     mocker.patch("azure.storage.blob._container_client.ContainerClient.delete_blobs",
         side_effect=delete_azure_blobs,
@@ -330,10 +341,10 @@ def test_rmdir(build_client, mocker):
     options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testrmdir")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = build_client.url
+    transfer.container = "testrmdir"
+    transfer.container_url = transfer.client.url
 
     assert 'FolderToDelete/ThisFileWillBeGone.txt' in _list_blobs(transfer.client)
     
