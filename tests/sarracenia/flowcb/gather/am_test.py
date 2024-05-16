@@ -1,14 +1,7 @@
 import pytest
-import os, types, copy
+from tests.conftest import *
 
-#useful for debugging tests
-import pprint
-def pretty(*things, **named_things):
-    for t in things:
-        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
-        print(str(k) + ":")
-        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
+import os, types, copy
 
 from sarracenia.flowcb.gather.am import Am
 import sarracenia.config 
