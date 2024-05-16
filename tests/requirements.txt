@@ -17,3 +17,4 @@ persist-queue>=0.8.1
 GTStoWIS2 @ git+https://github.com/wmo-im/GTStoWIS2.git@a29ec7818c9a65a9bbba30bb59d48859e553ebec
 pandas>=2.2.2
 paho.mqtt>=2.1.0
+amqp>=5.2.0
