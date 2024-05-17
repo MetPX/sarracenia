@@ -135,12 +135,19 @@ Call the corresponding function for each configuration::
     2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
 Declares the queues and exchanges related to each configuration.
-One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+One can also invoke it with *\-\-users*, so that it will declare users as well as exchanges and queues::
 
   $ sr3 --users declare
+    ...
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
     ...
 
+Providing a flow/flows will declare only the users that are specified in the flow(s)::
+
+  $ sr3 --users declare subscribe/dd_amis
+    ...
+    declare: 2024-05-17 20:02:18,548 434920 [INFO] sarracenia.rabbitmq_admin add_user permission user 'tfeed@localhost' role feeder  configure=.* write=.* read=.* 
+    ...
 
 dump
 ~~~~

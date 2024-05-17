@@ -610,9 +610,16 @@ feeder
   preference to administrator accounts to run flows.
 
 User credentials are placed in the `credentials.conf <sr3_credentials.7.html>`_ 
-file, and *sr3 --users declare* will update
+file, and *sr3 \-\-users declare* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
+
+- By default, all users are declared. However, flows can be specified on the command line to constrain
+  the declared users to only those in the given flow. For example:
+
+  - *sr3 \-\-users declare* will declare all users
+  - *sr3 \-\-users declare subscribe/dd_amis* will only declare users specified in *subscribe/dd_amis*
+
 
 debug
 -----
