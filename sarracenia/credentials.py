@@ -183,7 +183,6 @@ class CredentialDB:
             if hasattr(details.url,'password'):
                 key = key.replace( f":{details.url.password}", "" )
 
-
         self.credentials[key] = details
 
     def get(self, urlstr):
@@ -224,7 +223,6 @@ class CredentialDB:
                 return False, self.credentials[urlstr]
 
         # resolved from defined credentials
-
         ok, details = self._resolve(urlstr, url)
         if ok: return True, details
 

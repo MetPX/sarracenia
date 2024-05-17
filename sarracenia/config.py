@@ -1867,7 +1867,6 @@ class Config:
                 self.plugins_early.append( 'nodupe.name' )
                 delattr( self, 'nodupe_basis' )
 
-        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
             cfg = config[:-5]
         else:
@@ -1884,6 +1883,7 @@ class Config:
         if self.retry_ttl == 0:
            self.retry_ttl = None
 
+        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
                 hostdir = self.hostdir

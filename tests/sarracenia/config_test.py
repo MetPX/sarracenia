@@ -301,21 +301,55 @@ def test_source_from_exchange():
      assert( source == 'tsource' )
 
 
-def test_broker():
+def test_broker_finalize():
 
      options = sarracenia.config.default_config()
      options.component = 'subscribe'
      options.config = 'ex1'
      options.action = 'start'
-     options.credentials = sarracenia.credentials.CredentialDB()
+
+     before_add=len(options.credentials.credentials)
+
      options.credentials.add( 'amqp://bunnypeer:passthepoi@localhost' )
 
-     logger.info( f" {options.credentials=}" )
-     logger.info( f" {options.credentials.credentials=}" )
+     after_add=len(options.credentials.credentials)
+
+     assert( before_add + 1 == after_add )
 
      options.parse_line( options.component, options.config, "subscribe/ex1", 1, "broker amqp://bunnypeer@localhost" )
-     logger.info( f" {options.credentials.credentials=}" )
+     options.parse_line( options.component, options.config, "subscribe/ex1", 1, "post_broker amqp://bunnypeer@localhost" )
+
+     assert( options.broker.url.username == 'bunnypeer' )
+     assert( options.broker.url.password == 'passthepoi' )
+     assert( options.broker.url.username == 'bunnypeer' )
+     assert( options.broker.url.password == 'passthepoi' )
+
+     assert( options.exchange == None )
+     assert( not hasattr(options,'post_exchange') )
+     assert( not hasattr(options,'retry_ttl') )
+
+     options.parse_line( options.component, options.config, "subscribe/ex1", 1, "directory ~/ex1" )
+     options.parse_line( options.component, options.config, "subscribe/ex1", 1, "no 1" )
+     
+     assert( len(options.bindings) == 0 )
+     assert( options.directory == '~/ex1' )
+     assert( not hasattr( options, 'queue_filename' )  )
+     assert( options.queueName == None  )
 
      options.finalize()
 
-     logger.info( f" {type(options.broker)} " )
+     assert( hasattr(options,'retry_ttl') )
+     assert( hasattr( options, 'queue_filename' )  )
+     assert( hasattr( options, 'queueName' )  )
+     assert( type(options.queueName) == str )
+     assert( options.queueName.startswith('q_bunnypeer_subscribe.ex1')  )
+     assert( options.directory == os.path.expanduser( '~/ex1' ) )
+     assert( len(options.bindings) == 1 )
+     assert( options.exchange == 'xs_bunnypeer' )
+     assert( options.post_exchange == [ 'xs_bunnypeer' ] )
+     assert( hasattr(options,'nodupe_ttl') )
+     assert( hasattr(options,'metricsFilename') )
+     assert( hasattr(options,'pid_filename') )
+     assert( hasattr(options,'retry_path') )
+     assert( hasattr(options,'novipFilename') )
+     assert( hasattr(options,'bindings') )
