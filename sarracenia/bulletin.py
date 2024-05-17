@@ -14,6 +14,8 @@ class Bulletin:
             Modifying bulletin file contents
             Modifying bulletin filenames
 
+        Also holds some code used in CA bulletins uniquely.
+
         Spawned from analysts realizing that lots of bulletin handlers/plugins use the same methods repeatedly.
         This is in turn will reduce duplicate code throughout.
 
@@ -24,6 +26,92 @@ class Bulletin:
     def __init__(self):
         self.seq = 0
         self.binary = 0
+
+    def _verifyYear(self, bulletin_year):
+        """ Derived from missing https://github.com/MetPX/Sundew/blob/main/lib/bulletinAm.py -> tokIsYear
+            Checks if the year that was appended to the bulletin contents is valid or not.
+            This is only applicable for CA type bulletins (based on Sundew code).
+        """
+
+        ltime = time.localtime()
+        current_year  = time.strftime("%Y",ltime )
+        previous_year = str(int(current_year) - 1)
+
+        # Prevent all bulletins being rejected on a new year for a couple of minutes. Check for previous year as well
+        if bulletin_year == current_year or bulletin_year == previous_year    : return True
+        if len(bulletin_year) !=    4       : return False
+        if bulletin_year[:1]  !=  '2'       : return False
+
+        return True
+
+    def verifyHeader(self, header):
+        """Derived from Sundew -> https://github.com/MetPX/Sundew/blob/main/lib/bulletin.py#L601-L671.
+           Verifies the integrity of the bulletin header. Flag if there is an error in the header.
+           Called by the buildHeader method.
+        """
+
+        isProblem = False
+        rebuild = 0
+
+        # Remove duplicate spaces
+        tokens = header.split(b' ')
+        header = b' '.join(tokens)
+
+        if header==b'':
+            logger.error("Header is empty when it shouldn't be.")
+            isProblem = True
+            return header, isProblem
+ 
+        tokens = header.split(b' ')
+
+        # Header can't miss the timestamp. Don't raise an error however, as we want these bulletins added as a PROBLEM file locally. 
+        if len(tokens) < 3:
+            logger.error('Incomplete header (less than 3 fields)')
+            return header, isProblem
+
+        # Remove the ['z', 'Z'] or ['utc', 'UTC'] if they're present in the group DDHHmm
+        if len(tokens[2]) > 6: 
+            tokens[2] = tokens[2][0:6]
+            logger.info("Header normalized (%s): truncated the DDHHMM group (>6 characters)" % str(header))
+            rebuild = 1
+
+        # Verify first three fields, T1T2AiA2ii CCCC DDHHmm -> https://www.weather.gov/tg/headef 
+        if not tokens[0].isalnum() or len(tokens[0]) not in [4,5,6] or \
+           not tokens[1].isalnum() or len(tokens[1]) not in [4,5,6] or \
+           not tokens[2].isdigit() or len(tokens[2]) != 6 or \
+           not (0 <  int(tokens[2][:2]) <= 31) or not(00 <= int(tokens[2][2:4]) <= 23) or \
+           not(00 <= int(tokens[2][4:]) <= 59):
+            logger.error('Malformed header (some of the first 3 fields corrupt).')
+            isProblem = True
+            return header, isProblem
+
+        # If there is no BBB or more, return to prevent error
+        if len(tokens) == 3:
+            if rebuild:
+                header = b' '.join(tokens)
+            return header, isProblem
+
+        # Verify BBB field(s) -> https://www.weather.gov/tg/headef. Remove it if it's corrupted.
+        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3][0] not in ['C','A','R','P']:
+            logger.info("Header normalized: fourth and later fields removed.") 
+            del tokens[3:]
+            rebuild = 1
+
+        if len(tokens) == 5 and \
+                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4][0] not in ['C','A','R','P']):
+            logger.info("Header normalized: fifth and later fields removed")
+            del tokens[4:]
+            rebuild = 1
+
+        if len(tokens) > 5:
+            logger.info("Header normalized: sixth and later fields removed")
+            del tokens[5:]
+            rebuild = 1
+
+        if rebuild:
+            header = b' '.join(tokens)
+
+        return header,isProblem
 
     def getData(self, msg, path):
         """Get the bulletin data.
@@ -165,7 +253,6 @@ class Bulletin:
 
         return station
 
-
     def getBBB(self, first_line):
         """Get the BBB. If none found, return empty string.
            The BBB is the field of the bulletin header that states if it was amended or not.
@@ -191,7 +278,7 @@ class Bulletin:
                 header = T1T2A1A2ii + "_" + CCCC + "_" + YYGGgg
             else:  
                 header = T1T2A1A2ii + "_" + CCCC # + "_" + YYGGgg
-
+            
         except Exception:
             header = None
 
@@ -210,17 +297,22 @@ class Bulletin:
         try:
             parts = data.split(',')
 
-            if len(parts) < 4: return None
-
             year = parts[1]
             jul = parts[2]
             hhmm = parts[3]
 
-            # passe-passe pour le jour julien en float parfois ?
-            f = float(jul)
-            i = int(f)
-            jul = '%s' % i
-            # fin de la passe-passe
+            if parts[0][:2] == "CA":
+                # Need to verify time for CA bulletins.
+                if not self._verifyYear(year):
+                    logger.error("Unable to verify year from julian time.")
+                    return None
+
+            if len(parts) < 4: return None
+
+            # Julian days shouldn't be float type. Reject them when found. They should only be integers.
+            if '.' in jul:
+                logger.error("Julian days can't be of float type.")
+                return None
 
             # strange 0 filler
 

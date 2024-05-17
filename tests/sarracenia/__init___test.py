@@ -351,8 +351,9 @@ class Test_Message():
         #Test set 1
         options = sarracenia.config.default_config()
         msg = sarracenia.Message()
-        with pytest.raises(Exception):
-            msg.updatePaths(options)
+        # this was a behaviour changed in https://github.com/MetPX/sarracenia/pull/1034
+        #with pytest.raises(Exception):
+        #    msg.updatePaths(options)
 
         msg = sarracenia.Message()
         msg.updatePaths(options, new_dir, new_file)

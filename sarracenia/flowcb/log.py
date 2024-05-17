@@ -64,13 +64,22 @@ class Log(FlowCB):
         if set(['gather']) & self.o.logEvents:
             logger.info( f' messageCountMax: {messageCountMax} ')
 
-        return []
+        return (True, [])
 
     def _messageStr(self, msg):
         if self.o.logMessageDump:
             return msg.dumps()
         else:
-            return msg['baseUrl'] + ' ' + msg['relPath']
+            s = ''
+            if 'baseUrl' in msg:
+                s+= msg['baseUrl'] + ' '
+            if 'relPath' in msg:
+                s+= msg['relPath']
+            elif 'retrievePath' in msg:
+                s+= msg['retrievePath']
+            else:
+                s+= 'badMessage'
+            return s
 
     def _messageAcceptStr(self,msg):
         if self.o.logMessageDump:
@@ -115,13 +124,17 @@ class Log(FlowCB):
             op=','.join(msg['fileOp'].keys())
 
             if op in ['link']:
-                s+= f"a link to {msg['fileOp']['link']} with baseUrl: {msg['baseUrl']} "
+                s+= f"a link to {msg['fileOp']['link']} "
             elif op in ['rename']:
-                s+= f"a rename {msg['fileOp']['rename']} with baseUrl: {msg['baseUrl']} "
+                s+= f"a rename {msg['fileOp']['rename']} "
             else:
-                s+= f"a {op} with baseUrl: {msg['baseUrl']} "
+                s+= f"a {op} "
         else:
-            s+= f"a file with baseUrl: {msg['baseUrl']} "
+            s+= f"a file "
+
+        if 'baseUrl' in msg:
+            s+= f"with baseUrl: {msg['baseUrl']} "
+
         if 'relPath' in msg:
             s+= f"relPath: {msg['relPath']} "
         if 'retrievePath' in msg:
@@ -176,6 +189,9 @@ class Log(FlowCB):
         for msg in worklist.ok:
             if 'size' in msg:
                 self.fileBytes += msg['size']
+                
+            if not self.o.download:
+                continue
 
             if set(['after_work']) & self.o.logEvents:
                 if 'fileOp' in msg :
@@ -244,5 +260,5 @@ class Log(FlowCB):
     def on_housekeeping(self):
         if set(['on_housekeeping']) & self.o.logEvents:
             self.stats()
-            logger.info("housekeeping")
+            logger.debug("housekeeping")
         self.__reset()

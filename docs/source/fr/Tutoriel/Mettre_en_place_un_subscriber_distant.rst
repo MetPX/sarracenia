@@ -23,6 +23,7 @@ La commande *edit* démarre l’éditeur configuré par l’utilisateur sur le f
   $ sr3 edit subscribe/swob.conf
     broker amqps://anonymous@dd.weather.gc.ca
     subtopic observations.swob-ml.#
+    topicPrefix v02.post
     directory /tmp/swob_downloads
     accept .*
   $ mkdir /tmp/swob_downloads

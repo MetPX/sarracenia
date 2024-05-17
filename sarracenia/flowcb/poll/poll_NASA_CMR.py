@@ -340,6 +340,11 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                         sumstr = {"method":"md5", "value":md5}
                     except:
                         logger.warning(f"Could not get MD5 Checksum for {data_url}, posting without it.")
+                        sumstr = {"method":"cod", "value":"md5"}
+                # source is podaac but md5_url isn't available
+                elif self.o.dataSource == "podaac":
+                    # tell downloads to use md5
+                    sumstr = {"method":"cod", "value":"md5"}
 
                 # finally create the message!
                 if data_url:

@@ -80,14 +80,23 @@ class FlowCB:
 
         Task: acknowledge messages from a gather source.
 
-    def gather(self, messageCountMax) -> list::
+    def gather(self, messageCountMax) -> (gather_more, messages) ::
 
-        Task: gather messages from a source... return a list of messages 
+        Task: gather messages from a source... return a tuple:
 
-              in a poll, gather is always called, regardless of vip posession.
-              in all other components, gather is only called when in posession
+              * gather_more ... bool whether to continue gathering 
+              * messages ... list of messages 
+
+              or just return a list of messages.
+
+              In a poll, gather is always called, regardless of vip posession.
+
+              In all other components, gather is only called when in posession
               of the vip.
-        return []
+
+        return (True, list)
+         OR
+        return list
 
     def after_accept(self,worklist) -> None::
 
@@ -246,10 +255,10 @@ def load_library(factory_path, options):
             packagename, classname = factory_path.rsplit('.', 1)
 
     try:
-        module = importlib.import_module('sarracenia.flowcb.' + packagename)
+        module = importlib.import_module(packagename)
         class_ = getattr(module, classname)
     except ModuleNotFoundError:
-        module = importlib.import_module(packagename)
+        module = importlib.import_module('sarracenia.flowcb.' + packagename)
         class_ = getattr(module, classname)
  
     if hasattr(options, 'settings'):
