@@ -1981,7 +1981,7 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -1992,9 +1992,9 @@ class sr_GlobalState:
                     print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
                     kill_hung.append(  kill_pid )
                     pcount += 1
-
-        print('killing hung processes... (no point in SIGTERM if it is hung)')
+        
         if (len(kill_hung) > 0) and not self.options.dry_run :
+            print('killing hung processes... (no point in SIGTERM if it is hung)')
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
             time.sleep(5)
@@ -2003,7 +2003,8 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
-            self._clean_missing_proc_state()
+            if not self.options.dry_run:
+                self._clean_missing_proc_state()
             self._read_states()
             self._resolve()
             filtered_missing = []
