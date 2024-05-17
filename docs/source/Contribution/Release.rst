@@ -74,20 +74,28 @@ the stable release does not require any explicit testing.
 
   git checkout stable
   git merge pre-release
+  # there will be conflicts here for debian/changelog and sarracenia/_version.py
+  # for changelog:
+  #   - merge all the rcX changelogs into a single stable one.
+  #   - ensure the version at the top is correct and tagged 'unstable'
+  #   - edit the signature at the bottom for reflect who you are, and current date.
+  # for sarracenia/_version.py
+  #   - fix it so it shows the correct stable version.
   git tag -a v3.xx.yy -m "v3.xx.yy"
   git push origin v3.xx.yy
 
-* merge from pre-release_py36 to stable_focal_bionic::
+* merge from pre-release_py36 to stable_py36::
 
-  git checkout stable_focal_bionic
+  git checkout stable_py36
   git merge pre-release_py36
+  # same editing required as above.
   git tag -a o3.xx.yy -m "o3.xx.yy"
   git push origin v3.xx.yy
 
 * go on Launchpad, 
 
    * stable branch ready.
-   * stable_focal_bionic branch ready.
+   * stable_py36 branch ready.
    * https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk
    * do: **Import Now**
    * https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-old
@@ -100,17 +108,17 @@ the stable release does not require any explicit testing.
 
 * go on ubuntu 18.04, build bdist_wheel::
 
-  git checkout stable_focal_bionic
+  git checkout stable_py36
   python3 setup.py bdist_wheel 
 
 * go on redhat 8, build rpm::
 
-  git checkout stable_focal_bionic
+  git checkout stable_py36
   python3 setup.py bdist_rpm 
 
 * go on redhat 9, build rpm::
 
-  git checkout stable_focal_bionic
+  git checkout stable_py36
   rpmbuild --build-in-place -bb metpx-sr3.spec
 
 
@@ -270,8 +278,8 @@ in detail::
 
   git checkout pre-release
   git branch -D pre-release_py36
-  git branch stable_focal_bionic
-  git checkout stable_focal_bionic
+  git branch stable_py36
+  git checkout stable_py36
   vi debian/control
   # remove pybuild-plugin-pyproject from the "Build-Depends"
   git rm pyproject.toml
@@ -280,7 +288,7 @@ in detail::
 
 There might be a "--force" required at some point. Perhaps something along the lines of::
 
-  git push origin stable_focal_bionic --force
+  git push origin stable_py36 --force
 
 Then proceed with Launchpad instructions.
 
@@ -383,7 +391,7 @@ Repositories:
   merge from v2_dev branch into v2_stable one, and manually trigger a build.
 
   * metpx-sr3 -- on demand build sr3 packages from *stable* branch.
-  * metpx-sr3-old -- on demand build sr3 packages from *stable_focal_bionic* branch.
+  * metpx-sr3-old -- on demand build sr3 packages from *stable_py36* branch.
   * sarracenia-release -- on deman build v2 packages from *v2_stable* branch.
 
 for more discussion see `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
