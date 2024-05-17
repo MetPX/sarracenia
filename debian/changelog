@@ -1,4 +1,11 @@
-metpx-sr3 (3.00.53rc2) unstable; urgency=medium
+metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
+
+  * fixed #927 sanity not restarting crashed polls.
+  * bug fixes and unit tests for AM
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
+
+metpx-sr3 (3.00.53) unstable; urgency=medium
 
   * NEW! merge PR #1019 Azure Transfer protocol driver (experimental)
   * NEW! merge PR #1030 WMO-00 Accumulated file support (experimental.)
@@ -17,11 +24,6 @@ metpx-sr3 (3.00.53rc2) unstable; urgency=medium
   * fix #1020 Added sourceFromMessage option for v2 compatibility.
   * fix #1012 *persist* is now a configurable option (was always on.)
   * fix #947 sr3 status should ignore files if not .inc or .conf
-
- -- peter <peter@bsqt.homeip.net>  Wed, 17 Apr 2024 14:31:12 -0400
-
-metpx-sr3 (3.00.53rc1) unstable; urgency=medium
-
   * NEW! merge PR #1010 S3 Transfer protocol driver (experimental)
   * fix #1004 make persistence an option (was always persistent until now.)
   * fix #1002 sftp accellerator failure when colons in the destination name.
@@ -44,11 +46,10 @@ metpx-sr3 (3.00.53rc1) unstable; urgency=medium
   * fix #973 AM ... add missing tokIsYear better AM message filtering.
   * fix #971 Add missing to list of possible process status
   * docs: Add topicPrefix for #961
-  * docs: some revisions for clarity/syntax. 
+  * docs: some revisions for clarity/syntax.
   * some fixes for misnaming of some (rare) files received by gather/am
 
-
- -- Peter Silva <peter@bsqt.homeip.net>  Thu, 06 Apr 2024 16:31:04 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 17 May 2024 09:31:04 -0400
 
 metpx-sr3 (3.00.52) unstable; urgency=medium
 
