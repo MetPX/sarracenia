@@ -23,9 +23,6 @@ class Message(FlowCB):
             props = sarracenia.moth.default_options
             props.update(self.o.dictify())
 
-            if hasattr(self.o, 'topic' ):
-                del self.o['topic']
-
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
             for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic' ]:
                 post_one='post_'+k
@@ -56,12 +53,12 @@ class Message(FlowCB):
     def on_housekeeping(self):
         if hasattr(self,'poster') and self.poster:
             m = self.poster.metricsReport()
-            logger.info(
+            logger.debug(
                 f"messages: good: {m['txGoodCount']} bad: {m['txBadCount']} bytes: {m['txByteCount']}"
             )
             self.poster.metricsReset()
         else:
-            logger.info( "no metrics available" )
+            logger.debug( "no metrics available" )
 
     def on_start(self):
         if hasattr(self,'poster') and self.poster:

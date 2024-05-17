@@ -349,7 +349,7 @@ class Moth():
         logger.error("NewMessages unimplemented")
         return []
 
-    def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json') -> bool:
+    def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json', exchange: str = None) -> bool:
         """
            publish a message as set up to the given topic.
 

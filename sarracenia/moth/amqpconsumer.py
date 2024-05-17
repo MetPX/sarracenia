@@ -26,9 +26,9 @@ import logging
 import sarracenia
 from sarracenia.moth.amqp import AMQP, amqp_ss_maxlen, default_options
 
+import socket
 import time
 import queue
-import threading
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +41,17 @@ class AMQPConsumer(AMQP):
 
         TODO: 
           - how does this work with the batch and prefetch options? 
+          - set our own consumer tag
+          - make timeout configurable?
     """
 
     def __init__(self, props, is_subscriber) -> None:
         super().__init__(props, is_subscriber)
-        self._raw_msg_q = queue.Queue() # Queue is thread safe
-        self._consumer_thread = None
-        self._thread_please_stop = False
+        self._raw_msg_q = None 
+        # "The consumer tag is local to a connection, so two clients can use the same consumer tags. 
+        #  If this field is empty the server will generate a unique tag."
+        self._request_consumer_tag = '' # TODO set to something useful
+        self._active_consumer_tag = None
 
         # control log level in config file:
         # set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug
@@ -58,33 +62,6 @@ class AMQPConsumer(AMQP):
             if 'logLevel' in self.o['settings'][me]:
                 logger.setLevel(self.o['logLevel'].upper())
 
-    def __consumer_setup(self) -> None:
-        """ Start consuming from the queue.
-        """
-        if not self.connection:
-            self.getSetup()
-        # docs.celeryq.dev/projects/amqp/en/latest/reference/amqp.channel.html#amqp.channel.Channel.basic_consume
-        self.channel.basic_consume(self.o['queueName'], no_ack=False, callback=self.__get_on_message)
-        self.__stop_thread() # make sure it's not already running
-        self._consumer_thread = threading.Thread(target=self.__drain_events)
-        self._consumer_thread.start()
-
-    def __drain_events(self):
-        """ Calls drain_events on the connection until told to stop.
-        """
-        logger.debug("thread starting")
-        while not self._thread_please_stop:
-            # This blocks until there's an event to deal with
-            try:
-                self.connection.drain_events(timeout=2) # TODO configurable timeout?
-            except TimeoutError:
-                pass
-            except Exception as e:
-                logger.error(f"exception occurred: {e}")
-                logger.debug('Exception details: ', exc_info=True)
-        logger.debug("thread stopping")
-        self._consumer_thread = None
-
     def __get_on_message(self, msg):
         """ Callback for AMQP basic_consume, called when the broker sends a new message.
         """
@@ -92,22 +69,23 @@ class AMQPConsumer(AMQP):
         # This will block until the msg can be put in the queue
         self._raw_msg_q.put(msg)
 
-    def __stop_thread(self):
-        # need to stop consuming - tell the thread to stop, then join it and wait
-        self._thread_please_stop = True
-        if self._consumer_thread:
-            self._consumer_thread.join()
-        self._consumer_thread = None
-        self._thread_please_stop = False # if True, the thread won't start again
-
-    def _amqp_setup_signal_handler(self, signum, stack):
-        logger.info("ok, asked to stop")
-        self.please_stop=True
-        self.__stop_thread()
-
     def getCleanUp(self) -> None:
-        self.__stop_thread()
+        # TODO cancel consumer with basic_cancel(consumer_tag)?
         super().getCleanUp()
+        self._active_consumer_tag = None
+
+    def getSetup(self) -> None:
+        super().getSetup()
+        # (re)create queue. Anything in the queue is invalid after re-creating a connection.
+        self._raw_msg_q = queue.Queue() 
+        self._active_consumer_tag = self.channel.basic_consume(queue=self.o['queueName'], 
+                                                               consumer_tag=self._request_consumer_tag,
+                                                               no_ack=False, 
+                                                               callback=self.__get_on_message)
+        logger.info(f"registered consumer with tag {self._active_consumer_tag}")
+        if self._request_consumer_tag != '' and self._request_consumer_tag != self._active_consumer_tag:
+            logger.warning(f"active consumer tag {self._active_consumer_tag} is different than " + 
+                           f"requested consumer tag {self._request_consumer_tag}")
 
     def getNewMessage(self) -> sarracenia.Message:
         """ Mostly a copy of moth.amqp.AMQP's getNewMessage.
@@ -121,8 +99,15 @@ class AMQPConsumer(AMQP):
             if not self.connection:
                 self.getSetup()
 
-            if not self._consumer_thread:
-                self.__consumer_setup()
+            # trigger incoming event processing
+            try:
+                self.connection.drain_events(timeout=0.1) # TODO configurable timeout?
+            except TimeoutError:
+                pass
+            # In newer Python versions, socket.timeout is "a deprecated alias of TimeoutError", but it's not on
+            # older versions (3.6) and needs to be handled separately
+            except socket.timeout:
+                pass
 
             try:
                 # don't block waiting for the queue to be available, better to just try again later
@@ -162,10 +147,3 @@ class AMQPConsumer(AMQP):
         self.close()
         time.sleep(1)
         return None
-
-    def close(self) -> None:
-        try: 
-            self.__stop_thread()
-        except:
-            pass
-        super().close()

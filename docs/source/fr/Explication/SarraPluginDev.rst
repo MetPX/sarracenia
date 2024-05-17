@@ -554,6 +554,10 @@ pour des informations détaillées sur les signatures d’appel et les valeurs d
 +---------------------+----------------------------------------------------+
 | gather(self)        | Rassembler les messages a la source, retourne une  |
 |                     | une liste de messages.                             |
+|                     | on peut également retourner un tuple dont le       |
+|                     | première élément est une valeur booléen keep_going |
+|                     | qui peut arreter l´execution des gather.           |
+|                     |                                                    |
 +---------------------+----------------------------------------------------+
 |                     | Appelé à chaque intervalle housekeeping (minutes). |
 |                     | utilisé pour nettoyer le cache, vérifier les       |

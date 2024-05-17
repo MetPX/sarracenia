@@ -116,8 +116,11 @@ default_options = {
     'retry_refilter': False,
     'sanity_log_dead': 9999,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
     'sourceFromExchange': False,
+    'sourceFromMessage': False,
+    'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0
 }
@@ -134,9 +137,9 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
-    'permCopy', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
+    'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
                 ]
 
 float_options = [ ]
@@ -152,7 +155,7 @@ list_options = [ 'path', 'vip' ]
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents' : sarracenia.flowcb.entry_points + [ 'reject' ],
+    'logEvents' : set(sarracenia.flowcb.entry_points + [ 'reject' ]),
     'fileEvents' : set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
@@ -164,8 +167,8 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 'identity', 
-    'inlineEncoding', 'logLevel', 
+    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
+    'hostname', 'identity', 'inlineEncoding', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
@@ -322,9 +325,9 @@ r"""
 
 
 def isTrue(S):
-    s = S.lower()
-    if s == 'true' or s == 'yes' or s == 'on' or s == '1': return True
-    return False
+    if type(S) is list:
+        S = S[-1]
+    return S.lower() in ['true', 'yes', 'on', '1']
 
 
 def get_package_lib_dir():
@@ -1010,6 +1013,37 @@ class Config:
         w = 'with ' if fn or flatten or strip else ''
         return f'{s} {pattern} into {maskDir} {w}mirror:{mirror}{strip}{flatten}{fn}'
 
+    def _parse_set_string( self, v:str, old_value: set ) -> set:
+        """
+           given a set string, return a python set.
+        """
+        sv=set()
+        if type(v) is list:
+            sv=set(v)
+        elif type(v) is set:
+            sv=v
+        elif type(v) is str:
+            v=v.replace('|',',')
+            if v == 'None': 
+                sv=set([])
+            else:
+                if v[0] in [ '+', '-']:
+                    op=v[0]
+                    v=v[1:]
+                else:
+                    op='r'
+
+                if ',' in v: 
+                    sv=set(v.split(','))
+                else: 
+                    sv=set([v])
+
+                if op == '+':
+                    sv= old_value | sv
+                elif op == '-' :
+                    sv= old_value - sv
+        return sv
+
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
         r"""
            options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.
@@ -1046,7 +1080,7 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"{self.files}{self.lineno} multiple declarations of {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{self.files}{self.lineno} multiple declarations of {kind} {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
@@ -1080,32 +1114,7 @@ class Config:
                 setattr(self, option, octal_number(int(v,base=8)))
         elif kind == 'set':  
             set_options.append(option)
-            sv=set()
-            if type(v) is list:
-                sv=set(v)
-            elif type(v) is set:
-                sv=v
-            elif type(v) is str:
-                if v == 'None': 
-                    sv=set([])
-                else:
-                    if v[0] in [ '+', '-']:
-                        op=v[0]
-                        v=v[1:]
-                    else:
-                        op='r'
-
-                    if ',' in v: 
-                        sv=set(v[1:].split(','))
-                    else: 
-                        sv=set([v[1:]])
-
-                    if op == '+':
-                        sv= getattr(self,option) | sv
-                    elif op == '-' :
-                        sv= getattr(self,option) - sv
-                    else:
-                        sv=set([v])
+            sv = self._parse_set_string(v,set())
             setattr(self, option, sv)
             if all_values:
                 set_choices[option] = all_values
@@ -1447,8 +1456,6 @@ class Config:
                     k = 'sendTo'
             elif k == 'broker' and component == 'poll' :
                 k = 'post_broker'
-            elif k == 'directory' and component == 'poll' :
-                k = 'path'
 
             if (k in convert_to_v3): 
                 self.log_flowcb_needed |= '_log' in k
@@ -1486,7 +1493,6 @@ class Config:
                     setattr(self, k, True)
                 else:
                     setattr(self, k, isTrue(v))
-            
                 if k in ['logReject'] and self.logReject:
                     self.logEvents = self.logEvents | set(['reject'])
                 continue
@@ -1619,27 +1625,18 @@ class Config:
                         setattr(self,k,set_choices[k])
                     continue
                 v=v.replace('|',',')
-                if v[0] in ['-','+']:
-                    op=v[0]
-                    v=v[1:]
-                else:
-                    op='r'
-
-                if op == '+':
-                    vs = getattr(self,k) | set(v.split(','))
-                elif op == '-':
-                    vs = getattr(self,k) - set(v.split(','))
-                else:
-                    vs = set( v.split(',') )
-
+                vs = self._parse_set_string(v,getattr(self,k))
                 setattr(self, k, vs )
 
                 if k in set_choices :
                     for i in getattr(self,k):
                         if i not in set_choices[k]:
-                            logger.error( f'{self.files}:{lineno} invalid entry for {k}:  {i}. Must be one of: {set_choices[k]}' )
+                            logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
 
             elif k in str_options:
+                if ( k == 'directory' ) and not self.download:
+                    logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
+
                 v = ' '.join(line[1:])
                 if v == 'None':
                     v=None
@@ -1851,9 +1848,10 @@ class Config:
         if hasattr(self, 'nodupe_basis'):
             if self.nodupe_basis == 'data': 
                 self.plugins_early.append( 'nodupe.data' )
+                delattr( self, 'nodupe_basis' )
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
-            delattr( self, 'nodupe_basis' )
+                delattr( self, 'nodupe_basis' )
 
         # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
@@ -1980,10 +1978,16 @@ class Config:
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( 'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
+        else:
+            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute')):
+                if self.sleep > 1:
+                    self.scheduled_interval = self.sleep
+                    self.sleep=1
+
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
@@ -1996,6 +2000,28 @@ class Config:
         for f,l,u in self.undeclared:
             if u not in alloptions:
                 logger.error( f"{f}:{l} undeclared option: {u}")
+            elif u in flag_options:
+                if type( getattr(self,u) ) is not bool:
+                    setattr(self,u,isTrue(getattr(self,u)))
+            elif u in float_options:
+                if type( getattr(self,u) ) is not float:
+                    setattr(self,u,float(getattr(self,u)))
+            elif u in set_options:
+                if type( getattr(self,u) ) is not set:
+                    setattr(self,u,self._parse_set_string(getattr(self,u),set()))
+            elif u in str_options:
+                if type( getattr(self,u) ) is not str:
+                    setattr(self,u,str(getattr(self,u)))
+            elif u in count_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+            elif u in size_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+            elif u in duration_options:
+                if type( getattr(self,u) ) not in [ int, float ]:
+                    setattr(self,u,durationToSeconds(getattr(self,u)))
+            # list options are the default, so no need to regularize
 
         no_defaults=set()
         for u in alloptions:
@@ -2733,7 +2759,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(metricsfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         cfg_preparse.metricsFilename = metricsfilename
 
@@ -2749,7 +2775,7 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
             except Exception as ex:
                 logging.error( "makedirs {} failed err={}".format(os.path.dirname(logfilename),ex))
                 logging.debug("Exception details:", exc_info=True)
-                os.sleep(1)
+                time.sleep(0.1)
 
         log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
         if logging.getLogger().hasHandlers():

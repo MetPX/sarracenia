@@ -61,15 +61,16 @@ Author:
     André LeBlanc, ANL, Autumn 2022
 """
 
-import logging, socket, struct, time, sys, os, signal, ipaddress
+import logging, socket, struct, time, sys, os, signal, ipaddress, urllib.parse
 from base64 import b64encode
-import urllib.parse
+from random import randint
+from typing import NoReturn
+
 import sarracenia
 from sarracenia.bulletin import Bulletin
 from sarracenia.flowcb.rename.raw2bulletin import Raw2bulletin
 import sarracenia.config
 from sarracenia.flowcb import FlowCB
-from random import randint
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,7 @@ class Am(FlowCB):
         self.minnum = 00000
         self.maxnum = 99999 
         self.remoteHost = None
+        self.timeout = 0.1
 
         # Initialise socket
         ## Create a TCP socket
@@ -110,7 +112,7 @@ class Am(FlowCB):
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
  
-    def __WaitForRemoteConnection__(self):
+    def __WaitForRemoteConnections__(self) -> NoReturn:
 
         if self.host == 'None':
             raise Exception("No host was specified. Exiting.")
@@ -119,22 +121,44 @@ class Am(FlowCB):
             # Bind socket to specified host and listen
             self.s.bind((self.host, self.port)) 
             self.s.listen(1)
+            # Set timeout higher so that exponential backoff isn't triggered on startup.
+            self.s.settimeout(self.timeout*100)
             logger.info("Socket listening on host %s and port %d.", self.host, self.port)
+            logger.info("Trying to accept connection.")
         except socket.error as e:
                 logger.error(f"Bind failed. Retrying. Error message: {e.args}")
                 time.sleep(5)
         
-        child_inst = 2
+        child_inst = 1
+        n = 1
 
         while True:
             
                 try:
                     # Accept the connection from socket
-                    logger.info("Trying to accept connection.")
 
                     try:
                         conn, self.remoteHost = self.s.accept()
+
+                        # Write out file descriptor of the connected socket so that the child can pick it up.
+                        n = 1
+                        child_inst += 1
+                        conn_filename = sarracenia.config.get_pid_filename(
+                             None, self.o.component, self.o.config, child_inst)
+                        conn_filename = conn_filename.replace('pid','conn')
+                        conn_fd = open(conn_filename, 'w')
+                        conn_fd.write(str(conn.fileno()))
+                        conn_fd.close()
+
+                        os.set_inheritable(conn.fileno(), True)
                         time.sleep(1)
+
+                    except TimeoutError:
+                        n = n * 2 
+                        if n > 64: n = 64
+                        logger.info(f"No new connections. Waiting {n} seconds.")
+                        time.sleep(n)
+                        continue
 
                     except Exception as e:
                         logger.error(f"Stopping accept. Exiting. Error message: {e}")
@@ -148,20 +172,26 @@ class Am(FlowCB):
                     
                     # Instance forks
                     ## Instance 1 (Parent, pid=child_pid): Stays in the loop trying to accept other connections. 
-                    ## Instance 2 (Child, pid=0): Exits loop. Proceeds to initialise the service with the remote host.
+                    ## Insys.argv[2] = str(child_instance)
+                    sys.argv[2] = str(child_inst)
                     pid = os.fork()
 
                     if pid == 0:
                         ## Close the unconnected socket instance as it is unused in the service.
                         self.s.close()
 
+                        self.o.no = child_inst
+
                         ## Set the logfiles properly
                         sarracenia.config.cfglogs(self.o, self.o.component, self.o.config, self.o.logLevel, child_inst)
 
-                        self.o.no = child_inst
                         logger.info(f"Starting up service with host {self.remoteHost[0]}")
-                        break                    
 
+                        os.execl(sys.executable , sys.executable , *sys.argv )   
+
+                        logger.critical(f"Failed to launch child! sys.argv={sys.argv}. Exiting")
+                        sys.exit(1)
+                        
                     elif pid == -1:
                         raise logger.exception("Connection could not fork. Exiting.")
         
@@ -176,34 +206,36 @@ class Am(FlowCB):
                         conn.close()
                         logger.info(f"Forked child from host {self.remoteHost[0]} with instance number {child_inst} and pid {pid}")
 
-                        child_inst += 1
-                        pass
-                   
+                        # Check if any children processes are zombies (children are killed and waiting to be terminated by parent)
+                        os.waitpid(-1, os.WNOHANG)
+
                 except Exception:
                     logger.error(f"Couldn't accept connection. Parent or child failed. Retrying to accept.")
-                    # self.s.close()
-                    # conn.close()
                     time.sleep(1)
-                
-        logger.info("Connection accepted with IP %s on port %d. Starting service.", self.remoteHost[0], self.port)     
 
-        return conn                       
+        logger.critical("Exited infinite server forking loop! Exiting.")
+        sys.exit(1)
 
 
     def on_start(self):
-        # Set ipadresses in proper format
-        for IP in self.o.AllowIPs:
-            IP = ipaddress.ip_address(IP)
 
-        # If there are remaining instances, delete their filepaths and exit.
-        if self.o.no != 1:
-            pidfilename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
-            if os.path.exists(pidfilename):
-                os.unlink(pidfilename)
-            sys.exit(0)
-        
-        self.conn = self.__WaitForRemoteConnection__()
-    
+        if self.o.no == 1:
+            # Set ipadresses in proper format
+            for IP in self.o.AllowIPs:
+                IP = ipaddress.ip_address(IP)
+
+            self.conn = self.__WaitForRemoteConnections__()
+        else:
+            # Recreate the socket from the connection state file, created by the parent.
+            conn_filename = sarracenia.config.get_pid_filename(None, self.o.component, self.o.config, self.o.no)
+            conn_filename = conn_filename.replace('pid','conn')
+            conn_fd = open(conn_filename)
+            conn_fd_str = conn_fd.read()
+            conn_fd.close()
+            # Remove the .conn file as we don't need it anymore
+            os.unlink(conn_filename)
+            self.conn = socket.fromfd(int(conn_fd_str), socket.AF_INET, socket.SOCK_STREAM) 
+            self.conn.settimeout(self.timeout)
 
     def on_stop(self):
         logger.info("On stop called. Exiting.")
@@ -217,18 +249,25 @@ class Am(FlowCB):
         sys.exit(0)
         
 
-    def AddBuffer(self):
+    def addBuffer(self):
         # try:
         try:
             tmp = self.conn.recv(self.limit)
 
-        except Exception as e:
-            tmp = ''
-            logger.error(f"Reception has been interrupted. Closing connection and exiting. Error message: {e}")
+            # Socket returns b'' on disconnect.
+            if tmp == b'':
+                raise Exception()
 
-        if tmp == '':
+        # We don't want to wait on a hanging connection. We use the timeout error to exit out of the reception if there is nothing.
+        # This in turn makes the whole flow the same as any other sarracenia flow.
+        except TimeoutError:
+            return
+
+        except Exception as e:
+            logger.error(f"Reception has been interrupted. Closing connection and exiting. Error message: {e}")
+            self.stop_requested = True
             self.conn.close()
-            raise Exception()
+            sys.exit(1)
         
         self.inBuffer = self.inBuffer + tmp
 
@@ -237,7 +276,7 @@ class Am(FlowCB):
             # logger.warning("Type: %s, Value: %s, [socket.recv(%d)]" % (type, value, self.limit))
             
             
-    def CheckNextMsgStatus(self):
+    def checkNextMsgStatus(self):
 
         # Only unpack data if a bulletin is received
         ## When unpacking, the length of the header is vital since it allows the receiver to extract the bulletin contents from the buffer.
@@ -260,7 +299,7 @@ class Am(FlowCB):
 
     def unwrapmsg(self):
 
-        status = self.CheckNextMsgStatus()
+        status = self.checkNextMsgStatus()
 
         if status == 'OK':
             (self.header,src_inet,dst_inet,threads,start,length,firsttime,timestamp,future) = \
@@ -281,10 +320,10 @@ class Am(FlowCB):
 
     def correctContents(self, bulletin, bulletin_firstchars, lines, missing_ahl, bulletin_station, charset):
         """ Correct the bulletin contents, either of these ways
-            1. Remove trailing space in bulletin header
-            1. Add missing AHL headers for CA,MA,RA bulletins
-            2. Add missing AHL headers by mapping station codes
-            3. Add an extra line for SM/SI bulletins
+            1. Verify the received bulletin header.
+            2. Add missing AHL headers for CA,MA,RA bulletins
+            3. Add missing AHL headers by mapping station codes
+            4. Add an extra line for SM/SI bulletins
         """
 
         # We need to get the BBB from the header, to properly rewrite it.
@@ -293,12 +332,8 @@ class Am(FlowCB):
         reconstruct = 0
         ddhhmm = ''
         new_bulletin = b''
+        isProblem = False
         
-        # If there's a trailing space at the end of the bulletin header. Remove it.
-        if lines[0][-1:] == b' ':
-            lines[0] = lines[0].rstrip()
-            reconstruct = 1
-
         # Ported from Sundew. Complete missing headers from bulletins starting with the first characters below.
         if bulletin_firstchars in [ "CA", "RA", "MA" ]:
 
@@ -355,6 +390,11 @@ class Am(FlowCB):
 
             reconstruct = 1
 
+        # Check if the header is okay before proceeding to correcting rest of bulletin.
+        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0]) 
+        if verified_header != lines[0]:
+            lines[0] = verified_header
+            reconstruct = 1
 
         if reconstruct == 1:
             # Reconstruct the bulletin
@@ -363,17 +403,17 @@ class Am(FlowCB):
 
             logger.debug("Missing contents added")
 
-        return new_bulletin 
+        return new_bulletin , isProblem
 
 
     def gather(self, messageCountMax):
 
-        self.AddBuffer()
+        self.addBuffer()
 
         newmsg = []
 
         while True:
-            status = self.CheckNextMsgStatus()
+            status = self.checkNextMsgStatus()
             
             if status == 'INCOMPLETE':
                 break
@@ -426,7 +466,7 @@ class Am(FlowCB):
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
                         station = lines[1].split()[0].decode(charset)
-                        new_bulletin = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+                        new_bulletin, isProblem = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
                     
@@ -474,7 +514,7 @@ class Am(FlowCB):
                     msg['identity'] = {'method':self.o.identity_method, 'value':ident.value}
 
                     # Call renamer
-                    msg = self.renamer.rename(msg)
+                    msg = self.renamer.rename(msg,isProblem)
                     if msg == None:
                         continue
                     logger.debug(f"New sarracenia message: {msg}")
@@ -485,4 +525,4 @@ class Am(FlowCB):
                 except Exception as e:
                     logger.error(f"Unable to generate bulletin file. Error message: {e}")
 
-        return newmsg 
+        return (True, newmsg) 

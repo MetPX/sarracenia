@@ -671,6 +671,9 @@ L’option AMQP **durable**, sur les déclarations de fil d’attente. Si la val
 le courtier conservera la fil d’attente lors des redémarrages du courtier.
 Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.
 
+Remarque: seuls les messages *persistants* resteront dans une file d'attente durable après le redémarrage du courtier.
+Les messages persistants peuvent être publiés en activant l'option **persistant** (elle est activée par défaut).
+
 
 fileEvents <évènement, évènement,...>
 -------------------------------------
@@ -1280,6 +1283,20 @@ qu'un dossier puis être accepté.
 Les options **permDefault** spécifient un masque, c’est-à-dire que les autorisations doivent être
 au moins ce qui est spécifié.
 
+persistent <flag> (défaut: True)
+----------------------------------
+
+L'option **persistent** définit le *delivery_mode* pour un message AMQP. Lorsqu'il
+est choisi, les messages persistants seront publiés (``delivery_mode=2``). Lorsqu'ils
+ne le sont pas, ils seront placés en mode transitoire (non durables, ``delivery_mode=1``).
+
+Les messages persistants sont écrits sur le disque par le courtier et survivront au 
+redémarrage du courtier. Tous les messages transitoires dans une file d’attente seront
+perdus au redémarrage d’un courtier. Une remarque : les messages persistants ne survivront
+pas le redémarrage du courtier *quand ils résident dans une file d'attente durable*. 
+Non-durable les files d'attente, y compris tous les messages qu'elles contiennent, 
+seront perdues au redémarrage d'un courtier.
+
 pollUrl
 -------
 
@@ -1551,6 +1568,25 @@ sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
+scheduled_interval,scheduled_hour,scheduled_minute
+--------------------------------------------------
+
+Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
+(unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
+sondage devrait être lancer::
+
+  scheduled_interval 30
+
+Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune *scheduled_interval* n'est 
+définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres 
+spécificateurs de temps ::
+
+  scheduled_hour 1,4,5,23
+  scheduled_minute 14,17,29
+
+afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+après chacune des 4h, 5h et 23h.
+
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
 
@@ -1587,6 +1623,11 @@ Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréq
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
 ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
 les modifications apportées à un fichier pendant le temps de *sleep*, et produire un seul poste.
+
+Lorsque *sleep* est donné une valeur >0 pour être utilisé avec un *poll*, cela a pour effet de 
+définir *scheduled_interval*, pour des raisons de compatibilité. 
+Il est préférable que le sondage utilise explicitement les paramètres  *scheduled_interval*,
+*scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
 
 statehost <booléen> ( défaut: False )
 -------------------------------------
@@ -1651,6 +1692,18 @@ les rapports à l’origine des données injectées. Cela est généralement com
        *répertoire ${PBD}/${YYYYMMDD}/${SOURCE}*
 
 Pour que les données arrivent dans l’arborescence de format standard.
+
+sourceFromMessage <flag> (défaut: off)
+--------------------------------------
+
+L'option **sourceFromMessage** est principalement destinée aux administrateurs.
+Normalement, le champ *source* d'un message entrant est ignoré.
+Lorsque cette option est définie, le champ du message est accepté et utilisé
+pour le traitement. (remplace *source* et *sourceFromExchange* )
+
+Il est désactivé par défaut car les messages malveillants peuvent déformer les données
+origine. À utiliser uniquement avec des flux de données fiables et organisés de manière responsable.
+
 
 subtopic <modèle  amqp> (défaut: #)
 -----------------------------------
@@ -1798,6 +1851,14 @@ topicPrefix (défaut: v03)
 rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
 Cette option s’applique aux liaisons d’abonnement.
 Indique la version des messages d'annonce reçus dans les subtopics. (V03 fait référence à `<sr3_post.7.html>`_)
+
+topicCopy (défaut: False)
+-------------------------
+
+Définir *topicCopy* à *true* indique à sarracenia de transmettre les *topic* des messages sans modification.
+Sarracenia a une convention sur la manière dont les *topic* des produits sont organisés. Il y a
+un *topicPrefix*, suivi de *subtopic* (sous-thèmes) dérivés du champ *relPath* du message.
+Certains réseaux peuvent choisir d'utiliser des conventions thématiques différentes, externes à la sarracenia.
 
 users <flag> (défaut: false)
 ----------------------------

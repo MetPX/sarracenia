@@ -215,7 +215,11 @@ Other entry_points, extracted from sarracenia/flowcb/__init__.py ::
 
 
     def gather(self):
-        Task: gather notification messages from a source... return a list of notification messages.
+        Task: gather notification messages from a source... return either:
+              * a list of notification messages, or
+              * a tuple, (bool:keep_going, list of messages)
+              * to curtail further gathers in this cycle.
+                
         return []
 
     def metrics_report(self) -> dict:
@@ -280,6 +284,92 @@ of the one from the message, as the original is necessary for successful upstrea
 * msg['post_version'] ... calculated the encoding format of the message to post (from settings)
 
 * msg['new_subtopic'] ... the subtopic hierarchy that will be encoded in the notification message for downstream consumers.
+
+
+Override Fields
+---------------
+
+To change processing of messages, one can set overrides to change how built-in algorithms work.
+For example:
+
+* msg['nodupe_override'] = { 'key': ..., 'path': ... }   changes how the duplicate detection operates.
+* msg['topic'] ... defines the topic of a published message (instead of being calculated from other fields.)
+* msg['exchangeSplitOverride'] = int ... changes how post_ExchangeSplit chooses among multiple postExchanges.
+
+
+
+Customizing Duplicate Suppression
+---------------------------------
+
+The built-in processing for duplicates is to use the identity field as a key, and store the path as the value.
+So if a file is received with the same key, and the path is already present, then it is considered a duplicate
+and dropped.
+
+In some cases, we may want only the file name to be used, so if any file with the same name is received twice,
+regardless of content, then it should be considered a duplicate and dropped. This is useful when multiple systems
+are producing the same products, but they are not bitwise identical.  The built-in flowcb that implements
+that functionality is below::
+
+
+   import logging
+   from sarracenia.flowcb import FlowCB
+
+   logger = logging.getLogger(__name__)
+
+
+   class Name(FlowCB):
+       """
+         Override the the comparison so that files with the same name,
+         regardless of what directory they are in, are considered the same.
+         This is useful when receiving data from two different sources (two different trees)
+         and winnowing between them.
+       """
+       def after_accept(self, worklist):
+           for m in worklist.incoming:
+               if not 'nodupe_override' in m:
+                   m['_deleteOnPost'] \|= set(['nodupe_override'])
+                   m['nodupe_override'] = {}
+
+               m['nodupe_override']['path'] = m['relPath'].split('/')[-1]
+               m['nodupe_override']['key'] = m['relPath'].split('/')[-1]
+
+
+Customizing post_exchangeSplit
+------------------------------
+
+The exchangeSplit function allows a single flow to send outputs to different exchanges, 
+numbered 1...n to provide load distribution. The built-in processing does this in a 
+fixed way based on the hash of the identify field. The purpose of exchangeSplit is to 
+allow a common set of downstream paths to receive a subset of the total flow, and for 
+products with similar "routing" to land on the same downstream node. For example, a file 
+with a given checksum, for winnowing to work, has to land on the same downstream node.
+
+It could be that, rather than using a checksum, one would prefer to use some other
+method to decide which exchange is used::
+
+  import logging
+  from sarracenia.flowcb import FlowCB
+  import hashlib
+  logger = logging.getLogger(__name__)
+
+
+  class Distbydir(FlowCB):
+    """
+      Override the use of the identity field so that products can be grouped by directory in the relPath
+      This ensures that all products received from the same directory get posted to the same
+      exchange when post_exchangeSplit is active.
+    """
+    def after_accept(self, worklist):
+        for m in worklist.incoming:
+            m['_deleteOnPost'] |= set(['exchangeSplitOverride'])
+            m['exchangeSplitOverride'] = int(hashlib.md5(m['relPath'].split(os.sep)[-2]).hexdigest()[0])
+
+
+This routine sets the exchangeSplitOverride field, which needs to be an integer
+that will be used to pick which of the n exchanges in the post_exchangeSplit 
+exchanges defined. This routine calculates a checksum of the directory
+containing the file and then converts the first character of that checksum
+to an integer. If the directory is the same, the exchange chosen will be the same.
 
 
 Sample Flowcb Sub-Class

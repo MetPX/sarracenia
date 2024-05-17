@@ -79,7 +79,7 @@ def alarm_set(time):
 
 class Transfer():
     """
-     This is a sort of abstract base classe for implementing transfer protocols.
+     This is a sort of abstract base class for implementing transfer protocols.
      Implemented subclasses include support for: local files, https, sftp, and ftp. 
 
      This class has routines that do i/o given descriptors opened by the sub-classes,
@@ -95,6 +95,7 @@ class Transfer():
          cd     (dir)
          delete (path)
     
+
      if sending:: 
 
          put    ( msg, remote_file, local_file, remote_offset=0, local_offset=0, length=0 )
@@ -104,7 +105,31 @@ class Transfer():
          umask  ()
          chmod  (perm)
          rename (old,new)
-    
+
+     Note that the ls() call returns are polymorphic. One of:
+
+     * a dictionary where the key is the name of the file in the directory,
+       and the value is an SFTPAttributes structure for if (from paramiko.)
+       (sftp.py as an example)
+     * a dictionary where the key is the name of the file, and the value is a string
+       that looks like the output of a linux ls command.
+       (ftp.py as an example.)
+     * a sequence of bytes... will be parsed as an html page.
+       (https.py as an example)
+
+     The first format is the vastly preferred one. The others are fallbacks when the first
+     is not available.
+     The flowcb/poll/__init__.py lsdir() routing will turn ls tries to transform any of 
+     these return values into the first form (a dictionary of SFTPAttributes)
+     Each SFTPAttributes structure needs st_mode set, and folders need stat.S_IFDIR set.
+
+     if the lsdir() routine gets a sequence of bytes, the on_html_page() and on_html_parser_init(,
+     or perhaps handle_starttag(..) and handle_data() routines) will be used to turn them into
+     the first form.
+
+     web services with different such formats can be accommodated by subclassing and overriding
+     the handle_* entry points.
+
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
      * sendTo  - server to connect to.
@@ -320,7 +345,8 @@ class Transfer():
 
         # warn if length mismatch without transformation.
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
-        if length != 0 and rw_length != length:
+        
+        if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
             logger.warning(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))
@@ -425,6 +451,9 @@ class Transfer():
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
+    def gethttpsUrl(self, path):
+        return None
+
 # batteries included.
 import sarracenia.transfer.file
 import sarracenia.transfer.ftp
@@ -432,4 +461,7 @@ import sarracenia.transfer.https
 
 if features['sftp']['present']:
     import sarracenia.transfer.sftp
+
+if features['s3']['present']:
+    import sarracenia.transfer.s3
 
