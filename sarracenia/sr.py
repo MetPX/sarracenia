@@ -2623,7 +2623,26 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
     def convert(self):
-        cfg = self.v2_config[0]
+
+        print( f"v2_config: {self.v2_config}")
+        if len(self.v2_config) == 0:
+            print("need to specify what to convert from v2")
+            return
+
+        conversion_targets = self.v2_config
+        if self.options.wololo and len(conversion_targets) > 1:
+            if len(conversion_targets) != self.options.dangerWillRobinson :
+                print( f" will not overwrite multiple configurations unless really sure" )
+                print( f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
+                return
+
+        for c in conversion_targets:
+            self.convert1(c)
+
+    def convert1(self,cfg):
+        """
+          converts one config.
+        """
         component = cfg.split('/')[0]
         base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
         base_v3 = self.user_config_dir + os.sep
@@ -2646,8 +2665,10 @@ class sr_GlobalState:
         if not os.path.isdir(base_v3 + component):
             os.makedirs(base_v3 + component)
 
-        if os.path.exists(v3_config_path):
-            logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
+        if self.options.wololo:
+            logger.warning("Wololo!" )
+        elif os.path.exists(v3_config_path): 
+            logger.error( f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
             return
 
         synonyms = sarracenia.config.Config.synonyms
@@ -2765,7 +2786,7 @@ class sr_GlobalState:
                 elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
-        logging.info( f'wrote conversion from v2 {cfg} to sr3' )
+        logger.info( f'wrote conversion from v2 {cfg} to sr3' )
 
 
     def overview(self):
