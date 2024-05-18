@@ -1,6 +1,6 @@
-=====================================
-Guide du développeur MetPX-Sarracenia
-=====================================
+=======================================
+Publier une Version de MetPX-Sarracenia
+=======================================
 
 :version: |release|
 :date: |today|

@@ -7,8 +7,8 @@ Contribuer à Sarracenia
    :caption: Contenus:
 
    Développement
-   Publication
    Documentation
+   Publication
    modèle_de_page_man.rst
    v03
    Original (2015) Idée de base  <IdéeDeBase>
