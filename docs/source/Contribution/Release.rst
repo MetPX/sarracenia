@@ -102,14 +102,14 @@ the stable release does not require any explicit testing.
    * do: **Request Build** (on Focal and Bionic )
    * https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3
    * do: **Request Build** (on Jammy and Noble at least)
-        * update source
-        * run stable 
-        * run old
 
 * go on ubuntu 18.04, build bdist_wheel::
 
-  git checkout stable_py36
-  python3 setup.py bdist_wheel 
+      git checkout stable_py36
+      python3 setup.py bdist_wheel 
+
+note that *pip3 install wheel* is needed, because the one from
+ubuntu 18 is not compatible with the current pypi.org.
 
 * go on redhat 8, build rpm::
 
@@ -195,8 +195,6 @@ will be complete & solid enough that the we will resume the year/month conventio
 
 Final versions have no suffix and are considered stable and supported.
 Stable should receive bug-fixes if necessary from time to time.
-One can build python wheels, or debian packages for local testing purposes
-during development.
 
 .. Note:: If you change default settings for exchanges / queues  as
       part of a new version, keep in mind that all components have to use
