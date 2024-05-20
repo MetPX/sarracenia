@@ -1268,9 +1268,8 @@ class sr_GlobalState:
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
-        self.status_values = [
-            'disabled', 'hung', 'include', 'missing', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
-        ]
+        self.status_active =  ['hung', 'running', 'partial', 'waitVip' ]
+        self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -2190,7 +2189,7 @@ class sr_GlobalState:
                 fg_instances.add(f"{c}/{cfg}")
                 continue
 
-            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
@@ -2259,7 +2258,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         p=self.states[c][cfg]['instance_pids'][i]
