@@ -1072,33 +1072,37 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
+                    flow_status = 'unknown'
                     if hung_instances > 0 and (observed_instances > 0):
-                         self.configs[c][cfg]['status'] = 'hung'
+                         flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
                             if self.configs[c][cfg]['status'] != 'disabled':
-                                self.configs[c][cfg]['status'] = 'stopped'
+                                flow_status = 'stopped'
                         else:
                             if observed_instances > 0:
-                                self.configs[c][cfg]['status'] = 'partial'
+                                flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
                                     if len(self.states[c][cfg]['instance_pids']) == 0 :
-                                        self.configs[c][cfg]['status'] = 'stopped' 
+                                        flow_status = 'stopped' 
                                     else:
-                                        self.configs[c][cfg]['status'] = 'missing' 
+                                        flow_status = 'missing' 
                                         if not i in self.states[c][cfg]['instance_pids']:
                                              self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        self.configs[c][cfg]['status'] = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
-                        self.configs[c][cfg]['status'] = 'waitVip'
+                        flow_status = 'waitVip'
                     else:
-                        self.configs[c][cfg]['status'] = 'running'
+                        flow_status = 'running'
+
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
+                    self.configs[c][cfg]['status'] = flow_status
+
 
         # FIXME: missing check for too many instances.
         if self.cumulative_stats['rxLagCount']  > 0:
