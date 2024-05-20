@@ -55,12 +55,15 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
-        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
-        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
-        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, \
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
+        "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
+        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
+        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
+        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
+        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
+        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 
+        'connectPercent': 0, 'byteConnectPercent': 0
         }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
@@ -892,6 +895,13 @@ class sr_GlobalState:
 
         # comparing states and configs to find missing instances, and correct state.
         self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+        self.cumulative_stats={ 
+                'rxLagTime':0, 'rxLagCount':0, 
+                'rxMessageQueued':0, 'rxMessageRetry':0, 
+                'txMessageQueued':0, 'txMessageRetry':0, 
+                'rxMessageRate':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
+                'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
+                }
         for c in self.components:
             if not os.path.exists( self.user_cache_dir + os.sep + c ):
                 os.mkdir(self.user_cache_dir + os.sep + c )
@@ -959,7 +969,76 @@ class sr_GlobalState:
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
+                        m = metrics
+                        m['messagesQueued'] = -1
+                        if m[ "lagMessageCount" ] > 0:
+                            m['lagMean'] = m[ "lagTotal" ] / m[ "lagMessageCount" ]
+                            self.cumulative_stats['rxLagTime'] += m[ "lagTotal" ]
+                            self.cumulative_stats['rxLagCount'] +=  m[ "lagMessageCount" ]
+                        else:
+                            m['lagMean'] = 0
+                    
+                        m['retry'] = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+                        self.cumulative_stats['rxMessageRetry'] += m['retry']
+    
+                        if 'brokerQueuedMessageCount' in m:
+                            m['messagesQueued'] = m['brokerQueuedMessageCount']
+                            self.cumulative_stats['rxMessageQueued'] += m['messagesQueued']
+    
+                        m['latestTransfer'] = "n/a"
+                        if "transferLast" in m:
+                            m['latestTransfer'] = f"{now - m['transferLast']:4.1f}s"
+                        elif "messageLast" in m:
+                            m['latestTransfer'] = f"{now - m['messageLast']:4.1f}s"
+    
+                        if "last_housekeeping" in m and m["last_housekeeping"] > 0:
+                            m['time_base'] = now - m[ "last_housekeeping" ] 
+                            time_base = m['time_base']
+                            byteTotal = 0
+                            if 'rxByteCount' in m:
+                                byteTotal += m["rxByteCount"]
+            
+                            if 'txByteCount' in m:
+                                byteTotal += m["txByteCount"]
+                                self.cumulative_stats['txMessageByteRate'] +=  m["txByteCount"]/time_base
+            
+                            m['byteRate'] = byteTotal/time_base
+                            m['msgRate']  = (m["rxGoodCount"]+m["rxBadCount"])/time_base
+
+                            self.cumulative_stats['rxMessageByteRate'] += m['byteRate']
+                            self.cumulative_stats['rxMessageRate'] +=  m['msgRate']
+    
+                            m['transferRxByteRate'] = m['transferRxBytes']/time_base
+                            m['transferRxFileRate'] = m['transferRxFiles']/time_base
+                            m['transferTxByteRate'] = m['transferTxBytes']/time_base
+                            m['transferTxFileRate'] = m['transferTxFiles']/time_base
+    
+                            self.cumulative_stats['rxFileRate'] += m['transferRxFileRate']
+                            self.cumulative_stats['rxDataRate'] += m['transferRxByteRate']
+                            self.cumulative_stats['txFileRate'] += m['transferTxFileRate']
+                            self.cumulative_stats['txDataRate'] += m['transferTxByteRate']
+                            
+    
+    
+                            if 'transferConnectTime' in m:
+                                m['byteConnectPercent'] = int(100*(m['transferConnectTime'])/time_base)
+                            else:
+                                m['byteConnectPercent'] = 0
+    
+                            if 'disconnectTime' in m:
+                                m['connectPercent'] = int(100*(time_base-m['disconnectTime'])/time_base)
+                            else:
+                                m['connectPercent']= 0
+    
+                            self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
+                        if m["rxGoodCount"] > 0:
+                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                        else:
+                            m['rejectPercent'] = 0
+
                     self.states[c][cfg]['metrics'] = metrics
+                else:
+                    self.states[c][cfg]['metrics'] = empty_metrics
                     
                 if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0):
                     self.states[c][cfg]['missing_instances'] = []
@@ -1022,6 +1101,10 @@ class sr_GlobalState:
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
 
         # FIXME: missing check for too many instances.
+        if self.cumulative_stats['rxLagCount']  > 0:
+            self.cumulative_stats['lagMean'] = self.cumulative_stats['rxLagTime'] / self.cumulative_stats['rxLagCount'] 
+        else:
+            self.cumulative_stats['lagMean'] = 0
 
     def _match_patterns(self, patterns=None):
         """
@@ -2364,20 +2447,6 @@ class sr_GlobalState:
         print(underline)
 
         configs_running = 0
-        rxCumulativeLagTime=0
-        rxCumulativeLagCount=0
-        rxCumulativeMessagesQueued=0
-        rxCumulativeMessagesRetry=0
-        rxCumulativeMessageByteRate=0
-        rxCumulativeMessageRate=0
-        txCumulativeMessageRate=0
-        txCumulativeMessageByteRate=0
-        rxCumulativeFileRate=0
-        rxCumulativeDataRate=0
-        txCumulativeFileRate=0
-        txCumulativeDataRate=0
-        transferRxByteRate= 0
-        transferTxByteRate= 0
         now = time.time()
 
         for c in sorted(self.configs):
@@ -2392,16 +2461,16 @@ class sr_GlobalState:
                     continue
 
                 #find missing instances for this config.
-                m = sum(map(lambda x: c in x and cfg in x, self.missing))
+                missing_instances = sum(map(lambda x: c in x and cfg in x, self.missing))
                 if self.configs[c][cfg]['status'] != 'stopped':
                     expected = self.configs[c][cfg]['instances']
-                    running = expected - m
+                    running = expected - missing_instances
                     if running > 0:
                         configs_running += 1
                 else:
                     running = 0
                     expected = 0
-                    m = 0
+                    missing_instances = 0
 
                 cfg_status = self.configs[c][cfg]['status'][0:4]
                 if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
@@ -2415,87 +2484,14 @@ class sr_GlobalState:
                 line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
-                    brokerQdmCount = -1
-                    m = self.states[c][cfg]['metrics']
-                    if m[ "lagMessageCount" ] > 0:
-                        lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
-                        rxCumulativeLagTime += m[ "lagTotal" ]
-                        rxCumulativeLagCount +=  m[ "lagMessageCount" ]
-                    else:
-                        lagMean = 0
-                    
-                    retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
-                    rxCumulativeMessagesRetry += retry
-
-                    if 'brokerQueuedMessageCount' in m:
-                        brokerQdmCount = m['brokerQueuedMessageCount']
-                        rxCumulativeMessagesQueued += brokerQdmCount
-
-                    latestTransfer = "n/a"
-                    if "transferLast" in m:
-                        latestTransfer = f"{now - m['transferLast']:4.1f}s"
-                    elif "messageLast" in m:
-                        latestTransfer = f"{now - m['messageLast']:4.1f}s"
-
-                    if "last_housekeeping" in m and m["last_housekeeping"] > 0:
-                        time_base = now - m[ "last_housekeeping" ] 
-                        byteTotal = 0
-                        if 'rxByteCount' in m:
-                            byteTotal += m["rxByteCount"]
-        
-                        if 'txByteCount' in m:
-                            byteTotal += m["txByteCount"]
-                            txCumulativeMessageByteRate +=  m["txByteCount"]/time_base
-        
-                        byteRate= byteTotal/time_base
-                        msgRate= (m["rxGoodCount"]+m["rxBadCount"])/time_base
-
-                        transferRxByteRate = m['transferRxBytes']/time_base
-                        transferRxFileRate = m['transferRxFiles']/time_base
-                        transferTxByteRate = m['transferTxBytes']/time_base
-                        transferTxFileRate = m['transferTxFiles']/time_base
-
-                        rxCumulativeFileRate += transferRxFileRate
-                        rxCumulativeDataRate += transferRxByteRate
-                        txCumulativeFileRate += transferTxFileRate
-                        txCumulativeDataRate += transferTxByteRate
-                        
-                        rxCumulativeMessageByteRate += byteRate 
-                        rxCumulativeMessageRate +=  msgRate
-                        
-
-
-                        if 'transferConnectTime' in m:
-                            byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
-                        else:
-                            byteConnectPercent= 0
-
-                        if 'disconnectTime' in m:
-                            connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
-                        else:
-                            connectPercent= 0
-
-                        txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
-                    else:
-                        time_base = 0
-                        byteTotal=0
-                        byteRate=0
-                        msgRate=0
-                        connectPercent=0
-                        byteConnectPercent= 0
-
-                    if m["rxGoodCount"] > 0:
-                        rejectPercent = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
-                    else:
-                        rejectPercent = 0
-
+                    m=self.states[c][cfg]['metrics']
                     line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %-5s %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
-                            retry, connectPercent, byteConnectPercent, brokerQdmCount, m['lagMax'], lagMean, \
-                            latestTransfer, rejectPercent,\
-                            naturalSize(byteRate), \
-                            naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(transferRxByteRate), \
-                            naturalSize(transferTxByteRate) 
+                            m['retry'], m['connectPercent'], m['byteConnectPercent'], m['messagesQueued'], m['lagMax'], m['lagMean'], \
+                            m['latestTransfer'], m['rejectPercent'],\
+                            naturalSize(m['byteRate']), \
+                            naturalSize(m['msgRate']).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(m['transferRxByteRate']), \
+                            naturalSize(m['transferTxByteRate']) 
                             )
 
                     if self.options.displayFull :
@@ -2552,23 +2548,19 @@ class sr_GlobalState:
         print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        if rxCumulativeLagCount  > 0:
-            CumulativeMeanLag = rxCumulativeLagTime / rxCumulativeLagCount 
-        else:
-            CumulativeMeanLag = 0
 
         print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
-                naturalSize(rxCumulativeMessageByteRate),\
-                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
-                naturalSize(txCumulativeMessageByteRate),
-                rxCumulativeMessagesQueued, rxCumulativeMessagesRetry, CumulativeMeanLag
+                naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
+                naturalSize(self.cumulative_stats['rxMessageByteRate']),\
+                naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
+                naturalSize(self.cumulative_stats['txMessageByteRate']),
+                self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
             ))
         print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-               naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
-               naturalSize(rxCumulativeDataRate),
-               naturalSize( txCumulativeFileRate).replace("B","F").replace("Fyte","File"),
-               naturalSize(txCumulativeDataRate) ) )
+               naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
+               naturalSize(self.cumulative_stats['rxDataRate']),
+               naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
+               naturalSize(self.cumulative_stats['txDataRate']) ) )
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
