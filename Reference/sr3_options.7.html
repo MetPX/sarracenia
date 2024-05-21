@@ -12,6 +12,7 @@
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -335,7 +336,7 @@ directory.</p>
 <h3>OPTION TYPES<a class="headerlink" href="#option-types" title="Link to this heading"></a></h3>
 <p>sr3 options come in several types:</p>
 <dl class="simple">
-<dt>count, size</dt><dd><p>integer count type.  same as size described below.</p>
+<dt>count</dt><dd><p>integer count type.</p>
 </dd>
 <dt>duration</dt><dd><p>a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
 modified by a unit suffix ( m-minute, h-hour, w-week )</p>
@@ -349,10 +350,9 @@ all v2 plugin options are declared of type list.</p>
 </dd>
 <dt>set</dt><dd><p>a set of string values, each succeeding occurrence is unioned to the total.</p>
 </dd>
-<dt>size</dt><dd><p>integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
-alone base 10: 1k=1000, with a ‘b’ suffix, base 2: 1kb=1024</p>
+<dt>size</dt><dd><p>integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.</p>
 </dd>
-<dt>str</dt><dd><p>a string value</p>
+<dt>str</dt><dd><p>an string value</p>
 </dd>
 </dl>
 </section>
@@ -1815,11 +1815,6 @@ moving vip.</p>
 <p>When an <strong>sr3 instance</strong> does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
 Multiple vips form a list, where any individual address being active is enough.</p>
-</section>
-<section id="wololo">
-<h4>wololo<a class="headerlink" href="#wololo" title="Link to this heading"></a></h4>
-<p>A command line option to overwite an existing sr3 configuration when converting
-from v2.</p>
 </section>
 </section>
 <section id="see-also">

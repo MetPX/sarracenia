@@ -403,11 +403,6 @@ Conversion d’une configuration : les deux formats sont acceptés, ainsi que le
   $ sr3 convert shovel/no_trouble_f00.inc
     2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
 
-Pour écraser une configuration SR3 existante, utilisez l'option *--wololo*.
-Lors de l'écrasement de plusieurs configurations SR3 est voulu, il faut également 
-utiliser *--dangerWillRobinson=n* dans le mode normale... où *n* est le nombre de configurations à convertir.
-
-
 start
 ~~~~~
 

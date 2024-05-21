@@ -38,12 +38,6 @@ Instructions d’installation
 git
 ---
 
-3.0.54
-------
-
-*CHANGEMENT* : *sr3 sanity* redémarre uniquement les instances manquantes, pas celles arrêtées.
-cela est considéré comme plus conforme aux attentes des analystes. 
-
 3.0.53
 ------
 

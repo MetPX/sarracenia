@@ -12,6 +12,7 @@
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -246,7 +247,7 @@ the broker, or manage the configurations.</p>
 <li><p>remove:        remove a configuration.</p></li>
 <li><p>disable:       mark a configuration as ineligible to run.</p></li>
 <li><p>enable:        mark a configuration as eligible to run.</p></li>
-<li><p>convert:       converts v2 configs to a v3 config.</p></li>
+<li><p>convert:       converts a v2 config to a v3 config.</p></li>
 </ul>
 </div></blockquote>
 <p>For example:  <em>sr3 foreground subscribe/dd</em> runs the subscribe component with
@@ -273,7 +274,7 @@ one can work on a particular configuration.  A <em>disabled</em> configuration w
 started or restarted by the <strong>start</strong>,
 <strong>foreground</strong>, or <strong>restart</strong> actions. It can be used to set aside a configuration
 temporarily.</p>
-<p>The <strong>convert</strong> action is used to translate configuration files written with Sarracenia version 2
+<p>The <strong>convert</strong> action is used to translate a configuration file written with Sarracenia version 2
 options into Sarracenia version 3 options. The v2 configuration file must be placed in the
 <em>~/.config/sarra/component/v2_config.conf</em> directory and the translated version will be placed in
 the <em>~/.config/sr3/component/v3_config.conf</em> directory. For example, one would invoke this action
@@ -558,9 +559,6 @@ $ sr3 convert shovel/no_trouble_f00.inc
   2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
 </pre></div>
 </div>
-<p>To overwrite an existing sr3 configuration use the <em>–wololo</em> option.
-When overwriting multiple sr3 configurations, one must also use <em>–dangerWillRobinson=n</em> in the
-normal way… where <em>n</em> is the number of configurations to convert.</p>
 </section>
 <section id="start">
 <h4>start<a class="headerlink" href="#start" title="Link to this heading"></a></h4>

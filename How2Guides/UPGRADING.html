@@ -12,6 +12,7 @@
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -51,22 +52,21 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Release Notes (Advice on Upgrades)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation-instructions">Installation Instructions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#git">git</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">3.0.54</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">3.0.53</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">3.0.52</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">3.0.51</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">3.0.47</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">3.0.45</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id7">3.0.41</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id8">3.0.40</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id9">3.0.37</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">3.0.26</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id11">3.0.25</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id12">3.0.23</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id13">3.0.22</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id14">3.0.17</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id15">3.0.15</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id16">3.0.14</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">3.0.53</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">3.0.52</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">3.0.51</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">3.0.47</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">3.0.45</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">3.0.41</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">3.0.40</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3.0.37</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">3.0.26</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">3.0.25</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">3.0.23</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">3.0.22</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">3.0.17</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">3.0.15</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">3.0.14</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#v2-to-sr3">V2 to Sr3</a></li>
 </ul>
 </li>
@@ -164,19 +164,14 @@ may generate notification messages.</p>
 <h2>git<a class="headerlink" href="#git" title="Link to this heading"></a></h2>
 </section>
 <section id="id1">
-<h2>3.0.54<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
-<p><em>CHANGE</em>: <em>sr3 sanity</em> only restarts missing instances, not stopped ones.
-this is considered more in accordance with analyst expectations (POLA)</p>
-</section>
-<section id="id2">
-<h2>3.0.53<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<h2>3.0.53<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: <em>directory</em> option in poll will no longer be converted to <em>path</em> silently.
 Use <em>path</em> explicitly instead. It is still converted when upgrading from v2 with
 <em>sr3 convert</em>, but in v3 configurations, <em>directory</em> now acts as it does in all other
 components as a download specifier.</p>
 </section>
-<section id="id3">
-<h2>3.0.52<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id2">
+<h2>3.0.52<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: Additional messageCountMax arugment to flowcb.gather() entry point.
 when implementing flow callbacks for scheduled flows, or poll overrides, the
 gather entry point now takes one additional argument indicating the maximum
@@ -189,16 +184,16 @@ on the gather:</p>
 <p>With the default value, plugins are downward compatible. (earlier versions
 will call with only self as an argument.)</p>
 </section>
-<section id="id4">
-<h2>3.0.51<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id3">
+<h2>3.0.51<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: Additional <em>action</em> argument sarracenia.config.one_config() indicating
 how the configuration will be used.  When used for readonly operations (status,
 show, dump) the configuration should avoid filling values that should only
 be defines when used.  Examples have been updated appropriately.</p>
 <p><em>CHANGE</em>: <em>action</em> setting now mandatory for the sarracenia.config.finalize().</p>
 </section>
-<section id="id5">
-<h2>3.0.47<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id4">
+<h2>3.0.47<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: config option, strftime options, offset grammar changed:
 in v2 you had ${YYYYMMDD-70m}, in sr3 it should be ${%o-70m%Y%m%d}
 in 3.0.47, moved the time offset parsing to the beginning of the pattern.</p>
@@ -208,15 +203,15 @@ less surprising when not using/familiar with Sundew. This <em>None</em> setting
 is the same as used by v2, so it should improve compatibility with
 sarracenia v2 configurations.</p>
 </section>
-<section id="id6">
-<h2>3.0.45<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<section id="id5">
+<h2>3.0.45<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGE</em>: config option: logRotateInterval units was days, is now</dt><dd><p>a time interval (seconds) like all other intervals.</p>
 </dd>
 </dl>
 </section>
-<section id="id7">
-<h2>3.0.41<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id6">
+<h2>3.0.41<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: v03 post format field renamed: “integrity” is now “identity”</p>
 <blockquote>
 <div><ul class="simple">
@@ -228,8 +223,8 @@ sarracenia v2 configurations.</p>
 </ul>
 </div></blockquote>
 </section>
-<section id="id8">
-<h2>3.0.40<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id7">
+<h2>3.0.40<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGE</em>: the default format in which messages are posted is v03, but as of this</dt><dd><p>version, to override the format, one must use <em>post_format v02</em>
 prior to this version, setting of post_topicPrefix was sufficient.
@@ -261,15 +256,15 @@ some derived ones.</p>
 </div></blockquote>
 </div></blockquote>
 </section>
-<section id="id9">
-<h2>3.0.37<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<section id="id8">
+<h2>3.0.37<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>BUG</em>: <em>sr3 cleanup</em> does not work at all.</dt><dd><p><a class="reference external" href="https://github.com/MetPX/sarracenia/issues/669">https://github.com/MetPX/sarracenia/issues/669</a></p>
 </dd>
 </dl>
 </section>
-<section id="id10">
-<h2>3.0.26<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id9">
+<h2>3.0.26<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGE</em>: event options (logEvents, and fileEvents) now replace previous value</dt><dd><p>used to be unioned (or’d) with previous value.  now can preface
 the set elements with + to get the previous behaviour.
@@ -280,16 +275,16 @@ Also - is available to remove an element from a set option.
 </dd>
 </dl>
 </section>
-<section id="id11">
-<h2>3.0.25<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<section id="id10">
+<h2>3.0.25<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGE</em>: default value for acceptUnmatched is now True for all components.</dt><dd><p>prior to this release, default was False in subscribe component,
 and True for all others.</p>
 </dd>
 </dl>
 </section>
-<section id="id12">
-<h2>3.0.23<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<section id="id11">
+<h2>3.0.23<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>NOTICE</em>: now prefer strftime date specification in patterns, in place of</dt><dd><p>ones inherited from Sundew. converted by sr3 convert.</p>
 </dd>
@@ -297,8 +292,8 @@ and True for all others.</p>
 </dd>
 </dl>
 </section>
-<section id="id13">
-<h2>3.0.22<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<section id="id12">
+<h2>3.0.22<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: <em>destination</em>, when used in a poll is replaced by <em>pollUrl</em></p>
 <p><em>CHANGE</em>: <em>destination</em>, when used in a sender is replaced by <em>sendTo</em></p>
 <dl class="simple">
@@ -310,8 +305,8 @@ when a file is renamed.  This is now the default behaviour.</p>
 </dd>
 </dl>
 </section>
-<section id="id14">
-<h2>3.0.17<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<section id="id13">
+<h2>3.0.17<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGE</em>: The “Vendor” string is now “MetPX” instead of “science.gc.ca”.</dt><dd><p>This affects some file placement particularly on Windows.</p>
 </dd>
@@ -323,8 +318,8 @@ The <em>Identity</em> sum is now used exclusively for checksums.</p>
 </dd>
 </dl>
 </section>
-<section id="id15">
-<h2>3.0.15<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<section id="id14">
+<h2>3.0.15<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>NOTICE</em>: re-instating debian and windows packages by removing hard requirements for python modules</dt><dd><p>which are difficult to satisfy. From 3.0.15, dependencies are modular.</p>
 </dd>
@@ -360,8 +355,8 @@ Configuration files are no longer changed by this sort of routine intervention.<
 </dd>
 </dl>
 </section>
-<section id="id16">
-<h2>3.0.14<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<section id="id15">
+<h2>3.0.14<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
 <p>initial beta.</p>
 <dl class="simple">
 <dt><em>NOTICE</em>: only pip packages currently work. No Debian packages on launchpad.net</dt><dd><p>nor any windows packages.</p>
