@@ -25,7 +25,7 @@ author = 'Data Interchange Team'
 hoho = os.getcwd()
 print( f'current working directory {hoho}' )
 
-file_ = '../sarracenia/__init__.py'
+file_ = '../sarracenia/_version.py'
 filepath = os.path.join(os.path.abspath('..'), file_)
 
 with open(filepath) as fh:
