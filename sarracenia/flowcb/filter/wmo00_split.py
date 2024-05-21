@@ -43,7 +43,6 @@ references:
 
 """
 
-from curses.ascii import SOH,ETX
 from sarracenia.flowcb import FlowCB
 import hashlib
 import logging, random, subprocess, os
