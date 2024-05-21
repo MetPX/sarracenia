@@ -220,7 +220,7 @@ class CredentialDB:
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url):
                 self.add(urlstr)
-                return False, self.credentials[urlstr]
+                return False, self.credentials[urlstr.replace(':anonymous@','@')]
 
         # resolved from defined credentials
         ok, details = self._resolve(urlstr, url)
