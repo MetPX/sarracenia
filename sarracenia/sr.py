@@ -1963,7 +1963,7 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            if self.configs[c][cfg]['status'] in ['missing']:
+            if self.configs[c][cfg]['status'] in ['missing', 'partial']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
