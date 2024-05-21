@@ -1,14 +1,6 @@
 import pytest
+from tests.conftest import *
 from unittest.mock import patch
-
-#useful for debugging tests
-import pprint
-def pretty(*things, **named_things):
-    for t in things:
-        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
-        print(str(k) + ":")
-        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 from sarracenia.redisqueue import RedisQueue
 from sarracenia import Message as SR3Message

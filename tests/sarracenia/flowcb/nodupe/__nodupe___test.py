@@ -1,17 +1,9 @@
 import pytest
+from tests.conftest import *
 from unittest.mock import patch
+
 import os, types, copy
-
 import fakeredis
-
-#useful for debugging tests
-import pprint
-def pretty(*things, **named_things):
-    for t in things:
-        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
-        print(str(k) + ":")
-        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
 
 from sarracenia.flowcb.nodupe.redis import Redis as NoDupe_Redis
 from sarracenia.flowcb.nodupe.disk import Disk as NoDupe_Disk
