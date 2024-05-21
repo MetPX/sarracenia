@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - development
+      - issue1047
     paths-ignore:
       - '.github/**'
 
