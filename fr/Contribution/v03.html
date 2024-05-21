@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refactorisation de la version 3 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Idée de Base" href="Id%C3%A9eDeBase.html" />
+    <link rel="prev" title="SR3_TITRE" href="mod%C3%A8le_de_page_man.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Documentation.html">Normes de documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Refactorisation de la version 3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#resume">Résumé</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#v02-plugin-points-douloureux">V02 Plugin Points douloureux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#navire-de-thesee">Navire de Thésée</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#problemes-connus-resolus-dans-sr3">Problèmes connus (résolus dans sr3)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plan-concret-fait">Plan concret (Fait)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fait">Fait</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#todo">ToDo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bugs-preoccupations-problemes">BUGS/Préoccupations/Problèmes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apres-la-parite-de-vraies-ameliorations">Après la parité : de vraies améliorations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">TODO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pas-cuit-a-penser">Pas cuit / À penser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fixme-differe">FIXME/Différé</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transition">Transition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#incompatibilites">Incompatibilités</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fonctionnalites">Fonctionnalités</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Contribuer à Sarracenia</a> &raquo;</li>
+      <li>Refactorisation de la version 3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/v03.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="refactorisation-de-la-version-3">
+<h1>Refactorisation de la version 3<a class="headerlink" href="#refactorisation-de-la-version-3" title="Link to this heading"></a></h1>
+<section id="resume">
+<h2>Résumé<a class="headerlink" href="#resume" title="Link to this heading"></a></h2>
+<p>Ce document s’adresse aux développeurs qui ont besoin de travailler à la fois avec du code v2 et
+le refactor qui s’appelait à l’origine v3, mais qui s’appelait finalement sr3.
+Pour les développeurs familiers avec la v2, le document peut servir un peu de carte
+au code source de sr3, qui est maintenant suffisamment stabilisé pour qu’il
+passe les flow_tests. Sr3 n’est peut-être pas encore vraiment utilisable, mais la direction
+est bien établi et le développement ultérieur est maintenant décrit en utilisant le problème
+tracker (regardez l’étiquette v3only.) Donc, ce document est maintenant essentiellement
+historique. Si quelqu’un ne connaît pas la v2, ce document n’aidera pas parce que c’est
+exclusivement le mappage de v2 à sr3. La lecture du reste de la documentation v03
+devrait être plus utile.</p>
+<p>Objectifs abstraits de sr3:</p>
+<ul class="simple">
+<li><p>compatibilité de configuration (compatible vers le haut à partir de v2.) y compris tous les plugins.</p></li>
+<li><p>prise en charge de protocoles multiples.
+possibilité de mettre des urls pour mqtt, ou différentes bibliothèques amqp, peut-être d’autres.</p></li>
+<li><p>représenter en interne les choses dans les messages de notification v03, avoir quelque chose qui construit
+v02 pour la compatibilité, mais fonctionnent dans v03.</p></li>
+<li><p>moins de code, code plus simple.
+code pythonique plus lisible, élégant.
+faciliter l’entretien.</p></li>
+</ul>
+<section id="objectifs-dopportunite">
+<h3>objectifs d’opportunité<a class="headerlink" href="#objectifs-dopportunite" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>ajouter des choses pour le faire fonctionner comme une API?</p></li>
+<li><p>potentiellement nouvelle api de plugin pour autoriser des groupes (de messages de notification et / ou de fichiers.)</p></li>
+<li><p>Terminez la rotation des journaux.</p></li>
+<li><p>Supposons que python &gt; = 3.4 supprimer l’ancienne croûte.</p></li>
+<li><p>Supposons que ubuntu &gt; = 18.04 supprimer l’ancienne croûte.</p></li>
+<li><p>Supposons systèmed, supprimez l’intégration sysv.</p></li>
+<li><p>avoir des options qui adoptent camelCase dans la mesure du possible.</p></li>
+<li><p>entièrement asynchrone, multi-sources et récepteurs.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="etat-du-code">
+<h3>État du Code<a class="headerlink" href="#etat-du-code" title="Link to this heading"></a></h3>
+<p>À partir du 24/08/2021, le code sr3 réussit tous les mêmes tests de flux que la v2
+sur un ordinateur portable (sauf dynamique dans sr3 #407). Il exécute ces mêmes tests en utilisant les mêmes configurations, donc la compatibilité
+objectif est atteint. Sr3 accepte les URL du courtier mqtt et un problème est créé #389 pour amqp v1.
+Sr3 est utilisé pour alimenter un aliment expérimental de WMO, bien qu’avec le besoin
+pour le redémarrer régulièrement ( numéro #388 )</p>
+<p>Le nouveau code sr3 a 4000 lignes de moins que la v2 et inclut mqtt.py (protocole broker supplémentaire)
+ainsi qu’un module implémentant une couche de compatibilité avec les plugins v2. Par exemple,
+la nouvelle routine de configuration est 30 % plus courte et plus cohérente en sr3 qu’en v2.
+Le code est également beaucoup plus pythonique, car l’API est beaucoup plus
+naturel avec plusieurs niveaux d’API qui peuvent être appris en consultant des jupyter notebooks.</p>
+<p>code v2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">find</span> <span class="o">-</span><span class="n">name</span> <span class="s1">&#39;*.py&#39;</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="o">.</span><span class="n">pybuild</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">debian</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">plugins</span> <span class="o">|</span> <span class="n">xargs</span> <span class="n">wc</span> <span class="o">-</span><span class="n">l</span>
+ <span class="mi">133</span> <span class="o">./</span><span class="n">sr_winnow</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">544</span> <span class="o">./</span><span class="n">sr_sftp</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">47</span> <span class="o">./</span><span class="n">sr_tailf</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">365</span> <span class="o">./</span><span class="n">sr_cache</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">164</span> <span class="o">./</span><span class="n">sr_xattr</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">1136</span> <span class="o">./</span><span class="n">sr_message</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">51</span> <span class="o">./</span><span class="n">sr_checksum</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">129</span> <span class="o">./</span><span class="n">pyads</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">306</span> <span class="o">./</span><span class="n">sr_http</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">2204</span> <span class="o">./</span><span class="n">sr_subscribe</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">403</span> <span class="o">./</span><span class="n">sr_consumer</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">1636</span> <span class="o">./</span><span class="n">sr_post</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">265</span> <span class="o">./</span><span class="n">sr1</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">54</span> <span class="o">./</span><span class="n">sr_log2save</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">206</span> <span class="o">./</span><span class="n">sr_sarra</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">286</span> <span class="o">./</span><span class="n">sr_rabbit</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">567</span> <span class="o">./</span><span class="n">sr_file</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">28</span> <span class="o">./</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">107</span> <span class="o">./</span><span class="n">sr_report</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">74</span> <span class="o">./</span><span class="n">sr_watch</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">126</span> <span class="o">./</span><span class="n">sr_shovel</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">505</span> <span class="o">./</span><span class="n">sr_retry</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">956</span> <span class="o">./</span><span class="n">sr_util</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">355</span> <span class="o">./</span><span class="n">sr_sender</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">368</span> <span class="o">./</span><span class="n">sr_cfg2</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">1119</span> <span class="o">./</span><span class="n">sr</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">753</span> <span class="o">./</span><span class="n">sr_poll</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">729</span> <span class="o">./</span><span class="n">sr_audit</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">308</span> <span class="o">./</span><span class="n">sr_credentials</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">988</span> <span class="o">./</span><span class="n">sr_instances</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">608</span> <span class="o">./</span><span class="n">sr_amqp</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">455</span> <span class="o">./</span><span class="n">sr_ftp</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">3062</span> <span class="o">./</span><span class="n">sr_config</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">33</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="n">checksum_s</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">34</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="n">checksum_d</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">34</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">26</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="n">checksum_0</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">30</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="n">checksum_n</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">29</span> <span class="o">./</span><span class="nb">sum</span><span class="o">/</span><span class="n">checksum_a</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">19223</span> <span class="n">total</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>code sr3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2157</span> <span class="o">./</span><span class="n">config</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">342</span> <span class="o">./</span><span class="n">credentials</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">384</span> <span class="o">./</span><span class="n">diskqueue</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">183</span> <span class="o">./</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">768</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">gather</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">53</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">gather</span><span class="o">/</span><span class="n">message</span><span class="o">.</span><span class="n">py</span>
+   <span class="mi">7</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">housekeeping</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">130</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">housekeeping</span><span class="o">/</span><span class="n">resources</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">250</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">145</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">log</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">24</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">nodupe</span><span class="o">/</span><span class="n">data</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">345</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">nodupe</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">24</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">nodupe</span><span class="o">/</span><span class="n">name</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">454</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">poll</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">14</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">55</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="n">message</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">117</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">retry</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">461</span> <span class="o">./</span><span class="n">flowcb</span><span class="o">/</span><span class="n">v2wrapper</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">1617</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">80</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">poll</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">34</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">post</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">18</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">report</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">29</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">27</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">sender</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">16</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">shovel</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">29</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">subscribe</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">35</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">watch</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">16</span> <span class="o">./</span><span class="n">flow</span><span class="o">/</span><span class="n">winnow</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">793</span> <span class="o">./</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">226</span> <span class="o">./</span><span class="n">instance</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">36</span> <span class="o">./</span><span class="n">identity</span><span class="o">/</span><span class="n">arbitrary</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">93</span> <span class="o">./</span><span class="n">identity</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">24</span> <span class="o">./</span><span class="n">identity</span><span class="o">/</span><span class="n">md5</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">17</span> <span class="o">./</span><span class="n">identity</span><span class="o">/</span><span class="n">random</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">24</span> <span class="o">./</span><span class="n">identity</span><span class="o">/</span><span class="n">sha512</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">17</span> <span class="o">./</span><span class="n">moth</span><span class="o">/</span><span class="n">amq1</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">585</span> <span class="o">./</span><span class="n">moth</span><span class="o">/</span><span class="n">amqp</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">313</span> <span class="o">./</span><span class="n">moth</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">548</span> <span class="o">./</span><span class="n">moth</span><span class="o">/</span><span class="n">mqtt</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">16</span> <span class="o">./</span><span class="n">moth</span><span class="o">/</span><span class="n">pika</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">135</span> <span class="o">./</span><span class="n">pyads</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">349</span> <span class="o">./</span><span class="n">rabbitmq_admin</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">26</span> <span class="o">./</span><span class="n">sr_flow</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">52</span> <span class="o">./</span><span class="n">sr_post</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">2066</span> <span class="o">./</span><span class="n">sr</span><span class="o">.</span><span class="n">py</span>
+  <span class="mi">50</span> <span class="o">./</span><span class="n">sr_tailf</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">383</span> <span class="o">./</span><span class="n">transfer</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">514</span> <span class="o">./</span><span class="n">transfer</span><span class="o">/</span><span class="n">ftp</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">361</span> <span class="o">./</span><span class="n">transfer</span><span class="o">/</span><span class="n">https</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">437</span> <span class="o">./</span><span class="n">transfer</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+ <span class="mi">607</span> <span class="o">./</span><span class="n">transfer</span><span class="o">/</span><span class="n">sftp</span><span class="o">.</span><span class="n">py</span>
+<span class="mi">15519</span> <span class="n">total</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="v02-plugin-points-douloureux">
+<h2>V02 Plugin Points douloureux<a class="headerlink" href="#v02-plugin-points-douloureux" title="Link to this heading"></a></h2>
+<p>L’écriture de plugins devrait être une activité simple pour les personnes ayant une connaissance rudimentaire
+de Python et compréhension de la tâche à accomplir. Dans la version 2,
+écrire des plugins est beaucoup plus difficile qu’il ne devrait l’être.</p>
+<ul class="simple">
+<li><p>erreur de syntaxe, v2 donne essentiellement une réponse binaire, soit la lecture dans le plugin a fonctionné
+ou il ne l’a pas fait… il est très hostile par rapport au python normal.</p></li>
+<li><p>lorsqu’un paramètre est placé dans un fichier de configuration, sa valeur est [ valeur ], et non valeur (il est dans une liste.)</p></li>
+<li><p>problème de portée étrange de l’importation (l’importation dans l’ensemble ne se reporte pas sur on_message, besoin d’importer
+dans le corps principal de la routine ainsi que dans le fichier python.)</p></li>
+<li><p>Qu’est-ce qu’est self, qu’est-ce qu’est parent? Ces arguments pour les plugins ne sont pas évidents.
+self se réfère généralement à l’appelant, pas au self dans une classe normale, et le parent est le flux,
+donc aucun état ne peut être stocké dans self, et tout doit être stocké dans parent. Parent est une sorte de
+fourre-tout pour les paramètres et les valeurs dynamiques dans une seule pile.</p></li>
+<li><p>utilisation bizarre de l’API python logger … self.logger?</p></li>
+<li><p>impossibilité d’appeler à partir de code python (pas d’API.)</p></li>
+<li><p>impossibilité d’<em>ajouter</em> des messages de notification dans un plugin (ne peut traiter que le message que vous avez.)</p></li>
+<li><p>incapacité de traiter des groupes de messages de notification à la fois (par exemple pour les envois simultanés ou
+téléchargements, plutôt qu’un seul à la fois.</p></li>
+<li><p>mauvaise gestion des accusés de réception des messages. v02 ne fait qu’accepter le message précédent
+lorsqu’un nouveau est reçu.</p></li>
+<li><p>manque de clarté sur les options, par rapport aux variables de travail, car elles se trouvent dans le même espace de noms
+dans un plugin, si vous trouvez self.setting==True … est-ce parce que l’application l’a défini quelque part,
+ou parce qu’une option a été définie par un client… s’agit-il d’un paramètre ou d’une variable ?</p></li>
+<li><p>apporter des modifications aux messages de notification est un peu compliqué, car ils ont évolué sur différents formats de message.</p></li>
+</ul>
+<section id="modifications-apportees-pour-resoudre-les-problemes">
+<h3>Modifications apportées pour résoudre les problèmes<a class="headerlink" href="#modifications-apportees-pour-resoudre-les-problemes" title="Link to this heading"></a></h3>
+<ul>
+<li><p>utilisez importlib à partir de python, moyen beaucoup plus standard d’enregistrer des plugins.
+maintenant les erreurs de syntaxe seront détectées comme n’importe quel autre module python importé,
+avec un message d’erreur raisonnable.</p></li>
+<li><p>pas de décoration étrange à la fin des plugins (self.plugin = , etc… juste du python ordinaire.)</p></li>
+<li><p>Le choix étrange de <em>parent</em> comme lieu de stockage des paramètres est déroutant pour les gens.
+La variable d’instance <em>parent</em> devient <em>option</em>, <em>self.parent</em> devient <em>self.o</em></p></li>
+<li><p>les rappels d’événements pluriels remplacent les rappels singuliers :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>after_accept (self, worklist) remplace on_message (self, parent)</p></li>
+<li><p>after_work (self, worklist) remplace on_part / on_file (self, parent)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>les messages de notification ne sont que des dictionnaires python. champs définis par json.loads( format de charge utile v03 )
+les messages de notification ne contiennent que les champs réels, pas de paramètres ou d’autres choses…
+données simples.</p></li>
+<li><p>les rappels déplacent les messages de notification entre les listes de travail. Une liste de travail n’est qu’une liste
+de messages de notification. Il y en a quatre :</p>
+<ul class="simple">
+<li><p>worklist.incoming - messages de notification à traiter.</p></li>
+<li><p>worklist.rejected - message de notification qui ne doit pas être traité ultérieurement.</p></li>
+<li><p>worklist.ok - messages de notification qui ont été traités avec succès.</p></li>
+<li><p>worklist.retry : messages de notification pour lesquels le traitement a été tenté, mais qui a échoué.</p></li>
+</ul>
+</li>
+</ul>
+<p>pourrait en ajouter d’autres… nombre important de demandes pour quelque chose comme <em>différé</em></p>
+<ul class="simple">
+<li><p>acks effectués de manière plus proactive, dès qu’un message est traité
+(pour les messages de notification rejetés ou ayant échoué, c’est beaucoup plus tôt que dans la version 2.)</p></li>
+<li><p>ajouter un mécanisme de cadrage pour définir les propriétés du plugin.</p></li>
+<li><p>propriétés alimentées à __init__ du plugin, le parent a disparu des plugins, ils devraient
+juste se référer à self.o pour les options / paramètres dont ils ont besoin. (self.o sépare clairement les options
+à partir de données de travail.)</p></li>
+<li><p>analyse en ligne de commande à l’aide de la bibliothèque argParse standard python.  Signifie que les mots-clés ne fonctionnent plus
+avec un seul -.  Choix de l’utilisation standard de – pour les options basées sur des mots, et - pour les abréviations.
+exemples : Bon : –config, et -c, BAD : -config –c .</p></li>
+</ul>
+</section>
+</section>
+<section id="navire-de-thesee">
+<h2>Navire de Thésée<a class="headerlink" href="#navire-de-thesee" title="Link to this heading"></a></h2>
+<p>Il se peut que la refactorisation inhérent à v03 aboutisse à un
+Vaisseau de Thésée, où il fonctionne de la même manière que v02, mais toutes
+les pièces sont différentes… évidemment une préoccupation/un risque…
+pourrait être une fonctionnalité.</p>
+<p>Maintenant que nous avons vu un bon bout du processus, un
+mappage des transcriptions de code source entre
+les deux versions, est clair:</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Fichier Version 2</p></td>
+<td><p>Fichier Version 3</p></td>
+</tr>
+<tr class="row-even"><td><p>sr_config.py</p></td>
+<td><p>config.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_instances.py</p></td>
+<td><p>sr.py la plus part du mgmt
+instance.py un seul proc</p></td>
+</tr>
+<tr class="row-even"><td><p>sr_consumer.py</p>
+<p>sr_amqp.py</p>
+<p>sr_message.py</p>
+</td>
+<td><p>moth/__init__.py</p>
+<p>moth/amqp.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_checksum.py</p>
+<p>sum/*</p>
+</td>
+<td><dl class="simple">
+<dt>identity/</dt><dd><p>__init__.py
+*</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_cache.py</p></td>
+<td><p>flowcb/nodupe.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_retry.py</p></td>
+<td><p>flowcb/retry.py</p>
+<p>diskqueue.py</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_post.py</p></td>
+<td><p>flowcb/gather/file.py</p>
+<p>flow/post.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_poll.py</p></td>
+<td><dl class="simple">
+<dt>flowcb/poll/</dt><dd><p>__init__.py</p>
+</dd>
+</dl>
+<p>flow/poll.py</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_util.py/sr_proto</p>
+<p>sr_util.py/sr_transport</p>
+<p>sr_file.py</p>
+<p>sr_ftp.py</p>
+<p>sr_http.py</p>
+<p>sr_sftp.py</p>
+</td>
+<td><dl class="simple">
+<dt>transfer/__init__.py</dt><dd><ul class="simple">
+<li><p>transfer.Protocol</p></li>
+</ul>
+</dd>
+</dl>
+<p>flow/__init__.py</p>
+<p>transfer/file.py</p>
+<p>transfer/ftp.py</p>
+<p>transfer/http.py</p>
+<p>transfer/sftp.py</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>plugins/</p></td>
+<td><p>flowcb/  (celles sr3)
+plugins/ toujours la pour
+celles de v2.</p></td>
+</tr>
+<tr class="row-even"><td><p>overall flow</p></td>
+<td><p>flow/__init__.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>sr_poll.py</p>
+<p>sr_post.py</p>
+<p>sr_subscribe.py</p>
+<p>sr_shovel.py</p>
+<p>sr_report.py</p>
+<p>sr_sarra.py</p>
+<p>sr_sender.py</p>
+<p>sr_watch.py</p>
+<p>sr_winnow.py</p>
+</td>
+<td><p>sr_flow.py
+comme point d’entré</p>
+<p>mais normalment juste à
+utiliser sr.py comme un</p>
+</td>
+</tr>
+</tbody>
+</table>
+<section id="mappages">
+<h3>Mappages<a class="headerlink" href="#mappages" title="Link to this heading"></a></h3>
+<p>v2-&gt;sr3 variables d’instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">user_cache_dir</span> <span class="o">--&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">cfg_run_dir</span>
+</pre></div>
+</div>
+<p>Modifications nécessaires dans les plugins v2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarra.sr_util</span> <span class="kn">import</span> <span class="o">--&gt;</span> <span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span>
+</pre></div>
+</div>
+</section>
+<section id="dictionnaires-ou-membres-pour-les-proprietes">
+<h3>Dictionnaires ou membres pour les propriétés ?<a class="headerlink" href="#dictionnaires-ou-membres-pour-les-proprietes" title="Link to this heading"></a></h3>
+<p>Il semble y avoir une tension entre l’utilisation les membres de classe et les dictionnaires
+pour les paramètres. Les membres semblent plus pratiques, mais plus difficiles à manipuler,
+bien que nous ayons des idiomes équivalents. Argparse renvoie les options comme leurs propre
+membres de cet objet d’analyse. Il existe une hiérarchie à concilier :</p>
+<ul class="simple">
+<li><p>protocole par défaut</p></li>
+<li><p>consommateurs par défauts</p></li>
+<li><p>composants par défaut</p></li>
+<li><p>paramètres de configuration (remplacements)</p></li>
+<li><p>options de ligne de commande (remplacements)</p></li>
+</ul>
+<p>les résoudre pour appliquer des remplacements, mais plus de sens en tant qu’opérations
+sur les dictionnaires, l’impression, l’enregistrement du chargement, encore une fois a plus de sens
+sous forme de dictionnaires. Dans le code, les membres sont légèrement plus courts, et peut-être
+plus idiomatique:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span><span class="s1">&#39;member&#39;</span><span class="p">)</span> <span class="n">vs</span><span class="o">.</span> <span class="s1">&#39;member&#39;</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="p">(</span><span class="n">dictionary</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Ce qui a plus de sens… Cela fait-il une différence pratique?
+Pas sûr… besoin de garder les membres pour les endroits où
+les rappels sont appelés, mais peuvent utiliser des propriétés ailleurs, si vous le souhaitez.</p>
+</section>
+</section>
+<section id="problemes-connus-resolus-dans-sr3">
+<h2>Problèmes connus (résolus dans sr3)<a class="headerlink" href="#problemes-connus-resolus-dans-sr3" title="Link to this heading"></a></h2>
+<ul>
+<li><p>le passage des messages de journal est vraiment étrange. Nous n’avons pas compris ce que
+les objets de journalisation python étaient. Besoin de les utiliser de la manière normale.
+de nouveaux modules sont construits de cette façon…</p>
+<p>Dans les nouveaux modules, utilisez la convention logging.getLogger( __name__ ), mais
+souvent, le nom ne correspond pas au fichier source réel…  pourquoi?
+Par exemple, un message de journal d’analyse de config.py  s’affiche comme:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2020</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">13</span> <span class="o">...</span>  <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">sr_credentials</span> <span class="n">parse_file</span> <span class="o">...</span> <span class="n">msg</span> <span class="n">text</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>pourquoi est-il étiqueté sr_credentials? aucune idée.</p>
+</li>
+<li><p>cette chose bizarre de try/except pour l’importation de modules … essayé de supprimer
+mais il a cassé l’analyse des sommes de contrôle… doit passer du temps
+sur ce problème en particulier. Sur les nouveaux modules ( sarra.config,
+sarra.tmpc.*, sr.py ) en utilisant des importations normales. besoin probablement de
+refactorisez le fonctionnement du mécanisme du plug-in de somme de contrôle, puis réessayez.</p></li>
+</ul>
+<p>totalement remanié maintenant. La classe d’intégrité est normale et distincte de flowcb.</p>
+</section>
+<section id="plan-concret-fait">
+<h2>Plan concret (Fait)<a class="headerlink" href="#plan-concret-fait" title="Link to this heading"></a></h2>
+<p>Remplacez sarra/sr_config par sarra/sr_cfg2. La nouvelle sr_cfg2 utilise argparse
+et un modèle plus simple pour l’analyse des fichiers de configuration. C’est devenu config.py</p>
+<p>faire sr.py accepter des opérations sur des sous-ensembles, de sorte qu’il deviennent le point d’entrée unique.
+internaliser la mise en œuvre de tous les éléments de gestion, déclarer etc…</p>
+<p>HMPC -  Topic Message Protocol Client… une généralisation de la bibliothèque du passage de message avec
+une API simplifiée.  résume les différences de protocole
+(Ce dernier est devenu le module Moth.)</p>
+<p>La méthode d’essai consiste à apporter des modifications et à les vérifier par rapport à la branche
+sr_insects development. En général, un sr_insects non modifié devrait
+fonctionner, mais comme les journaux changent, il y a une logique ajoutée sur cette branche
+pour analyser les versions v2 et sr3 de la même manière. Ainsi, les tests de branche development
+sont compatibles avec les versions stables et en cours de développement.</p>
+<p>Pour que chaque composant fonctionne, entraînez-vous avec des tests unitaires individuels, puis
+accédez à des tests de flux statique.  Peut également faire flakey_broker. Le travail ne fait que se poursuivre
+dans la mesure où tous les composants sont convertis. Une fois la conversion complète réalisée,
+il faudra examiner dynamic_flow.</p>
+<p>Le but n’est pas un produit fini, mais un produit avec une structure suffisammen te et appropriée
+afin que les tâches puissent être déléguées avec un espoir raisonnable de succès.</p>
+</section>
+<section id="fait">
+<h2>Fait<a class="headerlink" href="#fait" title="Link to this heading"></a></h2>
+<p>La fonctionnalité de sr_amqp.py est entièrement reproduite dans moth/amqp.py
+Toute la logique importante est préservée, mais elle est transcrite dans de nouvelles classes.
+Devrait avoir un comportement de récupération en cas d’échec identique. Mais ce n’est pas le cas. Nous avons le
+test de flux statique qui réussi, mais le courtier flakey, qui teste une telle récupération,
+est actuellement cassé. (2022/03 tout va bien maintenant!)</p>
+<p>sr_cfg2.py était encore un talon, il a beaucoup de fonctionnalités et d’options, mais
+ca n’est pas clair comment l’étendre à tous. la chose à propos des instances qui
+héritent de configure… c’est étrange, mais difficile de voir comment changer cela
+ne cassera pas tout, en termes de plugins… penser à avoir des valeurs par défaut
+distribué aux classes qui utilisent les paramètres, et ayant quelque chose
+qui les rassemble, au lieu d’une seule chose de configuration massive.
+renommé à config.py (aka: sarra.config) et l’exerçant avec
+sr.py. C’est maintenant un remplacement complet.</p>
+<p>Penser à simplement supprimer sr_ le préfixe des classes pour les remplacements,
+puisqu’ils sont dans le répertoire sarra de toute façon. donc avoir une classe interne
+sarra/instances, sarra/sarra &lt;- remplacer le consommateur… C’est ce qui s’est passé
+et est devenu un espace réservé pour la progression, ce qui signifie que les fichiers avec le préfixe sr_
+dans le nom, qui ne sont pas des points d’entrée, indiquent le code v2 qui
+n’a pas encore été retiré/remplacé.</p>
+<p>Ajout d’une sélection de configuration à sr.py (par exemple, subscribe/*) et
+options <em>setup</em> et <em>cleanup</em>.</p>
+<p>add/remove/enable/disable/edit (dans sr.py) terminé.</p>
+<p>‘log’ abandonné pour l’instant… (quel journal ?)</p>
+<p>ajout de list, show, et d’un prototype construit de shovel… Obligatoire
+une instance (définit les fichiers d’état et les journaux) puis appelle le flux…
+flow/run() est visiblement l’algorithme général,
+le shovel est une sous-classe de flux.</p>
+<p>On a un squelette pour les plugins v2 qui fonctionnent (v2wrapper.py)
+implémentation basé sur l’importation et orienté groupe sur le sr3 plugin framework. ( #213 )</p>
+<p>cache (maintenant appelé noDupe) fonctionnant.</p>
+<p>réécrit le fonctionnement des rappels sr3 pour utiliser des listes de travail, puis refondre la
+cache et le réessayez des plug-ins v2 en tant que rappels sr3 eux-mêmes.</p>
+<p>classe abstraite de fil d’attente de messages renommée de tmpc à moth
+(que mange une Sarracenia?)</p>
+<p>Avec le shovel et le winnow remplacés par de nouvelles implémentations, il passe
+le test de flux dynamique, y compris le module Retry porté sur sr3, et
+un certain nombre de modules v2 utilisés tels quels.</p>
+<p>Terminé une version initiale du composant sr3_post maintenant (dans sr3 : flowcb.gather.file.File)
+Maintenant, on travaille sur sr_poll, ce qui prendra un certain temps car il implique un refactoring: sr_file, sr_http,
+sr_ftp, sr_sftp dans le module de transfert.</p>
+<p>Principalement effectué sr_subscribe, qui, dans l’ancienne version, est une classe de base pour tous les autres composants,
+mais dans sr3 n’est que le premier composant qui télécharge réellement les données. Donc rencontrer tout les
+problèmes avec le téléchargement de données et flowcb qui font des choses intéressantes. La plupart de fait, mais
+flowcb ne fonctionne pas tout à fait.</p>
+<p>sr_sarra était simple une fois sr_subscribe fait.</p>
+<p>Transfert réimplémenté pour obtenir une valeur de retour conventionnelle comme le nombre d’octets
+transférés, et s’ils diffèrent, cela signale un problème.</p>
+<p>sr_sender d’envoi maintenant terminé, impliquait beaucoup plus de réflexion sur la façon de définir de nouveaux_ champs
+dans les messages de notification. Mais une fois cela fait, on a pu supprimer à la fois l’expéditeur et sr_subscribe
+(la classe parente de la plupart des composants) et a permis la suppression des sr_cache, sr_consumer, sr_file,
+sr_ftp, sr_http, sr_message, sr_retry et sr_sftp, sum/*, sr_util.</p>
+<p>C’est la fin de la partie la plus difficile.</p>
+<p>Il y avait un engagement à reformater l’ensemble de la base du code en style PEP à l’aide de yapf3.
+Maintenant, on a le hook de pré-commit yapf3 qui reformate les modifications afin que toute la base du code
+reste au format yapf3.</p>
+<p>Ont également une limitation du débit de messages écrits dans le noyau, donc maintenant on a message_rate_min, et message_rate_max
+comme paramètres qui remplacent/déprécient le plugin v2 post_rate_limit.</p>
+<section id="inquietudes-abordees">
+<h3>Inquiétudes abordées<a class="headerlink" href="#inquietudes-abordees" title="Link to this heading"></a></h3>
+<p>Cette section contient des problèmes qui ont été résolus.  Ils ont été gênants pendant un certain temps,
+donc en notant quelle était la solution.</p>
+<ul>
+<li><p>la journalisation à l’aide de __name__ finit parfois par prétendre provenir du mauvais fichier.
+exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2020</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">16</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">52</span><span class="p">,</span><span class="mi">628</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">sr_credentials</span> <span class="n">set_newMessageFields</span> <span class="n">FIXME</span> <span class="n">new_dir</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">sarra_devdocroot</span><span class="o">/</span><span class="n">download</span>
+</pre></div>
+</div>
+<p>set_newMessageFields est dans config.py pas sr_credentials… pourquoi fait-il cela?
+Attends probablement que tout le code hérité soit remplacé avant d’attaquer à ce problème.
+si cela n’est pas corrigé, faites-en un rapport de bogue.</p>
+<p>corrigé : note… le problème était que la déclaration de l’enregistreur qui devait être APRÈS toutes
+Importations.  Concrètement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span> <span class="vm">__name__</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>doit être placé après toutes les importations.</p>
+</li>
+<li><p>sr_audit ? que faire. Supprimé.</p></li>
+<li><p>tous les fichiers non entry_point sr_*.py peuvent être supprimés.
+supprimer le sous-répertoire sum. sr_util.py</p></li>
+</ul>
+</section>
+<section id="revision-de-laccel">
+<h3>Révision de l’Accel<a class="headerlink" href="#revision-de-laccel" title="Link to this heading"></a></h3>
+<p>la compatibilité des plugins est à l’étude… on a décidé de réécrire les plugins accel_* pour sr3, et
+changer l’API car celle de la v2 présente des lacunes fondamentales :</p>
+<ul class="simple">
+<li><p>l’api do_get traite l’échec en soulevant une exception… il n’y a pas de vérification
+des codes de retour sur les routines intégrées… Il est possible de s’en occuper par try/except,
+mais on préférerait qu’un flux de programme normal puisse tracer et
+signaler lorsqu’une défaillance d’i/o se produit (gardez try/except à une échelle aussi petite que possible.)</p></li>
+<li><p>il y a une nature très idiosyncratique du do_get, par exemple dans la accel_scp v2,
+où il appelle do_get, puis décide de ne pas s’éxecuter et tombe à celui qui est intégré.
+Cette logique est rarement utile, difficile à expliquer et déroutante à diagnostiquer
+pratiquement.</p></li>
+</ul>
+<p>Avoir réécrit accel_wget, et accel_scp à la nouvelle api… on travaille via static-flow
+pour les tester. Il est également logique de repérer les invocations v2 d’entre eux, et de les remplacer par sr3
+dans la configuration. Et la première tentative a été assez alambiquée… on n’était pas content.
+pareil pour la 2ème tentative… on travaille sur une troisième.</p>
+<p>Réécrit à nouveau, il suffit d’ajouter getAccelerated() à l’API de transfert, afin qu’il soit intégré
+au lieu d’être un plugin.  N’importe quelle classe de Transfer peut spécifier un accélérateur et il
+sera déclenché par accel_threshold. Les accélérateurs https et sftp/scp sont implémentés.</p>
+</section>
+</section>
+<section id="todo">
+<h2>ToDo<a class="headerlink" href="#todo" title="Link to this heading"></a></h2>
+<p>Éléments de la liste todo qui ont été traités.</p>
+<ul class="simple">
+<li><p>migrer sr_xattr.py vers sarra/xattr.py (maintenant appelé sarracenia/filemetadata.py)</p></li>
+<li><p>corriger flakey_broker test poir qu’il réussise. (terminé!)</p></li>
+<li><p>mise à jour de la documentation… tout changer pour utiliser le point d’entrée sr3, oui c’est fait.
+(Voir le point de transition ci-dessous.)</p></li>
+<li><p>considérer la transition, la vie avec les deux versions… faut-il sr.py –&gt; sr3.py ? Oui. Fait.
+devrions-nous avoir un paquet Debian séparé avec des points d’entrée de transition
+(sr_subscribe et amis uniquement inclus dans le forfait compact, et tout)
+l’interactivité native ne se produit que via sr3 ?
+maintenant appelé metpx-sr3</p></li>
+<li><p>peut-être déplacer tout le plugin d’un niveau (se débarrasser du répertoire)
+donc Plugin devient une classe instanciée en sarra/__init__.py… Ca mets les
+plugins et le code intégré à un niveau plus égal… par exemple comment
+les protocoles de transfert de plugins fonctionnent-ils ?  idée… C’est en quelque sorte fait
+maintenant: plugin est devenu flowcb. L’intégrité est supprimée de la hiérarchie.
+L’extension de classe est maintenant un type de plugin séparé (via l’importation)</p></li>
+<li><p>changer le topic_prefix par défaut en v03.post. effectué 2021/02</p></li>
+<li><p>changer le topic_prefix par défaut en v03. effectué 2021/03</p></li>
+<li><p>changer topic_prefix à topicPrefix. effectué 2021/03</p></li>
+<li><p>Ajustez le Guide du programmeur pour refléter le nouvel API. effectué 2021/02</p></li>
+<li><p>l’incohérence des journaux entre ‘info’ et logging.INFO empêche un contrôle correct des journaux.
+CORRIGÉ 2021/02.</p></li>
+<li><p>accélérateurs manquants: sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc,</p></li>
+<li><p>migrer sr_credentials.py vers sarracenia/credentials.py.</p></li>
+<li><p>supprimer <em>post</em> des arborescences de rubriques v03. Fait!</p></li>
+<li><p>points d’entrée de nettoyage: sr_audit, sr_tailf, sr_log2save,</p></li>
+<li><p>test avec dynamic-flow.</p></li>
+<li><p>Support MQTT (Terminé!)</p></li>
+</ul>
+</section>
+<section id="bugs-preoccupations-problemes">
+<h2>BUGS/Préoccupations/Problèmes<a class="headerlink" href="#bugs-preoccupations-problemes" title="Link to this heading"></a></h2>
+<p>migré vers github issues avec la balise de v3only.</p>
+</section>
+<section id="apres-la-parite-de-vraies-ameliorations">
+<h2>Après la parité : de vraies améliorations<a class="headerlink" href="#apres-la-parite-de-vraies-ameliorations" title="Link to this heading"></a></h2>
+</section>
+<section id="id1">
+<h2>TODO<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>À ce stade, je suis en mesure de signaler les problèmes existants en tant que problèmes avec la balise v03only.
+voici donc les choses restantes après la refactorisation:</p>
+<ul class="simple">
+<li><p>ajouté le message “missing defaults”, examiner la liste et voir si nous devons tous les définir.
+check_undeclared_options valeurs par défaut manquantes : {‘discard’, ‘exchangeSplit’,
+‘pipe’, ‘post_total_maxlag’, ‘exchangeSuffix’, ‘destination’, ‘inplace’,
+‘report_exchange’, ‘post_exchangeSplit’, ‘set_passwords’, ‘declare_exchange’,
+‘sanity_log_dead’, ‘report_daemons’, ‘realpathFilter’, ‘reconnect’,
+‘post_exchangeSuffix’, ‘save’, ‘pump_flag’, ‘cache_stat’, ‘declare_queue’, ‘restore’,
+‘bind_queue’, ‘dry_run’, ‘sourceFromExchange’, ‘retry_mode’, ‘poll_without_vip’, ‘header’}
+#405</p></li>
+<li><p>#369 … clean shutdown</p></li>
+<li><p>déterminer une implémentation AsyncAPI pour l’abonnement au moins. #401</p></li>
+<li><p>faire en sorte que les transferts de fichiers partitionnés fonctionnent à nouveau. #396
+<a class="reference external" href="on_part_assembly.rst">on_part_assembly.rst</a></p></li>
+<li><p>convertir un poll existant en poll0 ? ancien poll. #394</p></li>
+<li><p>alarm_set tronque en entiers… Hmm.. utiliser setitimer à la place?  #397</p></li>
+<li><p>l’option outlet est manquante. #398</p></li>
+<li><p>Support vhost nécessaire. #384</p></li>
+<li><p>sr_poll bug actif/passif #29</p></li>
+<li><p>realpathFilter est utilisé par CMOI. Semble avoir disparu dans sr3. C’est là dans la version C. #399</p></li>
+<li><p>porter le reste des plugins v02 vers des équivalents v03 et ajoutez des mappages dans config.py, #400
+de sorte qu’il ne nous reste presque plus de v2.</p></li>
+<li><p>transfert / sftp.py supprimer file_index de l’implémentation ( # 367 ) dépendent de NoDupe.py</p></li>
+<li><p>mode asynchrone complet pour les MQP. nécessite des fonctionnalités publish_retry.
+(encore une fois dans les plans futurs ci-dessus.) #392</p></li>
+<li><p>une fois le mode asynchrone complet disponible, autorisez plusieurs collectes(gathers) et publications.
+(encore une fois dans les plans futurs ci-dessus.) #392</p></li>
+<li><p>#33 ajouter le nom d’hôte à la fil d’attente par défaut.</p></li>
+<li><p>#348 ajouter statehost à l’arborescence de répertoires .cache.</p></li>
+</ul>
+</section>
+<section id="pas-cuit-a-penser">
+<h2>Pas cuit / À penser<a class="headerlink" href="#pas-cuit-a-penser" title="Link to this heading"></a></h2>
+<p>Les choses du code structurel qui ne sont pas réglées peuvent changer.
+Probablement besoin d’être réglé avant que quelqu’un d’autre ne plonge.</p>
+<ul class="simple">
+<li><p>propriétés scopables pour les classes internes, comme elles existent pour les plugins. #402
+Je pense que c’est fait.  Il faudrait documenter quelque part,
+tester et faire des démonstrations en même temps.</p></li>
+<li><p>on a pris le code requis pour implémenter set_newMessageFields (maintenant appelé
+Sarracenia.Message.updateFieldsAccept) textuellement à partir de la v2.
+C’est assez poilu… peut-être se transformer en plugin, pour le sortir du
+code principal? Ne pas qu’il disparaîtra un jour. C’est assez laid, mais
+très utile et très utilisé dans les configurations existantes. probablement OK.</p></li>
+<li><p>modification du modèle de récupération, de sorte que toute la nouvelle logique/tentative soit dans la
+boucle principale, #392
+et moth revient immédiatement. Le but est qu’on pourrait avoir plusieurs
+gathers pour plusieurs flux en amont et reçevoir des messages de notification de la part de celui qui est
+vivant… on se retrouve également avec une seule boucle de cette façon… plus propre.
+probablement équivalent au mode asynchrone mentionné ci-dessus.</p></li>
+<li><p><em>gather</em> comme un moyen de séparer le fait d’avoir plusieurs courtiers d’entrées.  #392
+donc on pourrait éviter d’avoir besoin d’un winnow, mais juste d’avoir un abonné qui se connecte à
+plusieurs en amont directement.
+probablement équivalent à async et multi-gather.</p></li>
+<li><p>pensez à l’API en sous-classant le flux… et l’intégration automatique
+avec le point d’entrée sr… Hmm… probablement regarder cela lors de la mise à jour
+Guide du programmeur.</p></li>
+<li><p>plus de worklists? échec de renommage  -&gt; nouvelle tentative ou différé.  Ajouter un nouvel échec
+où l’échec représente un échec permanent. et l’autre représente
+à réessayer plus tard.</p></li>
+<li><p><a class="reference external" href="mqtt_issues.rst">MQTT issues</a></p></li>
+</ul>
+</section>
+<section id="fixme-differe">
+<h2>FIXME/Différé<a class="headerlink" href="#fixme-differe" title="Link to this heading"></a></h2>
+<p>Le but du travail principal de sr3 est d’obtenir un refactorisation au point où
+le code est compréhensible pour les nouveaux codeurs, de sorte que les tâches peuvent être attribuées.
+Cette section comprend un mélange de tâches qui, espérons-le, peuvent être assignées,</p>
+<p>FIXME sont des choses laissées de côté qui doivent être vues.</p>
+<ul>
+<li><p><strong>RELEASE BLOCKER</strong> poilu. #403
+watch ne fait pas de lot par lots. Il jette juste un arbre entier.
+Cela devra être re-écrit avec une approche de style itérateur.
+Donc si vous commencez dans une arborescence avec un million de fichiers, il analysera le million entier
+et les présentera comme une liste de travail unique en mémoire.  Cela aura des problèmes performances.
+Vous souhaitez procéder de manière incrémentielle à l’aide de listes d’un lot ‘prefetch’
+à la fois.</p>
+<p>Il existe une correction provisoire pour prétendre qu’il fait le traitement par lots correctement, mais
+l’impacte de la mémoire et le retard de production du premier fichier sont toujours là, mais au moins
+renvoie un lot à la fois.</p>
+</li>
+<li><p><strong>RELEASE BLOCKER</strong> journaux de poll et watch ont tendance à devenir énormes beaucoup trop rapidement. #389</p></li>
+<li><p>essayez jsonfile pour créer des messages de notification à publier. peut construire json de manière incrémentielle, # 402
+vous n’avez donc pas besoin de supprimer les éléments _deleteOnPost (vous pouvez simplement les ignorer)</p></li>
+<li><p>euh… ajouter les protocoles. mqtt et qpid-proton (amq1) #389</p></li>
+<li><p>assurez-vous que l’arrêt fonctionne réellement… voir des égarés après les tests… mais trop de changement
+pour vraiment savoir. besoin de vérifier… C’est le cas!</p></li>
+<li><p>Nous avons renoncé à l’envoi partitionné comme un retranchement pour le refactor. Il viendra dans un
+version ultérieure.</p></li>
+<li><p>la plupart des fonctionnalités de reporting sont supprimées.</p></li>
+</ul>
+</section>
+<section id="transition">
+<h2>Transition<a class="headerlink" href="#transition" title="Link to this heading"></a></h2>
+<p>Je ne sais pas si une mise à niveau simple (de remplacement) est une bonne approche. Sera-t-il possible de tester sarra
+suffisamment pour que des mises à niveau de pompes entières soient possibles? ou des mises à niveau incrémentielles
+(parallèles) soit requis?</p>
+<p>Cela dépend si sr3 fonctionnera comme un remplacement drop-in ou non. Il y a une certaine incompatibilité
+que nous savons va se produira avec les plugins do_*. Si cela est suffisamment bien documenté et facilement
+traité, alors ce n’est peut-être pas un problème. D’autre part, s’il y a des subtilités,
+alors une approche parallèle pourrait être nécessaire.</p>
+<section id="remplacement">
+<h3>Remplacement<a class="headerlink" href="#remplacement" title="Link to this heading"></a></h3>
+<p>Le paquet a le même nom que ceux de la v2 (metpx-sarracenia) qui différent que par le numéro de version.
+L’installation du nouveau remplace complètement l’ancien. Cela nécessite que la nouvelle version soit égale
+ou mieux que l’ancien dans tous les aspects, ou que l’installation soit limitée aux machines d’essai
+jusqu’à ce que ce point soit atteint.</p>
+<p>Cela prend plus de temps pour obtenir l’installation initiale, mais a une démarcation beaucoup plus claire (vous savez
+lorsque vous avez terminé.)</p>
+</section>
+<section id="parallel">
+<h3>Parallel<a class="headerlink" href="#parallel" title="Link to this heading"></a></h3>
+<p>Nommez le paquet metpx-sarra3 et demandez au répertoire de classe python d’être sarra3 (au lieu de sarra.)
+(aussi ~/.config/sr3 et ~/.cache/sr3. Les fichiers .cache doivent probablement être différents car
+les fichiers de nouvelle tentative ont des formats différents? valider. ) On peut donc copier des configurations de l’ancien vers
+le nouveau et exécuter les deux versions en parallèle. Le point d’entrée central serait sr3 (plutôt que
+sr), et pour éviter toute confusion, les autres points d’entrée (sr_subscribe etc…) seraient omis
+de sorte que le code v2 fonctionnerait inchangé. Peut nécessiter quelques ajustements pour que les classes sr
+ignorent les instances des autres versions.</p>
+<p>Ceci est similaire à la transition de python2 vers python3. Cela permet le déploiement de sr3 sans avoir
+à s’y convertir entièrement. Cela permet d’exécuter certains composants et de gagner lentement en maturité
+tandis que d’autres ne sont pas prêts. Cela facilite les tests A:B, en exécutant la même configuration
+avec une version ou l’autre sans avoir l’installation ou l’utilisation d’une machine différente,
+ce qui facilite la vérification de la compatibilité.</p>
+</section>
+<section id="conclusion">
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h3>
+<p>Avoir implémenté le modèle parallèle, avec APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
+le préfixe sr3_ remplace sr_ pour toutes les commandes et change la classe Python sarra au
+nom complet de sarracenia pour éviter les conflits entre les classes de python.</p>
+</section>
+</section>
+<section id="incompatibilites">
+<h2>Incompatibilités<a class="headerlink" href="#incompatibilites" title="Link to this heading"></a></h2>
+<p>Il n’est pas censé y en avoir. Il s’agit d’une liste en cours d’exécution de choses à corriger ou à documenter.
+gros changements:</p>
+<ul>
+<li><p>dans sr3, utilisez – pour les options de mots complets, comme –config ou –broker.  Dans la v2, vous pouvez utiliser -config et -broker,
+mais cela finira mal dans sr3.  Dans l’ancien analyseur de ligne de commande, -config et –config étaient identiques, ce qui
+était idiosyncratique.  Le nouvel analyseur d’options de ligne de commande est construit sur
+ArgParse et interprète un seul - comme préfixe une seule option où le
+les lettres suivantes sont et argumentent.  Exemple:</p>
+<p>-config hoho.conf -&gt; dans la v2 fait référence au chargement du fichier hoho.conf en tant que configuration.</p>
+<p>dans sr3, il sera interprété comme -c (config) charger le fichier config.conf, et hoho.conf fait partie d’une option ultérieure.</p>
+</li>
+<li><p>loglevel none -&gt; loglevel notset (maintenant on passe le paramètre directement au module de journalisation python, none n’est pas défini.)</p></li>
+<li><p>les messages de journal et la sortie en interactif seront complètement différents.</p></li>
+<li><p>paramètres abandonnés: use_amqplib, use_pika… remplacé par des bibliothèques d’implémentation
+distinctes par protocole. amqp utilise la bibliothèque ‘amqp’ qui n’est ni l’une ni l’autre des choses ci-dessus.
+( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )</p></li>
+<li><p>laissant tomber on_watch plugins. pour autant que je sache, personne ne les utilise.
+La façon don’t v03 fonctionne, ce serait un after_accept pour un watch.
+c’est plus logique de cette façon.</p></li>
+<li><p>les plugins qui accèdent aux internes de sr_retry doivent être réécrits, car la classe est maintenant plugin/retry.py.
+la façon de mettre en fil d’attente quelque chose pour une nouvelle tentative dans les plugins actuels consiste
+à les ajouter à la fil d’attente ayant échoué.
+Ce n’est qu’un problème dans les tests de débit de sr_insects.</p></li>
+<li><p>do_download et do_send étaient 1er passage aux plugins <em>schemed</em>, je pense qu’ils devraient être déconseillés / remplacés
+par do_get et do_put. Ca n’est plus clair si ils sont utiles (télécharger et envoyer des plugins sont
+au mauvais niveau d’abstraction)</p></li>
+<li><p>do_download, do_send, do_get, do_put sont des téléchargements <em>schemed</em>… c’est-à-dire, plutôt que d’empiler de sorte que
+tous sont appelés, ils sont enregistrés pour des protocoles particuliers.  Dans la v2, par exemple, les plugins accel_*
+enregistrent le schéma “download”. Un point d’entrée on_message modifierait le schéma de sorte que la routine do_*
+serait invoqué. Dans la v2, la signature d’appel pour tous les plugins est la même (self, parent) mais pour
+les cas do_get et do_put, c’est contre-productif. Ayez donc à la place une signature d’appel
+identique au protocole intégré get/put… src_file, dst_file, src_offset, dst_offset, len )
+Résolution: il suffit d’implémenter de nouvelles classes de transfert, ne s’intègre pas naturellement dans flowcb.</p></li>
+<li><p>Dans la v2, les paramètres par défaut du miroir étaient False dans tous les composants, à l’exception de sr_sarra.
+mais le réglage du miroir n’a pas été honoré dans shovel, et winnow (bug #358)
+ce bogue est corrigé dans sr3, mais vous remarquez alors que la valeur par défaut est incorrecte.</p>
+<p>Dans sr3, la valeur par défaut pour mirror est remplacée par True pour tous les flux, à l’exception de subscribe, qui
+est le comportement le moins surprenant étant donné que la valeur par défaut est False dans la v2.</p>
+</li>
+<li><p>dans la v2, le téléchargement ne vérifie pas la longueur d’un fichier pendant le téléchargement.
+dans sr3, c’est le cas. Par exemple, lors de l’utilisation de sftp comme sondage, ls répertorie la taille d’un lien symbolique.
+Lorsqu’il télécharge, il obtient le fichier réel, et non le lien symbolique, de sorte que la taille est différente.</p></li>
+</ul>
+<p>Exemple tiré du test de débit</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>     2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
+
+le fichier est de 114 octets, mais le chemin de liaison est de 135 octets...
+v2 et sr3 téléchargent le fichier et non le lien, mais sr3 produit ce message d’erreur.
+En pensant à celui-ci...  est-ce un bug dans le poll?
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Dans la v2, si vous supprimez un fichier, puis le recréez, un événement sera créé.
+Dans sr3, si vous faites de même, l’ancienne entrée sera dans la cache nodupe et l’événement sera supprimé.
+J’ai remarqué cette différence, mais je ne sais pas quelle version est correcte.
+cela pourrait être corrigé, si nous décidons que l’ancien comportement est juste.</p></li>
+</ul>
+</section>
+<section id="fonctionnalites">
+<h2>Fonctionnalités<a class="headerlink" href="#fonctionnalites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Tous les composants sont maintenant dérivés de la classe <em>flow</em> et exécutent déjà l’algorithme général
+conçu comme la base de la v2, mais jamais implémenté en tant que tel.</p></li>
+<li><p>L’API d’extension est maintenant du python simple sans paramètres magiques. Juste des classes standard, en utilisant un mécanisme
+d’importation standard. Le débogage devrait être beaucoup plus simple maintenant car l’interpréteur fournira de
+bien meilleurs messages d’erreur au démarrage. Les plugins de style v2 sont maintenant appelés <em>flow callbacks</em>,
+et il existe un certain nombre de classes (identity, moth, transfert, peut-être flux) qui permettent l’extension
+par une sous-classification simple. Cela devrait faire en sorte que ce soit beaucoup plus facile d’ajouter
+des protocoles supplémentaires pour le transport et les messages, ainsi que des algorithmes de somme de
+contrôle pour les nouveaux types de données.</p></li>
+<li><p>La classe sarra.moth fait l’abstraction de l’AMQP, de sorte que le protocole de messagerie devient enfichable.</p></li>
+<li><p>utiliser le préfixe sarracenia/ (déjà présent) pour remplacer le préfixe sr_ sur les modules.</p></li>
+<li><p>Un accès API aux flux. (ainsi on peut construire des programmes entièrement nouveaux en python en sous-classant.)</p></li>
+<li><p>les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.</p></li>
+<li><p>sr3 ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.</p></li>
+<li><p>sr3 list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.</p></li>
+<li><p>sr3 show est maintenant utilisé pour afficher la configuration analysée.</p></li>
+<li><p>les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.</p></li>
+<li><p>Les entry_points de plug-in FlowCB sont désormais basées sur des groupes de messages de notification, plutôt que sur des messages individuels, permettant aux gens
+d’organiser le travail simultané.</p></li>
+<li><p>l’intégrité (sommes de contrôle) sont maintenant des plugins.</p></li>
+<li><p>gather (entrée ? sources de messages de notification) sont désormais des plugins.</p></li>
+<li><p>ajout du typage des paramètres d’options, afin que les plugins puissent déclarer: taille, durée, chaîne ou liste.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mod%C3%A8le_de_page_man.html" class="btn btn-neutral float-left" title="SR3_TITRE" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Id%C3%A9eDeBase.html" class="btn btn-neutral float-right" title="Idée de Base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

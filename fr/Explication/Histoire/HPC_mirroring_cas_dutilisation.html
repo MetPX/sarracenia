@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Étude de cas : Mise en miroir HPC &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Échange de données de type maillé pour le WIS-GTS en 2019" href="mesh_gts.html" />
+    <link rel="prev" title="Histoire/Contexte de Sarracenia" href="Evolution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Histoire</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Annoncements_v03.html">Annonce de Sr3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deploiement_2018.html">Sarracenia Janvier 2018</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Evolution.html">Histoire/Contexte de Sarracenia</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Étude de cas : Mise en miroir HPC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mesh_gts.html">Échange de données de type maillé pour le WIS-GTS en 2019</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v01.html">Message v01 Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v02.html">Description du protocole / format du message v02</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v03.html">Modifications apportées pour créer la v03</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="../index.html">Explication</a> &raquo;</li>
+          <li><a href="index.html">Histoire</a> &raquo;</li>
+      <li>Étude de cas : Mise en miroir HPC</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/fr/Explication/Histoire/HPC_mirroring_cas_dutilisation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="etude-de-cas-mise-en-miroir-hpc">
+<h1>Étude de cas : Mise en miroir HPC<a class="headerlink" href="#etude-de-cas-mise-en-miroir-hpc" title="Link to this heading"></a></h1>
+<section id="mise-en-miroir-continue-de-27-millions-darborescence-de-fichiers-tres-rapidement">
+<h2>Mise en miroir continue de 27 millions d’arborescence de fichiers très rapidement<a class="headerlink" href="#mise-en-miroir-continue-de-27-millions-darborescence-de-fichiers-tres-rapidement" title="Link to this heading"></a></h2>
+<section id="resume">
+<h3>Résumé<a class="headerlink" href="#resume" title="Link to this heading"></a></h3>
+<p>Ce projet a pris plus de temps que prévu, soit plus de trois ans, car l’espace problématique a été exploré avec le
+l’aide d’un client très patient alors que l’outil pour concevoir et mettre en œuvre la solution efficace était finalement
+réglé. Le client a demandé une solution pour rendre les fichiers disponibles sur le cluster de sauvegarde dans
+un délai de cinq minutes de leur création sur la principale, et la première version de mirroring, déployée en 2017,
+atteint un délai d’environ 20 minutes.  La version 2 a été déployée en janvier 2020.</p>
+<p>Le client est en fait plus un partenaire, qui avait de très gros cas de test disponibles et
+a fini par assumer la responsabilité pour nous tous de comprendre si la solution fonctionnait ou non.
+Bien qu’il existe de nombreuses spécificités de cette implémentation, l’outil résultant ne repose sur aucune
+fonctionnalité spécifique au-delà d’un système de fichiers Linux normal pour atteindre une accélération de
+72:1 par rapport à rsync en temps réel en mise en miroir continu de 16 téraoctets dans 1,9 million de fichiers
+par jour entre deux arbres de 27 millions de fichiers chacun. Pendant que cela atteint en moyenne 185 Mo/seconde
+sur une période de 24 heures. Il convient de noter que les transferts sont très pointus. Sur le même équipement
+en même temps, un autre 4 téraoctets par jour sont écrits sur des clusters sur un autre réseau, de sorte que
+le taux de lecture agrégé sur le cluster opérationnel est de 20 téraoctets par jour (231 Mo/seconde)
+pour cette application, tandis que les systèmes de fichiers sont également utilisés pour toutes les
+applications d’utilisateur normales.</p>
+<p>Alors que ce projet a dû souffrir à travers le développement, avec les leçons apprises et les outils
+maintenant disponible, il devrait être simple d’appliquer cette solution à d’autres cas. Le résultat final est
+que l’on ajoute une <a class="reference external" href="https://en.wikipedia.org/wiki/Shim_(computing)">Bibliothèque Shim</a> à l’environnement des utilisateurs (transparent pour les tâches des utilisateurs), et
+puis chaque fois qu’un fichier est écrit, un message AMQP avec les métadonnées du fichier est publié. Un pool de
+démons de transfert sont prêts à transférer les fichiers publiés dans une file d’attente partagée. Le nombre d’abonnés
+est programmable et évolutif, et les techniques et la topologie pour effectuer le transfert sont toutes facilement
+contrôlé pour optimiser les transferts pour les critères jugés les plus importants.</p>
+</section>
+<section id="enonce-du-probleme">
+<h3>Énoncé du problème<a class="headerlink" href="#enonce-du-probleme" title="Link to this heading"></a></h3>
+<p>En novembre 2016, le Service météorologique du Canada (MSC) d’Environnement et Changement climatique Canada (ECCC)
+dans le cadre du projet High Performance Computing Replacement (HPCR) a demandé un très grand répertoire
+d’arbres à refléter en temps réel. Services partagés Canada (SPC) était le principal responsable du déploiement
+du HPCR, ECCC/MSC étant la seule communauté d’utilisateurs. On savait dès le départ que ces arbres seraient trop grands pour
+traiter l’utilisation d’outils ordinaires. On s’attendait à ce qu’il faille environ 15 mois pour explorer
+et arriver à un déploiement opérationnel efficace. Il convient de noter que SPC a travaillé tout au long de
+cette période en partenariat étroit avec ECCC, et que ce déploiement a nécessité la participation très active
+d’utilisateurs sophistiqués à suivre avec les rebondissements et les différentes avenues explorées et mises en œuvre.</p>
+<p>L’environnement informatique est le centre météorologique national du Canada, dont l’application principale est
+la <em>production</em> numérique de la prévision météorologique, où les modèles fonctionnent 7j/7 et 24h/24
+en exécutant différentes simulations (modèles de l’atmosphère, et parfois les voies navigables et l’océan,
+et la terre sous l’atmosphère) soit en ingérant les observations actuelles aka <em>assimilation</em>, les mapper
+à une grille <em>analyse</em>, puis faire avancer la grille dans le temps <em>prédiction/pronostic</em>. Les prévisions
+suivent un calendrier précis tout au long du cycle de 24 heures, alimentant l’un dans l’autre, de sorte
+que les retards se répercutent et que des efforts considérables sont déployés pour éviter les interruptions et
+maintiennent l’horaire.</p>
+</section>
+<section id="presentation-de-la-solution-hpcr">
+<h3>Présentation de la solution HPCR<a class="headerlink" href="#presentation-de-la-solution-hpcr" title="Link to this heading"></a></h3>
+<a class="reference internal image-reference" href="../../../_images/HPC-XC_High_Availability.png"><img alt="../../../_images/HPC-XC_High_Availability.png" src="../../../_images/HPC-XC_High_Availability.png" style="width: 1078.44px; height: 846.7800000000001px;" />
+</a>
+<p>Dans le diagramme ci-dessus, si les opérations se trouvent dans le hall de données 1 (à gauche du centre)
+et qu’elles échouent, l’objectif est de reprendre les opérations rapidement à partir du Data Hall 2
+(à droite). Pour que cela soit réaliste, les données de production doivent être disponibles
+dans l’autre hall, sur l’autre boutique du site, rapidement. Le problème de la <em>mise en miroir</em> est la
+synchronisation d’un très grand sous-ensemble de données entre le boutique de sites 1 et le magasin de
+sites 2. À des fins de surveillance, dans le même temps, un sous-ensemble doit être mis en miroir
+dans la salle de données 0.</p>
+</section>
+<section id="mise-en-miroir-continue">
+<h3>Mise en miroir continue<a class="headerlink" href="#mise-en-miroir-continue" title="Link to this heading"></a></h3>
+<p>Il y a deux clusters qui exécutent ces simulations, l’un d’eux travaillant normalement principalement
+sur les opérations, et l’autre en tant que <em>rechange</em> (exécutant uniquement des charges de recherche
+et développement).  Lorsque la primaire échoue, l’intention est d’exécuter des opérations sur l’autre
+supercalculateur, en utilisant un disque <em>de rechange</em> sur lequel toutes les données en direct ont été
+mises en miroir. Comme il y a (presque) toujours des exécutions en cours, les répertoires n’ont jamais
+arrêté d’être modifié, et il n’y a pas de période de maintenance où l’on peut rattraper si l’on prend
+du retard.</p>
+<p>Il y a essentiellement trois parties du problème :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Détection : obtenir la liste des fichiers qui ont été modifiés (récemment).</p></li>
+<li><p>Transfert: copiez-les sur l’autre cluster (minimisant la surcharge.)</p></li>
+<li><p>Performance : délai ambitieux pour livrer un fichier miroir : cinq minutes.</p></li>
+</ul>
+</div></blockquote>
+<p>Les arbres réels à refléter étaient les suivants dans la phase contractuelle initiale (appelée rétrospectivement U0):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$ grep directory *hall1*.conf
+policy_hall1_admin.conf:directory /fs/site1/ops/eccc/cmod/prod/admin
+policy_hall1_archive_dbase.conf:directory /fs/site1/ops/eccc/cmod/prod/archive.dbase
+policy_hall1_cmop.conf:directory /fs/site1/ops/eccc/cmod/cmop/data/maestro/smco500
+policy_hall1_daily_scores.conf:directory /fs/site1/ops/eccc/cmod/prod/daily_scores
+policy_hall1_hubs.conf:directory /fs/site1/ops/eccc/cmod/prod/hubs
+policy_hall1_products.conf:directory /fs/site1/ops/eccc/cmod/prod/products
+policy_hall1_stats.conf:directory /fs/site1/ops/eccc/cmod/prod/stats
+policy_hall1_version_control.conf:directory /fs/site1/ops/eccc/cmod/prod/version_control
+policy_hall1_work_ops.conf:directory /fs/site1/ops/eccc/cmod/prod/work_ops
+policy_hall1_work_par.conf:directory /fs/site1/ops/eccc/cmod/prod/work_par
+psilva@eccc1-ppp1:/home/sarr111/.config/sarra/poll$
+</pre></div>
+</div>
+<p>Au départ, on savait que le nombre de dossiers était important, mais on ne connaissait pas
+les montants en jeu. Ces données n’ont seulement été disponibles que beaucoup plus tard.</p>
+<p>La façon la plus efficace de copier ces arbres, comme on l’a dit au début, serait pour tous les travaux
+d’écrire des fichiers dans les arborescences pour annoncer explicitement les fichiers à copier. Cela
+impliquerait aux utilisateurs de modifier leurs tâches pour inclure l’appel de sr_cpost (une commande qui
+met en file d’attente les transferts de fichiers pour que les tiers les exécutent). Toutefois, le client
+a défini la contrainte supplémentaire selon laquelle la modification des tâches d’utilisateur
+n’était pas réalisable, la méthode utilisée pour obtenir la liste des fichiers à copier devait être
+implicite (effectuée sans la participation active de l’utilisateur).</p>
+</section>
+<section id="la-lecture-de-larbre-prend-trop-de-temps">
+<h3>La lecture de l’arbre prend trop de temps<a class="headerlink" href="#la-lecture-de-larbre-prend-trop-de-temps" title="Link to this heading"></a></h3>
+<p>On pourrait simplement analyser à un niveau supérieur afin d’analyser un seul répertoire parent, mais la demi-douzaine
+des sous-arbres des arbres ont été choisis afin d’en avoir des plus petits qui fonctionnaient plus rapidement,
+indépendamment de la méthode utilisée pour obtenir des listes de nouveaux fichiers. Que voulons-nous dire quand
+nous disons que ces arbres sont trop grands? Le plus grand de ces arbres est <em>hubs</em>
+( /fs/site1/ops/eccc/cmod/prod/hubs ). Rsync a été exécuté sur les <em>hubs</em>, en tant que juste visiter l’arbre une fois,
+sans aucune copie de fichier en cours. Visiter l’arbre, en utilisant rsync avec la somme de contrôle
+désactivée en tant qu’optimisation, a abouti au journal ci-dessous:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>psilva@eccc1-ppp1:~/test$ more tt_walk_hubs.log
+nohup: ignoring input
+rsync starting @ Sat Oct  7 14:56:52 GMT 2017
+number of files examined is on the order of: rsync --dry-run --links -avi --size-only /fs/site1/ops/eccc/cmod/prod/hubs /fs/site2/ops/eccc/cmod/prod/hubs |&amp; wc -l
+27182247
+rsync end @ Sat Oct  7 20:06:31 GMT 2017
+psilva@eccc1-ppp1:~/test$
+</pre></div>
+</div>
+<p>Un <strong>seul passage a pris plus de cinq heures pour examiner 27 millions de dossiers ou</strong> examiner
+<strong>environ 1500 fichiers par seconde</strong>. Le taux maximal d’exécution de rsyncs sur cet arbre est
+donc de l’ordre d’une fois toutes les six heures (pour permettre un certain temps de copie) pour
+cet arbre. Notez que toute méthode habituelle de copie d’une arborescence de répertoires nécessite
+de parcourir et qu’il n’y a aucune raison de croire qu’un autre outil tel que find, dump, tar, tree,
+etc… serait nettement plus rapide que rsync. Nous avons besoin d’une méthode plus rapide pour savoir
+quels fichiers ont été modifiés afin qu’ils puissent être copiés.</p>
+</section>
+<section id="methodes-de-detection-inotify-policy-shim">
+<h3>Méthodes de détection : Inotify, Policy, SHIM<a class="headerlink" href="#methodes-de-detection-inotify-policy-shim" title="Link to this heading"></a></h3>
+<p>Il existe une fonctionnalité du noyau Linux appelée INOTIFY, qui peut déclencher un événement
+lorsqu’un fichier est modifié. En définissant un déclencheur INOTIFY sur chaque répertoire de
+l’arborescence, nous pouvons être avertis lorsqu’un fichier est modifié dans l’arbre. C’était
+l’approche initiale adoptée. Il s’avère (en janvier 2017), qu’INOTIFY est bien une fonctionnalité
+Linux, en ce sens que les événements INOTIFY ne se propagent que sur un seul serveur. Avec un
+système de fichier cluster comme GPFS, il faut exécuter un moniteur INOTIFY sur chaque noyau
+où les fichiers sont écrits. Donc, plutôt que d’exécuter un seul démon, nous étions confrontés
+à l’exécution de plusieurs centaines de démons (un par nœud physique), chacun surveillant le
+même ensemble de dizaines de millions de fichiers. Puisque les démons fonctionnaient sur de
+nombreux nœuds, l’utilisation de la mémoire a atteint le téraoctet.</p>
+<p>Une autre approche : au lieu d’exécuter la détection de modification au niveau Linux, utilisez
+le système de fichier lui-même, qui est piloté par une base de données, pour indiquer quels
+fichiers ont été modifiés. Les principaux objectifs de la solution HPC et le système de stockage qui
+utilise le système de fichiers parallèle général d’IBM, ou GPFS. À l’aide de la méthode <em>GPFS-policy</em>,
+une requête est exécutée sur la base de données du système de fichiers à un rythme aussi élevé que
+possible (environ cinq à dix minutes par requête) combiné avec sr_poll pour annoncer les fichiers
+modifiés (et donc éligibles à la copie). C’est complètement non portable, mais on s’attendait à
+ce qu’il soit beaucoup plus rapide que la traversée de l’arborescence des fichiers.</p>
+<p>Au cours de l’hiver 2016-2017, ces deux méthodes ont été mises en œuvre. Le sr3_watch basé sur
+INOTIFY était la méthode la plus rapide (instantanée), mais les démons avaient des problèmes de
+stabilité et de consommation de mémoire, et ils ont également pris trop de temps à démarrer
+(nécessite une traversée initiale de l’arbre, qui prend le même temps que rsync). Bien que plus
+lent (prenant plus de temps pour remarquer qu’un fichier a été modifié), la politique GPFS avait
+une performance <em>acceptable</em> et était beaucoup plus fiable que la méthode de sr3_watch parallèle,
+et au printemps, avec un déploiement prévu pour le début de juillet 2017, l’approche stratégique
+du GPFS a été choisie.</p>
+<p>Au fur et à mesure que la migration progressait, les systèmes de fichiers se développaient parce
+qu’ils avaient plus de fichiers dans les arborescences et la méthode de stratégie GPFS a
+progressivement ralentie. Déjà en juillet 2017, ce n’était pas une solution acceptable. À ce stade,
+l’idée d’intercepter les appels d’i/o de fichiers de jobs avec une bibliothèque SHIM a été introduite.
+ECCC a dit à SPC à l’époque, le fait d’avoir une alimentation correcte et d’avoir tout prêt pour la
+transition était la priorité, de sorte que les efforts se sont concentrés dans cette direction jusqu’à
+ce que la migration soit réalisée en septembre. Bien qu’il s’agisse d’une priorité moindre au cours de
+l’été, une mise en œuvre C de la partie d’envoi de la bibliothèque Sarra a été implémentée avec un
+prototype de bibliothèque Shim pour l’appeler.</p>
+<p>C’est à noter que les exécutions de la politique GPFS ont été déployées opérationnellement depuis 2017.
+Cela s’est avéré être la <em>version 1</em> de la solution de mise en miroir, et a permis d’obtenir une mise
+en miroir vers les clusters secondaires avec environ 20 minutes de retard pour acheminer les données vers
+le deuxième système. Trois ans plus tard, il y a maintenant une mise à niveau des clusters de
+supercalculateurs (appelée U1) en cours avec deux nouveaux clusters supplémentaires en ligne.
+Le client utilise maintenant les méthodes normales Sarracenia pour mettre en miroir l’ancien cluster
+de sauvegarde vers les nouveaux, avec seulement quelques secondes de retard au-delà de ce qu’il faut pour
+accéder au cluster de sauvegarde.</p>
+<p>Il convient également de noter que l’utilisation de requêtes de stratégie GPFS a imposé une charge
+importante, et continue, aux clusters GPFS, et constitue une préoccupation constante pour les
+administrateurs GPFS. Ils aimeraient beaucoup s’en débarrasser. Les performances se sont stabilisées
+au cours de la dernière année, mais elles semblent ralentir à mesure que la taille de l’arborescence
+des fichiers augmente. De nombreuses optimisations ont été mises en œuvre pour obtenir des performance
+adéquates.</p>
+<section id="bibliotheque-shim">
+<h4>Bibliothèque Shim<a class="headerlink" href="#bibliotheque-shim" title="Link to this heading"></a></h4>
+<p>La méthode choisie pour la notification est une <a class="reference external" href="https://en.wikipedia.org/wiki/Shim_(computing)">bibliothèque Shim</a>
+Lorsqu’une application en cours d’exécution effectue des appels aux points d’entrée d’API
+fournis par les bibliothèques ou le noyau, il existe un processus de recherche (résolu au
+moment du chargement de l’application) qui trouve la première entrée dans le chemin d’accès
+qui a la signature appropriée. Par exemple, lors de l’émission d’un appel de fermeture de
+fichier(2), le système d’exploitation organisera l’appel de la routine correcte dans la
+bibliothèque appropriée.</p>
+<img alt="../../../_images/shim_explanation_normal_close.svg" src="../../../_images/shim_explanation_normal_close.svg" /><p>Un appel à la routine de fermeture indique qu’un programme a fini d’écrire le fichier en question,
+et indique donc généralement la première fois qu’il est utile d’annoncer un fichier pour le transfert.
+Nous avons créé une bibliothèque Shim, qui a des points d’entrée qui usurpent l’identité de ceux
+appelés par l’application, afin que les notifications de disponibilité des fichiers soient publiées
+par l’application elle-même, sans aucune modification de l’application.</p>
+<img alt="../../../_images/shim_explanation_shim_close.svg" src="../../../_images/shim_explanation_shim_close.svg" /><p>L’utilisation de la bibliothèque de Shim est détaillée dans <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(1)</a></p>
+</section>
+</section>
+<section id="copie-de-fichiers">
+<h3>Copie de fichiers<a class="headerlink" href="#copie-de-fichiers" title="Link to this heading"></a></h3>
+<p>Il est important de noter que pendant que tout ce travail progressait sur la partie “obtenir
+la liste des fichiers à copier” du problème, nous travaillions également sur la partie “copier
+les fichiers de l’autre côté” du problème. Au cours de l’été, les résultats des tests de
+performance et d’autres considérations ont entraîné de fréquents changements de tactique.
+Les <em>boutique du sites</em> sont des clusters à part entière.  Ils ont des nœuds de protocole pour
+servir le trafic en dehors du cluster GPFS. Il existe des nœuds siteio avec des connexions
+infiniband et des disques réels. Les nœuds de protocole (appelés nfs ou proto) sont des
+participants du cluster GPFS dédié aux opérations d’i/o, utilisé pour décharger les i/o du
+clusters de calcul principaux (PPP et Supercalculateur), qui ont des connexions comparables
+au boutique du sites en tant que nœuds de protocole.</p>
+<p>Il existe plusieurs réseaux (40GigE, Infiniband, ainsi que des réseaux de gestion) et celui
+à utiliser doit également être choisi.  Ensuite, il y a les méthodes de communication (ssh
+sur tcp / ip? BBCP sur TCP/IP ? GPFS sur tcpip? Ipoib? natif-ib?).</p>
+<img alt="../../../_images/site-store.jpg" src="../../../_images/site-store.jpg" />
+<p>De nombreuses sources et destinations différentes (ppp, nfs et nœuds de protocole), ainsi que
+de nombreuses méthodes différentes (rcp, scp, bbcp, sscp, cp, dd) ont toutes été testées à des
+degrés différents à différents moments. À ce stade, plusieurs forces de sarracenia étaient évidentes:</p>
+<ul class="simple">
+<li><p>La séparation de la publication et de l’abonnement signifie que l’on peut s’abonner sur le
+nœud source et pousser vers la destination, ou sur la destination et extraire de la source.
+Il est facile à adapter à l’une ou l’autre approche (on s’est retrouvé avec les nœuds de
+protocole de destination, en tirant de la source).</p></li>
+<li><p>La séparation de copier depuis des jobs computationnel signifie que les temps d’exécution des
+modèles ne sont pas affectés, car les travaux d’i/o sont complètement séparés.</p></li>
+<li><p>La capacité d’adapter le nombre de travailleurs à la performance requise (finalement décidé
+de 40 travailleurs effectuant des copies en parallèle).</p></li>
+<li><p>La disponibilité des plugins <em>download_cp</em>, <em>download_rcp</em>, <em>download_dd</em>, permet d’appliquer
+facilement de nombreux programmes de copie différents (et donc des protocoles) au problème de transfert.</p></li>
+</ul>
+<p>De nombreux critères différents ont été pris en compte (tels que: charge sur les nœuds nfs/protocole,
+autres nœuds, vitesse de transfert, charge sur les nœuds PPP). La configuration finale sélectionnée
+d’utiliser <em>cp</em> (via le <em>download_cp</em> plugin) initié à partir des nœuds de protocole de la
+boutique du site récepteur.  Ainsi, les lectures se produiraient via GPFS sur IPoIB, et les
+écritures seraient effectuées sur GPFS natif sur IB. Ce n’était pas la méthode de transfert la
+plus rapide testée (<em>bbcp</em> était plus rapide), mais elle a été sélectionnée parce qu’elle
+répartissait la charge sur les nœuds siteio, ce qui entraînait un NFS et un protocole plus stable.
+Les nœuds et surcharge de configuration TCP/IP/démontage supprimée. La partie “copier les fichiers
+de l’autre côté” du problème était stable à la fin de l’été 2017, et l’impact sur la stabilité
+du système est minimisé.</p>
+</section>
+<section id="bibliotheque-shim-necessaire">
+<h3>Bibliothèque Shim nécessaire<a class="headerlink" href="#bibliotheque-shim-necessaire" title="Link to this heading"></a></h3>
+<p>Malheureusement, la mise en miroir entre les sites fonctionnait avec un décalage d’environ 10 minutes
+sur le système de fichiers source (environ 30 fois plus rapide qu’une approche rsync naïve), et ne
+fonctionnait qu’en principe, avec de nombreux fichiers manquants dans la pratique, elle n’était pas
+utilisable aux fins prévues. La mise en service opérationnelle de la solution HPCR dans son ensemble
+(avec mise en miroir différée) a eu lieu en septembre 2017, et les travaux de mise en miroir ont
+essentiellement été arrêtés jusqu’en octobre (en raison des activités liées aux travaux de mise en
+service).</p>
+<p>Nous avons continué à travailler sur deux approches, la libsrshim et la politique GPFS. Les requêtes
+exécutées par la politique GPFS devaient être réglées, éventuellement un chevauchement de 75 secondes
+(où une requête suivante demandait des modifications de fichier jusqu’à un point 75 secondes avant la
+fin de la dernière) car il y avait des problèmes avec les fichiers manquants dans les copies. Même avec
+ce niveau de chevauchement, il manquait encore des dossiers. À ce stade, fin novembre, début décembre,
+les libsrshim fonctionnaient assez bien pour être si encourageants que les gens ont perdu tout intérêt
+pour la politique du GPFS. Contrairement à un délai moyen d’environ 10 minutes pour démarrer une copie
+de fichier avec des requêtes de stratégie GPFS, l’approche libsrshim a la copie en file d’attente dès
+que le fichier est fermé sur le système de fichiers source.</p>
+<p>Il convient de noter que lorsque le travail a commencé, l’implémentation python de Sarracenia était
+un outil de distribution de données, sans support pour la mise en miroir. Au fur et à mesure que
+l’année avançait, des fonctionnalités (prise en charge des liens symboliques, transport des attributs
+de fichier, prise en charge de la suppression de fichiers) ont été ajoutées au package initial. L’idée
+d’un traitement périodique (appelé pulsations) a été ajoutée, d’abord pour détecter les défaillances
+des clients (en voyant les journaux inactifs), mais plus tard pour lancer le nettoyage de la mémoire
+pour la cache des doublons, la surveillance de l’utilisation de la mémoire et la récupération d’erreurs
+complexes. Le cas d’utilisation a précipité de nombreuses améliorations dans l’application, y compris
+une deuxième implémentation en C pour les environnements où un environnement Python3 était difficile
+à établir, ou où l’efficacité était primordiale (le cas libsrshim).</p>
+</section>
+<section id="est-ce-que-ca-marche">
+<h3>Est-ce que ça marche?<a class="headerlink" href="#est-ce-que-ca-marche" title="Link to this heading"></a></h3>
+<p>En décembre 2017, le logiciel pour l’approche libsrshim semblait prêt, il a été déployé en quelques
+petites exécutions parallèles (non opérationnelles). Les essais en parallèle ont commencé en janvier 2018.
+Il y a eu de nombreux cas limites, et les tests se sont poursuivis pendant deux ans, jusqu’à ce qu’ils
+soient finalement prêts à être déployés en décembre 2019.</p>
+<ul class="simple">
+<li><p><strong>FIXME:</strong> inclure des liens vers des plugins</p></li>
+<li><p><strong>FIXME:</strong> Une autre approche envisagée consiste à comparer les instantanés du système de fichiers.</p></li>
+</ul>
+<p>Comme la bibliothèque Shim a été utilisée dans des contextes de plus en plus larges pour la rapprocher
+du déploiement, un nombre important de cas limites ont été rencontrés :</p>
+<ul class="simple">
+<li><p>Utilisation avec des shells non-login (en particulier SCP) ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/66">https://github.com/MetPX/sarrac/issues/66</a>  )</p></li>
+<li><p>Les applications Fortran boguées appellent de manière incorrecte la fermeture  ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/12">https://github.com/MetPX/sarrac/issues/12</a>  )</p></li>
+<li><p>TCL/TK traitant toute sortie vers STDERR comme une défaillance ( <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/69">https://github.com/MetPX/sarracenia/issues/69</a> )</p></li>
+<li><p><em>scripts shell hautes performances</em> (  <a class="reference external" href="https://github.com/MetPX/sarrac/issues/15">https://github.com/MetPX/sarrac/issues/15</a> )</p></li>
+<li><p>Code qui ne ferme pas tous les fichiers ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/11">https://github.com/MetPX/sarrac/issues/11</a> )</p></li>
+<li><p>code qui ne ferme pas un seul fichier ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/68">https://github.com/MetPX/sarrac/issues/68</a> )</p></li>
+<li><p>Il y a des chemins utilisés de plus de 255 caractères ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/39">https://github.com/MetPX/sarrac/issues/39</a> )</p></li>
+<li><p>Affrontements dans les symboles, provoquant le crash de SED ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/80">https://github.com/MetPX/sarrac/issues/80</a> )</p></li>
+</ul>
+<p>Au cours des deux années qui ont suivi, ces cas limites ont été traités et le déploiement a
+finalement eu lieu avec la transition vers U1 en janvier 2020. On s’attend à ce que le délai
+dans les fichiers apparaissant sur le deuxième système de fichiers soit de l’ordre de cinq
+minutes après leur écriture dans l’arborescence source, soit 72 fois plus rapide que rsync
+(voir la section suivante pour les informations sur les performances), mais nous n’avons pas
+encore de métriques concrètes.</p>
+<p>La question s’est naturellement posée, si l’arborescence des répertoires ne peut pas être
+parcourue, comment savons-nous que les arborescences source et destination sont les mêmes ?
+Un programme permettant de sélectionner des fichiers aléatoires sur l’arborescence source
+est utilisé pour alimenter un sr_poll, qui ajuste ensuite le chemin pour le comparer au
+même fichier sur la destination. Sur un grand nombre d’échantillons, nous obtenons une
+quantification de la précision de la copie. Le plugin pour cette comparaison est encore
+en développement.</p>
+</section>
+<section id="est-ce-rapide">
+<h3>Est-ce rapide?<a class="headerlink" href="#est-ce-rapide" title="Link to this heading"></a></h3>
+<p>Les exécutions de la politique GPFS sont toujours la méthode utilisée sur le plan opérationnel au moment
+de la rédaction de cet article (2018/01). Les chiffres de performances indiqués dans le résumé sont extraits
+des journaux d’une journée d’exécution de stratégie GPFS.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Hall1 à Hall2: bytes/days: 18615163646615 = 16T, nb fichier/jour:  1901463</p></li>
+<li><p>Hall2 à CMC: octets/jours: 4421909953006 = 4T, nb fichier/jour: 475085</p></li>
+</ul>
+</div></blockquote>
+<p>Tout indique que la bibliothèque de shim copie plus de données plus rapidement que les exécutions
+basées sur des stratégies, mais jusqu’à présent (2018/01), seuls des sous-ensembles de l’arborescence
+principale ont été testés.  Sur une arborescence de 142000 fichiers, l’exécution de la stratégie GPFS
+avait un temps de transfert moyen de 1355 secondes (environ 23 minutes), alors que l’approche de la
+bibliothèque de shim avait un temps de transfert moyen de 239 secondes (moins de cinq minutes) ou une
+accélération pour libshim vs stratégie GPFS d’environ 4:1. Sur un deuxième arbre où la bibliothèque
+de Shim transférait 144 000 fichiers en une journée, le temps de transfert moyen était de 264 secondes,
+alors que le même arbre avec l’approche de politique GPFS prenait 1175 (essentiellement 20 minutes).</p>
+<p>Les statistiques sont accumulées pour des heures particulières, et à des heures de faible trafic, le
+temps de transfert moyen avec la bibliothèque de Shim était de 0,5 seconde contre 166 secondes avec la
+politique. On pourrait prétendre à une accélération de 300:1, mais cela est inhérent au fait que la
+méthode GPFS-policy doit être limitée à une certaine intervalle d’interrogation (cinq minutes) pour
+limiter l’impact sur le système de fichiers, et cela fournit une limite inférieure sur la latence
+de transfert.</p>
+<p>Sur des arbres comparables, le nombre de fichiers copiés avec la bibliothèque shim est toujours plus
+élevé qu’avec la stratégie GPFS. Bien que l’exactitude soit encore en cours d’évaluation, la méthode
+shim fonctionne apparemment mieux que la politique. Si nous revenons à la performance rsync d’origine
+de 6 heures pour l’arbre, alors le ratio que nous prévoyons de livrer est de 6 heures contre 5 minutes …
+ou une accélération de 72:1.</p>
+<p>Ce qui précède est basé sur le rapport client suivant :</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Jan<span class="w"> </span>4th
+Preload:
+dracette@eccc1-ppp1:~$<span class="w"> </span>./mirror.audit_filtered<span class="w"> </span>-c<span class="w"> </span>~opruns/.config/sarra/subscribe/ldpreload.conf<span class="w">  </span>-t<span class="w"> </span>daily<span class="w"> </span>-d<span class="w"> </span><span class="m">2018</span>-01-04
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">238</span>.622s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1176</span>.83s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wh/banco/cutoff/2018010406_078_prog_gls_rel.tb0
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0244577s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/backup/ATX_radprm
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">142426</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">44506</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">14666</span>
+Policy:
+dracette@eccc1-ppp1:~$<span class="w"> </span>./mirror.audit_filtered<span class="w"> </span>-c<span class="w"> </span>~opruns/.config/sarra/subscribe/mirror-ss1-from-hall2.conf<span class="w">  </span>-t<span class="w"> </span>daily<span class="w"> </span>-d<span class="w"> </span><span class="m">2018</span>-01-04
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1355</span>.42s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">2943</span>.53s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/surface/201801041500_tt.obs
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1</span>.93106s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/prod/archive.dbase/dayfiles/par/2018010416_opruns_capa25km_rdpa_final
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">98296</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">97504</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">96136</span>
+
+Jan<span class="w"> </span>3rd
+Preload:
+dracette@eccc1-ppp1:~$<span class="w"> </span>./mirror.audit_filtered<span class="w"> </span>-c<span class="w"> </span>~opruns/.config/sarra/subscribe/ldpreload.conf<span class="w">  </span>-t<span class="w"> </span>daily<span class="w"> </span>-d<span class="w"> </span><span class="m">2018</span>-01-03
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">264</span>.377s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1498</span>.73s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/capa/bassin/6h/prelim/05/2018010312_05ME005_1.dbf
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0178287s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/XSS_0p1_statqpe
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">144419</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">60977</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">14185</span>
+Policy:
+dracette@eccc1-ppp1:~$<span class="w"> </span>./mirror.audit_filtered<span class="w"> </span>-c<span class="w"> </span>~opruns/.config/sarra/subscribe/mirror-ss1-from-hall2.conf<span class="w">  </span>-t<span class="w"> </span>daily<span class="w"> </span>-d<span class="w"> </span><span class="m">2018</span>-01-03
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1175</span>.33s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">2954</span>.57s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/surface/201801032200_tt.obs
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span>-0.359947s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/prod/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/1h/XTI/201801031300~~PA,PA_PRECIPET,EE,1H:URP:XTI:RADAR:META:COR1
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">106892</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">106176</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">104755</span>
+
+À<span class="w"> </span>garder<span class="w"> </span>à<span class="w"> </span>l’esprit:
+
+Nous<span class="w"> </span>avons<span class="w"> </span><span class="m">12</span><span class="w"> </span>instances<span class="w"> </span>pour<span class="w"> </span>le<span class="w"> </span>préchargement<span class="w"> </span>alors<span class="w"> </span>que<span class="w"> </span>nous<span class="w"> </span>en<span class="w"> </span>exécutons<span class="w"> </span><span class="m">40</span><span class="w"> </span>pour<span class="w"> </span>la<span class="w"> </span>stratégie.
+
+*<span class="w"> </span>J’ai<span class="w"> </span>filtré<span class="w"> </span>l’ensemble<span class="w"> </span>des<span class="w"> </span>fichiers<span class="w"> </span>qui<span class="w"> </span>faussaient<span class="w"> </span>fortement<span class="w"> </span>les<span class="w"> </span>résultats.
+*<span class="w"> </span>L’audit<span class="w"> </span>de<span class="w"> </span>préchargement<span class="w"> </span>en<span class="w"> </span>tranches<span class="w"> </span>horaires<span class="w"> </span>montre<span class="w"> </span>qu’il<span class="w"> </span>est<span class="w"> </span>fortement<span class="w"> </span>lié<span class="w"> </span>à<span class="w"> </span>l’instance.
+*<span class="w"> </span>Si<span class="w"> </span>nous<span class="w"> </span>devions<span class="w"> </span>l’augmenter,<span class="w"> </span>il<span class="w"> </span>devrait<span class="w"> </span>donner<span class="w"> </span>de<span class="w"> </span>bien<span class="w"> </span>meilleurs<span class="w"> </span>résultats<span class="w"> </span>dans<span class="w"> </span>des<span class="w"> </span>situations<span class="w"> </span>de<span class="w"> </span>compte<span class="w"> </span>élevé.
+
+Voici<span class="w"> </span>à<span class="w"> </span>nouveau<span class="w"> </span>le<span class="w"> </span><span class="m">4</span><span class="w"> </span>janvier,<span class="w"> </span>mais<span class="w"> </span>par<span class="w"> </span>tranche<span class="w"> </span>horaire:
+
+dracette@eccc1-ppp1:~$<span class="w"> </span>./mirror.audit_filtered<span class="w"> </span>-c<span class="w"> </span>~opruns/.config/sarra/subscribe/ldpreload.conf<span class="w">  </span>-t<span class="w"> </span>hourly<span class="w"> </span>-d<span class="w"> </span><span class="m">2018</span>-01-04
+<span class="m">00</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.505439s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">5</span>.54261s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/6h/XME/201801040000~~PA,PA_PRECIPET,EE,6H:URP:XME:RADAR:META:NRML
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0328007s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/IWX_0p5_statqpe
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">847</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">01</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">166</span>.883s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1168</span>.64s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wh/banco/cutoff/2018010318_078_prog_gls_rel.tb0
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.025425s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/XPG/201801031800_XPG_statomr
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">24102</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">3064</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">1</span>
+<span class="m">02</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.531483s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">4</span>.73308s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/archive.dbase/dayfiles/par/2018010401_opruns_capa25km_rdpa_preli
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0390887s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/XMB/201801031900_XMB_radprm
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">774</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">03</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.669443s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">131</span>.666s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/pa/1h/WKR/201801032000~~PA,PA_PRECIPET,EE,1H:URP:WKR:RADAR:META:COR2
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0244577s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/radprm/backup/ATX_radprm
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">590</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">04</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">59</span>.0324s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">236</span>.029s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/wcps_20170501/wf/depot/2018010400/nemo/LISTINGS/ocean.output.00016.672
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.033812s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/resps_20171107/forecast/products_dbase/images/2018010400_resps_ens-point-ETAs_239h-boxplot-NS_Pictou-001_240.png
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">2297</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">05</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">6</span>.60841s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">28</span>.6136s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/rewps_20171018/forecast/products_dbase/images_prog/2018010400_rewps_ens-point-Hs_Tp_072h-45012-000_072.png
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0278831s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/XSM/201801032200_XSM_0p2_statqpe
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">3540</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">06</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">1</span>.90411s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">18</span>.5288s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/radar/statqpe/backup/ARX_0p5_statqpe
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.0346384s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/WWW/201801040600_WWW_statomr
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">757</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">0</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+<span class="m">07</span><span class="w"> </span>GMT
+Mean<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">262</span>.338s
+Max<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">558</span>.845s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/capa/bassin/6h/final/11/2018010400_11AA028_1.shp
+Min<span class="w"> </span>transfer<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.028173s<span class="w"> </span><span class="k">for</span><span class="w"> </span>file:<span class="w"> </span>/space/hall2/sitestore/eccc/cmod/cmoi/opruns/ldpreload_test/hubs/suites/par/capa25km_20170619/gridpt/qperad/biais/6h/DLH/201801040000_DLH_statomr
+Total<span class="w"> </span>files:<span class="w"> </span><span class="m">23849</span>
+Files<span class="w"> </span>over<span class="w"> </span>300s:<span class="w"> </span><span class="m">11596</span>
+Files<span class="w"> </span>over<span class="w"> </span>600s:<span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</section>
+<section id="frais-generaux">
+<h3>Frais généraux<a class="headerlink" href="#frais-generaux" title="Link to this heading"></a></h3>
+<p>Quel est l’effet de la mise en service de la bibliothèque de Shim sur les tâches des utilisateurs?
+Lorsqu’il est utilisé dans de grands modèles avec de bons modèles d’i/o nécessaires pour des performances
+élevées, la surcharge ajoutée par la bibliothèque de Shim peut être négligeable. Cependant, une surcharge
+supplémentaire est introduite chaque fois qu’un processus est généré, ferme un fichier et se termine.
+Les scripts shell, qui fonctionnent en générant et en récoltant des processus en continu, voient un impact
+maximal de la bibliothèque de shim.  Ceci est exploré dans le numéro <a class="reference external" href="https://github.com/MetPX/sarrac/issues/15">https://github.com/MetPX/sarrac/issues/15</a> :</p>
+<p>Le numéro 15 décrit le script shell le plus défavorable qui réécrit un fichier, une ligne à la fois,
+générant et récoltant un processus à chaque fois. Dans ce cas, nous voyons jusqu’à 18 fois plus de
+pénalité dans les performances du script shell. Cependant, la réécriture du script shell en python
+peut entraîner une amélioration de 20 fois la performance, avec presque aucune surcharge de la bibliothèque
+shim (360 fois plus rapide que le script shell équivalent avec la bibliothèque shim active.)</p>
+<p>Ainsi, les scripts shell qui étaient lents auparavant peuvent être beaucoup plus lents avec la bibliothèque
+de shim, mais l’accélération disponible en reformulant des méthodes plus efficaces peut également avoir
+des avantages beaucoup plus importants.</p>
+</section>
+<section id="contributions">
+<h3>Contributions<a class="headerlink" href="#contributions" title="Link to this heading"></a></h3>
+<p><strong>Dominic Racette</strong> - ECCC CMC Operations Implementation</p>
+<blockquote>
+<div><p>Responsable client sur le projet de mise en miroir. Beaucoup d’audit et d’exécution de tests.
+Intégration/déploiement de plugins de copie. Beaucoup de tests et d’extraction de rapports de journal.
+Il s’agissait d’un projet qui reposait sur une large participation des clients pour fournir une suite
+de tests extrêmement variée, et Dominic était responsable de la part de ce travail.</p>
+</div></blockquote>
+<p><strong>Anthony Chartier</strong> - ECCC CMC Development</p>
+<blockquote>
+<div><p>Responsable client de l’Acquisition de Données Environnementales, le système d’acquisition de données utilisé
+par les séries canadiennes de prévisions météorologiques numériques.</p>
+</div></blockquote>
+<p><strong>Doug Bender</strong> - ECCC CMC Operations Implementation</p>
+<blockquote>
+<div><p>Un autre analyste client participant au projet.  Sensibilisation, engagement, etc…</p>
+</div></blockquote>
+<p><strong>Daluma Sen</strong> - SSC DCSB Supercomputing HPC Optimization</p>
+<blockquote>
+<div><p>Création de bibliothèques C dans un environnement HPC, contribution au sélecteur de fichiers aléatoires,
+conseil général.</p>
+</div></blockquote>
+<p><strong>Alain St-Denis</strong> - Manager, SSC DCSB Supercomputing HPC Optimization</p>
+<blockquote>
+<div><p>Inspiration, consultation, sage. Initialement proposé bibliothèque de Shim. Aide au débogage.</p>
+</div></blockquote>
+<p><strong>Daniel Pelissier</strong> - SSC DCSB Supercomputing HPC Integration / then replacing Alain.</p>
+<blockquote>
+<div><p>Inspiration/consultation sur le travail de la politique GPFS et l’utilisation des systèmes de stockage.</p>
+</div></blockquote>
+<p><strong>Tarak Patel</strong> - SSC DCSB Supercomputing HPC Integration.</p>
+<blockquote>
+<div><p>Installation de Sarracenia sur des nœuds de protocole et d’autres emplacements spécifiques.
+Développement de scripts de politique GPFS, appelé par les plugins de Jun Hu.</p>
+</div></blockquote>
+<p><strong>Jun Hu</strong>  - SSC DCSB Supercomputing Data Interchange</p>
+<blockquote>
+<div><p>Responsable du déploiement pour SPC, développement des plug-ins d’intégration de la politique GPFS Sarracenia,
+les a mis en œuvre au sein de sr_poll, a travaillé avec le CMOI sur les déploiements.
+A assumé la majeure partie de la charge de déploiement de SPC. Déploiement de la mise en œuvre inotify/sr_watch.</p>
+</div></blockquote>
+<p><strong>Noureddine Habili</strong>  - SSC DCSB Supercomputing Data Interchange</p>
+<blockquote>
+<div><p>Empaquetage Debian pour l’implémentation C. Certains travaux de déploiement également.</p>
+</div></blockquote>
+<p><strong>Peter Silva</strong> - Manager, SSC DCSB Supercomputing Data Interchange</p>
+<blockquote>
+<div><p>Chef de projet, a écrit l’implémentation C y compris la bibliothèque shim, piraté sur le Python
+aussi de temps en temps. Versions initiales de la plupart des plugins (en Sarra.)</p>
+</div></blockquote>
+<p><strong>Michel Grenier</strong> - SSC DCSB Supercomputing Data Interchange</p>
+<blockquote>
+<div><p>Responsable du développement Python Sarracenia. Quelques corrections C aussi.</p>
+</div></blockquote>
+<p><strong>Deric Sullivan</strong> - Manager, SSC DCSB Supercomputing HPC Solutions</p>
+<blockquote>
+<div><p>Consultation/travail sur les déploiements avec la solution inotify.</p>
+</div></blockquote>
+<p><strong>Walter Richards</strong> - SSC DCSB Supercomputing HPC Solutions</p>
+<blockquote>
+<div><p>Consultation/travail sur les déploiements avec la solution inotify.</p>
+</div></blockquote>
+<p><strong>Jamal Ayach</strong> - SSC DCSB Supercomputing HPC Solutions</p>
+<blockquote>
+<div><p>Consultation/travail sur les déploiements avec la solution inotify, ainsi que
+l’installation native de paquets sur pré et post-processeurs.</p>
+</div></blockquote>
+<p><strong>Michael Saraga</strong> - SSC DCSB .Data Interchange</p>
+<blockquote>
+<div><p>travailler sur la mise en œuvre de C en 2019, préparer des emballages et des emballages natifs
+pour les distributions Suse et Redhat.</p>
+</div></blockquote>
+<p><strong>Binh Ngo</strong> - SSC DCSB Supercomputing HPC Solutions</p>
+<blockquote>
+<div><p>Installation de paquets natifs sur les backends Cray.</p>
+</div></blockquote>
+<p><strong>FIXME:</strong> Qui d’autre devrait être ici: ?</p>
+<p>La direction d’ECCC et de SPC a également bénéficié d’un soutien et d’une surveillance tout au long du projet.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Evolution.html" class="btn btn-neutral float-left" title="Histoire/Contexte de Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mesh_gts.html" class="btn btn-neutral float-right" title="Échange de données de type maillé pour le WIS-GTS en 2019" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

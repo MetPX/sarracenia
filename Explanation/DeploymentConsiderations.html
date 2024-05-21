@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deployment Considerations &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="File Detection Strategies" href="DetectFileReady.html" />
+    <link rel="prev" title="Sarracenia Programming Guide" href="SarraPluginDev.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deployment Considerations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#transport-engines">Transport Engines</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ipv6">IPv6</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#designs">Designs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataless-or-s-0">Dataless or S=0</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#winnowed-dataless">Winnowed Dataless</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataless-with-sr-poll">Dataless With Sr_poll</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#standalone">Standalone</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#switching-routing">Switching/Routing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#security-considerations">Security Considerations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#client">Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#server-broker">Server/Broker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#input-validation">Input Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#privileged-system-access">Privileged System Access</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#glossary">Glossary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Deployment Considerations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/DeploymentConsiderations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="deployment-considerations">
+<h1>Deployment Considerations<a class="headerlink" href="#deployment-considerations" title="Link to this heading"></a></h1>
+<p>Sarracenia data pumps are often placed in network designs near demarcation points, to provide
+an application level demarcation point to allow for security scanning and to limit visibility
+into different zones.  Pumps may either have all services incorporated on a single server,
+or commonly the main broker is on a dedicated node, and the nodes that do the data transfer
+are called <em>Transport Engines.</em>  In high performance deployments, each transport engine
+may have a local broker to deal with local transfers and transformations.</p>
+<section id="transport-engines">
+<h2>Transport Engines<a class="headerlink" href="#transport-engines" title="Link to this heading"></a></h2>
+<p>Transport engines are the data servers queried by subscribers, by the end users, or other pumps.
+The subscribers read the notices and fetch the corresponding data, using the indicated protocol.
+The software to serve the data can be either SFTP or HTTP (or HTTPS.) For specifics of
+configuring the servers for use, please consult the documentation of the servers themselves.
+Also note that additional protocols can be enabled through the use of do_ plugins, as
+described in the Programming Guide.</p>
+<section id="ipv6">
+<h3>IPv6<a class="headerlink" href="#ipv6" title="Link to this heading"></a></h3>
+<p>A sample pump was implemented on a small VPS with IPv6 enabled. A client
+from far away connected to the rabbitmq broker using IPv6, and the
+subscription to the apache httpd worked without issues. <em>It just works</em>. There
+is no difference between IPv4 and IPv6 for sarra tools, which are agnostic of
+IP addresses.</p>
+<p>On the other hand, one is expected to use hostnames, since use of IP addresses
+will break certificate use for securing the transport layer (TLS, aka SSL) No
+testing of IP addresses in URLs (in either IP version) has been done.</p>
+</section>
+</section>
+<section id="designs">
+<h2>Designs<a class="headerlink" href="#designs" title="Link to this heading"></a></h2>
+<p>There are many different arrangements in which sarracenia can be used.</p>
+<dl class="simple">
+<dt>Dataless</dt><dd><p>where one runs just sarracenia on top of a broker with no local transfer engines.
+This is used, for example to run sr_winnow on a site to provide redundant data sources.</p>
+</dd>
+<dt>Standalone</dt><dd><p>the most obvious one, run the entire stack on a single server, openssh and a web server
+as well the broker and sarra itself. Makes a complete data pump, but without any redundancy.</p>
+</dd>
+<dt>Switching/Routing</dt><dd><p>Where, in order to achieve high performance, a cluster of standalone nodes are placed behind
+a load balancer. The load balancer algorithm is just round-robin, with no attempt to associate
+a given source with a given node. This has the effect of pumping different parts of large files
+through different nodes. So one will see parts of files announced by such pump, to be
+re-assembled by subscribers.</p>
+</dd>
+<dt>Data Dissemination</dt><dd><p>Where in order to serve a large number of clients, multiple identical servers, each with a complete
+mirror of data</p>
+</dd>
+<dt>FIXME:</dt><dd><p>ok, opened big mouth, now need to work through the examples.</p>
+</dd>
+</dl>
+<section id="dataless-or-s-0">
+<h3>Dataless or S=0<a class="headerlink" href="#dataless-or-s-0" title="Link to this heading"></a></h3>
+<p>A configuration which includes only the AMQP broker. This configuration can be used when users
+have access to disk space on both ends and only need a mediator. This is the configuration
+of sftp.science.gc.ca, where the HPC disk space provides the storage so that the pump does
+not need any, or pumps deployed to provide redundant HA to remote data centres.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: sample configuration of shovels, and sr_winnow (with output to xpublic) to allow
+subscribers in the SPC to obtain data from either edm or dor.</p>
+</div>
+<p>Note that while a configuration can be dataless, it can still make use of rabbitmq
+clustering for high availability requirements (see rabbitmq clustering below.)</p>
+</section>
+<section id="winnowed-dataless">
+<h3>Winnowed Dataless<a class="headerlink" href="#winnowed-dataless" title="Link to this heading"></a></h3>
+<p>Another example of a dataless pump would be to provide product selection from two upstream
+sources using sr_winnow. The sr_winnow is fed by shovels from upstream sources, and
+the local clients just connect to this local pump. sr_winnow takes
+care of only presenting the products from the first server to make
+them available. One would configure sr_winnow to output to the xpublic exchange
+on the pump.</p>
+<p>Local subscribers just point at the output of sr_winnow on the local pump. This
+is how feeds are implemented in the Storm prediction centres of ECCC, where they
+may download data from whichever national hub produces data first.</p>
+</section>
+<section id="dataless-with-sr-poll">
+<h3>Dataless With Sr_poll<a class="headerlink" href="#dataless-with-sr-poll" title="Link to this heading"></a></h3>
+<p>The sr_poll program can verify if products on a remote server are ready or modified.
+For each of the product, it emits an notification message on the local pump. One could use
+sr_subscribe anywhere, listen to notification messages and get the products (provided the
+credentials to access it)</p>
+</section>
+<section id="standalone">
+<h3>Standalone<a class="headerlink" href="#standalone" title="Link to this heading"></a></h3>
+<p>In a standalone configuration, there is only one node in the configuration. It runs all components
+and shares none with any other nodes. That means the Broker and data services such as sftp and
+apache are on the one node.</p>
+<p>One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
+queuing and transmission away from the instrument. It is restarted when the opportunity arises.
+It is just a matter of installing and configuring all a data flow engine, a broker, and the package
+itself on a single server. The <em>ddi</em> systems are generally configured this way.</p>
+</section>
+<section id="switching-routing">
+<h3>Switching/Routing<a class="headerlink" href="#switching-routing" title="Link to this heading"></a></h3>
+<p>In a switching/routing configuration, there is a pair of machines running a
+single broker for a pool of transfer engines. So each transfer engine’s view of
+the file space is local, but the queues are global to the pump.</p>
+<p>Note: On such clusters, all nodes that run a component with the
+same config file created by default have an identical <strong>queue_name</strong>. Targetting the
+same broker, it forces the queue to be shared. If it should be avoided,
+the user can just overwrite the default <strong>queue_name</strong> inserting <strong>${HOSTNAME}</strong>.
+Each node will have its own queue, only shared by the node instances.
+ex.: queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )</p>
+<p>Often there is internal traffic of data acquired before it is finally published.
+As a means of scaling, often transfer engines will also have brokers to handle
+local traffic, and only publish final products to the main broker.  This is how
+<em>ddsr</em> systems are generally configured.</p>
+</section>
+</section>
+<section id="security-considerations">
+<h2>Security Considerations<a class="headerlink" href="#security-considerations" title="Link to this heading"></a></h2>
+<p>This section is meant to provide insight to those who need to perform a security review
+of the application prior to implementation.</p>
+<section id="client">
+<h3>Client<a class="headerlink" href="#client" title="Link to this heading"></a></h3>
+<p>All credentials used by the application are stored
+in the ~/.config/sarra/credentials.conf file, and that file is forced to 600 permissions.</p>
+</section>
+<section id="server-broker">
+<h3>Server/Broker<a class="headerlink" href="#server-broker" title="Link to this heading"></a></h3>
+<p>Authentication used by transport engines is independent of that used for the brokers. A security
+assessment of rabbitmq brokers and the various transfer engines in use is needed to evaluate
+the overall security of a given deployment.</p>
+<p>The most secure method of transport is the use of SFTP with keys rather than passwords. Secure
+storage of sftp keys is covered in documentation of various SSH or SFTP clients. The credentials
+file just points to those key files.</p>
+<p>For Sarracenia itself, password authentication is used to communicate with the AMQP broker,
+so implementation of encrypted socket transport (SSL/TLS) on all broker traffic is strongly
+recommended.</p>
+<p>Sarracenia users are actually users defined on rabbitmq brokers.
+Each user Alice, on a broker to which she has access:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>can create and publish to any exchange that starts with xs_Alice_</p></li>
+<li><p>has an exchange xr_Alice, where she reads her report messages.</p></li>
+<li><p>can configure (read from and acknowledge) queues named qs_Alice_.* to bind to exchanges</p></li>
+<li><p>Alice can create and destroy her own queues and exchanges, but no-one else’s.</p></li>
+<li><p>Alice can only post data that she is publishing (it will refer back to her)</p></li>
+<li><p>Alice can also read (or subscribe to) any exchange whose name ends in <em>public</em>.</p></li>
+<li><p>Alice can thus create an exchange others can subscribe to with the following name:  xs_Alice_public</p></li>
+</ul>
+</div></blockquote>
+<p>Alice cannot create any exchanges or other queues not shown above.</p>
+<p>Rabbitmq provides the granularity of security to restrict the names of
+objects, but not their types. Thus, given the ability to create a queue named q_Alice,
+a malicious Alice could create an exchange named q_Alice_xspecial, and then configure
+queues to bind to it, and establish a separate usage of the broker unrelated to sarracenia.</p>
+<p>To prevent such misuse, sr_audit is a component that is invoked regularly looking
+for mis-use, and cleaning it up.</p>
+</section>
+<section id="input-validation">
+<h3>Input Validation<a class="headerlink" href="#input-validation" title="Link to this heading"></a></h3>
+<p>Users such as Alice post their notification messages to their own exchange (xs_Alice). Processes which read from
+user exchanges have a responsibility for validation. The process that reads xs_Alice (likely an sr_sarra)
+will overwrite any <em>source</em> or <em>cluster</em> heading written into the notification message with the correct values for
+the current cluster, and the user which posted the notification message.</p>
+<p>The checksum algorithm used must also be validated. The algorithm must be known. Similarly, if
+there is a malformed header of some kind, it should be rejected immediately. Only well-formed notification messages
+should be forwarded for further processing.</p>
+<p>In the case of sr_sarra, the checksum is re-calculated when downloading the data, it
+ensures it matches the notification message. If they do not match, an error report message is published.
+If the <em>recompute_checksum</em> option is True, the newly calculated checksum is put into the notification message.
+Depending on the level of confidence between a pair of pumps, the level of validation may be
+relaxed to improve performance.</p>
+<p>Another difference with inter-pump connections, is that a pump necessarily acts as an agent for all the
+users on the remote pumps and any other pumps the pump is forwarding for. In that case, the validation
+constraints are a little different:</p>
+<ul class="simple">
+<li><p>source doesn´t matter. (feeders can represent other users, so do not overwrite.)</p></li>
+<li><p>ensure cluster is not local cluster (as that indicates either a loop or misuse.)</p></li>
+</ul>
+<p>If the notification message fails the non-local cluster test, it should be rejected, and logged (FIME: published … hmm… clarify)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>FIXME:</dt><dd><ul class="simple">
+<li><p>if the source is not good, and the cluster is not good… cannot report back. so just log locally?</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+<section id="privileged-system-access">
+<h3>Privileged System Access<a class="headerlink" href="#privileged-system-access" title="Link to this heading"></a></h3>
+<p>Ordinary (sources, and subscribers) users operate sarra within their own permissions on the system,
+like an scp command. The pump administrator account also runs under a normal linux user account and,
+given requires privileges only on the AMQP broker, but nothing on the underlying operating system.
+It is convenient to grant the pump administrator sudo privileges for the rabbitmqctl command.</p>
+<p>There may be a single task which must operate with privileges: cleaning up the database, which is an easily
+auditable script that must be run on a regular basis. If all acquisition is done via sarra, then all of
+the files will belong to the pump administrator, and privileged access is not required for this either.</p>
+</section>
+</section>
+<section id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Link to this heading"></a></h2>
+<p>Sarracenia documentation uses a number of words in a particular way.
+This glossary should make it easier to understand the rest of the documentation.</p>
+<dl>
+<dt>Source</dt><dd><p>Someone who wants to ship data to someone else. They do that by advertising a
+trees of files that are copied from the starting point to one or more pumps
+in the network. The notification message sources produced tell others exactly where
+and how to download the files, and Sources have to say where they want the
+data to go to.</p>
+<p>Sources use programs like <a class="reference external" href="../Reference/sr3.1.html#post">sr_post.1</a>,
+<a class="reference external" href="../Reference/sr3.1.html#watch">sr_watch.1</a>, and <a class="reference external" href="../Reference/sr3.1.html#poll">sr_poll(1)</a> to create
+their notification messages.</p>
+</dd>
+<dt>Subscribers</dt><dd><p>are those who examine notification messages about files that are available, and
+download the files they are interested in.</p>
+<p>Subscribers use <a class="reference external" href="../Reference/sr3.1.html#subscribe">sr_subscribe(1)</a></p>
+</dd>
+<dt>Post, Notice, Notification, Advertisement, Announcement</dt><dd><p>These are AMQP messages build by sr_post, sr_poll, or sr3_watch to let users
+know that a particular file is ready. The format of these AMQP messages is
+described by the <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(7)</a> manual page. All of these
+words are used interchangeably. Advertisements at each step preserve the
+original source of the posting, so that report messages can be routed back
+to the source.</p>
+</dd>
+<dt>Report messages</dt><dd><p>These are AMQP messages (in <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(7)</a> format, with _report_
+field included) built by consumers of notification messages, to indicate what a given pump
+or subscriber decided to do with a notification message. They conceptually flow in the
+opposite direction of notifications in a network, to get back to the source.</p>
+</dd>
+<dt>Pump or broker</dt><dd><p>A pump is a host running Sarracenia, a rabbitmq AMQP server (called a <em>broker</em>
+in AMQP parlance) The pump has administrative users and manage the AMQP broker
+as a dedicated resource.  Some sort of transport engine, like an apache
+server, or an openssh server, is used to support file transfers. SFTP, and
+HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps
+copy files from somewhere, and write them locally. They then re-advertise the
+local copy to its neighbouring pumps, and end user subscribers, they can
+obtain the data from this pump.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For end users, a pump and a broker is the same thing for all practical
+purposes. When pump administrators configure multi-host clusters, however, a
+broker might be running on two hosts, and the same broker could be used by
+many transport engines. The entire cluster would be considered a pump. So the
+two words are not always the same.</p>
+</div>
+<dl class="simple">
+<dt>Dataless Pumps</dt><dd><p>There are some pumps that have no transport engine, they just mediate
+transfers for other servers, by making notification messages available to clients and
+servers in their network area.</p>
+</dd>
+<dt>Dataless Transfers</dt><dd><p>Sometimes transfers through pumps are done without using local space on the pump.</p>
+</dd>
+<dt>Pumping Network</dt><dd><p>A number of interconnects servers running the sarracenia stack. Each stack
+determines how it routes items to the next hop, so the entire size or extent
+of the network may not be known to those who put data into it.</p>
+</dd>
+<dt>Network Maps</dt><dd><p>Each pump should provide a network map to advise users of the known destination
+that they should advertise to send to. <em>FIXME</em> undefined so far.</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="SarraPluginDev.html" class="btn btn-neutral float-left" title="Sarracenia Programming Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DetectFileReady.html" class="btn btn-neutral float-right" title="File Detection Strategies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+name: Flow Tests / MQTT
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+  push:
+    branches:
+      - never
+    paths-ignore:
+      - '.github/**'
+      - 'debian/changelog'
+      - 'TODO.txt'
+
+        
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+
+jobs:
+
+  run_sr_insects_tests:
+
+    strategy:
+      # Don't cancel the entire matrix when one job fails
+      fail-fast: false
+      matrix:
+       which_test: [ static_flow, no_mirror, flakey_broker, dynamic_flow ]
+       osver: [ "ubuntu-22.04" ]
+
+    runs-on: ${{ matrix.osver }}
+  
+    name: ${{ matrix.which_test }} on ${{ matrix.osver }}
+    timeout-minutes: 45
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          travis/flow_autoconfig.sh
+          travis/flow_autoconfig_add_mosquitto.sh
+          travis/ssh_localhost.sh
+         
+      - name: Setup ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}; pwd; ls ; 
+          echo hoho
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
+
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      # https://github.com/marketplace/actions/debugging-with-tmate
+      # 
+      # 2023/06/06 - pas - this ALWAYS enables... some weird bug. commenting out to be able
+      #              to run at all.
+      #- name: Setup tmate session
+      #  uses: mxschmitt/action-tmate@v3
+      #  if: ${{ github.event.inputs.debug_enabled }}
+
+      - name: Limit ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_limit.sh
+          sleep 300
+
+      - name: Check results of ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_check.sh
+        
+      - name: Compress log files for artifacts
+        if: always()
+        continue-on-error: true
+        run: |
+          sr3 stop --dangerWillRobinson=1
+          cd ${HOME}/.cache/sr3/
+          tar -czf ${HOME}/cache_sr3.tar.gz *
+      
+      - name: Save run artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_state_${{ github.sha }}
+          path: ~/cache_sr3.tar.gz

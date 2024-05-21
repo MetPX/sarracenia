@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.retry &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.retry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.retry</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015</span>
+<span class="c1">#</span>
+<span class="c1"># more info: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">_codecs</span> <span class="kn">import</span> <span class="n">decode</span><span class="p">,</span> <span class="n">encode</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+
+<span class="c1"># class sarra/retry</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Retry">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry">[docs]</a>
+<span class="k">class</span> <span class="nc">Retry</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    overall goal:  </span>
+
+<span class="sd">    * When file transfers fail, write the messages to a queue to be retried later. </span>
+<span class="sd">      There is also a second retry queue for failed posts.</span>
+
+<span class="sd">    how it works:</span>
+
+<span class="sd">    * the after_accept checks how many incoming messages we received.</span>
+<span class="sd">      If there is a full batch to process, don&#39;t try to retry any.</span>
+
+<span class="sd">    * if there is room, then fill in the batch with some retry requests.</span>
+
+<span class="sd">    * when after_work is called, the worklist.failed list of messages</span>
+<span class="sd">      is the files where the transfer failed. write those messages to</span>
+<span class="sd">      a retry queue.</span>
+
+<span class="sd">    * the DiskQueue or RedisQueue classes are used to store the retries, and it handles</span>
+<span class="sd">      expiry on each housekeeping event.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Retry.__init__">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_retry __init__&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;missing retry pre-requsites, module disabled&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_driver&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;disk&#39;</span><span class="p">)</span>
+
+        <span class="c1"># retry_refilter False -- rety to send with existing processing.</span>
+        <span class="c1"># retry_refilter True -- re-ingest and re-apply processing (if it has changed.)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;retry_refilter&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1">#queuedriver = os.getenv(&#39;SR3_QUEUEDRIVER&#39;, &#39;disk&#39;)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;logLevel=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Retry.gather">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.gather">[docs]</a>
+    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there are only a few new messages, get some from the download retry queue and put them into</span>
+<span class="sd">        `worklist.incoming`.</span>
+
+<span class="sd">        Do this in the gather() entry point if retry_refilter is True.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="n">message_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qty</span><span class="p">)</span>
+
+        <span class="c1"># eliminate calculated values so it is refiltered from scratch.</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">:</span>
+             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                 <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;new_&#39;</span><span class="p">):</span>
+                     <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+             <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_isRetry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+             <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span> <span class="s1">&#39;_isRetry&#39;</span> <span class="p">]</span> <span class="p">)</span>
+
+
+        <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">message_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Retry.after_accept">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.after_accept">[docs]</a>
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there are only a few new messages, get some from the download retry queue and put them into</span>
+<span class="sd">        `worklist.incoming`.</span>
+
+<span class="sd">        Do this in the after_accept() entry point if retry_refilter is False.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_refilter</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">qty</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span>
+        <span class="c1">#logger.info(&#39;qty: %d len(worklist.incoming) %d&#39; % ( qty, len(worklist.incoming) ) )</span>
+
+        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="n">mlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qty</span><span class="p">)</span>
+
+        <span class="c1">#logger.debug(&quot;loading from %s: qty=%d ... got: %d &quot; % (self.download_retry_name, qty, len(mlist)))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mlist</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mlist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Retry.after_work">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.after_work">[docs]</a>
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new</span>
+<span class="sd">        messages, get some from the post retry queue and put them into `worklist.ok`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1">#logger.debug(&quot;putting %d messages into %s&quot; % (len(worklist.failed),self.download_retry_name) )</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="p">)</span>
+            <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># retry posting...</span>
+        <span class="n">qty</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">qty</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="n">mlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qty</span><span class="p">)</span>
+
+        <span class="c1">#logger.debug(&quot;loading from %s: qty=%d ... got: %d &quot; % (self.post_retry_name, qty, len(mlist)))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mlist</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mlist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Retry.after_post">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.after_post">[docs]</a>
+    <span class="k">def</span> <span class="nf">after_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Messages in `worklist.failed` should be put in the post retry queue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="p">)</span>
+        <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">=</span><span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="Retry.metricsReport">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.retry.Retry.metricsReport">[docs]</a>
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the number of messages in the download_retry and post_retry queues.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: containing metrics: ``{&#39;msgs_in_download_retry&#39;: (int), &#39;msgs_in_post_retry&#39;: (int)}``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;msgs_in_download_retry&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="p">),</span> <span class="s1">&#39;msgs_in_post_retry&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="p">)}</span></div>
+
+
+    <span class="k">def</span> <span class="nf">on_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;starting retry cleanup&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;download_retry&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_start</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_housekeeping&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">on_housekeeping</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">on_housekeeping</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_driver</span> <span class="o">==</span> <span class="s1">&#39;redis&#39;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">sarracenia.redisqueue</span> <span class="kn">import</span> <span class="n">RedisQueue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span> <span class="o">=</span> <span class="n">RedisQueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;work_retry&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span> <span class="o">=</span> <span class="n">RedisQueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_retry&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">sarracenia.diskqueue</span> <span class="kn">import</span> <span class="n">DiskQueue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_retry_name</span> <span class="o">=</span> <span class="s1">&#39;work_retry_</span><span class="si">%02d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">no</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span> <span class="o">=</span> <span class="n">DiskQueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">download_retry_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_retry_name</span> <span class="o">=</span> <span class="s1">&#39;post_retry_</span><span class="si">%03d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">no</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span> <span class="o">=</span> <span class="n">DiskQueue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_retry_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_retry</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_retry</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

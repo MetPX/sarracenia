@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetPX-Sarracenia Developer’s Guide &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Documentation Standards" href="Documentation.html" />
+    <link rel="prev" title="AMQP - Primer for Sarracenia" href="AMQPprimer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MetPX-Sarracenia Developer’s Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tools-you-need">Tools you Need</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#where-to-put-options">Where to Put Options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#development">Development</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#v2-workflow">v2 Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#v3-workflow">v3 Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sr-insects">sr_insects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#local-installation">Local Installation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-a-vanilla-vm">Prepare a Vanilla VM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ubuntu-18-04">Ubuntu 18.04</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#python-wheel">Python Wheel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#local-pip-install">Local Pip install</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#debian-ubuntu">Debian/Ubuntu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#committing-code">Committing Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#sr-insects-tests-description">sr_insects Tests Description</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#unit">Unit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#static-flow">Static Flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flakey-broker">Flakey Broker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dynamic-flow">Dynamic Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#running-flow-tests">Running Flow Tests</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#install-servers-on-workstation">Install Servers on Workstation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-flow-test-environment">Setup Flow Test Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-a-flow-test">Run A Flow Test</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flow-cleanup">Flow Cleanup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dynamic-flow-test-length">Dynamic Flow Test Length</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#high-volume-sample">High volume sample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flow-tests-with-mqtt">Flow tests with MQTT</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#commits-to-the-development-branch">Commits to the Development Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-branches">Key Branches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repositories">Repositories</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#local-python">Local Python</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#conventions">Conventions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#when-to-report">When to Report</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-a-new-dependency">Adding a New Dependency</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>MetPX-Sarracenia Developer’s Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/Development.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="metpx-sarracenia-developer-s-guide">
+<h1>MetPX-Sarracenia Developer’s Guide<a class="headerlink" href="#metpx-sarracenia-developer-s-guide" title="Link to this heading"></a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+</dl>
+<section id="tools-you-need">
+<h2>Tools you Need<a class="headerlink" href="#tools-you-need" title="Link to this heading"></a></h2>
+<p>To hack on the Sarracenia source, you need:</p>
+<ul class="simple">
+<li><p>A linux development environment, either a workstation, or a VM of some kind.
+setup using ubuntu is automated, but adjustment for other distros is possible.
+command-line comfort a must.</p></li>
+<li><p>python3. The application is developed in and depends on python versions &gt;= 3.5.</p></li>
+<li><p>style: PEP8 except max line length is 119, enforced via <a class="reference external" href="https://pycodestyle.pycqa.org/en/latest/intro.html#disclaimer">pycodestyle</a> for VSCode, yapf3 or other similar tool.</p></li>
+<li><p>an account on github.com will help in submitting patches for consideration.</p></li>
+</ul>
+<p>Things that will be installed by automated setup:</p>
+<ul class="simple">
+<li><p>a bunch of other python modules indicated in the dependencies (setup.py or debian/control)</p></li>
+<li><p>python3 pyftpdlib module, used to run an ftpserver on a high port during the flow test.</p></li>
+<li><p>git. in order to download the source from the github repository, and to prepare and submit
+changes.</p></li>
+<li><p>a dedicated rabbitmq broker, with administrative access, to run the sr_insects tests.
+this is installed by automated tools for setting up the linux environment.
+The flow test creates and destroys exchanges and will disrupt any active flows on the broker.</p></li>
+</ul>
+<p>after you have cloned the source code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">-</span><span class="n">b</span> <span class="n">development</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span> <span class="n">sr3</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="o">-</span><span class="n">b</span> <span class="n">development</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarrac</span> <span class="n">sr3c</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sr_insects</span> <span class="n">insects</span>
+<span class="n">cd</span> <span class="n">sr3</span>
+</pre></div>
+</div>
+<p>The rest of the Guide takes the above for granted.</p>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="Documentation.html"><span class="doc">Documentation Standards</span></a> exist in /docs/Contribution/Documentation.rst
+process for locally building the docs are there, as well as live web-site maintenance
+methods.</p>
+<section id="where-to-put-options">
+<h3>Where to Put Options<a class="headerlink" href="#where-to-put-options" title="Link to this heading"></a></h3>
+<p>Options are documented in sr3_options(7) dictionary style in alphabetic order.
+Should it be worthwhile, examples of use could be added to other guides.</p>
+</section>
+</section>
+<section id="development">
+<h2>Development<a class="headerlink" href="#development" title="Link to this heading"></a></h2>
+<p>In general, the development workflow is to get a laptop or a VM where one can run
+the flow_tests (available from <a class="reference external" href="http://github.com/MetPX/sr_insects">http://github.com/MetPX/sr_insects</a> ) The first step
+in configuring a development environment is ensuring that the sr_insects flow tests
+work, as they function as a gate for commits to important branches.</p>
+<p>Development is most commonly done on Ubuntu &gt;=18.04 platform.</p>
+<section id="v2-workflow">
+<h3>v2 Workflow<a class="headerlink" href="#v2-workflow" title="Link to this heading"></a></h3>
+<p>Finished development work for version 2 is committed to on the v2_dev branch, which is used
+to produce daily snapshots. One should not normally commit changes to the v2_dev branch,
+but rather merge them from a working branch.</p>
+<p>Development branches are named after the issue they are meant to address “v2_issue365”, for
+example. If there are multiple attempts to address a given issue, then use the issue
+as a name prefix. For example, there could be issue365, but if we decide that isn’t
+a good way to address the issue, there could be an issue365_methodB branch.</p>
+<p><strong>Before submitting a pull-request (PR), please ensure that the flow tests from
+sr_insects have been run successfully:  at least static_flow, flakey_broker, and dynamic_flow</strong></p>
+<p>When a PR is generated, the second developer can look it over for concerns.
+Once satisfied with the nature of the patch, the second developer should pull the branch
+and run the flow tests again (the same three) to confirm.  Only after the flow tests
+have been run on multiple machines should a change be merged to stable.</p>
+<p>issues unique to v2 should be tagged <em>v2only</em>.
+on Launchpad.net:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>daily repository packages of v2 will be build from v2_dev</p></li>
+<li><p>pre-release repository packages of v2 will be build from v2_dev</p></li>
+<li><p>release repository packages are generated from v2_stable.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="v3-workflow">
+<h3>v3 Workflow<a class="headerlink" href="#v3-workflow" title="Link to this heading"></a></h3>
+<p>The upcoming version of Sarracenia is developed in the development (work in progress) branch.
+As the major refactor is substantially complete, the remaining work is now entirely constructive
+and all development is co-ordinated through issues exactly as v2 is. Issues unique to v3, be
+they regressions or enhancements that don’t make sense to add to v2, have the tag <em>v3only</em>.
+Issues that are common between the releases are tagged <em>v3</em>.</p>
+<p>The workflow with v3 is similar to v2 but with different branches.  branches are assumed
+to be branched from the <em>development</em> branch, so v3 is assumed unless v2_ is present.
+Having all the flow tests complete fairly successfully
+is one criterion for acceptance into development.</p>
+<p>To run the sr_insects tests, the repository must be cloned with the development branch.
+A gate for merging to development is for a second developer to run the flow_tests.
+<strong>For v03, these tests must run:  static_flow, flakey_broker, dynamic_flow, transform_flow</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>launchpad has recipes to produce metpx-sr3 packages from various branches.</p></li>
+<li><p>The <em>MetPX Daily</em> repository is a snapshot of the development branch.</p></li>
+<li><p>The <em>MetPX Pre-Release</em> repository should receive versions ending in rcX (release candidate)
+The packages here from from pre-release branch which comes from snapshots of the development branch.
+There is also a pre-release-py36 branch for building pre-release packages for older operating systems.</p></li>
+<li><p>stable comes from on snapshots of (version 3) pre-release branch.</p></li>
+<li><p>The <em>MetPX</em> repository should only contain stable releases that have graduated from the rcX series.
+there is a stable_py36 branch to build packages for older operating systems that have
+python 3.6 (redhat 8, ubuntu 18, ubuntu 20) or are too old to use hatchling installer.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="sr-insects">
+<h3>sr_insects<a class="headerlink" href="#sr-insects" title="Link to this heading"></a></h3>
+<p>The sr_insects repository has it’s own issues DB, and work on sr_insects is encouraged.
+Both v2 and v3 are supported on the stable branch of sr_insects.  That branch should be
+used to support all development in both versions….</p>
+</section>
+</section>
+<section id="local-installation">
+<h2>Local Installation<a class="headerlink" href="#local-installation" title="Link to this heading"></a></h2>
+<p>There are many different ways to install python packages on a computer. Different developers
+will prefer different methods, and all the methods need to be tested prior to each release.
+Sarracenia can work with either mqtt or amqp (most mature and stable) message passing libraries.
+Install one of those first. in these examples, we use amqp.</p>
+<ul class="simple">
+<li><p><strong>Wheel</strong> when people are running different operating systems (non-ubuntu, non-debian) people will be installing wheels, typically that have been uploaded to pypi.python.org.  On the other hand, it is a bit of a pain/noise to upload every development version, so we only upload releases, so testing of wheels is done by building local wheels. Need to build a new wheel every time a change is made.</p></li>
+<li><p><strong>pip install metpx-sr3[amqp]</strong> would pull a wheel down from pypi.python.org. Generally not used during development of Sarracenia itself.
+one could also pull in all possible dependencies with <strong>pip install metpx-sr3[all]</strong></p></li>
+<li><p><strong>pip install -e .[amqp] …</strong> lets you edit the source code of the installed package, ideal for debugging problems, because it allows live changes to the application without having to go through building and installing a new package.</p></li>
+<li><p><strong>apt install metpx-sr3</strong> install debian package from repositories, similarly to pip install (not -e), normally dev snapshots are not uploaded to repositories, so while this would be the normal way for users of ubuntu servers, it is not available during development of the package itself. Also need <strong>apt install python3-amqp</strong></p></li>
+<li><p><strong>dpkg -i</strong> builds a debian package for local installation. This is how packages are tested prior to upload to repositories.  It can also be used to support development (have to run dpkg -i for each package change.) also need <strong>apt install python3-amqp</strong></p></li>
+</ul>
+<p>The sr_insects tests invokes the version of metpx-sarracenia that is installed on the system,
+and not what is in the development tree.  It is necessary to install the package on
+the system in order to have it run the sr_insects tests.</p>
+<section id="prepare-a-vanilla-vm">
+<h3>Prepare a Vanilla VM<a class="headerlink" href="#prepare-a-vanilla-vm" title="Link to this heading"></a></h3>
+<p>This section describes creating a test environment for use in a virtual machine. One way to build
+a virtual machine is to use multipass (<a class="reference external" href="https://multipass.run">https://multipass.run</a>) Assuming it is installed, one can
+create a vm with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multipass</span> <span class="n">launch</span> <span class="o">-</span><span class="n">m</span> <span class="mi">8</span><span class="n">G</span> <span class="o">-</span><span class="n">d</span> <span class="mi">30</span><span class="n">G</span> <span class="o">--</span><span class="n">name</span> <span class="n">flow</span>
+</pre></div>
+</div>
+<p>need to have ssh localhost work in the multipass container.  Can do that by copying multipass
+private key into the container:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">multipass</span> <span class="nb">list</span>
+<span class="n">Name</span>                    <span class="n">State</span>             <span class="n">IPv4</span>             <span class="n">Image</span>
+<span class="n">primary</span>                 <span class="n">Stopped</span>           <span class="o">--</span>               <span class="n">Ubuntu</span> <span class="mf">20.04</span> <span class="n">LTS</span>
+<span class="n">flow</span>                    <span class="n">Running</span>           <span class="mf">10.23.119.56</span>     <span class="n">Ubuntu</span> <span class="mf">20.04</span> <span class="n">LTS</span>
+<span class="n">keen</span><span class="o">-</span><span class="n">crow</span>               <span class="n">Running</span>           <span class="mf">10.23.119.5</span>      <span class="n">Ubuntu</span> <span class="mf">20.04</span> <span class="n">LTS</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>Weird issues with ssh keys not being interpreted properly by paramiko, work around
+( <a class="reference external" href="https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file">https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file</a> )</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>fractal% sudo cat /var/snap/multipass/common/data/multipassd/ssh-keys/id_rsa | sed &#39;s/BEGIN .*PRIVATE/BEGIN RSA PRIVATE/;s/END .*PRIVATE/END RSA PRIVATE/&#39; &gt;id_rsa_container
+chmod 600 id_rsa_container
+scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.175:/home/ubuntu/.ssh/id_rsa
+                                                                  100% 1704     2.7MB/s   00:00
+
+fractal% scp -i id_rsa_container id_rsa_container ubuntu@10.23.119.106:/home/ubuntu/.ssh/id_rsa
+The authenticity of host &#39;10.23.119.106 (10.23.119.106)&#39; can&#39;t be established.
+ECDSA key fingerprint is SHA256:jlRnxV7udiCBdAzCvOVgTu0MYJR5+kYzNwy/DIhkeD8.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added &#39;10.23.119.106&#39; (ECDSA) to the list of known hosts.
+id_rsa_container                                                                                                                         100% 1712     9.4MB/s   00:00
+fractal% multipass shell flow
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-81-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Fri Aug 27 21:12:16 EDT 2021
+
+  System load:  0.42              Processes:             112
+  Usage of /:   4.4% of 28.90GB   Users logged in:       0
+  Memory usage: 5%                IPv4 address for ens4: 10.23.119.106
+  Swap usage:   0%
+
+
+1 update can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+
+To run a command as administrator (user &quot;root&quot;), use &quot;sudo &lt;command&gt;&quot;.
+See &quot;man sudo_root&quot; for details.
+
+ubuntu@flow:~$
+</pre></div>
+</div>
+<p>then prompt ssh to accept the localhost key:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ubuntu@flow:~$ ssh localhost ls -a
+The authenticity of host &#39;localhost (127.0.0.1)&#39; can&#39;t be established.
+ECDSA key fingerprint is SHA256:jlRnxV7udiCBdAzCvOVgTu0MYJR5+kYzNwy/DIhkeD8.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added &#39;localhost&#39; (ECDSA) to the list of known hosts.
+.
+..
+.bash_logout
+.bashrc
+.cache
+.profile
+.ssh
+ubuntu@flow:~$
+</pre></div>
+</div>
+<p>This will provide a shell in an initialized VM.  To configure it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">-</span><span class="n">b</span> <span class="n">development</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span> <span class="n">sr3</span>
+<span class="n">cd</span> <span class="n">sr3</span>
+</pre></div>
+</div>
+<p>There are scripts that automate the installation of necessary environment to be able to run tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">travis</span><span class="o">/</span><span class="n">flow_autoconfig</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">travis</span><span class="o">/</span><span class="n">add_sr3</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>You should be able to see an empty configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">status</span>
+</pre></div>
+</div>
+<p>sr3c and sr3 are now installed, and should be ready to run a flow test from the sr_insects module, which
+has also been cloned:</p>
+<blockquote>
+<div><p>cd ../sr_insects</p>
+</div></blockquote>
+<p>The v03 branch of sr_insects supports testing of both v2 and v3, and both versions are now installed.
+The flow tests are intended to be run to confirm compatibility between v2 and v3, and so one
+must be able to test v2 as well:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ubuntu@flow:~/sr_insects$ dpkg -l | grep metpx
+ii  metpx-libsr3c                    3.21.08a1-0~202108270410~ubuntu20.04.1 amd64        C-Implementation of a Sarracenia Client
+ii  metpx-sarracenia                 2.21.08-0~202108241854~ubuntu20.04.1   all          Directory mirroring in real-time for users, file servers and web sites.
+ii  metpx-sr3                        3.00.008exp                            all          v3 Directory mirroring in real-time for users, file servers and web sites.
+ii  metpx-sr3c                       3.21.08a1-0~202108270410~ubuntu20.04.1 amd64        C-Implementation of a Sarracenia Client
+ubuntu@flow:~/sr_insects$
+</pre></div>
+</div>
+<p>The v2 package is metpx-sarracenia, whereas the v3 one is metpx-sr3. the flow tests will detect
+which version is installed and test v3 if both are present.  To override that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ubuntu@flow:~/sr_insects$ export sarra_py_version=2.21.08
+ubuntu@flow:~/sr_insects$
+</pre></div>
+</div>
+<p>Then one can run flow_tests from this shell normally.</p>
+</section>
+<section id="ubuntu-18-04">
+<h3>Ubuntu 18.04<a class="headerlink" href="#ubuntu-18-04" title="Link to this heading"></a></h3>
+<p>A number of systems run Ubuntu 18.04 even though it is pretty old.</p>
+<p>‘’’</p>
+<p>multipass launch -m 8G bionic</p>
+<p>‘’’</p>
+<p>can run developer tests as per multipass as described above.</p>
+</section>
+<section id="python-wheel">
+<h3>Python Wheel<a class="headerlink" href="#python-wheel" title="Link to this heading"></a></h3>
+<p>If you have not used add_sr3.sh (which builds a debian package), then one can use this procedure
+for local installation on a computer with a python wheel for testing and development:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_wheel</span>
+</pre></div>
+</div>
+<p>or… on newer systems, using build instead:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">isolation</span>
+</pre></div>
+</div>
+<p>Should build a wheel in the dist sub-directory.
+then as root install that new package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">...&lt;</span><span class="n">path</span><span class="o">&gt;/</span><span class="n">dist</span><span class="o">/</span><span class="n">metpx</span><span class="o">*.</span><span class="n">whl</span>
+</pre></div>
+</div>
+</section>
+<section id="local-pip-install">
+<h3>Local Pip install<a class="headerlink" href="#local-pip-install" title="Link to this heading"></a></h3>
+<p>For local installation on a computer, using a pip
+For testing and development:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>pip3 install -e .
+export PATH=${HOME}/.local/bin:${PATH}
+</pre></div>
+</div>
+<p>Using the local python package installer (PIP) to create a locally editable version.
+The above will install the package in ~/.local/bin… so need to ensure the path includes
+that directory.</p>
+</section>
+<section id="debian-ubuntu">
+<h3>Debian/Ubuntu<a class="headerlink" href="#debian-ubuntu" title="Link to this heading"></a></h3>
+<p>For local installation on a computer, using a debian package.
+This process builds a local .deb in the parent directory using standard debian mechanisms.
+- Check the <strong>build-depends</strong> line in <em>debian/control</em> for dependencies that might be needed to build from source.
+- The following steps will build sarracenia but not sign the changes or the source package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">metpx</span><span class="o">/</span><span class="n">sarracenia</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">devscripts</span>
+<span class="n">debuild</span> <span class="o">-</span><span class="n">uc</span> <span class="o">-</span><span class="n">us</span>
+<span class="n">sudo</span> <span class="n">dpkg</span> <span class="o">-</span><span class="n">i</span> <span class="o">../&lt;</span><span class="n">the</span> <span class="n">package</span> <span class="n">just</span> <span class="n">built</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>which accomplishes the same thing using debian packaging.
+The options are detailed below:</p>
+</section>
+<section id="committing-code">
+<h3>Committing Code<a class="headerlink" href="#committing-code" title="Link to this heading"></a></h3>
+<p>What should be done prior to committing to the development branch?
+Checklist:</p>
+<ul class="simple">
+<li><p>do development on some other branch. Usually the branch will be named after the issue being
+addressed. Example: issue240, if we give up on an initial approach and start another one,
+there may be issue240_2 for a second attempt. There may also be feature branches, such as v03.</p></li>
+<li><p><strong>sr_insects tests works</strong> (See Testing) The development branch should always be functional, do not commit code if the sr_insects tests are not working.</p></li>
+<li><p>Natural consequence: if the code changes means tests need to change, include the test change in the commit.</p></li>
+<li><p><strong>update doc/</strong> manual pages should get their updates ideally at the same time as the code.</p></li>
+</ul>
+<p>Usually there will be many such cycles on an issueXXX  branch before one is ready
+to issue a pull request. Eventually, we get to <a class="reference internal" href="#commits-to-the-development-branch">Commits to the Development Branch</a></p>
+</section>
+</section>
+<section id="sr-insects-tests-description">
+<h2>sr_insects Tests Description<a class="headerlink" href="#sr-insects-tests-description" title="Link to this heading"></a></h2>
+<p>Before committing code to the stable branch, as a Quality Assurance measure, one should run
+all available self-tests. It is assumed that the specific changes in the code have already been unit
+tested. Please add self-tests as appropriate to this process to reflect the new ones.
+Generally speaking one should solve problems at the first test that fails as each test
+is more complicated than the previous one.</p>
+<p>There is a separate git repository containing the more complex tests <a class="reference external" href="https://github.com/MetPX/sr_insects">https://github.com/MetPX/sr_insects</a></p>
+<p>A typical development workflow will be (Do not try this, this is just an overview of the steps that will be
+explained in detail in following sections):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>git branch issueXXX
+git checkout issueXXX
+cd sarra ; *make coding changes*
+cd ..
+debuild -uc -us
+cd ../sarrac
+debuild -uc -us
+sudo dpkg -i ../*.deb
+cd ..
+
+git clone -b development https://github.com/MetPX/sr_insects
+cd sr_insects
+sr3 status  # make sure there are no components configured before you start.
+            # test results will likely be skewed otherwise.
+for test in unit static_flow flakey_browser transform_flow dynamic_flow; do
+   cd $test
+   ./flow_setup.sh  # *starts the flows*
+   ./flow_limit.sh  # *stops the flows after some period (default: 1000) *
+   ./flow_check.sh  # *checks the flows*
+   ./flow_cleanup.sh  # *cleans up the flows*
+   cd ..
+done
+
+#assuming all the tests pass.
+git commit -a  # on the branch...
+</pre></div>
+</div>
+<section id="unit">
+<h3>Unit<a class="headerlink" href="#unit" title="Link to this heading"></a></h3>
+<p>The <em>unit</em> test in sr_insects is the shortest one taking a minute or so, and not requiring
+much configuration at all. They are sanity tests of code behaviour. Generally takes a minute
+or two on a laptop.</p>
+</section>
+<section id="static-flow">
+<h3>Static Flow<a class="headerlink" href="#static-flow" title="Link to this heading"></a></h3>
+<p>The <em>static_flow</em> tests are a bit more complicated, testing more components, using single
+threaded components in a linear way (all data moves uniformly forward.) It should be
+more straight-forward to identify issues as there is no deletion and so it lends itself well
+to repeating subset tests to identify individual issues. It takes about two minutes on a laptop.</p>
+</section>
+<section id="flakey-broker">
+<h3>Flakey Broker<a class="headerlink" href="#flakey-broker" title="Link to this heading"></a></h3>
+<p>The <em>flakey_broker</em> tests are the same as the <em>static_flow</em>, but slowed down so that they last
+a few minutes, and the broker is shutdown and restarted while the posting is happenning.
+Note that post_log prints before a notification message is posted (because post_log is an on_post plugin, and
+that action, allows one to modify the notification message, so it needs to be before the post actually happens.)</p>
+</section>
+<section id="dynamic-flow">
+<h3>Dynamic Flow<a class="headerlink" href="#dynamic-flow" title="Link to this heading"></a></h3>
+<p>The <em>dynamic_flow</em> test add advanced features:  multi-instances, the winnow component, retry logic testing,
+and includes file removals as well. Most of the documentation here refers to runnig the
+dynamic_flow test, as it is the most complicated one, and the ancestor of the others.  The unit
+test was separated out from the beginnig of the dynamic_flow test, and the static_flow is
+a simplified version of the original flow test as well.</p>
+<p>Generally speaking, one should run the tests in sequence and ensure the results of earlier
+tests are good before proceeding to the next test.</p>
+<p>Note that the development system must be configured for the sr_insects tests to run successfully. See the next
+section for configuration instructions. For development with a fresh OS installation,
+the configuration steps have been automated and can be applied with the flow_autoconfig.sh
+script in sr_insects (<a class="reference external" href="https://github.com/MetPX/sr_insects/blob/stable/flow_autoconfig.sh">https://github.com/MetPX/sr_insects/blob/stable/flow_autoconfig.sh</a>). Blind
+execution of this script on a working system may lead to undesirable side effects; you have been warned!</p>
+<p>The configuration one is trying to replicate:</p>
+<img alt="../_images/Flow_test.svg" src="../_images/Flow_test.svg" /><p>Following table describes what each element of the dynamic flow test does, and the test coverage
+shows functionality covered.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Configuration</p></td>
+<td><p>Does</p></td>
+<td><p>Test Coverage</p></td>
+</tr>
+<tr class="row-even"><td><p>subscribe t_ddx</p></td>
+<td><p>copy from data mart to local broker
+posting notification messages to
+local xwinno00 and xwinnow01
+exchanges.</p></td>
+<td><p>read amqps public data mart (v02)
+as ordinary user.</p>
+<p>shared queue and multiple processes
+3 instances download from each q</p>
+<p>post amqp to a local exchange (v02)
+as feeder(admin) user</p>
+<p>post_exchangeSplit to xwinnow0x</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>winnow t0x_f10</p></td>
+<td><p>winnow processing publish for xsarra
+exchange for downloading.</p>
+<p>as two sources identical, only half
+notification messages are posted to
+next</p>
+</td>
+<td><p>read local amqp v02
+as feeder user.</p>
+<p>complete caching (winnow) function</p>
+<p>post amqp v02 to local excchange.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>sarra download
+f20</p></td>
+<td><p>download the winnowed data from the
+data mart to a local directory
+(TESTDOCROOT= ~/sarra_devdocroot)</p>
+<p>add a header at application layer
+longer than 255 characters.</p>
+</td>
+<td><p>read local amqp v02 (xsarra)</p>
+<p>download using built-in python</p>
+<p>shared queue and multiple processes
+5 instances download from each q</p>
+<p>download using accel_wget plugin</p>
+<p>AMQP header truncation on publish.</p>
+<p>post amqp v02 to xpublic
+as feeder user
+as http downloads from localhost</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>subscribe t</p></td>
+<td><p>download as client from localhost
+to downloaded_by_sub_t directory.</p></td>
+<td><p>read amqp from local broker
+as ordinary user/client.</p>
+<p>shared queue and multiple processes
+5 instances download from each q</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>watch f40</p></td>
+<td><p>watch downloaded_by_sub_t
+(post each file that appears there.)</p>
+<p>memory ceiling set low</p>
+</td>
+<td><p>client v03 post of local file.
+(file: url)</p>
+<p>auto restarting on memory ceiling.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sender
+tsource2send</p></td>
+<td><p>read local file, send via sftp
+to sent_by_tsource2send directory</p>
+<p>post to xs_tsource_output</p>
+</td>
+<td><p>client consume v03 notification
+messages.
+consumer read local file.</p>
+<p>send via sftp.</p>
+<p>plugin replace_dir</p>
+<p>posting sftp url.
+post v02 (converting v03 back.)</p>
+<p>test post_exchangeSuffix option.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>subscribe
+u_sftp_f60</p></td>
+<td><p>download via sftp from localhost
+putting files in downloaded_by_sub_u
+directory.</p></td>
+<td><p>client sftp download.</p>
+<p>accel_sftp plugin.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>post test2_f61</p></td>
+<td><p>post files in sent_by_tsource2send
+with ftp URL’s in the
+xs_tsource_poll exchange</p>
+<p>(wrapper script calls post)</p>
+</td>
+<td><p>explicit file posting</p>
+<p>ftp URL posting.</p>
+<p>post_exchangeSuffix option</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>poll f62</p></td>
+<td><p>poll sent_by_tsource2send directory
+posting sftp download URL’s</p></td>
+<td><p>polling</p>
+<p>post_exchangeSuffix option</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>subscribe ftp_f70</p></td>
+<td><p>subscribe to test2_f61 ftp’ posts.
+download files from localhost
+to downloaded_by_sub_u directory.</p></td>
+<td><p>ftp url downloading.</p></td>
+</tr>
+<tr class="row-even"><td><p>subscribe q_f71</p></td>
+<td><p>subscribe to poll, downloading
+to recd_by_srpoll_test1</p></td>
+<td><p>confirming poll post quality.</p></td>
+</tr>
+<tr class="row-odd"><td><p>shovel pclean f90</p></td>
+<td><p>clean up files so they don’t
+accumulate
+fakes failures to exercise retries</p></td>
+<td><p>shovel function.</p>
+<p>retry logic.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>shovel pclean f91</p></td>
+<td><p>clean up files so they don’t
+accumulate</p></td>
+<td><p>shovel with posting v03</p>
+<p>retry logic.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>shovel pclean f92</p></td>
+<td><p>clean up files so they don’t
+accumulate</p></td>
+<td><p>shovel with consuming v03</p>
+<p>posting v02.</p>
+<p>retry logic.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Assumption: test environment is a Linux PC, either a laptop/desktop, or a server on which one
+can start a browser. If working with the C implementation as well, there are also the following
+flows defined:</p>
+<img alt="../_images/cFlow_test.svg" src="../_images/cFlow_test.svg" /></section>
+</section>
+<section id="running-flow-tests">
+<h2>Running Flow Tests<a class="headerlink" href="#running-flow-tests" title="Link to this heading"></a></h2>
+<p>This section documents these steps in much more detail.
+Before one can run the sr_insects tests, some pre-requisites must be taken care of.
+Note that there is Github Actions integration for at least the development branch
+to verify functionality on a variety of python version.  Consult:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">actions</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>for the latest test results. Note that the results include dozens of tests, and are
+a bit unreliable, typically it may take a few retries for it to work completely
+(3 or 4 fail after initial attempt, then re-run the failed ones, and then
+perhaps 1 or two will be left, and on the third pass the last one passes.)</p>
+</div>
+<section id="install-servers-on-workstation">
+<h3>Install Servers on Workstation<a class="headerlink" href="#install-servers-on-workstation" title="Link to this heading"></a></h3>
+<p>To prepare a computer to run the flow test, one must install some server
+software and configurations. This same work is done by travis/flow_autoconfig.sh
+which is run in <a class="reference internal" href="#prepare-a-vanilla-vm">Prepare a Vanilla VM</a> but if you need to configure it
+manually, below is the process.</p>
+<p>Install a minimal localhost broker and configure rabbitmq test users:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sudo apt-get install rabbitmq-server
+sudo rabbitmq-plugins enable rabbitmq_management
+
+mkdir ~/.config/sarra
+cat &gt; ~/.config/sarra/default.conf &lt;&lt; EOF
+declare env FLOWBROKER=localhost
+declare env MQP=amqp
+declare env SFTPUSER=${USER}
+declare env TESTDOCROOT=${HOME}/sarra_devdocroot
+declare env SR_CONFIG_EXAMPLES=${HOME}/git/sarracenia/sarra/examples
+EOF
+
+RABBITMQ_PASS=S0M3R4nD0MP4sS
+cat &gt; ~/.config/sarra/credentials.conf &lt;&lt; EOF
+amqp://bunnymaster:${RABBITMQ_PASS}@localhost/
+amqp://tsource:${RABBITMQ_PASS}@localhost/
+amqp://tsub:${RABBITMQ_PASS}@localhost/
+amqp://tfeed:${RABBITMQ_PASS}@localhost/
+amqp://anonymous:${RABBITMQ_PASS}@localhost/
+amqps://anonymous:anonymous@hpfx.collab.science.gc.ca
+amqps://anonymous:anonymous@hpfx1.collab.science.gc.ca
+amqps://anonymous:anonymous@hpfx2.collab.science.gc.ca
+amqps://anonymous:anonymous@dd.weather.gc.ca
+amqps://anonymous:anonymous@dd1.weather.gc.ca
+amqps://anonymous:anonymous@dd2.weather.gc.ca
+ftp://anonymous:anonymous@localhost:2121/
+EOF
+
+cat &gt; ~/.config/sarra/admin.conf &lt;&lt; EOF
+cluster localhost
+admin amqp://bunnymaster@localhost/
+feeder amqp://tfeed@localhost/
+declare source tsource
+declare subscriber tsub
+declare subscriber anonymous
+EOF
+
+sudo rabbitmqctl delete_user guest
+
+sudo rabbitmqctl add_user bunnymaster ${RABBITMQ_PASS}
+sudo rabbitmqctl set_permissions bunnymaster &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+sudo rabbitmqctl set_user_tags bunnymaster administrator
+
+sudo systemctl restart rabbitmq-server
+cd /usr/local/bin
+sudo mv rabbitmqadmin rabbitmqadmin.1
+sudo wget http://localhost:15672/cli/rabbitmqadmin
+sudo chmod 755 rabbitmqadmin
+
+sr3 --users declare
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please use other passwords in credentials for your configuration, just in case.
+Passwords are not to be hard coded in self test suite.
+The users bunnymaster, tsource, tsub, and tfeed are to be used for running tests.</p>
+<p>The idea here is to use tsource, tsub, and tfeed as broker accounts for all
+self-test operations, and store the credentials in the normal credentials.conf file.
+No passwords or key files should be stored in the source tree, as part of a self-test
+suite.</p>
+</div>
+</section>
+<section id="setup-flow-test-environment">
+<h3>Setup Flow Test Environment<a class="headerlink" href="#setup-flow-test-environment" title="Link to this heading"></a></h3>
+<p>Once the server environment is established, the flow tests use sftp transfers to localhost.</p>
+<p>It is also required that passwordless ssh access is configured on the test host
+for the system user that will run the flow test. This can be done by creating
+a private/public ssh key pair for the user (if there isn’t one already) and copying
+the public key to the authorized_keys file in the same directory as the keys (~/.ssh).
+For associated commands, see <a class="reference external" href="http://www.linuxproblem.org/art_9.html">http://www.linuxproblem.org/art_9.html</a></p>
+<p>Note that on systems where older versions of Paramiko (&lt; 2.7.2) are installed, and the ssh key pair was generated with OpenSSH &gt;= 6.5, manually testing the below command will work, but Paramiko will not be able to connect. This is likely the case if the <code class="docutils literal notranslate"><span class="pre">~/.ssh/id_rsa</span></code> file contains <code class="docutils literal notranslate"><span class="pre">BEGIN</span> <span class="pre">OPENSSH</span> <span class="pre">PRIVATE</span> <span class="pre">KEY</span></code>. To work around this, convert the private key’s format using <code class="docutils literal notranslate"><span class="pre">ssh-keygen</span> <span class="pre">-p</span> <span class="pre">-m</span> <span class="pre">PEM</span> <span class="pre">-f</span> <span class="pre">~/.ssh/id_rsa</span></code>.</p>
+<p>To confirm that that passwordless ssh to localhost works:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">localhost</span> <span class="n">ls</span>
+</pre></div>
+</div>
+<p>This should run and complete.  If it prompts for a password, the flow tests will not work.</p>
+<p>Check that the broker is working:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="n">status</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+<p>One part of the flow test runs an sftp server, and uses sftp client functions.
+Need the following package for that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">pyftpdlib</span> <span class="n">python3</span><span class="o">-</span><span class="n">paramiko</span>
+</pre></div>
+</div>
+<p>The setup script starts a trivial web server, and ftp server, and a daemon that invokes sr_post.
+It also tests the C components, which need to have been already installed as well
+and defines some fixed test clients that will be used during self-tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd
+git clone https://github.com/MetPX/sr_insects
+cd sr_insects
+cd static_flow
+. ./flow_setup.sh
+
+blacklab% ./flow_setup.sh
+cleaning logs, just in case
+rm: cannot remove &#39;/home/peter/.cache/sarra/log/*&#39;: No such file or directory
+Adding flow test configurations...
+2018-02-10 14:22:58,944 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpump/cno_trouble_f00.inc to /home/peter/.config/sarra/cpump/cno_trouble_f00.inc.
+2018-02-10 09:22:59,204 [INFO] copying /home/peter/src/sarracenia/sarra/examples/shovel/no_trouble_f00.inc to /home/peter/.config/sarra/shovel/no_trouble_f00.inc
+2018-02-10 14:22:59,206 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpost/veille_f34.conf to /home/peter/.config/sarra/cpost/veille_f34.conf.
+2018-02-10 14:22:59,207 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpump/pelle_dd1_f04.conf to /home/peter/.config/sarra/cpump/pelle_dd1_f04.conf.
+2018-02-10 14:22:59,208 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpump/pelle_dd2_f05.conf to /home/peter/.config/sarra/cpump/pelle_dd2_f05.conf.
+2018-02-10 14:22:59,208 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpump/xvan_f14.conf to /home/peter/.config/sarra/cpump/xvan_f14.conf.
+2018-02-10 14:22:59,209 [INFO] copying /usr/lib/python3/dist-packages/sarra/examples/cpump/xvan_f15.conf to /home/peter/.config/sarra/cpump/xvan_f15.conf.
+2018-02-10 09:22:59,483 [INFO] copying /home/peter/src/sarracenia/sarra/examples/poll/f62.conf to /home/peter/.config/sarra/poll/f62.conf
+2018-02-10 09:22:59,756 [INFO] copying /home/peter/src/sarracenia/sarra/examples/post/shim_f63.conf to /home/peter/.config/sarra/post/shim_f63.conf
+2018-02-10 09:23:00,030 [INFO] copying /home/peter/src/sarracenia/sarra/examples/post/test2_f61.conf to /home/peter/.config/sarra/post/test2_f61.conf
+2018-02-10 09:23:00,299 [INFO] copying /home/peter/src/sarracenia/sarra/examples/report/tsarra_f20.conf to /home/peter/.config/sarra/report/tsarra_f20.conf
+2018-02-10 09:23:00,561 [INFO] copying /home/peter/src/sarracenia/sarra/examples/report/twinnow00_f10.conf to /home/peter/.config/sarra/report/twinnow00_f10.conf
+2018-02-10 09:23:00,824 [INFO] copying /home/peter/src/sarracenia/sarra/examples/report/twinnow01_f10.conf to /home/peter/.config/sarra/report/twinnow01_f10.conf
+2018-02-10 09:23:01,086 [INFO] copying /home/peter/src/sarracenia/sarra/examples/sarra/download_f20.conf to /home/peter/.config/sarra/sarra/download_f20.conf
+2018-02-10 09:23:01,350 [INFO] copying /home/peter/src/sarracenia/sarra/examples/sender/tsource2send_f50.conf to /home/peter/.config/sarra/sender/tsource2send_f50.conf
+2018-02-10 09:23:01,615 [INFO] copying /home/peter/src/sarracenia/sarra/examples/shovel/t_dd1_f00.conf to /home/peter/.config/sarra/shovel/t_dd1_f00.conf
+2018-02-10 09:23:01,877 [INFO] copying /home/peter/src/sarracenia/sarra/examples/shovel/t_dd2_f00.conf to /home/peter/.config/sarra/shovel/t_dd2_f00.conf
+2018-02-10 09:23:02,137 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/cclean_f91.conf to /home/peter/.config/sarra/subscribe/cclean_f91.conf
+2018-02-10 09:23:02,400 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/cdnld_f21.conf to /home/peter/.config/sarra/subscribe/cdnld_f21.conf
+2018-02-10 09:23:02,658 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/cfile_f44.conf to /home/peter/.config/sarra/subscribe/cfile_f44.conf
+2018-02-10 09:23:02,921 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/clean_f90.conf to /home/peter/.config/sarra/subscribe/clean_f90.conf
+2018-02-10 09:23:03,185 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/cp_f61.conf to /home/peter/.config/sarra/subscribe/cp_f61.conf
+2018-02-10 09:23:03,455 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/ftp_f70.conf to /home/peter/.config/sarra/subscribe/ftp_f70.conf
+2018-02-10 09:23:03,715 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/q_f71.conf to /home/peter/.config/sarra/subscribe/q_f71.conf
+2018-02-10 09:23:03,978 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/t_f30.conf to /home/peter/.config/sarra/subscribe/t_f30.conf
+2018-02-10 09:23:04,237 [INFO] copying /home/peter/src/sarracenia/sarra/examples/subscribe/u_sftp_f60.conf to /home/peter/.config/sarra/subscribe/u_sftp_f60.conf
+2018-02-10 09:23:04,504 [INFO] copying /home/peter/src/sarracenia/sarra/examples/watch/f40.conf to /home/peter/.config/sarra/watch/f40.conf
+2018-02-10 09:23:04,764 [INFO] copying /home/peter/src/sarracenia/sarra/examples/winnow/t00_f10.conf to /home/peter/.config/sarra/winnow/t00_f10.conf
+2018-02-10 09:23:05,027 [INFO] copying /home/peter/src/sarracenia/sarra/examples/winnow/t01_f10.conf to /home/peter/.config/sarra/winnow/t01_f10.conf
+Initializing with sr_audit... takes a minute or two
+OK, as expected 18 queues existing after 1st audit
+OK, as expected 31 exchanges for flow test created.
+Starting trivial http server on: /home/peter/sarra_devdocroot, saving pid in .httpserverpid
+Starting trivial ftp server on: /home/peter/sarra_devdocroot, saving pid in .ftpserverpid
+running self test ... takes a minute or two
+sr_util.py TEST PASSED
+sr_credentials.py TEST PASSED
+sr_config.py TEST PASSED
+sr_cache.py TEST PASSED
+sr_retry.py TEST PASSED
+sr_consumer.py TEST PASSED
+sr_http.py TEST PASSED
+sftp testing start...
+sftp testing config read...
+sftp testing fake message built ...
+sftp sr_ftp instantiated ...
+sftp sr_ftp connected ...
+sftp sr_ftp mkdir ...
+test 01: directory creation succeeded
+test 02: file upload succeeded
+test 03: file rename succeeded
+test 04: getting a part succeeded
+test 05: download succeeded
+test 06: onfly_checksum succeeded
+Sent: bbb  into tztz/ddd 0-5
+test 07: download succeeded
+test 08: delete succeeded
+Sent: bbb  into tztz/ddd 0-5
+Sent: bbb  into tztz/ddd 0-5
+Sent: bbb  into tztz/ddd 0-5
+Sent: bbb  into tztz/ddd 0-5
+Sent: bbb  into tztz/ddd 0-5
+/home/peter
+/home/peter
+test 09: bad part succeeded
+sr_sftp.py TEST PASSED
+sr_instances.py TEST PASSED
+OK, as expected 9 tests passed
+Starting flow_post on: /home/peter/sarra_devdocroot, saving pid in .flowpostpid
+Starting up all components (sr start)...
+done.
+OK: sr3 start was successful
+Overall PASSED 4/4 checks passed!
+blacklab%
+</pre></div>
+</div>
+<p>As it runs the setup, it also executes all existing unit_tests.
+Only proceed to the flow_check tests if all the tests in flow_setup.sh pass.</p>
+</section>
+<section id="run-a-flow-test">
+<h3>Run A Flow Test<a class="headerlink" href="#run-a-flow-test" title="Link to this heading"></a></h3>
+<p>The flow_check.sh script reads the log files of all the components started, and compares the number
+of notification messages, looking for a correspondence within +- 10%   It takes a few minutes for the
+configuration to run before there is enough data to do the proper measurements:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">flow_limit</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>sample output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>initial sample building sample size 8 need at least 1000
+sample now   1021
+Sufficient!
+stopping shovels and waiting...
+2017-10-28 00:37:02,422 [INFO] sr_shovel t_dd1_f00 0001 stopping
+2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: instances option not implemented, ignored.
+info: instances option not implemented, ignored.
+2017-10-28 04:37:02,435 [INFO] 2017-10-28 04:37:02,435 [INFO] info: report option not implemented, ignored.
+info: report option not implemented, ignored.
+2017-10-28 00:37:02,436 [INFO] sr_shovel t_dd2_f00 0001 stopping
+running instance for config pelle_dd1_f04 (pid 15872) stopped.
+running instance for config pelle_dd2_f05 (pid 15847) stopped.
+    maximum of the shovels is: 1022
+</pre></div>
+</div>
+<p>Then check show it went with flow_check.sh:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>TYPE OF ERRORS IN LOG :
+
+  1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange &#39;xcvan00&#39; in vhost &#39;/&#39;
+  1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange &#39;xcvan01&#39; in vhost &#39;/&#39;
+
+
+test  1 success: shovels t_dd1_f00 ( 1022 ) and t_dd2_f00 ( 1022 ) should have about the same number of items read
+test  2 success: sarra tsarra (1022) should be reading about half as many items as (both) winnows (2240)
+test  3 success: tsarra (1022) and sub t_f30 (1022) should have about the same number of items
+test  4 success: max shovel (1022) and subscriber t_f30 (1022) should have about the same number of items
+test  5 success: count of truncated headers (1022) and subscribed messages (1022) should have about the same number of items
+test  6 success: count of downloads by subscribe t_f30 (1022) and messages received (1022) should be about the same
+test  7 success: downloads by subscribe t_f30 (1022) and files posted by watch (1022) should be about the same
+test  8 success: posted by watch(1022) and sent by sr_sender (1022) should be about the same
+test  9 success: 1022 of 1022: files sent with identical content to those downloaded by subscribe
+test 10 success: 1022 of 1022: poll test1_f62 and subscribe q_f71 run together. Should have equal results.
+test 11 success: post test2_f61 1022 and subscribe r_ftp_f70 1021 run together. Should be about the same.
+test 12 success: cpump both pelles (c shovel) should receive about the same number of messages (3665) (3662)
+test 13 success: cdnld_f21 subscribe downloaded (1022) the same number of files that was published by both van_14 and van_15 (1022)
+test 14 success: veille_f34 should post the same number of files (1022) that subscribe cdnld_f21 downloaded (1022)
+test 15 success: veille_f34 should post the same number of files (1022) that subscribe cfile_f44 downloaded (1022)
+test 16 success: Overall 15 of 15 passed!
+
+blacklab%
+</pre></div>
+</div>
+<p>If the flow_check.sh passes, then one has a reasonable confidence in the overall functionality of the
+python application, but the test coverage is not exhaustive. This is the lowest gate for committing
+changes to thy python code into the development branch. It is more qualitative sampling of the most
+common use cases rather than a thorough examination of all functionality. While not
+thorough, it is good to know the flows are working.</p>
+<p>Note that the <em>fclean</em> subscriber looks at files in and keeps files around long enough for them to go through all the other
+tests.  It does this by waiting a reasonable amount of time (45 seconds, the last time checked.) then it compares the file
+that have been posted by watch to the files created by downloading from it.  As the <em>sample now</em> count proceeds,
+it prints “OK” if the files downloaded are identical to the ones posted by sr_watch.   The addition of fclean and
+the corresponding cfclean for the cflow_test, are broken.  The default setup which uses <em>fclean</em> and <em>cfclean</em> ensures
+that only a few minutes worth of disk space is used at a given time, and allows for much longer tests.</p>
+<p>By default, the flow_test is only 1000 files, but one can ask it to run longer, like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">flow_limit</span><span class="o">.</span><span class="n">sh</span> <span class="mi">50000</span>
+</pre></div>
+</div>
+<p>To accumulate fifty thousand files before ending the test.  This allows testing of long term performance, especially
+memory usage over time, and the housekeeping functions of on_heartbeat processing.</p>
+</section>
+<section id="flow-cleanup">
+<h3>Flow Cleanup<a class="headerlink" href="#flow-cleanup" title="Link to this heading"></a></h3>
+<p>When done testing, run the ./flow_cleanup.sh script, which will kill the
+running servers and daemons, and delete all configuration files installed for
+the flow test, all queues, exchanges, and logs. This also needs to be done
+between each run of the flow test:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>blacklab% ./flow_cleanup.sh
+Stopping sr...
+Cleanup sr...
+Cleanup trivial http server...
+web server stopped.
+if other web servers with lost pid kill them
+Cleanup trivial ftp server...
+ftp server stopped.
+if other ftp servers with lost pid kill them
+Cleanup flow poster...
+flow poster stopped.
+if other flow_post.sh with lost pid kill them
+Deleting queues:
+Deleting exchanges...
+Removing flow configs...
+2018-02-10 14:17:34,150 [INFO] info: instances option not implemented, ignored.
+2018-02-10 14:17:34,150 [INFO] info: report option not implemented, ignored.
+2018-02-10 14:17:34,353 [INFO] info: instances option not implemented, ignored.
+2018-02-10 14:17:34,353 [INFO] info: report option not implemented, ignored.
+2018-02-10 09:17:34,837 [INFO] sr_poll f62 cleanup
+2018-02-10 09:17:34,845 [INFO] deleting exchange xs_tsource_poll (tsource@localhost)
+2018-02-10 09:17:35,115 [INFO] sr3_post shim_f63 cleanup
+2018-02-10 09:17:35,122 [INFO] deleting exchange xs_tsource_shim (tsource@localhost)
+2018-02-10 09:17:35,394 [INFO] sr3_post test2_f61 cleanup
+2018-02-10 09:17:35,402 [INFO] deleting exchange xs_tsource_post (tsource@localhost)
+2018-02-10 09:17:35,659 [INFO] sr_report tsarra_f20 cleanup
+2018-02-10 09:17:35,659 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:35,661 [INFO] deleting queue q_tfeed.sr_report.tsarra_f20.89336558.04455188 (tfeed@localhost)
+2018-02-10 09:17:35,920 [INFO] sr_report twinnow00_f10 cleanup
+2018-02-10 09:17:35,920 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:35,922 [INFO] deleting queue q_tfeed.sr_report.twinnow00_f10.35552245.50856337 (tfeed@localhost)
+2018-02-10 09:17:36,179 [INFO] sr_report twinnow01_f10 cleanup
+2018-02-10 09:17:36,180 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:36,182 [INFO] deleting queue q_tfeed.sr_report.twinnow01_f10.48262886.11567358 (tfeed@localhost)
+2018-02-10 09:17:36,445 [WARNING] option url deprecated please use post_base_url
+2018-02-10 09:17:36,446 [WARNING] use post_base_dir instead of document_root
+2018-02-10 09:17:36,446 [INFO] sr_sarra download_f20 cleanup
+2018-02-10 09:17:36,446 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:36,448 [INFO] deleting queue q_tfeed.sr_sarra.download_f20 (tfeed@localhost)
+2018-02-10 09:17:36,449 [INFO] exchange xpublic remains
+2018-02-10 09:17:36,703 [INFO] sr_sender tsource2send_f50 cleanup
+2018-02-10 09:17:36,703 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-02-10 09:17:36,705 [INFO] deleting queue q_tsource.sr_sender.tsource2send_f50 (tsource@localhost)
+2018-02-10 09:17:36,711 [INFO] deleting exchange xs_tsource_output (tsource@localhost)
+2018-02-10 09:17:36,969 [INFO] sr_shovel t_dd1_f00 cleanup
+2018-02-10 09:17:36,969 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+2018-02-10 09:17:37,072 [INFO] deleting queue q_anonymous.sr_shovel.t_dd1_f00 (anonymous@dd.weather.gc.ca)
+2018-02-10 09:17:37,095 [INFO] exchange xwinnow00 remains
+2018-02-10 09:17:37,095 [INFO] exchange xwinnow01 remains
+2018-02-10 09:17:37,389 [INFO] sr_shovel t_dd2_f00 cleanup
+2018-02-10 09:17:37,389 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+2018-02-10 09:17:37,498 [INFO] deleting queue q_anonymous.sr_shovel.t_dd2_f00 (anonymous@dd.weather.gc.ca)
+2018-02-10 09:17:37,522 [INFO] exchange xwinnow00 remains
+2018-02-10 09:17:37,523 [INFO] exchange xwinnow01 remains
+2018-02-10 09:17:37,804 [INFO] sr_subscribe cclean_f91 cleanup
+2018-02-10 09:17:37,804 [INFO] AMQP  broker(localhost) user(tsub) vhost(/)
+2018-02-10 09:17:37,806 [INFO] deleting queue q_tsub.sr_subscribe.cclean_f91.39328538.44917465 (tsub@localhost)
+2018-02-10 09:17:38,062 [INFO] sr_subscribe cdnld_f21 cleanup
+2018-02-10 09:17:38,062 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:38,064 [INFO] deleting queue q_tfeed.sr_subscribe.cdnld_f21.11963392.61638098 (tfeed@localhost)
+2018-02-10 09:17:38,324 [WARNING] use post_base_dir instead of document_root
+2018-02-10 09:17:38,324 [INFO] sr_subscribe cfile_f44 cleanup
+2018-02-10 09:17:38,324 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:38,326 [INFO] deleting queue q_tfeed.sr_subscribe.cfile_f44.56469334.87337271 (tfeed@localhost)
+2018-02-10 09:17:38,583 [INFO] sr_subscribe clean_f90 cleanup
+2018-02-10 09:17:38,583 [INFO] AMQP  broker(localhost) user(tsub) vhost(/)
+2018-02-10 09:17:38,585 [INFO] deleting queue q_tsub.sr_subscribe.clean_f90.45979835.20516428 (tsub@localhost)
+2018-02-10 09:17:38,854 [WARNING] extended option download_cp_command = [&#39;cp --preserve=timestamps&#39;] (unknown or not declared)
+2018-02-10 09:17:38,855 [INFO] sr_subscribe cp_f61 cleanup
+2018-02-10 09:17:38,855 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-02-10 09:17:38,857 [INFO] deleting queue q_tsource.sr_subscribe.cp_f61.61218922.69758215 (tsource@localhost)
+2018-02-10 09:17:39,121 [INFO] sr_subscribe ftp_f70 cleanup
+2018-02-10 09:17:39,121 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-02-10 09:17:39,123 [INFO] deleting queue q_tsource.sr_subscribe.ftp_f70.47997098.27633529 (tsource@localhost)
+2018-02-10 09:17:39,386 [INFO] sr_subscribe q_f71 cleanup
+2018-02-10 09:17:39,386 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-02-10 09:17:39,389 [INFO] deleting queue q_tsource.sr_subscribe.q_f71.84316550.21567557 (tsource@localhost)
+2018-02-10 09:17:39,658 [INFO] sr_subscribe t_f30 cleanup
+2018-02-10 09:17:39,658 [INFO] AMQP  broker(localhost) user(tsub) vhost(/)
+2018-02-10 09:17:39,660 [INFO] deleting queue q_tsub.sr_subscribe.t_f30.26453890.50752396 (tsub@localhost)
+2018-02-10 09:17:39,924 [INFO] sr_subscribe u_sftp_f60 cleanup
+2018-02-10 09:17:39,924 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-02-10 09:17:39,927 [INFO] deleting queue q_tsource.sr_subscribe.u_sftp_f60.81353341.03950190 (tsource@localhost)
+2018-02-10 09:17:40,196 [WARNING] option url deprecated please use post_base_url
+2018-02-10 09:17:40,196 [WARNING] use post_broker to set broker
+2018-02-10 09:17:40,197 [INFO] watch f40 cleanup
+2018-02-10 09:17:40,207 [INFO] deleting exchange xs_tsource (tsource@localhost)
+2018-02-10 09:17:40,471 [INFO] sr_winnow t00_f10 cleanup
+2018-02-10 09:17:40,471 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:40,474 [INFO] deleting queue q_tfeed.sr_winnow.t00_f10 (tfeed@localhost)
+2018-02-10 09:17:40,480 [INFO] deleting exchange xsarra (tfeed@localhost)
+2018-02-10 09:17:40,741 [INFO] sr_winnow t01_f10 cleanup
+2018-02-10 09:17:40,741 [INFO] AMQP  broker(localhost) user(tfeed) vhost(/)
+2018-02-10 09:17:40,743 [INFO] deleting queue q_tfeed.sr_winnow.t01_f10 (tfeed@localhost)
+2018-02-10 09:17:40,750 [INFO] deleting exchange xsarra (tfeed@localhost)
+2018-02-10 14:17:40,753 [ERROR] config cno_trouble_f00 not found.
+Removing flow config logs...
+rm: cannot remove &#39;/home/peter/.cache/sarra/log/sr_audit_f00.log&#39;: No such file or directory
+Removing document root ( /home/peter/sarra_devdocroot )...
+Done!
+</pre></div>
+</div>
+<p>After the flow_cleanup.sh, to check that a test has completed, use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">status</span>
+</pre></div>
+</div>
+<p>which should show that there are no active configurations.</p>
+<p>If the static_flow test works, then re-run the other tests: flakey_broker,
+transform_flow, and dynamic_flow.</p>
+</section>
+<section id="dynamic-flow-test-length">
+<h3>Dynamic Flow Test Length<a class="headerlink" href="#dynamic-flow-test-length" title="Link to this heading"></a></h3>
+<p>While most tests have a fixed duration, the dynamic flow test queries a remote
+server and can run for any length desired. The dynamic flow_test length defaults
+to 1000 files being flowed through the test cases. When in rapid development,
+one can supply an argument to shorten that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">flow_limit</span><span class="o">.</span><span class="n">sh</span> <span class="mi">200</span>
+</pre></div>
+</div>
+<p>Towards the end of a development cycle, longer flow_tests are adviseable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">flow_limit</span><span class="o">.</span><span class="n">sh</span> <span class="mi">20000</span>
+</pre></div>
+</div>
+<p>to identify more issues. sample run to 100,000 entries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>blacklab% ./flow_limit.sh 100000
+initial sample building sample size 155 need at least 100000
+sample now 100003 content_checks:GOOD missed_dispositions:0s:0
+Sufficient!
+stopping shovels and waiting...
+2018-02-10 13:15:08,964 [INFO] 2018-02-10 13:15:08,964 [INFO] info: instances option not implemented, ignored.
+info: instances option not implemented, ignored.
+2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
+2018-02-10 13:15:08,964 [INFO] info: report option not implemented, ignored.
+running instance for config pelle_dd2_f05 (pid 20031) stopped.
+running instance for config pelle_dd1_f04 (pid 20043) stopped.
+Traceback (most recent call last):ng...
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 1012, in &lt;module&gt;
+    main()
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 413, in main
+    method()
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 593, in invoke_list
+    format_list(self.get(uri), cols, obj_info, self.options)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 710, in format_list
+    formatter_instance.display(json_list)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 721, in display
+    (columns, table) = self.list_to_table(json.loads(json_list), depth)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 775, in list_to_table
+    add(&#39;&#39;, 1, item, add_to_row)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 742, in add
+    add(column, depth + 1, subitem, fun)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 742, in add
+    add(column, depth + 1, subitem, fun)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 754, in add
+    fun(column, subitem)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 761, in add_to_row
+    row[column_ix[col]] = maybe_utf8(val)
+  File &quot;/usr/bin/rabbitmqadmin&quot;, line 431, in maybe_utf8
+    return s.encode(&#39;utf-8&#39;)
+AttributeError: &#39;float&#39; object has no attribute &#39;encode&#39;
+maximum of the shovels is: 100008
+</pre></div>
+</div>
+<p>While it is running one can run flow_check.sh at any time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>NB retries for sr_subscribe t_f30 0
+NB retries for sr_sender 18
+
+      1 /home/peter/.cache/sarra/log/sr_cpost_veille_f34_0001.log [ERROR] sr_cpost rename: /home/peter/sarra_devdocroot/cfr/observations/xml/AB/today/today_ab_20180210_e.xml cannot stat.
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f14_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange &#39;xcvan00&#39; in vhost &#39;/&#39;
+      1 /home/peter/.cache/sarra/log/sr_cpump_xvan_f15_0001.log [ERROR] binding failed: server channel error 404h, message: NOT_FOUND - no exchange &#39;xcvan01&#39; in vhost &#39;/&#39;
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0002.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CA/CWAO/09/CACN00_CWAO_100857__WDK_10905. Type: &lt;class &#39;urllib.error.URLError&#39;&gt;, Value: &lt;urlopen error [Errno 110] Connection timed out&gt;
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Failed to reach server. Reason: [Errno 110] Connection timed out
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/SA/CYMM/09/SACN61_CYMM_100900___53321. Type: &lt;class &#39;urllib.error.URLError&#39;&gt;, Value: &lt;urlopen error [Errno 110] Connection timed out&gt;
+      1 /home/peter/.cache/sarra/log/sr_sarra_download_f20_0004.log [ERROR] Download failed http://dd2.weather.gc.ca//bulletins/alphanumeric/20180210/CS/CWEG/12/CSCN03_CWEG_101200___12074
+more than 10 TYPES OF ERRORS found... for the rest, have a look at /home/peter/src/sarracenia/test/flow_check_errors_logged.txt for details
+
+test  1 success: shovels t_dd1_f00 (100008) and t_dd2_f00 (100008) should have about the same number of items read
+test  2 success: sarra tsarra (100008) should be reading about half as many items as (both) winnows (200016)
+test  3 success: tsarra (100008) and sub t_f30 (99953) should have about the same number of items
+test  4 success: max shovel (100008) and subscriber t_f30 (99953) should have about the same number of items
+test  5 success: count of truncated headers (100008) and subscribed messages (100008) should have about the same number of items
+test  6 success: count of downloads by subscribe t_f30 (99953) and messages received (100008) should be about the same
+test  7 success: same downloads by subscribe t_f30 (199906) and files posted (add+remove) by watch (199620) should be about the same
+test  8 success: posted by watch(199620) and subscribed cp_f60 (99966) should be about half as many
+test  9 success: posted by watch(199620) and sent by sr_sender (199549) should be about the same
+test 10 success: 0 messages received that we don&#39;t know what happenned.
+test 11 success: sarra tsarra (100008) and good audit 99754 should be the same.
+test 12 success: poll test1_f62 94865 and subscribe q_f71 99935 run together. Should have equal results.
+test 13 success: post test2_f61 99731 and subscribe r_ftp_f70 99939 run together. Should be about the same.
+test 14 success: posts test2_f61 99731 and shim_f63 110795 Should be the same.
+test 15 success: cpump both pelles (c shovel) should receive about the same number of messages (160737) (160735)
+test 16 success: cdnld_f21 subscribe downloaded (50113) the same number of files that was published by both van_14 and van_15 (50221)
+test 17 success: veille_f34 should post twice as many files (100205) as subscribe cdnld_f21 downloaded (50113)
+test 18 success: veille_f34 should post twice as many files (100205) as subscribe cfile_f44 downloaded (49985)
+test 19 success: Overall 18 of 18 passed (sample size: 100008) !
+
+blacklab%
+</pre></div>
+</div>
+<p>This test was fired up at the end of the day, as it takes several hours, and results examined the next morning.</p>
+</section>
+<section id="high-volume-sample">
+<h3>High volume sample<a class="headerlink" href="#high-volume-sample" title="Link to this heading"></a></h3>
+<p>Trying the flow test with higher volume of notification messages (ie. 100 000) is one step closer to the goal of having a flow test running continously. This is motivated by our testing purposes.</p>
+<section id="limitation">
+<h4>Limitation<a class="headerlink" href="#limitation" title="Link to this heading"></a></h4>
+<p>Ubuntu have a limitation that tops inotify watches and that we encountered in <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/204">#204</a> . We can overcome this by setting the related sysctl variable. First, check what is the limit of your system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sysctl fs.inotify.max_user_watches
+fs.inotify.max_user_watches = 8196
+</pre></div>
+</div>
+<p>If the limit is too low (ie. 8196), change it to a more appropriate level for the flow test:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo sysctl fs.inotify.max_user_watches=524288
+</pre></div>
+</div>
+<p>To make this change permanent add this line to <code class="docutils literal notranslate"><span class="pre">/etc/sysctl.conf</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fs</span><span class="o">.</span><span class="n">inotify</span><span class="o">.</span><span class="n">max_user_watches</span><span class="o">=</span><span class="mi">524288</span>
+</pre></div>
+</div>
+<p>Then excute <code class="docutils literal notranslate"><span class="pre">sysctl</span> <span class="pre">-p</span></code> and the system should now support high volume of inotify events.</p>
+</section>
+<section id="flow-test-stuck">
+<h4>Flow Test Stuck<a class="headerlink" href="#flow-test-stuck" title="Link to this heading"></a></h4>
+<p>Sometimes flow tests (especially for large numbers) get stuck because of problems with the data stream (where multiple files get the same name) and so earlier versions remove later versions and then retries will always fail. Eventually, we will succeed in cleaning up the dd.weather.gc.ca stream, but for now sometimes a flow_check gets stuck ‘Retrying.’ The test has run all the notification messages required, and is at a phase of emptying out retries, but just keeps retrying forever with a variable number of items that never drops to zero.</p>
+<p>To recover from this state without discarding the results of a long test, do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>^C to interrupt the flow_check.sh 100000
+blacklab% sr3 stop
+blacklab% cd ~/.cache/sarra
+blacklab% ls */*/*retry*
+shovel/pclean_f90/sr_shovel_pclean_f90_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry        subscribe/t_f30/sr_subscribe_t_f30_0002.retry.new
+shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry        shovel/pclean_f92/sr_shovel_pclean_f92_0001.retry.state
+shovel/pclean_f91/sr_shovel_pclean_f91_0001.retry.state  subscribe/q_f71/sr_subscribe_q_f71_0004.retry.new
+blacklab% rm */*/*retry*
+blacklab% sr3 start
+blacklab%
+blacklab%  ./flow_check.sh 100000
+Sufficient!
+stopping shovels and waiting...
+2018-04-07 10:50:16,167 [INFO] sr_shovel t_dd2_f00 0001 stopped
+2018-04-07 10:50:16,177 [INFO] sr_shovel t_dd1_f00 0001 stopped
+2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
+2018-04-07 14:50:16,235 [INFO] info: report option not
+implemented, ignored.
+2018-04-07 14:50:16,235 [INFO] info: instances option not implemented, ignored.
+2018-04-07 14:50:16,235 [INFO] info: report option not
+implemented, ignored.
+running instance for config pelle_dd1_f04 (pid 12435) stopped.
+running instance for config pelle_dd2_f05 (pid 12428) stopped.
+maximum of the shovels is: 100075
+
+
+blacklab% ./flow_check.sh
+
+                 | dd.weather routing |
+test  1 success: sr_shovel (100075) t_dd1 should have the same number
+of items as t_dd2 (100068)
+test  2 success: sr_winnow (200143) should have the sum of the number
+of items of shovels (200143)
+test  3 success: sr_sarra (98075) should have the same number of items
+as winnows&#39;post (100077)
+test  4 success: sr_subscribe (98068) should have the same number of
+items as sarra (98075)
+                 | watch      routing |
+test  5 success: watch (397354) should be 4 times subscribe t_f30 (98068)
+test  6 success: sr_sender (392737) should have about the same number
+of items as watch (397354)
+test  7 success: sr_subscribe u_sftp_f60 (361172) should have the same
+number of items as sr_sender (392737)
+test  8 success: sr_subscribe cp_f61 (361172) should have the same
+number of items as sr_sender (392737)
+                 | poll       routing |
+test  9 success: sr_poll test1_f62 (195408) should have half the same
+number of items of sr_sender(196368)
+test 10 success: sr_subscribe q_f71 (195406) should have about the
+same number of items as sr_poll test1_f62(195408)
+                 | flow_post  routing |
+test 11 success: sr3_post test2_f61 (193541) should have half the same
+number of items of sr_sender(196368)
+test 12 success: sr_subscribe ftp_f70 (193541) should have about the
+same number of items as sr3_post test2_f61(193541)
+test 13 success: sr3_post test2_f61 (193541) should have about the same
+number of items as shim_f63 195055
+                 | py infos   routing |
+test 14 success: sr_shovel pclean_f90 (97019) should have the same
+number of watched items winnows&#39;post (100077)
+test 15 success: sr_shovel pclean_f92 (94537}) should have the same
+number of removed items winnows&#39;post (100077)
+test 16 success: 0 messages received that we don&#39;t know what happenned.
+test 17 success: count of truncated headers (98075) and subscribed
+messages (98075) should have about the same number of items
+                 | C          routing |
+test 18 success: cpump both pelles (c shovel) should receive about the
+same number of messages (161365) (161365)
+test 19 success: cdnld_f21 subscribe downloaded (47950) the same
+number of files that was published by both van_14 and van_15 (47950)
+test 20 success: veille_f34 should post twice as many files (95846) as
+subscribe cdnld_f21 downloaded (47950)
+test 21 success: veille_f34 should post twice as many files (95846) as
+subscribe cfile_f44 downloaded (47896)
+test 22 success: Overall 21 of 21 passed (sample size: 100077) !
+
+NB retries for sr_subscribe t_f30 0
+NB retries for sr_sender 36
+</pre></div>
+</div>
+<p>So, in this case, the results are still good in spite of not quite being
+able to terminate. If there was a significant problem, the cumulation
+would indicate it.</p>
+</section>
+</section>
+<section id="flow-tests-with-mqtt">
+<h3>Flow tests with MQTT<a class="headerlink" href="#flow-tests-with-mqtt" title="Link to this heading"></a></h3>
+<p>Flow tests can be run where certain components use the MQTT protocol, instead of AMQP.</p>
+<p>FIXME: steps missing, more clarity required.</p>
+<ul class="simple">
+<li><p>MQTT broker is installed</p></li>
+<li><p>the bunnymaster tsource, tfeed, tsub users defined and given passwords (broker dependent.)</p></li>
+<li><p>for each user: an mqtt://user:pw&#64;brokerhost  url’s line is added to ~/.config/sr3/credentials.conf</p></li>
+<li><p>edit the variable MQP in ~/.config/sr3/default.conf, MQP is used by the flow tests.</p></li>
+</ul>
+<p>Most components will use MQTT instead of amqp and can be run normally.</p>
+</section>
+</section>
+<section id="commits-to-the-development-branch">
+<h2>Commits to the Development Branch<a class="headerlink" href="#commits-to-the-development-branch" title="Link to this heading"></a></h2>
+<p>Aside from typos, language fixups in the documentation, and incrementing
+the version, developers are not expected to commit to stable. All work
+happens on development branches, and all testing is expected to pass before
+one considers affecting stable. Once the branch development is complete,
+or a unit of work-in-progress is felt to be worth merging to stable, one
+must summarize the changes from the branch for the debian change log,
+request on github.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">issueXXX</span>  <span class="c1"># v02_issueXXX for v2 work., github suggested branch names are fine also.</span>
+<span class="n">vi</span> <span class="n">CHANGES</span><span class="o">.</span><span class="n">rst</span> <span class="c1"># summarize the changes in Restructured Text</span>
+<span class="n">dch</span> <span class="c1"># copy/paste from CHANGES.rst, inserting one leading space.</span>
+<span class="n">vi</span> <span class="n">doc</span><span class="o">/</span><span class="n">UPGRADING</span><span class="o">.</span><span class="n">rst</span> <span class="c1"># rarely, if code has user impact.</span>
+<span class="n">vi</span> <span class="n">doc</span><span class="o">/</span><span class="n">fr</span><span class="o">/</span><span class="n">UPGRADING</span><span class="o">.</span><span class="n">rst</span> <span class="c1"># bon... ceci est visible aux usagers, donc...</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span>
+<span class="n">git</span> <span class="n">push</span>
+<span class="c1"># issue a pull request on github.com.</span>
+</pre></div>
+</div>
+<p>A Second developer will review the pull request and the reviewer will decide on whether
+merging is appropriate. The developer is expected to examine each commit, and
+understand it to some degree.</p>
+<p>If the pull-request has one of the following (substantial changes, new functionality, modifications to critical code structure) , it is recommended to have a Third developer also review the pull request. The expectation from this developer are the same as from the previous.</p>
+<p>The github Actions looks at pull requests and will flow tests on them.
+If the tests pass, then that is good qualitative indicator, however the tests are a bit
+fragile at the moment, so if they fail, it would be ideal for the reviewer to run
+the tests in their own development environment. If it passes in the local developer
+environment one can approve a merge in spite of Github Actions’ complaints.</p>
+</section>
+<section id="key-branches">
+<h2>Key Branches<a class="headerlink" href="#key-branches" title="Link to this heading"></a></h2>
+<p>There is a long running discussion about <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">Which Version is stable</a>
+The current set up is that there are four principal branches:</p>
+<ul class="simple">
+<li><p>stable branch is the release version of sr3, merging from pre-release. used to build sr3 packages in the
+<a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">MetPX</a> repository.</p></li>
+<li><p>development … The <a class="reference internal" href="v03.html"><span class="doc">version 3</span></a> work in progress branch is a next version of sarracenia.
+the development branch is used to build sr3 packages for the <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">Daily</a>
+and <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release">Pre-Release</a> repositories on launchpad.net.</p></li>
+<li><p>stable_py36 and pre-relrease-36 are branched from stable and pre_release respectively to adjust for building
+packages on older operating systems that have older versions of python (and no support for hatchling.)</p></li>
+<li><p>issue branches to be merged to development, it should be start with issueXXX or suggested branch names from github are ok also.</p></li>
+<li><p>sometimes, multiple branches are needed for a single issue, say for variations of a fix, eg. issueXXX_2_do_it_this_way .</p></li>
+<li><p>v2_dev … the integration branch for v2 maintenance used prior to promotion to v2_stable.</p></li>
+<li><p>v2_stable … generally this branch gets code via merges from v2_dev, after the pre-release has been tested on a
+as many systems as possible. used to build packages on the stable: <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">MetPX</a></p></li>
+</ul>
+</section>
+<section id="repositories">
+<h2>Repositories<a class="headerlink" href="#repositories" title="Link to this heading"></a></h2>
+<p>For Ubuntu operating systems, the launchpad.net site is the best way to provide packages that are fully integrated
+( built against current patch levels of all dependencies (software components that Sarracenia relies
+on to provide full functionality.)) Ideally, when running a server, a one should use one of the repositories,
+and allow automated patching to upgrade them as needed.</p>
+<p>Repositories:</p>
+<ul class="simple">
+<li><p>Daily <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily</a> (living on the edge… )
+automated daily build of sr3 packages happens from <em>development</em> branch.</p></li>
+<li><p>Pre-Release <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release</a> (for newest features.)
+from <em>development</em> branch. Developers manually trigger builds here when it seems appropriate (testing out
+code that is ready for release.)</p></li>
+<li><p>Release <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx</a> (for maximum stability)
+from <em>v2_stable</em> branch.  After testing in systems subscribed to pre-releases, Developers
+merge from v2_dev branch into v2_stable one, and manually trigger a build.</p></li>
+</ul>
+<p>for more discussion see <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">Which Version is stable</a></p>
+<section id="local-python">
+<h3>Local Python<a class="headerlink" href="#local-python" title="Link to this heading"></a></h3>
+<p>Working with a non-packaged version:</p>
+<p>notes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h3>
+<p>Install winpython from github.io version 3.5 or higher.  Then use pip to install from PyPI.</p>
+</section>
+</section>
+<section id="conventions">
+<h2>Conventions<a class="headerlink" href="#conventions" title="Link to this heading"></a></h2>
+<p>Below are some coding practices that are meant to guide developers when contributing to sarracenia.
+They are not hard and fast rules, just guidance.</p>
+<section id="when-to-report">
+<h3>When to Report<a class="headerlink" href="#when-to-report" title="Link to this heading"></a></h3>
+<p>sr_report(7) notification messages should be emitted to indicate final disposition of the data itself, not
+any notifications or report messages (don’t report report messages, it becomes an infinite loop!)
+For debugging and other information, the local log file is used.  For example, sr_shovel does
+not emit any sr_report(7) messages, because no data is transferred, only messages.</p>
+</section>
+</section>
+<section id="adding-a-new-dependency">
+<h2>Adding a New Dependency<a class="headerlink" href="#adding-a-new-dependency" title="Link to this heading"></a></h2>
+<p>Dependency Management is a complicated topic, because python has many different installation methods into disparate environments, and Sarracenia is multi-platform.  Standard python practice for dependencies is to make
+them <em>required</em> by listing them in requirements.txt or setup.py, and require all users to install them.
+In most python applications, if a dependency is missing, it just crashes with a import failure message
+of some kind.</p>
+<p>In Sr3, we have found that there are many different environments being deployed into where satisfying
+dependencies can be more trouble than they are worth, so each of the dependencies in setup.py are also
+dealt with in sarracenia/featuredetection, and the feature detection code allows the application to
+keep working, just without the functionality provided by the missing module. This is called <em>degradation</em>
+or <em>degraded mode</em>. The idea being to help the user do as much as they can, in the environment they have,
+while telling them what is missing, and what would ideally be added.</p>
+<p>for a full discussion see:</p>
+<p><cite>Managing Dependencies (Discussion) &lt;https://github.com/MetPX/sarracenia/issues/741&gt;</cite></p>
+<p>Short version:</p>
+<p>In addition to requirements.dev/setup.py, if you need to add a new library that isn’t part of
+<em>batteries included</em>, typically provided by a separate os or pip package, then you want to
+provide for the package to still work in the event that the package is not available (albeit
+without the function you are adding) and to add support for explaining what’s missing using
+the sarracenia/featuredetection.py module.</p>
+<p>In that module is a <em>features</em> data structure, where you add an entry explaining the import
+needed, and the functionality it brings to Sr3. You also add if feature[‘x’][‘present’] guards
+in the code where you are using the feature, in order to allow the code to degrade elegantly.</p>
+<p>If the dependency is added in a plugin, then there is also a method for that described here:</p>
+<p><cite>Plugin Developer Guide &lt;../Explanation/SarraPluginDev.html#callbacks-that-need-python-modules&gt;</cite></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="AMQPprimer.html" class="btn btn-neutral float-left" title="AMQP - Primer for Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Documentation.html" class="btn btn-neutral float-right" title="Documentation Standards" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

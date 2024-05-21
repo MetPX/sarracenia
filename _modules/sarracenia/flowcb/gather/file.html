@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.gather.file &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.gather.file</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.gather.file</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2020</span>
+<span class="c1">#</span>
+<span class="c1"># Sarracenia repository: https://github.com/MetPX/sarracenia</span>
+<span class="c1"># Documentation: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64decode</span><span class="p">,</span> <span class="n">b64encode</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha512</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">mimetypes</span> <span class="kn">import</span> <span class="n">guess_type</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;reassembly&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.blockmanifest</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">sarracenia.identity</span>
+
+
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">platform</span> <span class="k">as</span> <span class="n">_platform</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">from</span> <span class="nn">watchdog.observers</span> <span class="kn">import</span> <span class="n">Observer</span>
+    <span class="kn">from</span> <span class="nn">watchdog.observers.polling</span> <span class="kn">import</span> <span class="n">PollingObserver</span>
+    <span class="kn">from</span> <span class="nn">watchdog.events</span> <span class="kn">import</span> <span class="n">PatternMatchingEventHandler</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+<div class="viewcode-block" id="SimpleEventHandler">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.SimpleEventHandler">[docs]</a>
+    <span class="k">class</span> <span class="nc">SimpleEventHandler</span><span class="p">(</span><span class="n">PatternMatchingEventHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="SimpleEventHandler.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.SimpleEventHandler.__init__">[docs]</a>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_created</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">on_created</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_deleted</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">on_deleted</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_modified</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">on_modified</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_moved</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">on_moved</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="File">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File">[docs]</a>
+<span class="k">class</span> <span class="nc">File</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    read the file system, create messages for the files you find.</span>
+
+<span class="sd">    this is taken from v2&#39;s sr_post.py</span>
+
+<span class="sd">    FIXME FIXME FIXME</span>
+<span class="sd">    FIXME: the sr_post version would post files on the fly as it was traversing trees.</span>
+<span class="sd">    so it was incremental and had little overhead. This one is does the whole recursion</span>
+<span class="sd">    in one gather.</span>
+
+<span class="sd">    It will fail horribly for large trees. Need to re-formulate to replace recursion with interation.</span>
+<span class="sd">    perhaps a good time to use python iterators.</span>
+<span class="sd">  </span>
+<span class="sd">    also should likely switch from listdir to scandir</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">on_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_add </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span> <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_events</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c1"># on_created (for SimpleEventHandler)</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">is_directory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;mkdir&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c1"># on_deleted (for SimpleEventHandler)</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">is_directory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;rmdir&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c1"># on_modified (for SimpleEventHandler)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">is_directory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;modify&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_moved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c1"># on_moved (for SimpleEventHandler)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;move&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">dest_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="File.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;watchdog module must be installed to watch directories&quot;</span><span class="p">)</span>
+            
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> used to be overwrite_defaults&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_watched</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">watch_handler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_topicPrefix</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;v03&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inl</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+        <span class="c1">#self.o.blocksize = 200 * 1024 * 1024</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;create&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="s1">&#39;modify&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">post_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">is_directory</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;post_delete %s (%s,%s)&quot; % (path, key, value))</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;remove&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span> <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">is_directory</span><span class="p">:</span> 
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="s1">&#39;directory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="c1"># partstr</span>
+        <span class="n">partstr</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># used when moving a file</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;newname&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">post_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;start  %s&quot; % path)</span>
+
+        <span class="c1"># check the value of blocksize</span>
+
+        <span class="n">fsiz</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span>
+        <span class="n">blksz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
+
+        <span class="c1"># if we should send the file in parts</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">blksz</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">blksz</span> <span class="o">&lt;</span> <span class="n">fsiz</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_file_in_parts</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
+
+        <span class="c1"># used when moving a file</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">key</span> <span class="p">:</span> <span class="n">value</span> <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">if</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+
+        <span class="c1"># complete message</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v03&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inline</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fsiz</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineByteMax</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineEncoding</span> <span class="o">==</span> <span class="s1">&#39;guess&#39;</span><span class="p">:</span>
+                    <span class="n">e</span> <span class="o">=</span> <span class="n">guess_type</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">binary</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">e</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;text&#39;</span> <span class="ow">in</span> <span class="n">e</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">binary</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineEncoding</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">)</span>
+
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">binary</span><span class="p">:</span>
+                    <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;base64&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">b64encode</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                        <span class="p">}</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;encoding&quot;</span><span class="p">:</span> <span class="s2">&quot;base64&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">b64encode</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                        <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineOnly</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;skipping file </span><span class="si">%s</span><span class="s1"> too large (</span><span class="si">%d</span><span class="s1"> bytes &gt; </span><span class="si">%d</span><span class="s1"> bytes max)) for inlining&#39;</span> <span class="o">%</span> \
+                       <span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inlineByteMax</span> <span class="p">)</span>  <span class="p">)</span>
+                    <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">post_file_in_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">):</span>
+        <span class="c1">#logger.info(&quot;start %s&quot; % path )</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;initial msg:</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+        <span class="c1"># check the value of blocksize</span>
+
+        <span class="n">fsiz</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span>
+        <span class="n">chunksize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
+
+        <span class="c1"># count blocks and remainder</span>
+
+        <span class="n">block_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fsiz</span> <span class="o">/</span> <span class="n">chunksize</span><span class="p">)</span>
+        <span class="n">remainder</span> <span class="o">=</span> <span class="n">fsiz</span> <span class="o">%</span> <span class="n">chunksize</span>
+        <span class="k">if</span> <span class="n">remainder</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">block_count</span> <span class="o">=</span> <span class="n">block_count</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1">#logger.debug( f&quot; fiz:{fsiz}, chunksize:{chunksize}, block_count:{block_count}, remainder:{remainder}&quot; )</span>
+
+        <span class="c1"># loop on blocks</span>
+
+        <span class="n">blocks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">block_count</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">randomize</span><span class="p">:</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">blocks</span><span class="p">)</span>
+            <span class="c1">#blocks = [8, 3, 1, 2, 9, 6, 0, 7, 4, 5] # Testing</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sending partitions in the following order: &#39;</span> <span class="o">+</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">blocks</span><span class="p">))</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;inplace&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">chunksize</span><span class="p">,</span>
+            <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;manifest&#39;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; blocks:</span><span class="si">{</span><span class="n">blocks</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">current_block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+
+            <span class="c1"># compute block stuff</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">current_block</span> <span class="o">*</span> <span class="n">chunksize</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">chunksize</span>
+
+            <span class="n">last</span> <span class="o">=</span> <span class="n">current_block</span> <span class="o">==</span> <span class="n">block_count</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">last</span> <span class="ow">and</span> <span class="n">remainder</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="n">remainder</span>
+
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">length</span>
+
+            <span class="c1"># set partstr</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span> <span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;manifest&#39;</span><span class="p">][</span><span class="n">current_block</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="n">length</span><span class="p">,</span> <span class="s1">&#39;identity&#39;</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="p">}</span>
+
+        
+        <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;reassembly&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+           <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;block_manifest_delete&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">block_manifest_delete</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">blockmanifest</span><span class="o">.</span><span class="n">BlockManifest</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span> <span class="k">as</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">])</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">current_block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_block</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;manifest&#39;</span><span class="p">][</span><span class="n">current_block</span><span class="p">][</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;manifest&#39;</span><span class="p">][</span><span class="n">current_block</span><span class="p">][</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span>
+
+            <span class="c1">#logger.info( f&quot; size: {msg[&#39;size&#39;]} blocks: {msg[&#39;blocks&#39;]}, offset: {offset} identity: {msg[&#39;identity&#39;]} &quot; )</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">messages</span>
+
+    <span class="k">def</span> <span class="nf">post_link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;link&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;post_link %s&quot; % path )</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># resolve link</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;link&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># used when moving a file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+           <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">post_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;post_move %s %s&quot; % (src,dst) )</span>
+
+        <span class="c1"># watchdog funny ./ added at end of directory path ... removed</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/./&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/./&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">realpathPost</span><span class="p">:</span>
+            <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+                <span class="n">dst</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="c1"># file</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dst</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;v2compatRenameDoublePost&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">v2compatRenameDoublePost</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_delete</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;newname&#39;</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_file</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">dst</span><span class="p">),</span> <span class="s1">&#39;rename&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">messages</span>
+
+        <span class="c1"># link</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">dst</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;v2compatRenameDoublePost&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">v2compatRenameDoublePost</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_delete</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;newname&#39;</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_link</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="s1">&#39;rename&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">messages</span>
+
+        <span class="c1"># directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dst</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dst</span><span class="p">):</span>
+
+                <span class="n">dst_x</span> <span class="o">=</span> <span class="n">dst</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">x</span>
+                <span class="n">src_x</span> <span class="o">=</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">x</span>
+
+                <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_move</span><span class="p">(</span><span class="n">src_x</span><span class="p">,</span> <span class="n">dst_x</span><span class="p">)</span>
+
+            <span class="c1"># directory list to delete at end</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">move_dir_lst</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">messages</span>
+
+<div class="viewcode-block" id="File.post1file">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.post1file">[docs]</a>
+    <span class="k">def</span> <span class="nf">post1file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          create the notification message for a single file, based on the lstat metadata.</span>
+
+<span class="sd">          when lstat is present it is used to decide whether the file is an ordinary file, a link</span>
+<span class="sd">          or a directory, and the appropriate message is built and returned.</span>
+
+<span class="sd">          if the lstat metadata is None, then that signifies a &quot;remove&quot; message to be created.</span>
+<span class="sd">          In the remove case, without the lstat, one needs the is_directory flag to decide whether</span>
+<span class="sd">          it is an ordinary file remove, or a directory remove.   is_directory is not used other</span>
+<span class="sd">          than for the remove case.</span>
+
+<span class="sd">          The return value is a list that usually contains a single message.  It is a list to allow</span>
+<span class="sd">          for if options are combined such that a symbolic link and the realpath it posts to may</span>
+<span class="sd">          involve multiple messages for a single file. Similarly in the multi-block transfer case.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># watchdog funny ./ added at end of directory path ... removed</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;/./&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="c1"># always use / as separator for paths being posted.</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>  <span class="c1"># windows</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="c1"># path is a link</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_link</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">follow_symlinks</span><span class="p">:</span>
+                <span class="n">link</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+                        <span class="n">rpath</span> <span class="o">=</span> <span class="n">rpath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">messages</span>
+
+                <span class="n">lstat</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rpath</span><span class="p">):</span> 
+                   <span class="n">lstat</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">rpath</span><span class="p">)</span>
+
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">rpath</span><span class="p">,</span> <span class="n">lstat</span><span class="p">))</span>
+
+        <span class="c1"># path deleted</span>
+
+        <span class="k">elif</span> <span class="n">lstat</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_delete</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">is_directory</span><span class="o">=</span><span class="n">is_directory</span><span class="p">))</span>
+
+        <span class="c1"># path is a file</span>
+
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">messages</span></div>
+
+
+    <span class="k">def</span> <span class="nf">post1move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;post1move %s %s&quot; % (src,dst) )</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_dir_lst</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_move</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_dir_lst</span><span class="p">:</span>
+            <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="o">=</span> <span class="n">tup</span>
+            <span class="c1">#logger.debug(&quot;deleting moved directory %s&quot; % src )</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post_delete</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;newname&#39;</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">messages</span>
+
+<div class="viewcode-block" id="File.process_event">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.process_event">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          return a tuple: pop? + list of messages.</span>
+<span class="sd">          </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#logger.debug(&quot;process_event %s %s %s &quot; % (event,src,dst) )</span>
+
+        <span class="c1"># delete</span>
+
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;delete&#39;</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;rmdir&#39;</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># move</span>
+
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;move&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1move</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+
+        <span class="c1"># create or modify</span>
+
+        <span class="c1"># directory : skipped, its content is watched</span>
+        <span class="c1">#if self.o.recursive and os.path.isdir(src):</span>
+        <span class="c1">#    dirs = list(map(lambda x: x[1][1], self.inl.items()))</span>
+        <span class="c1">#    #logger.debug(&quot;skipping directory %s list: %s&quot; % (src, dirs))</span>
+
+        <span class="c1"># link ( os.path.exists = false, lstat = None )</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;link&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># file : must exists</span>
+        <span class="c1">#       (may have been deleted since event caught)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src</span><span class="p">):</span> <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># file : must be old enough</span>
+
+        <span class="n">lstat</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lstat</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">lstat</span><span class="p">,</span><span class="s1">&#39;st_mtime&#39;</span><span class="p">):</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
+
+            <span class="k">if</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMin</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> vs (inflight setting) </span><span class="si">%d</span><span class="s2"> seconds. Too New!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">age</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMin</span><span class="p">)</span> <span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> vs (fileAgeMax setting) </span><span class="si">%d</span><span class="s2"> seconds. Too Old!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">age</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileAgeMax</span><span class="p">)</span> <span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># post it</span>
+
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span></div>
+
+
+    <span class="k">def</span> <span class="nf">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bssetting</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">):</span>
+
+        <span class="n">tfactor</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+
+        <span class="k">if</span> <span class="n">bssetting</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1">## default blocksize</span>
+            <span class="k">return</span> <span class="n">tfactor</span>
+
+        <span class="k">elif</span> <span class="n">bssetting</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1">## send file as one piece.</span>
+            <span class="k">return</span> <span class="n">fsiz</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1">## partstr=i</span>
+            <span class="k">return</span> <span class="n">bssetting</span>
+
+    <span class="k">def</span> <span class="nf">wakeup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#logger.debug(&quot;wakeup&quot;)</span>
+
+        <span class="c1"># FIXME: Tiny potential for events to be dropped during copy.</span>
+        <span class="c1">#     these lists might need to be replaced with watchdog event queues.</span>
+        <span class="c1">#     left for later work. PS-20170105</span>
+        <span class="c1">#     more details: https://github.com/gorakhargosh/watchdog/issues/392</span>
+
+        <span class="c1"># pile up left events to process</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_events</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+        <span class="c1"># work with a copy events and keep done events (to delete them)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left_events</span><span class="p">)</span>
+
+        <span class="c1"># loop on all events</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span><span class="p">:</span>
+            <span class="n">event_done</span><span class="o">=</span><span class="kc">False</span>
+            <span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_events</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">event_done</span><span class="p">,</span> <span class="n">new_messages</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_messages</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                  This message is reduced to debug priority because it often happens when files</span>
+<span class="sd">                  are too transitory (they disappear before we have a chance to post them)</span>
+<span class="sd">                  not sure if it should be an error message or not.</span>
+<span class="sd">                  </span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;skipping event that could not be processed: (</span><span class="si">{}</span><span class="s2">): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">event</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">event_done</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">if</span> <span class="n">event_done</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">messages</span>
+
+<div class="viewcode-block" id="File.walk">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.walk">[docs]</a>
+    <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          walk directory tree returning 1 message for each file in it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;walk </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span>
+
+        <span class="c1"># how to proceed with symlink</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">realpathPost</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+                <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># need to post root of tree first, so mode bits get propagated on creation.</span>
+        <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span> <span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;skip posting of post_baseDir </span><span class="si">{src}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="c1"># walk src directory, this walk is depth first... there could be a lot of time</span>
+        <span class="c1"># between *listdir* run, and when a file is visited, if there are subdirectories before you get there.</span>
+        <span class="c1"># hence the existence check after listdir (crashed in flow_tests of &gt; 20,000)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">recursive</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">x</span>
+                <span class="c1"># add path created</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span>
+
+
+        <span class="k">return</span> <span class="n">messages</span></div>
+
+
+<div class="viewcode-block" id="File.walk_priming">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.walk_priming">[docs]</a>
+    <span class="k">def</span> <span class="nf">walk_priming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Find all the subdirectories of the given path, start watches on them. </span>
+<span class="sd">         deal with symbolically linked directories correctly</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">realp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+                <span class="n">realp</span> <span class="o">=</span> <span class="n">realp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;sr_watch </span><span class="si">%s</span><span class="s2"> is a link to directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">realp</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">realpathPost</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">realp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">p</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">dir_dev_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fs</span><span class="o">.</span><span class="n">st_dev</span><span class="p">,</span> <span class="n">fs</span><span class="o">.</span><span class="n">st_ino</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dir_dev_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inl</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;could not stat file (</span><span class="si">{}</span><span class="s2">): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">watch_handler</span><span class="p">,</span>
+                                            <span class="n">d</span><span class="p">,</span>
+                                            <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs_watched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ow</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inl</span><span class="p">[</span><span class="n">dir_dev_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ow</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;sr_watch priming watch (instance=</span><span class="si">%d</span><span class="s2">) scheduled for: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_watched</span><span class="p">),</span> <span class="n">d</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sr_watch priming watch: </span><span class="si">%s</span><span class="s2"> failed, deferred.&quot;</span> <span class="o">%</span>
+                               <span class="n">d</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="c1"># add path created</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;sr_watch could not schedule priming watch of: </span><span class="si">%s</span><span class="s2"> (EPERM) deferred.&quot;</span>
+                <span class="o">%</span> <span class="n">d</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># add path created</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_add</span><span class="p">(</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+    <span class="k">def</span> <span class="nf">watch_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sld</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;watch_dir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sld</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;sr_watch needs the python watchdog library to be installed.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">force_polling</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;sr_watch polling observer overriding default (slower but more reliable.)&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observer</span> <span class="o">=</span> <span class="n">PollingObserver</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;sr_watch optimal observer for platform selected (best when it works).&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observer</span> <span class="o">=</span> <span class="n">Observer</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_watched</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">watch_handler</span> <span class="o">=</span> <span class="n">SimpleEventHandler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">walk_priming</span><span class="p">(</span><span class="n">sld</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;sr_watch priming walk done, but not yet active. Starting...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;sr_watch now active on </span><span class="si">%s</span><span class="s2"> posting to exchange: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">sld</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_exchange</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_on_start</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">sld</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primed</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="File.gather">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.gather.file.File.gather">[docs]</a>
+    <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messageCountMax</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           from sr_post.py/run </span>
+
+<span class="sd">           FIXME: really bad performance with large trees: It scans an entire tree</span>
+<span class="sd">           before emitting any messages. Need to re-factor with iterator style so produce</span>
+<span class="sd">           result in batch sized chunks incrementally.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#logger.debug(&quot;%s run partflg=%s, sum=%s, nodupe_ttl=%s basis=%s pbd=%s&quot; % \</span>
+        <span class="c1">#      ( self.o.component, self.o.partflg, self.o.sumflg, self.o.nodupe_ttl,</span>
+        <span class="c1">#        self.o.nodupe_basis, self.o.post_baseDir ))</span>
+        <span class="c1">#logger.debug(&quot;%s realpathPost=%s follow_links=%s force_polling=%s batch=%s&quot;  % \</span>
+        <span class="c1">#      ( self.o.component, self.o.realpathPost, self.o.follow_symlinks, \</span>
+        <span class="c1">#        self.o.force_polling, self.o.batch ) )</span>
+        <span class="c1">#logger.info(&quot;%s len(self.queued_messages)=%d&quot; % \</span>
+        <span class="c1">#     ( self.o.component, len(self.queued_messages) ) )</span>
+
+        <span class="n">pbd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseDir</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">:]</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sleep</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">primed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wakeup</span><span class="p">())</span>
+
+        <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">postpath</span><span class="p">:</span>
+
+            <span class="c1"># convert relative path to absolute.</span>
+            <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">:</span> <span class="n">d</span> <span class="o">=</span> <span class="n">cwd</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">d</span>
+
+            <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;postpath = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">d</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sleep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;watch&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">watch_dir</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;python watchdog package missing! Cannot watch directory&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;postpath = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">d</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;could not post </span><span class="si">%s</span><span class="s2"> (exists </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">:]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;len(queued_messages)=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queued_messages</span><span class="p">))</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">batch</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">primed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

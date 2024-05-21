@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Un premier exemple utilisant l’API Sarracenia Moth &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Publication à partir du code Python" href="5_api_moth_post_demo.html" />
+    <link rel="prev" title="Exemple d’API de flux" href="3_api_flow_demo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Tutoriel</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Un premier exemple utilisant l’API Sarracenia Moth</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Liaisons">Liaisons</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#queue_name">queue_name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Messages">Messages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Ack">Ack</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Télécharger-des-données-avec-Python">Télécharger des données avec Python</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Tutoriel</a> &raquo;</li>
+      <li>Un premier exemple utilisant l’API Sarracenia Moth</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/4_api_moth_sub_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Un-premier-exemple-utilisant-l’API-Sarracenia-Moth">
+<h1>Un premier exemple utilisant l’API Sarracenia Moth<a class="headerlink" href="#Un-premier-exemple-utilisant-l’API-Sarracenia-Moth" title="Link to this heading"></a></h1>
+<p>Sarracenia est un package conçu pour annoncer la disponibilité de nouvelles données, généralement sous forme de fichiers. Nous plaçons les fichiers sur des serveurs standard, les rendons disponibles via le Web ou sftp, et informons les utilisateurs qu’ils sont arrivés à l’aide de messages.</p>
+<p>Sarracenia utilise des protocoles de transmission de messages standard existants, comme rabbitmq/AMQP pour transporter les messages, et dans les cercles de transmission de messages, car le serveur qui distribue les messages est appelé un <em>courtier</em> (broker).</p>
+<p>Nous appelons la combinaison d’un courtier de messages et d’un serveur de fichiers (qui peut être un serveur unique ou un grand cluster) une <strong>pompe de données</strong> (data pump).</p>
+<p>En supposant que vous avez installé le paquet <strong>metpx-sr3</strong>, soit en tant que paquet debian, ou via pip, les annonces d’accès à sens unique à utiliser avec la classe sarracenia.moth (Messages Organisés par les en-têtes de sujet), qui permet à un programme python de se connecter à un serveur Sarracenia, et commencer à recevoir des messages qui annoncent des ressources.</p>
+<p>La fabrique pour construire les objets sarracenia.moth prend deux arguments :</p>
+<ul class="simple">
+<li><p>courtier : un objet (Credential) contenant une url pointant vers le serveur de messagerie qui annonce des produits, et d’autres options associées.</p></li>
+<li><p>options : un dictionnaire d’autres paramètres que la classe pourrait utiliser.</p></li>
+</ul>
+<p>L’exemple ci-dessous construit un appel à un courtier auquel tout le monde peut accéder et demander 10 annonces.</p>
+<p>Vous pouvez l’exécuter, puis nous pourrons discuter de quelques paramètres :</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
+<span class="kn">import</span> <span class="nn">sarracenia.moth.amqp</span>
+<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+
+<span class="n">options</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
+<span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span> <span class="p">]</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">])]</span>
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;q_anonymous_&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_QuelquechoseDUtile&#39;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;options: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">options</span><span class="p">)</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+options: {&#39;acceptUnmatched&#39;: True, &#39;batch&#39;: 25, &#39;bindings&#39;: [(&#39;xpublic&#39;, [&#39;v02&#39;, &#39;post&#39;], [&#39;#&#39;])], &#39;broker&#39;: &lt;sarracenia.credentials.Credential object at 0x7f602ee7d780&gt;, &#39;dry_run&#39;: False, &#39;exchange&#39;: None, &#39;expire&#39;: None, &#39;inline&#39;: False, &#39;inlineEncoding&#39;: &#39;guess&#39;, &#39;inlineByteMax&#39;: 4096, &#39;logFormat&#39;: &#39;%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s&#39;, &#39;logLevel&#39;: &#39;info&#39;, &#39;messageDebugDump&#39;: False, &#39;message_strategy&#39;: {&#39;reset&#39;: True, &#39;stubborn&#39;: True, &#39;failure_duration&#39;: &#39;5m&#39;}, &#39;message_ttl&#39;: 0, &#39;topicPrefix&#39;: [&#39;v02&#39;, &#39;post&#39;], &#39;tlsRigour&#39;: &#39;normal&#39;, &#39;auto_delete&#39;: False, &#39;durable&#39;: True, &#39;exchangeDeclare&#39;: True, &#39;prefetch&#39;: 25, &#39;queueName&#39;: &#39;q_anonymous_fractal_QuelquechoseDUtile&#39;, &#39;queueBind&#39;: True, &#39;queueDeclare&#39;: True, &#39;reset&#39;: False, &#39;subtopic&#39;: [], &#39;vhost&#39;: &#39;/&#39;, &#39;queue_name&#39;: &#39;q_anonymous_fractal_QuelquechoseDUtile&#39;}
+</pre></div></div>
+</div>
+<p>Le paramètre <strong>courtier</strong>(broker) est un objet contenant une URL conventionnelle et d’autres options, indiquant le protocole de messagerie à utiliser pour accéder au serveur en amont. Lorsque vous vous connectez à un courtier, vous devez lui indiquer les messages qui vous intéressent. Dans Moth, tous les courtiers auxquels nous accédons doivent utiliser des hiérarchies de sujets. Vous pouvez les voir si vous avez exécuté avec succès l’exemple ci-dessus, il devrait y avoir dans les impressions
+de message un élément “sujet”(topic) dans les dictionnaires. En voici un exemple :</p>
+<p><strong>v02.post.20210213.WXO-DD.observations.swob-ml.20210213.CTZR</strong></p>
+<p>Celle-ci se divise en deux parties :</p>
+<ul class="simple">
+<li><p>topic_prefix: v02.post</p></li>
+<li><p>le reste de l’arborescence des rubriques est le reflet du chemin vers le produit annoncé, par rapport à un répertoire de base.</p></li>
+</ul>
+<p>Dans AMQP, il y a le concept des “échanges” qui sont en quelque sorte comparables aux chaînes de télévision… ce sont des regroupements d’annonces. donc pour se connecter à un courtier AMQP, il faut spécifier:</p>
+<ul class="simple">
+<li><p>exchange: Sarracenia promulgue xpublic comme défaut conventionnel.</p></li>
+<li><p>topic_prefix: décidez quelle version des messages vous souhaitez obtenir. Ce serveur produit des v02.</p></li>
+<li><p>subtopic: à quel sous-ensemble de messages topic_prefix voulons-nous nous abonner.</p></li>
+</ul>
+<section id="Liaisons">
+<h2>Liaisons<a class="headerlink" href="#Liaisons" title="Link to this heading"></a></h2>
+<p>L’option de liaisons définit les trois valeurs ci-dessus. dans l’exemple, les liaisons sont :</p>
+<ul class="simple">
+<li><p>topic_prefix: v02.post (obtenir des messages v02.)</p></li>
+<li><p>exchange: xpublic (celui par défaut.)</p></li>
+<li><p>subtopic: # ( un joker AMQP signifiant tout. )</p></li>
+</ul>
+<p>on se connecte au courtier</p>
+<p>amqp://hpfx.collab.science.gc.ca, sur l’échange <em>xpublic</em>, et nous serons intéressés par tous les messages correspondant à la spécification de sujet v02.post.#… (c’est-à-dire tous les messages v02 disponibles .)</p>
+<section id="sous-thème">
+<h3>sous-thème<a class="headerlink" href="#sous-thème" title="Link to this heading"></a></h3>
+<p>Le sous-thème ici ( <strong>#</strong> ) correspond à tout ce qui est produit sur le serveur. Plus le sous-thème est large, plus il y a de messages à envoyer et plus le traitement est important. Il est préférable de le rendre plus étroit. En prenant l’exemple ci-dessus, si nous sommes intéressés par swob, un sous-thème comme:</p>
+<ul class="simple">
+<li><p>*.WXO-DD.observations.swob-ml.#</p></li>
+</ul>
+<p>correspondrait à tous les swobs similaires à celui ci-dessus, mais évitez de vous envoyer des messages pour des non-swobs.</p>
+</section>
+</section>
+<section id="queue_name">
+<h2>queue_name<a class="headerlink" href="#queue_name" title="Link to this heading"></a></h2>
+<p>Par convention, dans les courtiers administrés par Sarracenia, les utilisateurs ne peuvent créer que des files d’attente commençant par q_ suivi de leur nom d’utilisateur. nous nous sommes connectés en tant qu’anonymes, et donc q_anonymous doit être utilisé. Après cela, le reste peut être ce que vous voulez, mais il y a quelques considérations :</p>
+<ul class="simple">
+<li><p>Si vous souhaitez démarrer plusieurs processus Python pour partager un flux de données, ils spécifient tous le même nom de file d’attente et ils partageront le flux de messages. Il s’adapte bien à quelques dizaines de téléchargeurs coopérants, mais ne s’adapte pas à l’infini, ne vous attendez pas à plus d’environ 99 processus pour pouvoir partager efficacement une charge à partir d’une seule file d’attente. Pour évoluer au-delà de cela avec AMQP, plusieurs sélections sont préférables.</p></li>
+<li><p>si vous allez demander de l’aide aux administrateurs de la pompe de données … vous devrez leur fournir le nom de la file d’attente, et ils devront peut-être pouvoir le choisir parmi des centaines ou des milliers qui se trouvent sur le serveur.</p></li>
+</ul>
+</section>
+<section id="Messages">
+<h2>Messages<a class="headerlink" href="#Messages" title="Link to this heading"></a></h2>
+<p>Différents protocoles de messagerie ont différentes structures et conventions de stockage. la classe MoTH renvoie les messages sous forme de dictionnaires python, quel que soit le protocole utilisé pour les obtenir ou, en cas de transfert, pour les transmettre. On peut ajouter des champs pour une utilisation programmatique aux messages simplement en ajoutant des éléments au dictionnaire. S’ils sont uniquement destinés à un usage interne, ajoutez le nom de l’élément du dictionnaire à la clé
+spéciale ‘_deleteOnPost’, afin que l’élément du dictionnaire soit supprimé lors du transfert du message.</p>
+</section>
+<section id="Ack">
+<h2>Ack<a class="headerlink" href="#Ack" title="Link to this heading"></a></h2>
+<p>Les messages sont marqués en transit par le courtier, et si vous ne les reconnaissez pas, la pompe de données les conservera et les réexpédiera éventuellement. conserver les messages en attente en mémoire ralentira également le traitement de tous les messages. Il faut accuser réception des messages dès que possible, mais pas si tôt que vous perdrez des données si le programme est interrompu. Dans l’exemple, nous reconnaissons après avoir fait notre travail d’impression du message.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+<span class="n">count</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">bon</span><span class="o">=</span><span class="mi">0</span> <span class="c1"># compteur des messages bien reçus</span>
+
+<span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">getNewMessage</span><span class="p">()</span>  <span class="c1">#get only one Message</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;message </span><span class="si">%d</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">count</span><span class="p">,</span><span class="n">m</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">getContent</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;le premier 50 octets du fichier annoncé: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">50</span><span class="p">])</span>
+        <span class="n">bon</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">ack</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">h</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span> <span class="c1"># remove server-side queue defined by Factory.</span>
+<span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bon</span><span class="si">}</span><span class="s2"> messages bien reçus&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-05-28 15:01:16,250 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2023-05-28 15:01:16,251 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+message 0: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_5eebe93b78f7f20d6c58dff7079f17f8:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190113.733&#39;, &#39;atime&#39;: &#39;20230528T190113.733&#39;, &#39;pubTime&#39;: &#39;20230528T190113.733&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_HGT_ISBL_1000_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;DcEZ6+fx637myOUf83VyDQ==&#39;}, &#39;size&#39;: 236654, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 1, &#39;local_offset&#39;: 0}
+le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x03\x9cn\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
+message 1: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_abed0a37b3c8b8511cc78b6f8c5c6a82:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190114.13&#39;, &#39;atime&#39;: &#39;20230528T190114.13&#39;, &#39;pubTime&#39;: &#39;20230528T190114.13&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_SPFH_ISBL_0150_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;oMQDWV/QlF9aLLGOu+Tumw==&#39;}, &#39;size&#39;: 330883, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 2, &#39;local_offset&#39;: 0}
+le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x05\x0c\x83\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
+message 2: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_7af6caa9fd11fae11919525225783fad:CMC:HRDPS:GRIB2:BIN::20230528190111&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190113.823&#39;, &#39;atime&#39;: &#39;20230528T190113.823&#39;, &#39;pubTime&#39;: &#39;20230528T190113.823&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_DEPR_ISBL_0850_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;zSw+zw6P1XlQayy+CjoLAg==&#39;}, &#39;size&#39;: 194315, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 3, &#39;local_offset&#39;: 0}
+le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x02\xf7\x0b\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
+message 3: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;CMC:HRDPS:GRIB2:BIN::20230528190112&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_e02209b0564eb4b19dd746af9eb5ee9c:CMC:HRDPS:GRIB2:BIN::20230528190112&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190114.89&#39;, &#39;atime&#39;: &#39;20230528T190114.89&#39;, &#39;pubTime&#39;: &#39;20230528T190114.89&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/model_hrdps/north/grib2/12/006/CMC_hrdps_north_WDIR_TGL_40_ps2.5km_2023052812_P006-00.grib2&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;model_hrdps&#39;, &#39;north&#39;, &#39;grib2&#39;, &#39;12&#39;, &#39;006&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;GpPL5qQEOn0ALfuOzQrIHw==&#39;}, &#39;size&#39;: 529466, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 4, &#39;local_offset&#39;: 0}
+le premier 50 octets du fichier annoncé: b&#39;GRIB\x00\x00\x00\x02\x00\x00\x00\x00\x00\x08\x14:\x00\x00\x00\x15\x01\x006\x00\x00\x04\x00\x01\x07\xe7\x05\x1c\x0c\x00\x00\x01\x02\x00\x00\x00A\x03\x00\x00\x12q1\x00\x00\x00&#39;
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-05-28 15:01:17,548 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+message 4: {&#39;_format&#39;: &#39;v02&#39;, &#39;_deleteOnPost&#39;: {&#39;subtopic&#39;, &#39;ack_id&#39;, &#39;_format&#39;, &#39;local_offset&#39;, &#39;exchange&#39;}, &#39;sundew_extension&#39;: &#39;DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109&#39;, &#39;from_cluster&#39;: &#39;DDSR.CMC&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;filename&#39;: &#39;msg_ddsr-WXO-DD_0926936c6c7b2968e12487b5e10b3bc9:DMS:WXO_RENAMED_SWOB2:MSC:XML::20230528190109&#39;, &#39;source&#39;: &#39;WXO-DD&#39;, &#39;mtime&#39;: &#39;20230528T190111.364&#39;, &#39;atime&#39;: &#39;20230528T190111.364&#39;, &#39;pubTime&#39;: &#39;20230528T190111.364&#39;, &#39;baseUrl&#39;: &#39;https://hpfx.collab.science.gc.ca&#39;, &#39;relPath&#39;: &#39;/20230528/WXO-DD/observations/swob-ml/20230528/CVKU/2023-05-28-1900-CVKU-AUTO-minute-swob.xml&#39;, &#39;subtopic&#39;: [&#39;20230528&#39;, &#39;WXO-DD&#39;, &#39;observations&#39;, &#39;swob-ml&#39;, &#39;20230528&#39;, &#39;CVKU&#39;], &#39;identity&#39;: {&#39;method&#39;: &#39;md5&#39;, &#39;value&#39;: &#39;WEEsvB9/BKQC1Pv9hgO3LA==&#39;}, &#39;size&#39;: 6426, &#39;exchange&#39;: &#39;xpublic&#39;, &#39;ack_id&#39;: 5, &#39;local_offset&#39;: 0}
+le premier 50 octets du fichier annoncé: b&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;n&#39;
+5 messages bien reçus
+</pre></div></div>
+</div>
+<p>2ème exemple … combinez baseURL + relPath (en parlant de retPath) et récupérez les données … utilisez newMessages() au lieu de getNewMessage pour afficher une autre interface utilisateur de consommation. Parler de http, et comment la récupération variera en fonction du protocole répertorié dans la baseUrl, et peut être compliqué.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+
+
+<span class="n">options</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">],</span> \
+        <span class="p">[</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;WXO-DD&#39;</span><span class="p">,</span> <span class="s1">&#39;observations&#39;</span><span class="p">,</span> <span class="s1">&#39;swob-ml&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="p">)]</span>
+
+<span class="n">h</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">Moth</span><span class="o">.</span><span class="n">subFactory</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+<span class="n">count</span><span class="o">=</span><span class="mi">0</span>
+
+<span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">newMessages</span><span class="p">()</span>  <span class="c1">#get all received Messages, upto options[&#39;batch&#39;] of them at a time.</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+        <span class="n">dataUrl</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;retPath&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+           <span class="n">dataUrl</span> <span class="o">+=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;retPath&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="n">dataUrl</span> <span class="o">+=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;url </span><span class="si">%d</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">count</span><span class="p">,</span><span class="n">dataUrl</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span> <span class="n">dataUrl</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">vxml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">xmlData</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">vxml</span><span class="p">)</span>
+
+            <span class="n">stn_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">tc_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">lat</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">lon</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="n">air_temp</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xmlData</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;stn_nam&#39;</span> <span class="p">:</span>
+                   <span class="n">stn_name</span><span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;tc_id&#39;</span> <span class="p">:</span>
+                   <span class="n">tc_id</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;lat&#39;</span> <span class="p">:</span>
+                   <span class="n">lat</span> <span class="o">=</span>  <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;long&#39;</span> <span class="p">:</span>
+                   <span class="n">lon</span>  <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;air_temp&#39;</span> <span class="p">:</span>
+                   <span class="n">air_temp</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;station: </span><span class="si">%s</span><span class="s1">, tc_id: </span><span class="si">%s</span><span class="s1">, lat: </span><span class="si">%s</span><span class="s1">, long: </span><span class="si">%s</span><span class="s1">, air_temp: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                   <span class="p">(</span> <span class="n">stn_name</span><span class="p">,</span> <span class="n">tc_id</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">air_temp</span>  <span class="p">))</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">ack</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">h</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span> <span class="c1"># remove server-side queue defined by Factory.</span>
+<span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obtained 10 product temperatures&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup queue declared q_anonymous_fractal_QuelquechoseDUtile (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+2023-05-28 15:01:57,568 [INFO] sarracenia.moth.amqp __getSetup binding q_anonymous_fractal_QuelquechoseDUtile with v02.post.*.WXO-DD.observations.swob-ml.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+url 0: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWZU/2023-05-28-1900-CWZU-AUTO-swob.xml
+station: SHEARWATER JETTY, tc_id: WZU, lat: 44.628055, long: -63.5225, air_temp: 23.3
+url 1: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYVR/2023-05-28-1900-CYVR-MAN-swob.xml
+station: Vancouver International, tc_id: , lat: 49.19470, long: -123.18400, air_temp: 18.2
+url 2: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CAHK/2023-05-28-1900-CAHK-AUTO-swob.xml
+station: HALIFAX KOOTENAY, tc_id: AHK, lat: 44.5875, long: -63.55, air_temp: 25.2
+url 3: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CPCN/2023-05-28-1900-CPCN-AUTO-swob.xml
+station: CAPPON, tc_id: PCN, lat: 51.066947, long: -110.796689, air_temp: 20.8
+url 4: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWMT/2023-05-28-1901-CWMT-AUTO-minute-swob.xml
+station: WHATI, tc_id: WMT, lat: 63.1343, long: -117.244497, air_temp: 11.3
+url 5: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CWPO/2023-05-28-1901-CWPO-AUTO-minute-swob.xml
+station: PILOT MOUND (AUT), tc_id: WPO, lat: 49.187933, long: -98.9064, air_temp: 30.3
+url 6: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1858-CVOC-AUTO-minute-swob.xml
+station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1
+url 7: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CXCP/2023-05-28-1900-CXCP-AUTO-swob.xml
+station: CHAMPION AGDM, tc_id: XCP, lat: 50.281945, long: -113.350278, air_temp: 23.7
+url 8: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CYZG/2023-05-28-1900-CYZG-MAN-swob.xml
+station: Salluit, tc_id: , lat: 62.17940, long: -75.66720, air_temp: 2.4
+url 9: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CVOC/2023-05-28-1900-CVOC-AUTO-swob.xml
+station: WHISTLER - NESTERS, tc_id: VOC, lat: 50.1289, long: -122.9546, air_temp: 18.1
+url 10: https://hpfx.collab.science.gc.ca/20230528/WXO-DD/observations/swob-ml/20230528/CNZS/2023-05-28-1900-CNZS-AUTO-swob.xml
+station: CORAL HARBOUR RCS, tc_id: NZS, lat: 64.187831, long: -83.347054, air_temp: -1.5
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2023-05-28 15:02:01,891 [INFO] sarracenia.moth.amqp getCleanUp deleteing queue q_anonymous_fractal_QuelquechoseDUtile
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+obtained 10 product temperatures
+</pre></div></div>
+</div>
+</section>
+<section id="Télécharger-des-données-avec-Python">
+<h2>Télécharger des données avec Python<a class="headerlink" href="#Télécharger-des-données-avec-Python" title="Link to this heading"></a></h2>
+<p>Vous pouvez utiliser la bibliothèque python urllib pour télécharger des données, puis les analyser. Dans cet exemple, les données sont une structure XML par message téléchargé et lu en mémoire. Certaines données de station sont ensuite imprimées.</p>
+<p>Cela fonctionne bien avec urllib pour les ressources de protocole de transport hyper-test, mais d’autres ressources peuvent être annoncées à l’aide d’autres protocoles, tels que sftp ou ftp. Le code python devra être étendu pour traiter avec d’autres protocoles, ainsi que des conditions d’erreur, telles que des pannes temporaires.</p>
+</section>
+<section id="Conclusion">
+<h2>Conclusion<a class="headerlink" href="#Conclusion" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="../Reference/code.html#module-sarracenia.moth">Sarracenia.moth.amqp</a> est le moyen le plus léger d’ajouter la consommation de messages Sarracenia à votre pile python existante. Vous demandez explicitement de nouveaux messages lorsque vous êtes prêt à les utiliser.</p>
+<p>Ce type d’intégration ne fournit pas:</p>
+<ul class="simple">
+<li><p>data retrieval: vous avez besoin de votre propre code pour télécharger les données correspondantes,</p></li>
+<li><p>error recovery: s’il y a des erreurs transitoires, vous devez créer un code de récupération d’erreur (pour récupérer des téléchargements partiels.)</p></li>
+<li><p>async/event/data driven: une façon de dire “faites ceci chaque fois que vous obtenez un fichier” … définissez les rappels à exécuter lorsqu’un événement particulier se produit, plutôt que le flux séquentiel illustré ci-dessus.</p></li>
+</ul>
+<p>La classe sarracenia.flow fournit des téléchargements, une récupération d’erreur et une API asynchrone à l’aide de la classe sarracenia.flowcb (flowCallback).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="3_api_flow_demo.html" class="btn btn-neutral float-left" title="Exemple d’API de flux" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="5_api_moth_post_demo.html" class="btn btn-neutral float-right" title="Publication à partir du code Python" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

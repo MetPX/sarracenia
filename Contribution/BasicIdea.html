@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Idea &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="1 Strawman Design" href="Design.html" />
+    <link rel="prev" title="Design Changes since Original (2015)" href="Evolution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>Basic Idea</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/BasicIdea.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<p>Status: Approved-Draft1-20150608</p>
+<section id="basic-idea">
+<h1>Basic Idea<a class="headerlink" href="#basic-idea" title="Link to this heading"></a></h1>
+<p>MetPX-Sarracenia is a data duplication or distribution engine that leverages existing
+standard technologies (sftp and web servers and AMQP brokers) to achieve real-time message
+delivery and end to end transparency in file transfers. Whereas in Sundew, each
+pump is a standalone configuration which transforms data in complex ways, in
+sarracenia, the data sources establish a structure which is carried through any
+number of intervening pumps until they arrive at a client. The consumer can
+provide explicit acknowledgement that propagates back through the network to the
+source.</p>
+<p>Whereas traditional file pumping is a point-to-point affair where knowledge is only
+between each segment, in Sarracenia, information flows from end to end in both directions.
+At it’s heart, sarracenia exposes a tree of web accessible folders (WAF), using
+any standard HTTP server (tested with apache). Weather applications are soft real-time,
+where data should be delivered as quickly as possible to the next hop, and
+minutes, perhaps seconds, count. The standard web push technologies, ATOM, RSS, etc…
+are actually polling technologies that when used in low latency applications consume a great
+deal of bandwidth an overhead. For exactly these reasons, those standards
+stipulate a minimum polling interval of five minutes. Advanced Message Queueing
+Protocol (AMQP) messaging brings true push to notifications, and makes real-time
+sending far more efficient.</p>
+<img alt="../_images/e-ddsr-components.jpg" src="../_images/e-ddsr-components.jpg" />
+<p>Sources of data announce their products, pumping systems pull the data onto their
+WAF trees, and then announce their trees for downstream clients. When clients
+download data, they may write a log message back to the server. Servers are configured
+to forward those client log messages back through the intervening servers back to
+the source. The Source can see the entire path that the data took to get to each
+client. With traditional pumping applications, sources only see that they delivered
+to the first hop in a chain. Beyond that first hop, routing is opaque, and tracing
+the path of data required assistance from administrators of each intervening system.
+With Sarracenia’s log forwarding, the pumping network is completely transparent
+to the sources, in that they can see where it went. With end to end logs, diagnostics
+are vastly simplified for everyone.</p>
+<p>For large files / high performance, files are segmented on ingest if they are sufficiently
+large to make this worthwhile. Each file can traverse the pump network independently,
+and reassembly is only needed at end points. A file of sufficient size will announce
+the availability of several segments for transfer, multiple threads or transfer nodes
+will pick up segments and transfer them. The more segments available, the higher
+the parallelism of the transfer. Sarracenia manages parallelism and network usage
+without explicit user intervention. As intervening pumps do not store and
+forward entire files, the maximum file size which can traverse the network is
+maximized.</p>
+<p>These concepts below are not in order (yet?) maybe we will do that later.
+not sure about priorities, just number to be able to refer to them.
+They are meant to help guide (reflect?) design/implementation decisions:</p>
+<p>For each objective/consideration/advice below, see if they make sense,
+and seem helpful. We should get rid of any that are not helpful.</p>
+<ol class="arabic">
+<li><p>The pump is, or any number of pumps are, transparent.
+Put another way:
+The source is in charge of the data they provide.</p>
+<p>The source determines the distribution (scope, and permissions)
+The source can obtain any information about themselves:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">when</span> <span class="n">status</span> <span class="n">changed</span><span class="p">:</span>  <span class="n">start</span><span class="p">,</span><span class="n">stop</span><span class="p">,</span><span class="n">drop</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">when</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">are</span> <span class="n">accepted</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">when</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">pulled</span> <span class="n">by</span> <span class="n">a</span> <span class="n">consumer</span> <span class="p">(</span><span class="n">a</span> <span class="n">scope</span> <span class="n">layer</span><span class="p">,</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">end</span> <span class="n">point</span><span class="o">.</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>AMQP brokers do not transfer any user data, just metadata.</p>
+<p>reasoning:
+need to keep the notification messages small so that the forwarding rate is high.
+large notification messages will gum up the works.  also permissions become interesting.
+end up with a ‘maximum size’ threshold, and implementing two methods for everything.</p>
+</li>
+<li><p>Config changes should propagate, not be unique to a host
+you should not have to do dsh, or px-push.
+That sort of management is built in. the message bus is there for that.
+might use ‘scope’ to have commands propagate through multiple clusters.</p></li>
+<li><p>Log is data.</p>
+<p><em>It is not enough for justice to be done.  Justice must be seen to be done.</em></p>
+<p>It is not enough for data to be delivered.  That delivery must be logged,
+and that log must be returned to the source.  While we want to supply
+enough information to data sources, we do not want to drown the network
+in meta data.  The local component logs will have much more information,
+The log messages traverse the network to the source are ´final dispositions´
+whenever an operation is either completed or finally abandoned.</p>
+</li>
+<li><p>This is a data distribution tool, not a file tree replicator.</p>
+<ul class="simple">
+<li><p>we do not need to know what linux uid/gid owned it originally.</p></li>
+<li><p>we do not care when it was modified.</p></li>
+<li><p>we do not care about it’s original permission bits.</p></li>
+<li><p>we do not care what ACL’s it has (they aren’t relevant on the destination.)</p></li>
+<li><p>we do not care about extended attributes. (portability, win,mac,lin,netapp?)</p></li>
+</ul>
+<p>again doubtful about this one.  Does it help?</p>
+</li>
+<li><p>Not worried about performance in phase 1
+- performance is enabled by the scalability of the design:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span> <span class="n">segmentation</span><span class="o">/</span><span class="n">re</span><span class="o">-</span><span class="n">assembly</span> <span class="n">provides</span> <span class="n">multi</span><span class="o">-</span><span class="n">threading</span><span class="o">.</span>
+<span class="o">--</span> <span class="n">segmentation</span> <span class="n">means</span> <span class="n">bigger</span> <span class="n">files</span> <span class="n">transfer</span> <span class="k">with</span> <span class="n">greater</span> <span class="n">parallelism</span><span class="o">.</span>
+   <span class="n">adds</span> <span class="n">multiple</span> <span class="n">streams</span> <span class="n">when</span> <span class="n">that</span> <span class="ow">is</span> <span class="n">worthwhile</span><span class="p">,</span> <span class="n">uses</span> <span class="n">a</span> <span class="n">single</span> <span class="n">stream</span>
+   <span class="n">when</span> <span class="n">that</span> <span class="n">makes</span> <span class="n">sense</span><span class="o">.</span>
+<span class="o">--</span> <span class="n">validation</span> <span class="n">provides</span> <span class="n">source</span> <span class="n">bandwidth</span> <span class="n">limiting</span><span class="o">.</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>need to prove all the moving parts work together first.</p></li>
+<li><p>much later, may return to see how to make each transfer engine
+go faster.</p></li>
+</ul>
+</li>
+<li><p>This is not a web application, this is not an FTP server.</p>
+<p>This application uses HTTP as one of the transport protocols, that’s all.
+It is not trying to be a web site, any more than it is trying to be an sftp server.</p>
+</li>
+<li><p>Common management not needed, just pass logs around.</p>
+<p>Different groups can manage different pumps.
+when we interconnect pumps, they become a source for us.
+log messages are routed to the data sources, so they get our logs on their
+data.  (security can have something to say about that.)</p>
+</li>
+<li><p>It needs to run anywhere.
+ubuntu,centos – primary.
+but windows also.</p>
+<p>We are trying to make a pump that others can easily adopt.
+That means they can install and go.</p>
+<dl class="simple">
+<dt>It needs to be easy to set up, both client and server.</dt><dd><p>(this aspect dealt with in packaging)</p>
+</dd>
+</dl>
+</li>
+<li><p>the application does not need to pursue absolute reliability.</p></li>
+</ol>
+<blockquote>
+<div><p>Node failure is rare in a Data Centre environment.
+Working well in the normal case is the priority.
+if it breaks, information is never lost.
+Worst case, just re-post, and the system will resend the missing parts
+through the nodes that are left.</p>
+<p>There might be some diagnostics to figure out which files are ‘in flight’
+when a given node goes down (deadman timers). But not sure that multiple
+acks with guarantees in the face of node failure is needed.
+going faster and being simpler is likely more reliable in practice.</p>
+<p>this is not a database, but a transfer engine.</p>
+</div></blockquote>
+<ol class="arabic simple" start="11">
+<li><p>Bulletins getting less common, Files are larger… No file too large.</p></li>
+</ol>
+<blockquote>
+<div><p>old apps are used to tiny files (millions of them) in EC/MSC.
+but even in EC, files are getting bigger, and will likely grow a lot.
+Satellite sensor data is now very critical, and that is substantially larger.
+A traditional WMO format weather warning was limited to 15Kbytes (limited by internals
+systems to 32 Kbytes now) and those sizes were rarely reached.  It was more like 7-12K.
+an average modern XML weather warning (CAP) is 60K so, so a five to eight fold increase.
+WMO since raised the limit to 500,000 bytes for WMO-GTS messages. and other mechanisms,
+such as FTP, have no fixed limit.</p>
+<p>Other scientific domains use very large files (measured in terabytes.) aim to be able
+to flow those through the pumps.  Worth thinking about transporting huge files.</p>
+</div></blockquote>
+<ol class="arabic simple" start="12">
+<li><p>Normal operation should not require programming knowledge.</p></li>
+</ol>
+<blockquote>
+<div><p>Configuratin and coding are distinct activities.  One should not have to modify scripts
+to configure standard elements of the application.  Software can be much simpler if it
+just leaves all features implemented as plug-in scripts.  leaving the local details
+for the scripts.  But most people will not be able to use it.</p>
+<p>Need to provide all core functionality through CLI at the very least.
+config files are consiered part of the CLI, which is why we try to choose carefully
+there as well.   For programmers, difference between script and config is subtle,
+not so for most other people.</p>
+<p>Scripting should only be required to extend features beyond what is standard.
+to provide added flexibility.  If the flexibility proves generally useful over time,
+then it should be brought out of scripts and into the configuration realm.</p>
+</div></blockquote>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Evolution.html" class="btn btn-neutral float-left" title="Design Changes since Original (2015)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Design.html" class="btn btn-neutral float-right" title="1 Strawman Design" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

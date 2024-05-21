@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Description du protocole / format du message v02 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Modifications apportées pour créer la v03" href="messages_v03.html" />
+    <link rel="prev" title="Message v01 Format" href="messages_v01.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Histoire</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Annoncements_v03.html">Annonce de Sr3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deploiement_2018.html">Sarracenia Janvier 2018</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Evolution.html">Histoire/Contexte de Sarracenia</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HPC_mirroring_cas_dutilisation.html">Étude de cas : Mise en miroir HPC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mesh_gts.html">Échange de données de type maillé pour le WIS-GTS en 2019</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v01.html">Message v01 Format</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Description du protocole / format du message v02</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v03.html">Modifications apportées pour créer la v03</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="../index.html">Explication</a> &raquo;</li>
+          <li><a href="index.html">Histoire</a> &raquo;</li>
+      <li>Description du protocole / format du message v02</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/fr/Explication/Histoire/messages_v02.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<p>Status: Approved-Draft2-20150825</p>
+<section id="description-du-protocole-format-du-message-v02">
+<h1>Description du protocole / format du message v02<a class="headerlink" href="#description-du-protocole-format-du-message-v02" title="Link to this heading"></a></h1>
+<p>Ce fichier a été utilisé lors de la phase de conception, mais après la mise en œuvre,
+elle est remplacée par la page de manuel sr_post(7).</p>
+<p>Ce dossier documente les conclusions/propositions finales, les raisonnements/débats
+va ailleurs.</p>
+<p>Les messages affichés comprennent quatre parties:</p>
+<ul class="simple">
+<li><p>Sujet: .&lt;version&gt;&lt;type&gt;. &lt;src&gt;(.&lt;dir&gt;.) <a href="#id1"><span class="problematic" id="id2">*</span></a>. &lt;nom de fichier&gt;</p></li>
+<li><p>en-têtes : série de paires clé-valeur, selon les spécifications AMQP.</p></li>
+<li><p>1ère ligne (champs séparés par des espaces) : &lt;horodatage&gt; &lt;srcURL&gt; &lt;relURL&gt;&lt;newline&gt;</p></li>
+<li><p>Reste du corps.</p></li>
+</ul>
+<p>La sujet du message se décompose comme suit</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;version&gt;.&lt;type&gt;.[Varie selon la version].&lt;dir&gt;.&lt;dir&gt;.&lt;dir&gt;...
+
+&lt;version&gt;:
+        exp -- Version initiale, obsolète (non traitée dans ce document)
+        v00 -- utilisé pour NURP &amp; PAN-AM en 2013-2014. (non couvert dans le présent document)
+        v01 -- version 2015.
+        v02 -- 2015 est passé aux embases AMQP pour les composants non obligatoires
+
+&lt;type&gt;:
+        adm  - Modifier les paramètres
+                ´admin´, ´config´, etc...
+
+        log  - rendre compte de l’état des opérations.
+
+        notify - ´post´ mais dans les versions exp et v00. (Non couvert ici.)
+
+        post - annoncer ou notifier qu’un nouveau bloc de produits est disponible.
+                Chaînes possibles : post,ann(ounce), not(ify)
+
+&lt;source&gt;:
+</pre></div>
+</div>
+<p>Le reste de ce document suppose la version 2 (sujet v02) :</p>
+<p>se décompose en:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>&lt;horodatage&gt;: date</dt><dd><p>YYYYMMDDHHMMSS.&lt;decimal&gt;</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>&lt;srcURL&gt; – URL de base utilisée pour récupérer les données.</p>
+<blockquote>
+<div><p>options: URL Complet:</p>
+<p>sftp://afsiext&#64;cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif</p>
+<p>dans le cas où l’URL ne se termine pas par un séparateur de chemin (‘/’),
+le chemin src est considéré comme la source complète du fichier à récupérer.</p>
+<p>URL Statique:</p>
+<p>sftp://afsiext&#64;cmcdataserver/</p>
+<p>Si l’URL se termine par un séparateur de chemin (‘/’), alors l’URL src est
+considéré comme un préfixe pour la partie variable de l’URL de récupération.</p>
+</div></blockquote>
+<p>&lt;relURL&gt; – Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.</p>
+<blockquote>
+<div><p>Deux cas basés sur la fin étant un séparateur de chemin ou non.</p>
+<blockquote>
+<div><p>cas 1: NURP/GIF/</p>
+<p>basé sur le répertoire de travail actuel du client de téléchargement,
+créer un sous-répertoire appelé URP, et à l’intérieur de celui-ci, un sous-répertoire
+appelé GIF sera créé.  Le nom du fichier sera tiré du
+srcpath.</p>
+</div></blockquote>
+<dl>
+<dt>Si le srcpath se termine par pathsep, alors le relpath ici sera</dt><dd><p>concaténé au srcpath, formant l’URL de récupération complète.</p>
+<p>cas 2: NRP/GIF/mine.gif</p>
+<p>Si le srcpath se termine par pathsep, le relpath sera concaténé
+à srcpath pour former l’URL de récupération complète.</p>
+</dd>
+<dt>si le chemin src ne se termine pas par pathsep, l’URL src est prise</dt><dd><p>comme terminé, et le fichier est renommé lors du téléchargement conformément à la
+spécification (dans ce cas, la mienne.gif)</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>AMQP fournit des EN-TÊTES qui sont des paires clé/valeur.</p>
+<p>Décrivez quelle partie de l’URL est annoncée :</p>
+<dl>
+<dt>parts=1,sz</dt><dd><p>– Extraction dans une seule pièce, de la taille donnée en octets</p>
+</dd>
+<dt>parts=&lt;i|p&gt;,&lt;bsz&gt;,&lt;fzb&gt;,&lt;bno&gt;,&lt;remainder&gt;</dt><dd><blockquote>
+<div><p>– Récupération en plusieurs parties.</p>
+<dl class="simple">
+<dt>– File Segment strategy::</dt><dd><dl class="simple">
+<dt>i - inplace (ne pas créer de fichiers temporaires, juste lseek dans le fichier.)</dt><dd><p>peut entraîner la création d’un fichier .srsig?</p>
+</dd>
+<dt>p - part files.  Utilisez .part fichiers, suffixe fixe.</dt><dd><p>Je ne sais pas lequel sera par défaut.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>– La stratégie de segment de fichier peut être remplacée par le client. Juste une suggestion.
+– analogues aux options rsync : –inplace, –partial,</p>
+</dd>
+<dt>&lt;taille de bloc en octets&gt;: bsz</dt><dd><p>Nombre d’octets dans un bloc.
+Les sommes de contrôle sont calculées par bloc, donc un post</p>
+</dd>
+<dt>&lt;taille du fichier en blocs&gt;: fzb</dt><dd><p>Nombre total entier de blocs dans le fichier
+FIXME: (y compris le dernier bloc ou pas?)
+si ce paramètre est défini sur 1.</p>
+</dd>
+<dt>&lt;block#&gt;: bno</dt><dd><p>0 origine, le numéro de bloc couvert par cette publication.</p>
+</dd>
+<dt>&lt;remainder&gt;: brem</dt><dd><blockquote>
+<div><p>normalement 0, sur le dernier bloc, il reste des blocs dans le fichier
+à transférer.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>– si (fzb=1 and brem=0)</dt><dd><p>alors bsz=fsz en octets.
+– fichiers entiers remplacés.
+– C’est la même chose que le mode –whole-file de rsync.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>sum=&lt;algorithm&gt;,&lt;value&gt;</p>
+<blockquote>
+<div><p>&lt;algorithm&gt;</p>
+<p>d - Additionner l’intégralité des données
+n - somme de contrôle sur le nom du fichier
+&lt;script&gt; - omme de contrôle avec un script, nommée &lt;script&gt;</p>
+<dl class="simple">
+<dt>&lt;script&gt; doit être “enregistré” dans le réseau de commutateurs.</dt><dd><p>enregistré signifie que tous les abonnés en aval
+peuvent obtenir le script pour valider la somme de contrôle.
+Il faut un mécanisme de récupération.</p>
+</dd>
+</dl>
+<p>&lt;value&gt; est la valeur de la somme de contrôle</p>
+</div></blockquote>
+<dl>
+<dt>flow=&lt;flowid&gt;</dt><dd><blockquote>
+<div><p>Une balise arbitraire utilisée pour le suivi des données via le réseau.</p>
+</div></blockquote>
+<p>Les deux voies sont subtilement liées.  Ni l’un ni l’autre ne peuvent être interprétés seuls.
+Il faut considérer les deux composantes du chemin.</p>
+</dd>
+<dt>FIXME<span class="classifier">vérifiez les points suivants :</span></dt><dd><p>fsz = Taille d’un fichier en octets = ( bsz * (fsb-1) ) + brem ?</p>
+</dd>
+</dl>
+<p>exemple 1:</p>
+<p>v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 sftp://afsiext&#64;cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif
+EN-TÊTES:
+parts=1,457
+rename=NRDPS/GIF/
+sum=d,&lt;md5sum&gt;
+flow=exp13</p>
+<blockquote>
+<div><p>v01 - version du protocol
+post - indique le type de message</p>
+<p>La version et le type déterminent ensemble le format des sujets suivantes et le corps du message.</p>
+<p>ec_cmc - le compte utilisé pour émettre le post (unique dans un réseau).</p>
+<blockquote>
+<div><p>– taille du fichier est de 457  (== taille du fichier)
+– d - La somme de contrôle a été calculée sur le corps.
+– flow est appelé ´exp13´ par le poster…
+– URL source complète spécifiée (ne se termine pas par ‘/’)
+– chemin relatif spécifié pour</p>
+</div></blockquote>
+<dl>
+<dt>pull de:</dt><dd><p>sftp://afsiext&#64;cmcdataserver/data/NRPDS/outputs/NRDPS_HiRes_000.gif</p>
+</dd>
+<dt>Chemin de téléchargement relatif complet :</dt><dd><p>NRDPS/GIF/NRDPS_HiRes_000.gif</p>
+<p>– Prend le nom de fichier de srcpath.
+– peut être modifié par un processus de validation.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>exemple 2:</p>
+<p>v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 <a class="reference external" href="http://afsiext&#64;cmcdataserver/data/">http://afsiext&#64;cmcdataserver/data/</a>
+HEADERS:
+rename=NRDPS/GIF/NRDPS_HiRes_000.gif
+parts=1,457
+sum=d,&lt;md5sum&gt;
+flow=exp13</p>
+<dl>
+<dt>Dans ce cas,</dt><dd><blockquote>
+<div><dl>
+<dt>pull de:</dt><dd><p><a class="reference external" href="http://afsiext&#64;cmcdataserver/data/NRPDS/GIF/NRDPS_HiRes_000.gif">http://afsiext&#64;cmcdataserver/data/NRPDS/GIF/NRDPS_HiRes_000.gif</a></p>
+<p>– srcpath se termine par ‘/’, donc concaténé, prend le fichier de l’URL relative.
+– véritable ‘miroir’</p>
+</dd>
+<dt>Chemin de téléchargement relatif complet :</dt><dd><p>NRDPS/GIF/NRDPS_HiRes_000.gif</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>– peut être modifié par un processus de validation.</p>
+</dd>
+</dl>
+<p>exemple 3:</p>
+<p>v02.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 <a class="reference external" href="http://afsiext&#64;cmcdataserver/data/">http://afsiext&#64;cmcdataserver/data/</a>
+HEADERS:
+rename=NRDPS/GIF/NRDPS_HiRes_000.gif
+parts=i,457,0,0,1,0
+sum=d,&lt;md5sum&gt;
+flow=exp13</p>
+<p>Cas d’attente.</p>
+<p>wait=on/off</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="messages_v01.html" class="btn btn-neutral float-left" title="Message v01 Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="messages_v03.html" class="btn btn-neutral float-right" title="Modifications apportées pour créer la v03" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

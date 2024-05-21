@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Idée de Base &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="1 Conception Strawman" href="Design.html" />
+    <link rel="prev" title="Refactorisation de la version 3" href="v03.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Documentation.html">Normes de documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Contribuer à Sarracenia</a> &raquo;</li>
+      <li>Idée de Base</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/IdéeDeBase.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<p>Status: Approved-Draft1-20150608</p>
+<section id="idee-de-base">
+<h1>Idée de Base<a class="headerlink" href="#idee-de-base" title="Link to this heading"></a></h1>
+<p>MetPX-Sarracenia est un moteur de duplication ou de distribution de données qui exploite des technologies
+standard existantes (serveurs sftp et Web et courtiers AMQP) pour obtenir des livraison de messages en temps réel
+et une transparence de bout en bout dans les transferts de fichiers. Alors qu’à Sundew, chaque
+pump est une configuration autonome qui transforme les données de manière complexe, dans
+sarracenia, les sources de données établissent une structure qui est réalisée à travers n’importe quel
+nombre de pompes intermédiaires jusqu’à ce qu’elles arrivent chez un client. Le consommateur peut
+fournir un accusé de réception explicite qui se propage à travers le réseau jusqu’a une
+source.</p>
+<p>Alors que le pompage traditionnel des fichiers est une affaire de point à point où la connaissance n’est que
+entre chaque segment, dans Sarracenia, l’information circule de bout en bout dans les deux sens.
+À la base, sarracenia expose un arbre de dossiers accessibles sur le Web (WAF), en utilisant
+tout serveur HTTP standard (testé avec apache). Les applications météo sont douces en temps réel,
+où les données doivent être livrées le plus rapidement possible au tronçon suivant, et
+les minutes, peut-être les secondes, comptent. Les technologies standard de web push, ATOM, RSS, etc…
+sont en fait des technologies d’interrogation qui, lorsqu’elles sont utilisées dans des
+applications à faible latence, consomment beaucoup de bande passante et de surcharge.
+Pour exactement ces raisons, ces normes stipulent un intervalle d’interrogation de minimum cinq minutes.
+La mise en fil d’attente avancée des messages (AMQP) apporte de véritables notifications push
+et rend l’envoi en temps réel beaucoup plus efficace.</p>
+<img alt="../../_images/e-ddsr-components.jpg" src="../../_images/e-ddsr-components.jpg" />
+<p>Les sources de données annoncent leurs produits, les systèmes de pompage extraient les données sur leurs
+arbres WAF, puis annoncent leurs arbres pour les clients en aval. Lorsque les clients
+téléchargent des données, ils peuvent écrire un message de journal sur le serveur. Les serveurs sont configurés
+pour transférer ces messages du journal du client via les serveurs intermédiaires vers
+la source. La Source peut voir l’intégralité du chemin emprunté par les données pour accéder à chaque
+client. Avec les applications de pompage traditionnelles, les sources ne voient que ce qu’elles ont livré
+au premier saut d’une chaîne. Au-delà de ce premier saut, le routage est opaque et le traçage
+du chemin des données nécessite l’assistance des administrateurs de chaque système intervenant.
+Avec l’envoi de fichiers journaux de Sarracenia, le réseau de pompage est totalement transparent
+aux sources. Avec des journaux de bout en bout, des diagnostics sont grandement simplifiés pour tout le monde.</p>
+<p>Pour les fichiers volumineux / hautes performances, les fichiers sont segmentés lors de l’ingestion
+s’ils sont suffisamment grand pour que cela en vaille la peine. Chaque fichier peut traverser le
+réseau de pompes indépendamment, et le remontage n’est nécessaire qu’aux points d’extrémité.
+Un fichier de taille suffisante annoncera sa disponibilité de plusieurs segments pour le transfert,
+et plusieurs threads ou de nœuds de transfert ramassera des segments et les transférera.
+Plus il y a de segments disponibles, plus le parallélisme du transfert. Sarracenia gère le
+parallélisme et l’utilisation du réseau sans intervention explicite de l’utilisateur. Comme les
+pompes intermédiaires ne stockent pas et ne transferent pas de fichiers entiers, la taille maximale
+du fichier pouvant traverser le réseau est maximisée.</p>
+<p>Ces concepts ci-dessous ne sont pas en ordre (encore?) peut-être que nous le ferons plus tard.
+Pas sûr des priorités, juste le nombre pour pouvoir s’y référer.
+Ils sont destinés à guider (réfléchir?) des décisions de conception / mise en œuvre:</p>
+<p>Pour chaque objectif/considération/conseil ci-dessous, voyez s’ils ont du sens,
+et semblent utiles. Nous devrions nous débarrasser de tout ce qui n’est pas utile.</p>
+<ol class="arabic">
+<li><p>La pompe est, ou n’importe quel nombre de pompes sont, transparentes.
+En d’autres termes:
+La source est en charge des données qu’elles fournissent.</p>
+<p>La source détermine la distribution (étendue et autorisations)
+La source peut obtenir n’importe quelle information sur elle-même:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">quand</span> <span class="n">le</span> <span class="n">statut</span> <span class="n">change</span><span class="p">:</span>  <span class="n">start</span><span class="p">,</span><span class="n">stop</span><span class="p">,</span><span class="n">drop</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">quand</span> <span class="n">les</span> <span class="n">messages</span> <span class="n">de</span> <span class="n">notifications</span> <span class="n">sont</span> <span class="n">acceptés</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">lorsque</span> <span class="n">les</span> <span class="n">données</span> <span class="n">sont</span> <span class="n">extraites</span> <span class="n">par</span> <span class="n">un</span> <span class="n">consommateur</span> <span class="p">(</span><span class="n">scope</span> <span class="n">layer</span> <span class="n">ou</span> <span class="n">end</span> <span class="n">point</span><span class="o">.</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Les courtiers AMQP ne transfèrent aucune donnée d’utilisateur, mais uniquement des métadonnées.</p>
+<p>raisonnement:
+doivent garder les messages de notification petits afin que le taux de transfert soit élevé.
+De grands messages de notification gommageront les travaux. Les autorisations deviennent également intéressantes.
+se retrouvent avec un seuil de “taille maximale” et mettent en œuvre deux méthodes pour tout.</p>
+</li>
+<li><p>Les modifications de configuration doivent se propager et ne peuvent pas être uniques à un hôte
+vous ne devriez pas avoir à faire dsh, ou px-push.
+Ce genre de gestion est intégré. le bus de messages est là pour cela.
+peut utiliser ‘scope’ pour que les commandes se propagent à travers plusieurs clusters.</p></li>
+<li><p>Le journal est une donnée.</p>
+<p><em>Il ne suffit pas que justice soit faite.  Justice doit être perçue comme étant faite.</em></p>
+<p>Il ne suffit pas que les données soient fournies.  Cette livraison doit être enregistrée,
+et ce journal doit être renvoyé à la source.  Alors que nous voulons fournir
+suffisamment d’informations pour les sources de données, nous ne voulons pas noyer le réseau
+dans les métadonnées.  Les journaux des composants locaux auront beaucoup plus d’informations,
+les messages de journal traversant le réseau jusqu’à la source sont des “dispositions finales”
+chaque fois qu’une opération est terminée ou finalement abandonnée.</p>
+</li>
+<li><p>Il s’agit d’un outil de distribution de données, pas d’un réplicateur d’arborescence de fichiers.</p>
+<ul class="simple">
+<li><p>nous n’avons pas besoin de savoir ce que linux uid/gid possédait à l’origine.</p></li>
+<li><p>nous ne nous soucions pas de savoir quand il a été modifié.</p></li>
+<li><p>nous ne nous soucions pas de ses bits d’autorisation d’origine.</p></li>
+<li><p>nous ne nous soucions pas du ACL qu’il a (ils ne sont pas pertinents sur la destination.)</p></li>
+<li><p>nous ne nous soucions pas des attributs étendus. (portabilité, win,mac,lin,netapp?)</p></li>
+</ul>
+<p>encore douteux à propos de celui-ci.  Est-ce que cela aide?</p>
+</li>
+<li><p>Ne pas s’inquiéter de la performance dans la phase 1
+- les performances sont rendues possibles par l’évolutivité de la conception</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span> <span class="n">la</span> <span class="n">segmentation</span><span class="o">/</span><span class="n">réassemblage</span> <span class="n">fournit</span> <span class="n">le</span> <span class="n">multi</span><span class="o">-</span><span class="n">threading</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">la</span> <span class="n">segmentation</span> <span class="n">signifie</span> <span class="n">un</span> <span class="n">transfert</span> <span class="n">de</span> <span class="n">fichiers</span> <span class="n">plus</span> <span class="n">volumineux</span> <span class="n">avec</span> <span class="n">un</span> <span class="n">plus</span> <span class="n">grand</span> <span class="n">parallélisme</span><span class="o">.</span>
+   <span class="n">ajoute</span> <span class="n">plusieurs</span> <span class="n">flux</span> <span class="n">lorsque</span> <span class="n">cela</span> <span class="n">en</span> <span class="n">vaut</span> <span class="n">la</span> <span class="n">peine</span><span class="p">,</span> <span class="n">utilise</span> <span class="n">un</span> <span class="n">seul</span> <span class="n">flux</span>
+   <span class="n">quand</span> <span class="n">cela</span> <span class="n">a</span> <span class="n">du</span> <span class="n">sens</span><span class="o">.</span>
+<span class="o">--</span> <span class="n">la</span> <span class="n">validation</span> <span class="n">permet</span> <span class="n">de</span> <span class="n">limiter</span> <span class="n">la</span> <span class="n">bande</span> <span class="n">passante</span> <span class="n">de</span> <span class="n">la</span> <span class="n">source</span><span class="o">.</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>il faut d’abord prouver que toutes les pièces mobiles fonctionnent ensemble.</p></li>
+<li><p>beaucoup plus tard, on peut revenir pour voir comment faire en sorte que chaque moteur de transfert aille plus vite.</p></li>
+</ul>
+</li>
+<li><p>Ce n’est pas une application web, ce n’est pas un serveur FTP.</p>
+<p>Cette application utilise HTTP comme l’un des protocoles de transport, c’est tout.
+Il n’essaie pas d’être un site Web, pas plus qu’il n’essaie d’être un serveur sftp.</p>
+</li>
+<li><p>Une gestion commune n’est pas nécessaire, il suffit de passer des journaux.</p>
+<p>Différents groupes peuvent gérer différentes pompes.
+lorsque nous interconnectons des pompes, elles deviennent une source pour nous.
+les messages de journal sont routés vers les sources de données, de sorte qu’elles obtiennent nos journaux sur leur
+données.  (la sécurité peut avoir quelque chose à dire à ce sujet.)</p>
+</li>
+<li><p>Il doit fonctionner n’importe où.
+ubuntu,centos – primaire.
+mais windows aussi.</p>
+<p>Nous essayons de faire une pompe que d’autres peuvent facilement adopter.
+Cela signifie qu’ils peuvent installer et démarrer.</p>
+<dl class="simple">
+<dt>Il doit être facile à configurer, à la fois pour le client et le serveur.</dt><dd><p>(cet aspect est traité dans l’emballage)</p>
+</dd>
+</dl>
+</li>
+<li><p>l’application n’a pas besoin de rechercher une fiabilité absolue.</p></li>
+</ol>
+<blockquote>
+<div><p>La défaillance de nœud est rare dans un environnement de centre de données.
+Bien travailler dans le cas normal est la priorité.
+s’il se brise, l’information n’est jamais perdue.
+Dans le pire des cas, il suffit de re-poster, et le système renverra les pièces manquantes
+à travers les nœuds qui restent.</p>
+<p>Il peut y avoir des diagnostics pour déterminer quels fichiers sont “en vol”
+lorsqu’un nœud donné tombe en panne (minuteries deadman). Mais pas sûr que des acks multiples
+avec des garanties en cas de défaillance du nœud sont nécessaires.
+aller plus vite et être plus simple est probablement plus fiable dans la pratique.</p>
+<p>il ne s’agit pas d’une base de données, mais d’un moteur de transfert.</p>
+</div></blockquote>
+<ol class="arabic simple" start="11">
+<li><p>Les bulletins deviennent moins courants, les fichiers sont plus volumineux… Pas de fichier trop volumineux.</p></li>
+</ol>
+<blockquote>
+<div><p>les anciennes applications sont utilisées pour de minuscules fichiers (des millions d’entre eux) dans EC / MSC.
+mais même dans EC, les fichiers deviennent de plus en plus volumineux et vont probablement beaucoup croître.
+Les données des capteurs satellitaires sont maintenant très critiques, et elles sont beaucoup plus volumineuses.
+Un avertissement météorologique traditionnel au format WMO était limité à 15 Koctets (limité par des données internes).
+à 32 Ko maintenant) et ces tailles étaient rarement atteintes.  C’était plus comme 7-12K.
+un avertissement météorologique XML moderne moyen (CAP) est de 60K donc, une augmentation de cinq à huit fois.
+WMO a depuis relevé la limite à 500 000 octets pour les messages WMO-GTS. et d’autres mécanismes,
+tels que FTP, n’ont pas de limite fixe.</p>
+<p>D’autres domaines scientifiques utilisent des fichiers très volumineux (mesurés en téraoctets).
+pour les faire circuler à travers les pompes.  Cela vaut la peine de penser à transporter d’énormes fichiers.</p>
+</div></blockquote>
+<ol class="arabic simple" start="12">
+<li><p>Le fonctionnement normal ne devrait pas nécessiter de connaissances en programmation.</p></li>
+</ol>
+<blockquote>
+<div><p>La configuration et le codage sont des activités distinctes.  Il ne faut pas avoir à modifier les scripts
+pour configurer les éléments standard de l’application.  Le logiciel peut être beaucoup plus simple s’il
+laisse simplement toutes les fonctionnalités implémentées sous forme de scripts de plug-in.
+En laissant les détails locaux pour les scripts.  Mais la plupart des gens ne pourront pas l’utiliser.</p>
+<p>Au moins besoin de fournir toutes les fonctionnalités de base via CLI.
+Les fichiers de configuration font une partie intégrante de l’interface de ligne de commande,
+c’est pourquoi nous essayons de choisir avec soin là aussi.
+Pour les programmeurs, la différence entre script et la config est subtile,
+ce n’est pas le cas pour la plupart des autres.</p>
+<p>L’écriture de scripts est seulement requise pour étendre les fonctionnalités au-delà de ce qui est standard,
+pour offrir plus de souplesse.  Si la flexibilité s’avère généralement utile au fil du temps,
+alors, cela devrait être sorti des scripts et dans le domaine de la configuration.</p>
+</div></blockquote>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="v03.html" class="btn btn-neutral float-left" title="Refactorisation de la version 3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Design.html" class="btn btn-neutral float-right" title="1 Conception Strawman" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloading Using the Command Line &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Customize File handling with Callbacks." href="2_CLI_with_flowcb_demo.html" />
+    <link rel="prev" title="Tutorials" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Downloading Using the Command Line</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#SR3">SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Customize File handling with Callbacks.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html">flow API Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html">A first Example using Sarracenia Moth API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_api_moth_post_demo.html">Posting from Python Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Install.html">MetPX-Sarracenia Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Setup_a_local_subscriber.html">Server Admin: A Local Subscriber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Setup_a_remote_subscriber.html">How to setup a Remote Subscriber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Windows.html">Windows user manual</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+      <li>Downloading Using the Command Line</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/1_CLI_introduction.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Downloading-Using-the-Command-Line">
+<h1>Downloading Using the Command Line<a class="headerlink" href="#Downloading-Using-the-Command-Line" title="Link to this heading"></a></h1>
+<p>This <a class="reference external" href="https://jupyter.org">jupyter notebook</a> introduces <a class="reference external" href="https://metpx.github.io/sarracenia">Sarracenia version 3</a> usage from the command line (mostly on Linux, but should be similar on Windows and Mac also, main difference being different conventions for where preferences and logs are stored.) This is probably the easiest way to work with Sarracenia. You configure a flow to download files into a directory, and you can read the directory to process the files there.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="o">!</span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/.config/sr3/subscribe
+<span class="o">!</span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/.cache/sr3/log
+</pre></div>
+</div>
+</div>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading"></a></h2>
+<p>The above is just a way to get jupyter notebooks to install metpx-sr3 on a server. Creating some directories in case people use API access without running things through the API. The basic pre-requisite is to have metpx-sr3 installed somehow, either as a .deb package, or using pip (or pip3) available to the environment used by jupyter.</p>
+<p>The rest of this notebook assumes <a class="reference external" href="https://metpx.github.io/sarracenia">metpx-sr3</a> is installed.</p>
+</section>
+<section id="SR3">
+<h2>SR3<a class="headerlink" href="#SR3" title="Link to this heading"></a></h2>
+<p>The command line interface is called <a class="reference internal" href="../Reference/sr3.1.html"><span class="doc">sr3</span></a> (short for Sarracenia version 3). One defines flows to run using configuration files in a simple format: <em>keyword</em> <em>value</em> format. There are example configurations to get you started:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>sr3<span class="w"> </span>list<span class="w"> </span>examples
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Sample Configurations: (from: /net/local/home/shakerm/sr3/sarracenia/examples )
+cpump/cno_trouble_f00.inc        flow/amserver.conf
+flow/opg.conf                    flow/poll.inc
+flow/post.inc                    flow/report.inc
+flow/sarra.inc                   flow/sender.inc
+flow/shovel.inc                  flow/subscribe.inc
+flow/watch.inc                   flow/winnow.inc
+poll/airnow.conf                 poll/aws-nexrad.conf
+poll/copernicus_odata.conf       poll/mail.conf
+poll/nasa-mls-nrt.conf           poll/nasa_cmr_opendap.conf
+poll/nasa_cmr_other.conf         poll/nasa_cmr_podaac.conf
+poll/noaa.conf                   poll/soapshc.conf
+poll/usgs.conf                   post/WMO_mesh_post.conf
+sarra/wmo_mesh.conf              sender/am_send.conf
+sender/ec2collab.conf            sender/pitcher_push.conf
+shovel/no_trouble_f00.inc        subscribe/aws-nexrad.conf
+subscribe/dd_2mqtt.conf          subscribe/dd_all.conf
+subscribe/dd_amis.conf           subscribe/dd_aqhi.conf
+subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf
+subscribe/dd_cmml.conf           subscribe/dd_gdps.conf
+subscribe/dd_radar.conf          subscribe/dd_rdps.conf
+subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf
+subscribe/ddc_normal.conf        subscribe/download_all_nasa_earthdata.conf
+subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf
+subscribe/get_copernicus.conf    subscribe/hpfxWIS2DownloadAll.conf
+subscribe/hpfx_amis.conf         subscribe/hpfx_citypage.conf
+subscribe/local_sub.conf         subscribe/ping.conf
+subscribe/pitcher_pull.conf      subscribe/sci2ec.conf
+subscribe/subnoaa.conf           subscribe/subsoapshc.conf
+subscribe/subusgs.conf           watch/master.conf
+watch/pitcher_client.conf        watch/pitcher_server.conf
+watch/sci2ec.conf
+</pre></div></div>
+</div>
+<p>There are different kinds for flows: the examples are classified by flow type (poll, post, sarra, sender, shovel, etc.) A <em>subscribe</em> is used by clients to download from a data pump. Let’s pick one of those.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>sr3<span class="w"> </span>add<span class="w"> </span>subscribe/hpfx_amis.conf
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add: 2024-03-06 23:48:56,706 2118966 [INFO] sarracenia.sr add copying: /net/local/home/shakerm/sr3/sarracenia/examples/subscribe/hpfx_amis.conf to /net/local/home/shakerm/.config/sr3/subscribe/hpfx_amis.conf
+
+</pre></div></div>
+</div>
+<p>The files that are active for you are placed in ~/.config/sr3/&lt;flow_type&gt;/config_name. You can browse there and modify them with an editor if you like. You can also do that with <em>sr3 edit subscribe/hpfx_amis.conf</em>.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># this is a feed of wmo bulletin (a set called AMIS in the old times)
+
+broker amqps://hpfx.collab.science.gc.ca/
+exchange xpublic
+
+# instances: number of downloading processes to run at once.  Defaults to 1. Not enough for this case
+instances 5
+
+# expire, in operational use, should be longer than longest expected interruption
+expire 10m
+
+topicPrefix v02.post
+subtopic *.WXO-DD.bulletins.alphanumeric.#
+mirror false
+directory /tmp/hpfx_amis/
+</pre></div>
+</div>
+<p>Add the messageCountMax, so it doesn’t run forever:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>mkdir<span class="w"> </span>/tmp/hpfx_amis
+<span class="o">!</span><span class="nb">echo</span><span class="w"> </span>messageCountMax<span class="w"> </span><span class="m">10</span><span class="w"> </span>&gt;&gt;~/.config/sr3/subscribe/hpfx_amis.conf
+</pre></div>
+</div>
+</div>
+<p>The root directory where files are to be placed needs to exist before you start. The above commands are to configure on a Linux machine, you might need something else on a mac or windows.</p>
+<p>You can then run a flow interactively with the <em>foreground</em> action, and it will end quickly, like so:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>sr3<span class="w"> </span>foreground<span class="w"> </span>subscribe/hpfx_amis.conf
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2024-03-06 23:49:06,570 2118978 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+.2024-03-06 23:49:06,841 [INFO] 2118981 sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+2024-03-06 23:49:06,846 [INFO] 2118981 sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+2024-03-06 23:49:06,846 [INFO] 2118981 sarracenia.flow loadCallbacks flowCallback plugins to load: [&#39;sarracenia.flowcb.gather.message.Message&#39;, &#39;sarracenia.flowcb.retry.Retry&#39;, &#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;, &#39;log&#39;]
+2024-03-06 23:49:06,855 [INFO] 2118981 sarracenia.flowcb.log __init__ subscribe initialized with: logEvents: {&#39;after_post&#39;, &#39;on_housekeeping&#39;, &#39;after_work&#39;, &#39;after_accept&#39;},  logMessageDump: False
+2024-03-06 23:49:06,855 [INFO] 2118981 sarracenia.flow run callbacks loaded: [&#39;sarracenia.flowcb.gather.message.Message&#39;, &#39;sarracenia.flowcb.retry.Retry&#39;, &#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;, &#39;log&#39;]
+2024-03-06 23:49:06,855 [INFO] 2118981 sarracenia.flow run pid: 2118981 subscribe/hpfx_amis instance: 0
+2024-03-06 23:49:06,906 [INFO] 2118981 sarracenia.moth.amqp _queueDeclare queue declared q_anonymous_subscribe.hpfx_amis.16789186.78043112 (as: amqps://anonymous@hpfx.collab.science.gc.ca/), (messages waiting: 0)
+2024-03-06 23:49:06,906 [INFO] 2118981 sarracenia.moth.amqp getSetup binding q_anonymous_subscribe.hpfx_amis.16789186.78043112 with v02.post.*.WXO-DD.bulletins.alphanumeric.# to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)
+2024-03-06 23:49:06,918 [INFO] 2118981 sarracenia.flow run now active on vip [&#39;AnyAddressIsFine&#39;]
+2024-03-06 23:49:15,332 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 4.84 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/WV/MMMX/23/WVMX31_MMMX_062348___03321
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 7.61 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRCN40_KWAL_062348___32108
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SX/KWAL/23/SXCN40_KWAL_062348___23784
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRCN40_KWAL_062348___45099
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRCN40_KWAL_062348___35424
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRCN40_KWAL_062348___47804
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRME20_KWAL_062348___48533
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 2.19 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRME20_KWAL_062348___768
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 1.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SR/KWAL/23/SRCN40_KWAL_062348___19124
+2024-03-06 23:49:15,333 [INFO] 2118981 sarracenia.flowcb.log after_accept accepted: (lag: 1.43 ) https://hpfx.collab.science.gc.ca /20240306/WXO-DD/bulletins/alphanumeric/20240306/SO/KWAL/23/SOLC10_KWAL_062348___60057
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/WVMX31_MMMX_062348___03321
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_062348___32108
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXCN40_KWAL_062348___23784
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_062348___45099
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_062348___35424
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_062348___47804
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRME20_KWAL_062348___48533
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRME20_KWAL_062348___768
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_062348___19124
+2024-03-06 23:49:15,455 [INFO] 2118981 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SOLC10_KWAL_062348___60057
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flow please_stop ok, telling 4 callbacks about it.
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flow run starting last pass (without gather) through loop for cleanup.
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flow please_stop ok, telling 4 callbacks about it.
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flow run on_housekeeping pid: 2118981 subscribe/hpfx_amis instance: 0
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flowcb.gather.message on_housekeeping messages: good: 10 bad: 0 bytes: 1.4 KiB average: 138 Bytes
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.flowcb.retry on_housekeeping on_housekeeping
+2024-03-06 23:49:15,456 [INFO] 2118981 sarracenia.diskqueue on_housekeeping work_retry_00 on_housekeeping
+2024-03-06 23:49:15,458 [INFO] 2118981 sarracenia.diskqueue on_housekeeping No retry in list
+2024-03-06 23:49:15,458 [INFO] 2118981 sarracenia.diskqueue on_housekeeping on_housekeeping elapse 0.002104
+2024-03-06 23:49:15,458 [INFO] 2118981 sarracenia.diskqueue on_housekeeping post_retry_000 on_housekeeping
+2024-03-06 23:49:15,460 [INFO] 2118981 sarracenia.diskqueue on_housekeeping No retry in list
+2024-03-06 23:49:15,460 [INFO] 2118981 sarracenia.diskqueue on_housekeeping on_housekeeping elapse 0.001996
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.housekeeping.resources on_housekeeping Current Memory cpu_times: user=0.24 system=0.03
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.housekeeping.resources on_housekeeping Current mem usage: 79.3 MiB, accumulating count (10 or 10/100 so far) before self-setting threshold
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.log stats version: 3.00.52rc2, started: 8 seconds ago, last_housekeeping:  8.6 seconds ago
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.log stats messages received: 10, accepted: 10, rejected: 0   rate accepted: 100.0% or 1.2 m/s
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.log stats files transferred: 10 bytes: 2.0 KiB rate: 243 Bytes/sec
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.log stats lag: average: 2.97, maximum: 7.61
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flowcb.log on_housekeeping housekeeping
+2024-03-06 23:49:15,461 [INFO] 2118981 sarracenia.flow run clean stop from run loop
+2024-03-06 23:49:15,462 [INFO] 2118981 sarracenia.flowcb.gather.message on_stop closing
+2024-03-06 23:49:15,462 [INFO] 2118981 sarracenia.flow close flow/close completed cleanly pid: 2118981 subscribe/hpfx_amis instance: 0
+
+</pre></div></div>
+</div>
+<p>As you can see, it downloaded five files to /tmp/amis. The <em>foreground</em> action is intended to help with debugging, rather than real operations.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>sr3<span class="w"> </span>status
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2024-03-06 23:49:30,243 2118998 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+status:
+Component/Config                         Processes   Connection        Lag                              Rates
+                                         State   Run Retry  msg data   Queued  LagMax LagAvg  Last  %rej     pubsub messages   RxData     TxData
+                                         -----   --- -----  --- ----   ------  ------ ------  ----  ----     ------ --------   ------     ------
+subscribe/hpfx_amis                      stop    0/0          -          -         -     -     -          -        -
+      Total Running Configs:   0 ( Processes: 0 missing: 0 stray: 0 )
+                     Memory: uss:0 Bytes rss:0 Bytes vms:0 Bytes
+                   CPU Time: User:0.00s System:0.00s
+           Pub/Sub Received: 0 msgs/s (0 Bytes/s), Sent:  0 msgs/s (0 Bytes/s) Queued: 0 Retry: 0, Mean lag: 0.00s
+              Data Received: 0 Files/s (0 Bytes/s), Sent: 0 Files/s (0 Bytes/s)
+</pre></div></div>
+</div>
+<p>Above, you can see there is 1 configuration in your list. You can have hundreds. The columns on the right refer to how many instances you have for each configuration. In the example above, <em>instances</em> is set to 5, so one would expect to see 5 running instances when it would be running. You can start specifc configurations (in this case a subscribe config) with <em>sr3 start subscribe/&lt;config&gt;</em>, or start all active configs from all components (sarra, subscribe, watch, winnow, etc.) with <em>sr3 start</em></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>sr3<span class="w"> </span>log<span class="w"> </span>subscribe/hpfx_amis.conf
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2024-03-06 23:45:56,401 2118802 [INFO] sarracenia.config finalize overriding batch for consistency with messageCountMax: {self.batch}
+tail: cannot open &#39;/net/local/home/shakerm/.cache/sr3/log/subscribe_hpfx_amis_01.log&#39; for reading: No such file or directory
+tail: no files remaining
+2024-03-06 23:45:56,406 2118802 [CRITICAL] root run_command subprocess.run failed err=Command &#39;[&#39;tail&#39;, &#39;-f&#39;, &#39;/net/local/home/shakerm/.cache/sr3/log/subscribe_hpfx_amis_01.log&#39;]&#39; returned non-zero exit status 1.
+
+</pre></div></div>
+</div>
+<p>When running in the background, output needs to go a log file. Since we have only ran this configuration file in the foreground, asking to see the log prints an error about the log being missing. This tells you that the logs are in the <em>~/.cache/sr3/log</em> directory. Logs can be monitored in real-time with traditional tools such as <em>tail -f</em> or <em>grep</em>.</p>
+<p><em>sr3 stop</em> does what you expect.</p>
+<p>Processes can crash. In the <em>sr3 status</em> output above, if the number of processes in the Run column is less than in the Exp (for Expected) one, then it means that some instances have crashed. You can repair it (just start the missing instances) with:</p>
+<p><em>sr3 sanity</em> – start missing instances, also kill strays if any found.</p>
+<p>So that’s it, an introduction to running configurations in Sarracenia from the command line.</p>
+</section>
+<section id="Conclusion">
+<h2>Conclusion<a class="headerlink" href="#Conclusion" title="Link to this heading"></a></h2>
+<p>If all you want to do is obtain data from a data pump in real-time, the easiest way to go is using the command line interface to control some processes that run all the time so that they dump files in a certain directory.</p>
+<p>It isn’t very efficient though. When dealing with a large number of files and aiming for high-speed processing, it’s more efficient to have your own application receive notifications about file arrivals rather than scanning a directory. This approach reduces CPU and I/O overhead while improving processing speed.</p>
+<p>The easiest way to do that is to add some callbacks to your flows. We’ll cover that next.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="2_CLI_with_flowcb_demo.html" class="btn btn-neutral float-right" title="Customize File handling with Callbacks." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

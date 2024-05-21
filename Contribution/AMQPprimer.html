@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMQP - Primer for Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MetPX-Sarracenia Developer’s Guide" href="Development.html" />
+    <link rel="prev" title="Contributing" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AMQP - Primer for Sarracenia</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#amqp-feature-selection">AMQP Feature Selection</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analogy-ftp">Analogy FTP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#amqp-not-1-0-but-0-8-or-0-9">AMQP: not 1.0, but 0.8 or 0.9</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#named-exchanges-and-queues">Named Exchanges and Queues</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#topic-based-exchanges">Topic-based Exchanges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#little-data">Little Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-parameters">Other Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mapping-amqp-concepts-to-sarracenia">Mapping AMQP Concepts to Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sarracenia-is-an-mqp-application">Sarracenia is an MQP Application</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#review">Review</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#appendix-a-background">Appendix A: Background</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#why-use-amqp">Why Use AMQP?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#where-does-amqp-come-from">Where does AMQP Come From?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#intel-cray-hpc-stack">Intel/Cray HPC Stack</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#openstack">OpenStack</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-adopt-amqp">How to Adopt AMQP</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>AMQP - Primer for Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/AMQPprimer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="amqp-primer-for-sarracenia">
+<h1><a class="toc-backref" href="#id2" role="doc-backlink">AMQP - Primer for Sarracenia</a><a class="headerlink" href="#amqp-primer-for-sarracenia" title="Link to this heading"></a></h1>
+<p>This is a short but rather dense briefing to explain
+the motivation for the use of AMQP by the MetPX-Sarracenia
+data pump.  Sarracenia is essentially an AMQP application,
+so some understanding AMQP is very helpful.
+AMQP is a vast and interesting topic in it’s own right.  No attempt is made to explain
+all of it here. This brief just provides a little context, and introduces only
+background concepts needed to understand and/or use Sarracenia.  For more information
+on AMQP itself, a set of links is maintained at
+the <a class="reference external" href="http://metpx.sourceforge.net/#amqp">Metpx web site</a> but a search engine
+will also reveal a wealth of material.</p>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#amqp-primer-for-sarracenia" id="id2">AMQP - Primer for Sarracenia</a></p>
+<ul>
+<li><p><a class="reference internal" href="#amqp-feature-selection" id="id3">AMQP Feature Selection</a></p>
+<ul>
+<li><p><a class="reference internal" href="#analogy-ftp" id="id4">Analogy FTP</a></p></li>
+<li><p><a class="reference internal" href="#amqp-not-1-0-but-0-8-or-0-9" id="id5">AMQP: not 1.0, but 0.8 or 0.9</a></p></li>
+<li><p><a class="reference internal" href="#named-exchanges-and-queues" id="id6">Named Exchanges and Queues</a></p></li>
+<li><p><a class="reference internal" href="#topic-based-exchanges" id="id7">Topic-based Exchanges</a></p></li>
+<li><p><a class="reference internal" href="#little-data" id="id8">Little Data</a></p></li>
+<li><p><a class="reference internal" href="#other-parameters" id="id9">Other Parameters</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#mapping-amqp-concepts-to-sarracenia" id="id10">Mapping AMQP Concepts to Sarracenia</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-is-an-mqp-application" id="id11">Sarracenia is an MQP Application</a></p></li>
+<li><p><a class="reference internal" href="#review" id="id12">Review</a></p></li>
+<li><p><a class="reference internal" href="#appendix-a-background" id="id13">Appendix A: Background</a></p>
+<ul>
+<li><p><a class="reference internal" href="#why-use-amqp" id="id14">Why Use AMQP?</a></p></li>
+<li><p><a class="reference internal" href="#where-does-amqp-come-from" id="id15">Where does AMQP Come From?</a></p></li>
+<li><p><a class="reference internal" href="#intel-cray-hpc-stack" id="id16">Intel/Cray HPC Stack</a></p></li>
+<li><p><a class="reference internal" href="#openstack" id="id17">OpenStack</a></p></li>
+<li><p><a class="reference internal" href="#how-to-adopt-amqp" id="id18">How to Adopt AMQP</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="amqp-feature-selection">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">AMQP Feature Selection</a><a class="headerlink" href="#amqp-feature-selection" title="Link to this heading"></a></h2>
+<p>AMQP is a universal message passing protocol with many different
+options to support many different messaging patterns.  MetPX-sarracenia specifies and uses a
+small subset of AMQP patterns. An important element of Sarracenia development was to
+select from the many possibilities a small subset of methods are general and
+easily understood, in order to maximize potential for interoperability.</p>
+<section id="analogy-ftp">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Analogy FTP</a><a class="headerlink" href="#analogy-ftp" title="Link to this heading"></a></h3>
+<p>Specifying the use of a protocol alone may be insufficient to provide enough information for
+data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
+need to be made above and beyond the protocol.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>authenticated or anonymous use?</p></li>
+<li><p>how to signal that a file transfer has completed (permission bits? suffix? prefix?)</p></li>
+<li><p>naming convention</p></li>
+<li><p>text or binary transfer</p></li>
+</ul>
+</div></blockquote>
+<p>Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.  Similar to the use
+of FTP alone as a transfer protocol is insufficient to specify a complete data transfer
+procedure, use of AMQP, without more information, is incomplete. The intent of the conventions
+layered on top of AMQP is to be a minimum amount to achieve meaningful data exchange.</p>
+</section>
+<section id="amqp-not-1-0-but-0-8-or-0-9">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">AMQP: not 1.0, but 0.8 or 0.9</a><a class="headerlink" href="#amqp-not-1-0-but-0-8-or-0-9" title="Link to this heading"></a></h3>
+<p>AMQP 1.0 standardizes the on-the-wire protocol, but removed all broker standardization.
+As the use of brokers is key to Sarracenia´s use of, was a fundamental element of earlier standards,
+and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker,
+as is provided by many free brokers, such as rabbitmq and Apache QPid, often referred to as 0.8,
+but 0.9 and post 0.9 brokers could inter-operate well.</p>
+</section>
+<section id="named-exchanges-and-queues">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Named Exchanges and Queues</a><a class="headerlink" href="#named-exchanges-and-queues" title="Link to this heading"></a></h3>
+<p>In AMQP prior to 1.0, many different actors can define communication parameters, such as exchanges
+to publish to, queues where notification messages accumulate, and bindings between the two. Applications
+and users declare and user their exchanges, queues, and bindings. All of this was dropped
+in the move to 1.0 making topic based exchanges, an important underpinning of pub/sub patterns
+much more difficult.</p>
+<p>in AMQP 0.9, one subscriber can declare a queue, and then multiple processes (given the right
+permissions and the queue name) can consume from the same queue. That requires being able
+to name the queue. In another protocol, such as MQTT, one cannot name the queue, and so
+this processing pattern is not supported.</p>
+<p>The mapping convention described in <a class="reference external" href="../Reference/sr3_post.7.html#topic">Topic</a>, allows
+MQTT to establish separate hierarchies which provides a fixed distribution among
+the workers, but not exactly the self-balancing shared queue that AMQP provides.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In RabbitMQ (the initial broker used), permissions are assigned using regular expressions. So
+a permission model where AMQP users can define and use <em>their</em> exchanges and queues
+is enforced by a naming convention easily mapped to regular expressions (all such
+resources include the username near the beginning). Exchanges begin with: xs_&lt;user&gt;_.
+Queue names begin with: q_&lt;user&gt;_.</p>
+</div>
+</section>
+<section id="topic-based-exchanges">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Topic-based Exchanges</a><a class="headerlink" href="#topic-based-exchanges" title="Link to this heading"></a></h3>
+<p>Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
+but sr3_post have the topic sent in order to support server side filtering by using topic
+based filtering. At AMQP 1.0, topic-based exchanges (indeed all exchanges, are no
+longer defined.) Server-side filtering allows for much fewer topic hierarchies to be used,
+and for much more efficient subsciptions.</p>
+<p>In Sarracenia, topics are chosen to mirror the path of the files being announced, allowing
+straight-forward server-side filtering, to be augmented by client-side filtering on
+message reception.</p>
+<p>The root of the topic tree is the version of the message payload.  This allows single brokers
+to easily support multiple versions of the protocol at the same time during transitions.  <em>v02</em>,
+created in 2015, is the third iteration of the protocol and existing servers routinely support previous
+versions simultaneously in this way.  The second sub-topic defines the type of message.
+At the time of writing:  v02.post is the topic prefix for current notification messages.</p>
+</section>
+<section id="little-data">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Little Data</a><a class="headerlink" href="#little-data" title="Link to this heading"></a></h3>
+<p>The AMQP messages contain notification messages, no actual file data. AMQP is optimized for and assumes
+small messages. Keeping the messages small allows for maximum message throughtput and permits
+clients to use priority mechanisms based on transfer of data, rather than the notification messages.
+Accomodating large messages would create many practical complications, and inevitably require
+the definition of a maximum file size to be included in the message itself, resulting in
+complexity to cover multiple cases.</p>
+<p>Sr3_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+Blocks of large files are announced independently and blocks can follow different paths
+between initial pump and final delivery. The protocol is unidirectional, in that there
+is no dialogue between publisher and subscriber. Each post is a stand-alone item that
+is one message in a stream, which on receipt may be spread over a number of nodes.</p>
+<p>However, it is likely that, for small files over high latency links, it is
+more efficient to include the body of the files in the notification messages themselves,
+rather than forcing a separate retrieval phase.  The relative advantage depends on:</p>
+<ul class="simple">
+<li><p>relative coarseness of server side filtering means some filtering is done on
+the client side.  Any data embedded for notification messages discarded on the client-side
+are waste.</p></li>
+<li><p>Sarracenia establishes long-lived connections for some protocols, such as SFTP,
+so the relative overhead for a retrieval may not be long.</p></li>
+<li><p>One will achieve a higher messaging rate without data being embedded, and if the
+notification messages are distributed to a number of workers, it is possible that the resulting
+message rate is higher without embedded data (because of faster distribution for
+parallel download) than the savings from embedding.</p></li>
+<li><p>the lower the latency of the connection, the lesser the performance advantage
+of embedding, and the more it becomes a limiting factor on high performance
+transfers.</p></li>
+</ul>
+<p>Further work is needed to better clarify when it makes sense to embed content
+in notification messages. For now, the <em>content</em> header is included to allow such experiments
+to occur.</p>
+</section>
+<section id="other-parameters">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Other Parameters</a><a class="headerlink" href="#other-parameters" title="Link to this heading"></a></h3>
+<p>AMQP has many other settings, and reliability for a particular use case
+is assured by making the right choices.</p>
+<ul class="simple">
+<li><p>persistence (have queues survive broker restarts, default to true),</p></li>
+<li><p>expiry (how long a queue should exist when no-one is consuming from it.  Default: a few
+minutes for development, but can set much longer for production)</p></li>
+<li><p>message_ttl (the life-span of queued notification messages. Messages that are too old will not
+be delivered: default is forever.)</p></li>
+<li><p>Pre-fetch is an AMQP tunable to determine how many notification messages a client will
+retrieve from a broker at once, optimizing streaming. (default: 25)</p></li>
+</ul>
+<p>These are used in declarations of queues and exchanges to provide appropriate
+message processing.  This is not an exhaustive list.</p>
+</section>
+</section>
+<section id="mapping-amqp-concepts-to-sarracenia">
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Mapping AMQP Concepts to Sarracenia</a><a class="headerlink" href="#mapping-amqp-concepts-to-sarracenia" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="../_images/AMQP4Sarra.svg"><img alt="../_images/AMQP4Sarra.svg" class="align-center" height="302" src="../_images/AMQP4Sarra.svg" width="434" /></a>
+<p>An AMQP Server is called a Broker. <em>Broker</em> is sometimes used to refer to the software,
+other times server running the broker software (same confusion as <em>web server</em>.) In the above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue.</p>
+<p>There are many different broker software implementations. We use rabbitmq.
+Not trying to be rabbitmq specific, but management functions differ between implementations.
+So admin tasks require ‘porting’ while the main application elements do not.</p>
+<dl class="simple">
+<dt><em>Queues</em> are usually taken care of transparently, but you need to know</dt><dd><ul class="simple">
+<li><p>A Consumer/subscriber creates a queue to receive notification messages.</p></li>
+<li><p>Consumer queues are <em>bound</em> to exchanges (AMQP-speak)</p></li>
+</ul>
+</dd>
+<dt>An <em>exchange</em> is a matchmaker between <em>publisher</em> and <em>consumer</em> queues.</dt><dd><ul class="simple">
+<li><p>A message arrives from a publisher.</p></li>
+<li><p>message goes to the exchange, is anyone interested in this message?</p></li>
+<li><p>in a <em>topic based exchange</em>, the message topic provides the <em>exchange key</em>.</p></li>
+<li><p>interested: compare message key to the bindings of <em>consumer queues</em>.</p></li>
+<li><p>message is routed to interested <em>consumer queues</em>, or dropped if there aren’t any.</p></li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Multiple processes can share a <em>queue</em>, they just take turns removing notification messages from it.</dt><dd><ul>
+<li><p>This is used heavily for sr_sarra and sr_subcribe multiple instances.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><em>Queues</em> can be <em>durable</em>, so even if your subscription process dies,
+if you come back in a reasonable time and you use the same queue,
+you will not have missed any notification messages.</p></li>
+<li><dl class="simple">
+<dt>How to Decide if Someone is Interested.</dt><dd><ul>
+<li><p>For Sarracenia, we use (AMQP standard) <em>topic based exchanges</em>.</p></li>
+<li><p>Subscribers indicate what topics they are interested in, and the filtering occurs server/broker side.</p></li>
+<li><p>Topics are just keywords separated by a dot. wildcards: # matches anything, * matches one word.</p></li>
+<li><p>We create the topic hierarchy from the path name (mapping to AMQP syntax)</p></li>
+<li><p>Resolution &amp; syntax of server filtering is set by AMQP. (. separator, # and * wildcards)</p></li>
+<li><p>Server side filtering is coarse, notification messages can be further filtered after download using regexp on the actual paths (the reject/accept directives.)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>topic prefix?  We start the topic tree with fixed fields</dt><dd><ul>
+<li><p>v02 the version/format of sarracenia notification messages.</p></li>
+<li><p>post … the message type, this is an notification message
+of a file (or part of a file) being available.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="sarracenia-is-an-mqp-application">
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">Sarracenia is an MQP Application</a><a class="headerlink" href="#sarracenia-is-an-mqp-application" title="Link to this heading"></a></h2>
+<p>in Version 2, MetPX-Sarracenia is only a light wrapper/coating around AMQP.
+in Version 3, this was reworked and an MQTT driver was added to make it
+less AMQP specific.</p>
+<ul class="simple">
+<li><p>A MetPX-Sarracenia pump is a python AMQP application that uses an (rabbitmq)
+broker to co-ordinate SFTP and HTTP client data transfers, and accompanies a
+web server (apache) and sftp server (openssh) on the same user-facing address.</p></li>
+<li><p>Wherever reasonable, we use their terminology and syntax.
+If someone knows AMQP, they understand. If not, they can research.</p>
+<ul>
+<li><p>Users configure a <em>broker</em>, instead of a pump.</p></li>
+<li><p>users explicitly can pick their <em>queue</em> names.</p></li>
+<li><p>users set <em>subtopic</em>,</p></li>
+<li><p>topics with dot separator are minimally transformed, rather than encoded.</p></li>
+<li><p>queue <em>durable</em>.</p></li>
+<li><p>we use <em>message headers</em> (AMQP-speak for key-value pairs) rather than encoding in JSON or some other payload format.</p></li>
+</ul>
+</li>
+<li><dl class="simple">
+<dt>reduce complexity through conventions.</dt><dd><ul>
+<li><p>use only one type of exchanges (Topic), take care of bindings.</p></li>
+<li><dl class="simple">
+<dt>naming conventions for exchanges and queues.</dt><dd><ul>
+<li><p>exchanges start with x.
+- xs_Weather - the exchange for the source (amqp user) named Weather to post notification messages
+- xpublic – exchange used for most subscribers.</p></li>
+<li><p>queues start with q</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Internet resources are more useful and reduce our documentation burden.</p></li>
+<li><p>We write less code (exposing raw AMQP means less glue.)</p></li>
+<li><p>Less potential for bugs/ higher reliability.</p></li>
+<li><p>we make minimum number of choices/restrictions</p></li>
+<li><p>set sensible defaults.</p></li>
+</ul>
+</section>
+<section id="review">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Review</a><a class="headerlink" href="#review" title="Link to this heading"></a></h2>
+<p>If you understood the rest of the document, this should make sense to you:</p>
+<p>An AMQP broker is a server process that houses exchanges and queues used to route notification messages
+with very low latency. A publisher sends notification messages to an exchange, while a consumer reads
+notification messages from their queue. Queues are <em>bound</em> to exchanges. Sarracenia links a broker
+to a web server to provide fast notifications, and uses topic exchanges to enable
+consumers’ server side filtering. The topic tree is based on the file tree you can
+browse if you visit the corresponding web server.</p>
+</section>
+<section id="appendix-a-background">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Appendix A: Background</a><a class="headerlink" href="#appendix-a-background" title="Link to this heading"></a></h2>
+<section id="why-use-amqp">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Why Use AMQP?</a><a class="headerlink" href="#why-use-amqp" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>open standard, multiple free implementations.</p></li>
+<li><p>low latency message passing.</p></li>
+<li><p>encourages asynchronous patterns/methods.</p></li>
+<li><p>language, protocol &amp; vendor neutral.</p></li>
+<li><p>very reliable.</p></li>
+<li><p>robust adoption (next two sections as examples)</p></li>
+</ul>
+</section>
+<section id="where-does-amqp-come-from">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Where does AMQP Come From?</a><a class="headerlink" href="#where-does-amqp-come-from" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Open International standard from financial world.</p></li>
+<li><p>Many proprietary similar systems exist, AMQP built to get away from lock-in. Standard is built with long experience of vendor messaging systems, and so quite mature.</p></li>
+<li><p>invariably used behind the scenes as a component in server-side processing, not user visible.</p></li>
+<li><p>many web companies (soundcloud)</p></li>
+<li><p>seeing good adoption in monitoring and integration for HPC</p></li>
+</ul>
+</section>
+<section id="intel-cray-hpc-stack">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Intel/Cray HPC Stack</a><a class="headerlink" href="#intel-cray-hpc-stack" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="http://www.intel.com/content/www/us/en/high-performance-computing/aurora-fact-sheet.html">Intel/Cray HPC stack</a></p>
+<a class="reference internal image-reference" href="../_images/IntelHPCStack.png"><img alt="../_images/IntelHPCStack.png" class="align-center" src="../_images/IntelHPCStack.png" style="width: 505.5px; height: 311.0px;" />
+</a>
+</section>
+<section id="openstack">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">OpenStack</a><a class="headerlink" href="#openstack" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="http://docs.openstack.org/developer/nova/rpc.html">AMQP is the messaging technology chosen by the OpenStack cloud.</a></p>
+<a class="reference internal image-reference" href="../_images/OpenStackArch.png"><img alt="../_images/OpenStackArch.png" class="align-center" src="../_images/OpenStackArch.png" style="width: 436.79999999999995px; height: 349.29999999999995px;" />
+</a>
+</section>
+<section id="how-to-adopt-amqp">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">How to Adopt AMQP</a><a class="headerlink" href="#how-to-adopt-amqp" title="Link to this heading"></a></h3>
+<p>Adopting AMQP is more like adopting XML than it is like adopting FTP.  FTP interoperability
+is easy as choices are limited. With XML, however you get <strong>more palette than painting.</strong> Many
+different dialects, schema methods, etc…  XML will be valid and parse, but without
+additional standardization, data exchange remains uncertain.  For real interoperabiltiy,
+one must standardize specific dialects.  Examples:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>RSS/Atom,</p></li>
+<li><p>Common Alerting Protocol (CAP)</p></li>
+</ul>
+</div></blockquote>
+<p>AMQP brokers and the client software can connect and send notification messages, but without
+additional standardization, applications will not communicate.  AMQP calls
+those additional layers <em>applications</em>.  AMQP enables every conceivable message
+pattern, so a <strong>well formed application is</strong> built by eliminating features from
+consideration, <strong>choosing the colours to use.</strong>
+Sarracenia is an applicaton of AMQP message passing to file transfer.</p>
+<p>As CAP narrows XML, Sarracenia narrows the scope of AMQP. This narrowing is necessary to obtain a useful result: Interoperability.  Sarracenia conventions and formats are defined in:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="../Reference/sr_post.7.html">sr_post format man page</a></p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Development.html" class="btn btn-neutral float-right" title="MetPX-Sarracenia Developer’s Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

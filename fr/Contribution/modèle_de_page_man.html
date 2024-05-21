@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR3_TITRE &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Refactorisation de la version 3" href="v03.html" />
+    <link rel="prev" title="Publier une Version de MetPX-Sarracenia" href="Publication.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Documentation.html">Normes de documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">SR3_TITRE</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sr-titre">sr_titre</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Contribuer à Sarracenia</a> &raquo;</li>
+      <li>SR3_TITRE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/modèle_de_page_man.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr3-titre">
+<h1>SR3_TITRE<a class="headerlink" href="#sr3-titre" title="Link to this heading"></a></h1>
+<section id="sr-titre">
+<h2>sr_titre<a class="headerlink" href="#sr-titre" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p><strong>sr_titre</strong> foreground|start|stop|restart|reload|status configfile
+<strong>sr_titre</strong> cleanup|declare|setup configfile</p>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p><strong>sr_title</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+est laborum. <a class="reference external" href="sr3.1.rst#subscribe">sr_subscribe(7)</a>
+avec des limitations.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ne télécharge pas de données, ne fait circuler que des messages de notification.</p></li>
+<li><p>s’exécute en tant qu’instance unique (pas plusieurs instances).</p></li>
+<li><p>ne supporte aucun plugin.</p></li>
+<li><p>Ne prend pas en charge de VIP pour la haute disponibilité.</p></li>
+<li><p>bibliothèque d’expressions régulières différente: POSIX vs python.</p></li>
+<li><p>Ne prend pas en charge regex pour la commande strip (pas de regex non-greedy).</p></li>
+</ul>
+</div></blockquote>
+<p>Il peut donc servir de remplaçant pour :</p>
+<blockquote>
+<div><p><a class="reference external" href="sr3.1.rst#report">sr_report(1)</a> - Traiter les messages de notification de rapport.</p>
+<p><a class="reference external" href="sr3.1.rst#shovel">sr_shovel(8)</a> - Traiter les messages de notification de shovel.</p>
+<p><a class="reference external" href="sr3.1.rst#winnow">sr_winnow(8)</a> - Traiter les messages de notification de winnow.</p>
+</div></blockquote>
+<p>La commande <strong>sr_cpump</strong> prend deux arguments : une action start|stop|restart|reload|status… (auto-décrit)
+suivi d’un fichier de configuration.</p>
+<p>L’action <strong>foreground</strong> est utilisée lors du débogage d’une configuration, lorsque l’utilisateur souhaite
+exécutez le programme et son fichier de configuration de manière interactive…   L’instance <strong>foreground</strong>
+n’est pas concerné par d’autres actions.  L’utilisateur cesserait d’utiliser l’instance <strong>foreground</strong>
+en utilisant simplement &lt;ctrl-c&gt; sur Linux ou en utilisant d’autres moyens pour envoyer SIGINT ou SIGTERM au processus.</p>
+<p>Les actions <strong>cleanup</strong>, <strong>declare</strong>, <strong>setup</strong> peuvent être utilisé pour gérer les ressources sur
+le serveur RabbitMQ. Les resources sont des files d’attente ou des échanges. <strong>declare</strong> Crée
+les ressources. <strong>setup</strong> crée et effectue en en plus les liaisons des files d’attente.</p>
+<p>Les actions <strong>add</strong>, <strong>remove</strong>, <strong>edit</strong>, <strong>list</strong>, <strong>enable</strong>, <strong>disable</strong> agissent
+sur des configurations.</p>
+</section>
+<section id="configuration">
+<h3>CONFIGURATION<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
+doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim
+ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia
+consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque
+porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
+adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore
+et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis
+nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid
+ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea
+voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem
+eum fugiat quo voluptas nulla pariatur?”</p>
+</section>
+<section id="variables-d-environment">
+<h3>VARIABLES D’ENVIRONMENT<a class="headerlink" href="#variables-d-environment" title="Link to this heading"></a></h3>
+<p>Si la variable SR_CONFIG_EXAMPLES est définie, la directive <em>add</em> peut être utilisée
+pour copier des exemples dans le répertoire de l’utilisateur à des fins d’utilisation et/ou de personnalisation.</p>
+<p>Une entrée dans le fichier ~/.config/sarra/default.conf (créée via sr_subscribe edit default.conf )
+pourrait être utilisé pour définir la variable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">SR_CONFIG_EXAMPLES</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+<p>La valeur doit être disponible à partir de la sortie d’une commande list de l’implémentation python.</p>
+</section>
+<section id="voir-aussi">
+<h3>VOIR AUSSI<a class="headerlink" href="#voir-aussi" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.rst#report">sr3_report(7)</a> - Format des messages de rapport.</p>
+<p><a class="reference external" href="sr3.1.rst#report">sr3_report(1)</a> - Traiter les messages de rapport.</p>
+<p><a class="reference external" href="sr3_post.1.rst">sr3_post(1)</a> - Publier des messages de notification de fichiers spécifiques.</p>
+<p><a class="reference external" href="sr_post.7.rst">sr3_post(7)</a> - Format des messages de notification.</p>
+<p><a class="reference external" href="sr3.1.rst#subscribe">sr3_subscribe(1)</a> - le client de téléchargement.</p>
+<p><a class="reference external" href="sr3.1.rst#watch">sr3_watch(1)</a> - Le démon de surveillance du répertoire.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Publication.html" class="btn btn-neutral float-left" title="Publier une Version de MetPX-Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="v03.html" class="btn btn-neutral float-right" title="Refactorisation de la version 3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

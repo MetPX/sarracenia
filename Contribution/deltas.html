@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discussion of File Modification Propagation &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sarracenia Design Philosophy" href="Philosophy/index.html" />
+    <link rel="prev" title="1 Strawman Design" href="Design.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Discussion of File Modification Propagation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-if-each-notification-is-for-a-block-not-a-file">What If Each Notification is for a Block, not a File ?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sr-suffix">.sr§ suffix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-select-chunksize">How to Select Chunksize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#if-we-do-blockwise-cksums-path-from-v00">if we do blockwise cksums, path from v00</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#digression-about-zsync">Digression about ZSync</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#server-protocol-considerations">Server/Protocol Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>Discussion of File Modification Propagation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/deltas.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<p>Status: Pre-Draft</p>
+<section id="discussion-of-file-modification-propagation">
+<h1>Discussion of File Modification Propagation<a class="headerlink" href="#discussion-of-file-modification-propagation" title="Link to this heading"></a></h1>
+<p>This was early thinking about how to deal with file updates.
+The early versions of the protocol only concerned itself with entire files.
+when the file sets are large enough, partial updates become very desirable.
+Also, when the size of individual files is large enough, and when traversing
+WAN links, one can obtain substantial practical advantage by sending sending
+data using multiple streams, rather than just one.</p>
+<p>So in v02 there is a header ‘parts’ which indicates the partitioning method
+used for a given transfer, and the conclusion about the format/protocol
+is now documented in the sr_post(7) man page.  This file contains early
+discussions &amp; notes.</p>
+<dl class="simple">
+<dt>Algorithm used (regardless of tool):</dt><dd><ul class="simple">
+<li><p>for each ´block´ (blocksize interesting) generate a signature.</p></li>
+<li><p>when a subscriber reads an notification message, it includes the signature.</p></li>
+<li><p>he compares the signatures on the file he already has, and updates it to match.</p></li>
+</ul>
+</dd>
+</dl>
+<p>the zsync algorithm is the right idea, can perhaps use it directly.</p>
+<section id="what-if-each-notification-is-for-a-block-not-a-file">
+<h2>What If Each Notification is for a Block, not a File ?<a class="headerlink" href="#what-if-each-notification-is-for-a-block-not-a-file" title="Link to this heading"></a></h2>
+<p>gedanken experiment… per block messages, rather than entire files ?
+what if the messages we send are all per block?</p>
+<p>Why is this really cool?</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>It does the gridftp thing, splitting out single file transfers
+into parallel streams.</p></li>
+<li><p>For large files, the ddsr’s might have a whole bunch of part files,
+instead of the complete ones, because the transfer is split over
+multiple nodes, no problem, as long as later stages are subscribed
+to all ddsr’s.</p></li>
+<li><p>intervening switches do not need to store the largest file
+that can be transferred, only some number of the largest chunks.
+eliminates the maximum file size problem.</p></li>
+<li><p>This also deals with files that are written over time, without waiting
+until they are complete before hitting send.</p></li>
+<li><p>for the client to do multi-threaded send, they just start up
+any number of sr_senders listening to their own input exchange.
+sharing the subscription, just like sr_subscribe (dd_subscribe) does.</p></li>
+<li><p>for large files, you can see progress reports sources receive
+confirmation of each switching layer receiving each chunk.</p></li>
+</ul>
+</div></blockquote>
+<p>say we set a blocksize of 10MB, and we checksum that block, noting the offset, then
+continue?</p>
+<p>so v01.post:
+blocksz sz-inblocks remainder blocknum flags chksum base-url relative-path flow ….</p>
+<p>see logging.txt for a description of ‘flow’, user settable, with a default.</p>
+<p>flags says whether the chksum is for the name or the body. (if checksum is for name,
+then cannot use blocking chksums.) … says name checksums should only be used for smallish files.</p>
+<p>The blocksz establishes the multiplier for the sz and the blocknum.  the remainder
+is the last bit of the file after the last block boundary.</p>
+<p>So you calculating the checksum for each block you send off a message with the block,</p>
+<p>this way, for large files, the transfer can be split over a large number of nodes.
+but then re-assembly is a bit of a puzzle.  will each node of ddsr have only
+fractional (aka sparse) large files?   as long as the sr_sub is to both ddsr’s, it should
+get everything.   what happens with sparse  files?</p>
+<p><a class="reference external" href="https://administratosphere.wordpress.com/2008/05/23/sparse-files-what-why-and-how/">https://administratosphere.wordpress.com/2008/05/23/sparse-files-what-why-and-how/</a></p>
+<p>that´s it’s OK…
+it would work, on linux, but it’s a bit strange, and would like cause confusion in
+practice.  Besides, how do we know when we are done?</p>
+<p>— Re-assembly —
+How about the following.  when sr_subscribe(dd_subscribe) writes files, it writes to a file
+suffixed .sr§1 when it receives a file, and there is a .sr§ it checks the size
+of the file, if the current part is contiguous, it just appends (via lseek &amp; write)
+the data to the .sr§ file.  If not, it creates a separate .sr§&lt;blocknum&gt;</p>
+</section>
+<section id="sr-suffix">
+<h2>.sr§ suffix<a class="headerlink" href="#sr-suffix" title="Link to this heading"></a></h2>
+<p>but that means they advertise the parts… hmm… the names now mean something,
+We use the Section Character instead of part.  to avoid that, pick a name that
+is more unusual that .part something like .sr§partnum (using utf-8 interesting
+to see what url-encoding will do to that.)  It is good to use UTF special
+characters, because no-one else uses them, so unlikely to clash.</p>
+<p>what is someone advertises a .sr§ file? what does it mean? do we need to
+detect it?</p>
+<p>Then it looks in the directory to see if a .sr§&lt;blocknum +1&gt; exists, and appends
+it if it does, and loops until all contiguous parts are appended (the corresponding
+files deleted.)</p>
+<p>NOTE: Do not use append writing .sr§, but always lseek and write.  This prevents
+race conditions from causing havoc.  If there are multiple sr_subscribe (dd_subscribes) writing
+the file they will just both write the same data multiple times (worst case.)</p>
+<p>anyways when you run out of contiguous parts, you stop.</p>
+<p>if the last contiguous block received includes the end of the file, then
+do the file completion logic.</p>
+</section>
+<section id="how-to-select-chunksize">
+<h2>How to Select Chunksize<a class="headerlink" href="#how-to-select-chunksize" title="Link to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>source choice?</p></li>
+<li><p>we impose our own on ddsr?</p></li>
+</ul>
+</div></blockquote>
+<p>a default to 10*1024*1024=10485760 bytes, with override possible.</p>
+<p>might want the validation part to impose a minimum chunksize
+on posted files, in addition to the file path.</p>
+<p>we set a minimum, say 10MB, then if that is less than 5% of the file,
+then use 5%, until we get to a maximum chunksize… say 500MB.
+override with size 0 (no chunking one long send.)</p>
+<dl>
+<dt>what is the overhead to send a block?</dt><dd><ul class="simple">
+<li><p>there are no fixed width fields in the messages, are all variable length ASCII.</p></li>
+<li><p>estimate that an avereage notification is 100 bytes,</p></li>
+<li><p>log message is perhaps 120 bytes.</p></li>
+</ul>
+</dd>
+<dt>for each block transferred.</dt><dd><p>notification goes in one direction,
+at least one log message per scope hope goes through in the other direction.</p>
+<p>if we say two hops + client delivery (a third hop)</p>
+<p>so a block will have on the order of 100+4*120 = 580 bytes.</p>
+</dd>
+</dl>
+<p>It accepted that there is substantial protocol overhead on small files.</p>
+<p>However, one would hope the overhead would get more reasonable for bigger files,
+but that is limited by the blocksize.
+Aesthetically, need to choose a size that dwarfs the overhead.</p>
+</section>
+<section id="if-we-do-blockwise-cksums-path-from-v00">
+<h2>if we do blockwise cksums, path from v00<a class="headerlink" href="#if-we-do-blockwise-cksums-path-from-v00" title="Link to this heading"></a></h2>
+<p>compatibility… upgrading…
+v00.notify alerts boil down to:</p>
+<p>v01.post could be:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>filesz 1 0 0  …</dt><dd><ul class="simple">
+<li><p>the blocksize is the length of the entire file, 1 block ithe sz</p></li>
+<li><p>no remainder.</p></li>
+<li><p>0th block (the first one, zero origin counting)</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>or we take the convention that a blocksize of zero means no blocking…
+in which chase it would be:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>0 1 filesz 0 …</dt><dd><ul class="simple">
+<li><p>store the sz as the remainder.</p></li>
+<li><p>disable blocking for that file.</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>if there is validation on the blocking size, needs to be a way to deal with it.</p>
+</section>
+<section id="digression-about-zsync">
+<h2>Digression about ZSync<a class="headerlink" href="#digression-about-zsync" title="Link to this heading"></a></h2>
+<p>zsync is available in repositories  and zsync(1) is the existing download client.
+zsyncmake(1) builds the signatures, with a programmable block size.</p>
+<p>It looks ike zsync is usable as is?</p>
+<dl class="simple">
+<dt>downside:  portability.</dt><dd><dl class="simple">
+<dt>need zsync on Windows and mac for downloads, dependency a pain.</dt><dd><p>there is a Windows binary, made once in 2011… hmm…
+have not seein it on Mac OS either… sigh…</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>we send the signatures in the notification messages, rather than posting on the site.
+If we set the blocksize high, then for files &lt; 1 block, there is no signature.</p>
+<p>should sr_sarra post the signature to the site, for zsync compatibility?</p>
+<p>Do not want to be forking zsyncmake for every product…
+even if we do not use zsync itself, might want to be compatible… so use
+a third party format and have a comparable.  1st implementation would do
+forking, 2nd version might replicate the algorithm internally.</p>
+<p>perhaps we have a threshold, if the file is less than a megabyte, we just send
+the new one.  The intent is not to replicate source trees, but large data sets.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>for most cases (when writing a new file) we do not want extra overhead.</p></li>
+<li><p>target is large files that change, for small ones, transfer again, is not a big deal.</p></li>
+<li><p>want to minimize signature size (as will travel with notifications.)</p></li>
+<li><p>so set a block size to really large.</p></li>
+</ul>
+</div></blockquote>
+<p>Perhaps build the zsync client into sr_subscribe (dd_subscribe), but use zsync make on the server side ?
+or when the file is big enough, forking a zsync is no big deal? but mac &amp; win…</p>
+</section>
+<section id="server-protocol-considerations">
+<h2>Server/Protocol Considerations<a class="headerlink" href="#server-protocol-considerations" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>HTTP:</dt><dd><p>– uses byte range feature of HTTP.
+– FIXME: find samples from other email.</p>
+</dd>
+<dt>in SFTP/python/paramiko…</dt><dd><p>– there is readv( … ) which allows to read subsets of a file.
+– the read command in SFTP PROTOCOL spec has offset as a standard argument of read</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Design.html" class="btn btn-neutral float-left" title="1 Strawman Design" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Philosophy/index.html" class="btn btn-neutral float-right" title="Sarracenia Design Philosophy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+name: Build docs and publish to gh-pages branch and GitHub Pages
+on:
+  push:
+    branches:
+      - development
+    paths-ignore:
+      - '.github/**'
+
+  workflow_dispatch:
+
+jobs:
+  gh-pages:
+    name: Publish Github Pages
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup locale
+      run: |
+        sudo locale-gen en_US.UTF-8
+        sudo update-locale
+    - name: Install dependencies
+      run: |
+        sudo apt update -y
+        sudo apt install -y python3-appdirs python3-humanfriendly python3-humanize python3-jsonpickle python3-paramiko python3-psutil python3-watchdog
+        sudo apt install -y pandoc dia python3-paramiko 
+        sudo apt install -y python3-sphinx python3-nbsphinx python3-sphinx-rtd-theme
+        sudo apt install -y python3-amqp
+    - name: Checkout
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 0
+    - name: install Sarracenia
+      run: |
+        pip3 install .
+    - name: Build and Commit
+      uses: sphinx-notes/pages@v2
+      with:
+        documentation_path: ./docs/source
+        requirements_path: ./requirements-dev.txt
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: gh-pages
+

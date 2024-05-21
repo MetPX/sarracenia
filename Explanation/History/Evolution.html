@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>History/Context of Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Case Study: HPC Mirroring" href="HPC_Mirroring_Use_Case.html" />
+    <link rel="prev" title="Sarracenia Status January 2018" href="deployment_2018.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">History</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="deployment_2018.html">Sarracenia Status January 2018</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">History/Context of Sarracenia</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dd-subscribe-renaming">dd_subscribe Renaming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fewer-klocs-better-klocs">Fewer Klocs, Better klocs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deployments-use-cases">Deployments/Use Cases</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#project-website">Project Website</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="HPC_Mirroring_Use_Case.html">Case Study: HPC Mirroring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mesh_gts.html">Mesh-Style Data Exchange for the WIS-GTS in 2019</a></li>
+<li class="toctree-l3"><a class="reference internal" href="messages_v01.html">Message v01 Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="messages_v02.html">Description of the message v02 protocol / format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="messages_v03.html">Changes Made to create v03</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_Announcement.html">Announcing Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Explanation</a> &raquo;</li>
+          <li><a href="index.html">History</a> &raquo;</li>
+      <li>History/Context of Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/Explanation/History/Evolution.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="history-context-of-sarracenia">
+<h1>History/Context of Sarracenia<a class="headerlink" href="#history-context-of-sarracenia" title="Link to this heading"></a></h1>
+<p><strong>MetPX-Sarracenia</strong> is a product of the Meteorological Product Exchange Project,
+originated in Environment Canada, but now run by Shared Services Canada on their
+behalf. The project started in 2004, with the goal of providing a free stack that
+implements World Meteorological Organization standard real-time data exchange,
+and also adjacent needs.  <a class="reference external" href="https://github.com/MetPX/Sundew">Sundew</a> was the
+first generation WMO 386 (GTS) switch.</p>
+<p>In 2007, when MetPX was originally open sourced, the staff responsible were part of
+Environment Canada. In honour of the Species At Risk Act (SARA), to highlight the plight
+of disappearing species which are not furry (the furry ones get all the attention) and
+because search engines will find references to names which are more unusual more easily,
+the original MetPX WMO switch was named after a carnivorous plant on the Species At
+Risk Registry: The <em>Thread-leaved Sundew</em>.</p>
+<p>Sundew, the WMO switch, also needed compatibility with existing internal transfer
+mechanisms based heavily on FTP. It worked, but the GTS itself is obsolete in many
+deep ways, and work started in 2009 extending Sundew to leverage new technologies,
+such as message queueing protocols, starting in 2008. Versions of Sundew are
+generally labelled &lt; 1.0</p>
+<p>The initial prototypes of Sarracenia leveraged MetPX Sundew, Sarracenia’s ancestor.
+Sundew plugins were developed to create notification messages for files delivered by Sundew,
+and Dd_subscribe was initially developed as a download client for <strong>dd.weather.gc.ca</strong>, an
+Environment Canada website where a wide variety of meteorological products are made
+available to the public. It is from the name of this site that the Sarracenia
+suite takes the dd_ prefix for its tools. The initial version was deployed in
+2013 on an experimental basis as dd_subscribe.</p>
+<section id="dd-subscribe-renaming">
+<h2>dd_subscribe Renaming<a class="headerlink" href="#dd-subscribe-renaming" title="Link to this heading"></a></h2>
+<p>The new project (MetPX-Sarracenia) has many components, is used for more than
+distribution, and more than one website, and causes confusion for sysadmins thinking
+it is associated with the dd(1) command (to convert and copy files).  So, components
+were switched to use the sr_ prefix. The following year, support of
+checksums was added, and in the fall of 2015, the feeds were updated to v02.</p>
+<p>We eventually ran into the limits of this extension approach, and in 2015 we
+started <a class="reference external" href="https://metpx.github.io/sarracenia">Sarracenia</a>
+as a ground-up second generation replacement, unburdened by strict legacy GTS compatibility.
+Sarracenia (version 2) was initially a prototype, and many changes of many kinds occurred during it’s lifetime.
+It is still (in 2022) the only version operationally deployed. It went through three changes in operational
+message format (exp, v00, and v02.) It supports hundreds of thousands file transfers per hour 24/7
+in Canada.</p>
+<p>Where Sundew supports a wide variety of file formats, protocols, and conventions
+specific to the real-time meteorology, Sarracenia takes a step further away from
+specific applications and is a ruthlessly generic tree replication engine, which
+should allow it to be used in other domains. The initial prototype client, dd_subscribe,
+in use since 2013, was sort of a logical dead end. A path forward was described
+with the <a class="reference external" href="https://www.youtube.com/watch?v=G47DRwzwckk">Sarracenia in 10 Minutes</a>
+in November 2015, which led to dd_subscribe’s replacement in 2016 by the full blown
+Sarracenia package, with all components necessary for production as well as
+consumption of file trees.</p>
+<p>The organization behind MetPX has moved to Shared Services Canada in 2011, but when
+it came time to name a new module, we kept with a theme of carnivorous plants, and
+chose another one indigenous to some parts of Canada: <em>Sarracenia</em>, a variety
+of insectivorous pitcher plants. We like plants that eat meat!</p>
+<p>Sarracenia was initially called v2, as in the second data pumping architecture
+in the MetPX project, (v1 being Sundew.) a good timeline of deployments/acheivements
+is <a class="reference external" href="mesh_gts.html#Maturity">here</a>. While it proved very promising,
+worked quite well, Over the years a number of limitations with the existing
+implementation became clear:</p>
+<ul class="simple">
+<li><p>The poor support for python developers. v2 code is not at all idiomatic Python.</p></li>
+<li><p>the odd plugin logic, with poor error reporting.</p></li>
+<li><p>The inability to process groups of messages.</p></li>
+<li><p>The inability to add other queueing protocols (limited to rabbitmq/AMQP.)</p></li>
+<li><p>Difficulty of adding transfer protocols.</p></li>
+</ul>
+<p>In 2020, Development began on <a class="reference external" href="../Contribution/v03.html">Version 3</a>, now
+dubbed Sr3. Sr3 is about 30% less code that v2, offers a much improved API,
+and supports additional message protocols, rather than just rabbitmq.</p>
+</section>
+<section id="fewer-klocs-better-klocs">
+<h2>Fewer Klocs, Better klocs<a class="headerlink" href="#fewer-klocs-better-klocs" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td colspan="4"><p>History of Data Pumping Applications for Environment Canada</p></td>
+</tr>
+<tr class="row-even"><td><p>Era</p></td>
+<td><p>Application</p></td>
+<td><p>Code size</p></td>
+<td><p>Features</p></td>
+</tr>
+<tr class="row-odd"><td><p>1980s</p></td>
+<td><p>Tandem, PDS (domestic GTS)</p></td>
+<td><p>500kloc</p></td>
+<td><p>X.25, WMO Socket, AM Socket, FTP (push only)</p></td>
+</tr>
+<tr class="row-even"><td><p>2000s</p></td>
+<td><p>Sundew</p></td>
+<td><p>30kloc</p></td>
+<td><p>WMO Socket/TCP, FTP, SFTP (push only)</p></td>
+</tr>
+<tr class="row-odd"><td><p>2010s</p></td>
+<td><p>Sarracenia v2</p></td>
+<td><p>25kloc</p></td>
+<td><p>AMQP, HTTP, SFTP, FTP (pub/sub and push)</p></td>
+</tr>
+<tr class="row-even"><td><p>2020s</p></td>
+<td><p>Sarracenia v3 (sr3)</p></td>
+<td><p>15kloc</p></td>
+<td><p>AMQP, MQTT, HTTP, SFTP, API (pub/sub and push)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="deployments-use-cases">
+<h2>Deployments/Use Cases<a class="headerlink" href="#deployments-use-cases" title="Link to this heading"></a></h2>
+<p>Deployment status in 2015: <a class="reference external" href="https://www.youtube.com/watch?v=G47DRwzwckk&amp;t=326s">Sarracenia in 10 Minutes Video (5:26 in)</a></p>
+<p>Deployment status in 2018: <a class="reference external" href="deployment_2018.html">Deployments as of January 2018</a></p>
+</section>
+<section id="project-website">
+<h2>Project Website<a class="headerlink" href="#project-website" title="Link to this heading"></a></h2>
+<p>Prior to March 2018, the primary web-site for the project was metpx.sf.net.
+That MetPX website was built from the documentation in the various modules
+in the project. It builds using all <strong>.rst</strong> files found in
+<strong>sarracenia/doc</strong> as well as <em>some</em> of the <strong>.rst</strong> files found in
+<strong>sundew/doc</strong>. In the Spring of 2018, development moved to github.com.
+github.com renders .rst when showing pages, so separate processing to render
+web pages is no longer needed.</p>
+<p>Between 2018 and 2022, updating was done by committing changes to .rst files
+directly on github, so the home page is:  <a class="reference external" href="https://github.com/MetPX/sarracenia">https://github.com/MetPX/sarracenia</a>)
+There was no post-processing required. As the links are all relative and
+other services such as gitlab also support such rendering, the
+<em>website</em> is portable any gitlab instance, etc… And the entry point is from
+the README.rst file at the root directory of each repository.</p>
+<p>That had some readability problems, with people saying “Doesn’t it have a web site?”
+and poor navigation, no indexing. In 2022/03, sphinx was adopted as part
+of #380 (Document Restructure) and the local build process is now essentially
+run sphinx. The new website ( <a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> ) is updated
+by a github workflow on each commit.</p>
+<section id="updating-the-sf-net-website">
+<h3>Updating The sf.net Website<a class="headerlink" href="#updating-the-sf-net-website" title="Link to this heading"></a></h3>
+<p>Only the index-e.html and index-f.html pages are used on the sf.net website
+today. Unless you want to change those pages, this operation is useless.
+For all other pages, the links go directly into the various .rst files on
+github.com.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="deployment_2018.html" class="btn btn-neutral float-left" title="Sarracenia Status January 2018" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="HPC_Mirroring_Use_Case.html" class="btn btn-neutral float-right" title="Case Study: HPC Mirroring" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

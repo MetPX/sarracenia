@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.housekeeping.resources &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.housekeeping.resources</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.housekeeping.resources</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Default on_housekeeping handler that:</span>
+<span class="sd">- Logs Memory and CPU usage.</span>
+<span class="sd">- Restarts components to deal with memory leaks.</span>
+
+<span class="sd">If `MemoryMax` is not in the config, it is automatically calculated with the following procedure:</span>
+
+<span class="sd">1. The plugin processes the first `MemoryBaseLineFile` items to reach a steady state.</span>
+<span class="sd">   - Subscribers process messages-in</span>
+<span class="sd">   - Posting programs process messages-posted</span>
+<span class="sd">2. Set `MemoryMax` threshold to `MemoryMultiplier` * (memory usage at time steady state)</span>
+
+<span class="sd">If memory use ever exceeds the `MemoryMax` threshold, then the plugin triggers a restart, reducing memory consumption.</span>
+
+<span class="sd">Parameters:</span>
+
+<span class="sd">MemoryMax : size (default: none)</span>
+<span class="sd">    Hard coded maximum for tolerable memory consumption.</span>
+<span class="sd">    Must be suffixed with k/m/g for Kilo/Mega/Giga byte values.</span>
+<span class="sd">    If not set then the following options will have an effect:</span>
+
+<span class="sd">MemoryBaseLineFile : int, optional (default: 100)</span>
+<span class="sd">    How many files to process before measuring to establish the baseline memory usage.</span>
+<span class="sd">    (how many files are expected to process before a steady state is reached)</span>
+
+<span class="sd">MemoryMultiplier : int, optional (default: 3)</span>
+<span class="sd">    How many times past the steady state memory footprint you want to allow the component to grow before restarting.</span>
+<span class="sd">    It could be normal for memory usage to grow, especially if plugins store data in memory.</span>
+
+
+<span class="sd">Returns:</span>
+<span class="sd">    Nothing, restarts components if memory usage is outside of configured thresholds.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">naturalSize</span><span class="p">,</span> <span class="n">naturalTime</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">psutil</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Resources">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources">[docs]</a>
+<span class="k">class</span> <span class="nc">Resources</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<div class="viewcode-block" id="Resources.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="c1"># Set option to neg value to determine if user set in config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;MemoryMax&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;MemoryBaseLineFile&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;MemoryMultiplier&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39; Per-process maximum memory footprint that is considered too large, forcing a process restart.&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transferCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+            <span class="n">mem</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">()</span><span class="o">.</span><span class="n">memory_info</span><span class="p">()</span><span class="o">.</span><span class="n">vms</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mem</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">ost</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">times</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current cpu_times: user=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2"> system=</span><span class="si">{</span><span class="n">ost</span><span class="o">.</span><span class="n">system</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># We must set a threshold **after** the config file has been parsed.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If the config set something, use it.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryMax</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryMax</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># No user input set, now to figure out what our baseline memory usage is at a steady state</span>
+                <span class="c1">#   Process MemoryBaseLineFile(s)+ then get a memory reading before setting memory restart threshold.</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transferCount</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryBaseLineFile</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryBaseLineFile</span><span class="p">):</span>
+                    <span class="c1"># Not enough files processed for steady state, continue to wait..</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Current mem usage: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span><span class="si">}</span><span class="s2">, accumulating count &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">transferCount</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryBaseLineFile</span><span class="si">}</span><span class="s2"> so far) &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;before self-setting threshold&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">MemoryMultiplier</span> <span class="o">*</span> <span class="n">mem</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory threshold set to: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Current Memory usage: </span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span><span class="si">}</span><span class="s2"> / &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">naturalSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="p">(</span><span class="n">mem</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mem</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+        <span class="c1"># self.restart()</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Resources.restart">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.housekeeping.resources.Resources.restart">[docs]</a>
+    <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Do an in-place restart of the current process (keeps pid).</span>
+<span class="sd">        Gets a new memory stack/heap, keeps all file descriptors but replaces the buffers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Memory threshold surpassed! Triggering a restart for &#39;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="si">}</span><span class="s2">&#39; via &#39;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># First arg must be the program to be run (absolute path to program)</span>
+        <span class="c1"># Second arg has to be python for windows, see how this affects the linux side of things..</span>
+        <span class="c1"># Third arg is the name of the program you wish to run (should be full path to script) plus all the args.</span>
+        <span class="c1">#   The star unpacks the sys.argv list into the remaining function args</span>
+
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">&#39;linux&#39;</span><span class="p">,</span> <span class="s1">&#39;cygwin&#39;</span><span class="p">,</span> <span class="s1">&#39;darwin&#39;</span><span class="p">,</span> <span class="s1">&#39;aix&#39;</span><span class="p">)):</span>
+            <span class="c1"># Unix* (Linux / Windows/Cygwin / MacOS / AIX) Specific restart</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">execl</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;win32&#39;</span><span class="p">):</span>
+            <span class="c1"># Windows Specific restart</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">execl</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Unknown platform type: &quot;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="si">}</span><span class="s1">&quot;, attempting default unix process restart..&#39;</span>
+            <span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">execl</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+
+        <span class="c1"># Scream out in agony and die</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Plugin resources.py:restart() &quot;execl&quot; failed, this should never be logged.&#39;</span>
+        <span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transferCount</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">)</span>
+        <span class="c1"># if self.threshold is not None:</span>
+        <span class="c1">#    TODO: Remove this callback when issue #444 is implemented</span>
+
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msgCount</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">)</span></div>
+
+        <span class="c1"># if self.threshold is not None:</span>
+        <span class="c1">#    TODO: Remove this callback when issue #444 is implemented</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

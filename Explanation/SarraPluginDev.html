@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarracenia Programming Guide &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Deployment Considerations" href="DeploymentConsiderations.html" />
+    <link rel="prev" title="Command Line Guide" href="CommandLineGuide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Sarracenia Programming Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-plugins">Working with Plugins</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#revision-record">Revision Record</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#audience">Audience</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flow-callbacks">Flow Callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#settings">Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#logging-control">Logging Control</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#extending-classes">Extending Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-simplest-flow-callback">The Simplest Flow_Callback</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-extensions">Sample Extensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fields-in-messages">Fields in Messages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#accessing-options">Accessing Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flow-callback-points">Flow Callback Points</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#better-file-reception">Better File Reception</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-file-reception">Advanced File Reception</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#file-notification-without-downloading">File Notification Without Downloading</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#extension-ideas">Extension Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#polling">Polling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#accessing-messages-from-python">Accessing Messages from Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Sarracenia Programming Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/SarraPluginDev.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sarracenia-programming-guide">
+<h1>Sarracenia Programming Guide<a class="headerlink" href="#sarracenia-programming-guide" title="Link to this heading"></a></h1>
+<section id="working-with-plugins">
+<h2>Working with Plugins<a class="headerlink" href="#working-with-plugins" title="Link to this heading"></a></h2>
+<section id="revision-record">
+<h3>Revision Record<a class="headerlink" href="#revision-record" title="Link to this heading"></a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+</dl>
+</section>
+<section id="audience">
+<h3>Audience<a class="headerlink" href="#audience" title="Link to this heading"></a></h3>
+<p>Readers of this manual should be comfortable with light scripting in Python version 3.
+While a great deal of v2 compatibility is included in Sarracenia version 3, wholesale
+replacement of the programming interfaces is a big part of what is in Version 3.
+If working with version 2, Programmers should refer to the version 2 programmer’s Guide,
+as the two are very different.</p>
+</section>
+<section id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h3>
+<p>Sarracenia v3 includes a number of points where processing can be customized by
+small snippets of user provided code, known as flowCallbacks. The flowCallbacks themselves
+are expected to be concise, and an elementary knowledge of Python should suffice to
+build new ones in a copy/paste manner, with many samples being available to read.</p>
+<p>There are other ways to extend Sarracenia v3 by subclassing of:</p>
+<ul class="simple">
+<li><p>Sarracenia.transfer.Transfer to add more data transfer protocols</p></li>
+<li><p>Sarracenia.identity.Identity to add more checksumming methods.</p></li>
+<li><p>Sarracenia.moth.Moth to add support for more messaging protocols.</p></li>
+<li><p>Sarracenia.flow.Flow to create new flows.</p></li>
+<li><p>Sarracenia.flowcb.FlowCB to add custom callback routines to flows.</p></li>
+<li><p>Sarracenia.flowcb.poll.Poll to customize poll flows.</p></li>
+<li><p>Sarracenia.flowcb.scheduled.Scheduled to customize scheduled flows.</p></li>
+</ul>
+<p>That will be discussed after callbacks are dealt with.</p>
+</section>
+<section id="id1">
+<h3>Introduction<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>A Sarracenia data pump is a web server with notifications for subscribers to
+know, quickly, when new data has arrived. To find out what data is already
+available on a pump, view the tree with a web browser.  For simple immediate
+needs, one can download data using the browser itself or through a standard tool
+such as wget. The usual intent is for sr_subscribe to automatically download
+the data wanted to a directory on a subscriber machine where other software
+can process it.</p>
+<p>Often, the purpose of automated downloading is to have other code ingest
+the files and perform further processing. Rather than having a separate
+process look at a file in a directory, one can insert customized
+processing at various points in the flow.</p>
+<p>Examples are available using the list command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="nb">list</span> <span class="n">fcb</span>
+<span class="n">Provided</span> <span class="n">plugins</span><span class="p">:</span> <span class="p">(</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">development</span><span class="o">/</span><span class="n">sarra</span> <span class="p">)</span>
+<span class="n">flowcb</span><span class="o">/</span><span class="n">gather</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>            <span class="n">flowcb</span><span class="o">/</span><span class="n">gather</span><span class="o">/</span><span class="n">message</span><span class="o">.</span><span class="n">py</span>         <span class="n">flowcb</span><span class="o">/</span><span class="n">line_log</span><span class="o">.</span><span class="n">py</span>               <span class="n">flowcb</span><span class="o">/</span><span class="n">line_mode</span><span class="o">.</span><span class="n">py</span>
+<span class="n">flowcb</span><span class="o">/</span><span class="nb">filter</span><span class="o">/</span><span class="n">deleteflowfiles</span><span class="o">.</span><span class="n">py</span> <span class="n">flowcb</span><span class="o">/</span><span class="nb">filter</span><span class="o">/</span><span class="n">fdelay</span><span class="o">.</span><span class="n">py</span>          <span class="n">flowcb</span><span class="o">/</span><span class="nb">filter</span><span class="o">/</span><span class="n">log</span><span class="o">.</span><span class="n">py</span>             <span class="n">flowcb</span><span class="o">/</span><span class="n">nodupe</span><span class="o">.</span><span class="n">py</span>
+<span class="n">flowcb</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="n">log</span><span class="o">.</span><span class="n">py</span>               <span class="n">flowcb</span><span class="o">/</span><span class="n">post</span><span class="o">/</span><span class="n">message</span><span class="o">.</span><span class="n">py</span>           <span class="n">flowcb</span><span class="o">/</span><span class="n">retry</span><span class="o">.</span><span class="n">py</span>                  <span class="n">flowcb</span><span class="o">/</span><span class="n">v2wrapper</span><span class="o">.</span><span class="n">py</span>
+<span class="n">fractal</span><span class="o">%</span>
+<span class="n">fractal</span><span class="o">%</span> <span class="n">fcbdir</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">development</span><span class="o">/</span><span class="n">sarra</span>
+</pre></div>
+</div>
+<section id="worklists">
+<h4>Worklists<a class="headerlink" href="#worklists" title="Link to this heading"></a></h4>
+<p>The worklist data structure is a set of lists of notification messages.  There are four:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>worklist.incoming – notification messages yet to be processed. (built by gather)</p></li>
+<li><p>worklist.rejected – notification message which are not to be further processed. (usually by filtering.)</p></li>
+<li><p>worklist.ok – notification messages which have been successfully processed. (usually by work.)</p></li>
+<li><p>worklist.failed   – notification messages for which processing was attempted, but it failed.</p></li>
+</ul>
+</div></blockquote>
+<p>The worklist is passed to the <em>after_accept</em> and <em>after_work</em> plugins as detailed in the next section.</p>
+</section>
+<section id="the-flow-algorithm">
+<h4>The Flow Algorithm<a class="headerlink" href="#the-flow-algorithm" title="Link to this heading"></a></h4>
+<p>All of the components (post, subscribe, sarra, sender, shovel, watch, winnow)
+share substantial code and differ only in default settings.  The Flow
+algorithm is:</p>
+<ul class="simple">
+<li><p>Gather a list of notification messages, from a file, or an upstream source of notification messages (a data pump.)
+places new notification messages in _worklist.incoming_</p></li>
+<li><p>Filter them with accept/reject clauses, rejected notification messages are moved to _worklist.rejected_ .
+after_accept callbacks further manipulate the worklists after initial accept/reject filtering.</p></li>
+<li><p>Work on the remaining incoming notification messages, by doing the download, send or other work that creates new files.
+when work for a notification message succeeds, the notification message is moved to the _worklist.ok_ .
+work work for a notification message fails, the notification message is moved to the _worklist.failed_ .</p></li>
+<li><p>(optional) Post the work accomplished (notification messages on _worklist.ok_ ) for the next flow to consume.</p></li>
+</ul>
+</section>
+</section>
+<section id="flow-callbacks">
+<h3>Flow Callbacks<a class="headerlink" href="#flow-callbacks" title="Link to this heading"></a></h3>
+<p>The many ways to extend functionality, the most common one being adding callbacks
+to flow components. All of the Sarracenia components are implemented using
+the sarra.flow class. There is a parent class sarra.flowcb to implement them.
+The package’s plugins are shown in the first grouping of available ones. Many of them have arguments which
+are documented by listing them. In a configuration file, one might have the line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowCallback</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">Log</span>
+</pre></div>
+</div>
+<p>That line cause Sarracenia to look in the Python search path for a class like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blacklab</span><span class="o">%</span> <span class="n">cat</span> <span class="n">sarra</span><span class="o">/</span><span class="n">flowcb</span><span class="o">/</span><span class="n">msg</span><span class="o">/</span><span class="n">log</span><span class="o">.</span><span class="n">py</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Log</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;received: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+          <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;worked successfully: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The module will print each notification message accepted, and each notification message after work on it
+has finished (download has occurred, for example.) To modify the callback class,
+copy it from the directory listed in the <em>list fcb</em> command to somewher in the
+environment’s PYTHONPATH, and then modify it for the intended purpose.</p>
+<p>One can also see which plugins are active in a configuration by looking at the notification messages on startup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">blacklab</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">foreground</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">clean_f90</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">08</span> <span class="mi">01</span><span class="p">:</span><span class="mi">21</span><span class="p">:</span><span class="mi">34</span><span class="p">,</span><span class="mi">763</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sr_subscribe</span> <span class="n">clean_f90</span> <span class="n">start</span>
+
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+
+<span class="mi">2020</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">12</span> <span class="mi">15</span><span class="p">:</span><span class="mi">20</span><span class="p">:</span><span class="mi">06</span><span class="p">,</span><span class="mi">250</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">callbacks</span> <span class="n">loaded</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarra.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarra.flowcb.msg.log.Log&#39;</span><span class="p">,</span> <span class="s1">&#39;file_noop.File_Noop&#39;</span><span class="p">,</span> <span class="s1">&#39;sarra.flowcb.v2wrapper.V2Wrapper&#39;</span><span class="p">,</span> <span class="s1">&#39;sarra.flowcb.gather.message.Message&#39;</span><span class="p">]</span> <span class="mi">2</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="n">blacklab</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>Use of the <em>flowCallbackPrepend</em> option will have the the class loaded at the beginning of the list, rather than
+at the end.</p>
+</section>
+<section id="settings">
+<h3>Settings<a class="headerlink" href="#settings" title="Link to this heading"></a></h3>
+<p>Often when writing extensions through subclassing, additional options need to be set. The
+sarracenia.config class does command-line and configuration file based
+option parsing. and has a routine that can be called from new code
+to define additional settings, usually from the __init__ routine, which
+in built-in classes and such as flowcb accept as an _options_ parameter
+on their __init__() routines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">somewhere</span> <span class="ow">in</span> <span class="n">the</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+<span class="n">options</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;accel_wget_command&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/bin/wget&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">add_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     options can be declared in any plugin. There are various *kind* of options, where the declared type modifies the parsing.</span>
+
+<span class="sd">     &#39;count&#39;      integer count type.</span>
+<span class="sd">     &#39;duration&#39;   a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)</span>
+<span class="sd">                  modified by a unit suffix ( m-minute, h-hour, w-week )</span>
+<span class="sd">     &#39;flag&#39;       boolean (True/False) option.</span>
+<span class="sd">     &#39;list&#39;       a list of string values, each succeeding occurrence catenates to the total.</span>
+<span class="sd">                  all v2 plugin options are declared of type list.</span>
+<span class="sd">     &#39;size&#39;       integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.</span>
+<span class="sd">     &#39;str&#39;        an arbitrary string value, as will all of the above types, each succeeding occurrence overrides the previous one.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>The example above defines an “accel_wget_command” option
+as being of string type, with default value _/usr/bin/wget_ .</p>
+<p>Other useful methods in the sarracenia.config.Config class:</p>
+<ul class="simple">
+<li><p>variableExpansion( value, Message=None) … to expand patterns such as ${YYYYMMDD-5m} in configuration files.
+one may want to evaluate these expansions at different times in processing, depending on the purpose
+of the user defined options.</p></li>
+</ul>
+<p>full list here: <a class="reference external" href="https://metpx.github.io/sarracenia/Reference/code.html#sarracenia.config.Config">https://metpx.github.io/sarracenia/Reference/code.html#sarracenia.config.Config</a></p>
+<section id="hierarchical-settings">
+<h4>Hierarchical Settings<a class="headerlink" href="#hierarchical-settings" title="Link to this heading"></a></h4>
+<p>One can also create settings specifically for individual callback classes using the _set_
+command and by identifying the exact class to which the setting applies. For example,
+sometimes turning the logLevel to debug can result in very large log files, and one would
+like to only turn on debug output for select callback classes. That can be done via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">gather</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">File</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>The _set_ command, can also be used to set options to be passed to any plugin.</p>
+</section>
+<section id="viewing-all-settings">
+<h4>Viewing all Settings<a class="headerlink" href="#viewing-all-settings" title="Link to this heading"></a></h4>
+<p>Use the _sr3_ _show_ command to view all active settings resulting from a configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">show</span> <span class="n">sarra</span><span class="o">/</span><span class="n">download_f20</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">Config</span> <span class="n">of</span> <span class="n">sarra</span><span class="o">/</span><span class="n">download_f20</span><span class="p">:</span>
+<span class="n">_Config__admin</span><span class="o">=</span><span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">bunnymaster</span><span class="nd">@localhost</span><span class="p">,</span> <span class="n">_Config__broker</span><span class="o">=</span><span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="p">,</span> <span class="n">_Config__post_broker</span><span class="o">=</span><span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="p">,</span> <span class="n">accel_threshold</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+<span class="n">accept_unmatch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">accept_unmatched</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">announce_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;https://tracker1.com&#39;</span><span class="p">,</span> <span class="s1">&#39;https://tracker2.com&#39;</span><span class="p">,</span> <span class="s1">&#39;https://tracker3.com&#39;</span><span class="p">],</span> <span class="n">attempts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="n">auto_delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">baseDir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span> <span class="s1">&#39;xsarra&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">)],</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1048576</span><span class="p">,</span> <span class="n">bytes_per_second</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bytes_ps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">cfg_run_dir</span><span class="o">=</span><span class="s1">&#39;/home/peter/.cache/sr3/sarra/download_f20&#39;</span><span class="p">,</span> <span class="n">chmod</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">chmod_dir</span><span class="o">=</span><span class="mi">509</span><span class="p">,</span> <span class="n">chmod_log</span><span class="o">=</span><span class="mi">384</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="s1">&#39;download_f20&#39;</span><span class="p">,</span> <span class="n">currentDir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="n">declare</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">declared_exchanges</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xpublic&#39;</span><span class="p">,</span> <span class="s1">&#39;xcvan01&#39;</span><span class="p">],</span> <span class="n">declared_users</span><span class="o">=</span><span class="s2">&quot;...rce&#39;, &#39;anonymous&#39;: &#39;subscriber&#39;, &#39;ender&#39;: &#39;source&#39;, &#39;eggmeister&#39;: &#39;subscriber&#39;}&quot;</span><span class="p">,</span>
+<span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s1">&#39;/home/peter/sarra_devdocroot&#39;</span><span class="p">,</span> <span class="n">documentRoot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">durable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exchange</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xflow_public&#39;</span><span class="p">],</span>
+<span class="n">expire</span><span class="o">=</span><span class="mf">25200.0</span><span class="p">,</span> <span class="n">feeder</span><span class="o">=</span><span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fixed_headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">flatten</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">hostdir</span><span class="o">=</span><span class="s1">&#39;fractal&#39;</span><span class="p">,</span> <span class="n">hostname</span><span class="o">=</span><span class="s1">&#39;fractal&#39;</span><span class="p">,</span> <span class="n">housekeeping</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>
+<span class="n">imports</span><span class="o">=</span><span class="p">[],</span> <span class="n">inflight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inlineEncoding</span><span class="o">=</span><span class="s1">&#39;guess&#39;</span><span class="p">,</span> <span class="n">inlineByteMax</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">instances</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">logFormat</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">logLevel</span><span class="o">=</span><span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="n">log_reject</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lr_backupCount</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lr_interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="n">lr_when</span><span class="o">=</span><span class="s1">&#39;midnight&#39;</span><span class="p">,</span> <span class="n">masks</span><span class="o">=</span><span class="s2">&quot;...nia/insects/flakey_broker&#39;, None, re.compile(&#39;.*&#39;), True, True, 0, False, &#39;/&#39;)]&quot;</span><span class="p">,</span> <span class="n">message_count_max</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">message_rate_max</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">message_rate_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">message_strategy</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;reset&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;stubborn&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;failure_duration&#39;</span><span class="p">:</span> <span class="s1">&#39;5m&#39;</span><span class="p">},</span> <span class="n">message_ttl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">notify_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sample.Sample&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.log.Log&#39;</span><span class="p">],</span> <span class="n">post_baseDir</span><span class="o">=</span><span class="s1">&#39;/home/peter/sarra_devdocroot&#39;</span><span class="p">,</span> <span class="n">post_baseUrl</span><span class="o">=</span><span class="s1">&#39;http://localhost:8001&#39;</span><span class="p">,</span>
+<span class="n">post_documentRoot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">post_exchange</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xflow_public&#39;</span><span class="p">],</span> <span class="n">post_exchanges</span><span class="o">=</span><span class="p">[],</span> <span class="n">prefetch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preserve_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">preserve_time</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">program_name</span><span class="o">=</span><span class="s1">&#39;sarra&#39;</span><span class="p">,</span>
+<span class="n">pstrip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">queue_filename</span><span class="o">=</span><span class="s1">&#39;/home/peter/.cache/sr3/sarra/download_f20/sarra.download_f20.tfeed.qname&#39;</span><span class="p">,</span>
+<span class="n">queue_name</span><span class="o">=</span><span class="s1">&#39;q_tfeed_sarra.download_f20.65966332.70396990&#39;</span><span class="p">,</span> <span class="n">randid</span><span class="o">=</span><span class="s1">&#39;52f9&#39;</span><span class="p">,</span> <span class="n">realpathPost</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">report_daemons</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="n">resolved_exchanges</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;xflow_public&#39;</span><span class="p">],</span> <span class="n">resolved_qname</span><span class="o">=</span><span class="s1">&#39;q_tfeed_sarra.download_f20.65966332.70396990&#39;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="p">{},</span> <span class="n">sleep</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">statehost</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="n">subtopic</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">suppress_duplicates</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">suppress_duplicates_basis</span><span class="o">=</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">tlsRigour</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">,</span> <span class="n">topicPrefix</span><span class="o">=</span><span class="s1">&#39;v03&#39;</span><span class="p">,</span>
+<span class="n">undeclared</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;announce_list&#39;</span><span class="p">],</span> <span class="n">users</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">v2plugin_options</span><span class="o">=</span><span class="p">[],</span> <span class="n">v2plugins</span><span class="o">=</span><span class="p">{},</span> <span class="n">vhost</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">vip</span><span class="o">=</span><span class="kc">None</span>
+
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="logging-control">
+<h3>Logging Control<a class="headerlink" href="#logging-control" title="Link to this heading"></a></h3>
+<p>The method of understanding sr3 flow activity is by examining its logs.
+Logging can be very heavy in sr3, so there are many ways of fine tuning it.</p>
+<section id="loglevel">
+<h4>logLevel<a class="headerlink" href="#loglevel" title="Link to this heading"></a></h4>
+<p>the normal logLevel one is used to in the built-in python Log classes. It has
+levels: <em>debug, info, warning, error,</em> and <em>critical,</em>  where level indicates
+the lowest priority message to print.  Default value is <em>info</em>.</p>
+<p>Because a simple binary switch of the logLevel can result in huge logs, for
+example when polling, where every time every line is polled could generate a log line.
+The monitoring of MQP protocols can be similarly verbose, so by default neither
+of these are actually put into debug mode by the global logLevel setting.
+some classes do not honour the global setting, and ask for explicit
+enabling:</p>
+</section>
+<section id="set-sarracenia-transfer-transfer-loglevel-debug">
+<h4>set sarracenia.transfer.Transfer.logLevel debug<a class="headerlink" href="#set-sarracenia-transfer-transfer-loglevel-debug" title="Link to this heading"></a></h4>
+<p>Can control the logLevel used in transfer classes, to set it lower or higher
+than the rest of sr3.</p>
+</section>
+<section id="set-sarracenia-moth-amqp-amqp-loglevel-debug">
+<h4>set sarracenia.moth.amqp.AMQP.logLevel debug<a class="headerlink" href="#set-sarracenia-moth-amqp-amqp-loglevel-debug" title="Link to this heading"></a></h4>
+<p>Print out debug messages specific to the AMQP message queue (sarracenia.moth.amqp.AMQP class).
+used only when debugging with the MQP itself, such as dealing with broker connectivity issues.
+interop diagnostics &amp; testing.</p>
+</section>
+<section id="set-sarracenia-moth-mqtt-mqtt-loglevel-debug">
+<h4>set sarracenia.moth.mqtt.MQTT.logLevel debug<a class="headerlink" href="#set-sarracenia-moth-mqtt-mqtt-loglevel-debug" title="Link to this heading"></a></h4>
+<p>Print out debug messages specific to the MQTT message queue (sarracenia.moth.mqtt.MQTT class).
+used only when debugging with the MQP itself, such as dealing with broker connectivity issues.
+interop diagnostics &amp; testing.</p>
+</section>
+<section id="logevents">
+<h4>logEvents<a class="headerlink" href="#logevents" title="Link to this heading"></a></h4>
+<p>default: <em>after_accept, after_work, on_housekeeping</em>
+available: after_accept, after_work, all, gather, on_housekeeping, on_start, on_stop, post</p>
+<p>implemented by the <em>sarracenia.flowcb.log.Log</em> class, one can select which events generate log
+messages. wildcard: <em>all</em> generates log messages for every event known to the <em>Log</em> class.</p>
+</section>
+<section id="logmessagedump">
+<h4>logMessageDump<a class="headerlink" href="#logmessagedump" title="Link to this heading"></a></h4>
+<p>implemented by sarracenia.flowcb.log, at each logging event, print out the current content
+of the notification message being processed.</p>
+</section>
+<section id="logreject">
+<h4>logReject<a class="headerlink" href="#logreject" title="Link to this heading"></a></h4>
+<p>print out a log message for each notification message rejected (normally silently ignored.)</p>
+</section>
+<section id="messagedebugdump">
+<h4>messageDebugDump<a class="headerlink" href="#messagedebugdump" title="Link to this heading"></a></h4>
+<p>Implemented in moth sub-classes, prints out the bytes actually received or sent
+for the MQP protocol in use.</p>
+</section>
+<section id="debugging-in-callbacks">
+<h4>Debugging in callbacks<a class="headerlink" href="#debugging-in-callbacks" title="Link to this heading"></a></h4>
+<p>Pythonic logging involves having distinct logging objects per file. So adding debugging levels
+requires setting debug up in each class where you need it.  To turn debugging on in callback,
+for example one called convert.geps_untar, in the config file place:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convert</span><span class="o">.</span><span class="n">geps_untar</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>and in addition, if that flow_callback does not have an __init__() entry point, one will
+need to add it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">options</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will apply the log formatting and priority to the logger in the current file.</p>
+</section>
+</section>
+<section id="extending-classes">
+<h3>Extending Classes<a class="headerlink" href="#extending-classes" title="Link to this heading"></a></h3>
+<p>One can add additional functionality to Sarracenia by creating subclassing.</p>
+<ul class="simple">
+<li><p>sarra.moth - Messages Organized into Topic Hierarchies. (existing ones: rabbitmq-amqp)</p></li>
+<li><p>sarra.identity - checksum algorithms ( existing ones: md5, sha512, arbitrary, random )</p></li>
+<li><p>sarra.transfer - additional transport protocols  (https, ftp, sftp )</p></li>
+<li><p>sarra.flow - creation of new components beyond the built-in ones. (post, sarra, shovel, etc…)</p></li>
+<li><p>sarra.flowcb - customization of component flows using callbacks.</p></li>
+<li><p>sarra.flowcb.poll - customization of poll callback for non-standard sources.</p></li>
+</ul>
+<p>One would start with the one of the existing classes, copy it somewhere else in the python path,
+and build your extension. These classes are added to Sarra using the <em>import</em> option
+in the configuration files. the __init__ files in the source directories are the good
+place to look for information about each class’s API.</p>
+</section>
+<section id="the-simplest-flow-callback">
+<h3>The Simplest Flow_Callback<a class="headerlink" href="#the-simplest-flow-callback" title="Link to this heading"></a></h3>
+</section>
+<section id="sample-extensions">
+<h3>Sample Extensions<a class="headerlink" href="#sample-extensions" title="Link to this heading"></a></h3>
+<p>Below is a minimal flowCallback sample class, that would be in a sample.py
+file placed in any directory in the PYTHONPATH:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sarracenia.flowcb</span>
+
+<span class="c1"># this logger declaration  must be after last import (or be used by imported module)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Sample</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">FlowCB</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="c1"># declare a module specific setting.</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;announce_list&#39;</span><span class="p">,</span> <span class="nb">list</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;announce_list: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">announce_list</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>All it does is add a setting called ‘announce-list’ to the configuration
+file grammar, and then print the value on start up.</p>
+<p>In a configuration file one, would expect to see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowCallback</span> <span class="n">sample</span><span class="o">.</span><span class="n">Sample</span>
+
+<span class="n">announce_list</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">tracker1</span><span class="o">.</span><span class="n">com</span>
+<span class="n">announce_list</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">tracker2</span><span class="o">.</span><span class="n">com</span>
+<span class="n">announce_list</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">tracker3</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+<p>And on startup, the logger message would print:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">021</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">08</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span><span class="mi">301</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sample</span> <span class="n">on_start</span> <span class="n">announce_list</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;https://tracker1.com&#39;</span><span class="p">,</span> <span class="s1">&#39;https://tracker2.com&#39;</span><span class="p">,</span> <span class="s1">&#39;https://tracker3.com&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Developers can add additional Transfer protocols for notification messages or
+data transport using the <em>import</em> directive to make the new class
+available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torr</span>
+</pre></div>
+</div>
+<p>would be a reasonable name for a Transfer protocol to retrieve
+resources with bittorrent protocol.  <em>import</em> can also be used
+to import arbitrary python modules for use by callbacks.</p>
+</section>
+<section id="fields-in-messages">
+<h3>Fields in Messages<a class="headerlink" href="#fields-in-messages" title="Link to this heading"></a></h3>
+<p>callbacks receive the parsed sarracenia.options as a parameter.
+self is the notification message being processed. variables variables most used:</p>
+<dl>
+<dt><em>msg[‘exchange’]</em></dt><dd><p>The exchange through which the notification message is being posted or consumed.</p>
+</dd>
+<dt><em>msg[‘isRetry’]</em></dt><dd><p>If this is a subsequent attempt to send or download a notification message.</p>
+</dd>
+<dt><em>msg[‘new_dir’]</em></dt><dd><p>The directory which will contain <em>msg[‘new_file’]</em></p>
+</dd>
+<dt><em>msg[‘new_file’]</em></dt><dd><p>A popular variable in on_file and on_part plugins is: <em>msg[‘new_file</em>,
+giving the file name the downloaded product has been written to.  When the
+same variable is modified in an after_accept plugin, it changes the name of
+the file to be downloaded. Similarly another often used variable is
+<em>parent.new_dir</em>, which operates on the directory to which the file
+will be downloaded.</p>
+</dd>
+<dt><em>msg[‘new_inflight_file’]</em></dt><dd><p>in download and send callbacks this field will be set with the temporary name
+of a file used while the transfer is in progress. Once the transfer is complete,
+the file should be renamed to what is in <em>msg[‘new_file’]</em>.</p>
+</dd>
+<dt><em>msg[‘pubTime’]</em></dt><dd><p>The time the notification message was originally inserted into the network (first field of a notice.)</p>
+</dd>
+<dt><em>msg[‘baseUrl’]</em></dt><dd><p>The root URL of the publication tree from which relative paths are constructed.</p>
+</dd>
+<dt><em>msg[‘relPath’]</em></dt><dd><p>The relative path from the baseURL of the file.
+concatenating the two gives the complete URL.</p>
+</dd>
+<dt><em>msg[‘fileOp’]</em></dt><dd><p>for non data download file operations, such as creation of symbolic links, file renames and removals.
+content described in <a class="reference external" href="../Reference/sr_post.7.html">sr_post(7)</a></p>
+</dd>
+<dt><em>msg[‘identity’]</em></dt><dd><p>The checksum structure, a python dictionary with ‘method’ and ‘value’ fields.</p>
+</dd>
+<dt><em>msg[‘subtopic’], msg[‘new_subtopic’]</em></dt><dd><p>list of strings (with the topic prefix stripped off)
+do not use, as it will be generated from msg[‘new_relPath’] when the message is published.</p>
+</dd>
+<dt><em>msg[‘_deleteOnPost’]</em></dt><dd><p>when state needs to be stored in messages, one can declare additional temporary fields
+for use only within the running process.  To mark them for deletion when forwarding,
+this set valued field is used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;my_new_field&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_temporary_state</span>
+<span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;my_new_field&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>For example, all of the <em>new_</em> fields are in the <em>_deleteOnPost</em> by default.</p>
+</dd>
+<dt><em>msg[‘onfly_checksum’], msg[‘data_checksum’]</em></dt><dd><p>the value of an <em>Identity</em> checksum field calculated as data is downloaded.
+In the case where data is modified while downloading, the <em>onfly_checksum</em>
+is to verify that the upstream data was correctly received, while the
+<em>data_checksum</em> is calculated for downstream consumers.</p>
+</dd>
+</dl>
+<p>These are the notification message fields which are most often of interest, but many other
+can be viewed by the following in a configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logMessageDump</span> <span class="kc">True</span>
+<span class="n">callback</span> <span class="n">log</span>
+</pre></div>
+</div>
+<p>Which ensures the log flowcb class is active, and turns on the setting
+to print rawish notification messages during processing.</p>
+</section>
+<section id="accessing-options">
+<h3>Accessing Options<a class="headerlink" href="#accessing-options" title="Link to this heading"></a></h3>
+<p>The settings resulting from parsing the configuration files are also readily available.
+Plugins can define their own options by calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FIXME</span><span class="p">:</span> <span class="n">api</span> <span class="n">incomplete</span><span class="o">.</span>
+<span class="n">Config</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="n">option</span><span class="o">=</span><span class="s1">&#39;name_of_option&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">default_value</span>  <span class="p">)</span>
+</pre></div>
+</div>
+<p>Options so declared just become instance variables in the options passed to init.
+By convention, plugins set self.o to contain the options passed at init time, so that
+all the built-in options are similarly processing.  If consult the <a class="reference external" href="../Reference/sr3.1.html#subscribe">sr_subscribe(1)</a>
+manual page, and most of the options will have a corresponing instance variable.</p>
+<p>Some examples:</p>
+<dl class="simple">
+<dt><em>self.o.baseDir</em></dt><dd><p>the base directory for where files are when consuming a post.</p>
+</dd>
+<dt><em>self.o.suppress_duplicates</em></dt><dd><p>Numerical value indicating the caching lifetime (how old entries should be before they age out.)
+Value of 0 indicates caching is disabled.</p>
+</dd>
+<dt><em>self.o.inflight</em></dt><dd><p>The current setting of <em>inflight</em> (see <a class="reference external" href="FileCompletion.html">Delivery Completion</a></p>
+</dd>
+<dt><em>self.o.overwrite</em></dt><dd><p>setting which controls whether to files already downloaded should be overwritten unconditionally.</p>
+</dd>
+<dt><em>self.o.discard</em></dt><dd><p>Whether files should be removed after they are downloaded.</p>
+</dd>
+</dl>
+</section>
+<section id="flow-callback-points">
+<h3>Flow Callback Points<a class="headerlink" href="#flow-callback-points" title="Link to this heading"></a></h3>
+<p>Sarracenia will interpret the names of functions as indicating times in processing when
+a given routine should be called.</p>
+<p>View the <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py">FlowCB source</a>
+for detailed information about call signatures and return values, etc…</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>When/Why it is Called</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ack</p></td>
+<td><p>acknowledge notification messages from a broker.</p></td>
+</tr>
+<tr class="row-odd"><td><p>after_accept
+(self,worklist)</p></td>
+<td><p>very freqently used.</p>
+<p>can just modify messages in worklist.incoming.
+adding a field, or changing a value.</p>
+<p>Move messages among lists of messages in worklist.
+to reject a message, it is moved from
+worklist.incoming -&gt; worklist.rejected.
+(will be acknowledged and discarded.)</p>
+<p>To indicate a message has been processed, move
+worklist.incoming -&gt; worklist.ok
+(will be acknowledged and discarded.)</p>
+<p>To indicate failure to process, move:
+worklist.incoming -&gt; worklist.failed
+(will go on retry queue for later.)</p>
+<p>Examples: msg_* in the examples directory</p>
+<p>msg_delay - make sure messages are old before
+processing them.</p>
+<p>msg_download - change messages to use different
+downloaders based on file size (built-in for small
+ones, binary downloaders for large files.)</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>after_work
+(self,worklist)</p></td>
+<td><p>called after When a transfer has been attempted.</p>
+<p>All messages are acknowledged by this point.
+worklist.ok contains successful transfers
+worklist.failed contains failed transfers
+worklist.rejected contains transfers rejected
+during transfer.</p>
+<p>usually about doing something with the file after
+download has completed.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>destfn(self,msg):</p></td>
+<td><p>called when renaming the file from inflight to
+permanent name.</p>
+<p>return the new name for the downloaded/sent file.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>download(self,msg)</p></td>
+<td><p>replace built-in downloader return true on success
+takes message as argument.</p></td>
+</tr>
+<tr class="row-odd"><td><p>gather(self)</p></td>
+<td><p>gather messages from a source, returns a list of
+messages.
+can also return a tuple where the first element
+is a boolean flag keep_going indicating whether
+to stop gather processing.</p></td>
+</tr>
+<tr class="row-even"><td><p>on_housekeeping
+(self)</p></td>
+<td><p>Called every housekeeping interval (minutes)
+used to clean cache, check for occasional issues.
+manage retry queues.</p>
+<p>return False to abort further processing
+return True to proceed</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>on_start(self)</p></td>
+<td><p>when a componente (e.g. sr_subscribe) is started.
+Can be used to read state from files.</p>
+<p>state files in self.o.user_cache_dir</p>
+<p>return value ignored</p>
+<p>example: file_total_save.py <a class="footnote-reference brackets" href="#id3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+</td>
+</tr>
+<tr class="row-even"><td><p>on_stop(self)</p></td>
+<td><p>when a component (e.g. sr_subscribe) is stopped.
+can be used to persist state.</p>
+<p>state files in self.o.user_cache_dir</p>
+<p>return value ignored</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>poll(self)</p></td>
+<td><p>replace the built-in poll method.
+return a list of notification messages.</p></td>
+</tr>
+<tr class="row-even"><td><p>post(self,worklist)</p></td>
+<td><p>replace the built-in post routine.</p></td>
+</tr>
+<tr class="row-odd"><td><p>send(self,msg)</p></td>
+<td><p>replace the built-in send routine.</p></td>
+</tr>
+</tbody>
+</table>
+<section id="destfnscripts">
+<h4>DESTFNSCRIPTS<a class="headerlink" href="#destfnscripts" title="Link to this heading"></a></h4>
+<p>As a compatibility layer with the ancestor MetPX Sundew, Sarracenia implements
+<em>Destination File Naming Scripts</em>, where the one can create a flowcallback
+class with a <em>destfn</em> entry point, and then use that to set the name of
+the file that will be downloaded.</p>
+<p>In the configuration file, one can use the filename option like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span> <span class="n">DESTFNSCRIPT</span><span class="o">=</span><span class="n">destfn</span><span class="o">.</span><span class="n">sample</span>
+</pre></div>
+</div>
+<p>To identify a class containing the destfn entry point to be applied.
+using the filename directive applies it to all files. One can also
+do it selectively in the configuration file’s accept clause:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="n">k</span><span class="o">.*</span> <span class="n">DESTFNSCRIPT</span><span class="o">=</span><span class="n">destfn</span><span class="o">.</span><span class="n">sample</span>
+</pre></div>
+</div>
+<p>which has it call the routine to rename only selected files (starting with <em>k</em>
+as per the accept clause)</p>
+<p>The destfn routine takes the notification message as an argument and should return
+the new file name as a string.</p>
+</section>
+<section id="callbacks-that-need-python-modules">
+<h4>Callbacks that need Python Modules<a class="headerlink" href="#callbacks-that-need-python-modules" title="Link to this heading"></a></h4>
+<p>Some callbacks need to use other python modules.  While normal imports
+are fine, one can integrate them better for sr3 users by supporting
+the <em>features</em> mechism:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+<span class="c1">#</span>
+<span class="c1"># Support for features inventory mechanism.</span>
+<span class="c1">#</span>
+<span class="n">features</span><span class="p">[</span><span class="s1">&#39;clamd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;modules_needed&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;pyclamd&#39;</span> <span class="p">],</span> <span class="s1">&#39;Needed&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;lament&#39;</span> <span class="p">:</span> <span class="s1">&#39;cannot use clamd to av scan files transferred&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rejoice&#39;</span> <span class="p">:</span> <span class="s1">&#39;can use clamd to av scan files transferred&#39;</span> <span class="p">}</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyclamd</span>
+    <span class="n">features</span><span class="p">[</span><span class="s1">&#39;clamd&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">features</span><span class="p">[</span><span class="s1">&#39;clamd&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>This lets users know which <em>features</em> are available in their installetion
+so when they run <em>sr3 features</em> it provides an easily understood list of missing
+libraries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">features</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">219</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">flowCallback</span> <span class="n">plugins</span> <span class="n">to</span> <span class="n">load</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;dcpflow&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="s1">&#39;post.message&#39;</span><span class="p">,</span> <span class="s1">&#39;clamav&#39;</span><span class="p">]</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">224</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dcpflow</span> <span class="fm">__init__</span> <span class="n">really</span> <span class="n">I</span> <span class="n">mean</span> <span class="n">hi</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">224</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">WARNING</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span> <span class="n">add_option</span> <span class="n">multiple</span> <span class="n">declarations</span> <span class="n">of</span> <span class="n">lrgs_download_redundancy</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Yes&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">]</span> <span class="n">choosing</span> <span class="n">last</span> <span class="n">one</span><span class="p">:</span> <span class="n">on</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">225</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dcpflow</span> <span class="fm">__init__</span>  <span class="n">lrgs_download_redundancy</span> <span class="ow">is</span> <span class="kc">True</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">225</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="fm">__init__</span> <span class="n">flow</span> <span class="n">initialized</span> <span class="k">with</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">}</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">07</span> <span class="mi">13</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">226</span> <span class="mi">1993037</span> <span class="p">[</span><span class="n">CRITICAL</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">flowCallback</span> <span class="n">plugin</span> <span class="n">clamav</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">load</span><span class="p">:</span> <span class="s1">&#39;pyclamd&#39;</span>
+
+<span class="n">Status</span><span class="p">:</span>    <span class="n">feature</span><span class="p">:</span>   <span class="n">python</span> <span class="n">imports</span><span class="p">:</span>      <span class="n">Description</span><span class="p">:</span>
+<span class="n">Installed</span>  <span class="n">amqp</span>       <span class="n">amqp</span>                 <span class="n">can</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">rabbitmq</span> <span class="n">brokers</span>
+<span class="n">Installed</span>  <span class="n">appdirs</span>    <span class="n">appdirs</span>              <span class="n">place</span> <span class="n">configuration</span> <span class="ow">and</span> <span class="n">state</span> <span class="n">files</span> <span class="n">appropriately</span> <span class="k">for</span> <span class="n">platform</span> <span class="p">(</span><span class="n">windows</span><span class="o">/</span><span class="n">mac</span><span class="o">/</span><span class="n">linux</span><span class="p">)</span>
+<span class="n">Installed</span>  <span class="n">filetypes</span>  <span class="n">magic</span>                <span class="n">able</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">content</span> <span class="n">headers</span>
+<span class="n">Installed</span>  <span class="n">ftppoll</span>    <span class="n">dateparser</span><span class="p">,</span><span class="n">pytz</span>      <span class="n">able</span> <span class="n">to</span> <span class="n">poll</span> <span class="k">with</span> <span class="n">ftp</span>
+<span class="n">Installed</span>  <span class="n">humanize</span>   <span class="n">humanize</span>             <span class="n">humans</span> <span class="n">numbers</span> <span class="n">that</span> <span class="n">are</span> <span class="n">easier</span> <span class="n">to</span> <span class="n">read</span><span class="o">.</span>
+<span class="n">Absent</span>     <span class="n">mqtt</span>       <span class="n">paho</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">client</span>     <span class="n">cannot</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">mqtt</span> <span class="n">brokers</span>
+<span class="n">Installed</span>  <span class="n">redis</span>      <span class="n">redis</span><span class="p">,</span><span class="n">redis_lock</span>     <span class="n">can</span> <span class="n">use</span> <span class="n">redis</span> <span class="n">implementations</span> <span class="n">of</span> <span class="n">retry</span> <span class="ow">and</span> <span class="n">nodupe</span>
+<span class="n">Installed</span>  <span class="n">sftp</span>       <span class="n">paramiko</span>             <span class="n">can</span> <span class="n">use</span> <span class="n">sftp</span> <span class="ow">or</span> <span class="n">ssh</span> <span class="n">based</span> <span class="n">services</span>
+<span class="n">Installed</span>  <span class="n">vip</span>        <span class="n">netifaces</span>            <span class="n">able</span> <span class="n">to</span> <span class="n">use</span> <span class="n">the</span> <span class="n">vip</span> <span class="n">option</span> <span class="k">for</span> <span class="n">high</span> <span class="n">availability</span> <span class="n">clustering</span>
+<span class="n">Installed</span>  <span class="n">watch</span>      <span class="n">watchdog</span>             <span class="n">watch</span> <span class="n">directories</span>
+<span class="n">Installed</span>  <span class="n">xattr</span>      <span class="n">xattr</span>                <span class="n">on</span> <span class="n">linux</span><span class="p">,</span> <span class="n">will</span> <span class="n">store</span> <span class="n">file</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="n">extended</span> <span class="n">attributes</span>
+<span class="n">MISSING</span>    <span class="n">clamd</span>      <span class="n">pyclamd</span>              <span class="n">cannot</span> <span class="n">use</span> <span class="n">clamd</span> <span class="n">to</span> <span class="n">av</span> <span class="n">scan</span> <span class="n">files</span> <span class="n">transferred</span>
+
+ <span class="n">state</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sr3</span>
+ <span class="n">config</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span>
+
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>You can see that that clamd feature is disabled because the pyclamd python library is not installed.</p>
+</section>
+<section id="flow-callback-poll-customization">
+<h4>Flow Callback Poll Customization<a class="headerlink" href="#flow-callback-poll-customization" title="Link to this heading"></a></h4>
+<p>A built-in subclass of flowcb, sarracenia.flowcb.poll.Poll implements the bulk
+of sr3 polling. There are many times different types resources to poll, and
+so many options to customize it are needed. Customization is accomplished
+via sub-classing, so the top of such an callback looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb.poll</span> <span class="kn">import</span> <span class="n">Poll</span>
+<span class="o">....</span>
+
+<span class="k">class</span> <span class="nc">Nasa_mls_nrt</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Rather than implementing a flowcb class, one subclasses the
+flowcb.poll.Poll class.  Here are the common poll
+subclass specific entry points usually implemented in sub-classes:</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>handle_data</p></td>
+<td><p>in sr_poll if you only want to change how the
+downloaded html URL is parsed, override this</p>
+<p>action:
+parse parent.entries to make self.entries</p>
+<p>Examples:  html_page* in the examples directory</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>on_line</p></td>
+<td><p>in sr_poll if sites have different remote formats
+called to parse each line in parent.entries.</p>
+<p>Work on parent.line</p>
+<p>return False to abort further processing
+return True to proceed</p>
+<p>Examples:  line_* in the examples directory</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examination of the built-in <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py">flowcb Poll</a>
+class is helpful</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>see <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/smc_download_cp.py">smc_download_cp</a></p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>see <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/74">Issue 74</a></p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>see <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/part_clanav_scan.py">part_clanav_scan.py</a></p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p>see <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_total_save.py">file_total_save.py</a></p>
+</aside>
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<p>see <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py">poll_email_ingest.py</a></p>
+</aside>
+</aside>
+</section>
+</section>
+</section>
+<section id="better-file-reception">
+<h2>Better File Reception<a class="headerlink" href="#better-file-reception" title="Link to this heading"></a></h2>
+<p>For example, rather than using the file system, sr_subscribe could indicate when each file is ready
+by writing to a named pipe:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">blacklab</span><span class="o">%</span> <span class="n">sr_subscribe</span> <span class="n">edit</span> <span class="n">dd_swob</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">subtopic</span> <span class="n">observations</span><span class="o">.</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">.</span><span class="c1">#</span>
+
+<span class="n">flowcb</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">work</span><span class="o">.</span><span class="n">rxpipe</span><span class="o">.</span><span class="n">RxPipe</span>
+<span class="n">rxpipe_name</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dd_swob</span><span class="o">.</span><span class="n">pipe</span>
+
+<span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dd_swob</span>
+<span class="n">mirror</span> <span class="kc">True</span>
+<span class="n">accept</span> <span class="o">.*</span>
+
+<span class="c1"># rxpipe is a builtin on_file script which writes the name of the file received to</span>
+<span class="c1"># a pipe named &#39;.rxpipe&#39; in the current working directory.</span>
+</pre></div>
+</div>
+<p>With the <em>flowcb</em> option, one can specify a processing option such as rxpipe. With rxpipe,
+every time a file transfer has completed and is ready for post-processing, its name is written
+to the linux pipe (named .rxpipe) in the current working directory. So the code for post-processing
+becomes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">do_something</span> <span class="o">&lt;.</span><span class="n">rxpipe</span>
+</pre></div>
+</div>
+<p>No filtering out of working files by the user is required, and ingestion of partial files is
+completely avoided.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the case where a large number of sr_subscribe instances are working
+on the same configuration, there is slight probability that notifications
+may corrupt one another in the named pipe.
+We should probably verify whether this probability is negligeable or not.</p>
+</div>
+<section id="advanced-file-reception">
+<h3>Advanced File Reception<a class="headerlink" href="#advanced-file-reception" title="Link to this heading"></a></h3>
+<p>The <em>after_work</em> entry point in a <em>sarracenia.flowcb</em> class is an action to perform
+after receipt of a file (or after sending, in a sender.) The RxPipe module is an example
+provided with sarracenia:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">RxPipe</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">options</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="n">option</span><span class="o">=</span><span class="s1">&#39;rxpipe_name&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;str&#39;</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;rxpipe_name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">file_rxpipe_name</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Missing rxpipe_name parameter&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxpipe</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">rxpipe_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rxpipe</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxpipe</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>With this fragment of Python, when sr_subscribe is first called, it ensures that
+a pipe named npipe is opened in the specified directory by executing
+the __init__ function within the declared RxPipe python class.  Then, whenever
+a file reception is completed, the assignment of <em>self.on_file</em> ensures that
+the rx.on_file function is called.</p>
+<p>The rxpipe.on_file function just writes the name of the file downloaded to
+the named pipe.  The use of the named pipe renders data reception asynchronous
+from data processing. As shown in the previous example, one can then
+start a single task <em>do_something</em> which processes the list of files fed
+as standard input to it, from a named pipe.</p>
+<p>In the examples above, file reception and processing are kept entirely separate. If there
+is a problem with processing, the file reception directories will fill up, potentially
+growing to an unwieldy size and causing many practical difficulties. When a plugin such
+as on_file is used, the processing of each file downloaded is run before proceeding
+to the next file.</p>
+<p>If the code in the on_file script is changed to do actual processing work, then
+rather than being independent, the processing could provide back pressure to the
+data delivery mechanism.  If the processing gets stuck, then the sr_subscriber
+will stop downloading, and the queue will be on the server, rather than creating
+a huge local directory on the client.  Different models apply in different
+situations.</p>
+<p>An additional point is that if the processing of files is invoked
+in each instance, providing very easy parallel processing built
+into sr_subscribe.</p>
+<section id="using-credentials-in-plugins">
+<h4>Using Credentials in Plugins<a class="headerlink" href="#using-credentials-in-plugins" title="Link to this heading"></a></h4>
+<p>To implement support of additional protocols, one often needs credentials
+value in the script with the code :</p>
+<ul class="simple">
+<li><p><strong>ok, details = self.o.credentials.get(msg.urlcred)</strong></p></li>
+<li><p><strong>if details  : url = details.url</strong></p></li>
+</ul>
+<p>The details options are element of the details class (hardcoded):</p>
+<ul class="simple">
+<li><p><strong>print(details.ssh_keyfile)</strong></p></li>
+<li><p><strong>print(details.passive)</strong></p></li>
+<li><p><strong>print(details.binary)</strong></p></li>
+<li><p><strong>print(details.tls)</strong></p></li>
+<li><p><strong>print(details.prot_p)</strong></p></li>
+</ul>
+<p>For the credential that defines protocol for download (upload),
+the connection, once opened, is kept open. It is reset
+(closed and reopened) only when the number of downloads (uploads)
+reaches the number given by the  <strong>batch</strong>  option (default 100).</p>
+<p>All download (upload) operations use a buffer. The size, in bytes,
+of the buffer used is given by the <strong>bufsize</strong> option (default 8192).</p>
+</section>
+<section id="why-v3-api-should-be-used-whenever-possible">
+<h4>Why v3 API should be used whenever possible<a class="headerlink" href="#why-v3-api-should-be-used-whenever-possible" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>uses importlib from python, much more standard way to register plugins.
+now syntax errors will be picked up just like any other python module being imported,
+with a reasonable error message.</p></li>
+<li><p>no strange decoration at end of plugins (self.plugin = , etc… just plain python.)
+Entirely standard python modules, just with known methods/functions</p></li>
+<li><p>The strange choice of <em>parent</em> as a place for storing settings is puzzling to people.
+<em>parent</em> instance variable becomes <em>options</em>,  <em>self.parent</em> becomes <em>self.o</em></p></li>
+<li><p>plural event callbacks replace singular ones.  after_accept replaces on_message</p></li>
+<li><p>notification messages are just python dictionaries. fields defined by json.loads( v03 payload format )
+notification messages only contain the actual fields, no settings or other things…
+plain data.</p></li>
+<li><p>what used to be called plugins, are now only a type of plugins, called flowCallbacks.
+They now move notification messages between worklists.</p></li>
+</ul>
+<p>With this API, dealing with different numbers of input and output files becomes much
+more natural, when unpacking a tar file, notification messages for the unpacked files can be appended
+to the ok list, so they will be posted when the flow arrives there.
+Similarly a large number of small files may be bucketed together to make one
+large file. so rather than transferring all the incoming files to the list,
+only the resulting tar bucket will be placed in ok.</p>
+<p>The <em>import</em> mechanism described below provides a straightforward means
+of extending Sarracenia by creating children of the main classes</p>
+<ul class="simple">
+<li><p>moth (messages organized in topic hierarchies) for dealing with new message protocols.</p></li>
+<li><p>transfer … for adding new protocols for file transfers.</p></li>
+<li><p>flow .. new components with different flow from the built-in ones.</p></li>
+</ul>
+<p>In v2, there was no equivalent extension mechanism, and adding protocols
+would have required re-working of core code in a custom way for every addition.</p>
+</section>
+</section>
+</section>
+<section id="file-notification-without-downloading">
+<h2>File Notification Without Downloading<a class="headerlink" href="#file-notification-without-downloading" title="Link to this heading"></a></h2>
+<p>If the data pump exists in a large shared environment, such as
+a Supercomputing Centre with a site file system,
+the file might be available without downloading.  So just
+obtaining the file notification and transforming it into a
+local file is sufficient:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">blacklab</span><span class="o">%</span> <span class="n">sr_subscribe</span> <span class="n">edit</span> <span class="n">dd_swob</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">subtopic</span> <span class="n">observations</span><span class="o">.</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">.</span><span class="c1">#</span>
+<span class="n">document_root</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">dd_root</span>
+<span class="n">download</span> <span class="n">off</span>
+<span class="n">flowcb</span> <span class="n">msg_2local</span><span class="o">.</span><span class="n">Msg2Local</span>
+<span class="n">flowcb</span> <span class="n">do_something</span><span class="o">.</span><span class="n">DoSomething</span>
+
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>There should be two files in the PYTHONPATH somewhere containing
+classes derived from FlowCB with after_accept routines declared.
+The processing in those routines will be done on receipt of a batch
+of notification messages.  A notification message will correspond to a file.</p>
+<p>the after_accept routins accept a worklist as an argument.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>FIXME</strong>: perhaps show a way of checking the parts header to
+with an if statement in order to act on only the first part notification message
+for long files.</p>
+</div>
+<section id="extension-ideas">
+<h3>Extension Ideas<a class="headerlink" href="#extension-ideas" title="Link to this heading"></a></h3>
+<p>Examples of things that would be fun to do with plugins:</p>
+<ul class="simple">
+<li><p>Common Alerting Protocol (CAP), is an XML format that provides a warnings
+for many types of events, indicating the area of coverage.  There is a
+‘polygon’ field in the warning, that the source could add to messages using
+an on_post plugin.  Subscribers would have access to the ‘polygon’ header
+through use of an after_accept plugin, enabling them to determine whether the
+alert affected an area of interest without downloading the entire warning.</p></li>
+<li><p>A source that applies compression to products before posting, could add a
+header such as ‘uncompressed_size’ and ‘uncompressed_sum’ to allow
+subscribers with an after_accept plugin to compare a file that has been locally
+uncompressed to an upstream file offered in compressed form.</p></li>
+<li><p>add Bittorrent, S3, IPFS as transfer protocols (sub-classing Transfer)</p></li>
+<li><p>add additional message protocols (sub-classing Moth)</p></li>
+<li><p>additional checksums, subclassing Identity. For example, to get GOES DCP
+data from sources such as USGS Sioux Falls, the reports have a trailer
+that shows some antenna statistics from the reception site.  So if one
+receives GOES DCP from Wallops, for example, the trailer will be different
+so checksumming the entire content will have different results for the
+same report.</p></li>
+</ul>
+</section>
+</section>
+<section id="polling">
+<h2>Polling<a class="headerlink" href="#polling" title="Link to this heading"></a></h2>
+<p>To implement a customized poll, declare it as a subclass of Poll
+(sarracenia.flowcb.poll.Poll), and only the needed The routine (in this case
+the html parsing “handle_data”) need be written to override the behaviour provided
+by the parent class.</p>
+<p>( <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/__init__.py</a> )</p>
+<p>The plugin has a main “parse” routine, which invokes the html.parser class, in which
+the data_handler is called for each line, gradually building the self.entries
+dictionary where each entry with an SFTPAttributes structure describing one file being polled.</p>
+<p>So the work in handle_data is just to fill an paramiko.SFTPAttributes structure.
+Since the web site doesn’t actually provide any metadata, it is just filled in with sensible
+default info, that provides enough information to build a notification message and run it through
+duplicate suppression.</p>
+<p>Here it the complete poll callback:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb.poll</span> <span class="kn">import</span> <span class="n">Poll</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Nasa_mls_nrt</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+
+        <span class="n">st</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="mo">0o775</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">if</span> <span class="s1">&#39;MLS-Aura&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+               <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">data</span><span class="p">)</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">data</span><span class="p">]</span><span class="o">=</span><span class="n">st</span>
+
+               <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">) = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">,</span><span class="n">st</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="kc">None</span> <span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="n">data</span> <span class="p">:</span> <span class="k">return</span>
+</pre></div>
+</div>
+<p>The file is here:</p>
+<p>( <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py</a> )</p>
+<p>and matching config file provided here:</p>
+<p>( <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf</a> )</p>
+</section>
+<section id="accessing-messages-from-python">
+<h2>Accessing Messages from Python<a class="headerlink" href="#accessing-messages-from-python" title="Link to this heading"></a></h2>
+<p>So far, we have presented methods of writing customizations of Sarracenia
+processing, where one writes extensions, via either callbacks or extension
+classes to change what sarracenia flow instances do.</p>
+<p>Some may not want to use the Sarracenia and configuration language at all.
+They may have existing code, that they want call some sort of data ingesting code from.
+One can call sarracenia related functions directly from existing python programs.</p>
+<p>For now, best to consult the <a class="reference external" href="../Tutorials">Tutorials</a>  included with Sarracenia,
+which have some examples of such use.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>FIXME</strong>, link to amqplib, or java bindings, and a pointer to the sr3_post and sr_report section 7 man pages.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="CommandLineGuide.html" class="btn btn-neutral float-left" title="Command Line Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DeploymentConsiderations.html" class="btn btn-neutral float-right" title="Deployment Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.moth.amqp &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../moth.html">sarracenia.moth</a> &raquo;</li>
+      <li>sarracenia.moth.amqp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.moth.amqp</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2020</span>
+<span class="c1">#</span>
+<span class="c1"># Sarracenia repository: https://github.com/MetPX/sarracenia</span>
+<span class="c1"># Documentation: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+<span class="c1">########################################################################</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; version 2 of the License.</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#  along with this program; if not, write to the Free Software</span>
+<span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+<span class="c1"># the real AMQP library... not this one...</span>
+<span class="kn">import</span> <span class="nn">amqp</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia.postformat</span> <span class="kn">import</span> <span class="n">PostFormat</span>
+<span class="kn">from</span> <span class="nn">sarracenia.moth</span> <span class="kn">import</span> <span class="n">Moth</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">amqp_ss_maxlen </span>
+
+<span class="sd">the maximum length of a &quot;short string&quot;, as per AMQP protocol, in bytes.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">amqp_ss_maxlen</span> <span class="o">=</span> <span class="mi">255</span>
+
+<span class="n">default_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;auto_delete&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="s1">&#39;durable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;exchangeDeclare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;persistent&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;prefetch&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="s1">&#39;queueName&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;queueBind&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;queueDeclare&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;reset&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;subtopic&#39;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s1">&#39;messageDebugDump&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;topicPrefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;vhost&#39;</span><span class="p">:</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="AMQP">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP">[docs]</a>
+<span class="k">class</span> <span class="nc">AMQP</span><span class="p">(</span><span class="n">Moth</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       implementation of the Moth API for the amqp library, which is built to talk to rabbitmq brokers in 0.8 and 0.9</span>
+<span class="sd">       AMQP dialects.</span>
+
+<span class="sd">       to allow acknowledgements we map: AMQP&#39; &#39;delivery_tag&#39; to the &#39;ack_id&#39;</span>
+
+<span class="sd">       additional AMQP specific options:</span>
+
+<span class="sd">       exchangeDeclare  - declare exchanges before use.</span>
+<span class="sd">       queueBind        - bind queue to exchange before use.</span>
+<span class="sd">       queueDeclare     - declare queue before use.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_msgRawToDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">raw_msg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">body</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;messageDebugDump&#39;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;raw message start&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;content_type&#39;</span> <span class="ow">in</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">properties</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;message is missing content-type header&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">body</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;body: type: </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> bytes) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">body</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">),</span> <span class="n">body</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;had no body&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;headers: type: </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> elements) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">raw_msg</span><span class="o">.</span><span class="n">headers</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_msg</span><span class="o">.</span><span class="n">headers</span><span class="p">),</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">headers</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;had no headers&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;properties:&#39;</span> <span class="o">%</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">properties</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;had no properties&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">:</span> 
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;delivery info: </span><span class="si">{</span><span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;had no delivery info&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;raw message end&#39;</span><span class="p">)</span>
+
+
+
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">body</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bytes</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">body</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s1">&#39;ignoring message. UTF8 encoding expected. raw message received: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ex</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_ack</span><span class="p">(</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;delivery_tag&#39;</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="s1">&#39;content_type&#39;</span> <span class="ow">in</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+                <span class="n">content_type</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;content_type&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">content_type</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">PostFormat</span><span class="o">.</span><span class="n">importAny</span><span class="p">(</span> <span class="n">body</span><span class="p">,</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Decode failed, discarding message&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_ack</span><span class="p">(</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;delivery_tag&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">topic</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;routing_key&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="s1">&#39;%23&#39;</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;%22&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span>
+            <span class="n">source</span><span class="o">=</span><span class="kc">None</span>
+            <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;sourceFromExchange&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">]:</span>
+                <span class="n">itisthere</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="s2">&quot;xs_([^_]+)_.*&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="p">)</span>
+                <span class="k">if</span> <span class="n">itisthere</span><span class="p">:</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="n">itisthere</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">itisthere</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="s2">&quot;xs_([^_]+)&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">itisthere</span><span class="p">:</span>
+                        <span class="n">source</span> <span class="o">=</span> <span class="n">itisthere</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="s1">&#39;sourceFromMessage&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;sourceFromMessage&#39;</span><span class="p">]:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">source</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">])</span>
+
+            <span class="n">msg_topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+
+            <span class="c1"># topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017</span>
+            <span class="k">if</span> <span class="s1">&#39;topicCopy&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicCopy&#39;</span><span class="p">]:</span>
+                <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">topicOverride</span><span class="o">=</span><span class="kc">False</span>
+                <span class="k">if</span> <span class="s1">&#39;relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">path_topic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">msg_topic</span> <span class="o">!=</span> <span class="n">path_topic</span><span class="p">:</span>
+                        <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+                
+                <span class="c1"># set subtopic if possible.</span>
+                <span class="k">if</span> <span class="n">msg_topic</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">])]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]:</span>
+                    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;subtopic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg_topic</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]):]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">topicOverride</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span> <span class="p">)</span>
+
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">delivery_info</span><span class="p">[</span><span class="s1">&#39;delivery_tag&#39;</span><span class="p">]</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;local_offset&#39;</span><span class="p">,</span> <span class="s1">&#39;subtopic&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="o">.</span><span class="n">validate</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;channel&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_ack</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">])</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;message acknowledged and discarded: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="c1"># length of an AMQP short string (used for headers and many properties)</span>
+    <span class="n">amqp_ss_maxlen</span> <span class="o">=</span> <span class="mi">255</span>
+
+<div class="viewcode-block" id="AMQP.__init__">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           connect to broker, depending on message_strategy stubborness, remain connected.</span>
+<span class="sd">           </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_qDeclare</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+            <span class="nb">format</span><span class="o">=</span>
+            <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_setup</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">me</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;settings&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">me</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">][</span><span class="n">s</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s1">&#39;logLevel&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logLevel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">__connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">broker</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          connect to broker. </span>
+<span class="sd">          returns True if connected, false otherwise.</span>
+<span class="sd">          * side effect: self.channel set to a new channel.</span>
+
+<span class="sd">          Expect caller to handle errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span>
+            <span class="k">if</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">):</span>
+                    <span class="n">host</span> <span class="o">+=</span> <span class="s1">&#39;:5671&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">host</span> <span class="o">+=</span> <span class="s1">&#39;:5672&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">host</span> <span class="o">+=</span> <span class="s1">&#39;:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;invalid broker specification: </span><span class="si">{</span><span class="n">broker</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># if needed, set the vhost using the broker URL&#39;s path</span>
+        <span class="n">vhost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;vhost&#39;</span><span class="p">]</span>
+        <span class="c1"># if the URL path is &#39;/&#39; or &#39;&#39;, no vhost is specified and the default vhost from self.o</span>
+        <span class="c1"># will be used. Otherwise, strip off leading or trailing slashes.</span>
+        <span class="k">if</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span> <span class="ow">and</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">vhost</span> <span class="o">=</span> <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">amqp</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+                                          <span class="n">userid</span><span class="o">=</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                                          <span class="n">password</span><span class="o">=</span><span class="n">unquote</span><span class="p">(</span>
+                                              <span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">),</span>
+                                          <span class="n">login_method</span><span class="o">=</span><span class="n">broker</span><span class="o">.</span><span class="n">login_method</span><span class="p">,</span>
+                                          <span class="n">virtual_host</span><span class="o">=</span><span class="n">vhost</span><span class="p">,</span>
+                                          <span class="n">ssl</span><span class="o">=</span><span class="p">(</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="s1">&#39;connect&#39;</span><span class="p">):</span>
+            <span class="c1"># check for amqp 1.3.3 and 1.4.9 because connect doesn&#39;t exist in those older versions</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">management_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_amqp_setup_signal_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signum</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ok, asked to stop&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span><span class="o">=</span><span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="s1">&#39;no&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="c1"># control frequency of checks for queue size. hardcoded for now.</span>
+            <span class="n">next_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_qDeclare</span> <span class="o">+</span> <span class="mi">30</span>
+            <span class="n">now</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">next_time</span> <span class="o">&lt;=</span> <span class="n">now</span><span class="p">:</span>
+                <span class="c1">#self._queueDeclare(passive=True)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_qDeclare</span><span class="o">=</span><span class="n">now</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">metricsReport</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
+
+    <span class="k">def</span> <span class="nf">_queueDeclare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">passive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span>  <span class="nb">int</span><span class="p">:</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># from sr_consumer.build_connection...</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;could not connect&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;metrics&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;brokerQueuedMessageCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">2</span>
+
+            <span class="c1">#FIXME: test self.first_setup and props[&#39;reset&#39;]... delete queue...</span>
+            <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueDeclare&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]:</span>
+
+                <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;x-expires&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;x-message-ttl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+
+                <span class="c1">#FIXME: conver expire, message_ttl to proper units.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;queue declare (dry run) </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">) &#39;</span> <span class="o">%</span>
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">broker_str</span><span class="p">))</span>
+                    <span class="n">msg_count</span><span class="o">=</span><span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">qname</span><span class="p">,</span> <span class="n">msg_count</span><span class="p">,</span> <span class="n">consumer_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">management_channel</span><span class="o">.</span><span class="n">queue_declare</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span>
+                        <span class="n">passive</span><span class="o">=</span><span class="n">passive</span><span class="p">,</span>
+                        <span class="n">durable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;durable&#39;</span><span class="p">],</span>
+                        <span class="n">exclusive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">auto_delete</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">],</span>
+                        <span class="n">nowait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">arguments</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">passive</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;queue declared </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (as: </span><span class="si">{</span><span class="n">broker_str</span><span class="si">}</span><span class="s2">), (messages waiting: </span><span class="si">{</span><span class="n">msg_count</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;metrics&#39;</span><span class="p">):</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;brokerQueuedMessageCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg_count</span>
+                <span class="k">return</span> <span class="n">msg_count</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;connecting to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;queueName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, durable: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;durable&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, expire: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;expire&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, auto_delete=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;auto_delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;AMQP getSetup failed to </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;metrics&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;brokerQueuedMessageCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+
+<div class="viewcode-block" id="AMQP.getSetup">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.getSetup">[docs]</a>
+    <span class="k">def</span> <span class="nf">getSetup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup so we can get messages.</span>
+
+<span class="sd">        if message_strategy is stubborn, will loop here forever.</span>
+<span class="sd">             connect, declare queue, apply bindings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">original_sigint</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+        <span class="n">original_sigterm</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amqp_setup_signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amqp_setup_signal_handler</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="s1">&#39;broker&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
+            <span class="c1"># tear the whole thing down, and start over.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># from sr_consumer.build_connection...</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;could not connect&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="c1"># only first/lead instance needs to declare a queue and bindings.</span>
+                <span class="k">if</span> <span class="s1">&#39;no&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
+                    <span class="k">return</span>
+
+                <span class="c1">#logger.info(&#39;getSetup connected to {}&#39;.format(self.o[&#39;broker&#39;].url.hostname) )</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;prefetch&#39;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+
+                <span class="c1">#FIXME: test self.first_setup and props[&#39;reset&#39;]... delete queue...</span>
+                <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
+
+                <span class="c1"># from Queue declare</span>
+                <span class="n">msg_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queueDeclare</span><span class="p">()</span>
+                
+                <span class="k">if</span> <span class="n">msg_count</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span> <span class="k">break</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueBind&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]:</span>
+                        <span class="n">exchange</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">subtopic</span> <span class="o">=</span> <span class="n">tup</span>
+                        <span class="n">topic</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">subtopic</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding (dry run) </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
+                                <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;binding </span><span class="si">%s</span><span class="s1"> with </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> \
+                                <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">topic</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">broker_str</span> <span class="p">)</span> <span class="p">)</span>
+                            <span class="k">if</span> <span class="n">exchange</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">management_channel</span><span class="o">.</span><span class="n">queue_bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">exchange</span><span class="p">,</span>
+                                                <span class="n">topic</span><span class="p">)</span>
+
+                <span class="c1"># Setup Successfully Complete!</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;getSetup ... Done!&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;connecting to: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;queueName&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, durable: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;durable&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, expire: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;expire&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, auto_delete=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s2">&quot;auto_delete&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;AMQP getSetup failed to </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_strategy&#39;</span><span class="p">][</span><span class="s1">&#39;stubborn&#39;</span><span class="p">]:</span> <span class="k">return</span>
+
+            <span class="k">if</span> <span class="n">ebo</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span> <span class="n">ebo</span> <span class="o">*=</span> <span class="mi">2</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sleeping </span><span class="si">{}</span><span class="s2"> seconds ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ebo</span><span class="p">))</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">ebo</span><span class="p">)</span>
+
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">original_sigint</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="n">original_sigterm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">putSetup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">original_sigint</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+        <span class="n">original_sigterm</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amqp_setup_signal_handler</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_amqp_setup_signal_handler</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+
+            <span class="c1"># It does not really matter how it fails, the recovery approach is always the same:</span>
+            <span class="c1"># tear the whole thing down, and start over.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;no broker given&quot;</span> <span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;could not connect&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="c1"># transaction mode... confirms would be better...</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">tx_select</span><span class="p">()</span>
+                <span class="n">broker_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)</span>
+
+                <span class="c1">#logger.debug(&#39;putSetup ... 1. connected to {}&#39;.format(broker_str ) )</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchangeDeclare&#39;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... 1. declaring </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]]</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declare (dry run): </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
+                                    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">exchange_declare</span><span class="p">(</span>
+                                <span class="n">x</span><span class="p">,</span>
+                                <span class="s1">&#39;topic&#39;</span><span class="p">,</span>
+                                <span class="n">auto_delete</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;auto_delete&#39;</span><span class="p">],</span>
+                                <span class="n">durable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;durable&#39;</span><span class="p">])</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;exchange declared: </span><span class="si">%s</span><span class="s1"> (as: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
+                                    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">broker_str</span><span class="p">))</span>
+
+                <span class="c1"># Setup Successfully Complete!</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metricsConnect</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;putSetup ... Done!&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;AMQP putSetup failed to connect or declare exchanges </span><span class="si">{}</span><span class="s2">@</span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_strategy&#39;</span><span class="p">][</span><span class="s1">&#39;stubborn&#39;</span><span class="p">]:</span> <span class="k">return</span>
+
+            <span class="k">if</span> <span class="n">ebo</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span> <span class="n">ebo</span> <span class="o">*=</span> <span class="mi">2</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sleeping </span><span class="si">{}</span><span class="s2"> seconds ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ebo</span><span class="p">))</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">ebo</span><span class="p">)</span>
+
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">original_sigint</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="n">original_sigterm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">putCleanUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;deleted exchange (dry run): </span><span class="si">%s</span><span class="s2"> (if unused)&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;channel&#39;</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">exchange_delete</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">if_unused</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;deleted exchange: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">amqp</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">PreconditionFailed</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">err_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Exchange.delete: (406) PRECONDITION_FAILED - exchange &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;failed to delete exchange: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err_msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;failed on </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getCleanUp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;dry_run&#39;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;deleting queue (dry run) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;deleting queue </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">]</span> <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;channel&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">queue_delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;failed to </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AMQP.newMessages">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.newMessages">[docs]</a>
+    <span class="k">def</span> <span class="nf">newMessages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span><span class="p">:</span>  <span class="c1">#build_consumer</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;getting from a publisher&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">ml</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getNewMessage</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fetched</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">fetched</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;batch&#39;</span><span class="p">]:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getNewMessage</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                <span class="n">fetched</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">ml</span></div>
+
+
+<div class="viewcode-block" id="AMQP.getNewMessage">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.getNewMessage">[docs]</a>
+    <span class="k">def</span> <span class="nf">getNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span><span class="p">:</span>  <span class="c1">#build_consumer</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;getting from a publisher&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">getSetup</span><span class="p">()</span>
+
+            <span class="n">raw_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">raw_msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">connected</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxByteCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_msg</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span> 
+                    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgRawToDict</span><span class="p">(</span><span class="n">raw_msg</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;message decode failed. raw message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">raw_msg</span><span class="o">.</span><span class="n">body</span> <span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxBadCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxGoodCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowstr</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;fixed_headers&#39;</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fixed_headers</span><span class="p">:</span>
+                        <span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fixed_headers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;new msg: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">msg</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;failed </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                           <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;queueName&#39;</span><span class="p">],</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_strategy&#39;</span><span class="p">][</span><span class="s1">&#39;stubborn&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;lost connection to broker&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="AMQP.ack">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.ack">[docs]</a>
+    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           do what you need to acknowledge that processing of a message is done.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span><span class="p">:</span>  <span class="c1">#build_consumer</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;getting from a publisher&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+       
+        <span class="c1"># silent success. retry messages will not have an ack_id, and so will not require acknowledgement.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;ack_id&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+            <span class="c1">#logger.warning( f&quot;no ackid present&quot; )</span>
+            <span class="k">return</span>
+
+        <span class="c1">#logger.info( f&quot;acknowledging {m[&#39;ack_id&#39;]}&quot; )</span>
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">):</span> 
+                    <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_ack</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">])</span>
+                <span class="k">del</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">]</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;ack_id&#39;</span><span class="p">)</span>
+                <span class="c1"># Break loop if no exceptions encountered</span>
+                <span class="k">return</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;failed for tag: </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">],</span> <span class="n">err</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                <span class="c1"># Cleanly close partially broken connection and restablish</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">getSetup</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">ebo</span> <span class="o">&lt;</span> <span class="mi">60</span><span class="p">:</span> <span class="n">ebo</span> <span class="o">*=</span> <span class="mi">2</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Sleeping </span><span class="si">{}</span><span class="s2"> seconds before re-trying ack...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ebo</span><span class="p">))</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">ebo</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AMQP.putNewMessage">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.moth.amqp.AMQP.putNewMessage">[docs]</a>
+    <span class="k">def</span> <span class="nf">putNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span>
+                      <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+                      <span class="n">exchange</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        put a new message out, to the configured exchange by default.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span><span class="p">:</span>  <span class="c1">#build_consumer</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;publishing from a consumer&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Check connection and channel status, try to reconnect if not connected</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">connected</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">is_open</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">putSetup</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed, connection was closed/broken and could not be re-opened </span><span class="si">{</span><span class="n">exchange</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># The caller probably doesn&#39;t expect the message to get modified by this method, so use a copy of the message</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">version</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span>
+
+
+        <span class="k">if</span> <span class="s1">&#39;_deleteOnPost&#39;</span> <span class="ow">in</span> <span class="n">body</span><span class="p">:</span>
+            <span class="c1"># FIXME: need to delete because building entire JSON object at once.</span>
+            <span class="c1"># makes this routine alter the message. Ideally, would use incremental</span>
+            <span class="c1"># method to build json and _deleteOnPost would be a guide of what to skip.</span>
+            <span class="c1"># library for that is jsonfile, but not present in repos so far.</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">body</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">body</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">body</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">body</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exchange</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="p">(</span> <span class="s1">&#39;exchangeSplit&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchangeSplit&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># FIXME: assert ( len(self.o[&#39;exchange&#39;]) == self.o[&#39;post_exchangeSplit&#39;] )</span>
+                        <span class="c1">#        if that isn&#39;t true... then there is something wrong... should we check ?</span>
+                        <span class="k">if</span> <span class="s1">&#39;exchangeSplitOverride&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                            <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;exchangeSplitOverride&#39;</span><span class="p">])</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">idx</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">body</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">],</span>
+                                      <span class="s1">&#39;ascii&#39;</span><span class="p">))</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span>
+                        
+                        <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                            <span class="s1">&#39;do not know which exchange to publish to: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">])</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">exchange</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]:</span>
+            <span class="n">ttl</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">sarracenia</span><span class="o">.</span><span class="n">durationToSeconds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ttl</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+        
+        <span class="k">if</span> <span class="s1">&#39;persistent&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+            <span class="n">deliv_mode</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;persistent&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deliv_mode</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="n">raw_body</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">content_type</span> <span class="o">=</span> <span class="n">PostFormat</span><span class="o">.</span><span class="n">exportAny</span><span class="p">(</span> <span class="n">body</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="p">)</span>
+
+        <span class="n">topic</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">])</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="s1">&#39;%23&#39;</span><span class="p">)</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;%22&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">255</span><span class="p">:</span>  <span class="c1"># ensure topic is &lt;= 255 characters</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;message topic too long, truncating&quot;</span><span class="p">)</span>
+            <span class="n">mxlen</span> <span class="o">=</span> <span class="n">amqp_ss_maxlen</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)[</span><span class="n">mxlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xc0</span> <span class="o">==</span> <span class="mh">0xc0</span><span class="p">):</span>
+                <span class="n">mxlen</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="n">mxlen</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;messageDebugDump&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;raw message body: version: </span><span class="si">%s</span><span class="s1"> type: </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">raw_body</span><span class="p">),</span>  <span class="n">raw_body</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;raw message headers: type: </span><span class="si">%s</span><span class="s1"> value: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">headers</span><span class="p">),</span>  <span class="n">headers</span><span class="p">))</span>
+
+        <span class="n">message</span><span class="p">[</span><span class="s1">&#39;post_topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic</span>
+        <span class="n">message</span><span class="p">[</span><span class="s1">&#39;post_exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exchange</span>
+        <span class="n">message</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span><span class="s1">&#39;post_exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;post_topic&#39;</span><span class="p">]</span> <span class="p">)</span>
+        <span class="k">del</span> <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">headers</span> <span class="p">:</span>  
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">&gt;=</span>
+                                                      <span class="n">amqp_ss_maxlen</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;message header </span><span class="si">%s</span><span class="s2"> too long, dropping&quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">AMQP_Message</span> <span class="o">=</span> <span class="n">amqp</span><span class="o">.</span><span class="n">Message</span><span class="p">(</span><span class="n">raw_body</span><span class="p">,</span>
+                                        <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+                                        <span class="n">application_headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                                        <span class="n">expire</span><span class="o">=</span><span class="n">ttl</span><span class="p">,</span>
+                                        <span class="n">delivery_mode</span><span class="o">=</span><span class="n">deliv_mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txByteCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_body</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="n">headers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txByteCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">headers</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowstr</span><span class="p">()</span>
+
+        <span class="c1"># timeout option is a float and default is 0.0. basic_publish wants int or None for no timeout</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">]:</span>
+                <span class="n">pub_timeout</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pub_timeout</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Set pub_timeout to None. Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">pub_timeout</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">body</span><span class="o">=</span><span class="n">raw_body</span>
+        <span class="n">ebo</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;trying to publish body: </span><span class="si">{</span><span class="n">body</span><span class="si">}</span><span class="s2"> headers: </span><span class="si">{</span><span class="n">headers</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">exchange</span><span class="si">}</span><span class="s2"> under: </span><span class="si">{</span><span class="n">topic</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_publish</span><span class="p">(</span><span class="n">AMQP_Message</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">pub_timeout</span><span class="p">)</span>
+            <span class="c1"># Issue #732: tx_commit can get stuck forever</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">tx_commit</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;published body: </span><span class="si">{}</span><span class="s2"> headers: </span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2"> under: </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                          <span class="n">body</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="n">topic</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txGoodCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># no failure == success :-)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;failed </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">exchange</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txBadCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># Issue #466: commenting this out until message_strategy stubborn is working correctly (Issue #537)</span>
+            <span class="c1"># Always return False when an error occurs and use the DiskQueues to retry, instead of looping. This should</span>
+            <span class="c1"># eventually be configurable with message_strategy stubborn</span>
+            <span class="c1"># if True or not self.o[&#39;message_strategy&#39;][&#39;stubborn&#39;]:</span>
+            <span class="c1">#     return False</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">False</span> <span class="c1"># instead of looping</span></div>
+
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;sr_amqp/close 2: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_amqp/close 2 Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># FIXME toclose not useful as we don&#39;t close channels anymore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsDisconnect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR_post &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Traduction de terminologie" href="glossary.html" />
+    <link rel="prev" title="OPTIONS SR3" href="sr3_options.7.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Référence</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sr3.1.html">SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_cpump.1.html">Sr3_cpump C Page de Référence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">format de message d´annonce sr3_post</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#format-protocole-de-messages-d-annonce-sarracenia">Format/Protocole de messages d’annonce Sarracenia</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Référence</a> &raquo;</li>
+      <li>SR_post</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Reference/sr_post.7.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr-post">
+<h1>SR_post<a class="headerlink" href="#sr-post" title="Link to this heading"></a></h1>
+<section id="format-protocole-de-messages-d-annonce-sarracenia">
+<h2>Format/Protocole de messages d’annonce Sarracenia<a class="headerlink" href="#format-protocole-de-messages-d-annonce-sarracenia" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>7</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="status-stable-default">
+<h3>STATUS: Stable/Default<a class="headerlink" href="#status-stable-default" title="Link to this heading"></a></h3>
+<p>Les messages de Sarracenia version 2 sont la format précédente, utilisée pour des transferts
+de téraoctets et de millions de fichiers par jour. La version 3 propose une prochaine
+itération du format des messages d’annonces Sarracenia.</p>
+<p>La plupart des champs et leur signification sont les mêmes dans la version 3 que dans la version 2.
+Certains champs changent parce que le protocole est exposé a une revision plus approfondi qu’auparavant.</p>
+<p>Le changement de protocole de charge utile vise à simplifier les implémentations futures
+et à activer l’utilisation par des protocoles de messagerie autres que l’AMQP antérieur à la version 1.0.
+Voir <a class="reference external" href=".../Explications/History/messages_v03.html">v03 Modifications</a> pour plus de détails.</p>
+<p>Pour générer des messages en format v03, utilisez le paramètre suivant</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_topicPrefix</span> <span class="n">v03</span>
+</pre></div>
+</div>
+<p>Pour sélectionner les messages à consommer dans ce format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">topicPrefix</span> <span class="n">v03</span>
+</pre></div>
+</div>
+</section>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p>Version 03 du format des annonces de modification d’un fichier pour sr_post.</p>
+<p>Un message sr3_post se compose d’un sujet et du <em>BODY</em></p>
+<section id="amqp-topic">
+<h4><strong>AMQP Topic:</strong><a class="headerlink" href="#amqp-topic" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>::</dt><dd><p>&lt;version&gt; = « v03 » la version du protocole ou du format.
+« post » = le type de message dans le protocole.
+&lt;dir&gt; = un sous-répertoire menant au fichier (peut être de nombreux répertoires profonds)</p>
+</dd>
+</dl>
+</section>
+<section id="body-en-tete-json-encoding">
+<h4><strong>BODY:</strong> <em>{ &lt;en-tête&gt; }</em> (JSON encoding.)<a class="headerlink" href="#body-en-tete-json-encoding" title="Link to this heading"></a></h4>
+<p>Les en-têtes sont un tableau de paires nom:valeur:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>OBLIGATOIRE:
+
+        &quot;pubTime&quot;       - &quot;YYYYMMDDTHHMMSS.ss&quot; - UTC date/horodatage.
+        &quot;baseUrl&quot;       - racine de l’URL à télécharger.
+        &quot;relPath&quot;       - Le chemin relatif peut être concaténé à &lt;base_url&gt;
+
+ un de:
+        &quot;identity&quot;     - Version WMO du champ de sum v02, en cours de développement.
+        {
+           &quot;method&quot; : &quot;md5&quot; | &quot;sha512&quot; | &quot;cod&quot; | &quot;arbitrary&quot; | &quot;random&quot; ,
+           &quot;value&quot;  : &quot;base64 valeur de somme de contrôle encodée&quot;
+        }
+ ou:
+        &quot;fileOp&quot;   - pour décrire des opérations de fichiers sans transfert de données.
+        {
+           &quot;link&quot; : &quot;la valeur d´un lien symbolique&quot;
+           &quot;remove&quot; : &quot;&quot;  - un valeur pour indique que le fichier a été détruit
+           &quot;hlink&quot; : &quot;fichier a cibler pour un lien dure (non-symbolique)¨
+           &quot;rename&quot; : &quot;pour de renommage de fichier. valeur indique l´ancien nom.&quot;
+           &quot;directory&quot;: &quot;&quot; - indique que l&#39;opẃereation (soit création ou suppresion) est sur un répertoire.
+        }
+ou:
+        rien. Si aucun des champs ci-haut sont inclus, la suppression des duplicats
+        se fiera sur d´autres champes, tel que la date de modification de fichier,
+        s´il y lieu, afin d´éviter des boucles. Il est fortement suggeré au fournisseurs
+        de données de fournir un algorithme de d´intégrité pour éviter la fragilisation
+        des services de réplication de données.
+
+dans certains cas, les deux champs peuvent être présent, tel qu´un renommage de fichier,
+ou ca se peut que la fichier a été modifié et renommé, par exemple.
+
+
+FACULTATIF:
+
+        pour compatibilité GeoJSON:
+        &quot;type&quot;: &quot;Feature&quot;
+        &quot;geometry&quot;: RFC 7946 (geoJSON) spécification géographique compatible.
+
+        &quot;size&quot;          - le nombre d’octets annoncés.
+        &quot;blocks&quot;        - si le fichier publié est partitionné, alors :
+        {
+            &quot;method&quot;    : &quot;inplace&quot; | &quot;partitioned&quot; , - Le fichier est-il déjà en parties ?
+            &quot;size&quot;      : &quot;9999&quot;, -  taille des blocs.
+            &quot;count&quot;     : &quot;9999&quot;, - nombres de blocs dans un fichier.
+            &quot;remainder&quot; : &quot;9999&quot;, - taille du dernier bloc.
+            &quot;number&quot;    : &quot;9999&quot;, - quel est ce bloc.
+        }
+        &quot;rename&quot;        - nom pour écrire au fichier localement.
+        &quot;retrievePath&quot;       - le chemin de récupération relatif peut être concaténé avec &lt;base_url&gt; pour remplacer relPath -
+                          utilisé pour les cas d’API.
+        &quot;topic&quot;         - copie du sujet de l’en-tête AMQP (généralement omis)
+        &quot;source&quot;        - l’entité d’origine du message d´annonce.
+        &quot;from_cluster&quot;  - le cluster d’origine d’un message d´annonce.
+        &quot;to_clusters&quot;   - une spécification de destination.
+        &quot;atime&quot;         - heure du dernier accès à un fichier (facultatif)
+        &quot;mtime&quot;         - heure de la dernière modification d’un fichier (facultatif)
+        &quot;mode&quot;          - bits d’autorisation (facultatif)
+
+        &quot;content&quot;       - pour les fichiers plus petits, le contenu peut être incorporé.
+        {
+            &quot;encoding&quot; : &quot;utf-8&quot; | &quot;base64&quot; | &quot;iso-8859-1&quot; ,
+            &quot;value&quot;    &quot; &quot;contenu de fichier encodé&quot;
+        }
+        Noter que iso-8859-1 est là pour des raisons de transmission inaltéré de formats obsolètes.
+
+        &quot;contentType&quot; : &quot;chaine mime-type&quot;  - indique le format des données.
+
+        Pour le messages de thème &quot;v03.report&quot;, les en-têtes additionnelles qui suivent seront présents:
+
+        &quot;report&quot; { &quot;code&quot;: 999  - Code de réponse de style HTTP.
+                   &quot;timeCompleted&quot;: &quot;YYYYMMDDTHHMMSS.ss&quot; - UTC date/horodatage.
+                   &quot;message&quot; :  - message de rapport d’état documenté dans `Report Messages`_
+                 }
+
+        Autres champs optionnels:
+
+
+        des paires supplémentaires nom:valeur définies par l’utilisateur sont autorisées.
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>L’en-tête <strong>parts</strong> n’a pas encore été revu par d’autres. Nous avons commencé la discussion sur <em>size</em>,
+mais il n’y a pas eu de conclusion.</p>
+</div>
+</section>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p>Les sources créent des messages d´annonce en format <em>sr_post</em> pour annoncer les modifications apportées aux fichiers.
+Les abonnés lisent le message pour décider si un téléchargement du contenu annoncé est justifié.  Cette page
+de manuel décrit entièrement le format de ces messages d´annonce.  Les messages d´annonce sont des charges utiles
+pour un bus de messages AMQP (Advanced Message Queuing Protocol), mais le transport de données de fichiers
+est séparé, utilisant des protocoles plus courants tels que SFTP, HTTP, HTTPS ou FTP (ou autre?).
+Les fichiers sont transportés sou forme de flux d’octets purs, aucune métadonnée au-delà du contenu du fichier
+n’est transporté (bits de permission, attributs étendus, etc….)</p>
+<p>Avec cette méthode, les messages AMQP fournissent un « plan de contrôle » pour les transferts de données.
+Alors que chaque message d´annonce est essentiellement point à point, les pompes de données peuvent
+être reliées transitivement entre elles pour créer des réseaux arbitraires.  Chaque publication est consommée
+par le saut suivant de la chaîne. Chaque saut re-publie (crée un nouveau poste pour) les données des sauts ultérieurs.
+Les avis se déplacent dans le même sens que les données. Si les consommateurs le permettent, les messages de
+rapport circulent également dans le chemin de contrôle, mais dans la direction opposée, permettant aux sources
+de connaître l’ensemble de leur disposition.</p>
+<p>La couche minimale sur AMQP brut offre une fonctionnalité de transfert de fichiers plus complète :</p>
+<dl>
+<dt>Filtrage des sources (utilisation des échanges <a href="#id1"><span class="problematic" id="id2">`AMQP TOPIC`_</span></a>)</dt><dd><p>Les messages d´annonce utilisent les <em>topic exchanges</em> de l’AMQP, où les thèmes sont des hiérarchies
+destiné à représenter des thèmes d’intérêt pour un consommateur. Un consommateur peut télécharger le
+critères de sélection pour le courtier de sorte que seulement un petit sous-ensemble d’avis
+sont transmis au client.  Lorsqu’il y a beaucoup d’utilisateurs intéressés par seulement un
+petit sous-ensembles de données, les économies de trafic sont importantes.</p>
+</dd>
+<dt>Fingerprint Winnowing (utilisation de l’en-tête <a class="reference internal" href="#identity">identity</a>)</dt><dd><p>Chaque produit a une empreinte digitale d’intégrité et une taille destinée à l’identifier de manière unique,
+appelée <em>fingerprint</em>. Si deux fichiers ont la même empreinte digitale, ils sont considérés comme équivalents.
+Dans les cas où plusieurs sources de données équivalentes sont disponibles, mais les consommateurs en aval
+préféreraient recevoir des annonces uniques des fichiers, les processus intermédiaires peuvent choisir de
+publier des notifications du premier avec une empreinte digitale donnée, et ignorez les suivantes.
+Propager uniquement la première occurrence d’une référence reçue en aval, sur la base de
+son empreinte digitale, est appelée: <em>Fingerprint Winnowing</em>.</p>
+<p><em>Fingerprint Winnowing</em> est la base d’une stratégie robuste de haute disponibilité : mettre en place plusieurs
+sources pour les mêmes données, les consommateurs acceptent les annonces de chacune des sources, mais seulement
+en transférant le premier qui est reçu en aval. En fonctionnement normal, une source peut être plus rapide
+que les autres, et donc les fichiers des autres sources sont généralement « winnowed ». Quand une source
+disparaît, les données des autres sources sont automatiquement sélectionnées, parce ce que les empreintes
+digitales sont maintenant <em>fresh</em> et utilisés, jusqu’à ce qu’une source plus rapide soit disponible.</p>
+<p>L’avantage de cette méthode pour une haute disponibilité est qu’aucune décision A/B n’est requise.
+Le temps d’un <em>switchover</em> est nul. D’autres stratégies sont sujet à des retards considérables
+en prenant la décision de passer au numérique, et les pathologies que l’on pourrait considérer comme des oscillations,
+et/ou des deadlocks.</p>
+<p><em>Fingerprint Winnowing</em> permet également le <em>mesh-like</em>, ou un réseau <em>any to any</em>, où l’on interconnecte simplement
+un nœud avec d’autres et les messages d´annonce se propagent. Leur chemin spécifique à travers le
+le réseau n’est pas défini, mais chaque participant téléchargera chaque nouvelle référence à partir du premier
+nœud qui le met à sa disposition. Garder les messages d´annonce petits et séparés des données
+est optimal pour cet usage.</p>
+</dd>
+<dt>Partitionnement (utilisation de l´entête <a class="reference internal" href="#parts">parts</a> )</dt><dd><p>Dans n’importe quel réseau de pompage de données de stockage et de transmission de données qui transporte des fichiers
+entiers, limite la taille maximale d’un fichier au minimum disponible sur n’importe quel nœud intermédiaire.
+Pour éviter de définir la taille maximale d’un fichier, une norme de segmentation est spécifiée, permettant aux
+nœuds intermédiaires de tenir uniquement des segments du fichier, et de les transmettre au fur et à mesure qu’ils
+soient reçus, plutôt que d’être forcé à conserver le fichier entier.</p>
+<p>Le partitionnement permet également à plusieurs flux de transférer des parties du fichier en parallèle.
+Plusieurs flux peuvent fournir une optimisation efficace sur les liens longs.</p>
+</dd>
+</dl>
+</section>
+<section id="theme-topic">
+<h3>THÈME (TOPIC)<a class="headerlink" href="#theme-topic" title="Link to this heading"></a></h3>
+<p>Dans les échanges basé par thèmes dans AMQP, chaque message d´annonce a un en-tête de thème. AMQP définit le caractère ‘.’
+en tant que séparateur hiérarchique (comme ‘' dans un nom de chemin Windows, ou ‘/’ dans Linux), il existe également une
+paire de caractères génériques définis par la norme : ‘*’ correspond à un seul thème, ‘#’ correspond au reste de
+la chaîne de caractère du thème. Pour permettre des modifications dans le corps du message d´annonce à l’avenir, les
+arborescences de thèmes commencent par le numéro de la version du protocole.</p>
+<p>AMQP permet le filtrage des thèmes côté serveur à l’aide de wildcards. Les abonnés spécifient les sujets d’intérêt
+(qui correspondent à des répertoires sur le serveur), leur permettant de réduire le
+nombre de notifications envoyées du serveur au client.</p>
+<p>La racine de l’arborescence des thèmes est le spécificateur de version : « v03 ».  Ensuite il y a le spécificateur
+de type de message. Ces deux champs définissent le protocole utilisé pour le reste du message d´annonce.
+Le type de message d´annonce pour les messages d´annonce est « post ». Après avoir fixé le préfixe du thème,
+les sous-thèmes restants sont les éléments de chemin d’accès du fichier sur le serveur Web.
+Par exemple, si un fichier est placé sur <a class="reference external" href="http://www.example.com/a/b/c/d/foo.txt">http://www.example.com/a/b/c/d/foo.txt</a>,
+alors le thème complet du message d´annonce sera : <em>v03.a.b.c.d</em>
+Les champs AMQP sont limités à 255 caractères et les caractères du champ sont
+encodé en utf8, de sorte que la limite de longueur réelle peut être inférieure à cela.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sarracenia s’appuie sur des courtiers pour interpréter l’en-tête du thème. Les courtiers interprètent
+des en-têtes spécifiques au protocole AMQP, et ne décode pas efficacement la charge utile pour extraire les en-têtes.
+Par conséquent, l’en-tête du thème est stocké dans un en-tête AMQP, plutôt que dans la charge utile qui autorise le
+filtrage côté serveur. Pour éviter d’envoyer deux fois les mêmes informations, cet en-tête est
+omis de la charge utile JSON.</p>
+<p>De nombreuses implémentations côté client, une fois le message d´annonce chargé, définiront l’en-tête <em>topic</em>
+dans la structure en mémoire, il serait donc très imprudent de définir l’en-tête <em>topic</em>
+dans une application même si elle n’est pas visible dans la charge utile sur fil.</p>
+</div>
+<section id="mappage-vers-mqtt">
+<h4>Mappage vers MQTT<a class="headerlink" href="#mappage-vers-mqtt" title="Link to this heading"></a></h4>
+<p>L’un des objectifs du format v03 est d’avoir un format de charge utile qui fonctionne avec plus que l’AMQP.
+Message Queing Telemetry Transport (MQTT v3.11) est une norme iso ( <a class="reference external" href="https://www.iso.org/standard/69466.html">https://www.iso.org/standard/69466.html</a>
+un protocole qui peut facilement prendre en charge le même modèle de messagerie publication/abonnement, avec quelques détails
+different, donc un mappage est nécessaire.</p>
+<p>Tout d’abord, le séparateur de thème dans MQTT est une barre oblique (/), au lieu du point (.) qui est utilisé dans AMQP.</p>
+<p>Deuxièmement, avec AMQP, on peut établir des hiérarchies de thèmes différents en utilisant des <em>topic-based exchanges</em>.
+MQTT n’a pas de concept similaire, il n’y a qu’une seule hiérarchie, donc lors du mappage, il faut placer le nom
+de l’échange à la racine de l’hiérarchie des thèmes pour obtenir le même effet</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AMQP</span><span class="p">:</span>   <span class="n">Exchange</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">exchange</span> <span class="n">name</span><span class="o">&gt;</span>
+           <span class="n">topic</span><span class="p">:</span> <span class="n">v03</span><span class="o">.&lt;</span><span class="n">directory</span><span class="o">&gt;...</span>
+
+<span class="n">MQTT</span><span class="p">:</span>   <span class="n">topic</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">exchange</span> <span class="n">name</span><span class="o">&gt;/</span><span class="n">v03</span><span class="o">/&lt;</span><span class="n">directory</span><span class="o">&gt;...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="les-en-tetes-fixes">
+<h3>LES EN-TÊTES FIXES<a class="headerlink" href="#les-en-tetes-fixes" title="Link to this heading"></a></h3>
+<p>Le message d´annonce est un tableau encodé en JSON unique, avec un ensemble obligatoire de champs, tout en permettant
+l’utilisation d’autres champs arbitraires.  Les champs obligatoires doivent être présents dans chaque message:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>“pubTime” : “<em>&lt;horodatage&gt;</em>” : la date de publication de l’affichage qui a été émis.  Format: YYYYMMDDTHHMMSS. <em>&lt;decimalseconds&gt;</em></p></li>
+</ul>
+<p>Remarque : L’horodatage est toujours dans le fuseau horaire UTC.</p>
+<ul class="simple">
+<li><p>“baseUrl” : “&lt;<em>base_url</em>&gt;” – l’URL de base utilisée pour récupérer les données.</p></li>
+<li><p>“relPath” : “&lt;<em>relativepath</em>&gt;” –   la partie variable de l’URL, généralement ajoutée à <em>baseUrl</em>.</p></li>
+</ul>
+</div></blockquote>
+<p>L’URL que les consommateurs utiliseront pour télécharger les données. Exemple d’URL complet</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">afsiext</span><span class="nd">@cmcdataserver</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">NRPDS</span><span class="o">/</span><span class="n">outputs</span><span class="o">/</span><span class="n">NRPDS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+</pre></div>
+</div>
+<p>Champs supplémentaires :</p>
+<section id="from-cluster-nom-du-cluster">
+<h4><strong>from_cluster=&lt;nom_du_cluster&gt;</strong><a class="headerlink" href="#from-cluster-nom-du-cluster" title="Link to this heading"></a></h4>
+<p>L’en-tête from_cluster définit le nom du cluster source où
+les données ont été introduites dans le réseau. Cela est utilisé pour renvoyer les journaux
+au cluster chaque fois que ses produits sont utilisés.</p>
+</section>
+<section id="fileop-link-valeur-du-lien-symbolique">
+<h4><strong>fileOp { “link”: “&lt;valeur du lien symbolique&gt;” }</strong><a class="headerlink" href="#fileop-link-valeur-du-lien-symbolique" title="Link to this heading"></a></h4>
+<p>Lorsque le fichier à transférer est un lien symbolique, l’en-tête ‘fileOp’ est créé avec
+le sous-entête “link” pour contenir sa valeur.</p>
+</section>
+<section id="size-and-blocks">
+<h4><strong>size and blocks</strong><a class="headerlink" href="#size-and-blocks" title="Link to this heading"></a></h4>
+<blockquote id="parts">
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;size&quot;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">sz</span><span class="o">&gt;</span> <span class="p">,</span>
+
+<span class="s2">&quot;blocks&quot;</span> <span class="p">:</span>
+<span class="p">{</span>
+       <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;inplace&quot;</span> <span class="ow">or</span> <span class="s2">&quot;partitioned&quot;</span><span class="p">,</span>
+       <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">bsz</span><span class="o">&gt;</span><span class="p">,</span>
+       <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">blktot</span><span class="o">&gt;</span><span class="p">,</span>
+       <span class="s2">&quot;remainder&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">brem</span><span class="o">&gt;</span><span class="p">,</span>
+       <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">bno</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Un en-tête indiquant la méthode et les paramètres de partitionnement appliqués au fichier.
+Le partitionnement est utilisé pour envoyer un seul fichier en tant que collection de segments, plutôt qu’en une
+seule entité.  Le partitionnement est utilisé pour accélérer les transferts de grands ensembles de données en utilisant
+plusieurs flux et/ou pour réduire l’utilisation du stockage pour les fichiers extrêmement volumineux.</p>
+<p>Lors du transfert de fichiers partitionnés, chaque partition est annoncée et potentiellement transportée
+indépendamment sur un réseau de pompage de données.</p>
+<blockquote>
+<div><p><em>&lt;méthode&gt;</em></p>
+</div></blockquote>
+<p>Indique quelle méthode de partitionnement, si il y en a une, a été utilisée dans la transmission.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Méthode</p></td>
+<td><p>Déscription</p></td>
+</tr>
+<tr class="row-even"><td><p>p - partitioned</p></td>
+<td><p>Le fichier est partitionné, des fichiers en pièce individuels
+sont créés.</p></td>
+</tr>
+<tr class="row-odd"><td><p>i - inplace</p></td>
+<td><p>Le fichier est partitionné, mais les blocs sont lus à partir d’un
+seul fichier, plutôt que des parties.</p></td>
+</tr>
+<tr class="row-even"><td><p>1 - &lt;sizeonly&gt;</p></td>
+<td><p>Le fichier est dans une seule partie (pas de partitionnement).
+dans v03, seul l’en-tête <em>size</em> sera présent. <em>blocs</em> est omis.</p></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div><ul class="simple">
+<li><p>analogue aux options rsync : –inplace, –partial,</p></li>
+</ul>
+<p><em>&lt;blocksize in bytes&gt;: bsz</em></p>
+</div></blockquote>
+<p>Nombre d’octets dans un bloc.  Lorsque vous utilisez la méthode 1, la taille du bloc est la taille du fichier.
+Les restants des champs sont seulement utiles pour les fichiers partitionnés.</p>
+<p><em>&lt;blocks in total&gt;: blktot</em>
+le nombre total (en entier) de blocs dans le fichier (le dernier bloc peut être partiel)</p>
+<p><em>&lt;remainder&gt;: brem</em>
+normalement 0, pour le dernier bloc, octets restants dans le fichier
+à transférer.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>– if (fzb=1 and brem=0)</dt><dd><p>then bsz=fsz in bytes in bytes.
+– fichiers entièrement remplacé.
+– c’est la même chose que le mode –whole-fil de rsync.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>&lt;block#&gt;: bno</em>
+0 origine, le numéro de bloc couvert par cette publication.</p>
+</section>
+<section id="rename-relpath">
+<h4><strong>rename=&lt;relpath&gt;</strong><a class="headerlink" href="#rename-relpath" title="Link to this heading"></a></h4>
+<p>Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.</p>
+</section>
+<section id="fileop-rename-oldpath">
+<h4><strong>fileOp { ‘rename’:&lt;oldpath&gt; … }</strong><a class="headerlink" href="#fileop-rename-oldpath" title="Link to this heading"></a></h4>
+<p>lorsqu’un fichier est renommé à la source, pour l’envoyer aux abonnés, il va y avoir deux posts: un message
+est annoncé avec le nouveau nom comme base_url, et l’en-tête <em>FileOp</em> va inclure la valeur de l’ancien nom du fichier,
+dans un sous-champs appellé ‘rename’.</p>
+<p>Les liens dures (hard links) sont, par contre, traités comme un post ordinaire du fichier avec un ensemble d’en-tête <em>fileOp</em>.
+Les changements de noms de liens symboliques et répertoires sont representés pas la présences de sous champs “directory”
+(répertoire) et “link”  (lien) dans le champs “fileOp” qui contient également un <em>rename</em>.</p>
+</section>
+<section id="identity">
+<h4><strong>identity</strong><a class="headerlink" href="#identity" title="Link to this heading"></a></h4>
+<p>Le champ d’intégrité donne une somme de contrôle qui est utile pour identifier le contenu
+d’un fichier:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;identity&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="o">&lt;</span><span class="n">méthode</span><span class="o">&gt;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">valeur</span><span class="o">&gt;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Le champ d’intégrité est une signature calculée pour permettre aux récepteurs de déterminer
+s’ils ont déjà téléchargé le produit ailleurs.</p>
+<p><em>&lt;method&gt;</em> - champ de chaîne de caractère (string field) indiquant la méthode de somme de contrôle utilisée.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Méthode</p></td>
+<td><p>Déscription</p></td>
+</tr>
+<tr class="row-even"><td><p>random</p></td>
+<td><p>Pas de sommes de contrôle (copie inconditionnelle). Ignore la
+lecture du fichier (plus rapide)</p></td>
+</tr>
+<tr class="row-odd"><td><p>arbitrary</p></td>
+<td><p>valeur arbitraire définie par l’application qui ne peut pas être
+calculée</p></td>
+</tr>
+<tr class="row-even"><td><p>md5</p></td>
+<td><p>Somme de contrôle de l’ensemble des données
+(MD-5 selon IETF RFC 1321)</p></td>
+</tr>
+<tr class="row-odd"><td><p>link</p></td>
+<td><p>Lié : SHA512 somme de la valeur du lien</p></td>
+</tr>
+<tr class="row-even"><td><p>md5name</p></td>
+<td><p>Somme de contrôle du nom du fichier (MD-5 selon IETF RFC 1321)</p></td>
+</tr>
+<tr class="row-odd"><td><p>remove</p></td>
+<td><p>Supprimé : SHA512 du nom du fichier.</p></td>
+</tr>
+<tr class="row-even"><td><p>sha512</p></td>
+<td><p>Somme de contrôle de l’ensemble des données
+(SHA512 selon IETF RFC 6234)</p></td>
+</tr>
+<tr class="row-odd"><td><p>cod</p></td>
+<td><p>Somme de contrôle du téléchargement, avec algorithme comme argument
+Exemple : cod,sha512 signifie télécharger, appliquer la somme de
+contrôle SHA512 et annoncer avec cette somme de contrôle calculée
+lors de la propagation ultérieure.</p></td>
+</tr>
+<tr class="row-even"><td><p><em>&lt;name&gt;</em></p></td>
+<td><p>Somme de contrôle avec un autre algorithme, nommé <em>&lt;name&gt;</em>
+<em>&lt;name&gt;</em> doit être <em>registered</em> dans le réseau de pompage de données
+Enregistré signifie que tous les abonnés en aval peuvent obtenir
+l’algorithme pour valider la somme de contrôle.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>*&lt;value&gt;* La valeur est calculée en appliquant la méthode donnée à la partition transférée.
+pour un algorithme ou aucune valeur n’a de sens, un entier aléatoire est généré pour prendre en charge
+l&#39;équilibrage de charge basé sur la somme de contrôle.
+</pre></div>
+</div>
+</section>
+</section>
+<section id="report-messages">
+<h3>Report Messages<a class="headerlink" href="#report-messages" title="Link to this heading"></a></h3>
+<p>Certains clients peuvent renvoyer la télémétrie à l’origine des données téléchargées à des fins de dépannage
+et à des fins de statistiques. Ces messages d´annonce ont le thème <em>v03.report</em> et ont un en-tête <em>report</em>
+qui est un <em>object</em> JSON avec quatre champs :</p>
+<blockquote>
+<div><p>{ “elapsedTime”: &lt;report_time&gt;, “resultCode”: &lt;report_code&gt;, “host”: &lt;report_host&gt;, “user”: &lt;report_user&gt;* }</p>
+<ul class="simple">
+<li><p><em>&lt;report_code&gt;</em>  les codes de résultat décrits dans la section suivante</p></li>
+<li><p><em>&lt;report_time&gt;</em>  l’heure à laquelle le rapport a été généré.</p></li>
+<li><p><em>&lt;report_host&gt;</em>  nom d’hôte à partir duquel la récupération a été lancée.</p></li>
+<li><p><em>&lt;report_user&gt;</em>  nom d’utilisateur du courtier à partir duquel la récupération a été lancée.</p></li>
+</ul>
+</div></blockquote>
+<p>Les messages de rapport ne doivent jamais inclure l’en-tête <em>content</em> (aucun fichier incorporé dans les rapports).</p>
+<section id="report-code">
+<h4>Report_Code<a class="headerlink" href="#report-code" title="Link to this heading"></a></h4>
+<p>Le code de rapport est un code d’état à trois chiffres, adopté à partir du protocole HTTP (w3.org/IETF RFC 2616)
+encodé sous forme de texte.  Conformément à la RFC, tout code renvoyé doit être interprété comme suit :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>2xx indique une réussite.</p></li>
+<li><p>3xx indique qu’une action supplémentaire est nécessaire pour terminer l’opération.</p></li>
+<li><p>4xx indique qu’une erreur permanente sur le client a empêché une opération réussie.</p></li>
+<li><p>5xx indique qu’un problème sur le serveur a empêché une opération réussie.</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: besoin de valider si notre utilisation des codes d’erreur coïncide avec l’intention générale
+exprimé ci-dessus… Un 3xx signifie-t-il que nous nous attendons à ce que le client fasse quelque chose? 5xx signifie-t-il
+que la défaillance était du côté du courtier/serveur ?</p>
+</div>
+<p>Les codes d’erreur spécifiques renvoyés et leurs significations dépendent de l’implémentation.
+Pour l’implémentation sarracenia, les codes suivants sont définis :</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Texte correspondant et signification pour la mise en œuvre de sarracenia</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>201</p></td>
+<td><p>Téléchargement réussi. (variantes: Downloaded, Inserted, Published, Copied, or Linked)</p></td>
+</tr>
+<tr class="row-odd"><td><p>203</p></td>
+<td><p>Informations non-autoritaire : transformées pendant le téléchargement.</p></td>
+</tr>
+<tr class="row-even"><td><p>205</p></td>
+<td><p>Réinitialiser le contenu : tronqué. Le fichier est plus court que prévu (longueur modifiée
+pendant le transfert). Cela ne se produit que lors des transferts en plusieurs parties.</p></td>
+</tr>
+<tr class="row-odd"><td><p>205</p></td>
+<td><p>Réinitialiser le contenu : somme de contrôle recalculée à la réception.</p></td>
+</tr>
+<tr class="row-even"><td><p>304</p></td>
+<td><p>Non modifié (Somme de contrôle validée, inchangée, donc aucun téléchargement en suit.)</p></td>
+</tr>
+<tr class="row-odd"><td><p>307</p></td>
+<td><p>Insertion différée (écriture dans une partie du fichier temporaire pour le moment.)</p></td>
+</tr>
+<tr class="row-even"><td><p>417</p></td>
+<td><p>Échec de l’attente : message d´annonce non valide (en-têtes corrompus)</p></td>
+</tr>
+<tr class="row-odd"><td><p>496</p></td>
+<td><p>failure: During send, other protocol failure.</p></td>
+</tr>
+<tr class="row-even"><td><p>497</p></td>
+<td><p>failure: During send, other protocol failure.</p></td>
+</tr>
+<tr class="row-odd"><td><p>499</p></td>
+<td><p>Échec : Non copié. Problème de téléchargement SFTP/FTP/HTTP</p></td>
+</tr>
+<tr class="row-even"><td><p>503</p></td>
+<td><p>Service indisponible. supprimer (la suppression de fichiers n’est pas prise en charge.)</p></td>
+</tr>
+<tr class="row-odd"><td><p>503</p></td>
+<td><p>Impossible de traiter : Service indisponible</p></td>
+</tr>
+<tr class="row-even"><td><p>503</p></td>
+<td><p>Protocole de transport spécifié dans la publication n’est pas pris en charge</p></td>
+</tr>
+<tr class="row-odd"><td><p>xxx</p></td>
+<td><p>Les codes d’état de validation des messages d´annonce et des fichiers dépendent du script</p></td>
+</tr>
+</tbody>
+</table>
+<p>FIXME: will 3 error codes that are the same cause confusion?</p>
+</section>
+<section id="autres-champs-de-rapport">
+<h4>Autres champs de rapport<a class="headerlink" href="#autres-champs-de-rapport" title="Link to this heading"></a></h4>
+<p><em>&lt;report_message&gt;</em> une chaine de caractères.</p>
+</section>
+</section>
+<section id="en-tetes-facultatives">
+<h3>En-têtes facultatives<a class="headerlink" href="#en-tetes-facultatives" title="Link to this heading"></a></h3>
+<p>pour le cas d’utilisation de la mise en miroir de fichiers, des en-têtes supplémentaires seront présents :</p>
+<section id="atime-mtime-mode">
+<h4><strong>atime,mtime,mode</strong><a class="headerlink" href="#atime-mtime-mode" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>man 2 stat - les métadonnées du fichier standard linux/unix :
+temps d’accès, temps de modification et autorisation (bits de mode)
+les heures sont dans le même format que le champ pubTime.
+la chaîne d’autorisation est composée de quatre caractères destinés à être interprétés comme suit :
+autorisations octal linux/unix traditionnelles.</p>
+</div></blockquote>
+<p><strong>Les en-têtes qui sont inconnus à un courtier DOIVENT être transmis sans modification.</strong></p>
+<p>Sarracenia fournit un mécanisme permettant aux utilisateurs d’inclure d’autres en-têtes arbitraires dans les messages d´annonce,
+pour amplifier les métadonnées pour une prise de décision plus détaillée sur le téléchargement de données.
+Par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;PRINTER&quot;</span> <span class="p">:</span> <span class="s2">&quot;name_of_corporate_printer&quot;</span><span class="p">,</span>
+
+<span class="s2">&quot;GeograpicBoundingBox&quot;</span> <span class="p">:</span>
+ <span class="p">{</span>
+         <span class="s2">&quot;top_left&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="mf">40.73</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">74.1</span> <span class="p">}</span> <span class="p">,</span>
+         <span class="s2">&quot;bottom_right&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">40.01</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">71.12</span> <span class="p">}</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>permettrait au client d’appliquer un filtrage/traitement côté client plus élaboré et plus précis.
+L’implémentation intermédiaire peut ne rien savoir de l’en-tête,
+mais ils ne devraient pas être dépouillés, car certains consommateurs peuvent les comprendre et les traiter.</p>
+</section>
+</section>
+<section id="exemple">
+<h3>EXEMPLE<a class="headerlink" href="#exemple" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AMQP</span> <span class="n">TOPIC</span><span class="p">:</span> <span class="n">v03</span><span class="o">.</span><span class="n">NRDPS</span><span class="o">.</span><span class="n">GIF</span>
+<span class="n">MQTT</span> <span class="n">TOPIC</span><span class="p">:</span> <span class="n">exchange</span><span class="o">/</span><span class="n">v03</span><span class="o">/</span><span class="n">NRDPS</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span>
+<span class="n">Body</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;pubTime&quot;</span><span class="p">:</span> <span class="s2">&quot;201506011357.345&quot;</span><span class="p">,</span> <span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;sftp://afsiext@cmcdataserver&quot;</span><span class="p">,</span> <span class="s2">&quot;relPath&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/NRPDS/outputs/NRDPS_HiRes_000.gif&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;rename&quot;</span><span class="p">:</span> <span class="s2">&quot;NRDPS/GIF/&quot;</span><span class="p">,</span> <span class="s2">&quot;parts&quot;</span><span class="p">:</span><span class="s2">&quot;p,457,1,0,0&quot;</span><span class="p">,</span> <span class="s2">&quot;identity&quot;</span> <span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;md5&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span><span class="s2">&quot;&lt;md5sum-base64&gt;&quot;</span> <span class="p">},</span> <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;ec_cmc&quot;</span> <span class="p">}</span>
+
+       <span class="o">-</span> <span class="n">v03</span> <span class="o">-</span> <span class="n">version</span> <span class="n">du</span> <span class="n">protocole</span>
+       <span class="o">-</span> <span class="n">la</span> <span class="n">version</span> <span class="n">et</span> <span class="n">le</span> <span class="nb">type</span> <span class="n">ensemble</span> <span class="n">determine</span> <span class="n">le</span> <span class="nb">format</span> <span class="n">des</span> <span class="n">thèmes</span> <span class="n">qui</span> <span class="n">suivent</span> <span class="n">et</span> <span class="n">du</span> <span class="n">corps</span> <span class="n">du</span> <span class="n">message</span> <span class="n">d</span><span class="s1">&#39;annonce.</span>
+
+       <span class="o">-</span> <span class="n">blocksize</span> <span class="n">est</span> <span class="mi">457</span>  <span class="p">(</span><span class="o">==</span> <span class="n">taile</span> <span class="n">du</span> <span class="n">fichier</span><span class="p">)</span>
+       <span class="o">-</span> <span class="n">block</span> <span class="n">count</span> <span class="n">est</span> <span class="mi">1</span>
+       <span class="o">-</span> <span class="n">restant</span> <span class="n">est</span> <span class="mf">0.</span>
+       <span class="o">-</span> <span class="n">block</span> <span class="n">number</span> <span class="n">est</span> <span class="mf">0.</span>
+       <span class="o">-</span> <span class="n">d</span> <span class="o">-</span> <span class="n">somme</span> <span class="n">de</span> <span class="n">contrôle</span> <span class="n">a</span> <span class="n">été</span> <span class="n">calculé</span> <span class="n">à</span> <span class="n">partir</span> <span class="n">du</span> <span class="n">corps</span> <span class="n">du</span> <span class="n">fichier</span><span class="o">.</span>
+       <span class="o">-</span> <span class="n">la</span> <span class="n">source</span> <span class="n">complète</span> <span class="n">de</span> <span class="n">l</span><span class="s1">&#39;URL spécifiée (ne se termine pas par &#39;</span><span class="o">/</span><span class="s1">&#39;)</span>
+       <span class="o">-</span> <span class="n">chemin</span> <span class="n">relatif</span> <span class="n">spécifié</span> <span class="n">pour</span>
+
+       <span class="n">tirer</span> <span class="n">de</span><span class="p">:</span>
+               <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">afsiext</span><span class="nd">@cmcdataserver</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">NRPDS</span><span class="o">/</span><span class="n">outputs</span><span class="o">/</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+
+       <span class="n">chemin</span> <span class="n">de</span> <span class="n">téléchargement</span> <span class="n">relatif</span> <span class="n">complet</span> <span class="p">:</span>
+               <span class="n">NRDPS</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+
+               <span class="o">--</span> <span class="n">prends</span> <span class="n">le</span> <span class="n">nom</span> <span class="n">du</span> <span class="n">fichier</span> <span class="n">de</span> <span class="n">base_url</span><span class="o">.</span>
+               <span class="o">--</span> <span class="n">peut</span> <span class="n">être</span> <span class="n">modifié</span> <span class="n">par</span> <span class="n">un</span> <span class="n">processus</span> <span class="n">de</span> <span class="n">validation</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="un-autre-exemple">
+<h3>Un Autre Exemple<a class="headerlink" href="#un-autre-exemple" title="Link to this heading"></a></h3>
+<p>Le post résultant de la commande de sr3_watch suivante, a noter la création du fichier ‘foo’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_watch</span> <span class="o">-</span><span class="n">pbu</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">-</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span> <span class="o">-</span><span class="n">pb</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+<p>Ici, <em>sr_watch</em> vérifie si le fichier /data/shared/products/foo est modifié.
+Lorsque cela se produit, <em>sr_watch</em> lit le fichier /data/shared/products/foo et calcule sa somme de contrôle.
+Il crée ensuite un message d’annonce, se connecte à broker.com en tant qu’utilisateur « invité »
+(informations d’identification par défaut) et envoie la publication aux vhosts ‘/’ par défaut et
+à l’échange ‘sx_guest’ (l’échange par défaut).</p>
+<p>Un abonné peut télécharger le fichier /data/shared/products/foo en se connectant en tant qu’utilisateur stanley
+sur mysftpserver.com en utilisant le protocole sftp pour broker.com en supposant qu’il dispose des
+informations d’identification appropriées.</p>
+<p>La sortie de la commande est la suivante</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AMQP</span> <span class="n">Topic</span><span class="p">:</span> <span class="n">v03</span><span class="mf">.20150813</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">products</span>
+<span class="n">MQTT</span> <span class="n">Topic</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">exchange</span><span class="o">&gt;/</span><span class="n">v03</span><span class="o">/</span><span class="mi">20150813</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span>
+<span class="n">Body</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;pubTime&quot;</span><span class="p">:</span><span class="s2">&quot;20150813T161959.854&quot;</span><span class="p">,</span> <span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span><span class="s2">&quot;sftp://stanley@mysftpserver.com/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relPath&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/shared/products/foo&quot;</span><span class="p">,</span> <span class="s2">&quot;parts&quot;</span><span class="p">:</span><span class="s2">&quot;1,256,1,0,0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="s2">&quot;d,25d231ec0ae3c569ba27ab7a74dd72ce&quot;</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="s2">&quot;guest&quot;</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Les posts sont publiés sur les échanges de thèmes AMQP, ce qui signifie que chaque message d’annonce a un en-tête de thème.
+Le corps se compose d’un temps <em>20150813T161959.854</em>, suivi des deux parties de
+l’URL de récupération. Les en-têtes ont d’abord les <em>parts</em>, une taille en octets <em>256</em>,
+le nombre de blocs de cette taille <em>1</em>, les octets restants <em>0</em>, le
+bloc actuel <em>0</em>, un indicateur <em>d</em> signifiant que la somme de contrôle md5 est
+effectuée sur les données, et la somme de contrôle <em>25d231ec0ae3c569ba27ab7a74dd72ce</em>.</p>
+<section id="possibilites-doptimisation">
+<h4>Possibilités d’optimisation<a class="headerlink" href="#possibilites-doptimisation" title="Link to this heading"></a></h4>
+<p>L’objectif d’optimisation est la lisibilité et la facilité de mise en œuvre, beaucoup plus
+que l’efficacité ou la performance. Il existe de nombreuses optimisations pour réduire les
+frais généraux de plusieur aspects, ce qui augmente la complexité de l’implémentation.
+exemples: gzip la charge utile permettrait d’économiser peut-être 50% de taille,
+regroupant également des en-têtes fixes (l’en-tête ‘body’ peut contenir
+tous les champs fixes: « pubtime, baseurl, relpath, sum, parts », et un autre
+champ ‘meta’ pourrait contenir: atime, mtime, mode donc il y aurait moins de
+champs nommés et ca économiserais peut-être 40 octets de surcharge par avis. Mais
+tous les changements augmentent la complexité, et ca rends les messages d’annonce plus difficile à analyser.</p>
+</section>
+</section>
+<section id="standards">
+<h3>Standards<a class="headerlink" href="#standards" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Sarracenia s’appuie sur <a class="reference external" href="https://www.rabbitmq.com/resources/specs/amqp0-9-1.pdf">AMQP pre 1.0</a>
+vu que la norme 1.0 a éliminé les concepts : courtier, échange, fil d’attente et
+reliure.  L’ensemble de fonctionnalités 1.0 est inférieur au minimum nécessaire pour prendre en charge
+L’architecte publication-abonnement de Sarracenia</p></li>
+<li><p>MQTT fait référence à <a class="reference external" href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.pdf">MQTT v5.0</a>
+et <a class="reference external" href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html">MQTT v3.1.1</a>,
+MQTT v5 a une extension importante: les abonnements partagés (fortement utilisés dans Sarracenia.)
+donc v5 est fortement recommandé. La prise en charge de la version 3.1 est uniquement pour des raisons de support héritées.</p></li>
+<li><p>JSON est défini par <a class="reference external" href="https://www.rfc-editor.org/info/rfc7159">IETF RFC 7159</a>.
+La norme JSON inclut l’utilisation obligatoire de l’ensemble de caractères UNICODE (ISO 10646)
+L’ensemble de caractères par défaut JSON est UTF-8, mais autorise plusieurs caractères
+(UTF-8, UTF-16, UTF-32), mais interdit également la présence de marques d’ordre d’octets (byte order markings, BOM.)</p></li>
+<li><p>comme Sarracenia v02, UTF-8 est obligatoire. Sarracenia restreint le format JSON
+en exigeant un codage UTF-8 (IETF RFC 3629) qui n’a pas besoin/n’utilise pas de BOM.
+Aucun autre codage n’est autorisé.</p></li>
+<li><p>Le codage d’URL, conformément à la RFC 1738 de l’IETF, est utilisé pour échapper aux caractères dangereux
+quand approprié.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="voir-aussi">
+<h3>VOIR AUSSI<a class="headerlink" href="#voir-aussi" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.html">sr3(1)</a> - rracenia ligne de commande principale.</p>
+<p><a class="reference external" href="sr3_post.1.html">sr3_post(1)</a> - poste des annoncements de fichiers (implémentation en Python.)</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - poste des annoncements de fichiers (implémentation en C.)</p>
+<p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - copie des messages d’annonce (implantation en C du composant “shovel”.)</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr3_credentials.7.html">sr3_credentials(7)</a> - Convertissez les lignes du fichier journal au format .save pour le rechargement/le renvoi.</p>
+<p><a class="reference external" href="sr_options.7.html">sr3_options(7)</a> - les options de configurations</p>
+<p><strong>Home Page:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia : une boîte à outils de gestion du partage de données pub/sub en temps réel</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sr3_options.7.html" class="btn btn-neutral float-left" title="OPTIONS SR3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="glossary.html" class="btn btn-neutral float-right" title="Traduction de terminologie" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

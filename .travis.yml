@@ -1,0 +1,42 @@
+dist: bionic
+services: rabbitmq
+language: python
+arch: arm64-graviton2
+
+matrix:
+  include:
+  - name: "3.6-tests"
+    python: "3.6"
+    env: LIMIT=500 TEST=tests
+  - name: "3.6-static_flow"
+    python: "3.6"
+    env: LIMIT=500 TEST=static_flow
+  - name: "3.7-flakey_broker"
+    python: "3.7"
+    env: LIMIT=500 TEST=flakey_broker
+  - name: "3.5-1000limit"
+    python: "3.5"
+    env: LIMIT=1000 TEST=dynamic_flow
+  - name: "3.6-2000limit"
+    python: "3.6"
+    env: LIMIT=2000 TEST=dynamic_flow
+  - name: "3.7-3000limit"
+    python: "3.7"
+    env: LIMIT=3000 TEST=dynamic_flow
+
+
+branches:
+  only:
+  - main
+
+install:
+- travis/install.sh
+- ${HOME}/sr_insects/flow_autoconfig.sh
+
+script:
+- cd ${HOME}/sr_insects/$TEST
+- ./flow_setup.sh
+- timeout 60m ./flow_limit.sh $LIMIT
+- ./flow_check.sh
+- ./flow_cleanup.sh
+

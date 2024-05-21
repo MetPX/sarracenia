@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.moth &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.moth</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.moth</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">default_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s1">&#39;bindings&#39;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s1">&#39;broker&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;dry_run&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="s1">&#39;xpublic&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="s1">&#39;inline&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;inlineEncoding&#39;</span><span class="p">:</span> <span class="s1">&#39;guess&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;inlineByteMax&#39;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
+    <span class="s1">&#39;logFormat&#39;</span><span class="p">:</span>
+    <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;logLevel&#39;</span><span class="p">:</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;messageDebugDump&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;message_strategy&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;reset&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;stubborn&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;failure_duration&#39;</span><span class="p">:</span> <span class="s1">&#39;5m&#39;</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;message_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;topicPrefix&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;v03&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;tlsRigour&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">ProtocolPresent</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+       <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+       <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;support for </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2"> missing, please install python packages: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="s1">&#39;modules_needed&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Protocol scheme </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2"> unsupported for communications with message brokers&quot;</span> <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="Moth">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth">[docs]</a>
+<span class="k">class</span> <span class="nc">Moth</span><span class="p">():</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Moth ... Messages Organized by Topic Headers</span>
+<span class="sd">        (en français: Messages organisés par thème hierarchique. )</span>
+
+<span class="sd">        A multi-protocol library for use by hierarchical message passing implementations,</span>
+<span class="sd">        (messages which have a &#39;topic&#39; header that is used for routing by brokers.)</span>
+<span class="sd"> </span>
+<span class="sd">        - regardless of protocol, the message format returned should be the same.</span>
+<span class="sd">        - the message is turned into a sarracenia.Message object, which acts like a python </span>
+<span class="sd">          dictionary, corresponding to key-value pairs in the message body, and properties.</span>
+<span class="sd">        - topic is a special key that may end up in the message body, or some sort of property</span>
+<span class="sd">          or metadata.</span>
+<span class="sd">        - the protocol should support acknowledgement under user control. Such control indicated</span>
+<span class="sd">          by the presence of an entry_point called &quot;ack&quot;. The entry point accepts &quot;ack_id&quot; as</span>
+<span class="sd">          a message identifier to be passed to the broker. Whatever protocol symbol is used</span>
+<span class="sd">          by the protocol, it is passed through this message property. Examples:</span>
+<span class="sd">          in rabbitmq/amqp ack takes a &quot;delivery_tag&quot; as an argument, in MQTT, it takes a &quot;message-id&quot;</span>
+<span class="sd">          so when receiving an AMQP message, the m[&#39;ack_id&#39;] is assigned the delivery_tag from the message. </span>
+<span class="sd">        - There is a special dict item:  &quot;_DeleteOnPost&quot;,  </span>
+<span class="sd">          to identify keys which are added only for local use.</span>
+<span class="sd">          they will be removed from the message when publishing.</span>
+<span class="sd">          examples:  topic (sent outside body), message-id (used for acknowledgements.)</span>
+<span class="sd">          new_basedir, ack_id, new\_... (settings...)</span>
+
+<span class="sd">        Intent is to be specialized for topic based data distribution (MQTT style.)</span>
+<span class="sd">        API to allow pass-through of protocol specific properties, but apply templates for genericity.</span>
+
+<span class="sd">        Target protocols (and corresponding libraries.): AMQP, MQTT, ?</span>
+
+<span class="sd">        Things to specify:</span>
+
+<span class="sd">        * broker</span>
+
+<span class="sd">        * topicPrefix</span>
+
+<span class="sd">        * subTopic  </span>
+
+<span class="sd">        * queueName   (for amqp, used as client-id for mqtt)</span>
+
+<span class="sd">        this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret</span>
+<span class="sd">        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials</span>
+<span class="sd">  </span>
+<span class="sd">        usage::</span>
+
+<span class="sd">           import sarracenia.moth</span>
+<span class="sd">           import sarracenia.credentials</span>
+
+
+<span class="sd">           props = sarracenia.moth.default_options</span>
+<span class="sd">           props[&#39;broker&#39;] = sarracenia.credentials.Credential(&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;)</span>
+<span class="sd">           props[&#39;expire&#39;] = 300</span>
+<span class="sd">           props[&#39;batch&#39;] = 1</span>
+<span class="sd">           is_subscriber=True</span>
+
+<span class="sd">           c= Moth( props, is_subscriber  )</span>
+
+<span class="sd">           messages = c.newMessages()</span>
+
+<span class="sd">           # if there are new messages from a publisher, return them, otherwise return</span>
+<span class="sd">           # an empty list []].</span>
+<span class="sd">             </span>
+<span class="sd">           p=Moth( { &#39;batch&#39;:1 }, False )</span>
+
+<span class="sd">           p.putNewMessage()</span>
+
+<span class="sd">           p.close()</span>
+<span class="sd">           # tear down connection.     </span>
+<span class="sd">  </span>
+<span class="sd">        Initialize a broker connection. Connections are unidirectional.</span>
+<span class="sd">        either for subscribing (with subFactory) or publishing (with pubFactory.)</span>
+<span class="sd">       </span>
+<span class="sd">        The factories return objects subclassed to match the protocol required</span>
+<span class="sd">        by the broker argument.</span>
+
+<span class="sd">        arguments to the factories are:</span>
+
+<span class="sd">        * broker ... the url of the broker to connect to.</span>
+
+<span class="sd">        * props is a dictionary or properties/parameters.</span>
+
+<span class="sd">        * supplied as overrides to the default properties listed above.</span>
+
+<span class="sd">        Some may vary among protocols::</span>
+<span class="sd"> </span>
+<span class="sd">          Protocol     library implementing    URL to select</span>
+<span class="sd">          --------     --------------------    -------------</span>
+
+<span class="sd">          AMQPv0.9 --&gt; amqplib from Celery --&gt; amqp, amqps</span>
+
+<span class="sd">          AMQPv0.9 --&gt; pika                --&gt; pika, pikas</span>
+
+<span class="sd">          MQTTv3   --&gt; paho                --&gt; mqtt, mqtts</span>
+
+<span class="sd">          AMQPv1.0 --&gt; qpid-proton         --&gt; amq1, amq1s</span>
+
+
+
+<span class="sd">       **messaging_strategy**</span>
+
+<span class="sd">       how to manage the connection. Covers whether to treat the connection</span>
+<span class="sd">       as new or assume it is set up. Also, If something goes wrong.  </span>
+<span class="sd">       What should be done. </span>
+<span class="sd">         </span>
+<span class="sd">       * reset: on startup... erase any state, and re-initialize.</span>
+
+<span class="sd">       * stubborn: If set to True, loop forever if something bad happens.  </span>
+<span class="sd">         Never give up. This sort of setting is desired in operations, especially unattended.</span>
+<span class="sd">         if set to False, may give up more easily.</span>
+
+<span class="sd">       * failure_duration is to advise library how to structure connection service level.</span>
+<span class="sd">          </span>
+<span class="sd">         * 5m - make a connection that will recover from transient errors of a few minutes,</span>
+<span class="sd">           but not tax the broker too much for prolonged outages.</span>
+
+<span class="sd">         * 5d - duration outage to striving to survive connection for five days.</span>
+
+<span class="sd">       Changing recovery_strategy setting, might result in having to destroy and re-create </span>
+<span class="sd">       consumer queues (AMQP.)</span>
+
+<span class="sd">       **Options**</span>
+
+<span class="sd">       **both**</span>
+
+<span class="sd">       * &#39;topicPrefix&#39; : [ &#39;v03&#39; ]</span>
+
+<span class="sd">       * &#39;messageDebugDump&#39;: False, --&gt; enable printing of raw messages.</span>
+
+<span class="sd">       * &#39;inline&#39;: False,  - Are we inlining content within messages?</span>
+
+<span class="sd">       * &#39;inlineEncoding&#39;: &#39;guess&#39;, - what encoding should we use for inlined content?</span>
+
+<span class="sd">       * &#39;inlineByteMax&#39;: 4096,  - Maximum size of messages to inline.</span>
+
+<span class="sd">       **for get**</span>
+
+<span class="sd">       *  &#39;batch&#39;  : 100  # how many messages to get at once</span>
+
+<span class="sd">       *  &#39;broker&#39; : an sr_broker ?</span>
+
+<span class="sd">       *  &#39;queueName&#39;  : Mandatory, name of a queue. (only in AMQP... hmm...)</span>
+
+<span class="sd">       *  &#39;bindings&#39; : [ list of bindings ]</span>
+
+<span class="sd">       *  &#39;loop&#39;</span>
+
+<span class="sd">       **optional:**</span>
+
+<span class="sd">       *  &#39;message_ttl&#39;    </span>
+
+<span class="sd">       **for put:**</span>
+
+<span class="sd">       *   &#39;exchange&#39; (only in AMQP... hmm...)</span>
+<span class="sd">       </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">subFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;no broker specified&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">],</span><span class="s1">&#39;url&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;invalid broker url&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ProtocolPresent</span><span class="p">(</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">):</span>
+           <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;unknown broker scheme/protocol specified&#39;</span><span class="p">)</span>
+           <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">Moth</span><span class="o">.</span><span class="n">findAllSubclasses</span><span class="p">(</span><span class="n">Moth</span><span class="p">):</span>
+            <span class="n">driver</span><span class="o">=</span><span class="n">sc</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="c1"># when amqp_consumer option is True, use the moth.AMQPConsumer class, not normal moth.AMQP</span>
+            <span class="k">if</span> <span class="s2">&quot;amqp_consumer&quot;</span> <span class="ow">in</span> <span class="n">props</span> <span class="ow">and</span> <span class="n">props</span><span class="p">[</span><span class="s2">&quot;amqp_consumer&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s1">&#39;amqp&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s1">&#39;amqpconsumer&#39;</span><span class="p">:</span>
+                    <span class="c1"># driver needs to be amqp to match with the broker URL&#39;s scheme</span>
+                    <span class="n">driver</span> <span class="o">=</span> <span class="s1">&#39;amqp&#39;</span>
+            <span class="n">scheme</span><span class="o">=</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">scheme</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">or</span> \
+               <span class="p">(</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span> <span class="p">]))</span> <span class="ow">or</span> \
+               <span class="p">(</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ws&#39;</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">sc</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;broker intialization failure&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">pubFactory</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Moth&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;no broker specified&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">],</span><span class="s1">&#39;url&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;invalid broker url&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ProtocolPresent</span><span class="p">(</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">):</span>
+           <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;unknown broker scheme/protocol specified&#39;</span><span class="p">)</span>
+           <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">Moth</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
+            <span class="n">driver</span><span class="o">=</span><span class="n">sc</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">scheme</span><span class="o">=</span><span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">scheme</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">or</span> \
+               <span class="p">(</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span> <span class="p">]))</span> <span class="ow">or</span> \
+               <span class="p">(</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">driver</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">scheme</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ws&#39;</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">sc</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># ProtocolPresent test should ensure that we never get here...</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;broker intialization failure&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="Moth.findAllSubclasses">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.findAllSubclasses">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">findAllSubclasses</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively finds all subclasses of a class. __subclasses__() only gives direct subclasses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls_subclasses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">cls_subclasses</span><span class="p">:</span>
+            <span class="n">cls_subclasses</span> <span class="o">=</span> <span class="n">cls_subclasses</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">Moth</span><span class="o">.</span><span class="n">findAllSubclasses</span><span class="p">(</span><span class="n">sc</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cls_subclasses</span></div>
+
+
+<div class="viewcode-block" id="Moth.__init__">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_subscriber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           If is_subscriber=True, then this is a consuming instance.</span>
+<span class="sd">           expect calls to get* routines.</span>
+
+<span class="sd">           if is_subscriber=False, then expect/permit only calls to put*</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span> <span class="o">=</span> <span class="n">is_subscriber</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;connected&#39;</span><span class="p">:</span> <span class="kc">False</span> <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">default_options</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;masks&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_options</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_options</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_options</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">props</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+
+        <span class="n">me</span> <span class="o">=</span> <span class="s1">&#39;sarracenia.moth.Moth&#39;</span>
+
+        <span class="c1"># apply settings from props.</span>
+        <span class="k">if</span> <span class="s1">&#39;settings&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">me</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">][</span><span class="n">s</span><span class="p">]</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logFormat&#39;</span><span class="p">],</span>
+                            <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logLevel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span></div>
+
+
+<div class="viewcode-block" id="Moth.ack">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.ack">[docs]</a>
+    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          tell broker that a given message has been received.</span>
+
+<span class="sd">          ack uses the &#39;ack_id&#39; property to send an acknowledgement back to the broker.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ack unimplemented&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get default properties to override, used by client for validation. </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Moth</span><span class="o">.</span><span class="n">__default_options</span>
+
+<div class="viewcode-block" id="Moth.getNewMessage">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.getNewMessage">[docs]</a>
+    <span class="k">def</span> <span class="nf">getNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there is one new message available, return it. Otherwise return None. Do not block.</span>
+
+<span class="sd">        side effects:</span>
+<span class="sd">            metrics.</span>
+<span class="sd">            self.metrics[&#39;RxByteCount&#39;] should be incremented by size of payload.</span>
+<span class="sd">            self.metrics[&#39;RxGoodCount&#39;] should be incremented by 1 if a good message is received.</span>
+<span class="sd">            self.metrics[&#39;RxBadCount&#39;] should be incremented by 1 if an invalid message is received (&amp;discarded.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;getNewMessage unimplemented&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Moth.newMessages">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.newMessages">[docs]</a>
+    <span class="k">def</span> <span class="nf">newMessages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there are new messages available from the broker, return them, otherwise return None.</span>
+
+<span class="sd">        On Success, this routine returns immediately (non-blocking) with either None, or a list of messages.</span>
+
+<span class="sd">        On failure, this routine blocks, and loops reconnecting to broker, until interaction with broker is successful.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;NewMessages unimplemented&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="Moth.putNewMessage">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.putNewMessage">[docs]</a>
+    <span class="k">def</span> <span class="nf">putNewMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span> <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           publish a message as set up to the given topic.</span>
+
+<span class="sd">           return True is succeeded, False otherwise.</span>
+
+<span class="sd">           side effect</span>
+<span class="sd">            self.metrics[&#39;TxByteCount&#39;] should be incremented by size of payload.</span>
+<span class="sd">            self.metrics[&#39;TxGoodCount&#39;] should be incremented by 1 if a good message is received.</span>
+<span class="sd">            self.metrics[&#39;TxBadCount&#39;] should be incremented by 1 if an invalid message is received (&amp;discarded.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;implementation missing!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span> <span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxByteCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxGoodCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;rxBadCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txByteCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txGoodCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;txBadCount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;connected&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">down_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectTime&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">down_time</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
+
+    <span class="k">def</span> <span class="nf">metricsConnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;connected&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">:</span>
+            <span class="n">down_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectTime&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">down_time</span>
+
+<div class="viewcode-block" id="Moth.metricsDisconnect">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.metricsDisconnect">[docs]</a>
+    <span class="k">def</span> <span class="nf">metricsDisconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           tear down an existing connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;connected&#39;</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectCount&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;disconnectLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;implementation missing!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Moth.cleanup">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.cleanup">[docs]</a>
+    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          get rid of server-side resources associated with a client. (queues/id&#39;s, etc...)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getCleanUp</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">putCleanUp</span><span class="p">()</span></div>
+</div>
+
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.amqp</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.amqpconsumer</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">sarracenia.moth.mqtt</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

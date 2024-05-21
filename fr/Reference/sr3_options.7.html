@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPTIONS SR3 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SR_post" href="sr_post.7.html" />
+    <link rel="prev" title="SR3 CREDENTIALS" href="sr3_credentials.7.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Référence</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sr3.1.html">SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_cpump.1.html">Sr3_cpump C Page de Référence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">OPTIONS SR3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#format-de-fichier-de-configuration-sr3">Format de fichier de configuration SR3</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr3_post</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Référence</a> &raquo;</li>
+      <li>OPTIONS SR3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Reference/sr3_options.7.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="options-sr3">
+<h1>OPTIONS SR3<a class="headerlink" href="#options-sr3" title="Link to this heading"></a></h1>
+<section id="format-de-fichier-de-configuration-sr3">
+<h2>Format de fichier de configuration SR3<a class="headerlink" href="#format-de-fichier-de-configuration-sr3" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">section de manuel<span class="colon">:</span></dt>
+<dd class="field-odd"><p>7</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">group de Manuel<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>nom valeur
+nom valeur d’utilisation
+nom valeur_${substitution}
+.
+.
+.
+</pre></div>
+</div>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p>Les options sont placées dans des fichiers de configuration, une par ligne, avec le format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">option</span> <span class="o">&lt;</span><span class="n">valeur</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debug</span> <span class="n">true</span>
+<span class="n">debug</span>
+</pre></div>
+</div>
+<p>définit l’option <em>debug</em> pour activer une sortie d’éxécution plus détaillée. Si aucune valeur n’est spécifiée,
+la valeur true est assigné, donc les valeurs ci-dessus sont équivalentes. Un deuxième exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+<p>Dans l’exemple ci-dessus, <em>broker</em> est le mot-clé de l’option, et le reste de la ligne est la
+valeur attribuée au paramètre. Les fichiers de configuration sont une séquence de paramètres,
+avec un paramètre par ligne.
+Remarque:</p>
+<ul class="simple">
+<li><p>les fichiers sont lus de haut en bas, surtout pour <em>directory</em>, <em>strip</em>, <em>mirror</em>,
+et les options <em>flatten</em> s’appliquent aux clauses <em>accept</em> qui se trouvent dans la suite du fichier.</p></li>
+<li><p>La barre oblique (/) est utilisée comme séparateur de chemin dans les fichiers de configuration Sarracenia sur tous les
+systèmes d’exploitation. L’utilisation de la barre oblique inverse comme séparateur () (tel qu’utilisé dans la
+cmd shell de Windows) risque de ne pas fonctionner correctement. Lorsque des fichiers sont lu dans Windows, le chemin d’accès
+est immédiatement converti en utilisant la barre oblique. Ceci est pour s’assurer que les options <em>reject</em>, <em>accept</em>, et
+<em>strip</em> peuvent filtrer des expressions correctement. C’est pour cela qu’il est toujours important d’utiliser la barre
+oblique (/) quand un séparateur est nécessaire.</p></li>
+<li><p><strong>#</strong> est le préfixe des lignes de descriptions non fonctionnelles de configurations ou de commentaires.
+C’est identique aux scripts shell et/ou python</p></li>
+<li><p><strong>Toutes les options sont sensibles aux majuscules et minuscules.</strong> <strong>Debug</strong> n’est pas la même chose que <strong>debug</strong> ni <strong>DEBUG</strong>.
+Ces trois options sont différentes (dont deux n’existent pas et n’auront aucun effet et créeront un avertissement
+d’« option inconnue »).</p></li>
+</ul>
+<p>Le fichier a un ordre important. Il est lu de haut en bas, donc les options qui sont assignée sur une ligne on tendance
+a affecter les lignes qui suivent:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mirror</span> <span class="n">off</span>
+<span class="n">directory</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">just_flat_files_here_please</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="n">flatones</span><span class="o">.*</span>
+
+<span class="n">mirror</span> <span class="n">on</span>
+<span class="n">directory</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">fully_mirrored</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>Dans l’extrait ci-dessus, le paramètre <em>mirror</em> est désactivé, et la valeur de <em>directory</em> est définie. Les fichiers
+dont le nom inclut <em>flatones</em> seront donc tous placés dans le répertoire <em>/data/just_flat_files_here_please</em>.
+Pour les fichiers qui n’ont pas ce nom, ils ne seront pas récupérés par le premier <em>accept</em>. Ensuite, avec le <em>mirror</em>
+activé et le nouveau paramètre de <em>directory</em> défini, le restant des fichiers atterrira dans
+/data/fully_mirrored. Un deuxième exemple :</p>
+<p>séquence #1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>séquence #2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span>
+<span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: cela ne correspond-il qu’aux fichiers se terminant par ‘gif’ ou devrions-nous y ajouter un $ ?
+cela correspondra-t-il à quelque chose comme .gif2 ? y a-t-il un .* supposé à la fin ?</p>
+</div>
+<p>Dans la séquence #1, tous les fichiers se terminant par ‘gif’ sont rejetés. Dans la séquence #2, le
+accept .* (qui accepte tout) est lu avant la déclaration du rejet,
+donc le rejet n’a aucun effet. Certaines options ont une portée globale, plutôt que d’être
+interprété dans l’ordre. Dans ces cas, la dernière déclaration remplace celle qu’il y avait plus tôt dans le fichier..</p>
+</section>
+<section id="variables">
+<h3>Variables<a class="headerlink" href="#variables" title="Link to this heading"></a></h3>
+<p>Il est possible de faire une substitution dans la valeur d’une option. Les valeurs sont représentées par ${name}.
+Le nom peut être une variable d’environnement ordinaire, ou choisi parmi un certain nombre de variables déjà
+intégrés:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>varTimeOffset -5m
+directory /monrépertoirelocal/${%Y%m%d_%Hh%m:%S.%f}/mydailies
+accept    .*observations.*
+
+rename lala_${%o-1h%Y%m%d%H%m%S.%f}
+</pre></div>
+</div>
+<p>Il est possible les substitution de date et heure, avec des décalage, dans le premier cas avec varTimeOffset,
+un décalage de 5 minutes dans le passé, dans le deuxième cas, c’est une heure dans le passé.
+Il est également possible de spécifier des substitutions de variables sur les arguments du paramètre du <em>directory</em>
+en utilisant la notation <a href="#id1"><span class="problematic" id="id2">*</span></a>${..} * :</p>
+<ul>
+<li><p>%…     - un patron tel qu’accepté par <a class="reference external" href="https://docs.python.org/fr/3/library/datetime.html#datetime.date.strftime">datetime.strftime()</a></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>avec l’ajout du décalage au début avec o+- et une durée.</p></li>
+<li><p>exemple:  ${%Y/%m/%d_%Hh%M:%S.%f} –&gt; 2022/12/04_17h36:34.123479</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>SOURCE   - l’utilisateur amqp qui a injecté des données (extraites du message d’annonce).</p></li>
+<li><p>BD       - le répertoire de base.</p></li>
+<li><p>BUP      - le composant du chemin de baseUrl (ou : baseUrlPath).</p></li>
+<li><p>BUPL     - le dernier élément du chemin du baseUrl. (ou: baseUrlPathLast).</p></li>
+<li><p>PBD      - le “post base dir”.</p></li>
+<li><p><em>var</em>    - n’importe quelle variable d’environnement.</p></li>
+<li><p>BROKER_USER - le nom d’utilisateur pour l’authentification auprès du courtier (par exemple, anonyme)</p></li>
+<li><p>POST_BROKER_USER - le nom d’utilisateur pour l’authentification auprès du courtier de destination (post_broker)</p></li>
+<li><p>PROGRAM     - le nom du composant (subscribe, shovel, etc…)</p></li>
+<li><p>CONFIG      - le nom du fichier de configuration en cours d’exécution.</p></li>
+<li><p>HOSTNAME    - le hostname qui exécute le client.</p></li>
+<li><p>RANDID      - Un ID aléatoire qui va être consistant pendant la duration d’une seule invocation.</p></li>
+</ul>
+<p>Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
+le composant, ceci n’est pas décodé ou dérivé du contenu des fichiers livrés.
+Toutes les dates/heures de Sarracenia sont en UTC. Le paramètre varTimeOffset peut spécifier
+une déviation par rapport à l’heure actuelle.</p>
+<p>note:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Lorsque les substitutions de date ${% sont présentes, l&#39;interprétation des modèles % dans les noms de fichiers
+par strftime, peut signifier qu&#39;il faut leur échapper les caractères précédents via le doublage : %%
+</pre></div>
+</div>
+<p>Référez  à <em>sourceFromExchange</em> pour un exemple d’utilisation. Notez que toute valeur déjà intégrée
+dans Sarracenia a priorité par rapport à une variable du même nom dans l’environnement.
+Notez que les paramètres de <em>flatten</em> peuvent être modifiés entre les options de <em>directory</em>.</p>
+<section id="substitutions-compatible-sundew">
+<h4>Substitutions Compatible Sundew<a class="headerlink" href="#substitutions-compatible-sundew" title="Link to this heading"></a></h4>
+<p>Dans <a class="reference external" href="../Explication/Glossary.html#sundew">MetPX Sundew</a>, le format de la nomination de fichier est beaucoup plus
+stricte, et est spécialisée pour une utilisation aves les données du World Meteorological Organization (WMO).
+Notez que la convention du format des fichiers est antérieure, et n’a aucun rapport avec la convention de
+dénomination des fichiers de WMO actuellement approuvée, et est utilisé strictement comme format interne. Les fichiers sont
+séparés en six champs avec deux points. Le premier champ, DESTFN, est le “Abbreviated Header Line (AHL)” de WMO
+(style 386) ou les blancs sont remplacé avec des traits de soulignement</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TTAAii</span> <span class="n">CCCC</span> <span class="n">YYGGGg</span> <span class="n">BBB</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>(voir le manuel de WMO pour plus de détails) suivis de chiffres pour rendre le produit unique (cela est vrai en
+théorie, mais pas en pratique vu qu’il existe un grand nombre de produits qui ont les mêmes identifiants).
+La signification du cinquième champ est une priorité, et le dernier champ est un horodatage.
+La signification des autres champs varie en fonction du contexte. Exemple de nom de fichier</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SACN43_CWAO_012000_AAA_41613</span><span class="p">:</span><span class="n">ncp1</span><span class="p">:</span><span class="n">CWAO</span><span class="p">:</span><span class="n">SA</span><span class="p">:</span><span class="mf">3.</span><span class="n">A</span><span class="o">.</span><span class="n">I</span><span class="o">.</span><span class="n">E</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="mi">20050201200339</span>
+</pre></div>
+</div>
+<p>Si un fichier est envoyé à Sarracenia et qu’il est nommé selon les conventions de Sundew,
+les champs de substitution suivants seront disponibles:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${T1}    remplacer par le bulletin T1
+${T2}    remplacer par le bulletin T2
+${A1}    remplacer par le bulletin A1
+${A2}    remplacer par le bulletin A2
+${ii}    remplacer par le bulletin ii
+${CCCC}  remplacer par le bulletin CCCC
+${YY}    remplacer par le bulletin YY   (obs. jour)
+${GG}    remplacer par le bulletin GG   (obs. heure)
+${Gg}    remplacer par le bulletin Gg   (obs. minute)
+${BBB}   remplacer par le bulletin bbb
+${RYYYY} remplacer par l&#39;année de réception
+${RMM}   remplacer par le mois de réception
+${RDD}   remplacer par le jour de réception
+${RHH}   remplacer par l&#39;heure de réception
+${RMN}   remplacer par la minute de réception
+${RSS}   remplacer par la seconde de réception
+${YYYY}         année actuelle (utilisé %Y est préféré)
+${MM}           mois actuel (utilisé %M est préféré)
+${JJJ}          julian actuelle (utilisé %j est préféré)
+${YYYYMMDD}     date actuelle (utilisé %Y%M%D est préféré)
+</pre></div>
+</div>
+<p>Les champs ‘R’ proviennent du sixième champ, et les autres viennent du premier champ.
+Lorsque des données sont injectées dans Sarracenia à partir de Sundew, l’en-tête du message d’annonce <em>sundew_extension</em>
+fournira la source de ces substitions même si ces champs ont été supprimés des fichiers livrés.</p>
+<dl class="simple">
+<dt>note::</dt><dd><p>les versions périmés de spécification temporelles éventuellement vont cessé d´être interprétés
+ands une version ultérieur.</p>
+</dd>
+</dl>
+<section id="sr-dev-appname">
+<h5>SR_DEV_APPNAME<a class="headerlink" href="#sr-dev-appname" title="Link to this heading"></a></h5>
+<p>La variable d’environnement SR_DEV_APPNAME peut être définie pour que la configuration de l’application et les répertoires
+d’état soient créés sous un nom différent. Ceci est utilisé dans le développement pour pouvoir avoir de nombreuses configurations
+actives à la fois. Cela permet de faire plus de tests au lieu de toujours travailler avec la configuration <em>réelle</em> du développeur.</p>
+<p>Exemple : export SR_DEV_APPNAME=sr-hoho… lorsque vous démarrez un composant sur un système Linux, il
+va rechercher les fichiers de configuration dans ~/.config/sr-hoho/ et va placer les fichiers d’état dans le
+répertoire ~/.cache/sr-hoho.</p>
+</section>
+</section>
+</section>
+<section id="types-d-options">
+<h3>TYPES D’OPTIONS<a class="headerlink" href="#types-d-options" title="Link to this heading"></a></h3>
+<p>Les options de sr3 ont plusieurs types :</p>
+<dl class="simple">
+<dt>count</dt><dd><p>type de nombre entier. Même format que <em>size</em> détaillé plus bas.</p>
+</dd>
+<dt>duration</dt><dd><p>un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
+modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine ).</p>
+</dd>
+<dt>flag</dt><dd><p>une option qui a la valeur soit Vrai (True ou on) ou Faux (False ou off) (une valeur booléenne).</p>
+</dd>
+<dt>float</dt><dd><p>un nombre à virgule flottante, (séparateur de décimale étant un point.)</p>
+</dd>
+<dt>list</dt><dd><p>une liste de chaîne de caractères, chaque occurrence successive se rajoute au total.
+Tous les options plugins de v2 sont déclarée du type list.</p>
+</dd>
+<dt>set</dt><dd><p>un assortissement de chaîne de caractères, chaque occurrence successive s’unionise au total.</p>
+</dd>
+<dt>size</dt><dd><p>taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 10).
+si on rajoute ´b’ … c´est base 2 :   1k=1000, 1kb=1024</p>
+</dd>
+<dt>str</dt><dd><p>une chaîne de caractères.</p>
+</dd>
+</dl>
+</section>
+<section id="options">
+<h3>OPTIONS<a class="headerlink" href="#options" title="Link to this heading"></a></h3>
+<p>Les options actuelles sont énumérées ci-dessous. Notez qu’elles sont sensibles aux majuscules, et
+seulement un extrait est disponible sur la ligne de commande. Celles qui sont disponibles
+sur la ligne de commande ont le même effet que lorsqu’elles sont spécifiés dans un fichier de configuration.</p>
+<p>Les options disponibles dans les fichiers de configuration :</p>
+<section id="acceltreshold-size-defaut-0-desactiver">
+<h4>accelTreshold &lt;size&gt; défaut: 0 (désactiver.)<a class="headerlink" href="#acceltreshold-size-defaut-0-desactiver" title="Link to this heading"></a></h4>
+<p>L’option accelThreshold indique la taille minimale d’un fichier transféré pour
+qu’un téléchargeur binaire puisse être lancé.</p>
+</section>
+<section id="accelxxxcommand">
+<h4>accelXxxCommand<a class="headerlink" href="#accelxxxcommand" title="Link to this heading"></a></h4>
+<p>On peut spécifier d’autres fichiers binaires pour les téléchargeurs pour des cas particuliers,</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Option</p></td>
+<td><p>Valeur par Défaut</p></td>
+</tr>
+<tr class="row-even"><td><p>accelWgetCommand</p></td>
+<td><p>/usr/bin/wget %s -O %d</p></td>
+</tr>
+<tr class="row-odd"><td><p>accelScpCommand</p></td>
+<td><p>/usr/bin/scp %s %d</p></td>
+</tr>
+<tr class="row-even"><td><p>accelCpCommand</p></td>
+<td><p>/usr/bin/cp  %s %d</p></td>
+</tr>
+<tr class="row-odd"><td><p>accelFtpgetCommand</p></td>
+<td><p>/usr/bin/ncftpget %s %d</p></td>
+</tr>
+<tr class="row-even"><td><p>accelFtpputCommand</p></td>
+<td><p>/usr/bin/ncftpput %s %d</p></td>
+</tr>
+</tbody>
+</table>
+<p>utilisez %s pour remplacer le nom du fichier source et %d pour le fichier en cours d’écriture.
+Un exemple de paramètre à remplacer</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accelCpCommand</span> <span class="n">dd</span> <span class="k">if</span><span class="o">=%</span><span class="n">s</span> <span class="n">of</span><span class="o">=%</span><span class="n">d</span> <span class="n">bs</span><span class="o">=</span><span class="mi">4096</span><span class="n">k</span>
+</pre></div>
+</div>
+</section>
+<section id="accept-reject-et-acceptunmatched">
+<h4>accept, reject et acceptUnmatched<a class="headerlink" href="#accept-reject-et-acceptunmatched" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>accept     &lt;modèle regexp&gt; (optionnel) [&lt;mot-clés&gt;]</strong></p></li>
+<li><p><strong>reject     &lt;modèle regexp&gt; (optionnel)</strong></p></li>
+<li><p><strong>acceptUnmatched   &lt;booléen&gt; (défaut: True)</strong></p></li>
+</ul>
+<p>Les options <strong>accept</strong> et <strong>reject</strong> traitent les expressions régulières (regexp).
+Le regexp est appliqué à l’URL du message d’annonce pour trouver une correspondance.</p>
+<p>Si l’URL d’un fichier correspond à un modèle <strong>reject</strong>, le message d’annonce
+est reconnu comme consommé par le courtier et est ignoré.</p>
+<p>Celui qui correspond à un modèle <strong>accept</strong> est traité par le composant.</p>
+<p>Dans de nombreuses configurations, les options <strong>accept</strong> et <strong>reject</strong> sont mélangé
+avec l’option <strong>directory</strong>.  Ces options associent les messages d’annonce acceptés
+à la valeur du <strong>directory</strong> sous laquelle elles sont spécifiées.</p>
+<p>Une fois que toutes les options <strong>accept</strong> / <strong>reject</strong> sont traitées, normalement
+le message d’annonce est accepté. Pour changer ce comportement,
+il est possible de définir <strong>acceptUnmatched</strong> à False. Les paramètres de <strong>accept/reject</strong>
+sont interprétés dans l’ordre. Chaque option est traitée de manière ordonnée
+de haut en bas. Par exemple:</p>
+<p>séquence #1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>séquence #2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span>
+<span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+</pre></div>
+</div>
+<p>Dans la séquence #1, tous les fichiers se terminant par ‘gif’ sont rejetés.  Dans la séquence #2,
+le accept .* (qui accepte tout) est lu avant la déclaration de reject, de sorte que le reject n’a aucun effet.</p>
+<p>Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées au composant,
+et a la place, envoyer un sur ensemble de ce qui est pertinent, et de seulement régler les mécanismes côté client,
+économisant du bandwidth et du traitement pour tous. Plus de détails sur les directives:</p>
+<p>Les options <strong>accept</strong> et <strong>reject</strong> utilisent des expressions régulières (regexp) pour trouver
+une correspondance avec l’URL.
+Ces options sont traitées séquentiellement.
+L’URL d’un fichier qui correspond à un modèle <strong>reject</strong> n’est pas publiée.
+Les fichiers correspondant à un modèle <strong>accept</strong> sont publiés.
+Encore une fois, un <em>rename</em> peut être ajouté à l’option <em>accept</em>… les produits qui correspondent
+a l’option <em>accept</em> seront renommé comme décrit… à moins que le <em>accept</em> corresponde à
+un fichier, l’option <em>rename</em> doit décrire un répertoire dans lequel les fichiers
+seront placé (en préfix au lieu de remplacer le nom du fichier).</p>
+<p>L’option <strong>permDefault</strong> permet aux utilisateurs de spécifier un masque d’autorisation octal numérique
+de style Linux:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">permDefault</span> <span class="mi">040</span>
+</pre></div>
+</div>
+<p>signifie qu’un fichier ne sera pas publié à moins que le groupe ait l’autorisation de lecture
+(sur une sortie ls qui ressemble à : —r—–, comme une commande chmod 040 &lt;fichier&gt; ).
+Les options <strong>permDefault</strong> spécifient un masque, c’est-à-dire que les autorisations doivent être
+au moins ce qui est spécifié.</p>
+<p>Le <strong>regexp pattern</strong> peut être utilisé pour définir des parties du répertoire si une partie du message d’annonce est placée
+entre parenthèses. <strong>sender</strong> peut utiliser ces parties pour générer le nom du répertoire.
+Les chaînes de parenthèses entre les guillemets rst remplaceront le mot-clé <strong>${0}</strong> dans le nom du répertoire…
+le second <strong>{1} $</strong> etc.</p>
+<p>Exemple d’utilisation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>filename NONE
+
+directory /ce/premier/répertoire/ciblé
+
+accept .*fichier.*type1.*
+
+directory /ce/répertoire/ciblé
+
+accept .*fichier.*type2.*
+
+accept .*fichier.*type3.*  DESTFN=fichier_de_type3
+
+directory /ce/${0}/modèle/${1}/répertoire
+
+accept .*(2016....).*(RAW.*GRIB).*
+</pre></div>
+</div>
+<p>Un message d’annonce sélectionné par le premier <em>accept</em> sera remis inaltérée dans le premier répertoire.</p>
+<p>Un message d’annonce sélectionné par le deuxième <em>accept</em> sera remis inaltérée dans deuxième répertoire.</p>
+<p>Un message d’annonce sélectionné par le troisième <a href="#id3"><span class="problematic" id="id4">*</span></a>accept sera renommé « fichier_de_type3 » dans le deuxième répertoire.</p>
+<p>Un message d’annonce sélectionné par le quatrième <em>accept</em> sera remis inaltérée à un répertoire.</p>
+<p>Ça sera appelé  <em>/ce/20160123/modèle/RAW_MERGER_GRIB/répertoire</em> si la notice du message d’annonce ressemble à cela:</p>
+<p><strong>20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC</strong></p>
+</section>
+<section id="acceptsizewrong-booleen-defaut-false">
+<h4>acceptSizeWrong: &lt;booléen&gt; (défaut: False)<a class="headerlink" href="#acceptsizewrong-booleen-defaut-false" title="Link to this heading"></a></h4>
+<p>Lorsqu’un fichier est téléchargé et que sa taille ne correspond pas à celle annoncée, il est
+normalement rejeté, comme un échec. Cette option accepte le fichier même avec la mauvaise
+taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
+le fichier est modifié au moment de sa récupération.</p>
+</section>
+<section id="attempts-count-defaut-3">
+<h4>attempts &lt;count&gt; (défaut: 3)<a class="headerlink" href="#attempts-count-defaut-3" title="Link to this heading"></a></h4>
+<p>L’option <strong>attempts</strong> indique combien de fois il faut tenter le téléchargement des données avant d’abandonner.
+Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’option <strong>retry</strong> a la valeur false,
+le fichier est immédiatement supprimé.</p>
+<p>Lorsque l’option <strong>attempts</strong> est utilisé, un échec de téléchargement après le numéro prescrit
+des <strong>attempts</strong> (ou d’envoi, pour un sender) va entrainer l’ajout du message d’annonce à un fichier de fil d’attente
+pour une nouvelle tentative plus tard.  Lorsque aucun message d’annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+les requêtes se feront avec la fil d’attente de “retry”.</p>
+</section>
+<section id="basedir-chemin-defaut">
+<h4>baseDir &lt;chemin&gt; (défaut: /)<a class="headerlink" href="#basedir-chemin-defaut" title="Link to this heading"></a></h4>
+<p><strong>baseDir</strong> fournit le chemin d’accès au répertoire, et lorsqu’il est combiné avec le chemin d’accès relatif
+de la notification sélectionnée, <strong>baseDir</strong> donne le chemin absolu du fichier à envoyer.
+Le défaut est None, ce qui signifie que le chemin dans la notification est le chemin absolu.</p>
+<p>Parfois, les senders s’abonnent à xpublic local, qui sont des URL http, mais le sender
+a besoin d’un fichier local, alors le chemin d’accès local est construit en concaténant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">baseDir</span> <span class="o">+</span> <span class="n">chemin</span> <span class="n">d</span><span class="s1">&#39;accès relatif dans le baseUrl + relPath</span>
+</pre></div>
+</div>
+</section>
+<section id="baseurl-relpath-flag-defaut-off">
+<h4>baseUrl_relPath &lt;flag&gt; (défaut: off)<a class="headerlink" href="#baseurl-relpath-flag-defaut-off" title="Link to this heading"></a></h4>
+<p>Normalement, le chemin d’accès relatif (baseUrl_relPath est False, ajouté au répertoire de base) pour
+les fichiers téléchargés seront définis en fonction de l’en-tête relPath inclus
+dans le message d’annonce. Toutefois, si <em>baseUrl_relPath</em> est défini, le relPath du message d’annonce va
+être précédé des sous-répertoires du champ baseUrl du message d’annonce.</p>
+</section>
+<section id="batch-count-defaut-100">
+<h4>batch &lt;count&gt; (défaut: 100)<a class="headerlink" href="#batch-count-defaut-100" title="Link to this heading"></a></h4>
+<p>L’option <strong>batch</strong> est utilisée pour indiquer le nombre de fichiers à transférer
+sur une connexion, avant qu’elle ne soit démolie et rétablie.  Sur de très bas volume de
+transferts, où des délais d’attente peuvent se produire entre les transferts, cela devrait être
+ajuster à 1.  Pour la plupart des situations, le défaut est bien. Pour un volume plus élevé,
+on pourrait l’augmenter pour réduire les frais généraux de transfert. Cette option est seulement utilisé pour les
+protocoles de transfert de fichiers, et non HTTP pour le moment.</p>
+</section>
+<section id="blocksize-size-defaut-0-auto">
+<h4>blocksize &lt;size&gt; défaut: 0 (auto)<a class="headerlink" href="#blocksize-size-defaut-0-auto" title="Link to this heading"></a></h4>
+<p>REMARQUE: <strong>EXPERIMENTAL pour sr3, devrait revenir dans la version future</strong>
+Cette option <strong>blocksize</strong> contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
+La valeur doit être l’une des suivantes</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0 - calcul automatiquement une stratégie de partitionnement appropriée (défaut).
+1 - envoyez toujours des fichiers entiers en une seule partie.
+&lt;blocksize&gt; - utiliser une taille de partition fixe (taille d’exemple : 1M ).
+</pre></div>
+</div>
+<p>Les fichiers peuvent être annoncés en plusieurs parties.  Chaque partie à un somme de contrôle (checksum) distinct.
+Les parties et leurs somme de contrôle sont stockées dans la cache. Les partitions peuvent traverser
+le réseau séparément et en parallèle. Lorsque les fichiers changent, les transferts sont
+optimisé en n’envoyant que les pièces qui ont changé.</p>
+<p>L’option <em>outlet</em> permet à la sortie finale d’être autre qu’un poste.
+Voir <a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> pour plus de détails.</p>
+</section>
+<section id="broker">
+<h4>Broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
+<p><strong>broker [amqp|mqtt]{s}://&lt;utilisateur&gt;:&lt;mot-de-passe&gt;&#64;&lt;hoteDuCourtier&gt;[:port]/&lt;vhost&gt;</strong></p>
+<p>Un URI est utilisé pour configurer une connexion à une pompe de messages d’annonce, soit
+un courtier MQTT ou AMQP. Certains composants de Sarracenia fixent un défaut raisonnable pour
+cette option. Il faut fournir l’utilisateur normal, l’hôte, et le port de connexion.
+Dans la plupart des fichiers de configurations,
+le mot de passe est manquant. Le mot de passe est normalement inclus seulement dans le fichier
+<a class="reference external" href="sr3_credentials.7.html">credentials.conf</a>.</p>
+<p>Le travail de Sarracenia n’a pas utilisé de vhosts, donc <strong>vhost</strong> devrait presque toujours être <strong>/</strong>.</p>
+<p>pour plus d’informations sur le format URI AMQP: ( <a class="reference external" href="https://www.rabbitmq.com/uri-spec.html">https://www.rabbitmq.com/uri-spec.html</a> )</p>
+<p>soit dans le fichier default.conf, soit dans chaque fichier de configuration spécifique.
+L’option broker indique à chaque composant quel courtier contacter.</p>
+<p><strong>broker [amqp|mqtt]{s}://&lt;utilisateur&gt;:&lt;mot-de-passe&gt;&#64;&lt;hoteDuCourtier&gt;[:port]/&lt;vhost&gt;</strong></p>
+<dl class="simple">
+<dt>::</dt><dd><p>(défaut: None et il est obligatoire de le définir )</p>
+</dd>
+</dl>
+<p>Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
+aux échanges et aux thèmes pour déterminer le messages d’annonce en question.</p>
+</section>
+<section id="bufsize-size-defaut-1m">
+<h4>bufsize &lt;size&gt; (défaut: 1m)<a class="headerlink" href="#bufsize-size-defaut-1m" title="Link to this heading"></a></h4>
+<p>Les fichiers seront copiés en tranches de <em>bufsize</em> octets. Utilisé par les protocoles de transfert.</p>
+</section>
+<section id="byteratemax-size-defaut-0">
+<h4>byteRateMax &lt;size&gt; (défaut: 0)<a class="headerlink" href="#byteratemax-size-defaut-0" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt><strong>byteRateMax</strong> est supérieur à 0, le processus tente de respecter cette vitesse de livraison</dt><dd><p>en kilo-octets par seconde… ftp,ftps,ou sftp)</p>
+</dd>
+</dl>
+<p><strong>FIXME</strong>: byteRateMax… uniquement implémenté par le sender ? ou subscriber aussi, données uniquement, ou messages d’annonce aussi ?</p>
+</section>
+<section id="callback-speficationdeclass">
+<h4>callback &lt;SpéficationDeClass&gt;<a class="headerlink" href="#callback-speficationdeclass" title="Link to this heading"></a></h4>
+<p>La plupart des traitements personnalisables ou de la logique “plugin” sont implémentés à l’aide de la classe de flowCallback (“rappel de flux.”) À différents stades du traitement des messages de notification, les classes de flowCallback définissent
+points d’entrée qui correspondent à ce point de traitement. pour chaque point de ce type dans le traitement,
+il existe une liste de routines de rappel de flux à appeler.</p>
+<blockquote>
+<div><p><a class="reference external" href="../../Reference/flowcb.html">flowCallback Reference (anglais)</a></p>
+</div></blockquote>
+<p>Le <em>SpécificationDeClass</em> est similaire à une instruction <em>import</em> de python.
+Il utilise le chemin de recherche standard pour les modules python, et inclut également ~/.config/sr3/plugins.
+Il y a un raccourci pour faire usage plus court pour les cas courants. par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="n">log</span>
+</pre></div>
+</div>
+<p>Sarracenia tentera d’abord de faire précéder <em>log</em> de <em>sarracenia.flowcb.log</em> puis
+instancier l’instance de rappel en tant qu’élément de la classe sarracenia.flowcb.log.Log.
+S’il ne trouve pas une telle classe, alors il tentera de trouver un nom de classe <em>log</em>, et instanciera un
+objet <em>log.Log.</em></p>
+<p>Pour plus de détails sur ce genre de recherche, consulter (en anglais)
+<a class="reference external" href="../../Reference/flowcb.html#sarracenia.flowcb.load_library">FlowCallback load_library</a></p>
+</section>
+<section id="callback-prepend-specificationdeclass">
+<h4>callback_prepend &lt;SpécificationDeClass&gt;<a class="headerlink" href="#callback-prepend-specificationdeclass" title="Link to this heading"></a></h4>
+<p>Identique à <em>callback</em> mais rajoute la class au début de la liste (pour éxecuter avant les point
+d´entrée des autres classes FlowCB)</p>
+</section>
+<section id="dangerwillrobinson-default-omis">
+<h4>dangerWillRobinson (default: omis)<a class="headerlink" href="#dangerwillrobinson-default-omis" title="Link to this heading"></a></h4>
+<p>Cette option n’est reconnue qu’en tant qu’option de ligne de commande. Il est spécifié quand une opération
+aura des effets irréversiblement destructeurs ou peut-être inattendus. par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>arrêtera d’exécuter les composants, mais pas ceux qui sont exécutés au premier plan. Arrêter ceux
+peut surprendre les analystes qui les examineront, donc ce n’est pas fait par défaut</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">dangerWillRobinson</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>arrête arrête tous les composants, y compris ceux de premier plan. Un autre exemple serait le <em>nettoyage</em>
+action. Cette option supprime les files d’attente et les échanges liés à une configuration, qui peuvent être
+destructeur pour les flux. Par défaut, le nettoyage ne fonctionne que sur une seule configuration à la fois.
+On peut spécifier cette option pour faire plus de ravages.</p>
+</section>
+<section id="declare">
+<h4>declare<a class="headerlink" href="#declare" title="Link to this heading"></a></h4>
+<dl>
+<dt>env NAME=Value</dt><dd><p>On peut également référer à des variables d’environnement dans des fichiers de configuration,
+en utilisant la syntaxe <em>${ENV}</em>.  Si une routine de Sarracenia doit utiliser
+une variable d’environnement, elles peuvent être définis dans un fichier de configuration</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">HTTP_PROXY</span><span class="o">=</span><span class="n">localhost</span>
+</pre></div>
+</div>
+</dd>
+<dt>exchange exchange_name</dt><dd><p>à l’aide de l’URL d’administration, déclarez l’échange avec <em>exchange_name</em></p>
+</dd>
+<dt>subscriber</dt><dd><p>Un abonné (subsciber) est un utilisateur qui peut seulement s’abonner aux données et renvoyer des messages de rapport.
+Les abonnés n’ont pas le droit d’injecter des données. Chaque abonné dispose d’un xs_&lt;utilisateur&gt; qui
+s’appelle “exchange” sur la pompe. Si un utilisateur est nommé <em>Acme</em>, l’échange correspondant sera <em>xs_Acme</em>.
+Cet échange est l’endroit où un processus d’abonnement enverra ses messages de rapport.</p>
+<p>Par convention/défaut, l’utilisateur <em>anonyme</em> est créé sur toutes les pompes pour permettre l’abonnement sans abonnement
+a un compte spécifique.</p>
+</dd>
+<dt>source</dt><dd><p>Un utilisateur autorisé à s’abonner ou à générer des données. Une source ne représente pas nécessairement
+une personne ou un type de données, mais plutôt une organisation responsable des données produites.
+Donc, si une organisation recueille et met à disposition dix types de données avec un seul contact,
+e-mail, ou numéro de téléphone, toute question sur les données et leur disponibilité par rapport aux
+activités de collecte peuvent alors utiliser un seul compte “source”.</p>
+<p>Chaque source reçoit un échange xs_&lt;utilisateur&gt; pour l’injection de publications de données. Cela est comme un abonné
+pour envoyer des messages de rapport sur le traitement et la réception des données. La source peut également avoir
+un échange xl_&lt;utilisateur&gt; où, selon les configurations de routage des rapports, les messages de rapport des
+consommateurs seront envoyés.</p>
+</dd>
+<dt>feeder</dt><dd><p>Un utilisateur autorisé à écrire à n’importe quel échange. Une sorte d’utilisateur de flux administratif, destiné à pomper
+des messages d’annonce lorsque aucune source ou abonné ordinaire n’est approprié pour le faire. Doit être utilisé de
+préférence au lieu de comptes d’administrateur pour exécuter des flux.</p>
+</dd>
+</dl>
+<p>Les informations d’identification de l’utilisateur sont placées dans le <a class="reference external" href="sr3_credentials.7.html">credentials.conf</a>
+et <em>sr3 --users declare</em> mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
+mot de passe de l’administrateur est déjà correct.</p>
+<ul class="simple">
+<li><p>Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur
+la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,</p>
+<ul>
+<li><p><em>sr3 --users declare</em> déclarera tous les utilisateurs</p></li>
+<li><p><em>sr3 --users declare subscribe/dd_amis</em> ne déclarera que les utilisateurs spécifiés dans <em>subscribe/dd_amis</em></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="debug">
+<h4>debug<a class="headerlink" href="#debug" title="Link to this heading"></a></h4>
+<p>Définir l’option debug est identique a utilisé <strong>logLevel debug</strong></p>
+</section>
+<section id="delete-booleen-defaut-off">
+<h4>delete &lt;booléen&gt; (défaut: off)<a class="headerlink" href="#delete-booleen-defaut-off" title="Link to this heading"></a></h4>
+<p>Lorsque l’option <strong>delete</strong> est définie, une fois le téléchargement terminé avec succès, l’abonné
+supprimera le fichier à la source. Par défaut, l’option est false.</p>
+</section>
+<section id="discard-booleen-defaut-off">
+<h4>discard &lt;booléen&gt; (défaut: off)<a class="headerlink" href="#discard-booleen-defaut-off" title="Link to this heading"></a></h4>
+<p>L’option <strong>discard</strong>, si elle est définie a true, supprime le fichier une fois téléchargé. Cette option peut être
+utile lors du débogage ou pour tester une configuration.</p>
+</section>
+<section id="directory-chemin-defaut">
+<h4>directory &lt;chemin&gt; (défaut: .)<a class="headerlink" href="#directory-chemin-defaut" title="Link to this heading"></a></h4>
+<p>L’option <em>directory</em> définit où placer les fichiers sur votre serveur.
+Combiné avec les options <strong>accept</strong> / <strong>reject</strong>, l’utilisateur peut sélectionner
+les fichiers d’intérêt et leurs répertoires de résidence (voir le <strong>mirror</strong>
+pour plus de paramètres de répertoire).</p>
+<p>Les options <strong>accept</strong> et <strong>reject</strong> utilisent des expressions régulières (regexp) pour trouver une correspondance avec l’URL.
+Ces options sont traitées séquentiellement.
+L’URL d’un fichier qui correspond à un modèle <strong>reject</strong> n’est jamais téléchargée.
+Celui qui correspond à un modèle <strong>accept</strong> est téléchargé dans le répertoire
+déclaré par l’option <strong>directory</strong> la plus proche au-dessus de l’option <strong>accept</strong> correspondante.
+<strong>acceptUnmatched</strong> est utilisé pour décider quoi faire lorsque aucune clause de rejet ou d’acceptation corresponde.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ex</span><span class="o">.</span>   <span class="n">directory</span> <span class="o">/</span><span class="n">monrépertoirelocal</span><span class="o">/</span><span class="n">mesradars</span>
+      <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+
+      <span class="n">directory</span> <span class="o">/</span><span class="n">monrépertoirelocal</span><span class="o">/</span><span class="n">mesgribs</span>
+      <span class="n">reject</span>    <span class="o">.*</span><span class="n">Reg</span><span class="o">.*</span>
+      <span class="n">accept</span>    <span class="o">.*</span><span class="n">GRIB</span><span class="o">.*</span>
+</pre></div>
+</div>
+</section>
+<section id="destfn-script-script-defaut-none">
+<h4>destfn_script &lt;script&gt; (défaut: None)<a class="headerlink" href="#destfn-script-script-defaut-none" title="Link to this heading"></a></h4>
+<p>L’option de compatibilité Sundew définit un script à exécuter lorsque tout est prêt
+pour la livraison du produit.  Le script reçoit une instance de la classe sender.
+Le script prends le parent comme argument, et par exemple, une
+modification de <strong>parent.msg.new_file</strong> changera le nom du fichier écrit localement.</p>
+</section>
+<section id="download-flag-defaut-true">
+<h4>download &lt;flag&gt; (défaut: True)<a class="headerlink" href="#download-flag-defaut-true" title="Link to this heading"></a></h4>
+<p>utilisé pour désactiver le téléchargement dans le composant subscribe et/ou sarra.
+Se définit a False par défaut dans les composants de shovel ou de winnow.</p>
+</section>
+<section id="dry-run-flag-defaut-false">
+<h4>dry_run &lt;flag&gt; (défaut: False)<a class="headerlink" href="#dry-run-flag-defaut-false" title="Link to this heading"></a></h4>
+<p>Exécuter en mode simulation par rapport aux transferts de fichiers. Se connecte toujours à un courtier et télécharge et traite
+les messages d´annonce, mais les transferts de fichiers corréspondants sont désactivés, à utiliser lors du test d’un expéditeur
+ou d’un téléchargeur, par exemple pour s’exécuter en parallèle avec un fichier existant, et comparez les journaux pour voir
+si l’expéditeur est configuré pour envoyer les mêmes fichiers que l’ancien (implémenté avec un autre système.)</p>
+</section>
+<section id="durable-flag-defaut-true">
+<h4>durable &lt;flag&gt; (défaut: True)<a class="headerlink" href="#durable-flag-defaut-true" title="Link to this heading"></a></h4>
+<p>L’option AMQP <strong>durable</strong>, sur les déclarations de fil d’attente. Si la valeur est True,
+le courtier conservera la fil d’attente lors des redémarrages du courtier.
+Cela signifie que la fil d’attente est sur le disque si le courtier est redémarré.</p>
+<p>Remarque: seuls les messages <em>persistants</em> resteront dans une file d’attente durable après le redémarrage du courtier.
+Les messages persistants peuvent être publiés en activant l’option <strong>persistant</strong> (elle est activée par défaut).</p>
+</section>
+<section id="fileevents-evenement-evenement">
+<h4>fileEvents &lt;évènement, évènement,…&gt;<a class="headerlink" href="#fileevents-evenement-evenement" title="Link to this heading"></a></h4>
+<p>ensemble séparée par des virgules de d’événements de fichiers à surveiller.
+Événements de fichiers disponibles : <em>create, delete, link, modify, mkdir, rmdir</em>
+Si on commence la liste avec plus (+) ca signifie un rajout à l´ensemble actuel
+Les événements <em>create</em>, <em>modify</em> et <em>delete</em> reflètent ce qui est attendu : un fichier en cours de création,
+de modification ou de suppression.
+Si <em>link</em> est défini, des liens symboliques seront publiés sous forme de liens afin que les consommateurs puissent choisir
+comment les traiter. S’il n’est pas défini, aucun événement de lien symbolique sera publié.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>déplacer ou renommer des événements entraîne un modèle spécial de double publication, avec une publication en
+utilisant l’ancien nom et définissant le champ <em>newname</em>, et un deuxième message d’annonce avec le nouveau nom, et un champ <em>oldname</em>.
+Cela permet aux abonnés d’effectuer un renommage réel et d’éviter de déclencher un téléchargement lorsque cela est possible.</p>
+</div>
+<p>FIXME : algorithme de renommage amélioré en v3 pour éviter l’utilisation de double post…</p>
+</section>
+<section id="exchange-nom-defaut-xpublic-et-exchangesuffix">
+<h4>exchange &lt;nom&gt; (défaut: xpublic) et exchangeSuffix<a class="headerlink" href="#exchange-nom-defaut-xpublic-et-exchangesuffix" title="Link to this heading"></a></h4>
+<p>La norme pour les pompes de données est d’utiliser l’échange <em>xpublic</em>. Les utilisateurs peuvent établir un
+flux de données privées pour leur propre traitement. Les utilisateurs peuvent déclarer leurs propres échanges
+qui commencent toujours par <em>xs_&lt;nom-d’utilisatueur&gt;</em>. Pour éviter d’avoir à le spécifier à chaque
+fois, on peut simplement régler <em>exchangeSuffix kk</em> qui entraînera l’échange
+à être défini a <em>xs_&lt;nom-d’utilisatueur&gt;_kk</em> (en remplaçant le défaut <em>xpublic</em>).
+Ces paramètres doivent apparaître dans le fichier de configuration avant les paramètres <em>topicPrefix</em> et <em>subtopic</em>.</p>
+</section>
+<section id="exchangedeclare-flag">
+<h4>exchangeDeclare &lt;flag&gt;<a class="headerlink" href="#exchangedeclare-flag" title="Link to this heading"></a></h4>
+<p>Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles
+sont à jour. Si l’échange existe déjà, cet indicateur peut être défini a False,
+donc aucune tentative d’échange de la fil d’attente n’est faite, ou il s’agit de liaisons.
+Ces options sont utiles sur les courtiers qui ne permettent pas aux utilisateurs de déclarer leurs échanges.</p>
+</section>
+<section id="expire-duration-defaut-5m-cinq-minutes-recommende-de-remplacer">
+<h4>expire &lt;duration&gt; (défaut: 5m  == cinq minutes. RECOMMENDE DE REMPLACER)<a class="headerlink" href="#expire-duration-defaut-5m-cinq-minutes-recommende-de-remplacer" title="Link to this heading"></a></h4>
+<p>L’option <em>expire</em> est exprimée sous forme d’une duration… ça fixe combien de temps une fil d’attente devrait
+vivre sans connexions.</p>
+<p>Un entier brut est exprimé en secondes, et si un des suffixe m,h,d,w est utilisés, l’intervalle est en minutes,
+heures, jours ou semaines respectivement. Après l’expiration de la fil d’attente, le contenu est supprimé et
+des différences peuvent donc survenir dans le flux de données de téléchargement.  Une valeur de
+1d (jour) ou 1w (semaine) peut être approprié pour éviter la perte de données. Cela dépend de combien de temps
+l’abonné est sensé s’arrêter et ne pas subir de perte de données.</p>
+<p>Si aucune unité n’est donnée, un nombre décimal de secondes peut être fourni, tel que
+0,02 pour spécifier une durée de 20 millisecondes.</p>
+<p>Le paramètre <strong>expire</strong> doit être remplacé pour une utilisation opérationnelle.
+Le défaut est défini par une valeur basse car il définit combien de temps les ressources vont être
+assigné au courtier, et dans les premières utilisations (lorsque le défaut était de de 1 semaine), les courtiers
+étaient souvent surchargés de très longues files d’attente pour les tests restants.</p>
+</section>
+<section id="filename-mots-cle-defaut-none">
+<h4>filename &lt;mots-clé&gt; (défaut:None)<a class="headerlink" href="#filename-mots-cle-defaut-none" title="Link to this heading"></a></h4>
+<p>De <strong>MetPX Sundew</strong>, le support de cette option donne toutes sortes de possibilités
+pour définir le nom de fichier distant. Certains <strong>keywords</strong> sont basés sur le fait que
+les noms de fichiers <strong>MetPX Sundew</strong> ont cinq (à six) champs de chaîne de caractères séparés par des deux-points.</p>
+<p>La valeur par défaut sur Sundew est NONESENDER, mais dans l’intérêt de décourager l’utilisation
+de la séparation par des deux-points dans les fichiers, le défaut dans Sarracenia est WHATFN.</p>
+<p>Les mots-clés possibles sont :</p>
+<dl class="simple">
+<dt><strong>None</strong></dt><dd><ul class="simple">
+<li><p>Aucune modification du nom de fichier (enlever toute interprétation de style Sundew)
+N.B. différent de NONE décrit plus loin.</p></li>
+</ul>
+</dd>
+<dt><strong>WHATFN</strong></dt><dd><ul class="simple">
+<li><p>la première partie du nom de fichier Sundew (chaîne de caractères avant le premier : )</p></li>
+</ul>
+</dd>
+<dt><strong>HEADFN</strong></dt><dd><ul class="simple">
+<li><p>Partie EN-TETE du nom de fichier Sundew</p></li>
+</ul>
+</dd>
+<dt><strong>SENDER</strong></dt><dd><ul class="simple">
+<li><p>le nom de fichier Sundew peut se terminer par une chaîne SENDER=&lt;string&gt; dans ce cas,
+la &lt;string&gt; sera le nom de fichier distant</p></li>
+</ul>
+</dd>
+<dt><strong>NONE</strong></dt><dd><ul class="simple">
+<li><p>livrer avec le nom du fichier Sundew complet (sans :SENDER=…)</p></li>
+</ul>
+</dd>
+<dt><strong>NONESENDER</strong></dt><dd><ul class="simple">
+<li><p>livrer avec le nom de fichier Sundew complet (avec :SENDER=…)</p></li>
+</ul>
+</dd>
+<dt><strong>TIME</strong></dt><dd><ul class="simple">
+<li><p>horodatage ajouté au nom de fichier. Exemple d’utilisation : WHATFN:TIME</p></li>
+</ul>
+</dd>
+<dt><strong>DESTFN=str</strong></dt><dd><ul class="simple">
+<li><p>déclaration str direct du nom de fichier</p></li>
+</ul>
+</dd>
+<dt><strong>SATNET=1,2,3,A</strong></dt><dd><ul class="simple">
+<li><p>Paramètres d’application satnet interne cmc</p></li>
+</ul>
+</dd>
+<dt><strong>DESTFNSCRIPT=script.py</strong></dt><dd><ul class="simple">
+<li><p>appeler un script (identique à destfn_script) pour générer le nom du fichier à écrire</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="flatten-string-defaut">
+<h4>flatten &lt;string&gt; (défaut: ‘/’)<a class="headerlink" href="#flatten-string-defaut" title="Link to this heading"></a></h4>
+<p>L’option <strong>flatten</strong> permet de définir un caractère de séparation. La valeur par défaut ( ‘/’ )
+annule l’effet de cette option. Ce caractère remplace le ‘/’ dans l’url
+et crée un nom de fichier « flatten » à partir de son chemin d’accès dd.weather.gc.ca.
+Par exemple, récupérer l’URL suivante, avec les options</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">model_gem_global</span><span class="o">/</span><span class="mi">25</span><span class="n">km</span><span class="o">/</span><span class="n">grib2</span><span class="o">/</span><span class="n">lat_lon</span><span class="o">/</span><span class="mi">12</span><span class="o">/</span><span class="mi">015</span><span class="o">/</span><span class="n">CMC_glb_TMP_TGL_2_latlon</span><span class="mf">.24</span><span class="n">x</span><span class="mf">.24_2013121612</span><span class="n">_P015</span><span class="o">.</span><span class="n">grib2</span>
+
+  <span class="n">flatten</span>   <span class="o">-</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">monrépertoirelocal</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">model_gem_global</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>entraînerait la création du chemin d’accès au fichier:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">monrépertoirelocal</span><span class="o">/</span><span class="n">model_gem_global</span><span class="o">-</span><span class="mi">25</span><span class="n">km</span><span class="o">-</span><span class="n">grib2</span><span class="o">-</span><span class="n">lat_lon</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">015</span><span class="o">-</span><span class="n">CMC_glb_TMP_TGL_2_latlon</span><span class="mf">.24</span><span class="n">x</span><span class="mf">.24_2013121612</span><span class="n">_P015</span><span class="o">.</span><span class="n">grib2</span>
+</pre></div>
+</div>
+</section>
+<section id="flowmain-defaut-none">
+<h4>flowMain (défaut: None)<a class="headerlink" href="#flowmain-defaut-none" title="Link to this heading"></a></h4>
+<p>Par défaut, un flux exécutera la classe sarracenia.flow.Flow, qui implémente l’algorithme Flow de manière générique.
+La version générique ne transfère pas de données, crée et manipule uniquement des messages. Cela convient pour
+pelle, vanner, poster et surveiller les composants, mais les composants qui transfèrent ou transforment les données ont besoin
+pour définir un comportement supplémentaire en sous-classant Flow. Exemples : sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.</p>
+<p>L’option <strong>flowMain</strong> permet à une configuration de flux d’exécuter une sous-classe de flux, au lieu du parent par défaut
+classer. Exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowMain</span> <span class="n">subscribe</span>
+</pre></div>
+</div>
+<p>Dans un fichier de configuration de flux générique, le flux sera configuré pour agir en tant que composant d’abonné (subscribe.)
+On peut créer des composants personnalisés en sous-classant Flow et en utilisant la directive <strong>flowMain</strong> pour invoquer
+la nouvelle sous-classe.</p>
+</section>
+<section id="follow-symlinks-flag">
+<h4>follow_symlinks &lt;flag&gt;<a class="headerlink" href="#follow-symlinks-flag" title="Link to this heading"></a></h4>
+<p>L’option <em>follow_symlinks</em> entraîne la traversée de liens symboliques. Si <em>follow_symlinks</em> est défini
+et la destination d’un lien symbolique est un fichier, alors ce fichier de destination doit être publié ainsi que le lien.
+Si la destination du lien symbolique est un répertoire, le répertoire doit être ajouté à ceux qui sont
+surveillé par « watch ». Si <em>follow_symlinks</em> est false, alors aucune action liée à la destination du
+lien symbolique est prise.</p>
+</section>
+<section id="force-polling-flag-defaut-false">
+<h4>force_polling &lt;flag&gt; (défaut: False)<a class="headerlink" href="#force-polling-flag-defaut-false" title="Link to this heading"></a></h4>
+<p>Par défaut, « watch » sélectionne une méthode optimale (dépendante du système d’exploitation) pour regarder un
+répertoire.</p>
+<p>Pour les grandes arborescences, la méthode optimale peut être plusieurs fois (10x ou même
+100x) plus rapide à reconnaître lorsqu’un fichier a été modifié. Dans certains cas,
+les méthodes optimales de plateforme ne fonctionnent pas (comme avec certains réseaux,
+partages, ou systèmes de fichiers distribués), il faut donc utiliser un système plus lent mais avec une méthode
+de « polling » plus fiable et portable.  Le mot-clé <em>force_polling</em> oblige « watch » a sélectionner
+la méthode de « polling » malgré le fait qu’il y ait une meilleur option de disponible.</p>
+<dl class="simple">
+<dt>Pour une discussion détaillée, voir:</dt><dd><p><a class="reference external" href="../Explication/DetectFileHasChanged.html">Detecting File Changes</a></p>
+</dd>
+</dl>
+<p>REMARQUE:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Lorsque les répertoires sont consommés par des processus en utilisant l’option *delete* de l’abonné, ils restent vides, et
+chaque fichier doit être signalé à chaque passage.  Lorsque les abonnés n’utilisent pas *delete*, « watch » doit
+savoir quels fichiers sont nouveaux.  Il le fait en notant l’heure du début de la dernière passe du « polling ».
+Les fichiers sont publiés si leur heure de modification est plus récente que cela. Cela se traduira par de
+nombreux postes de « watch », qui peuvent être minimisés avec l’utilisation de la cache. On pourrait même dépendre
+de la cache entièrement et activez l’option *delete*, ou « watch » pourra tenter de publier l’arborescence entière
+à chaque fois (en ignorant mtime).
+
+**LIMITATION CONNUE** : Lorsque *force_polling* est défini, le paramètre *sleep* doit être
+au moins 5 secondes. À l’heure actuelle, on ne sait pas pourquoi.
+</pre></div>
+</div>
+</section>
+<section id="header-nom-valeur">
+<h4>header &lt;nom&gt;=&lt;valeur&gt;<a class="headerlink" href="#header-nom-valeur" title="Link to this heading"></a></h4>
+<p>Ajoutez un en-tête &lt;nom&gt; avec la valeur donnée aux publicités. Utilisé pour transmettre des chaîne de caractères en tant
+que métadonnées dans les publicités pour améliorer la prise de décision des consommateurs. Doit être utilisé
+avec parcimonie. Il y a des limites sur le nombre d’en-têtes pouvant être utilisés, et la réduction de la
+taille des messages d’annonce a des impacts importants sur la performance.</p>
+</section>
+<section id="housekeeping-intervalle-defaut-300-secondes">
+<h4>housekeeping &lt;intervalle&gt; (défaut: 300 secondes)<a class="headerlink" href="#housekeeping-intervalle-defaut-300-secondes" title="Link to this heading"></a></h4>
+<p>L’option <strong>housekeeping</strong> définit la fréquence d’exécution du traitement périodique tel que déterminé par
+la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.</p>
+</section>
+<section id="include-config">
+<h4>include config<a class="headerlink" href="#include-config" title="Link to this heading"></a></h4>
+<p>inclure une autre configuration dans cette configuration.</p>
+</section>
+<section id="inflight-string-defaut-tmp-ou-none-si-post-broker-est-definit">
+<h4>inflight &lt;string&gt; (défaut: .tmp ou NONE si post_broker est définit)<a class="headerlink" href="#inflight-string-defaut-tmp-ou-none-si-post-broker-est-definit" title="Link to this heading"></a></h4>
+<p>L’option <strong>inflight</strong> définit comment ignorer les fichiers lorsqu’ils sont transférés
+ou (en plein vol entre deux systèmes). Un réglage incorrect de cette option provoque des
+transferts peu fiables, et des précautions doivent être prises.  Voir
+<a class="reference external" href="../Explication/FileCompletion.html">Delivery Completion</a> pour plus de détails.</p>
+<p>La valeur peut être un suffixe de nom de fichier, qui est ajouté pour créer un nom temporaire pendant
+le transfert.  Si <strong>inflight</strong> est défini a <strong>.</strong>, alors il s’agit d’un préfixe pour se conformer à
+la norme des fichiers « cachés » sur unix/linux.
+Si <strong>inflight</strong> se termine par / (exemple : <em>tmp/</em> ), alors il s’agit d’un préfixe, et spécifie un
+sous-répertoire de la destination dans lequel le fichier doit être écrit pendant qu’il est en vol.</p>
+<p>Si un préfixe ou un suffixe est spécifié, lorsque le transfert est
+terminé, le fichier est renommé à son nom permanent pour permettre un traitement ultérieur.</p>
+<p>Lors de la publication d’un fichier avec sr3_post, sr3_cpost, watch, ou poll, l’option <strong>inflight</strong>
+peut également être spécifié comme une intervalle de temps, par exemple, 10 pour 10 secondes.
+Lorsque l’option est défini sur une intervalle de temps, le processus de publication de fichiers attends
+jusqu’à ce que le fichier n’ai pas été modifié pendant cet intervalle. Ainsi, un fichier
+ne peux pas être traité tant qu’il n’est pas resté le même pendant au moins 10 secondes.
+C’est un effet pareil à un choix de valeur pou <em>fileAgeMin</em>.</p>
+<p>Enfin, <strong>inflight</strong> peut être réglé a <em>NONE</em>. Dans ce cas, le fichier est écrit directement
+avec le nom final, où le destinataire attendra de recevoir un poste pour notifier l’arrivée du fichier.
+Il s’agit de l’option la plus rapide et la moins coûteuse lorsqu’elle est disponible.
+C’est aussi le défaut lorsqu’un <em>post_broker</em> est donné, indiquant qu’un autre processus doit être
+notifié après la livraison.</p>
+<p>NOTE:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Lors</span> <span class="n">de</span> <span class="n">l</span><span class="s1">&#39;écriture d&#39;</span><span class="n">un</span> <span class="n">fichier</span><span class="p">,</span> <span class="n">si</span> <span class="n">vous</span> <span class="n">voyez</span> <span class="n">le</span> <span class="n">message</span> <span class="n">d</span><span class="s1">&#39;erreur ::</span>
+
+<span class="n">paramètre</span> <span class="n">en</span> <span class="n">vol</span> <span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="n">pas</span> <span class="n">pour</span> <span class="n">les</span> <span class="n">téléchargements</span>
+
+<span class="n">C</span><span class="s1">&#39;est parce que le réglage de l&#39;</span><span class="n">intervalle</span> <span class="n">de</span> <span class="n">temps</span> <span class="n">est</span> <span class="n">uniquement</span> <span class="n">pour</span> <span class="n">la</span> <span class="n">lecture</span> <span class="n">des</span> <span class="n">fichiers</span><span class="o">.</span> <span class="n">Le</span> <span class="n">processus</span>
+<span class="n">qui</span> <span class="n">écrit</span> <span class="n">le</span> <span class="n">fichier</span><span class="p">,</span> <span class="n">ne</span> <span class="n">peut</span> <span class="n">pas</span> <span class="n">contrôler</span> <span class="n">combien</span> <span class="n">de</span> <span class="n">temps</span> <span class="n">un</span> <span class="n">processus</span> <span class="n">lecteur</span> <span class="n">ultérieur</span> <span class="n">attendra</span> <span class="n">pour</span>
+<span class="n">regarder</span> <span class="n">un</span> <span class="n">fichier</span> <span class="n">en</span> <span class="n">cours</span> <span class="n">téléchargé</span><span class="p">,</span> <span class="n">il</span> <span class="n">est</span> <span class="n">donc</span> <span class="n">inapproprié</span> <span class="n">de</span> <span class="n">spécifier</span> <span class="n">un</span> <span class="n">temps</span> <span class="n">de</span> <span class="n">modification</span> <span class="n">minimum</span><span class="o">.</span>
+<span class="n">en</span> <span class="n">regardant</span> <span class="n">les</span> <span class="n">fichiers</span> <span class="n">locaux</span> <span class="n">avant</span> <span class="n">de</span> <span class="n">générer</span> <span class="n">un</span> <span class="n">post</span><span class="p">,</span> <span class="n">ça</span> <span class="n">ne</span> <span class="n">sert</span> <span class="n">pas</span> <span class="n">comme</span> <span class="n">disons</span><span class="p">,</span> <span class="n">un</span> <span class="n">moyen</span>
+<span class="n">de</span> <span class="n">retarder</span> <span class="n">l</span><span class="s1">&#39;envoi des fichiers.</span>
+</pre></div>
+</div>
+</section>
+<section id="inline-flag-defaut-false">
+<h4>inline &lt;flag&gt; (défaut: False)<a class="headerlink" href="#inline-flag-defaut-false" title="Link to this heading"></a></h4>
+<p>Lors de la publication de messages d’annonce, l’option <strong>inline</strong> est utilisée pour avoir le contenu du fichier
+inclus dans le post. Cela peut être efficace lors de l’envoi de petits fichiers sur un niveau élevé de
+liens de latence, un certain nombre d’allers-retours peuvent être enregistrés en évitant la récupération
+des données utilisant l’URL. On ne devrait seulement utiliser <em>inline</em> pour des fichiers relativement petits.
+Lorsque <strong>inline</strong> est actif, seuls les fichiers inférieurs à <strong>inlineByteMax</strong> octets
+(défaut: 1024) auront réellement leur contenu inclus dans les messages d’annonce.
+Si <strong>inlineOnly</strong> est défini et qu’un fichier est plus volumineux que inlineByteMax, le fichier
+ne sera pas affiché.</p>
+</section>
+<section id="inlinebytemax-taille">
+<h4>inlineByteMax &lt;taille&gt;<a class="headerlink" href="#inlinebytemax-taille" title="Link to this heading"></a></h4>
+<p>la taille maximale des fichiers dont le contenu est à inclure dans un messages d’annonce (envoyé inline.)</p>
+<p>Quand on inclut les données dans le message on l’encode dans un format choisi:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>text: le fichier doit être du utf-8 valide (ou érreur.)</p></li>
+<li><p>binary:  le fichier peut être encodé n’importe comment, il sera en format base64.</p></li>
+<li><p>guess: essaie le format text en premier, utilise binary en cas d’erreur.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="inlineonly">
+<h4>inlineOnly<a class="headerlink" href="#inlineonly" title="Link to this heading"></a></h4>
+<p>ignorer les messages d´annonce si les données ne sont pas inline.</p>
+</section>
+<section id="inplace-flag-defaut-on">
+<h4>inplace &lt;flag&gt; (défaut: On)<a class="headerlink" href="#inplace-flag-defaut-on" title="Link to this heading"></a></h4>
+<p>Les fichiers volumineux peuvent être envoyés en plusieurs parties, plutôt que de tout en même temps.
+Lors du téléchargement, si <strong>inplace</strong> est True, ces parties seront rajoutées au fichier
+de manière ordonnée. Chaque partie, après avoir été insérée dans le fichier, est annoncée aux abonnés.
+Cela peut être défini a False pour certains déploiements de Sarracenia où une pompe
+ne voie que quelques parties, et non l’intégralité de fichiers en plusieurs parties.</p>
+<p>L’option <strong>inplace</strong> est True par défaut.
+Dépendamment de <strong>inplace</strong> et si le message d´annonce était une partie, le chemin peut
+encore changer (en ajoutant un suffixe de pièce si nécessaire).</p>
+</section>
+<section id="instances">
+<h4>Instances<a class="headerlink" href="#instances" title="Link to this heading"></a></h4>
+<p>Parfois, une instance d’un composant et d’une configuration ne suffit pas pour traiter et envoyer toutes
+les notifications disponibles.</p>
+<p><strong>instances &lt;entier&gt; (défaut:1)</strong></p>
+<p>L’option d’instance permet de lancer plusieurs instances d’un composant et d’une configuration.
+Lors de l’exécution d’un sender par exemple, un nombre de fichiers d’exécution sont créés dans
+le répertoire ~/.cache/sarra/sender/nomDeConfig</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>A .sender_nomDeConfig.state         est créé, contenant le nombre d’instances.
+A .sender_nomDeConfig_$instance.pid est créé, contenant le PID du processus $instance .
+</pre></div>
+</div>
+<p>Dans le répertoire ~/.cache/sarra/log:</p>
+<blockquote>
+<div><p>Un .sender_nomDeConfig_$instance.log  est créé en tant que journal du processus $instance.</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alors que les courtiers gardent les files d’attente disponibles pendant un certain temps, les files d’attente
+prennent des ressources sur les courtiers, et sont nettoyés de temps en temps. Une fil d’attente qu’on
+n’accède pas et a trop de fichiers (définis par l’implémentation) en fil d’attente seront détruits.
+Les processus qui meurent doivent être redémarrés dans un délai raisonnable pour éviter la
+perte de notifications. Une fil d’attente qu’on n’accède pas pendant une longue période
+(dépendant de l’implémentation) sera détruite.</p>
+</div>
+</section>
+<section id="identity-string">
+<h4>identity &lt;string&gt;<a class="headerlink" href="#identity-string" title="Link to this heading"></a></h4>
+<p>Tous les postes de fichiers incluent une somme de contrôle. Elle est placée dans l’en-tête du message amqp
+et aura comme entrée <em>sum</em> avec la valeur de défaut ‘d,md5_checksum_on_data’.
+L’option <em>sum</em> indique au programme comment calculer la somme de contrôle.
+Dans la v3, elles sont appelées Identity methods (méthodes d’intégrité)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cod</span><span class="p">,</span><span class="n">x</span>      <span class="o">-</span> <span class="n">Calculer</span> <span class="n">On</span> <span class="n">Download</span> <span class="n">en</span> <span class="n">appliquant</span> <span class="n">x</span>
+<span class="n">sha512</span>     <span class="o">-</span> <span class="n">faire</span> <span class="n">SHA512</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span> <span class="p">(</span><span class="n">défaut</span><span class="p">)</span>
+<span class="n">md5</span>        <span class="o">-</span> <span class="n">faire</span> <span class="n">md5sum</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span>
+<span class="n">md5name</span>    <span class="o">-</span> <span class="n">faire</span> <span class="n">la</span> <span class="n">somme</span> <span class="n">de</span> <span class="n">contrôle</span> <span class="n">md5sum</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">nom</span> <span class="n">du</span> <span class="n">fichier</span>
+<span class="n">random</span>     <span class="o">-</span> <span class="n">inventer</span> <span class="n">une</span> <span class="n">valeur</span> <span class="n">aléatoire</span> <span class="n">pour</span> <span class="n">chaque</span> <span class="n">poste</span><span class="o">.</span>
+<span class="n">arbitrary</span>  <span class="o">-</span> <span class="n">appliquer</span> <span class="n">la</span> <span class="n">valeur</span> <span class="n">fixe</span> <span class="n">littérale</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Les options v2 sont une chaîne de caractères séparée par des virgules.  Les indicateurs de somme de contrôle valides sont :</p>
+<ul class="simple">
+<li><p>0 : aucune somme de contrôle… la valeur dans le poste est un entier aléatoire (uniquement pour tester/débugger).</p></li>
+<li><p>d : faire md5sum sur le contenu du fichier</p></li>
+<li><p>n : faire la somme de contrôle md5sum sur le nom du fichier</p></li>
+<li><p>p : faire la somme de contrôle SHA512 sur le nom du fichier et sur partstr <a class="footnote-reference brackets" href="#id7" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
+<li><p>s : faire SHA512 sur le contenu du fichier (défaut)</p></li>
+<li><p>z,a : calculer la valeur de la somme de contrôle en utilisant l’algorithme a et l’assigner après le téléchargement.</p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">1</a><span class="fn-bracket">]</span></span>
+<p>seulement implémenter en C. ( voir <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/117">https://github.com/MetPX/sarracenia/issues/117</a> )</p>
+</aside>
+</aside>
+</section>
+<section id="logevents-defaut-after-accept-after-work-on-housekeeping">
+<h4>logEvents ( défaut: after_accept,after_work,on_housekeeping )<a class="headerlink" href="#logevents-defaut-after-accept-after-work-on-housekeeping" title="Link to this heading"></a></h4>
+<p>l´ensemble des moments durant le traitement des message de notification ou on veut émettre des
+messages de journal. Autres valeurs : on_start, on_stop, post, gather, … etc…
+On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
+la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel.</p>
+</section>
+<section id="loglevel-defaut-info">
+<h4>logLevel ( défaut: info )<a class="headerlink" href="#loglevel-defaut-info" title="Link to this heading"></a></h4>
+<p>Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
+critical, error, info, warning, debug.</p>
+</section>
+<section id="logmetrics-default-false">
+<h4>logMetrics ( default: False )<a class="headerlink" href="#logmetrics-default-false" title="Link to this heading"></a></h4>
+<p>écrire des métriques dans un fichier de quotidien pour la collecte de statistiques.
+le fichier sera dans le même répertoire que les logs, et aura une suffix avec la date.</p>
+</section>
+<section id="logreject-defaut-false">
+<h4>logReject ( défaut: False )<a class="headerlink" href="#logreject-defaut-false" title="Link to this heading"></a></h4>
+<p>Normalement, le rejet des messages d´annonce se fait en silence. Lorsque logReject a la valeur True, un message
+de journal est généré pour chaque message d´annonce rejeté et indiquant la raison du rejet.</p>
+</section>
+<section id="logstdout-defaut-false">
+<h4>logStdout ( défaut: False )<a class="headerlink" href="#logstdout-defaut-false" title="Link to this heading"></a></h4>
+<p><em>logStdout</em> désactive la gestion des journaux. Il vaut mieux l’utiliser sur la ligne de commande, car il y a
+certains risques de créer des fichiers stub avant que les configurations ne soient complètement analysées</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">logStdout</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>Tous les processus lancés héritent leurs descripteurs de fichier du parent. Donc toutes les sorties sont
+comme une session interactive.</p>
+<p>Cela contraste avec le cas normal, où chaque instance prend soin de ses journaux, en tournant et en purgeant
+périodiquement. Dans certains cas, on veut que d’autres logiciels s’occupent de la journalisation, comme dans docker,
+où c’est préférable que toute la journalisation soit une sortie standard.</p>
+<p>Ça n’a pas été mesuré, mais il est probable que l’utilisation de <em>logStdout</em> avec de grandes configurations
+(des dizaines d’instances configurés/processus) entraînera soit une corruption des journaux, ou limitera
+la vitesse d’exécution de tous les processus qui écrivent à stdout.</p>
+</section>
+<section id="logrotatecount-max-logs-defaut-5">
+<h4>logRotateCount &lt;max_logs&gt; ( défaut: 5 )<a class="headerlink" href="#logrotatecount-max-logs-defaut-5" title="Link to this heading"></a></h4>
+<p>Nombre maximal de journaux de messages (logs) et statistiques (metrics) archivés.</p>
+</section>
+<section id="logrotateinterval-intervalle-unite-de-temps-defaut-1d">
+<h4>logRotateInterval &lt;intervalle&gt;[&lt;unité_de_temps&gt;] ( défaut: 1d )<a class="headerlink" href="#logrotateinterval-intervalle-unite-de-temps-defaut-1d" title="Link to this heading"></a></h4>
+<p>La durée de l’intervalle avec une unité de temps optionnel (soit 5m, 2h, 3d)
+entre chaque changement de fichier journal (de messages et statistiques)</p>
+</section>
+<section id="messagecountmax-count-defaut-0">
+<h4>messageCountMax &lt;count&gt; (défaut: 0)<a class="headerlink" href="#messagecountmax-count-defaut-0" title="Link to this heading"></a></h4>
+<p>Si <strong>messageCountMax</strong> est supérieur à zéro, le flux se ferme après avoir traité le nombre de messages d´annonce spécifié.
+Ceci est normalement utilisé pour le débogage uniquement.</p>
+</section>
+<section id="messageratemax-float-defaut-0">
+<h4>messageRateMax &lt;float&gt; (défaut: 0)<a class="headerlink" href="#messageratemax-float-defaut-0" title="Link to this heading"></a></h4>
+<p>Si <strong>messageRateMax</strong> est supérieur à zéro, le flux essaye de respecter cette vitesse de livraison en termes de
+messages d´annonce par seconde. Notez que la limitation est sur les messages d´annonce obtenus ou générés par seconde, avant le
+filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.</p>
+</section>
+<section id="messageratemin-float-defaut-0">
+<h4>messageRateMin &lt;float&gt; (défaut: 0)<a class="headerlink" href="#messageratemin-float-defaut-0" title="Link to this heading"></a></h4>
+<p>Si <strong>messageRateMin</strong> est supérieur à zéro et que le flux détecté est inférieur à ce taux,
+un message d´annonce sera produit :</p>
+</section>
+<section id="message-ttl-duration-defaut-none">
+<h4>message_ttl &lt;duration&gt;  (défaut: None)<a class="headerlink" href="#message-ttl-duration-defaut-none" title="Link to this heading"></a></h4>
+<p>L’option <strong>message_ttl</strong> définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
+Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.</p>
+</section>
+<section id="mirror-flag-defaut-off">
+<h4>mirror &lt;flag&gt; (défaut: off)<a class="headerlink" href="#mirror-flag-defaut-off" title="Link to this heading"></a></h4>
+<p>L’option <strong>miroir</strong> peut être utilisée pour mettre en miroir l’arborescence des fichiers de dd.weather.gc.ca.
+Si l’option est défini a <strong>True</strong> le répertoire donné par l’option <strong>directory</strong> sera le nom de base
+de l’arborescence. Les fichiers acceptés sous ce répertoire seront placé sous le sous-répertoire
+de l’arborescence où il réside dans dd.weather.gc.ca.
+Par exemple, récupérer l’URL suivante, avec des options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">radar</span><span class="o">/</span><span class="n">PRECIP</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">WGJ</span><span class="o">/</span><span class="mi">201312141900</span><span class="n">_WGJ_PRECIP_SNOW</span><span class="o">.</span><span class="n">gif</span>
+
+  <span class="n">mirror</span>    <span class="kc">True</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">monrépertoirelocal</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>entraînerait la création des répertoires et du fichier
+/monrépertoirelocal/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+Les paramètres de mirror peuvent être modifiés entre les options de répertoire.</p>
+</section>
+<section id="no-count">
+<h4>no &lt;count&gt;<a class="headerlink" href="#no-count" title="Link to this heading"></a></h4>
+<p>Présent sur les instances démarrées par l’interface de gestion sr3.
+L’option no est seulement utilisée sur la ligne de commande et n’est pas destinée aux utilisateurs.
+Il s’agit d’une option à utiliser par sr3 lors de la génération (spawning) d’instances pour informer chaque processus
+de quelle instance il s’agit. Par exemple, l’instance 3 sera générée avec –no 3</p>
+</section>
+<section id="nodupe-basis-donnes-nom-chemin-defaut-chemin">
+<h4>nodupe_basis &lt;donnes|nom|chemin&gt; (défaut: chemin)<a class="headerlink" href="#nodupe-basis-donnes-nom-chemin-defaut-chemin" title="Link to this heading"></a></h4>
+<p>Une option sous forme de mot-clé (alternative: <em>cache_basis</em> ) pour identifier quels fichiers sont comparés
+à des fins de suppression des doublons. Normalement, la suppression des doublons utilise l’intégralité du
+chemin d’accès pour identifier les fichiers qui n’ont pas été modifiés. Cela permet aux fichiers avec un contenu
+identique d’être publié dans différents répertoires et de ne pas être supprimé. Dans certains cas
+cas, la suppression de fichiers identiques devrait être effectuée quel que soit l’endroit où se trouve
+le fichier.  Définissez ‘nom’ pour les fichiers de nom identique, mais qui sont dans des répertoires
+différents pour qu’ils puissent être considéré comme des doublons. Définissez ‘données’ pour n’importe quel fichier,
+quel que soit le nom, pour qu’il puisse être considéré comme un doublon si la somme de contrôle correspond.</p>
+<p>Ceci est implémenté en tant qu’alias pour :</p>
+<blockquote>
+<div><p>callback_prepend nodupe.name</p>
+</div></blockquote>
+<p>ou:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.data</p>
+</div></blockquote>
+<p>Pour plus d´information: <a class="reference external" href="../Explication/SupprimerLesDoublons.html">Supprimer les doublons</a></p>
+</section>
+<section id="fileagemax">
+<h4>fileAgeMax<a class="headerlink" href="#fileagemax" title="Link to this heading"></a></h4>
+<p>Si les fichiers sont plus anciens que ce paramètre (défaut: 30d), ignorez-les, ils sont trop
+ancien pour qu’il puisse être posté.</p>
+<dl>
+<dt>Dans un Poll :</dt><dd><ul class="simple">
+<li><p>La valeur par défaut est 7 heures. doit être inférieur à nodupe_ttl pour empêcher la réabsorption de données en double.</p></li>
+</ul>
+<p>(discussion complète ici (en anglais): <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/904">https://github.com/MetPX/sarracenia/issues/904</a>)</p>
+</dd>
+</dl>
+</section>
+<section id="fileagemin">
+<h4>fileAgeMin<a class="headerlink" href="#fileagemin" title="Link to this heading"></a></h4>
+<p>Si les fichiers sont plus neuf que ce paramètre (défaut: 0 … désactivé), ignorez-les, ils sont trop
+neufs pour qu’ils puissent être postés.</p>
+</section>
+<section id="nodupe-ttl-off-on-999-smhdw">
+<h4>nodupe_ttl &lt;off|on|999[smhdw]&gt;<a class="headerlink" href="#nodupe-ttl-off-on-999-smhdw" title="Link to this heading"></a></h4>
+<p>Lorsque <strong>nodupe_ttl</strong> est défini à une intervalle de temps
+qui est différente de zéro, chaque nouveau message d´annonce est comparé à ceux reçus dans cette intervalle, pour vérifier si
+c’est un doublon. Les doublons ne sont pas traités ultérieurement. Qu’est-ce qu’un doublon ? Un fichier avec
+le même nom (y compris l’en-tête des pièces) et la même somme de contrôle. A chaque intervalle de <em>hearbeat</em>, un
+processus de nettoyage recherche les fichiers dans la cache qui n’ont pas été consultés pendant <strong>cache</strong> secondes,
+et les supprime, afin de limiter la taille de la cache. De différents paramètres sont approprié pour de différents
+cas d’utilisation.</p>
+<p>Un intervalle d’entier brut est en secondes sauf si le suffixe m, h, d ou w est utilisé. Dans ce cas l’intervalle
+est en minutes, heures, jours ou semaines respectivement. Après l’expiration de l’intervalle, le contenu est
+abandonné, de sorte que les doublons séparés par une intervalle suffisamment grande passeront.
+Une valeur de 1d (jour) ou 1w (semaine) est appropriée.  Définir l’option sans spécifier
+un temps correspondra à 300 secondes (ou 5 minutes) comme intervalle d’expiration.</p>
+<p><strong>L’utilisation de la cache est incompatible avec la stratégie de défaut *parts 0*</strong>, il faut spécifier une
+stratégie alternative.  Il faut utiliser soit une taille de bloc fixe, ou ne jamais partitionner les fichiers.
+Il faut éviter l’algorithme dynamique qui modifiera la taille de la partition utilisée au fur et à
+mesure qu’un fichier grandit.</p>
+<p><strong>Notez que le stockage de suppression de doublons est local à chaque instance</strong>. Lorsqu’un nombre N d’instances partagent
+une fil d’attente, la première fois qu’une publication est reçue, elle peut se faire choisir par une instance,
+et si un doublon est ensuite reçu, il sera probablement choisi par une autre instance.
+<strong>Pour une suppression efficace des doublons avec les instances</strong>, il faut <strong>déployer deux couches d’abonnés</strong>.
+Utiliser une <strong>première couche d’abonnés (shovels)</strong> avec la suppression de doublons éteinte et
+utiliser <em>post_exchangeSplit</em> pour la sortie. Cela achemine les publications en utilisant la somme de contrôle vers
+une <strong>deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.</strong></p>
+</section>
+<section id="outlet-post-json-url-defaut-post">
+<h4>outlet post|json|url (défaut: post)<a class="headerlink" href="#outlet-post-json-url-defaut-post" title="Link to this heading"></a></h4>
+<p>REMARQUE: <strong>PAS IMPLEMENTÉ dans sr3, devrait revenir dans la version future</strong>
+L’option <strong>outlet</strong> est utilisée pour permettre l’écriture d’un poste a un fichier au lieu de
+l’afficher à un courtier. Les valeurs d’argument valides sont les suivantes :</p>
+<p><strong>post:</strong></p>
+<blockquote>
+<div><p>poster un messages d´annonce a un post_exchange</p>
+<p><strong>post_broker amqp{s}://&lt;utilisateur&gt;:&lt;mot-de-passe&gt;&#64;&lt;hoteDuCourtier&gt;[:port]/&lt;vhost&gt;</strong>
+<strong>post_exchange     &lt;nom&gt;         (OBLIGATOIRE)</strong>
+<strong>post_topicPrefix &lt;string&gt;       (défaut: “v03”)</strong>
+<strong>on_post           &lt;script&gt;       (défaut: None)</strong></p>
+<p>Si aucun courtier n’est fourni, le <strong>post_broker</strong> sera défini par le courtier d’entrée par défaut.
+Il suffit de définir l’option a un autre courtier si vous souhaitez envoyer les notifications
+ailleurs.</p>
+<p>Le <strong>post_exchange</strong> doit être défini par l’utilisateur. C’est l’échange sous lequel
+les notifications seront publiées.</p>
+</div></blockquote>
+<p><strong>json:</strong></p>
+<blockquote>
+<div><p>écrire chaque message d´annonce en sortie standard, un par ligne dans le même format json que celui utilisé pour
+l’enregistrement et la restauration de la fil d’attente par l’implémentation python.</p>
+</div></blockquote>
+<p><strong>url:</strong></p>
+<blockquote>
+<div><p>il suffit de sortir l’URL de récupération vers la sortie standard.</p>
+</div></blockquote>
+<p>FIXME: L’option <strong>outlet</strong> provient de l’implémentation C ( <em>sr3_cpump</em> ) et elle n’a pas
+a été beaucoup utilisé dans l’implémentation python.</p>
+</section>
+<section id="overwrite-flag-defaut-off">
+<h4>overwrite &lt;flag&gt; (défaut: off)<a class="headerlink" href="#overwrite-flag-defaut-off" title="Link to this heading"></a></h4>
+<p>L’option <strong>overwrite</strong>, si définie a false, évite les téléchargements inutiles sous ces conditions :</p>
+<p>1- le fichier à télécharger se trouve déjà dans le système de fichiers de l’utilisateur et est au bon endroit</p>
+<p>2- la somme de contrôle du message amqp correspond à celle du fichier.</p>
+<p>Le défaut est False.</p>
+</section>
+<section id="path-chemin">
+<h4>path &lt;chemin&gt;<a class="headerlink" href="#path-chemin" title="Link to this heading"></a></h4>
+<p><strong>post</strong> évalue le chemin d’accès du système de fichiers à partir de l’option <strong>path</strong>
+et éventuellement <strong>post_baseDir</strong> si cette option est utilisée.</p>
+<p>Si un chemin d’accès définit un fichier, ce fichier est surveillé.</p>
+<p>Si ce chemin définit un répertoire, tous les fichiers de ce répertoire sont
+surveillé et si <strong>watch</strong> trouve un (ou plusieurs) répertoire(s), il
+les regarde de manière récursive jusqu’à ce que toute l’arborescence soit scanné.</p>
+<p>Les annonces AMQP consistent des champs de l’arborescence, de l’heure d’annonce,
+la valeur de l’option <strong>url</strong>, et FIXME: and the resolved paths to which were withdrawn
+the <em>post_baseDir</em> present and needed.</p>
+</section>
+<section id="permdefault-permdirdefault-permlog-permcopy">
+<h4>permDefault, permDirDefault, permLog, permCopy<a class="headerlink" href="#permdefault-permdirdefault-permlog-permcopy" title="Link to this heading"></a></h4>
+<p>Les bits d’autorisation sur les fichiers de destination écrits sont contrôlés par les directives <em>permCopy</em>.
+<em>permCopy</em> appliquera les autorisations de mode publiées par la source du fichier.
+Si aucun mode de source est disponible, le <em>permDefault</em> sera appliqué aux fichiers et le
+<em>permLog</em> sera appliqué aux répertoires. Si aucun défaut est spécifié, les défauts du système d’exploitation
+(sur linux, contrôlé par les paramètres umask) déterminera les autorisations du fichier.
+(Notez que l’option <em>chmod</em> est interprétée comme un synonyme pour <em>permDefault</em>,
+et <em>chmod_dir</em> est un synonyme de <em>permDirDefault</em>).</p>
+<p>Lorsqu’il est défini dans un composant de posting, permCopy peut soit inclure ou exclure
+l’en-tête <em>mode</em> des messages d´annonce.</p>
+<p>lorsqu’il est défini dans un composant de polling, permDefault définit les autorisations minimales pour
+qu’un dossier puis être accepté.</p>
+<p>(sur une sortie ls qui ressemble à : —r—–, comme une commande chmod 040 &lt;fichier&gt; ).
+Les options <strong>permDefault</strong> spécifient un masque, c’est-à-dire que les autorisations doivent être
+au moins ce qui est spécifié.</p>
+</section>
+<section id="persistent-flag-defaut-true">
+<h4>persistent &lt;flag&gt; (défaut: True)<a class="headerlink" href="#persistent-flag-defaut-true" title="Link to this heading"></a></h4>
+<p>L’option <strong>persistent</strong> définit le <em>delivery_mode</em> pour un message AMQP. Lorsqu’il
+est choisi, les messages persistants seront publiés (<code class="docutils literal notranslate"><span class="pre">delivery_mode=2</span></code>). Lorsqu’ils
+ne le sont pas, ils seront placés en mode transitoire (non durables, <code class="docutils literal notranslate"><span class="pre">delivery_mode=1</span></code>).</p>
+<p>Les messages persistants sont écrits sur le disque par le courtier et survivront au
+redémarrage du courtier. Tous les messages transitoires dans une file d’attente seront
+perdus au redémarrage d’un courtier. Une remarque : les messages persistants ne survivront
+pas le redémarrage du courtier <em>quand ils résident dans une file d’attente durable</em>.
+Non-durable les files d’attente, y compris tous les messages qu’elles contiennent,
+seront perdues au redémarrage d’un courtier.</p>
+</section>
+<section id="pollurl">
+<h4>pollUrl<a class="headerlink" href="#pollurl" title="Link to this heading"></a></h4>
+<p>Spécification de ressources d´une serveur à sonder
+Voir <a class="reference external" href="../Explication/GuideLigneDeCommande.html">Guide de ligne de commande</a> pour plus
+d´informations.</p>
+</section>
+<section id="post-basedir-chemin">
+<h4>post_baseDir &lt;chemin&gt;<a class="headerlink" href="#post-basedir-chemin" title="Link to this heading"></a></h4>
+<p>L’option <em>post_baseDir</em> fournit le chemin d’accès au répertoire qui, lorsqu’il est combiné (ou trouvé)
+dans le <em>path</em> donné, donne le chemin absolu local au fichier de données à publier.
+La partie <em>post_baseDir</em> du chemin d’accès sera supprimée de l’annonce publiée.
+Pour les URL sftp, il peut être approprié de spécifier un chemin d’accès relatif à un compte d’utilisateur.
+Exemple de cette utilisation serait: –post_baseDir ~utilisateur –url sftp:utilisateur&#64;hote
+Pour les fichiers : url, baseDir n’est généralement pas approprié. Pour publier un chemin absolu,
+omettez le paramètre –post_baseDir et spécifiez simplement le chemin d’accès complet en tant qu’argument.</p>
+</section>
+<section id="post-baseurl-url">
+<h4>post_baseUrl &lt;url&gt;<a class="headerlink" href="#post-baseurl-url" title="Link to this heading"></a></h4>
+<p>L’option <strong>post_baseUrl</strong> définit comment obtenir le fichier… il définit le protocole,
+l’hôte, le port et, l’utilisateur (facultatif). Il est recommandé de ne pas inclure de
+mots de passe dans les URLs.</p>
+</section>
+<section id="post-broker-url">
+<h4>post_broker &lt;url&gt;<a class="headerlink" href="#post-broker-url" title="Link to this heading"></a></h4>
+<p>l’URL du courtier pour publier des messages d’annonce. Voir <a class="reference external" href="#broker">broker</a> pour plus de détails.</p>
+</section>
+<section id="post-exchange-name-defaut-xpublic">
+<h4>post_exchange &lt;name&gt; (défaut: xpublic)<a class="headerlink" href="#post-exchange-name-defaut-xpublic" title="Link to this heading"></a></h4>
+<p>FIXME: L’option <strong>post_exchange</strong> est définie sous quelle échange la nouvelle notification
+sera affiché. Lors de la publication sur une pompe en tant qu’administrateur, un
+choix commun pour post_exchange est ‘xpublic’.</p>
+<p>Lors de la publication d’un produit, un utilisateur peut démarrer un script en utilisant
+un point d’entrée de rappel de flux (flow callback) tels que <strong>after_accept</strong> et <strong>after_work</strong>
+pour modifier les messages d’annonce générés à propos des fichiers avant leur publication.</p>
+</section>
+<section id="post-exchangesplit-compte-defaut-0">
+<h4>post_exchangeSplit &lt;compte&gt; (défaut: 0)<a class="headerlink" href="#post-exchangesplit-compte-defaut-0" title="Link to this heading"></a></h4>
+<p>L’option <strong>post_exchangeSplit</strong> ajoute un suffixe à deux chiffres qui est crée en hachant le dernier caractère
+de la somme de contrôle avec le nom de post_exchange, afin de répartir la production entre un certain nombre d’échanges.
+Ceci est actuellement utilisé dans les pompes à trafic élevé pour avoir plusieurs instances de winnow,
+qui ne peuvent pas être instancié de la manière normale.  Exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_exchangeSplit</span> <span class="mi">5</span>
+<span class="n">post_exchange</span> <span class="n">xwinnow</span>
+</pre></div>
+</div>
+<p>entraînera la publication de messages d’annonce sur cinq échanges nommés : xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 et xwinnow04, où chaque échange ne recevra qu’un cinquième
+du flux total.</p>
+</section>
+<section id="post-format-name-defaut-v03">
+<h4>post_format &lt;name&gt; (défaut: v03)<a class="headerlink" href="#post-format-name-defaut-v03" title="Link to this heading"></a></h4>
+<p>Définit le format de message pour les messages publiés. les valeurs actuellement incluses sont :</p>
+<ul class="simple">
+<li><p>v02 … utilisé par toutes les pompes de données existantes dans la plupart des cas.</p></li>
+<li><p>v03 … par défaut au format sr3 JSON plus facile à utiliser.</p></li>
+<li><p>wis … un format expérimental geoJSON en flux pour l’Organisation météorologique mondiale</p></li>
+</ul>
+<p>Lorsqu’elle est fournie, cette valeur remplace tout ce qui peut être déduit de post_topicPrefix.</p>
+</section>
+<section id="post-on-start">
+<h4>post_on_start<a class="headerlink" href="#post-on-start" title="Link to this heading"></a></h4>
+<p>Lors du démarrage de watch, on peut soit demander au programme de publier tous les fichiers dans les répertoires
+surveillés, ou pas. (pas implanté en sr3_cpost)</p>
+</section>
+<section id="post-topic-chaine">
+<h4>post_topic &lt;chaine&gt;<a class="headerlink" href="#post-topic-chaine" title="Link to this heading"></a></h4>
+<p>Définissez explicitement une chaîne de sujet de publication, en remplaçant l’habituel
+groupe de paramètres. Pour les pompes de données Sarracenia, cela ne devrait jamais être nécessaire,
+car l’utilisation de <em>post_exchange</em>, <em>post_topicPrefix</em> et le <em>relPath</em> construit normalement le bon
+valeur pour les sujets à la fois pour la publication et la liaison.</p>
+</section>
+<section id="post-topicprefix-defaut-topicprefix">
+<h4>post_topicPrefix (défaut: topicPrefix)<a class="headerlink" href="#post-topicprefix-defaut-topicprefix" title="Link to this heading"></a></h4>
+<p>Rajouter au subtopic pour former une hiérarchie complète des sujets.
+Cette option s’applique à la publication.  Elle indique la version des messages d’annonce publiés
+dans les subtopics. (v03 fait référence à <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>) Cette valeur par défaut est défini par tout ce qui
+a été reçue.</p>
+</section>
+<section id="prefetch-n-defaut-1">
+<h4>prefetch &lt;N&gt; (défaut: 1)<a class="headerlink" href="#prefetch-n-defaut-1" title="Link to this heading"></a></h4>
+<p>L’option <strong>prefetch</strong> définit le nombre de messages d’annonce à récupérer en même temps.
+Lorsque plusieurs instances sont en cours d’exécution et que prefetch est égale à 4, chaque instance obtient jusqu’à quatre
+messages d’annonce à la fois.  Pour réduire le nombre de messages d’annonce perdus si une instance meurt et qu’elle a le
+partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
+il faut augmenter ce nombre pour masquer la latence d’aller-retour, donc un réglage de 10 ou plus est nécessaire.</p>
+</section>
+<section id="queuename-queue-queue-name-qn">
+<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>queueName &lt;nom&gt;</p></li>
+</ul>
+<p>Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
+queue_name crée par les composants suit la convention suivante :</p>
+<blockquote>
+<div><p><strong>q_&lt;utilisateurDeCourtier&gt;.&lt;nomDuProgramme&gt;.&lt;nomDeConfig&gt;.&lt;aléatoire&gt;.&lt;aléatoire&gt;</strong></p>
+</div></blockquote>
+<p>Ou:</p>
+<ul class="simple">
+<li><p><em>utilisateurDeCourtier</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
+<li><p><em>nomDuProgramme</em> est le composant qui utilise la fil d’attente (par exemple <em>subscribe</em> ),</p></li>
+<li><p><em>nomDeConfig</em> est le fichier de configuration utilisé pour régler le comportement des composants.</p></li>
+<li><p><em>aléatoire</em> n’est qu’une série de caractères choisis pour éviter les affrontements quand plusieurs
+personnes utilisent les mêmes configurations</p></li>
+</ul>
+<p>Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par <strong>q_&lt;utilisateurDeCourtier&gt;</strong>.</p>
+<p>Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
+taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queue_name est écrit à :</p>
+<blockquote>
+<div><p>~/.cache/sarra/&lt;nomDuProgramme&gt;/&lt;nomDeConfig&gt;/&lt;nomDuProgramme&gt;_&lt;nomDeConfig&gt;_&lt;utilisateurDeCourtier&gt;.qname</p>
+</div></blockquote>
+<p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même fil d’attente. Certains voudront peut-être utiliser l’option <em>queue_name</em> comme méthode plus explicite
+de partager le travail sur plusieurs nœuds.</p>
+</section>
+<section id="queuebind">
+<h4>queueBind<a class="headerlink" href="#queuebind" title="Link to this heading"></a></h4>
+<p>Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
+Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
+ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
+permettent pas aux utilisateurs de déclarer leurs files d’attente.</p>
+</section>
+<section id="queuedeclare-flag-defaut-true">
+<h4>queueDeclare &lt;flag&gt; (défaut: True)<a class="headerlink" href="#queuedeclare-flag-defaut-true" title="Link to this heading"></a></h4>
+<p>Avec l´option queueDeclare à <em>True</em>, un composant déclare un fil d´attente pour accumuler des messages d’annonce lors
+de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
+faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.</p>
+</section>
+<section id="randomize-flag">
+<h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
+<p>Actif si <em>-r|–randomize</em> apparaît dans la ligne de commande… ou <em>randomize</em> est défini
+à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
+le fichier est publié par bloc (l’option <em>blocksize</em> a été définie), les messages d’annonce de bloc
+sont randomisés, ce qui signifie qu’ils ne seront pas affichés.</p>
+</section>
+<section id="realpathadjust-compte-experimental-defaut-0">
+<h4>realpathAdjust &lt;compte&gt; (Experimental) (défaut: 0)<a class="headerlink" href="#realpathadjust-compte-experimental-defaut-0" title="Link to this heading"></a></h4>
+<p>L’option realpathAdjust ajuste le nombre d’éléments de chemin de fichier résolus avec la routine realpath
+provenant du bibliotech standard C. Le nombre indique combien d’éléments de chemin doivent être ignorés, en comptant
+depuis le début du chemin avec des nombres positifs, ou la fin avec des nombres négatifs. Le défaut est zéro
+indiquant que le chemin au complet est résolu.</p>
+</section>
+<section id="realpathfilter-flag-experimentale">
+<h4>realpathFilter &lt;flag&gt; (Expérimentale)<a class="headerlink" href="#realpathfilter-flag-experimentale" title="Link to this heading"></a></h4>
+<p>l’option realpathFilter résout les chemins à l’aide de la routine de bibliothèque <strong>realpath</strong> standard C,
+mais uniquement dans le but d’appliquer des filtres d’acceptation de rejet. Ceci est utilisé uniquement pendant
+affectation.</p>
+<p>Cette option est utilisée pour étudier certains cas d’utilisation et pourrait disparaître à l’avenir.</p>
+<p>Implémenté en C, mais pas python actuellement.</p>
+</section>
+<section id="realpathpost-flag-experimentale">
+<h4>realpathPost &lt;flag&gt; (Expérimentale)<a class="headerlink" href="#realpathpost-flag-experimentale" title="Link to this heading"></a></h4>
+<p>L’option realpathPost résout les chemins donnés à leurs chemins canoniques, éliminant ainsi
+toute indirection via des liens symboliques. Le comportement améliore la capacité de watch à
+surveiller l’arborescence, mais l’arborescence peut avoir des chemins complètement différents de ceux des arguments
+donné. Cette option impose également la traversée de liens symboliques.</p>
+<p>Cette option est utilisée pour étudier certains cas d’utilisation et pourrait disparaître à l’avenir.</p>
+</section>
+<section id="sendto-url">
+<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
+<p>Specification du serveur auquel on veut livrer des données (dans un <em>sender</em>)</p>
+</section>
+<section id="rename-chemin">
+<h4>rename &lt;chemin&gt;<a class="headerlink" href="#rename-chemin" title="Link to this heading"></a></h4>
+<p>Avec l’option <em>renommer</em>, l’utilisateur peut suggérer un chemin de destination pour ses fichiers. Si le
+chemin se termine par ‘/’ il suggère un chemin de répertoire…  Si ce n’est pas le cas, l’option
+spécifie un changement de nom de fichier.</p>
+</section>
+<section id="report-et-report-exchange">
+<h4>report et report_exchange<a class="headerlink" href="#report-et-report-exchange" title="Link to this heading"></a></h4>
+<p>REMARQUE: <strong>PAS IMPLEMENTÉ dans sr3, devrait revenir dans la version future</strong>
+Pour chaque téléchargement, par défaut, un message de rapport amqp est renvoyé au courtier.
+Cela se fait avec l’option :</p>
+<ul class="simple">
+<li><p><strong>rapport &lt;flag&gt; (défaut: True)</strong></p></li>
+<li><p><strong>report_exchange &lt;report_exchangename&gt; (défaut: xreport|xs_*nomUtilisateur* )</strong></p></li>
+</ul>
+<p>Lorsqu’un rapport est généré, il est envoyé au <em>report_exchange</em> configuré. Les composants administratifs
+publient directement sur <em>xreport</em>, tandis que les composants d’utilisateur publient sur leur
+échanges (xs_*nomUtilisateur*). Les démons de rapport copient ensuite les messages dans <em>xreport</em> après validation.</p>
+<p>Ces rapports sont utilisés pour le réglage de la livraison et pour les sources de données afin de générer des
+informations statistiques. Définissez cette option a <strong>False</strong>, pour empêcher la génération de ces rapports.</p>
+</section>
+<section id="reset-flag-defaut-false">
+<h4>reset &lt;flag&gt; (défaut: False)<a class="headerlink" href="#reset-flag-defaut-false" title="Link to this heading"></a></h4>
+<p>Lorsque <strong>reset</strong> est défini et qu’un composant est (re)démarré, sa fil d’attente est
+supprimé (si elle existe déjà) et recréé en fonction des options de fil d’attente.
+C’est à ce moment-là qu’une option de courtier est modifiée, car le courtier refusera
+l’accès à une fil d’attente déclarée avec des options différentes de celles qui étaient
+défini à la création.  Cette option peut également être utilisé pour supprimer rapidement une fil d’attente
+lorsqu’un récepteur a été fermé pendant une longue période de temps. Si la suppression des doublons est active, alors
+la cache de réception est également supprimé.</p>
+<p>Le protocole AMQP définit d’autres options de fil d’attente qui ne sont pas exposées
+via Sarracenia, parce que Sarracenia choisit soi-même des valeurs appropriées.</p>
+</section>
+<section id="retryemptybeforeexit-booleen-defaut-false">
+<h4>retryEmptyBeforeExit: &lt;booléen&gt; (défaut: False)<a class="headerlink" href="#retryemptybeforeexit-booleen-defaut-false" title="Link to this heading"></a></h4>
+<p>Utilisé pour les tests de flux de sr_insects. Empêche Sarracenia de quitter lorsqu’il reste des messages d’annonce dans la file
+d’attente de nouvelles tentatives (retry queue). Par défaut, une publication quitte proprement une fois qu’elle a
+créé et tenté de publier des messages d’annonce pour tous les fichiers du répertoire spécifié. Si des messages d’annonce ne sont pas
+publiés avec succès, ils seront enregistrés sur le disque pour réessayer ultérieurement. Si une publication n’est
+exécutée qu’une seule fois, comme dans les tests de flux, ces messages d’annonce ne seront jamais réessayés, sauf si
+retryEmptyBeforeExit est défini à True.</p>
+</section>
+<section id="retry-refilter-boolean-par-defaut-false">
+<h4>retry_refilter &lt;boolean&gt; (par défaut : False)<a class="headerlink" href="#retry-refilter-boolean-par-defaut-false" title="Link to this heading"></a></h4>
+<p>L’option <strong>retry_refilter</strong> modifie la façon dont les messages sont rechargés lorsqu’ils sont récupérés à partir
+d’une file d’attente pour une nouvelle tentive de transfer (retry). La méthode par défaut (valeur : False)
+consiste à répéter le transfert en utilisant exactement le même message que précédemment. Si <strong>retry_refilter</strong>
+est défini (valeur : True), alors tous les Les champs calculés du message + seront supprimés et le
+traitement redémarrera à partir de la phase <em>gather</em>  (le traitement d’acceptation/rejet sera
+répété, les destinations recalculées.)</p>
+<p>Le comportement normal de nouvelle tentative (retry) est utilisé lorsque la destination a subit une
+panne et doit renvoyer plus tard, tandis que l’option <strong>retry_refilter</strong> est utilisée lors de la récupération
+de la configuration</p>
+</section>
+<section id="retry-ttl-duration-defaut-identique-a-expire">
+<h4>retry_ttl &lt;duration&gt; (défaut: identique à expire)<a class="headerlink" href="#retry-ttl-duration-defaut-identique-a-expire" title="Link to this heading"></a></h4>
+<p>L’option <strong>retry_ttl</strong> (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
+un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
+été transféré après deux jours de tentatives, il est jeté.</p>
+</section>
+<section id="sanity-log-dead-interva-le-defaut-1-5-housekeeping">
+<h4>sanity_log_dead &lt;interva;le&gt; (défaut: 1.5*housekeeping)<a class="headerlink" href="#sanity-log-dead-interva-le-defaut-1-5-housekeeping" title="Link to this heading"></a></h4>
+<p>L’option <strong>sanity_log_dead</strong> définit la durée à prendre en compte avant de redémarrer un composant.</p>
+</section>
+<section id="scheduled-interval-scheduled-hour-scheduled-minute">
+<h4>scheduled_interval,scheduled_hour,scheduled_minute<a class="headerlink" href="#scheduled-interval-scheduled-hour-scheduled-minute" title="Link to this heading"></a></h4>
+<p>Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
+(unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
+sondage devrait être lancer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_interval</span> <span class="mi">30</span>
+</pre></div>
+</div>
+<p>Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune <em>scheduled_interval</em> n’est
+définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres
+spécificateurs de temps</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_hour</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">23</span>
+<span class="n">scheduled_minute</span> <span class="mi">14</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">29</span>
+</pre></div>
+</div>
+<p>afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+après chacune des 4h, 5h et 23h.</p>
+</section>
+<section id="shim-defer-posting-to-exit-experimental">
+<h4>shim_defer_posting_to_exit (EXPERIMENTAL)<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>
+<p>(option spécifique à libsrshim)
+Reporte la publication des fichiers jusqu’à ce que le processus se ferme.
+Dans les cas où le même fichier est ouvert et modifiée à plusieurs reprises, ceci
+peut éviter les publications redondantes.  (défaut: False)</p>
+</section>
+<section id="shim-post-minterval-interval-experimental">
+<h4>shim_post_minterval <em>interval</em> (EXPERIMENTAL)<a class="headerlink" href="#shim-post-minterval-interval-experimental" title="Link to this heading"></a></h4>
+<p>(option spécifique à libsrshim)
+Si un fichier est ouvert pour écriture et fermé plusieurs fois dans l’intervalle,
+il ne sera affiché qu’une seule fois. Lorsqu’on écrit dans un fichier plusieurs fois, en particulier
+dans un script shell, de nombreux postes sont créés, et les scripts shell affecte la performance.
+Dans tous les cas, les abonnés ne seront pas en mesure de faire des copies assez rapidement, donc
+il y a peu d’avantages à avoir 100 messages d’annonce du même fichier dans la même seconde pa exemple.
+Il est prudent de fixer une limite maximale à la fréquence de publication d’un fichier donné. (défaut: 5s)
+Remarque: si un fichier est toujours ouvert ou a été fermé après son post précédent, alors
+pendant le traitement de sortie du processus, il sera à nouveau publié, même si l’intervalle
+n’est pas respecté, afin de fournir le message d’annonce final le plus précis.</p>
+</section>
+<section id="shim-skip-parent-open-files-experimental">
+<h4>shim_skip_parent_open_files (EXPERIMENTAL)<a class="headerlink" href="#shim-skip-parent-open-files-experimental" title="Link to this heading"></a></h4>
+<p>(option spécifique à libsrshim)
+L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
+ouvert et ne poste pas si c’est le cas. (défaut: Vrai)</p>
+</section>
+<section id="sleep-temps">
+<h4>sleep &lt;temps&gt;<a class="headerlink" href="#sleep-temps" title="Link to this heading"></a></h4>
+<p>Temps d’attente entre la génération d’événements. Lorsqu’on écrit fréquemment à des fichiers, c’est inutile
+de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
+ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
+les modifications apportées à un fichier pendant le temps de <em>sleep</em>, et produire un seul poste.</p>
+<p>Lorsque <em>sleep</em> est donné une valeur &gt;0 pour être utilisé avec un <em>poll</em>, cela a pour effet de
+définir <em>scheduled_interval</em>, pour des raisons de compatibilité.
+Il est préférable que le sondage utilise explicitement les paramètres  <em>scheduled_interval</em>,
+<em>scheduled_hour</em>, et/ou <em>scheduled_minute</em> plutôt que <em>sleep</em>.</p>
+</section>
+<section id="statehost-booleen-defaut-false">
+<h4>statehost &lt;booléen&gt; ( défaut: False )<a class="headerlink" href="#statehost-booleen-defaut-false" title="Link to this heading"></a></h4>
+<p>Dans les grands centres de données, le répertoire de base peut être partagé entre des milliers de
+nœuds. Statehost ajoute le nom du nœud après le répertoire de cache pour le rendre
+unique à chaque nœud. Ainsi, chaque nœud a ses propres fichiers d’état et journaux.
+Par exemple, sur un nœud nommé goofy, ~/.cache/sarra/log/ devient ~/.cache/sarra/goofy/log/.</p>
+</section>
+<section id="strip-count-regexp-defaut-0">
+<h4>strip &lt;count|regexp&gt; (défaut: 0)<a class="headerlink" href="#strip-count-regexp-defaut-0" title="Link to this heading"></a></h4>
+<p>Il est possible de modifier les répertoires en miroir relatifs à l’aide de l’option <strong>strip</strong>.
+Si elle est défini à N (un entier), les premiers répertoires ‘N’ du chemin relatif
+sont supprimés. Par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">radar</span><span class="o">/</span><span class="n">PRECIP</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">WGJ</span><span class="o">/</span><span class="mi">201312141900</span><span class="n">_WGJ_PRECIP_SNOW</span><span class="o">.</span><span class="n">gif</span>
+
+  <span class="n">mirror</span>    <span class="kc">True</span>
+  <span class="n">strip</span>     <span class="mi">3</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">monrépertoirelocal</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>entraînerait la création des répertoires et du fichier
+/monrépertoirelocal/WGJ/201312141900_WGJ_PRECIP_SNOW.gif.
+Lorsqu’un regexp est fourni à la place d’un nombre, cela indique un modèle à supprimer
+du chemin relatif. Par exemple, si</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>strip  .*?GIF/
+</pre></div>
+</div>
+<p>Le fichier sera aussi placé au même emplacement.
+Notez que les paramètres de strip peuvent être modifiés entre les options de répertoire.</p>
+<dl>
+<dt>REMARQUE::</dt><dd><p>avec <strong>strip</strong>, l’utilisation du modificateur <strong>?</strong> (pour éviter l’expression régulière <em>greediness</em>) est souvent utile.
+Cela garantit que le match le plus court est utilisé.</p>
+<p>Par exemple, avec un nom de fichier : radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
+L’expression : .*?GIF correspond à : radar/PRECIP/GIF
+alors que l’expression : .*GIF correspond au nom entier.</p>
+</dd>
+</dl>
+</section>
+<section id="sourcefromexchange-flag-defaut-off">
+<h4>sourceFromExchange &lt;flag&gt; (défaut: off)<a class="headerlink" href="#sourcefromexchange-flag-defaut-off" title="Link to this heading"></a></h4>
+<p>L’option <strong>sourceFromExchange</strong> est principalement destinée aux administrateurs.
+Si les messages d’annonce reçus sont postés directement à partir d’une source, l’échange utilisé
+est «xs_&lt;nomUtilisateurSourceDuCourtier&gt;». Ces messages d’annonce pourraient manquer les en-têtes <em>source</em> et <em>from_cluster</em>,
+ou un utilisateur malveillant peut définir des valeurs incorrectes.
+Pour se protéger contre ces deux problèmes, les administrateurs doivent définir l’option <strong>sourceFromExchange</strong>.</p>
+<p>Lorsque l’option est définie, les valeurs des en-têtes de <em>source</em> et <em>from_cluster</em> du message d’annonce seront alors remplacées</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="o">&lt;</span><span class="n">utilsateurDuCourtier</span><span class="o">&gt;</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;from_cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster</span>
+</pre></div>
+</div>
+<p>Cela va remplacer toutes les valeurs présentes dans le message d’annonce. Ce paramètre doit toujours être utilisé
+lors de l’ingestion de données à partir d’un échange d’utilisateur. Ces champs sont utilisés pour renvoyer
+les rapports à l’origine des données injectées. Cela est généralement combiné avec:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>*mirror true*
+*sourceFromExchange true*
+*répertoire ${PBD}/${YYYYMMDD}/${SOURCE}*
+</pre></div>
+</div>
+<p>Pour que les données arrivent dans l’arborescence de format standard.</p>
+</section>
+<section id="sourcefrommessage-flag-defaut-off">
+<h4>sourceFromMessage &lt;flag&gt; (défaut: off)<a class="headerlink" href="#sourcefrommessage-flag-defaut-off" title="Link to this heading"></a></h4>
+<p>L’option <strong>sourceFromMessage</strong> est principalement destinée aux administrateurs.
+Normalement, le champ <em>source</em> d’un message entrant est ignoré.
+Lorsque cette option est définie, le champ du message est accepté et utilisé
+pour le traitement. (remplace <em>source</em> et <em>sourceFromExchange</em> )</p>
+<p>Il est désactivé par défaut car les messages malveillants peuvent déformer les données
+origine. À utiliser uniquement avec des flux de données fiables et organisés de manière responsable.</p>
+</section>
+<section id="subtopic-modele-amqp-defaut">
+<h4>subtopic &lt;modèle  amqp&gt; (défaut: #)<a class="headerlink" href="#subtopic-modele-amqp-defaut" title="Link to this heading"></a></h4>
+<p>Dans les publications d’un échange, le paramètre de subtopic restreint la sélection du produit.
+Pour donner la bonne valeur au subtopic, on a le choix de filtrer en utilisant <strong>subtopic</strong> seulement avec le
+wildcarding limité d’AMQP et une longueur limitée à 255 octets encodés, ou de manière plus puissante, les expressions régulière
+basés sur les mécanismes <strong>accept/reject</strong> décrits ci-dessous. La différence est que le
+le filtrage AMQP est appliqué par le courtier lui-même, ce qui évite que les avis soient livrés.
+aux clients. Les modèles <strong>accept/reject</strong> s’appliquent aux messages d’annonce envoyés par le
+courtier à l’abonné. En d’autres termes, <strong>accept/reject</strong> sont des filtres côté client,
+alors que <strong>subtopic</strong> est le filtrage côté serveur.</p>
+<p>Il est recommandé d’utiliser le filtrage côté serveur pour réduire le nombre d’annonces envoyées
+au client et envoyer seulement ce qui est pertinent, et seulement régler les mécanismes côté client,
+économisant du bandwidth et du traitement pour tous.</p>
+<p>topicPrefix est principalement utilisé lors des transitions de version de protocole,
+où l’on souhaite spécifier une version de protocole non-commune des messages d’annonce auquel s’abonner.</p>
+<p>Normalement, l’utilisateur spécifie un échange et plusieurs options de subtopic. <strong>subtopic</strong> est ce qui est
+normalement utilisé pour indiquer les messages d’annonce d’intérêt. Pour utiliser <strong>subtopic</strong> pour filtrer les produits,
+il faut que la chaîne de caractère subtopic corresponde au chemin relatif du produit.</p>
+<p>Par exemple, en consommant à partir de DD, pour donner la bonne valeur au subtopic, il est possible de
+parcourir le site Web <strong>http://dd.weather.gc.ca</strong> et noter tous les répertoires
+d’intérêt.  Pour chaque arborescence de répertoires d’intérêt, il faut écrire une option de <strong>subtopic</strong>
+comme cela:</p>
+<p><strong>subtopic  repertoire1.*.sous-repertoire3.*.sous-repertoire5.#</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ou</span><span class="p">:</span>
+      <span class="o">*</span>                <span class="n">correspond</span> <span class="n">à</span> <span class="n">un</span> <span class="n">nom</span> <span class="n">de</span> <span class="n">répertoire</span> <span class="n">unique</span>
+      <span class="c1">#                correspond à toute arborescence de répertoires restants</span>
+</pre></div>
+</div>
+<dl>
+<dt>Remarque:</dt><dd><p>Lorsque les répertoires ont ces wild-cards, ou espaces dans leurs noms, ils
+sera encodé par l’URL ( ‘#’ devient %23 ).
+Lorsque les répertoires ont des points dans leur nom, cela changera
+la hiérarchie des sujets.</p>
+<dl class="simple">
+<dt>FIXME:</dt><dd><p>les marques de hachage sont substituées à l’URL, mais n’ont pas vu le code pour les autres valeurs.
+Vérifiez si les astérisques dans les noms de répertoire dans les rubriques doivent être encodés par l’URL.
+Vérifiez si les points dans les noms de répertoire dans les rubriques doivent être encodés par l’URL.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>On peut utiliser plusieurs liaisons à plusieurs échanges comme cela:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">échange</span> <span class="n">A</span>
+<span class="n">subtopic</span> <span class="n">repertoire1</span><span class="o">.*.</span><span class="n">repertoire2</span><span class="o">.</span><span class="c1">#</span>
+
+<span class="n">échange</span> <span class="n">B</span>
+<span class="n">subtopic</span> <span class="o">*.</span><span class="n">repertoire4</span><span class="o">.</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>Cela va déclarer deux liaisons différentes à deux échanges différents et deux arborescences de fichiers différentes.
+Alors que la liaison par défaut consiste à se lier à tout, certains courtiers pourraient ne pas permettre aux
+clients à définir des liaisons, ou on peut vouloir utiliser des liaisons existantes.
+On peut désactiver la liaison de fil d’attente comme cela:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">subtopic</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>(False, ou off marchera aussi.)</p>
+</section>
+<section id="sundew-compat-regex-first-match-is-zero-default-faux">
+<h4>sundew_compat_regex_first_match_is_zero (default: Faux)<a class="headerlink" href="#sundew-compat-regex-first-match-is-zero-default-faux" title="Link to this heading"></a></h4>
+<p>Lors de la numérotation des groupes dans les modèles de correspondance, les groupes Sundew commencent à 0.
+Les expressions régulières Python utilisent le groupe zéro pour représenter la chaîne entière et chaque correspondance
+le groupe commence à 1. Il est considéré comme moins surprenant de se conformer aux conventions Python,
+mais le faire unilatéralement romprait la compatibilité. Voici donc un switch à utiliser
+lors du pontage entre Sundew, sarra v2 et sr3. Finalement, cela devrait toujours être désactivé.
+Exemples:</p>
+<ul class="simple">
+<li><p>sundew_compat_regex_first_match_is_zero: True</p></li>
+<li><p>url du message:  <a class="reference external" href="https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml">https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml</a></p></li>
+<li><p>argument <em>accept</em>: .*/WXO-DD/meteocode/(atl|ont|pnr|pyr|que)/.*/TRANSMIT.FP([A-Z][A-Z]).*([0-2][0-9][0-6][0-9]Z).*</p></li>
+<li><p><em>directory</em> corréspondant: /tmp/meteocode/${2}/${0}/${1}</p></li>
+<li><p>répertoire évalué:  /tmp/meteocode/1000Z/que/CN</p></li>
+</ul>
+<p>Pour obtenir le même résultat lorsque le option est faux:</p>
+<ul class="simple">
+<li><p>sundew_compat_regex_first_match_is_zero: False</p></li>
+<li><p><em>directory</em> corréspondant: /tmp/meteocode/${3}/${1}/${2}</p></li>
+</ul>
+<p>Le monde qui fouille sur les ressources sur les expressions régulière de python
+seront moins surpris par cette dernière convention.</p>
+</section>
+<section id="timecopy-defaut-on">
+<h4>timeCopy (défaut: on)<a class="headerlink" href="#timecopy-defaut-on" title="Link to this heading"></a></h4>
+<p>Sur les systèmes de type Unix, lorsque la commande <em>ls</em> ou un navigateur de fichiers affiche une modification ou un
+temps d’accès, il s’agit d’un affichage des éléments posix <em>st_atime</em> et <em>st_ctime</em> d’un struct renvoyé par l’appel
+stat(2).  Lorsque <em>timeCopy</em> est activé, les en-têtes qui reflètent ces valeurs dans les messages d’annonce sont utilisés
+pour restaurer l’accès et la modification des heures respectivement sur le système de l’abonné. Pour documenter
+le retard de la réception des fichiers, cette option peut être désactivée, puis les temps du fichier sur la
+source et la destination sont comparés.</p>
+<p>Lorsqu’il est défini dans un composant de publication, les en-têtes <em>atime</em> et <em>mtime</em> des messages d’annonce sont éliminés.</p>
+</section>
+<section id="timeout-intervalle-defaut-0">
+<h4>timeout &lt;intervalle&gt; (défaut: 0)<a class="headerlink" href="#timeout-intervalle-defaut-0" title="Link to this heading"></a></h4>
+<p>L’option <strong>timeout</strong> définit le nombre de secondes à attendre avant d’interrompre un
+transfert de connexion ou de téléchargement (appliqué pendant le transfert).</p>
+</section>
+<section id="timezone-chaine-defaut-utc">
+<h4>timezone &lt;chaine&gt; (défaut: UTC)<a class="headerlink" href="#timezone-chaine-defaut-utc" title="Link to this heading"></a></h4>
+<p>Établir le fuseau horaire pour les dates afficher pour les fichiers sur un serveur FTP.
+La valeur est tel que décrit timezone as per <a class="reference external" href="pypi.org/project/pytz">pytz</a>
+exemples: Canada/Pacific, Pacific/Nauru, Europe/Paris
+Seulement actif dans le contexte de sondage de serveur FTP.</p>
+</section>
+<section id="tlsrigour-defaut-medium">
+<h4>tlsRigour (défaut: medium)<a class="headerlink" href="#tlsrigour-defaut-medium" title="Link to this heading"></a></h4>
+<p><em>tlsRigour</em> peut être réglé a : <em>lax, medium ou strict</em>, et donne un indice à l’application par rapport à la
+configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
+est l’encapsulation de sockets TCP normales en cryptage standard. Il existe de nombreux aspects de
+négociations TLS, vérification du nom d’hôte, vérification des certificats, validation, choix de
+chiffrement. Ce qui est considéré comme sécuritaire évolue au fil du temps, de sorte que les paramètres
+qui étaient considérés comme sécuritaire il y a quelques années, sont actuellement déconseillés.
+Ceci mène naturellement à des difficultés de communication à cause de différents
+niveaux de conformité par rapport à ce qui est couramment défini comme un cryptage rigoureux.</p>
+<p>Par exemple, si on se connecte à un site et que son certificat est expiré, et
+qu’il est quand même nécessaire de l’utiliser, alors définir tlsRigour a <em>lax</em> pourra
+permettre la connexion de réussir.</p>
+</section>
+<section id="topic-chaine">
+<h4>topic &lt;chaine&gt;<a class="headerlink" href="#topic-chaine" title="Link to this heading"></a></h4>
+<p>Définissez explicitement une chaîne de sujet d’abonnement ou de publication, en remplaçant la valeur
+dériver à partir de l’habituel groupe de paramètres. Pour les pompes de données Sarracenia, cela ne
+devrait jamais être nécessaire, car l’utilisation de l’<em>exchange</em>, <em>topicPrefix</em> et <em>subtopic</em>
+construit normalement le bon valeur.</p>
+</section>
+<section id="topicprefix-defaut-v03">
+<h4>topicPrefix (défaut: v03)<a class="headerlink" href="#topicprefix-defaut-v03" title="Link to this heading"></a></h4>
+<p>rajouté au subtopic pour former une hiérarchie complète de thèmes (topics).
+Cette option s’applique aux liaisons d’abonnement.
+Indique la version des messages d’annonce reçus dans les subtopics. (V03 fait référence à <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>)</p>
+</section>
+<section id="topiccopy-defaut-false">
+<h4>topicCopy (défaut: False)<a class="headerlink" href="#topiccopy-defaut-false" title="Link to this heading"></a></h4>
+<p>Définir <em>topicCopy</em> à <em>true</em> indique à sarracenia de transmettre les <em>topic</em> des messages sans modification.
+Sarracenia a une convention sur la manière dont les <em>topic</em> des produits sont organisés. Il y a
+un <em>topicPrefix</em>, suivi de <em>subtopic</em> (sous-thèmes) dérivés du champ <em>relPath</em> du message.
+Certains réseaux peuvent choisir d’utiliser des conventions thématiques différentes, externes à la sarracenia.</p>
+</section>
+<section id="users-flag-defaut-false">
+<h4>users &lt;flag&gt; (défaut: false)<a class="headerlink" href="#users-flag-defaut-false" title="Link to this heading"></a></h4>
+<p>Utiliser comme complément lorsque l’action <em>declare</em> est utilisée, pour demander à sr3 de déclarer des utilisateurs
+sur le courtier, ainsi que les files d’attente et les échanges.</p>
+</section>
+<section id="v2compatrenamedoublepost-flag-default-false">
+<h4>v2compatRenameDoublePost &lt;flag&gt; ( default: false)<a class="headerlink" href="#v2compatrenamedoublepost-flag-default-false" title="Link to this heading"></a></h4>
+<p>la version 3 de Sarracenia propose une logique améliorée autour du renommage des fichiers,
+en utilisant un seul message par opération de renommage. La version 2 nécessitait deux postes.
+Lors de la publication, dans une situation de mise en miroir, pour la consommation par les clients
+v2, cet indicateur doit être réglé.</p>
+</section>
+<section id="vartimeoffset-default-0">
+<h4>varTimeOffset (default: 0)<a class="headerlink" href="#vartimeoffset-default-0" title="Link to this heading"></a></h4>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">varTimeOffset</span> <span class="o">-</span><span class="mi">7</span><span class="n">m</span>
+</pre></div>
+</div>
+<p>modifiera des substitutions de variables qui impliquent des substitutions de date/heure.
+Dans un modèle comme ${YYYY}/${MM}/${DD} sera évalué comme étant le
+date, évaluée sept minutes dans le passé.</p>
+</section>
+<section id="vip-options-active-passive">
+<h4>vip - OPTIONS ACTIVE/PASSIVE<a class="headerlink" href="#vip-options-active-passive" title="Link to this heading"></a></h4>
+<p>L’option <strong>vip</strong> indique qu’une configuration doit être active uniquement sur
+un seul nœud dans un cluster à la fois, un singleton. C’est typiquement
+requis pour un composant de poll, mais cela peut être utilisé avec un sender ou avec d’autres cas.</p>
+<p><strong>subscribe</strong> peut être utilisé sur un seul nœud de serveur ou plusieurs nœuds
+pourrait partager les responsabilités. Un autre logiciel de haute disponibilité et configurée séparément
+présente un <strong>vip</strong> (ip virtuelle) sur le serveur actif. Si jamais
+le serveur tombe en panne, le <strong>vip</strong> est déplacé sur un autre serveur et le traitement
+se produit en utilisant le nouveau serveur qui a maintenant le VIP actif.
+Les deux serveurs exécuteraient une instance <strong>sr3</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="o">**</span><span class="n">vip</span>          <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span>          <span class="p">[]</span><span class="o">**</span>
+</pre></div>
+</div>
+<p>Lorsqu’une seule instance <strong>sr3</strong> est exécutée  sur un serveur, ces options ne sont pas définies,
+et l’abonnement fonctionnera en « mode autonome » (standalone mode).</p>
+<p>Dans le cas des courtiers en cluster, les options doivent être définit en fonction du
+vip qui change.</p>
+<p><strong>vip 153.14.126.3</strong></p>
+<p>Lorsqu’une <strong>instance sr3</strong> ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
+Si c’est le cas, elle consomme et traite un message d’annonce et revérifie pour le vip.
+lorsque plus qu’un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.</p>
+</section>
+<section id="wololo">
+<h4>wololo<a class="headerlink" href="#wololo" title="Link to this heading"></a></h4>
+<p>Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.</p>
+</section>
+</section>
+<section id="see-also">
+<h3>SEE ALSO<a class="headerlink" href="#see-also" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.html">sr3(1)</a> - Sarracenia ligne de commande principale.</p>
+<p><a class="reference external" href="sr3_post.1.html">sr3_post(1)</a> - émettre des messages d’annonce de fichiers (implémentation en Python.)</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - émettre des messages d´annonce de fichiers (implémentation en C.)</p>
+<p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - copie les messages d’annonce ( implémentation en C du composant shovel. )</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr_post.7.html">sr3_post(7)</a> - Le formats des annonces.</p>
+<p><strong>Page d’Accueil:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia : une boîte à outils de gestion du partage de données pub/sub en temps réel</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sr3_credentials.7.html" class="btn btn-neutral float-left" title="SR3 CREDENTIALS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sr_post.7.html" class="btn btn-neutral float-right" title="SR_post" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

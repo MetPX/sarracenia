@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR3_TITLE &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MQTT Implementation Notes" href="mqtt_issues.html" />
+    <link rel="prev" title="Releasing MetPX-Sarracenia" href="Release.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SR3_TITLE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sr-title">sr_title</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configuration">CONFIGURATION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#environment-variables">ENVIRONMENT VARIABLES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>SR3_TITLE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/man_page_template.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr3-title">
+<h1>SR3_TITLE<a class="headerlink" href="#sr3-title" title="Link to this heading"></a></h1>
+<section id="sr-title">
+<h2>sr_title<a class="headerlink" href="#sr-title" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p><strong>sr_title</strong> foreground|start|stop|restart|reload|status configfile
+<strong>sr_title</strong> cleanup|declare|setup configfile</p>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p><strong>sr_title</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+est laborum. <a class="reference external" href="sr3.1.rst#subscribe">sr_subscribe(7)</a>
+with some limitations.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>doesn’t download data, only circulates notification messages.</p></li>
+<li><p>runs as only a single instance (no multiple instances).</p></li>
+<li><p>does not support any plugins.</p></li>
+<li><p>does not support vip for high availability.</p></li>
+<li><p>different regular expression library: POSIX vs. python.</p></li>
+<li><p>does not support regex for the strip command (no non-greedy regex).</p></li>
+</ul>
+</div></blockquote>
+<p>It can therefore act as a drop-in replacement for:</p>
+<blockquote>
+<div><p><a class="reference external" href="sr3.1.rst#report">sr_report(1)</a> - process report notification messages.</p>
+<p><a class="reference external" href="sr3.1.rst#shovel">sr_shovel(8)</a> - process shovel notification messages.</p>
+<p><a class="reference external" href="sr3.1.rst#winnow">sr_winnow(8)</a> - process winnow notification messages.</p>
+</div></blockquote>
+<p>The <strong>sr_cpump</strong> command takes two arguments: an action start|stop|restart|reload|status… (self described)
+followed by a configuration file.</p>
+<p>The <strong>foreground</strong> action is used when debugging a configuration, when the user wants to
+run the program and its configfile interactively…   The <strong>foreground</strong> instance
+is not concerned by other actions.  The user would stop using the <strong>foreground</strong> instance
+by simply &lt;ctrl-c&gt; on linux or use other means to send SIGINT or SIGTERM to the process.</p>
+<p>The actions <strong>cleanup</strong>, <strong>declare</strong>, <strong>setup</strong> can be used to manage resources on
+the rabbitmq server. The resources are either queues or exchanges. <strong>declare</strong> creates
+the resources. <strong>setup</strong> creates and additionally does the bindings of queues.</p>
+<p>The actions <strong>add</strong>, <strong>remove</strong>, <strong>edit</strong>, <strong>list</strong>, <strong>enable</strong>, <strong>disable</strong> act
+on configurations.</p>
+</section>
+<section id="configuration">
+<h3>CONFIGURATION<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
+doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
+veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim
+ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia
+consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque
+porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
+adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore
+et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis
+nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid
+ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea
+voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem
+eum fugiat quo voluptas nulla pariatur?”</p>
+</section>
+<section id="environment-variables">
+<h3>ENVIRONMENT VARIABLES<a class="headerlink" href="#environment-variables" title="Link to this heading"></a></h3>
+<p>If the SR_CONFIG_EXAMPLES variable is set, then the <em>add</em> directive can be used
+to copy examples into the user’s directory for use and/or customization.</p>
+<p>An entry in the ~/.config/sarra/default.conf (created via sr_subscribe edit default.conf )
+could be used to set the variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">SR_CONFIG_EXAMPLES</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+<p>The value should be available from the output of a list command from the python
+implementation.</p>
+</section>
+<section id="see-also">
+<h3>SEE ALSO<a class="headerlink" href="#see-also" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.rst#report">sr3_report(7)</a> - the format of report messages.</p>
+<p><a class="reference external" href="sr3.1.rst#report">sr3_report(1)</a> - process report messages.</p>
+<p><a class="reference external" href="sr3_post.1.rst">sr3_post(1)</a> - post notification messages of specific files.</p>
+<p><a class="reference external" href="sr_post.7.rst">sr3_post(7)</a> - the format of notification messages.</p>
+<p><a class="reference external" href="sr3.1.rst#subscribe">sr3_subscribe(1)</a> - the download client.</p>
+<p><a class="reference external" href="sr3.1.rst#watch">sr3_watch(1)</a> - the directory watching daemon.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Release.html" class="btn btn-neutral float-left" title="Releasing MetPX-Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mqtt_issues.html" class="btn btn-neutral float-right" title="MQTT Implementation Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

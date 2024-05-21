@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.instance &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.instance</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.instance</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># This file is part of Sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2020</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging.handlers</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">sarracenia.moth</span> <span class="kn">import</span> <span class="n">Moth</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">user_config_dir</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flow</span> <span class="kn">import</span> <span class="n">Flow</span>
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlunparse</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RedirectedTimedRotatingFileHandler">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.RedirectedTimedRotatingFileHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">RedirectedTimedRotatingFileHandler</span><span class="p">(</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">TimedRotatingFileHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="RedirectedTimedRotatingFileHandler.doRollover">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.RedirectedTimedRotatingFileHandler.doRollover">[docs]</a>
+    <span class="k">def</span> <span class="nf">doRollover</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">doRollover</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="instance">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.instance">[docs]</a>
+<span class="k">class</span> <span class="nc">instance</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Process management for a single flow instance.</span>
+<span class="sd">       start and stop instances.</span>
+
+<span class="sd">       this is the main entry point launched from the sr3 cli, with arguments for it to turn into a specific configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="instance.__init__">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.instance.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">original_sigint</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">getsignal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">stop_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signum</span><span class="p">,</span> <span class="n">stack</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;signal </span><span class="si">%d</span><span class="s1"> received&#39;</span> <span class="o">%</span> <span class="n">signum</span><span class="p">)</span>
+
+        <span class="c1"># stack trace dump from: https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;when debug is on, we generate stack trace below to help debugging, but note that nothing has failed&quot;</span><span class="p">)</span>
+            <span class="n">id2name</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">th</span><span class="o">.</span><span class="n">ident</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">th</span> <span class="ow">in</span> <span class="n">threading</span><span class="o">.</span><span class="n">enumerate</span><span class="p">()])</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">threadId</span><span class="p">,</span> <span class="n">stack</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">_current_frames</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># Thread: </span><span class="si">%s</span><span class="s2">(</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">id2name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">threadId</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">threadId</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">traceback</span><span class="o">.</span><span class="n">extract_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">):</span>
+                    <span class="n">code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;File: &quot;</span><span class="si">%s</span><span class="s1">&quot;, line </span><span class="si">%d</span><span class="s1">, in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span><span class="o">.</span><span class="n">please_stop</span><span class="p">()</span>
+
+<div class="viewcode-block" id="instance.start">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.instance.start">[docs]</a>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          Main element to run a single flow instance. It parses the command line arguments twice.</span>
+<span class="sd">          the first pass, is to initialize the log file and debug level, and select the configuration file to parse.</span>
+<span class="sd">          Once the log file is set, and output &amp; error re-direction is in place, the second pass begins:</span>
+<span class="sd">    </span>
+<span class="sd">          The configuration files are parsed, and then the options are parsed a second time to act</span>
+<span class="sd">          as overrides to the configuration file content.</span>
+<span class="sd">          </span>
+<span class="sd">          As all process management is handled by sr.py, the *action* here is not parsed, but always either</span>
+<span class="sd">          *start* (daemon) or *foreground* (interactive)</span>
+<span class="sd">    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">global</span> <span class="n">logger</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+            <span class="nb">format</span><span class="o">=</span>
+            <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(process)d</span><span class="s1"> </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: honour SR_ variable for moving preferences...</span>
+        <span class="n">default_cfg_dir</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">user_config_dir</span><span class="p">(</span>
+            <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appname&#39;</span><span class="p">],</span>
+            <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appauthor&#39;</span><span class="p">])</span>
+
+        <span class="n">cfg_preparse</span><span class="o">=</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span> \
+            <span class="p">{</span>
+               <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;inline&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;inlineEncoding&#39;</span><span class="p">:</span><span class="s1">&#39;guess&#39;</span><span class="p">,</span> <span class="s1">&#39;logStdout&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">}</span> <span class="p">)</span>
+
+        <span class="n">defconfig</span> <span class="o">=</span> <span class="n">default_cfg_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s2">&quot;default.conf&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">defconfig</span><span class="p">):</span>
+            <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">defconfig</span><span class="p">)</span>
+        <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+        <span class="c1">#cfg_preparse.dump()</span>
+
+        <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;foreground&#39;</span><span class="p">,</span> <span class="s1">&#39;start&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;action must be one of: foreground or start&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">logLevel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="p">,</span> <span class="s1">&#39;logLevel&#39;</span><span class="p">):</span>
+            <span class="n">logLevel</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logLevel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logLevel</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="p">,</span>
+                       <span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">cfg_preparse</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;foreground&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;need an instance number to run.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="o">.</span><span class="n">configurations</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">)</span> <span class="ow">and</span> \
+           <span class="p">(</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">configurations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;post&#39;</span> <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;can only run one configuration in an instance&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="ow">in</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">configurations</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;flow&#39;</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">configurations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">component</span><span class="p">,</span> <span class="n">config</span> <span class="o">=</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">configurations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="n">cfg_preparse</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logRotateInterval</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">24</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">):</span>
+            <span class="n">logRotateInterval</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logRotateInterval</span><span class="p">)</span>
+            <span class="n">lr_when</span><span class="o">=</span><span class="s1">&#39;s&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logRotateInterval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logRotateInterval</span><span class="o">/</span><span class="p">(</span><span class="mi">24</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span>
+            <span class="n">lr_when</span><span class="o">=</span><span class="s1">&#39;midnight&#39;</span>
+            
+
+        <span class="c1"># init logs here. need to know instance number and configuration and component before here.</span>
+        <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">action</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span><span class="s1">&#39;run&#39;</span><span class="p">]</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
+                <span class="n">hostdir</span> <span class="o">=</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">hostdir</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hostdir</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">metricsfilename</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_metrics_filename</span><span class="p">(</span> <span class="n">hostdir</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">no</span><span class="p">)</span>
+
+            <span class="n">dir_not_there</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">metricsfilename</span><span class="p">))</span>
+            <span class="k">while</span> <span class="n">dir_not_there</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">metricsfilename</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">dir_not_there</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                    <span class="n">dir_not_there</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s2">&quot;makedirs </span><span class="si">{}</span><span class="s2"> failed err=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">metricsfilename</span><span class="p">),</span><span class="n">ex</span><span class="p">))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">metricsFilename</span> <span class="o">=</span> <span class="n">metricsfilename</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logStdout</span><span class="p">:</span>
+
+                <span class="n">logfilename</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_log_filename</span><span class="p">(</span> <span class="n">hostdir</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">no</span><span class="p">)</span>
+
+                <span class="n">dir_not_there</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">logfilename</span><span class="p">))</span>
+                <span class="k">while</span> <span class="n">dir_not_there</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">logfilename</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">dir_not_there</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                        <span class="n">dir_not_there</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s2">&quot;makedirs </span><span class="si">{}</span><span class="s2"> failed err=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">logfilename</span><span class="p">),</span><span class="n">ex</span><span class="p">))</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+                <span class="n">log_format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(levelname)s</span><span class="s1">] </span><span class="si">%(name)s</span><span class="s1"> </span><span class="si">%(funcName)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+                <span class="k">if</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">hasHandlers</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+                        <span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+                <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logLevel</span><span class="p">)</span>
+
+                <span class="n">handler</span> <span class="o">=</span> <span class="n">RedirectedTimedRotatingFileHandler</span><span class="p">(</span>
+                    <span class="n">logfilename</span><span class="p">,</span>
+                    <span class="n">when</span><span class="o">=</span><span class="n">lr_when</span><span class="p">,</span>
+                    <span class="n">interval</span><span class="o">=</span><span class="n">logRotateInterval</span><span class="p">,</span>
+                    <span class="n">backupCount</span><span class="o">=</span><span class="n">cfg_preparse</span><span class="o">.</span><span class="n">logRotateCount</span><span class="p">)</span>
+                <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">log_format</span><span class="p">))</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg_preparse</span><span class="p">,</span> <span class="s1">&#39;permLog&#39;</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">logfilename</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">permLog</span><span class="p">)</span>
+
+                <span class="c1"># FIXME: https://docs.python.org/3/library/contextlib.html portable redirection...</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">dup2</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logLevel</span><span class="p">)</span>
+
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_signal</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_signal</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
+            <span class="n">hostdir</span> <span class="o">=</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">hostdir</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hostdir</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">pidfilename</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_pid_filename</span><span class="p">(</span> <span class="n">hostdir</span><span class="p">,</span> <span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">no</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pidfilename</span><span class="p">)):</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pidfilename</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pidfilename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pfn</span><span class="p">:</span>
+            <span class="n">pfn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">cfg_preparse</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="n">cfg</span><span class="o">.</span><span class="n">novipFilename</span> <span class="o">=</span> <span class="n">pidfilename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.pid&quot;</span><span class="p">,</span> <span class="s2">&quot;.noVip&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s1">&#39;env_declared&#39;</span><span class="p">):</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">env_declared</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">putenv</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">pidfilename</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">pidfilename</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">instance</span><span class="p">()</span>
+    <span class="n">i</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

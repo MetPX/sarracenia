@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portage des plugins V2 vers Sr3 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Contribuer à Sarracenia" href="../Contribution/index.html" />
+    <link rel="prev" title="GUIDE DE MISE A NIVEAU" href="MiseANiveau.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Comment Faire</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="subscriber.html">Guide de l’abonné</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FlowCallbacks.html">Écriture de plugins FlowCallback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Ingestion_de_email_avec_Sarracenia.html">Ingestion par e-mail avec Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Exemples_Hydro.html">Utilisation de plugins pour récupérer des données hydrométriques</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html">Sources de données</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Docker.html">Exécution de MetPX via Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Admin.html">Administration des pompes de données AMQP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Addenda_Admin_Rabbit.html">Administration de Rabbitmq Adddendum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MiseANiveau.html">GUIDE DE MISE A NIVEAU</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Portage des plugins V2 vers Sr3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#placement-de-fichier">Placement de Fichier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#difference-de-ligne-de-commande">Différence de ligne de commande</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ce-qui-fonctionnera-sans-changement">Ce qui fonctionnera sans changement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ce-qui-ne-fonctionnera-pas-sans-changement">Ce qui ne fonctionnera pas sans changement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differences-de-codage-entre-les-plugins-dans-v2-vs-sr3">Différences de codage entre les plugins dans v2 vs Sr3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fichiers-de-configuration">Fichiers de configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mise-a-niveau-de-la-configuration">Mise à niveau de la configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#options">Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mappage-des-points-d-entree-v2-aux-callbacks-v3">Mappage des points d’entrée v2 aux Callbacks v3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#on-line-sous-classement-de-poll">on_line -&gt; sous-classement de poll</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#do-send-send">do_send -&gt; send:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#do-download-download">do_download -&gt; download:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#v3-seulement-post-gather">v3 seulement: post,gather</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#v3-exemples-complexes">v3 Exemples complexes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#table-of-v2-and-sr3-equivalents">Table of v2 and sr3 Equivalents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Comment Faire</a> &raquo;</li>
+      <li>Portage des plugins V2 vers Sr3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/CommentFaire/v2ASr3.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="portage-des-plugins-v2-vers-sr3">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Portage des plugins V2 vers Sr3</a><a class="headerlink" href="#portage-des-plugins-v2-vers-sr3" title="Link to this heading"></a></h1>
+<p>Ceci est un guide pour porter des plugins de Sarracenia version 2.X (metpx-sarracenia) vers
+Sarracenia version 3.x (metpx-sr3)</p>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#portage-des-plugins-v2-vers-sr3" id="id1">Portage des plugins V2 vers Sr3</a></p>
+<ul>
+<li><p><a class="reference internal" href="#placement-de-fichier" id="id2">Placement de Fichier</a></p></li>
+<li><p><a class="reference internal" href="#difference-de-ligne-de-commande" id="id3">Différence de ligne de commande</a></p></li>
+<li><p><a class="reference internal" href="#ce-qui-fonctionnera-sans-changement" id="id4">Ce qui fonctionnera sans changement</a></p></li>
+<li><p><a class="reference internal" href="#ce-qui-ne-fonctionnera-pas-sans-changement" id="id5">Ce qui ne fonctionnera pas sans changement</a></p></li>
+<li><p><a class="reference internal" href="#differences-de-codage-entre-les-plugins-dans-v2-vs-sr3" id="id6">Différences de codage entre les plugins dans v2 vs Sr3</a></p></li>
+<li><p><a class="reference internal" href="#fichiers-de-configuration" id="id7">Fichiers de configuration</a></p></li>
+<li><p><a class="reference internal" href="#mise-a-niveau-de-la-configuration" id="id8">Mise à niveau de la configuration</a></p></li>
+<li><p><a class="reference internal" href="#options" id="id9">Options</a></p></li>
+<li><p><a class="reference internal" href="#mappage-des-points-d-entree-v2-aux-callbacks-v3" id="id10">Mappage des points d’entrée v2 aux Callbacks v3</a></p>
+<ul>
+<li><p><a class="reference internal" href="#on-message-on-post-after-accept" id="id11">on_message, on_post –&gt; after_accept</a></p></li>
+<li><p><a class="reference internal" href="#on-file-after-work" id="id12">on_file –&gt; after_work</a></p></li>
+<li><p><a class="reference internal" href="#on-heartbeat-on-housekeeping" id="id13">on_heartbeat -&gt; on_housekeeping</a></p></li>
+<li><p><a class="reference internal" href="#do-poll-poll" id="id14">do_poll -&gt; poll</a></p></li>
+<li><p><a class="reference internal" href="#traitement-ip-virtuel-dans-le-poll" id="id15">Traitement IP virtuel dans le poll</a></p></li>
+<li><p><a class="reference internal" href="#flux-programme" id="id16">Flux programmé</a></p></li>
+<li><p><a class="reference internal" href="#on-html-page-sous-classement-de-flowcb-poll" id="id17">on_html_page -&gt; sous-classement de flowcb/poll</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#on-line-sous-classement-de-poll" id="id18">on_line -&gt; sous-classement de poll</a></p></li>
+<li><p><a class="reference internal" href="#do-send-send" id="id19">do_send -&gt; send:</a></p></li>
+<li><p><a class="reference internal" href="#do-download-download" id="id20">do_download -&gt; download:</a></p>
+<ul>
+<li><p><a class="reference internal" href="#destfnscript" id="id21">DESTFNSCRIPT</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#v3-seulement-post-gather" id="id22">v3 seulement: post,gather</a></p></li>
+<li><p><a class="reference internal" href="#v3-exemples-complexes" id="id23">v3 Exemples complexes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#flowcb-nodupe" id="id24">flowcb/nodupe</a></p></li>
+<li><p><a class="reference internal" href="#flowcb-retry" id="id25">flowcb/retry</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#table-of-v2-and-sr3-equivalents" id="id26">Table of v2 and sr3 Equivalents</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Si vous êtes nouveau sur Sarracenia, et que vous n’avez aucune expérience ou besoin de regarder les plugins v2,
+ne lisez pas ceci. cela ne fera que vous confondre. <strong>Ce guide s’adresse à ceux qui ont besoin de prendre des
+Plugins v2 et les porter à Sr3.</strong> Vous feriez mieux d’obtenir un nouveau regard en regardant le
+<a class="reference external" href="../Tutorials">jupyter notebook examples</a> qui fournissent une introduction à la v3 sans
+les références déroutantes à la v2.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Même si vous avez réellement besoin de porter des plugins v2 vers sr3, vous devriez toujours être
+familier avec les plugins sr3 avant d’essayer d’en porter un. Ressources pour cela :</p>
+<p><a class="reference external" href="../Explication/SarraPluginDev.html">Guide de Programmation</a></p>
+<blockquote>
+<div><p>Les <a class="reference external" href="../Tutorials">exemples de jupyter notebook</a> sont probablement un bon pré-requis pour tout
+le monde, pour comprendre comment fonctionnent les plugins Sr3, avant d’essayer de porter ceux de la v2.</p>
+</div></blockquote>
+</div>
+<p><a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.log">Exemple de plugin Sr3</a></p>
+<p>D’une manière générale, les plugins v2 ont été rajouté sur le code existant pour permettre certaines modifications
+de comportement. Les plugins V2 de première génération n’avaient que des routines uniques déclarées
+(par exemple <em>on_message</em>), alors que ceux de la deuxième génération utilisaient des classes entières
+(par exemple <em>plugin</em>) ont été déclarés, mais toujours sur pilotis.</p>
+<p>Les plugins Sr3 sont des éléments de conception de base, composés ensemble pour implémenter une partie de
+Sarracenia. Les plugins V3 devraient être plus faciles à implémenté et à déboguer pour les programmeurs Python,
+et sont plus flexibles et puissants que le mécanisme de v2.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>v3 utilise la syntaxe standard de python, pas l’étrange <em>self.plugins</em>, <em>parent.logger</em>, de la v2,
+et oh gee pourquoi <em>import</em> ne fonctionne-t-il pas?</p></li>
+<li><p>Importations python standard; Les erreurs de syntaxe sont détectées et signalées <em>de la manière normale</em></p></li>
+<li><p>Les classes v3 sont conçues pour être utilisables en dehors de l’interface de ligne de commande elle-même
+(voir les exemples de jupyter notebook)
+appelable par les programmeurs d’applications dans leur propre code, comme toute autre bibliothèque python.</p></li>
+<li><p>Les classes v3 peuvent être sous-classées pour ajouter des fonctionnalités de base, comme un nouveau message
+de notification ou un protocole de transport de fichier.</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>Il existe également quelques vidéos pas à pas sur Youtube montrant des ports simples v2 -&gt; v3:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://www.youtube.com/watch?v=rUazjoGzPac">Sender (10 min)</a></p></li>
+<li><p><a class="reference external" href="https://www.youtube.com/watch?v=P20M9ojn_Zw">Poll (20 min)</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<section id="placement-de-fichier">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Placement de Fichier</a><a class="headerlink" href="#placement-de-fichier" title="Link to this heading"></a></h2>
+<p>v2 place les fichier de configuration sous ~/.config/sarra, et les fichiers d’état sous ~/.cache/sarra</p>
+<p>v3 place les fichier de configuration sous ~/.config/sr3, et les fichiers d’état sous ~/.cache/sr3</p>
+<p>v2 a une implémentation C de sarra appelée sarrac. L’implémentation C pour v3, est appelée sr3c,
+et est identique à celui de la v2, sauf qu’il utilise les emplacements de fichiers v3.</p>
+</section>
+<section id="difference-de-ligne-de-commande">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Différence de ligne de commande</a><a class="headerlink" href="#difference-de-ligne-de-commande" title="Link to this heading"></a></h2>
+<p>En bref, le point d’entrée sr3 est utilisé pour démarrer / arrêter / évaluer les choses:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v2</span><span class="p">:</span>  <span class="n">sr_</span><span class="o">*</span><span class="n">component</span><span class="o">*</span> <span class="n">start</span> <span class="n">config</span>
+
+<span class="n">v3</span><span class="p">:</span>  <span class="n">sr3</span> <span class="n">start</span> <span class="o">*</span><span class="n">component</span><span class="o">*/</span><span class="n">config</span>
+</pre></div>
+</div>
+<p>Dans sr3, on peut également utiliser des spécifications de style de globbing de fichier pour demander qu’une commande
+soit invoqué sur un groupe de configurations, alors que dans la v2, on ne pouvait fonctionner que sur une à la fois.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>sr3_post</strong> est une exception à ce changement parce qu’il fonctionne comme sr3_post de la v2, étant
+un outil d’affichage interactif.</p>
+</div>
+</section>
+<section id="ce-qui-fonctionnera-sans-changement">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Ce qui fonctionnera sans changement</a><a class="headerlink" href="#ce-qui-fonctionnera-sans-changement" title="Link to this heading"></a></h2>
+<p>La première étape du portage d’une configuration subscribe/X vers v3, consiste simplement à copier le
+fichier de configuration de ~/.config/sarra à l’emplacement correspondant dans ~/.config/sr3 et essayez:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">show</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">X</span>
+</pre></div>
+</div>
+<p>La commande <em>show</em> est nouvelle dans sr3 et permet d’afficher la configuration après
+avoir été analysé. La plupart d’entre eux devraient fonctionner, sauf si vous avez des plugins do_*.</p>
+<p>Exemples de choses qui devraient fonctionner:</p>
+<ul>
+<li><p>tous les paramètres des fichiers de configuration v2 doivent être reconnus par l’analyseur d’options v3 et convertis
+aux équivalents v3, c’est-à-dire :</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option v2</p></th>
+<th class="head"><p>Option v3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>accept_scp_threshold</p></td>
+<td><p>accel_threshold</p></td>
+</tr>
+<tr class="row-odd"><td><p>heartbeat</p></td>
+<td><p>housekeeping</p></td>
+</tr>
+<tr class="row-even"><td><p>chmod_log</p></td>
+<td><p>permLog</p></td>
+</tr>
+<tr class="row-odd"><td><p>loglevel</p></td>
+<td><p>logLevel</p></td>
+</tr>
+<tr class="row-even"><td><p>post_base_url</p></td>
+<td><p>post_baseUrl</p></td>
+</tr>
+<tr class="row-odd"><td><p>post_rate_limit</p></td>
+<td><p>messageRateMax</p></td>
+</tr>
+<tr class="row-even"><td><p>cache, suppress_duplicates</p></td>
+<td><p>nodupe_ttl</p></td>
+</tr>
+<tr class="row-odd"><td><p>topic_prefix</p></td>
+<td><p>topicPrefix</p></td>
+</tr>
+</tbody>
+</table>
+<p>Pour la liste complète, consultez le <a class="reference external" href="UPGRADING.html">Release Notes</a></p>
+<p>Le topic_prefix dans la v2 est ‘v02.post’ dans la v3, la valeur par défaut est ‘v03’. Si topic_prefix est omis
+vous devrez ajouter la ligne <em>topicPrefix v02.post</em> pour obtenir le même comportement que la v2. Pourrais
+être également placé dans ~/.config/sr3/default.conf si le cas est trop courant.
+Il se peut que l’on doive remplacer de la même manière la valeur par défaut sr3 pour post_topicPrefix.</p>
+</li>
+<li><p>toutes les routines on_message, on_file, on_post, on_heartbeat, fonctionneront, par sr3 en utilisant
+le plugin flowcb/v2wrapper.py qui sera automatiquement appelé lorsque les plugins v2 sont
+lu dans le fichier de configuration.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Idéalement, v2wrapper est utilisé comme béquille pour permettre d’avoir une configuration fonctionnelle
+rapidement. Il y a un succès de performance à l’utilisation de v2wrapper.</p>
+</div>
+</section>
+<section id="ce-qui-ne-fonctionnera-pas-sans-changement">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Ce qui ne fonctionnera pas sans changement</a><a class="headerlink" href="#ce-qui-ne-fonctionnera-pas-sans-changement" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>do_* ils sont juste fondamentalement différents dans la v3.</p></li>
+</ul>
+<p>Si vous avez une configuration avec un plugin do_*, vous avez besoin de ce guide, à partir du jour 1.
+pour définir une configuration pour utiliser un plugin, dans la v2 on utilisait l’option <em>plugin</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plugin</span> <span class="o">&lt;</span><span class="n">pluginName</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>L’équivalent de celui de la v3 est <em>callback</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="o">&lt;</span><span class="n">pluginName</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Pour que ce raccourci fonctionne, il devrait y avoir un fichier nommé &lt;pluginName&gt;.py quelque part dans le
+PYTHONPATH (~/.config/plugins est ajouté pour plus de commodité.) et ce fichier source python a besoin
+qu’une classe &lt;PluginName&gt; y soit déclarée (identique au nom du fichier mais avec la première lettre en majuscule).
+Si vous devez le nommer différemment, il existe un formulaire plus long qui permet de violer la
+convention dans v3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowCallback</span> <span class="o">&lt;</span><span class="n">pluginName</span><span class="o">&gt;.</span><span class="n">MyFavouriteClass</span>
+</pre></div>
+</div>
+<p>les déclarations de plugins de routine individuelles on_message, on_file, etc… ne sont pas un moyen de
+faire les choses dans la v3. Vous déclarez des rappels et leur demandez de contenir les points d’entrée dont vous avez besoin.</p>
+<ul class="simple">
+<li><p>DESTFNSCRIPT fonctionne de manière similaire dans v3 à v2, mais l’API est faite pour correspondre v3 flowCallbacks,
+les nouvelles routines, ou on renvoie le nouveau nom de fichier en sortie, au lieu de modifier un champ
+dans le message de notification.</p></li>
+</ul>
+</section>
+<section id="differences-de-codage-entre-les-plugins-dans-v2-vs-sr3">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Différences de codage entre les plugins dans v2 vs Sr3</a><a class="headerlink" href="#differences-de-codage-entre-les-plugins-dans-v2-vs-sr3" title="Link to this heading"></a></h2>
+<p>L’API pour ajouter ou personnaliser des fonctionnalités dans sr3 est très différente de la v2.
+En général, les plugins v3:</p>
+<ul>
+<li><p><strong>sont généralement sous-classés à partir de sarracenia.flowcb.FlowCB.</strong></p>
+<p>Dans la v2, on déclarerait:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Msg_Log</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Les plugins v3 sont des fichiers sources python normaux (pas de magie à la fin.)
+ils sont sous-classés à partir de sarracenia.flowcb:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="k">class</span> <span class="nc">MyPlugin</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+  <span class="o">...</span><span class="n">le</span> <span class="n">reste</span> <span class="n">de</span> <span class="n">la</span> <span class="n">classe</span> <span class="n">de</span> <span class="n">plugin</span><span class="o">..</span>
+
+   <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+     <span class="o">...</span><span class="n">code</span> <span class="n">à</span> <span class="n">exécuter</span> <span class="n">dans</span> <span class="n">callback</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>Pour créer un plugin <em>after_accept</em> dans la classe <em>MyPlugin</em>, définissez une fonction
+avec ce nom et la signature appropriée.</p>
+</li>
+<li><p>Les plugins v3 <strong>sont pythoniques, pas bizarres</strong> :
+Dans la v2, vous avez besoin que la dernière ligne pour inclure quelque chose comme</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">plugin</span> <span class="o">=</span> <span class="s1">&#39;Msg_Delay&#39;</span>
+</pre></div>
+</div>
+<p>ceux de la première génération à la fin avaient quelque chose comme ceci pour attribuer explicitement des points d’entrée:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg_2localfile</span> <span class="o">=</span> <span class="n">Msg_2LocalFile</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">on_message</span> <span class="o">=</span> <span class="n">msg_2localfile</span><span class="o">.</span><span class="n">on_message</span>
+</pre></div>
+</div>
+<p>Quoi qu’il en soit, une partie python naïve du fichier échouerait invariablement sans qu’une sorte de
+harnais de test ne soit enroulée autour d’elle.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dans la v3, supprimez ces lignes (généralement situées au bas du fichier)</p>
+</div>
+<p>Dans la v2, il y avait des problèmes étranges avec les importations, ce qui a entraîné la mise en place
+d’importer des instructions à l’intérieur des fonctions. Ce problème est résolu dans la v3, vous pouvez
+vérifier votre syntaxe d’importation en faisant <em>import X</em> dans n’importe quel interpréteur python.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Placez les importations nécessaires au début du fichier, comme tout autre module python
+<strong>et supprimez les importations situées dans les fonctions lors du portage</strong>.</p>
+</div>
+</li>
+<li><p><strong>Les plugins v3 peuvent être utilisés par les programmeurs d’applications.</strong> Les plugins ne sont pas
+boulonné, mais un élément central, implémentant la suppression de doublon, réception et transmission de messages
+de notification, surveillance de fichiers, etc.. comprendre les plugins v3 donne aux gens des indices
+importants pour être capable de travailler sur sarracénia.</p>
+<p>Les plugins v3 peuvent être <em>importés</em> dans des applications existantes pour ajouter la possibilité
+d’interagir avec les pompes sarracenia sans utiliser l’interface de ligne de commande Sarracenia.
+voir les tutoriels jupyter.</p>
+</li>
+<li><p>Les plugins v3 utilisent maintenant <strong>la journalisation python standard</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+</pre></div>
+</div>
+<p>Assurez-vous que la déclaration d’enregistreur suivante se trouve après le <strong>last _import_</strong> en haut du plugin v3</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># To log a notification message:</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Lors du portage des plugins v2 -&gt; v3 : <em>logger.x</em> remplace <em>parent.logger.x</em>.
+Parfois, il y a aussi self.logger x… je ne sais pas pourquoi… ne demandez pas.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dans vi, vous pouvez utiliser le remplacement global pour effectuer un travail rapide lors du portage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="o">%</span><span class="n">s</span><span class="o">/</span><span class="n">parent</span><span class="o">.</span><span class="n">logger</span><span class="o">/</span><span class="n">logger</span><span class="o">/</span><span class="n">g</span>
+</pre></div>
+</div>
+</div>
+</li>
+<li><p>En v2, <strong>parent</strong> est un gâchis. L’objet <em>self</em> variait en fonction des points d’entrée
+appelé. Par exemple, <em>self</em> dans __init__ n’est pas identique à <em>self</em> dans on_message. En conséquence, tous les
+variables d´états doivent être stocké dans le parent. l’objet parent contient des options, des paramètres et
+les variable d´instance de la classe qui appelle le plugin.</p>
+<p>Pour les attributs réels, sr3 fonctionne désormais comme les programmeurs python s’y attendent : self,
+est le même self, dans __init__() et tous les autres points d’entrée, donc on peut définir des variables
+d’état pour le plugin en utilisant les attributs self.x dans le code du plugin.</p>
+</li>
+<li><p>Les plugins v3 <em>ont des options comme argument pour le __init__ (self, options): routine</em> plutôt
+que dans la v2 où ils se trouvaient dans l’objet parent. Par convention, dans la plupart des modules, la
+fonction __init__ comprend un:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;OptionName&#39;</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">DefaultValue</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dans VI, vous pouvez utiliser le remplacement global:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="o">%</span><span class="n">s</span><span class="o">/</span><span class="n">parent</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">/</span><span class="n">g</span>
+</pre></div>
+</div>
+</div>
+</li>
+<li><p><strong>vous pouvez voir quelles options sont actives en démarrant un composant avec la commande ‘show’</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">show</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">myconf</span>
+</pre></div>
+</div>
+<p>ces paramètres sont accessibles à partir de self.o</p>
+</li>
+<li><p>Dans les paramètres sr3, <strong>recherchez le remplacement de nombreux traits de soulignement par le camelCase</strong></p>
+<dl class="simple">
+<dt>correspondre à l’intention.  ainsi:</dt><dd><ul class="simple">
+<li><p>custom_setting_thing -&gt; customSettingThing</p></li>
+<li><p>post_base_dir -&gt; post_baseDir</p></li>
+<li><p>post_broker est inchangé.</p></li>
+<li><p>post_base_url -&gt; post_baseUrl</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Dans la v2, <em>parent.msg</em> stockait les messages, avec certains champs comme attributs intégrés et d’autres comme en-têtes.
+Dans la v3 <strong>les messages de notification sont maintenant des dictionnaires python</strong> , donc un <cite>msg.relpath</cite> v2 devient <cite>msg[‘relPath’]</cite> dans la v3.</p>
+<p>plutôt que d’être transmis via le parent, il existe une option <em>worklist</em> transmise aux points d’entrée du plugin qui manipulent
+messages. par exemple, un <em>on_message(self,parent)</em> dans un plugin v2 devient un <em>after_accept(self,worklist)</em> dans sr3.
+la liste de travail.incoming contient tous les messages qui ont passé le filtrage d’acceptation/rejet et seront traités
+(pour télécharger, envoyer ou publier) donc la logique ressemblera à</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+    <span class="n">do</span> <span class="n">the</span> <span class="n">same</span> <span class="n">logic</span> <span class="k">as</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">v2</span> <span class="n">plugin</span><span class="o">.</span>
+    <span class="k">for</span> <span class="n">one</span> <span class="n">message</span> <span class="n">at</span> <span class="n">a</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">loop</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Les mappages de tous les points d’entrée sont décrits dans <a class="reference internal" href="#mappage-des-points-d-entree-v2-aux-callbacks-v3">Mappage des points d’entrée v2 aux Callbacks v3</a>
+section plus loin dans ce document</p>
+<p>Chaque message de notification v3 agit comme un dictionnaire python. Ci-dessous un mappage de table
+champs de la représentation sarra v2 à celle de sr3 :</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>v2</p></th>
+<th class="head"><p>sr3</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>msg.pubtime</p></td>
+<td><p>msg[‘pubTime’]</p></td>
+<td><p>quand le message a été initialement publié</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.baseurl</p></td>
+<td><p>msg[‘baseUrl’]</p></td>
+<td><p>racine de l’arborescence url du fichier annoncé.</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.relpath</p></td>
+<td><p>msg[‘relPath’]</p></td>
+<td><p>chemin relatif concaténé à baseUrl pour le chemin canonique</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>no equivalent</em></p></td>
+<td><p>msg[‘retrievePath’]</p></td>
+<td><p>chemin opaque pour remplacer le chemin canonique.</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.notice</p></td>
+<td><p>pas disponible</p></td>
+<td><p>calculé à partir d’un autre champ sur l’écriture v2</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.new_subtopic</p></td>
+<td><p>msg[‘new_subtopic’]</p></td>
+<td><p>à éviter en sr3, champ calculé à partir de relPath</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.new_dir</p></td>
+<td><p>msg[‘new_dir’]</p></td>
+<td><p>nom de répertoire où le fichier sera écrite.</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.new_file</p></td>
+<td><p>msg[‘new_file’]</p></td>
+<td><p>nom de fichier à écrire en new_dir.</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.headers</p></td>
+<td><p>msg</p></td>
+<td><p>pour les champs variables/optionnels.</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.headers[‘x’]</p></td>
+<td><p>msg[‘x’]</p></td>
+<td><p>un message est un dict python</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.message_ttl</p></td>
+<td><p>msg[‘message_ttl’]</p></td>
+<td><p>le même option de réglage.</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.exchange</p></td>
+<td><p>msg[‘exchange’]</p></td>
+<td><p>le canal sur lequel le message à été reçu.</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.logger</p></td>
+<td><p>logger</p></td>
+<td><p>les journeaux fonctionnent ¨normalement” pour python</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.parts</p></td>
+<td><p>msg[‘size’]</p></td>
+<td><p>oublie ca, utilise une constructeur de sarracenia.Message</p></td>
+</tr>
+<tr class="row-even"><td><p>msg.sumflg</p></td>
+<td><p>msg[‘identity’]</p></td>
+<td><p>oublie ca, utilise une constructeur de sarracenia.Message</p></td>
+</tr>
+<tr class="row-odd"><td><p>msg.rename</p></td>
+<td><p>msg[‘rename’]</p></td>
+<td><p>En sr3, souvent mieux d’utiliser: <em>retrievePath</em> et <em>relPath</em></p></td>
+</tr>
+<tr class="row-even"><td><p>parent.msg</p></td>
+<td><p>worklist.incoming</p></td>
+<td><p>sr3 traite des groupe des messages, pas individuelement</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>pubTime, baseUrl, relPath, retrievePath, size, identity, sont tous des champs de message standard
+mieux décrit dans <a class="reference external" href="../Reference/sr_post.7.html">sr_post(7)</a></p></li>
+<li><p>si l’on a besoin de stocker par état de message, alors on peut déclarer des champs temporaires dans le message,
+qui ne seront pas transmis lors de la publication du message. Il y a un champ défini <em>msg[‘_deleteOnPost’]</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;my_new_field&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_new_value</span>
+<span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;my_new_field&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Sarracenia supprimera le champ donné du message avant de le publier pour les consommateurs en aval.</p>
+</li>
+<li><p>dans les anciennes versions de v2 (&lt;2.17), il y avait msg.local_file, et msg.remote_file, certains anciens plugins peuvent contenir
+ce. Ils représentaient la destination dans les cas d’abonnement et d’expéditeur, respectivement.
+les deux ont été remplacés par new_dir concaténé avec new_file pour couvrir les deux cas.
+la séparation du répertoire et du nom de fichier a été considérée comme une amélioration.</p></li>
+<li><p>dans la v2 <em>parent</em> était l’objet sr_subscribe, qui avait toutes ses variables d’instance, dont aucune
+étaient destinés à être utilisés par des plugins. Dans les fonctions du plugin __init__(), elles
+peuvent être référencées en tant que <em>soi</em> plutôt que <em>parent</em> :</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>v2</p></th>
+<th class="head"><p>sr3</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>parent.currentDir</p></td>
+<td><p>msg[‘new_dir’] ?</p></td>
+<td><p>répertoire <em>courant</em>… ca dépend…</p></td>
+</tr>
+<tr class="row-odd"><td><p>parent.masks</p></td>
+<td><p><em>none</em></p></td>
+<td><p>valeur interne de la class sr_subscribe</p></td>
+</tr>
+<tr class="row-even"><td><p>parent.program_name</p></td>
+<td><p>self.o.program_name</p></td>
+<td><p>nom de la programme qui execute e.g. ‘sr_subscribe’</p></td>
+</tr>
+<tr class="row-odd"><td><p>parent.consumer</p></td>
+<td><p><em>none</em></p></td>
+<td><p>ivaleur interne de la class sr_consumer</p></td>
+</tr>
+<tr class="row-even"><td><p>parent.publisher</p></td>
+<td><p><em>none</em></p></td>
+<td><p>instance de Publisher de sr_amqp.py</p></td>
+</tr>
+<tr class="row-odd"><td><p>parent.post_hc</p></td>
+<td><p><em>none</em></p></td>
+<td><p>instance de HostConnect class from sr_amqp.py</p></td>
+</tr>
+<tr class="row-even"><td><p>parent.cache</p></td>
+<td><p><em>none</em></p></td>
+<td><p>cache pour mémoriser les fichiers traités.</p></td>
+</tr>
+<tr class="row-odd"><td><p>parent.retry</p></td>
+<td><p><em>none</em></p></td>
+<td><p>fil d´attente pour les ressais.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Il existe des dizaines (des centaines ?) de ces attributs qui étaient destinés à servir de données internes au
+sr_subscribe et ne devrait pas vraiment être disponible pour les plugins.
+La plupart d’entre eux n’apparaissent pas, mais si un développeur a trouvé quelque chose, il peut être présent.
+Difficile de prédire ce qu’un développeur de plugin utilisant l’une de ces valeurs attendait.</p>
+</li>
+<li><p>Dans la v3 <strong>les messages de notification sont maintenant des dictionnaires python</strong> , donc <cite>msg.relpath</cite> dans v2
+devient <cite>msg[‘relPath’]</cite> dans la v3. Les messages de notification v3, car les dictionnaires sont la
+représentation interne par défaut.</p></li>
+<li><p>Dans la v3 <strong>les plugins fonctionnent sur des lots de messages de notification</strong>. v2 <em>on_message</em> obtient parent
+comme paramètre, et le message de notification se trouve dans parent.message. Dans la v3, <em>after_accept</em> a worklist
+comme option, qui est la liste python des messages, la longueur maximale étant fixée par l’option
+<em>batch</em>. Donc, l’organisation générale pour after_accept, et after_work est:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_incoming</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">old_list</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">good</span><span class="p">:</span>
+       <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bad</span><span class="p">:</span>
+       <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+<span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">=</span><span class="n">new_incoming</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>les plugins doivent être déplacés du répertoire /plugins vers le répertoire /flowcb,
+et plus précisément, les plugins on_message qui se transforment en plugins after_accept devraient être
+placé dans le répertoire flowcb/accept (afin que les plugins similaires puissent être regroupés).</p>
+</div>
+<p>Dans <em>after_work</em>, le remplacement de <em>on_file</em> dans v2, les opérations sont sur :</p>
+<ul class="simple">
+<li><p>worklist.ok (transfert réussi.)</p></li>
+<li><p>worklist.failed (transferts ayant échoué.)</p></li>
+</ul>
+<p>Dans le cas de la réception d’un fichier .tar et de l’extension à des fichiers individuels,
+la routine <em>after_work</em> modifierait le fichier worklist.ok pour qu’il contienne des messages de notification pour
+les fichiers individuels, plutôt que les .tar collectifs d’origine.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>les plugins on_file qui deviennent des plugins after_work doivent être placés dans le
+répertoire /flowcb/after_work</p>
+</div>
+</li>
+<li><p>v3 a <strong>pas besoin de définir des champs de message de notification dans les plugins</strong>
+dans la v2, il faudrait définir partstr, et sumstr pour les messages de notification v2 dans les plugins.
+Cela nécessitait une compréhension excessive des formats de message de notification et signifiait que la
+modification des formats de message de notification demande de modifier les plugins (le format de message de
+notification v03 est non pris en charge par la plupart des plugins v2, par exemple).</p></li>
+</ul>
+<blockquote>
+<div><p>La manipulation de ces champs manuellement est activement contre-productif.
+La somme de contrôle est déjà effectuée lorsque le nouveau message de notification est généré, donc très probablement
+tous les champs de message tels que <strong>sumalgo</strong> et d’autres champs <strong>algo</strong> peuvent être ignorés.</p>
+<blockquote>
+<div><p>Pour créer un message de notification à partir d’un fichier local dans un plugin v3</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">)</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>juste a regarder <a class="reference internal" href="#do-poll-poll">do_poll -&gt; poll</a></p>
+</div></blockquote>
+</div></blockquote>
+<ul>
+<li><p>les plugins v3 <strong>impliquent rarement la sous-classification des classes de Moth ou de Transfer.</strong>
+La classe sarracenia.moth implémente un support pour les protocoles de mise en fil d’attente
+des messages de notification qui prennent en charge les abonnements basés sur la hiérarchie des topics.
+Il y a actuellement deux sous-classes de Moth: amqp (pour rabbitmq) et mqtt.  Ce serait
+idéal pour quelqu’un d’ajouter un amq1 (pour le support qpid amqp 1.0.)</p>
+<p>Il peut être raisonnable d’y ajouter une classe SMTP pour l’envoi d’e-mails,
+Pas sûr.</p>
+<p>Les classes sarracenia.transfer incluent http, ftp et sftp aujourd’hui.
+Elles sont utilisés pour interagir avec des services distants qui fournissent une interface de fichier
+(prise en charge de choses comme la liste des fichiers, le téléchargement et / ou l’envoi.)
+D’autres sous-classes telles que S3, IPFS ou webdav, seraient des ajouts excellents.</p>
+</li>
+</ul>
+</section>
+<section id="fichiers-de-configuration">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Fichiers de configuration</a><a class="headerlink" href="#fichiers-de-configuration" title="Link to this heading"></a></h2>
+<p>Dans la v2, l’option de configuration principale pour déclarer un plugin est</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plugin</span> <span class="n">X</span>
+</pre></div>
+</div>
+<p>D’une manière générale, il devrait y avoir un fichier plugins/x.py
+avec une classe X.py dans ce fichier dans ~/.config/plugins
+ou dans le répertoire sarra/plugins dans le paquet lui-même.
+Il s’agit déjà d’un style de déclaration de plugin de deuxième génération
+dans Sarracenia. La version originale, une personne déclare des points d’entrée individuels</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">on_message</span><span class="p">,</span> <span class="n">on_file</span><span class="p">,</span> <span class="n">on_post</span><span class="p">,</span> <span class="n">on_</span><span class="o">...</span><span class="p">,</span> <span class="n">do_</span><span class="o">...</span>
+</pre></div>
+</div>
+<p>Dans Sr3, les entrées ci-dessus sont considérées comme des demandes pour des plugins de v2,
+et doit être utilisé que pour des raisons de continuité.
+Idéalement, on devrait appeler les plugins v3 comme suit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>Où x sera une sous-classe de sarracenia.flowcb, qui
+contiendra une classe X (première lettre en majuscule) dans le
+fichier x.py quelque part dans le chemin de recherche python, ou dans le répertoire
+<em>sarracenia/flowcb</em> qui est inclus dans le package.
+Il s’agit en fait d’une version abrégée de l’importation python.
+Si vous devez déclarer un rappel qui n’obéit pas à cette
+convention, on peut aussi utiliser un manière plus flexible mais plus longue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">X</span>
+</pre></div>
+</div>
+<p>les deux ci-dessus sont équivalents. La version flowcb peut être utilisée pour importer des classes
+qui ne correspondent pas à la convention du x.X (un fichier nommé x.py contenant une classe appelée X)</p>
+</section>
+<section id="mise-a-niveau-de-la-configuration">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Mise à niveau de la configuration</a><a class="headerlink" href="#mise-a-niveau-de-la-configuration" title="Link to this heading"></a></h2>
+<p>Une fois qu’un plugin est porté, on peut également faire en sorte que l’analyseur d’options v3 reconnaisse une
+invocation de plugin de v2 et la remplace par une invocation v3. En regardant dans /sarracenia/config.py#L144,
+il existe une structure de données <em>convert_to_v3</em>.  Voici un exemple d’entrée</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="s1">&#39;on_message&#39;</span> <span class="p">:</span> <span class="p">{</span>
+         <span class="s1">&#39;msg_delete&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;flowCallback&#39;</span><span class="p">:</span> <span class="s1">&#39;sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles&#39;</span> <span class="p">]</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+</pre></div>
+</div>
+<p>Un fichier de configuration v2 contenant une ligne <em>on_message msg_delete</em> sera remplacé par l’analyseur avec</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowCallback</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">deleteflowfiles</span><span class="o">.</span><span class="n">DeleteFlowFiles</span>
+</pre></div>
+</div>
+</section>
+<section id="options">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Options</a><a class="headerlink" href="#options" title="Link to this heading"></a></h2>
+<p>Dans la v2, on déclarerait les paramètres à utiliser par un plugin dans la routine __init__, avec
+le <em>declare_option</em>.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parent</span><span class="o">.</span><span class="n">declare_option</span><span class="p">(</span><span class="s1">&#39;poll_usgs_stn_file&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Les valeurs sont toujours de type <em>list</em>, donc généralement, on utilise la valeur en choisissant la première valeur:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parent</span><span class="o">.</span><span class="n">poll_usgs_stn_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Dans la v3, cela serait remplacé par</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="n">option</span><span class="o">=</span><span class="s1">&#39;poll_usgs_stn_file&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;hoho&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Dans la v3 il y a maintenant des types (comme on le voit dans le fichier sarracenia/config.py#L777) et le paramètre
+de valeur par défaut est inclus sans code supplémentaire. Il serait mentionné dans d’autres routines comme celle-ci:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">poll_usgs_stn_file</span>
+</pre></div>
+</div>
+</section>
+<section id="mappage-des-points-d-entree-v2-aux-callbacks-v3">
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Mappage des points d’entrée v2 aux Callbacks v3</a><a class="headerlink" href="#mappage-des-points-d-entree-v2-aux-callbacks-v3" title="Link to this heading"></a></h2>
+<p>Pour un aperçu complet des points d’entrée v3, jetez un coup d’œil :
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/__init__.py</a></p>
+<p>pour plus de détails.</p>
+<section id="on-message-on-post-after-accept">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">on_message, on_post –&gt; after_accept</a><a class="headerlink" href="#on-message-on-post-after-accept" title="Link to this heading"></a></h3>
+<p>v2 : reçoit un message de notification, renvoie True/False</p>
+<dl class="simple">
+<dt>v3: reçoit worklist</dt><dd><p>modifie worklist.incoming
+transfert des messages de notification rejetés vers worklist.rejected ou worklist.failed.</p>
+</dd>
+</dl>
+<p>Flux d’échantillon:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+
+   <span class="o">...</span>
+
+   <span class="n">new_incoming</span><span class="o">=</span><span class="p">[]</span>
+   <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">message</span> <span class="ow">is</span> <span class="n">useful</span> <span class="n">to</span> <span class="n">us</span><span class="p">:</span>
+           <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">else</span>
+           <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+   <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">new_incoming</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>exemples:</dt><dd><p>v2: plugins/msg_gts2wistopic.py
+v3: flowcb/wistree.py</p>
+</dd>
+</dl>
+</section>
+<section id="on-file-after-work">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">on_file –&gt; after_work</a><a class="headerlink" href="#on-file-after-work" title="Link to this heading"></a></h3>
+<p>v2 : reçoit un message de notification, renvoie True/False</p>
+<dl>
+<dt>v3: reçoit worklist</dt><dd><p>modifie worklist.ok (transfer has already happenned.)
+transfert des messages de notification rejetés vers worklist.rejected ou worklist.failed.</p>
+<p>peut également être utilisé pour travailler sur worklist.failed (la logique de retry le fait.)</p>
+</dd>
+</dl>
+<p>exemples:</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>IL N’Y A PAS D’EXEMPLES?!?!
+TODO: ajouter quelques exemples</p>
+</div>
+</section>
+<section id="on-heartbeat-on-housekeeping">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">on_heartbeat -&gt; on_housekeeping</a><a class="headerlink" href="#on-heartbeat-on-housekeeping" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>v2: reçoit le parent comme argument.</dt><dd><p>fonctionnera inchangé.</p>
+</dd>
+</dl>
+<p>v3: ne reçoit que self (qui devrait avoir self.o qui remplaçe le parent)</p>
+<p>exemples:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>v2: hb_cache.py – nettoie la cache (références sr_cache.)</p></li>
+<li><p>v3: flowcb/nodupe.py – implémente toute la routine de mise en cache.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="do-poll-poll">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">do_poll -&gt; poll</a><a class="headerlink" href="#do-poll-poll" title="Link to this heading"></a></h3>
+<p>v2: appelez do_poll à partir du plugin.</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>le protocole d’utilisation de la routine do_poll est identifié par le point d’entrée registered_as()</dt><dd><p>qui est obligatoire à fournir.</p>
+</dd>
+</dl>
+</li>
+<li><p>nécessite la construction manuelle de champs pour les messages de notification, est-ce que la vérification du message de notification est spécifique,
+(ne prennent généralement pas en charge les messages de notification v03.)</p></li>
+<li><p>appelle explicitement les points d’entrée du poll.</p></li>
+<li><p>fonctionne, il faut s’inquiéter de savoir si on a le vip ou non pour décider quel traitement
+à faire dans chaque plugin.</p></li>
+<li><p>paramètre poll_without_vip disponible.</p></li>
+</ul>
+</div></blockquote>
+<p>Dans plusieurs sondages v2, un do_poll est associé à un point d’entrée download_quelquechose
+où un message partiel est construit avec le sondage et celui du téléchargement (ou do_download) est spécialisé
+pour effectuer le téléchargement proprement dit. Souvent, dans SR3, on peut créer un message qui sera téléchargé avec succès
+avec le traitement de téléchargement intégré.</p>
+<p>Un exemple de traitement de téléchargement personnalisé consiste à créer l’arborescence de répertoires dans laquelle télécharger, combinée avec
+l’utilisation d’un en-tête <em>rename</em> (en v2 parent.msg.rename) On peut désormais utiliser “retrievePath” pour définir l’url
+pour soumettre au serveur, et “relPath” pour définir où il sera placé localment. <em>RelPath</em> inclut
+toute l’arborescence des répertoires, où <em>rename</em> est uniquement pour le nom du fichier. La combinaison de <em>relPath</em> et
+<em>retrievePath</em> fournit souvent suffisamment de fonctionnalités pour éviter le besoin d’un point d’entrée de téléchargement.</p>
+<p>Il existe un autre modèle courant dans les sondages v2 où, plutôt que d’interroger un serveur distant pour le savoir
+quels nouveaux produits sont disponibles, dans sr3 nous avons le concept de flux programmé, où il y a un délai fixe
+liste des demandes effectuées périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration
+à sr3 suit :</p>
+<p>v3: définir poll dans une classe flowcb.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>le sondage n’est exécuté que lorsque has_vip est true.</p></li>
+<li><p>le point d’entrée registered_as() est inutile.</p></li>
+<li><p>toujours rassembler les exécutions, et est utilisé pour s’abonner à post effectuée par le nœud qui a le vip,
+permettant a la cache nodupe d’être maintenu à jour.</p></li>
+<li><p>API définie pour créer des messages de notification à partir de données de fichier, quel que soit le format du message de notification.</p></li>
+<li><p>get est disparu, les <em>poll</em> utilisent accept/reject comme les autres composants.</p></li>
+<li><p>renvoie une liste de messages de notification à filtrer et à publier.</p></li>
+<li><p>l´option <em>download</em> permet un sondage (poll ou flow) de télécharger les données dans une seul configuration.
+En v2, il faullt combiner avec une autre configuration pour effectuer le téléchargement.</p></li>
+</ul>
+</div></blockquote>
+<p>Pour créer un message de notification, sans fichier local, utilisez fromFileInfo sarracenia.message factory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dateparser</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+
+<span class="n">gathered_messages</span><span class="o">=</span><span class="p">[]</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>génère un message de notification à partir de zéro.</p>
+<p>On peut également construire et fournir un enregistrement de statistiques simulé à partir de l’usine fromFileInfo,
+en utilisant la classe <em>paramiko.SfTPAttributes()</em>. Par exemple, en utilisant
+les routines dateparser pour convertir. Toutefois, le serveur distant répertorie également la date et l’heure, et
+détermine la taille du fichier et les autorisations en vigueur</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pollmtime</span> <span class="o">=</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span> <span class="o">...</span> <span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="p">{</span> <span class="o">...</span> <span class="n">TO_TIMEZONE</span><span class="o">=</span><span class="s1">&#39;utc&#39;</span> <span class="p">}</span> <span class="p">)</span>
+<span class="n">mtimestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span> <span class="n">pollmtime</span><span class="o">.</span><span class="n">timetuple</span><span class="p">()</span> <span class="p">)</span>
+
+<span class="n">fsize</span> <span class="o">=</span> <span class="n">info_from_poll</span> <span class="c1">#about the size of the file to download</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+<span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span><span class="o">=</span><span class="n">mtimstamp</span>
+<span class="n">st</span><span class="o">.</span><span class="n">st_atime</span><span class="o">=</span><span class="n">mtimestamp</span>
+<span class="n">st</span><span class="o">.</span><span class="n">st_size</span><span class="o">=</span><span class="n">fsize</span>
+<span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="o">=</span><span class="mo">0o666</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">sample_fileName</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Il faut remplir l’enregistrement <em>SFTPAttributes</em> si possible, puisque le doublon
+de cache utilise les métadonnées si elles sont disponibles. Plus les métadonnées sont bonnes, le mieux est la
+détection des modifications apportées aux fichiers existants.</p>
+<p>Une fois le message de notification généré, ajoutez-le à la liste</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gathered_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>et à la fin:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">return</span> <span class="n">gathered_messages</span>
+</pre></div>
+</div>
+</section>
+<section id="traitement-ip-virtuel-dans-le-poll">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Traitement IP virtuel dans le poll</a><a class="headerlink" href="#traitement-ip-virtuel-dans-le-poll" title="Link to this heading"></a></h3>
+<p>Dans la v2, si vous avez une séléction de vIP, tous les nœuds participants pollent le serveur en amont
+et maintiennent la liste des fichiers actuels, ils ne publient tout simplement pas le résultat.
+Donc, si vous avez 8 serveurs partageant un vIP, les huit sont des poll, un peu triste.
+Il y a aussi le paramètre poll_no_vip, et les plugins doivent souvent vérifier s’ils
+ont le vIP ou non.</p>
+<p>Dans la v3, seul le serveur avec le vIP peux poller. Les plugins n’ont pas besoin de vérifier.
+Les autres serveurs participants s’abonnent à l’endroit où le sondage est publié,
+pour mettre à jour leur cache recent_files.</p>
+<dl class="simple">
+<dt>exemples:</dt><dd><ul class="simple">
+<li><p>flowcb/poll/airnow.py</p></li>
+</ul>
+</dd>
+</dl>
+<p>Dans un sondage v2, les échanges de sortie étaient parfois des échanges assez populaires (par exemple xpublic)
+ce qui rendrait les files d’attente duplicate_suppression dans un sondage sr3 plus grand que nécessaire.</p>
+<p>Lorsque vous utilisez un sondage dans sr3, idéalement, le post_exchange est dédié à cet
+sondage, afin que les participants VIP minimisent la taille de leur cache de suppression des doublons
+en le chargeant uniquement des éléments publiés par le sondage.</p>
+</section>
+<section id="flux-programme">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Flux programmé</a><a class="headerlink" href="#flux-programme" title="Link to this heading"></a></h3>
+<p>S’il existe un serveur WISKIS ( <a class="reference external" href="https://www.kisters.net/wiski">https://www.kisters.net/wiski</a> ), il faut émettre
+Les requêtes, souvent centrées sur le temps sont à intervalles réguliers. donc un point d’entrée <em>gather()</em>
+est implémenté qui renvoie une liste de messages qu’un téléchargeur utilisera pour obtenir les données.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/flow/opg.conf</a> un exemple de configuration de flux pour interroger les capteurs d’Ontario Power Generation.</p></li>
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/scheduled/wiski.py</a> Le plugin utilisé par la configuration OPG utilisant le point d’entrée rassemble().</p></li>
+</ul>
+<p>Comme un sondage, on peut utiliser l’option <em>download</em> pour consommer les messages en les
+téléchargeant dans la même configuration, ou publier sur un échange pour téléchargement
+par un <em>subscribe</em> ou <em>sarra</em> pour plus de performance.</p>
+</section>
+<section id="on-html-page-sous-classement-de-flowcb-poll">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">on_html_page -&gt; sous-classement de flowcb/poll</a><a class="headerlink" href="#on-html-page-sous-classement-de-flowcb-poll" title="Link to this heading"></a></h3>
+<p>Voici un plugin v2 nsa_mls_nrt.py:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="k">class</span> <span class="nc">Html_parser</span><span class="p">():</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+
+        <span class="n">parent</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Html_parser __init__&quot;</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">html.parser</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">logger</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">HTMLParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_starttag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_starttag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_data</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span>
+
+
+    <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">c</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">attr</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;href&quot;</span> <span class="ow">and</span> <span class="n">n</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">time</span>
+
+        <span class="k">if</span> <span class="s1">&#39;MLS-Aura&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">data</span><span class="p">)</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;-rwxr-xr-x 1 101 10 &#39;</span> <span class="o">+</span><span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="s1">&#39;Jan 1 00:01&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">data</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">) = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="kc">None</span> <span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="n">data</span> <span class="p">:</span> <span class="k">return</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        # at this point data is a filename like</span>
+<span class="sd">        name = data.strip().strip(&#39;\t&#39;)</span>
+
+<span class="sd">        parts = name.split(&#39;_&#39;)</span>
+<span class="sd">        if len(parts) != 3 : return</span>
+
+<span class="sd">        words = parts[1].split(&#39;.&#39;)</span>
+<span class="sd">        sdate  = &#39; &#39;.join(words[:4])</span>
+<span class="sd">        t      = time.strptime(sdate,&#39;%Y %j %H %M&#39;)</span>
+
+<span class="sd">        # accept file if 1 month old in sec  60 sec* 60min * 24hr * 31days</span>
+
+<span class="sd">        epochf = time.mktime(t)</span>
+<span class="sd">        now    = time.time()</span>
+<span class="sd">        elapse = now - epochf</span>
+
+<span class="sd">        if elapse &gt; self.month_in_secs : return</span>
+
+<span class="sd">        # build an ls line from date in file ... size set to 0  since not provided</span>
+
+<span class="sd">        mydate = time.strftime(&#39;%b %d %H:%M&#39;,t)</span>
+
+<span class="sd">        mysize = &#39;_&#39;</span>
+
+<span class="sd">        self.entries[self.myfname] = &#39;-rwxr-xr-x 1 101 10 &#39; + mysize + &#39; &#39; + mydate + &#39; &#39; + data</span>
+<span class="sd">        self.logger.debug(&quot;(%s) = %s&quot; % (self.myfname,self.entries[self.myfname]))</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Html_parser parse&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">parent</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">parent</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="n">html_parser</span> <span class="o">=</span> <span class="n">Html_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">on_html_page</span> <span class="o">=</span> <span class="n">html_parser</span><span class="o">.</span><span class="n">parse</span>
+</pre></div>
+</div>
+<p>Le plugin a une routine principale “parse”, qui appelle la classe html.parser, où data_handler
+est appelé pour chaque ligne, en construisant progressivement le dictionnaire self.entries où chaque entrée est
+une chaîne construite pour ressembler à une ligne de sortie de commande <em>ls</em>.</p>
+<p>Ce plugin est une copie presque exacte du plugin html_page.py utilisé par défaut.
+Le point d’entrée on_html_page pour les plugins est remplacé par un mécanisme complètement différent.
+La plus grande partie de la logique du poll de v2 dans sr3 est dans la nouvelle  class sarracenia.FlowCB.Poll.
+La logique des plugins/html_page.py v2, utilisés par défaut, fait désormais partie de cette
+nouvelle classe Poll, sous-classée à partir de flowcb, de sorte que l’analyse HTML de base est intégrée.</p>
+<p>Un autre changement par rapport à la v2 est qu’il y avait beaucoup plus de manipulation de chaînes dans l’ancienne
+version. Dans les poll sr3, la plupart des maniupulations de chaînes ont été remplacées par le remplissage d’une
+structure paramiko.SFTPAttribute dès que possible.</p>
+<p>Donc, la façon de remplacer on_html_page dans sr3 est de sous-classer Poll. Voici une
+version sr3 du même plugin (nasa_mls_nrt.py):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">nowflt</span><span class="p">,</span> <span class="n">timestr2flt</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb.poll</span> <span class="kn">import</span> <span class="n">Poll</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Nasa_mls_nrt</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+
+        <span class="n">st</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="mo">0o775</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">if</span> <span class="s1">&#39;MLS-Aura&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+               <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;data </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">data</span><span class="p">)</span>
+               <span class="c1">#self.entries[self.myfname] = &#39;-rwxr-xr-x 1 101 10 &#39; +&#39;_&#39; + &#39; &#39; + &#39;Jan 1 00:01&#39; + &#39; &#39; + data</span>
+               <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">data</span><span class="p">]</span><span class="o">=</span><span class="n">st</span>
+
+               <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">) = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">,</span><span class="n">st</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="kc">None</span> <span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="n">data</span> <span class="p">:</span> <span class="k">return</span>
+</pre></div>
+</div>
+<p>( <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/nasa_mls_nrt.py</a> )
+et le fichier de configuration correspondant fourni ici :
+( <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf">https://github.com/MetPX/sarracenia/blob/development/sarracenia/examples/poll/nasa-mls-nrt.conf</a> )</p>
+<p>La nouvelle classe est déclarée comme une sous-classe de Poll, et seule la classe nécessaire
+de routine HTML (handle_data) doit être écrite pour remplacer le comportement
+fourni par la classe parente.</p>
+<p>Cette solution est inférieure à la moitié de la taille de celle de la v2 et permet
+toutes sortes de flexibilité en permettant le remplacement de tout ou une seule partie des éléments
+de la classe de poll.</p>
+</section>
+</section>
+<section id="on-line-sous-classement-de-poll">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">on_line -&gt; sous-classement de poll</a><a class="headerlink" href="#on-line-sous-classement-de-poll" title="Link to this heading"></a></h2>
+<p>Comme on_html_page ci-dessus, toutes les utilisations de on_line dans la version précédente
+concernaient le reformatage des lignes pour qu’elles puissent être analysées. La routine on_line peut être
+sous-classé de la même manière pour le remplacer.  Il fallait modifier la chaîne parent.line
+pour qu’elle soit analysable par l’analyse de ligne de style <em>ls</em> intégrée.</p>
+<p>Dans sr3, on_line devrait renvoyer un  champ paramiko.SFTPAttributes rempli, similaire
+à la façon dont on_html_page fonctionne (mais seulement un seul au lieu d’un dictionnaire d’entre eux.)
+Avec l’analyse de date plus flexible dans sr3, il n’y a pas le besoin d’identifié de on_line
+sur lequel construire un exemple.</p>
+</section>
+<section id="do-send-send">
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">do_send -&gt; send:</a><a class="headerlink" href="#do-send-send" title="Link to this heading"></a></h2>
+<p>v2 : do_send peut être une routine autonome ou associée à un type de protocole</p>
+<ul class="simple">
+<li><p>basé sur registered_as() afin que la destination détermine si elle est utilisée ou non.</p></li>
+<li><p>accepte parent comme argument.</p></li>
+<li><p>renvoie True en cas de réussite, False en cas d’échec.</p></li>
+<li><p>aura généralement un point d’entrée registered_as() pour indiquer les protocoles pour lesquels utiliser un sender.</p></li>
+</ul>
+<p>v3: send(self,msg)</p>
+<ul class="simple">
+<li><p>utilisez le msg fourni pour effectuer l’envoi.</p></li>
+<li><p>renvoie True en cas de réussite, False en cas d’échec.</p></li>
+<li><p>registered_as n’est plus utilisé, peut être supprimé.</p></li>
+<li><p>Le entry_point d’envoi remplace tous les envois et n’est pas spécifique au protocole.
+Pour ajouter la prise en charge de nouveaux protocoles, il faut sous-classer sarracenia.transfer à la place.</p></li>
+</ul>
+<dl class="simple">
+<dt>exemples:</dt><dd><ul class="simple">
+<li><p>flowcb/send/email.py</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="do-download-download">
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">do_download -&gt; download:</a><a class="headerlink" href="#do-download-download" title="Link to this heading"></a></h2>
+<p>créer une classe flowCallback avec un point d’entrée <em>download</em>.</p>
+<ul>
+<li><p>accepte un seul message de notification comme argument.</p></li>
+<li><p>renvoie la valeur True si le téléchargement réussit.</p></li>
+<li><p>s’il renvoie False, la logique de nouvelle tentative s’applique (le téléchargement sera appelé à nouveau
+puis placé dans la fil d’attente de nouvelles tentatives, retry queue.)</p></li>
+<li><p>utiliser msg[‘new_dir’], msg[‘new_file’], msg[‘new_inflight_path’]
+pour respecter les paramètres tels que <em>inflight</em> et placer le fichier correctement.
+(à moins que changer cela soit la motivation du plugin.)</p></li>
+<li><p>peut être une bonne idée de vérifier la somme de contrôle des données téléchargées.
+Si la somme de contrôle du fichier téléchargé n’est pas en accord avec ce qui se trouve dans
+le message de notification, la suppression des doublons échoue et ca boucle.</p></li>
+<li><p>un cas de téléchargement est lorsque retrievalURL n’est pas un téléchargement de fichier normal.
+Dans v03, il existe des champs retrievePath pour exactement ce cas. Cette nouvelle fonctionnalité
+peut être utilisé pour éliminer le besoin de plugins de téléchargement.  Exemple:</p>
+<p>Dans la v2:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py">https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py</a></p></li>
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py">https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py</a></p></li>
+</ul>
+</div></blockquote>
+<p>est porté sur sr3 :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/noaa_hydrometric.py">https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/poll/noaa_hydrometric.py</a></p></li>
+</ul>
+</div></blockquote>
+<p>Le résultat porté définit le nouveau champ <em>retrievePath</em> (chemin de récupération) au lieu de new_dir et new_file
+et le traitement normal du champ <em>retrievePath</em> dans le message de notification fera un bon téléchargement, aucun
+plugin est requis.</p>
+</li>
+<li><p>Souvent, dans les sondages v2, plutôt que d’interroger un serveur distant pour savoir quels nouveaux produits
+sont disponibles, dans sr3 nous avons le concept de flux planifié, où il y a une liste fixe de requêtes effectuées</p>
+<blockquote>
+<div><p>périodiquement. Voir « Flux programmé » pour en savoir plus à ce sujet. Pour les sondages typiques, la migration vers sr3 suit :</p>
+</div></blockquote>
+</li>
+</ul>
+<section id="destfnscript">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">DESTFNSCRIPT</a><a class="headerlink" href="#destfnscript" title="Link to this heading"></a></h3>
+<p>DESTFNSCRIPT est refondu en tant que point d’entrée flowcb, où la directive est maintenant formatée d’une manière
+similaire au flowcallback dans la configuration</p>
+<p>configuration V2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.py
+</pre></div>
+</div>
+<p>Code du plugin v2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">stat</span>
+
+<span class="c1"># this renamer takes file name like : AACN01_CWAO_160316___00009:cmcin:CWAO:AA:1:Direct:20170316031754</span>
+<span class="c1"># and returns :                       AACN01_CWAO_160316___00009_20170316031254</span>
+
+<span class="k">class</span> <span class="nc">Renamer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+      <span class="k">pass</span>
+
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+
+      <span class="n">path</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">new_file</span>
+      <span class="n">tok</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+
+      <span class="n">datestr</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">())</span>
+      <span class="c1">#parent.logger.info(&#39;Valeur_path: %s&#39; % datstr)</span>
+
+      <span class="n">new_path</span><span class="o">=</span><span class="n">tok</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">datestr</span>
+      <span class="n">parent</span><span class="o">.</span><span class="n">new_file</span> <span class="o">=</span> <span class="n">new_path</span>
+      <span class="k">return</span> <span class="kc">True</span>
+
+<span class="n">renamer</span><span class="o">=</span><span class="n">Renamer</span><span class="p">()</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">destfn_script</span><span class="o">=</span><span class="n">renamer</span><span class="o">.</span><span class="n">perform</span>
+</pre></div>
+</div>
+<p>Se transforme en sr3</p>
+<p>configuration SR3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>accept .*${HOSTNAME}.*AWCN70_CWUL.*       DESTFNSCRIPT=sender_renamer_add_date.Sender_Renamer_Add_Date
+</pre></div>
+</div>
+<p>In sr3, as for any flowcallback invocation, one needs to use a traditional python class invocation
+and add to it the name of the class within the file.  This notation is equivalent to python <em>from</em>
+statement <em>from sender_renamer_add_date import Sender_Renamer_Add_Date</em></p>
+<p>Dans sr3, comme pour tout appel flowcallback, il faut utiliser un appel de classe python traditionnel
+et ajouter le nom de la classe dans le fichier. Cette notation est équivalente à l’instruction python <em>from</em>,
+<em>from sender_renamer_add_date import Sender_Renamer_Add_Date</em></p>
+<p>code du flow callback:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span><span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Sender_Renamer_Add_Date</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+
+   <span class="k">def</span> <span class="nf">destfn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+       <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;before: m=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">msg</span> <span class="p">)</span>
+       <span class="n">relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;relPath&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+       <span class="n">datestr</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">())</span>
+       <span class="k">return</span> <span class="n">relPath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">datestr</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Exemple de débogage des fonctions destfn sr3 ::</dt><dd><p>fractal% python3
+Python 3.10.4 (main, Jun 29 2022, 12:14:53) [GCC 11.2.0] on linux
+Type “help”, “copyright”, “credits” or “license” for more information.
+&gt;&gt;&gt; from sender_renamer_add_date import Sender_Renamer_Add_Date
+&gt;&gt;&gt; fb=Sender_Renamer_Add_Date(None)
+&gt;&gt;&gt; msg = { ‘relPath’ : ‘relative/path/to/file.txt’ }
+&gt;&gt;&gt; fb.destfn(msg)
+‘file.txt_20220725130328’
+&gt;&gt;&gt;</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="v3-seulement-post-gather">
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">v3 seulement: post,gather</a><a class="headerlink" href="#v3-seulement-post-gather" title="Link to this heading"></a></h2>
+<p>Le polling/posting est en fait effectuée dans des classes de rappel de flux (flowcb).
+Le statut de sortie n’a pas d’importance, toutes ces routines seront appelées dans l’ordre.</p>
+<p>Le retour d’un gather est une liste de messages de notification à ajouter à worklist.incoming</p>
+<p>Le retour d’un post n’est pas défini. Le but est de créer un effet secondaire
+qui affecte un autre processus ou serveur.</p>
+<dl class="simple">
+<dt>exemples:</dt><dd><ul class="simple">
+<li><p>flowcb/gather/file.py - lire des fichiers à partir du disque (pour le post et watch)</p></li>
+<li><p>flowcb/gather/message.py - comment les messages de notification sont reçus par tous les composants</p></li>
+<li><p>flowcb/post/message.py - comment les messages de notification sont publiés par tous les composants.</p></li>
+<li><p>flowcb/poll/nexrad.py - cela poll le serveur AWS de la NOAA pour les données.
+installer une configuration pour l’utiliser avec <em>sr3 add poll/aws-nexrad.conf</em></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="v3-exemples-complexes">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">v3 Exemples complexes</a><a class="headerlink" href="#v3-exemples-complexes" title="Link to this heading"></a></h2>
+<section id="flowcb-nodupe">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">flowcb/nodupe</a><a class="headerlink" href="#flowcb-nodupe" title="Link to this heading"></a></h3>
+<p>suppression des doublons dans la v3, a:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>un after_accept qui achemine les doublons à partir de worklist.incoming.</dt><dd><p>( ajout de non-dupes à la cache de réception.)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="flowcb-retry">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">flowcb/retry</a><a class="headerlink" href="#flowcb-retry" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>dispose d’une fonction after_accept pour ajouter des messages de notification à la
+fil d’attente entrante, afin de déclencher une autre tentative de traitement.</p></li>
+<li><p>a une routine after_work faisant quelque chose d’inconnu … FIXME.</p></li>
+<li><p>a une fonction de publication pour prendre les téléchargements échoués et les mettre
+sur la liste des nouvelles tentatives pour un examen ultérieur.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+<section id="table-of-v2-and-sr3-equivalents">
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">Table of v2 and sr3 Equivalents</a><a class="headerlink" href="#table-of-v2-and-sr3-equivalents" title="Link to this heading"></a></h2>
+<p>Voici un aperçu des plugins inclus dans Sarracenia,
+On peut parcourir les deux arbres, et à l’aide du tableau ci-dessous,
+peut examiner, comparer et contraster les implémentations.</p>
+<ul class="simple">
+<li><p>arbo v2: <a class="reference external" href="https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins">https://github.com/MetPX/sarracenia/tree/v2_stable/sarra/plugins</a></p></li>
+<li><p>arbo Sr3: <a class="reference external" href="https://github.com/MetPX/sarracenia/tree/development/sarracenia/flowcb">https://github.com/MetPX/sarracenia/tree/development/sarracenia/flowcb</a></p></li>
+</ul>
+<p>La dénomination donne également un exemple de mappage de convention de nom… par ex. plugins dont le nom v2 commence par :</p>
+<ul class="simple">
+<li><p>msg_… -&gt; filter/… où accept/…</p></li>
+<li><p>file_… -&gt; work/…</p></li>
+<li><p>poll_… -&gt; poll/… où gather/…</p></li>
+<li><p>hb_… -&gt; housekeeping/…</p></li>
+</ul>
+<p>sont mappés aux répertoires conventionnels sr3 à droite.</p>
+<p>Les chemins relatifs des dossiers ci-dessus sont indiqués dans le tableau (les liens sont dans le code source, donc en anglais):</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>V2 plugins (all in one directory…)</p></td>
+<td><p>Sr3 flow callbacks (treeified)</p></td>
+</tr>
+<tr class="row-even"><td><p>data_…</p>
+<p>modifier le fichier en vol.</p>
+</td>
+<td><p>subclass sarracenia.transfer</p>
+<p>pas d´exemple disponible actuelement, veuillez consulter le code source.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>destfn_sample.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.destfn.sample">destfn/sample.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>file_age.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.work.age">work/age.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>file_delete.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.work.delete">work/delete.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>file_email.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.work.email">send/email.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>file_rxpipe.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.work.rxpipe">work/rxpipe.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>hb_memory</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.housekeeping.resources">housekeeping/resources.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>html_page.py</p></td>
+<td><p>subclass sarracenia.transfer</p>
+<p>pas d´exemple disponible actuelement, veuillez consulter le code source.</p>
+<p>voir poll/nasa_mls_nrt.py comme exemple de tel cas.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>msg_2http.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.tohttp">accept/tohttp.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_2localfile.py, msg_2local.py (not sure)</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.tolocalfile">accept/tolocalfile.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>msg_delete.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.filter.deleteflowfiles">filter/deleteflowfiles.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_fdelay.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.filter.fdelay">filter/fdelay.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>msg_filter_wmo2msc.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.filter.wmo2msc">filter/wmo2msc.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_log.py,file_log.py, hb_log.py, post_log.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.log">log.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>msg_pclean.py, msg_pclean_f90.py</p>
+<p>msg_pclean_f92.py</p>
+</td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.pclean">pclean.py</a>
+<a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.filter.pcleanf92">filter/pcleanf90.py</a></p>
+<p>filter/pcleanf92.py &lt;../../Reference/flowcb.html#module-sarracenia.flowcb.filter.pcleanf92&gt;`_</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>post_rate_limit.py</p></td>
+<td><p>incorporé dans l´application messageRateMax</p></td>
+</tr>
+<tr class="row-even"><td><p>msg_rename_dmf.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.renamedmf">accept/renamedmf.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_rename_whatfn.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.renamewhatfn">accept/renamewhatfn.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>msg_rename4jicc.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.rename4jicc">accept/rename4jicc.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_stopper.py</p></td>
+<td><p>incorporé dans l´application messageCountMax</p></td>
+</tr>
+<tr class="row-even"><td><p>msg_sundew_pxroute.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.sundewpxroute">accept/sundewpxroute.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_speedo.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.speedo">accept/speedo.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>msg_to_clusters.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.accept.toclusters">accept/toclusters.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>msg_WMO_type_suffix.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.accept.wmotypesuffix">accept/wmotypesuffix.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>anciennement inclu dans l´application
+suppresion de duplicata
+hb_cache.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.nodupe">nodupe/__init__.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>incoporé dan l´appli message subscriber</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.gather.message">gather/message.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>incoporé dan l´appli message poster</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.post.message">post/message.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>incoporé dan l´appli file scan or noticing.</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.gather.file">gather/file.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>incoporé dan l´appli retry logic</p>
+<p>hb_retry.py</p>
+</td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.retry">retry.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>poll_email.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.poll.mail">poll/mail.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>poll_nexrad.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.poll.nexrad">poll/nexrad.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>poll_noaa.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.poll.noaa_hydrometric">poll/noaa_hydrometric.py</a></p></td>
+</tr>
+<tr class="row-even"><td><p>poll_usgs.py</p></td>
+<td><p><a class="reference external" href="../../Reference/flowcb.html#module-sarracenia.flowcb.poll.usgs">poll/usgs.py</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>spare</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="MiseANiveau.html" class="btn btn-neutral float-left" title="GUIDE DE MISE A NIVEAU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Contribution/index.html" class="btn btn-neutral float-right" title="Contribuer à Sarracenia" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

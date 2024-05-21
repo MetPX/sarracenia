@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contribuer à Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Guide du développeur MetPX-Sarracenia" href="D%C3%A9veloppement.html" />
+    <link rel="prev" title="Portage des plugins V2 vers Sr3" href="../CommentFaire/v2ASr3.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Contribuer à Sarracenia</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Documentation.html">Normes de documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+      <li>Contribuer à Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="contribuer-a-sarracenia">
+<h1>Contribuer à Sarracenia<a class="headerlink" href="#contribuer-a-sarracenia" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contenus:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#outillage">Outillage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#developpement">Développement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#installation-locale">Installation locale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#description-des-tests-sr-insects">Description des Tests sr_insects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#execution-de-tests-de-flux">Exécution de tests de Flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#commits-vers-la-branche-principale">Commits vers la branche principale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#branches-principales">Branches Principales</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#depots-de-pacquets-ubuntu-launchpad-net">Dépots de pacquets Ubuntu: Launchpad.net</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#conventions">Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="D%C3%A9veloppement.html#ajout-d-un-dependence">Àjout d´un Dépendence</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Documentation.html">Normes de documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html#structure-des-dossiers">Structure des dossiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html#processus">Processus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html#guide-de-style">Guide de Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html#localisation">Localisation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#processus-de-pre-publication">Processus de Pre-Publication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#processus-de-publication-de-version-stable">Processus de Publication de Version Stable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#detailles">Detailles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#launchpad-net">Launchpad.net</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#github">github</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Publication.html#ubuntu-18">ubuntu 18</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mod%C3%A8le_de_page_man.html#sr-titre">sr_titre</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#resume">Résumé</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#v02-plugin-points-douloureux">V02 Plugin Points douloureux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#navire-de-thesee">Navire de Thésée</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#problemes-connus-resolus-dans-sr3">Problèmes connus (résolus dans sr3)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#plan-concret-fait">Plan concret (Fait)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#fait">Fait</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#todo">ToDo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#bugs-preoccupations-problemes">BUGS/Préoccupations/Problèmes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#apres-la-parite-de-vraies-ameliorations">Après la parité : de vraies améliorations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#id1">TODO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#pas-cuit-a-penser">Pas cuit / À penser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#fixme-differe">FIXME/Différé</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#transition">Transition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#incompatibilites">Incompatibilités</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html#fonctionnalites">Fonctionnalités</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Design.html">Design original (2015)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#hypotheses-contraintes"><span class="sectnum">1.1 </span>Hypothèses/contraintes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#nombre-de-commutateurs"><span class="sectnum">1.2 </span>Nombre de commutateurs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#selection-des-fonctionnalites-amqp"><span class="sectnum">1.3 </span>Sélection des fonctionnalités AMQP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#application"><span class="sectnum">1.4 </span>Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#routage"><span class="sectnum">1.5 </span>Routage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#modele-de-securite"><span class="sectnum">1.6 </span>Modèle de sécurité</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Design.html#topologies"><span class="sectnum">1.7 </span>Topologies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html#selection-des-fonctionnalites-amqp">Sélection des fonctionnalités AMQP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html#mappage-des-concepts-amqp-a-sarracenia">Mappage des concepts AMQP à Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html#sarracenia-est-une-application-mqp">Sarracenia est une application MQP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html#revision">Révision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html#annexe-a-contexte">Annexe A : Contexte</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="probl%C3%A8mes_mqtt.html#v3-vs-v5">v3 vs. v5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="probl%C3%A8mes_mqtt.html#abonnements-partages">Abonnements partagés</a></li>
+<li class="toctree-l2"><a class="reference internal" href="probl%C3%A8mes_mqtt.html#contre-pression">Contre-pression</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#que-se-passe-t-il-si-chaque-notification-concerne-un-bloc-pas-un-fichier">Que se passe-t-il si chaque notification concerne un bloc, pas un fichier ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#suffixe-sr">suffixe .sr§</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#comment-selectionner-chunksize">Comment sélectionner Chunksize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#si-nous-faisons-des-cksums-par-blocs-chemin-a-partir-de-v00">Si nous faisons des cksums par blocs, chemin à partir de v00</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#digression-sur-zsync">Digression sur ZSync</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html#considerations-relatives-au-serveur-protocole">Considérations relatives au serveur/protocole</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="assemblage_on_part.html#composants">Composants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assemblage_on_part.html#algorithme">Algorithme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assemblage_on_part.html#test">Test</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../CommentFaire/v2ASr3.html" class="btn btn-neutral float-left" title="Portage des plugins V2 vers Sr3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="D%C3%A9veloppement.html" class="btn btn-neutral float-right" title="Guide du développeur MetPX-Sarracenia" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

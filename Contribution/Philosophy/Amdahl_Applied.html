@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amdahl’s Law Applied &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="CAP Theorem Applied" href="CAP_Theorem_Applied.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Design.html">Original (2015) Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Philosophy</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Amdahl applied</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Speedup">Speedup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#What-is-Amdahl’s-Law?">What is Amdahl’s Law?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Large-Numbers-of-Processors-Need-High-Parallelism">Large Numbers of Processors Need High Parallelism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Serial-Example">Serial Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NEWS-FLASH:-Serial-9x-Faster-than-Parallel!">NEWS FLASH: Serial 9x Faster than Parallel!</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Summary">Summary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Relevance?">Relevance?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#So-Sarracenia-is-Not-a-Parallel-App!">So Sarracenia is Not a Parallel App!</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#THANKS!">THANKS!</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="CAP_Theorem_Applied.html">CAP Theorem Applied</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CAP_Theorem_Applied.html#Storage/State">Storage/State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CAP_Theorem_Applied.html#Thanks!">Thanks!</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Contributing</a> &raquo;</li>
+          <li><a href="index.html">Sarracenia Design Philosophy</a> &raquo;</li>
+      <li>Amdahl’s Law Applied</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/Contribution/Philosophy/Amdahl_Applied.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Amdahl’s-Law-Applied">
+<h1>Amdahl’s Law Applied<a class="headerlink" href="#Amdahl’s-Law-Applied" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Ideally: code on 4 cores runs 4x faster than on 1.</p></li>
+<li><p>That is rare. There is a name for it: “Embarassingly Parallel.”</p></li>
+<li><p>It should really be called “Perfectly Parallel.”</p></li>
+<li><p>Usually, application <em>Speedup</em> is limited by how it is designed or implemented.</p></li>
+<li><p>When using large numbers or processes and processors, this hits <em>HARD.</em></p></li>
+</ul>
+<section id="Speedup">
+<h2>Speedup<a class="headerlink" href="#Speedup" title="Link to this heading"></a></h2>
+<p>If you have a single processor to run code, then assuming perfect parallism (the so-called “embarrasingly parallel” case) then your code will run twice as fast on two processors, four times as fast on four, etc… This is the ideal case. Much real-life code has “dependencies” that limit speedup.</p>
+<p>Speedup of a task, when adding processors is limited by how much of the code can run in parallel. If you had an infinite number of processors to apply to a problem, then performance is limited by the p the parallelizability of your code.</p>
+<p>The graph below plots the speedup available against the degree to which the code is parallelizable (from 5% to 95% in steps of 5%.) For example, if the algorithm is only 50% parallelizable, then throwing an infinite number of processors at the problem will give you a 25% speedup ( 1.25 on the plot.) so it isn’t worthwhile.</p>
+<p>Note that, towards the right edge of the plot, the speedup is nearly vertical. This means that the difference in real life performance near that limit, say between 98% and 99% parallelizable, is huge (as in closer to ten fold than 10%)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.95</span><span class="p">)</span>
+
+<span class="n">speedup</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+
+<span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">speedup</span><span class="p">)(</span><span class="n">P</span><span class="p">)</span>
+
+<span class="n">f1</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="n">S</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Proportion of code that is Parallelizable&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Maximum theoretical Speedup&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span> <span class="s2">&quot;Speedup vs. Algorithmic Parallelism&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/Contribution_Philosophy_Amdahl_Applied_3_0.png" src="../../_images/Contribution_Philosophy_Amdahl_Applied_3_0.png" />
+</div>
+</div>
+</section>
+<section id="What-is-Amdahl’s-Law?">
+<h2>What is Amdahl’s Law?<a class="headerlink" href="#What-is-Amdahl’s-Law?" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Speedup a program can achieve is limited by the level of parallelization of its design.</p></li>
+<li><p>If code is 95% parallelized, then 5%, or 1 part in 20, is serial… that means, no matter how many processors are put on the job, eventually you are limited by the part that isn’t parallel. It’s asymptotic speedup (that it will never reach, is 20x.)</p></li>
+<li><p>The more processors you want to use, the more this law bites.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nproc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="c1"># p is the parallelizable part of the code, that can be sped up.</span>
+<span class="c1"># n is the number of processors applied to the problem.</span>
+<span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="n">n</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.95</span> <span class="p">]:</span>
+    <span class="n">i</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">p</span>
+    <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">t</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">n</span><span class="p">)</span> <span class="p">)(</span><span class="n">nproc</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nproc</span><span class="p">,</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%02d%%</span><span class="s2"> parallel code&quot;</span> <span class="o">%</span><span class="k">int</span>(p*100))
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">,</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;number of processors&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;speedup&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Amdahl&#39;s law&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/Contribution_Philosophy_Amdahl_Applied_5_0.png" src="../../_images/Contribution_Philosophy_Amdahl_Applied_5_0.png" />
+</div>
+</div>
+</section>
+<section id="Large-Numbers-of-Processors-Need-High-Parallelism">
+<h2>Large Numbers of Processors Need High Parallelism<a class="headerlink" href="#Large-Numbers-of-Processors-Need-High-Parallelism" title="Link to this heading"></a></h2>
+<p>In the previous picture, we could see that:</p>
+<ul class="simple">
+<li><p>we could never get more than a 20 fold speedup if 5% of the code is serial.</p></li>
+<li><p>To use higher number of processors, we need higher and higher levels of parallelization.</p></li>
+<li><p>There limit is, of course, 100% parallel code, usually referred to as “embarrassingly parallel.”</p></li>
+<li><p>to use larger numbers of processors, the ideal is to write embarassingly (aka Perfectly) parallel code.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">A</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span> <span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.995</span><span class="p">,</span> <span class="mf">0.997</span><span class="p">,</span> <span class="mf">0.999</span> <span class="p">]:</span>
+    <span class="n">i</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">p</span>
+    <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">t</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">n</span><span class="p">)</span> <span class="p">)(</span><span class="n">nproc</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nproc</span><span class="p">,</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2"> parallel&quot;</span> <span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">,</span><span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;number of processors&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;speedup&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Amdahl&#39;s law with p&gt;99%&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/Contribution_Philosophy_Amdahl_Applied_7_0.png" src="../../_images/Contribution_Philosophy_Amdahl_Applied_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Serial-Example">
+<h2>Serial Example<a class="headerlink" href="#Serial-Example" title="Link to this heading"></a></h2>
+<p>Below is a simple example of a python snippet that we want to accelerate. It does a math function and calculates “tot” over a range of numbers.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+<span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
+<span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
+   <span class="k">global</span> <span class="n">tot</span><span class="p">,</span><span class="n">counter</span>
+   <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+   <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
+      <span class="n">tot</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">tot</span>
+      <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">count</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; total is: </span><span class="si">{</span><span class="n">tot</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ total is: 1414.21661385363
+CPU times: user 161 ms, sys: 0 ns, total: 161 ms
+Wall time: 160 ms
+</pre></div></div>
+</div>
+<p>So it calculates the answer, and it does it in 122 milliseconds, entirely in user space (0 ns of system time.) We want to make it faster, so let’s add threading.</p>
+<ul class="simple">
+<li><p>import threads</p></li>
+<li><p>run four threads in parallel.</p></li>
+</ul>
+<p>should finish four times faster, right?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
+<span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
+   <span class="k">global</span> <span class="n">tot</span>
+   <span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+   <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
+      <span class="n">tot</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">tot</span>
+      <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">threadMax</span><span class="o">=</span><span class="mi">4</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">threadNumber</span><span class="o">=</span><span class="mi">1</span>
+<span class="k">while</span> <span class="n">threadNumber</span> <span class="o">&lt;</span> <span class="n">threadMax</span><span class="p">:</span>
+   <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+   <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+   <span class="n">threadNumber</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; total is: </span><span class="si">{</span><span class="n">tot</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ total is: 2449.49161668406
+CPU times: user 404 ms, sys: 3.8 ms, total: 408 ms
+Wall time: 405 ms
+</pre></div></div>
+</div>
+<p>OK, so the answer is wrong, and it took 3 times more cpu time to do it. How come?</p>
+<ul class="simple">
+<li><p>Because the overhead for setting up the threads is much more than the size of the problem. (amortization)</p></li>
+<li><p>But the answer is still wrong. Why?</p>
+<ul>
+<li><p>the four tasks are changing the same counters and writing on eachothers work,</p></li>
+<li><p>it is a pile of race conditions.</p></li>
+</ul>
+</li>
+<li><p>How can we get the parallel code to get the right answer?</p></li>
+<li><p>We add locks, to serialize access to the variables the tasks are contending for.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
+<span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">counterLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+<span class="n">totLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
+   <span class="k">global</span> <span class="n">counter</span><span class="p">,</span><span class="n">tot</span>
+   <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
+      <span class="n">totLock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+      <span class="n">tot</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">tot</span>
+      <span class="n">totLock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+      <span class="n">counterLock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+      <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="n">counterLock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+<span class="n">threadMax</span><span class="o">=</span><span class="mi">4</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">threadNumber</span><span class="o">=</span><span class="mi">1</span>
+<span class="k">while</span> <span class="n">threadNumber</span> <span class="o">&lt;</span> <span class="n">threadMax</span><span class="p">:</span>
+   <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+   <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+   <span class="n">threadNumber</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; total is: </span><span class="si">{</span><span class="n">tot</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ total is: 1414.2180280637874
+CPU times: user 2.7 s, sys: 2.3 s, total: 5 s
+Wall time: 2.78 s
+</pre></div></div>
+</div>
+<p>OK, now instead of 3 times slower it is now almost 20 times slower, and spending half the time in the kernel, but the answer is correct. Why did synchronizing access to get the correct the answer make the cpu time double?</p>
+<p><strong>locking is expensive</strong> To parallelize code, use locks sparingly. locks are signs of serial code, and serial code fundamentally limits performance.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="nb">max</span><span class="o">=</span><span class="mi">1000000</span>
+<span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">tot</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">critLock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">count</span><span class="p">():</span>
+   <span class="k">global</span> <span class="n">counter</span><span class="p">,</span><span class="n">tot</span>
+   <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">:</span>
+      <span class="n">critLock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+      <span class="n">tot</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">tot</span>
+      <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="n">critLock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+<span class="n">threadMax</span><span class="o">=</span><span class="mi">4</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">threadNumber</span><span class="o">=</span><span class="mi">1</span>
+<span class="k">while</span> <span class="n">threadNumber</span> <span class="o">&lt;</span> <span class="n">threadMax</span><span class="p">:</span>
+   <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
+   <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+   <span class="n">threadNumber</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; total is: </span><span class="si">{</span><span class="n">tot</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ total is: 1414.2180280637874
+CPU times: user 687 ms, sys: 810 ms, total: 1.5 s
+Wall time: 917 ms
+</pre></div></div>
+</div>
+<div class="line-block">
+<div class="line">Here, instead of using a lock for each variable, we use the concept of a shared lock for when both variables.</div>
+<div class="line">It eliminates about 40% of the execution time, so now it is only 9x slower than serial.</div>
+</div>
+</section>
+<section id="NEWS-FLASH:-Serial-9x-Faster-than-Parallel!">
+<h2>NEWS FLASH: Serial 9x Faster than Parallel!<a class="headerlink" href="#NEWS-FLASH:-Serial-9x-Faster-than-Parallel!" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Sometimes the thing you are trying to do is inherently serial.</p></li>
+<li><p>Do something else instead.</p></li>
+<li><p>more hardware can slow things down because of co-ordination.</p></li>
+<li><p>locks are hard to get right, and can super easily kill performance.</p></li>
+<li><p>Also: headlines never tell the whole truth.</p></li>
+</ul>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Application design limits speedup.</p></li>
+<li><p><strong>Perfectly Parallel</strong> is the gold standard.</p></li>
+<li><p><em>almost all parallel</em>, counts for little when things scale.</p></li>
+<li><p>Locks, joins, waits… they mean you failed to do the above.</p></li>
+<li><p>(Synchronous) API calls… mean you failed to do the above.</p></li>
+<li><p>Every small percentage of synchronization or global state, limits ultimate performance.</p></li>
+<li><p>As the number of processes and processors rises, these small things dominate.</p></li>
+<li><p>locks, joins, waits… are all expensive, in terms of cpu time. They add overhead to any application. If you use them, make sure they are worth it, and amortize them by making them as coarse as possible.</p></li>
+<li><p>Ideally, try to formulate the algorithm so there are no synchronization points.</p></li>
+</ul>
+</section>
+<section id="Relevance?">
+<h2>Relevance?<a class="headerlink" href="#Relevance?" title="Link to this heading"></a></h2>
+<p>Note that on our main cluster (ddsr.cmc) the configuration is 128 processors:</p>
+<ul class="simple">
+<li><p>16 processors / node</p></li>
+<li><p>8 nodes in the cluster</p></li>
+<li><p>600 configurations/node (identical on all nodes)</p></li>
+<li><p>~900 processes/node = 7200 processes in the application.</p></li>
+<li><p>at 7200 processes, 99.9% parallel isn’t good enough to make good use of hardware.</p></li>
+<li><p>At this scale, you really want p to be around 99.99%…</p></li>
+</ul>
+</section>
+<section id="So-Sarracenia-is-Not-a-Parallel-App!">
+<h2>So Sarracenia is Not a Parallel App!<a class="headerlink" href="#So-Sarracenia-is-Not-a-Parallel-App!" title="Link to this heading"></a></h2>
+<p>It is just an ordinary python script that launches processes. It’s not a real parallel app.</p>
+<ul class="simple">
+<li><p>it is not based on threads !</p></li>
+<li><p>it does not use global locks, no joins, no synchronization!</p></li>
+<li><p>it is not leveraging multiprocessing!</p></li>
+<li><p>it is launching completely independent processes that never synchronize!</p></li>
+</ul>
+<section id="Yes,-Exactly.">
+<h3>Yes, Exactly.<a class="headerlink" href="#Yes,-Exactly." title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="THANKS!">
+<h2>THANKS!<a class="headerlink" href="#THANKS!" title="Link to this heading"></a></h2>
+<p>light reading:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Amdahl%27s_law">https://en.wikipedia.org/wiki/Amdahl%27s_law</a></p></li>
+<li><p><a class="reference external" href="https://jenkov.com/tutorials/java-concurrency/amdahls-law.html">https://jenkov.com/tutorials/java-concurrency/amdahls-law.html</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="CAP_Theorem_Applied.html" class="btn btn-neutral float-right" title="CAP Theorem Applied" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

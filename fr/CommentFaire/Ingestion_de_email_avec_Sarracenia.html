@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingestion par e-mail avec Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Utilisation de plugins pour récupérer des données hydrométriques" href="Exemples_Hydro.html" />
+    <link rel="prev" title="Écriture de plugins FlowCallback" href="FlowCallbacks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Comment Faire</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="subscriber.html">Guide de l’abonné</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FlowCallbacks.html">Écriture de plugins FlowCallback</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Ingestion par e-mail avec Sarracenia</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#polling">Polling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#telechargement">Téléchargement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cas-d-utilisation">Cas d’utilisation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Exemples_Hydro.html">Utilisation de plugins pour récupérer des données hydrométriques</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html">Sources de données</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Docker.html">Exécution de MetPX via Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Admin.html">Administration des pompes de données AMQP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Addenda_Admin_Rabbit.html">Administration de Rabbitmq Adddendum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MiseANiveau.html">GUIDE DE MISE A NIVEAU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v2ASr3.html">Portage des plugins V2 vers Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Comment Faire</a> &raquo;</li>
+      <li>Ingestion par e-mail avec Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/CommentFaire/Ingestion_de_email_avec_Sarracenia.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="ingestion-par-e-mail-avec-sarracenia">
+<h1>Ingestion par e-mail avec Sarracenia<a class="headerlink" href="#ingestion-par-e-mail-avec-sarracenia" title="Link to this heading"></a></h1>
+<p>Le courrier électronique est un moyen facile d’acheminer les données entre les serveurs. Utilisation du protocole POP3 (Post Office Protocol) et
+Protocole IMAP (Internet Message Access Protocol), les fichiers e-mail peuvent être diffusés via Sarracenia
+en étendant les fonctions du poll et de téléchargement.</p>
+<section id="polling">
+<h2>Polling<a class="headerlink" href="#polling" title="Link to this heading"></a></h2>
+<section id="extending-polling-protocols">
+<h3>Extending Polling Protocols<a class="headerlink" href="#extending-polling-protocols" title="Link to this heading"></a></h3>
+<p>De série, Sarracenia support les pollUrl pour sonder des serveurs avec les protocoles HTTP/HTTPS et SFTP/FTP.
+D’autres protocoles peuvent être pris en charge en sous-classant la classe sarracenia.flowcb.poll.Poll.
+Heureusement, il existe un plugin de poll par courrier, qui invoque un plugin.
+commencez par énumérer les exemples disponibles</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="nb">list</span> <span class="n">examples</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">poll</span>
+<span class="n">cpump</span><span class="o">/</span><span class="n">cno_trouble_f00</span><span class="o">.</span><span class="n">inc</span>        <span class="n">poll</span><span class="o">/</span><span class="n">airnow</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">poll</span><span class="o">/</span><span class="n">aws</span><span class="o">-</span><span class="n">nexrad</span><span class="o">.</span><span class="n">conf</span>             <span class="n">poll</span><span class="o">/</span><span class="n">mail</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">poll</span><span class="o">/</span><span class="n">nasa</span><span class="o">-</span><span class="n">mls</span><span class="o">-</span><span class="n">nrt</span><span class="o">.</span><span class="n">conf</span>           <span class="n">poll</span><span class="o">/</span><span class="n">noaa</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">poll</span><span class="o">/</span><span class="n">soapshc</span><span class="o">.</span><span class="n">conf</span>                <span class="n">poll</span><span class="o">/</span><span class="n">usgs</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>Ajouter la configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">add</span> <span class="n">poll</span><span class="o">/</span><span class="n">mail</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">add</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span> <span class="mi">15</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">48</span><span class="p">,</span><span class="mi">266</span> <span class="mi">2785187</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">sr</span> <span class="n">add</span> <span class="n">copying</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">poll</span><span class="o">/</span><span class="n">mail</span><span class="o">.</span><span class="n">conf</span> <span class="n">to</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">poll</span><span class="o">/</span><span class="n">mail</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>Qu’avons-nous obtenu?:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>fractal% cat ~/.config/sr3/poll/mail.conf
+#
+# Sample poll config, used to advertise availability of new emails using either POP3/IMAP protocols.
+# To use, make sure rabbitmq is running as described in the Dev.rst documentation,
+# and a tsource user/xs_tsource exchange exist, with FLOWBROKER set to the hostname
+# rabbitmq is running on (e.g. export FLOWBROKER=&#39;localhost&#39;)
+#
+# The pollUrl is in RFC 1738 format, e.g. &lt;scheme&gt;://&lt;user&gt;@&lt;host&gt;:&lt;port&gt;/ where your full credentials,
+# &lt;scheme&gt;://&lt;user&gt;:&lt;password&gt;@&lt;host&gt;:&lt;port&gt;/ would be contained in your ~/.config/sarra/credentials.conf.
+# Valid schemes are pop/pops/imap/imaps, where the s denotes an SSL connection. If a port isn&#39;t
+# specified, the default port associated with the scheme will be used (IMAPS -&gt; 993, POPS -&gt; 995,
+# IMAP -&gt; 143, POP -&gt; 110).
+#
+
+post_broker amqp://tsource@${FLOWBROKER}
+post_exchange xs_tsource
+
+scheduled_interval 60
+
+pollUrl &lt;scheme&gt;://&lt;user&gt;@&lt;host&gt;:&lt;port&gt;/
+
+callback poll.mail
+
+fractal%
+</pre></div>
+</div>
+<p>Maintenant, lorsque l’instance de poll est démarrée avec ce plugin,</p>
+</section>
+<section id="mise-en-oeuvre-de-pop-imap">
+<h3>Mise en œuvre de POP/IMAP<a class="headerlink" href="#mise-en-oeuvre-de-pop-imap" title="Link to this heading"></a></h3>
+<p>Avec les modules <em>poplib</em> et <em>imaplib</em> de Python, la pollUrl peut être analysée et le serveur de messagerie
+peut être connecté selon le schéma spécifié. Sarracenia peut extraire les informations d’identification de la pollUrl
+grâce à ses classes intégrées, aucun mot de passe n’a donc besoin d’être stocké dans le fichier de configuration pour se connecter. Pop3
+utilise un indicateur de lecture interne pour déterminer si un message a été vu ou non. Si un message n’est pas lu, après
+en le récupérant avec POP3, il sera marqué comme lu et il ne sera pas repris sur d’autres poll.
+POP3 offre d’autres options comme la suppression du fichier après sa lecture, mais IMAP offre plus d’options de gestion
+de courrier telles que le déplacement entre les dossiers et la génération de requêtes plus complexes. IMAP permet également
+à plusieurs clients de se connecter à une boîte aux lettres en même temps, et prend en charge les indicateurs de message de suivi tels que
+si le message est lu/non lu, répondu/pas encore répondu, ou supprimé/toujours dans la boîte de réception. L’exemple
+de plugin de poll,
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_email_ingest.py">poll_email_ingest.py</a>
+récupère uniquement les e-mails non lus dans la boîte de réception et les marque comme non lus après les avoir récupérés, dans les deux cas suivants :
+Versions POP et IMAP. Ce paramètre peut être facilement modifié selon les intentions de l’utilisateur final. S’il y a
+s’il y a de nouveaux messages de la dernière fois qu’un client POP/IMAP s’est connecté, il publiera alors le fichier
+en fonction de l’objet et d’un horodatage, où une instance sr_subscribe peut recevoir le message publié,
+connectez-vous individuellement au serveur et téléchargez le message pour le sortir dans un fichier localement. Un exemple
+de configuration qui a été inclus sous <strong>exemples</strong> en tant que
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollingest.conf">pollingest.conf</a>.
+Une fois que vous avez modifié/fourni les variables d’environnement requises pour le
+config pour travailler, ouvrir un nouveau terminal et exécuter</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap:~]$ sr_poll foreground pollingest.conf
+</pre></div>
+</div>
+<p>Si les informations d’identification ont été incluses correctement et que toutes les variables ont été définies, la sortie doit ressembler à ceci</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap:~/sarra_test_output]$ sr_poll foreground pollingest.conf
+2018-10-03 15:24:58,611 [INFO] poll_email_ingest init
+2018-10-03 15:24:58,617 [INFO] sr_poll pollingest startup
+2018-10-03 15:24:58,617 [INFO] log settings start for sr_poll (version: 2.18.07b3):
+2018-10-03 15:24:58,617 [INFO]  inflight=unspecified events=create|delete|link|modify use_pika=False
+2018-10-03 15:24:58,617 [INFO]  suppress_duplicates=1200 retry_mode=True retry_ttl=Nonems
+2018-10-03 15:24:58,617 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+2018-10-03 15:24:58,617 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+2018-10-03 15:24:58,617 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+2018-10-03 15:24:58,617 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
+2018-10-03 15:24:58,617 [INFO]  post_base_dir=None post_base_url=pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sum=z,d blocksize=209715200
+2018-10-03 15:24:58,617 [INFO]  Plugins configured:
+2018-10-03 15:24:58,617 [INFO]          on_line: Line_Mode
+2018-10-03 15:24:58,617 [INFO]          on_html_page: Html_parser
+2018-10-03 15:24:58,617 [INFO]          do_poll: Fetcher
+2018-10-03 15:24:58,617 [INFO]          on_message:
+2018-10-03 15:24:58,617 [INFO]          on_part:
+2018-10-03 15:24:58,618 [INFO]          on_file: File_Log
+2018-10-03 15:24:58,618 [INFO]          on_post: Post_Log
+2018-10-03 15:24:58,618 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse
+2018-10-03 15:24:58,618 [INFO]          on_report:
+2018-10-03 15:24:58,618 [INFO]          on_start:
+2018-10-03 15:24:58,618 [INFO]          on_stop:
+2018-10-03 15:24:58,618 [INFO] log_settings end.
+2018-10-03 15:24:58,621 [INFO] Output AMQP broker(localhost) user(tsource) vhost(/)
+2018-10-03 15:24:58,621 [INFO] Output AMQP exchange(xs_tsource)
+2018-10-03 15:24:58,621 [INFO] declaring exchange xs_tsource (tsource@localhost)
+2018-10-03 15:24:59,452 [INFO] post_log notice=20181003192459.452392 pops://dfsghfgsdfg24@hotmail.com@outlook.office365.com:995/ sarra%20demo20181003_15241538594699_452125 headers={&#39;parts&#39;: &#39;1,1,1,0,0&#39;, &#39;sum&#39;: &#39;z,d&#39;, &#39;from_cluster&#39;: &#39;localhost&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;}
+^C2018-10-03 15:25:00,355 [INFO] signal stop (SIGINT)
+2018-10-03 15:25:00,355 [INFO] sr_poll stop
+</pre></div>
+</div>
+</section>
+</section>
+<section id="telechargement">
+<h2>Téléchargement<a class="headerlink" href="#telechargement" title="Link to this heading"></a></h2>
+<p>Les messages électroniques, une fois récupérés, sont formatés au format MIME (Multipurpose Internet Mail Extensions) 1.0 brut,
+comme indiqué dans le premier en-tête du fichier. Les métadonnées de l’e-mail sont transmises dans une série d’en-têtes, dont une
+par ligne, dans le format nom:valeur. Cela peut être analysé pour les pièces jointes, les corps de message, les méthodes de codage, etc. Un
+<em>do_download</em> plugin peut implémenter la récupération du message à sortir dans un fichier en enregistrant le protocole
+dans un module séparé, comme dans le plugin <em>do_poll</em>. Une fois qu’un message est reçu avec l’utilisateur/hôte
+publié, il peut ensuite se connecter au serveur de messagerie en utilisant la destination et les informations d’identification spécifiées
+dans ~/.config/sarra/credentials.conf et récupére le message localement. Un exemple de plugin qui fait cela
+peut être trouvé sous <strong>plugins</strong> comme
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_email_ingest.py">download_email_ingest.py</a>.</p>
+<section id="decodage-du-contenu">
+<h3>Décodage du contenu<a class="headerlink" href="#decodage-du-contenu" title="Link to this heading"></a></h3>
+<p>Une fois le message électronique téléchargé, un plug-in <em>on_file</em> peut analyser le fichier au format MIME et extraire
+la pièce jointe, généralement indiquée par l’en-tête Content-Disposition ou les champs corps/objet/adresse du message, à enregistrer en tant que
+nouveau fichier pour affiner davantage les données. Un exemple de plugin qui fait cela peut être trouvé sous <strong>plugins</strong> comme
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/file_email_decode.py">file_email_decode.py</a>.
+Un exemple de configuration incorporant ce type de traitement de fichiers est inclus sous <strong>exemples</strong> en tant que
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/downloademail.conf">downloademail.conf</a>.
+Une fois que les variables d’environnement ont été fournies et que le serveur rabbitmq est correctement configuré, ouvrez un nouveau
+terminal et exécutez:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap~]$ sr_subscribe foreground downloademail.conf
+</pre></div>
+</div>
+<p>Si tout a été fourni correctement, la sortie devrait ressembler à ceci:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap:~/sarra_output_test]$ sr_subscribe foreground downloademail.conf
+2018-10-03 15:24:57,153 [INFO] download_email_ingest init
+2018-10-03 15:24:57,159 [INFO] sr_subscribe downloademail start
+2018-10-03 15:24:57,159 [INFO] log settings start for sr_subscribe (version: 2.18.07b3):
+2018-10-03 15:24:57,159 [INFO]  inflight=.tmp events=create|delete|link|modify use_pika=False
+2018-10-03 15:24:57,159 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=300000ms
+2018-10-03 15:24:57,159 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+2018-10-03 15:24:57,159 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+2018-10-03 15:24:57,159 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+2018-10-03 15:24:57,159 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
+2018-10-03 15:24:57,159 [INFO]  Plugins configured:
+2018-10-03 15:24:57,159 [INFO]          do_download: Fetcher
+2018-10-03 15:24:57,159 [INFO]          do_get     :
+2018-10-03 15:24:57,159 [INFO]          on_message:
+2018-10-03 15:24:57,159 [INFO]          on_part:
+2018-10-03 15:24:57,159 [INFO]          on_file: File_Log Decoder
+2018-10-03 15:24:57,159 [INFO]          on_post: Post_Log
+2018-10-03 15:24:57,159 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse RETRY
+2018-10-03 15:24:57,159 [INFO]          on_report:
+2018-10-03 15:24:57,159 [INFO]          on_start:
+2018-10-03 15:24:57,159 [INFO]          on_stop:
+2018-10-03 15:24:57,159 [INFO] log_settings end.
+2018-10-03 15:24:57,159 [INFO] sr_subscribe run
+2018-10-03 15:24:57,160 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-10-03 15:24:57,164 [INFO] Binding queue q_tsource.sr_subscribe.downloademail.64168876.31529683 with key v02.post.# from exchange xs_tsource on broker amqp://tsource@localhost/
+2018-10-03 15:24:57,166 [INFO] reading from to tsource@localhost, exchange: xs_tsource
+2018-10-03 15:24:57,167 [INFO] report to tsource@localhost, exchange: xs_tsource
+2018-10-03 15:24:57,167 [INFO] sr_retry on_heartbeat
+2018-10-03 15:24:57,172 [INFO] No retry in list
+2018-10-03 15:24:57,173 [INFO] sr_retry on_heartbeat elapse 0.006333
+2018-10-03 15:25:00,497 [INFO] download_email_ingest downloaded file: /home/ib/dads/map/.cache/sarra/sarra_doc_test/sarra demo20181003_15241538594699_452125
+2018-10-03 15:25:00,500 [INFO] file_log downloaded to: /home/ib/dads/map/.cache/sarra/sarra_doc_test/sarra demo20181003_15241538594699_452125
+^C2018-10-03 15:25:03,675 [INFO] signal stop (SIGINT)
+2018-10-03 15:25:03,675 [INFO] sr_subscribe stop
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cas-d-utilisation">
+<h2>Cas d’utilisation<a class="headerlink" href="#cas-d-utilisation" title="Link to this heading"></a></h2>
+<p>Les plugins d’ingestion d’e-mails ont été développés pour le cas d’utilisation des données en rafale courte, où l’information
+arrive dans les pièces jointes des messages. Auparavant, les e-mails étaient téléchargés avec un script fetchmail et un
+cronjob s’exécuterait de temps en temps pour détecter et décoder les nouveaux fichiers et leurs pièces jointes,
+à utiliser pour un traitement ultérieur des données. Sarracenia prend désormais en charge toutes les étapes du routage des données,
+et permet à ce processus d’être plus parallélisable.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="FlowCallbacks.html" class="btn btn-neutral float-left" title="Écriture de plugins FlowCallback" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Exemples_Hydro.html" class="btn btn-neutral float-right" title="Utilisation de plugins pour récupérer des données hydrométriques" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

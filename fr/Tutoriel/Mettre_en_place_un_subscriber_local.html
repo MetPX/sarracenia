@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrateur du serveur : un abonné local &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Manuel de l’utilisateur Windows" href="Windows.html" />
+    <link rel="prev" title="Comment configurer un abonné distant" href="Mettre_en_place_un_subscriber_distant.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Tutoriel</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Tutoriel</a> &raquo;</li>
+      <li>Administrateur du serveur : un abonné local</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/Mettre_en_place_un_subscriber_local.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="administrateur-du-serveur-un-abonne-local">
+<h1>Administrateur du serveur : un abonné local<a class="headerlink" href="#administrateur-du-serveur-un-abonne-local" title="Link to this heading"></a></h1>
+<p>Cet exemple explique comment s’abonner aux fichiers swob du bureau météorologique d’Environnement Canada.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install rabbitmq-server
+$ sudo rabbitmqctl list_users
+  Listing users ...
+  user    tags
+  guest   [administrator]
+
+$ sudo rabbitmqctl add_user &#39;bob&#39;
+  Adding user &quot;bob&quot; ...
+  Password: robert
+
+$ sudo rabbitmqctl list_vhosts
+  Listing vhosts ...
+  name
+  /
+</pre></div>
+</div>
+<p>Définir les autorisations d’utilisateur pour vhost pour configurer bob:read:write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo rabbitmqctl set_permissions -p &quot;/&quot; &quot;bob&quot; &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+  Setting permissions for user &quot;bob&quot; in vhost &quot;/&quot; ...
+
+$ sudo rabbitmqctl set_user_tags bob management
+  Setting tags for user &quot;bob&quot; to [management] ...
+
+$ sudo rabbitmq-plugins enable rabbitmq_management
+$ /etc/init.d/rabbitmq-server restart
+</pre></div>
+</div>
+<p>Pour plus d’informations sur les différents types de balises d’utilisateur, voir <a class="reference external" href="https://www.rabbitmq.com/management.html#permissions">rabbitmq access and permissions.</a>
+Ouvrez <a class="reference external" href="http://localhost:15672/">http://localhost:15672/</a> dans un navigateur Web.
+Connectez-vous avec le nom d’utilisateur/mot de passe créé ci-dessus.
+Cliquez sur l’onglet <code class="docutils literal notranslate"><span class="pre">Queues</span></code> pour surveiller la progression du point de vue du courtier.
+Retour dans le terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir .config/sarra/subscribe
+$ vi .config/sarra/subscribe/test-subscribe.conf
+  broker amqp://bob:robert@localhost/
+  exchange xs_bob
+  directory /tmp/sarra/output
+  accept .*
+</pre></div>
+</div>
+<p>Configurez les bits qui publient les modifications apportées à l’échange</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir .config/sarra/watch
+$ vi $_/test-watch.conf
+  post_broker amqp://bob:robert@localhost/
+  post_exchange xs_bob
+  path /tmp/sarra/input/
+  events modify,create
+
+$ mkdir -p /tmp/sarra/{in,out}put
+$ sr3 start
+$ sr3_watch log test-watch
+</pre></div>
+</div>
+<p>–&gt; Tous les rapports normaux.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe log test-subscribe
+  .
+  .
+  2020-08-20 16:29:26,111 [ERROR] standard queue name based on:
+    prefix=q_bob
+    component=subscribe
+    exchangeSplit=False
+    no=1
+</pre></div>
+</div>
+<p>–&gt; Notez la ligne avec <strong>[ERROR]</strong>,  elle n’a pas pu trouver la fil d’attente.
+c’est parce que la fil d’attente doit d’abord être créée par sr3_watch et puis que que nous avons commencé l’abonné et
+watch en même temps avec ‘<code class="docutils literal notranslate"><span class="pre">sr</span> <span class="pre">start</span></code>’ nous sommes tombés dans une petite condition de course.
+Cela a été résolu peu de temps après car le sr_subscribe a un temps de nouvelle tentative de 1 seconde.
+Cela peut être confirmé avec la page ‘RabbitMQ Queues’ affichant une <code class="docutils literal notranslate"><span class="pre">q_bob.sr_subscribe.test_subscribe.</span> <span class="pre">...</span></code> fil d’attente dans la liste.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ touch /tmp/sarra/input/testfile1.txt
+$ ls /tmp/sarra/input/
+  testfile1.txt
+$ ls /tmp/sarra/output/
+    testfile1.txt
+$ sr_subscribe log test-subscribe
+  .
+  .
+  2020-08-20 16:29:26,078 [INFO] file_log downloaded to: /tmp/sarra/output/testfile1.txt
+
+$ sr3_watch log test-watch
+  2020-08-20 16:29:20,612 [INFO] post_log notice=20200820212920.611807823 file:/ /tmp/sarra/input/testfile1.txt headers={&#39;to_clusters&#39;:&#39;localhost&#39;, &#39;mtime&#39;:&#39;20200820212920.0259232521&#39;, &#39;atime&#39;: &#39;20200820212920.0259232521&#39;, &#39;mode&#39;: &#39;644&#39;, &#39;parts&#39;: &#39;1,0,1,0,0&#39;, &#39;sum&#39;:&#39;d,d41d8cd98f00b204e9800998ecf8427e&#39;}
+
+$ touch /tmp/sarra/input/testfile{2..9}.txt
+$ for i in {001..015}; do echo &quot;file #$i&quot; &gt; file$i.txt; done
+$ watch -n 1 ls /tmp/sarra/output/
+</pre></div>
+</div>
+<p>Maintenant, vous pouvez regarder les fichiers ruisseler dans le dossier de sortie,
+Regardez également la page ‘RabbitMQ Queues’ qui recoit et traite les messages AMQP.
+Lorsque tout est terminé, vous pouvez arrêter à la fois l’abonné et le watcher avec:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 stop
+  ...
+$ sr_subscribe cleanup test-subscribe
+  ...
+</pre></div>
+</div>
+<p>Maintenant, la fil d’attente a été supprimée de RabbitMQ et tous les services ont été arrêtés.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Mettre_en_place_un_subscriber_distant.html" class="btn btn-neutral float-left" title="Comment configurer un abonné distant" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Windows.html" class="btn btn-neutral float-right" title="Manuel de l’utilisateur Windows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

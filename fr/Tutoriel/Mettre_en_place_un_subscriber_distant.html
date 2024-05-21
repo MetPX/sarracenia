@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comment configurer un abonné distant &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Administrateur du serveur : un abonné local" href="Mettre_en_place_un_subscriber_local.html" />
+    <link rel="prev" title="Installation de MetPX Sarracenia" href="Installer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Tutoriel</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Comment configurer un abonné distant</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mise-en-place">Mise en Place</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#demarrage">Démarrage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nettoyage">Nettoyage</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Tutoriel</a> &raquo;</li>
+      <li>Comment configurer un abonné distant</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/Mettre_en_place_un_subscriber_distant.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="comment-configurer-un-abonne-distant">
+<h1>Comment configurer un abonné distant<a class="headerlink" href="#comment-configurer-un-abonne-distant" title="Link to this heading"></a></h1>
+<p>Cet exemple explique comment s’abonner aux fichiers swob du bureau météo d’Environnement Canada.</p>
+<section id="mise-en-place">
+<h2>Mise en Place<a class="headerlink" href="#mise-en-place" title="Link to this heading"></a></h2>
+<p>Initialiser le stockage des informations d’identification dans le fichier <cite>~/.config/sr3/credentials.conf</cite></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit credentials.conf
+  amqps://anonymous:anonymous@dd.weather.gc.ca
+</pre></div>
+</div>
+<p>Le format est un URL complet sur chaque ligne (<cite>amqps://&lt;user&gt;:&lt;password&gt;&#64;&lt;target.url&gt;</cite>).
+Le fichier credentials.conf devrait être privé (permissions octale linux: 0600).
+Les fichiers .conf placés dans <code class="docutils literal notranslate"><span class="pre">~/.config/sr3/subscribe_directory``seront</span> <span class="pre">automatiquement</span> <span class="pre">trouvé</span> <span class="pre">par</span> <span class="pre">``sr_subscribe</span></code>, plutôt que de donner le chemin complet.</p>
+<p>La commande <em>edit</em> démarre l’éditeur configuré par l’utilisateur sur le fichier à créer, dans le répertoire approprié:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob.conf
+  broker amqps://anonymous@dd.weather.gc.ca
+  subtopic observations.swob-ml.#
+  topicPrefix v02.post
+  directory /tmp/swob_downloads
+  accept .*
+$ mkdir /tmp/swob_downloads
+$ sr3 status subscribe/swob
+  2017-12-14 06:54:54,010 [INFO] sr_subscribe swob 01 is stopped
+</pre></div>
+</div>
+<div class="admonition error">
+<p class="admonition-title">Error</p>
+<p>La modification actuelle échoue s’il n’y a pas de fichier à l’emplacement prévu
+(en fait, il ne crée pas de fichier)act, not create a file)
+Voir l’issue <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/251">#251</a> pour plus d’informations ou pour se plaindre.
+En attendant, utilisez plutôt:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir -p .config/sarra/subscribe
+$ touch $_/swob.conf
+$ sr3 edit swob.conf
+</pre></div>
+</div>
+</div>
+<p><em>broker</em> indique où se connecter pour recevoir le flux de notifications.
+Le terme <em>broker</em> est tiré de AMQP (<a class="reference external" href="http://www.amqp.org">http://www.amqp.org</a>), le protocole utilisé pour transférer les notifications.
+Les notifications qui seront reçues ont toutes des <em>topics</em> qui correspondent à leur URL.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Omettre <code class="docutils literal notranslate"><span class="pre">directory</span></code> du fichier de configuration écrira les fichiers dans le répertoire actuel.
+Compte tenu de la rapidité avec laquelle ils arrivent, soyez prêt à nettoyer.</p>
+</div>
+</section>
+<section id="demarrage">
+<h2>Démarrage<a class="headerlink" href="#demarrage" title="Link to this heading"></a></h2>
+<p>Maintenant, démarrez l’abonné nouvellement créé:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 start swob
+  2015-12-03 06:53:35,268 [INFO] user_config = 0 ../swob.conf
+  2015-12-03 06:53:35,269 [INFO] instances 1
+  2015-12-03 06:53:35,270 [INFO] sr3 subscribe swob 0001 started
+</pre></div>
+</div>
+<p>L’activité peut être surveillée via des fichiers journaux dans  <code class="docutils literal notranslate"><span class="pre">~/.cache/sarra/log/</span></code> ou avec la commande <em>log</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 log swob
+
+  2015-12-03 06:53:35,635 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+  2015-12-03 17:32:01,834 [INFO] user_config = 1 ../swob.conf
+  2015-12-03 17:32:01,835 [INFO] sr_subscribe start
+  2015-12-03 17:32:01,835 [INFO] sr_subscribe run
+  2015-12-03 17:32:01,835 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+  2015-12-03 17:32:01,835 [INFO] AMQP  input :    exchange(xpublic) topic(v02.post.observations.swob-ml.#)
+  2015-12-03 17:32:01,835 [INFO] AMQP  output:    exchange(xs_anonymous) topic(v02.report.#)
+
+  2015-12-03 17:32:08,191 [INFO] Binding queue q_anonymous.sr_subscribe.swob.21096474.62787751 with key v02.post.observations.swob-ml.# to exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">[Ctrl]</span> <span class="pre">+</span> <span class="pre">[C]</span></code> pour quitter la surveillance des journaux.
+Le journal de démarrage semble normal, indiquant que les informations d’authentification ont été acceptées.
+<code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> recevra la notification et téléchargera le fichier dans le répertoire actuel
+(sauf indication contraire dans le fichier de configuration).</p>
+<p>Un téléchargement normal ressemble à ceci</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">031</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">topic</span>   <span class="n">v02</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">observations</span><span class="o">.</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="mf">.20151203</span><span class="o">.</span><span class="n">CMED</span>
+<span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">031</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20151203223214.699</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd2</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">observations</span><span class="o">/</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="mi">20151203</span><span class="o">/</span><span class="n">CMED</span><span class="o">/</span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">2200</span><span class="o">-</span><span class="n">CMED</span><span class="o">-</span><span class="n">AUTO</span><span class="o">-</span><span class="n">swob</span><span class="o">.</span><span class="n">xml</span>
+<span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">031</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">headers</span> <span class="p">{</span><span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="s1">&#39;2015-12-03-2200-CMED-AUTO-swob.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;parts&#39;</span><span class="p">:</span> <span class="s1">&#39;1,3738,1,0,0&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span> <span class="s1">&#39;d,157a9e98406e38a8252eaadf68c0ed60&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;metpx&#39;</span><span class="p">,</span> <span class="s1">&#39;to_clusters&#39;</span><span class="p">:</span> <span class="s1">&#39;DD,DDI.CMC,DDI.ED M&#39;</span><span class="p">,</span> <span class="s1">&#39;from_cluster&#39;</span><span class="p">:</span> <span class="s1">&#39;DD&#39;</span><span class="p">}</span>
+<span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">031</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">downloading</span><span class="o">/</span><span class="n">copying</span> <span class="n">into</span> <span class="o">./</span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">2200</span><span class="o">-</span><span class="n">CMED</span><span class="o">-</span><span class="n">AUTO</span><span class="o">-</span><span class="n">swob</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>Donner toutes les informations contenues dans la notification.
+Voici un échec</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">715</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Downloads</span><span class="p">:</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd2</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">observations</span><span class="o">/</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="mi">20151203</span><span class="o">/</span><span class="n">CXFB</span><span class="o">/</span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">2200</span><span class="o">-</span><span class="n">CXFB</span><span class="o">-</span><span class="n">AUTO</span><span class="o">-</span><span class="n">swob</span><span class="o">.</span><span class="n">xml</span>  <span class="n">into</span> <span class="o">./</span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">2200</span><span class="o">-</span><span class="n">CXFB</span><span class="o">-</span><span class="n">AUTO</span><span class="o">-</span><span class="n">swob</span><span class="o">.</span><span class="n">xml</span> <span class="mi">0</span><span class="o">-</span><span class="mi">6791</span>
+<span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">786</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">Download</span> <span class="n">failed</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd2</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">observations</span><span class="o">/</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">/</span><span class="mi">20151203</span><span class="o">/</span><span class="n">CXFB</span><span class="o">/</span><span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">2200</span><span class="o">-</span><span class="n">CXFB</span><span class="o">-</span><span class="n">AUTO</span><span class="o">-</span><span class="n">swob</span><span class="o">.</span><span class="n">xml</span>
+<span class="mi">2015</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">03</span> <span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">787</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">Server</span> <span class="n">couldn</span><span class="s1">&#39;t fulfill the request. Error code: 404, Not Found</span>
+</pre></div>
+</div>
+<p>Ce message n’est pas toujours un échec car <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span></code> tente à plusieurs reprises avant d’abandonner.
+Après quelques minutes, voici à quoi ressemble le répertoire de téléchargement</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls -al | tail
+  -rw-rw-rw-  1 peter peter   7875 Dec  3 17:36 2015-12-03-2236-CL3D-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   7868 Dec  3 17:37 2015-12-03-2236-CL3G-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2236-CTRY-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   6876 Dec  3 17:37 2015-12-03-2236-CYPY-AUTO-swob.xml
+  -rw-rw-rw-  1 peter peter   6574 Dec  3 17:36 2015-12-03-2236-CYZP-AUTO-swob.xml
+  -rw-rw-rw-  1 peter peter   7871 Dec  3 17:37 2015-12-03-2237-CL3D-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   7873 Dec  3 17:37 2015-12-03-2237-CL3G-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   7037 Dec  3 17:37 2015-12-03-2237-CTBF-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter   7022 Dec  3 17:37 2015-12-03-2237-CTRY-AUTO-minute-swob.xml
+  -rw-rw-rw-  1 peter peter 122140 Dec  3 17:38 sr_subscribe_dd_swob_0001.log
+</pre></div>
+</div>
+</section>
+<section id="nettoyage">
+<h2>Nettoyage<a class="headerlink" href="#nettoyage" title="Link to this heading"></a></h2>
+<p>Pour ne pas télécharger plus de fichiers, arrêtez l’abonné</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe stop swob
+  2015-12-03 17:32:22,219 [INFO] sr_subscribe swob 01 stopped
+</pre></div>
+</div>
+<p>Cela laisse cependant la fil d’attente que <code class="docutils literal notranslate"><span class="pre">sr_subscribe</span> <span class="pre">start</span></code> a configuré sur le courtier active,
+pour permettre à un abonné défaillant de tenter de se reconnecter sans perdre de progression.
+C’est jusqu’à ce que le courtier expire la fil d’attente et la supprime.
+Pour indiquer au courtier que nous avons terminé la fil d’attente, demandez à l’abonné de nettoyer</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr_subscribe cleanup swob
+2015-12-03 17:32:22,008 [INFO] sr_subscribe swob cleanup
+2015-12-03 17:32:22,008 [INFO] AMQP broker(dd.weatheer.gc.ca) user(anonymous) vhost()
+2015-12-03 17:32:22,008 [INFO] Using amqp module (AMQP 0-9-1)
+2015-12-03 17:32:22,008 [INFO] deleting queue q_anonymous.sr_subscribe.swob.21096474.62787751 (anonymous@dd.weather.gc.ca)
+</pre></div>
+</div>
+<p>La meilleure pratique consiste à effacer la fil d’attente lorsque terminé afin de réduire la charge sur le courtier.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Installer.html" class="btn btn-neutral float-left" title="Installation de MetPX Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Mettre_en_place_un_subscriber_local.html" class="btn btn-neutral float-right" title="Administrateur du serveur : un abonné local" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

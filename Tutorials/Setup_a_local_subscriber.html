@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Server Admin: A Local Subscriber &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to setup a Remote Subscriber" href="Setup_a_remote_subscriber.html" />
+    <link rel="prev" title="MetPX-Sarracenia Installation" href="Install.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="1_CLI_introduction.html">Downloading Using the Command Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Customize File handling with Callbacks.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html">flow API Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html">A first Example using Sarracenia Moth API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="5_api_moth_post_demo.html">Posting from Python Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Install.html">MetPX-Sarracenia Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Server Admin: A Local Subscriber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Setup_a_remote_subscriber.html">How to setup a Remote Subscriber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Windows.html">Windows user manual</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Tutorials</a> &raquo;</li>
+      <li>Server Admin: A Local Subscriber</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/Setup_a_local_subscriber.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="server-admin-a-local-subscriber">
+<h1>Server Admin: A Local Subscriber<a class="headerlink" href="#server-admin-a-local-subscriber" title="Link to this heading"></a></h1>
+<p>This example goes over how to build a local pump, with a local broker,
+subscribe to the swob files from the Environment Canada Weather office,
+and republish them locally.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt install rabbitmq-server
+$ sudo rabbitmqctl list_users
+  Listing users ...
+  user    tags
+  guest   [administrator]
+
+$ sudo rabbitmqctl add_user &#39;bob&#39;
+  Adding user &quot;bob&quot; ...
+  Password: robert
+
+$ sudo rabbitmqctl list_vhosts
+  Listing vhosts ...
+  name
+  /
+</pre></div>
+</div>
+<p>Set user permissions for vhost for bob’s configure:read:write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo rabbitmqctl set_permissions -p &quot;/&quot; &quot;bob&quot; &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+  Settting permissions for user &quot;bob&quot; in vhost &quot;/&quot; ...
+
+$ sudo rabbitmqctl set_user_tags bob management
+  Setting tags for user &quot;bob&quot; to [management] ...
+
+$ sudo rabbitmq-plugins enable rabbitmq_management
+$ systemctl restart rabbitmq-server
+</pre></div>
+</div>
+<p>For more on the different kinds of user tags, see <a class="reference external" href="https://www.rabbitmq.com/management.html#permissions">rabbitmq access and permissions.</a>
+Open <a class="reference external" href="http://localhost:15672/">http://localhost:15672/</a> in a web browser.
+Log in with the username/password created above.
+Click the <code class="docutils literal notranslate"><span class="pre">Queues</span></code> tab to monitor the progress from the broker’s perspective.
+Back in terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir -p .config/sarra/subscribe
+$ vi .config/sarra/subscribe/test-subscribe.conf
+  broker amqp://bob:robert@localhost/
+  exchange xs_bob
+  directory /tmp/sarra/output
+  accept .*
+</pre></div>
+</div>
+<p>Setup the bits that post changes to the exchange:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir -p .config/sarra/watch
+$ vi $_/test-watch.conf
+  post_broker amqp://bob:robert@localhost/
+  post_exchange xs_bob
+  path /tmp/sarra/input/
+  events modify,create
+
+$ mkdir -p /tmp/sarra/{in,out}put
+$ sr3 start
+$ sr3 log watch/test-watch
+</pre></div>
+</div>
+<p>–&gt; All reporting normal.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 log subscribe/test-subscribe
+  .
+  .
+  2020-08-20 16:29:26,111 [ERROR] standard queue name based on:
+    prefix=q_bob
+    component=subscribe
+    exchangeSplit=False
+    no=1
+</pre></div>
+</div>
+<p>–&gt; Note the line with <strong>[ERROR]</strong>, it was unable to find the queue.
+this is because the queue needs to first be created by the watch and since we started the
+subscriber and watch at the same time with ‘<code class="docutils literal notranslate"><span class="pre">sr</span> <span class="pre">start</span></code>’ we ran into a small race condition.
+This was soon after resolved as the sr_subscribe has a 1 second retry time.
+This can be confirmed with the ‘RabbitMQ Queues’ page showing a <code class="docutils literal notranslate"><span class="pre">q_bob.subscribe.test-subscribe.</span> <span class="pre">...</span></code> queue in the list.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ touch /tmp/sarra/input/testfile1.txt
+$ ls /tmp/sarra/input/
+  testfile1.txt
+$ ls /tmp/sarra/output/
+    testfile1.txt
+$ sr3 log subscribe/test-subscribe
+  .
+  .
+  2020-08-20 16:29:26,078 [INFO] file_log downloaded to: /tmp/sarra/output/testfile1.txt
+
+$ sr3 log watch/test-watch
+  2020-08-20 16:29:20,612 [INFO] post_log notice=20200820212920.611807823 file:/ /tmp/sarra/input/testfile1.txt headers={&#39;to_clusters&#39;:&#39;localhost&#39;, &#39;mtime&#39;:&#39;20200820212920.0259232521&#39;, &#39;atime&#39;: &#39;20200820212920.0259232521&#39;, &#39;mode&#39;: &#39;644&#39;, &#39;parts&#39;: &#39;1,0,1,0,0&#39;, &#39;sum&#39;:&#39;d,d41d8cd98f00b204e9800998ecf8427e&#39;}
+
+$ touch /tmp/sarra/input/testfile{2..9}.txt
+$ for i in {001..015}; do echo &quot;file #$i&quot; &gt; file$i.txt; done
+$ watch -n 1 ls /tmp/sarra/output/
+</pre></div>
+</div>
+<p>Now you can watch the files trickle into the output folder,
+also watch the ‘RabbitMQ Queues’ page receive and process AMQP messages.
+When all is completed you can shut down both the subscriber and watcher with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 stop
+  ...
+$ sr3 cleanup subscribe/test-subscribe
+  ...
+</pre></div>
+</div>
+<p>Now the queue has been deleted from RabbitMQ and all services have been stopped.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Install.html" class="btn btn-neutral float-left" title="MetPX-Sarracenia Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Setup_a_remote_subscriber.html" class="btn btn-neutral float-right" title="How to setup a Remote Subscriber" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

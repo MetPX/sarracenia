@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Utilisation de plugins pour récupérer des données hydrométriques &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Sources de données" href="source.html" />
+    <link rel="prev" title="Ingestion par e-mail avec Sarracenia" href="Ingestion_de_email_avec_Sarracenia.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Comment Faire</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="subscriber.html">Guide de l’abonné</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FlowCallbacks.html">Écriture de plugins FlowCallback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Ingestion_de_email_avec_Sarracenia.html">Ingestion par e-mail avec Sarracenia</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Utilisation de plugins pour récupérer des données hydrométriques</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#protocoles-de-polling-pris-en-charge-en-mode-natif">Protocoles de polling pris en charge en mode natif</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#exemples-dintegration-dapi-dans-des-plugins">Exemples d’intégration d’API dans des plugins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cas-d-utilisation">Cas d’utilisation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="source.html">Sources de données</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Docker.html">Exécution de MetPX via Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Admin.html">Administration des pompes de données AMQP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Addenda_Admin_Rabbit.html">Administration de Rabbitmq Adddendum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MiseANiveau.html">GUIDE DE MISE A NIVEAU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v2ASr3.html">Portage des plugins V2 vers Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Comment Faire</a> &raquo;</li>
+      <li>Utilisation de plugins pour récupérer des données hydrométriques</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/CommentFaire/Exemples_Hydro.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="utilisation-de-plugins-pour-recuperer-des-donnees-hydrometriques">
+<h1>Utilisation de plugins pour récupérer des données hydrométriques<a class="headerlink" href="#utilisation-de-plugins-pour-recuperer-des-donnees-hydrometriques" title="Link to this heading"></a></h1>
+<p>Plusieurs sites Web de données environnementales utilisent des API pour communiquer des données. Afin de faire de la publicité pour la
+disponibilité de nouveaux fichiers et les intégrer de manière transparente dans la pile Sarracenia, quelques plugins sont
+nécessaire pour étendre la fonctionnalité de polling.</p>
+<section id="protocoles-de-polling-pris-en-charge-en-mode-natif">
+<h2>Protocoles de polling pris en charge en mode natif<a class="headerlink" href="#protocoles-de-polling-pris-en-charge-en-mode-natif" title="Link to this heading"></a></h2>
+<p>Prêt à l’emploi, Sarracenia prend en charge l’interrogation des sources HTTP / HTTPS et SFTP / FTP où le nom de fichier
+est ajouté à la fin de l’URL de base. Par exemple, si vous essayez d’accéder les données de niveau de l’eau
+du réservoir du lac Ghost près de Cochrane en Alberta, auxquelles on peut accéder en naviguant jusqu’à
+<cite>http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/L_HG_05BE005_table.json</cite>,
+l’URL de base dans ce cas serait considérée comme le
+<cite>http://environment.alberta.ca/apps/Basins/data/figures/river/abrivers/stationdata/</cite>
+et la partie du nom de fichier <cite>L_HG_05BE005_table.json</cite>. Étant donné que l’URL de base ne
+contient pas un bon répertoire avec tous les fichiers JSON, si vous vouliez vérifier si les nouvelles
+données de niveau d’eau ont a été ajouté au localisateur ci-dessus, puisqu’il s’agit d’un fichier
+JSON, vous pouvez vérifier l’en-tête modifié en dernier pour
+voir s’il a été modifié depuis votre dernier poll. À partir de là, vous devrez définir le <em>new_baseurl</em> sur la
+première partie, et le <em>new_file</em> réglé sur la seconde, et une instance sr_subscribe saurait assembler
+pour localiser le fichier et le télécharger.</p>
+<section id="extension-des-protocoles-de-poll">
+<h3>Extension des protocoles de poll<a class="headerlink" href="#extension-des-protocoles-de-poll" title="Link to this heading"></a></h3>
+<p>Si la source de données ne respecte pas cette convention (voir <a class="reference internal" href="#api-noaa-co-ops">API NOAA CO-OPS</a> et <a class="reference internal" href="#service-web-de-valeurs-instantanees-usgs">Service Web de valeurs instantanées USGS</a>
+pour des exemples de deux sources de données qui ne le font pas), un module <strong>registered_as</strong>
+peut être inclus en bas d’un fichier plugin pour définir la liste des protocoles en cours
+d’extension ou d’implémentation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">registered_as</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;http&#39;</span><span class="p">,</span><span class="s1">&#39;https&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Ca surchargerait alors la méthode de transfert et utiliserait celle décrite dans le plugin.</p>
+</section>
+</section>
+<section id="exemples-dintegration-dapi-dans-des-plugins">
+<h2>Exemples d’intégration d’API dans des plugins<a class="headerlink" href="#exemples-dintegration-dapi-dans-des-plugins" title="Link to this heading"></a></h2>
+<section id="api-noaa-co-ops">
+<h3>API NOAA CO-OPS<a class="headerlink" href="#api-noaa-co-ops" title="Link to this heading"></a></h3>
+<p>Le département des marées et des courants de National Oceanic and Atmospheric Administration publie son
+programme coopératif données d’observations et de prédictions de stations via un service Web GET RESTful,
+disponible à l’adresse <a class="reference external" href="https://tidesandcurrents.noaa.gov/api/">the NOAA Tides et le site Web de Currents</a>.
+Par exemple, si vous souhaitez accéder aux données de température de l’eau de la dernière heure à Honolulu,
+vous pouvez naviguer vers <cite>https://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1612340&amp;product=water_temperature&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv</cite>.
+Une nouvelle observation est enregistrée toutes les six minutes, donc si vous vouliez annoncer uniquement de nouvelles données via
+Sarracenia, vous configureriez une instance sr_poll pour vous connecter à l’API, mettre en veille toutes les heures et leur construire
+une requête GET à annoncer à chaque fois qu’il se réveille (cela fonctionne sous l’hypothèse potentiellement erronée
+que la source de données maintienne son accord). Pour télécharger ce nouveau fichier, vous devez vous connecter
+à un sr_subscribe au même échange sur lequel il a été annoncé, et il récupérerait l’URL, qu’un <em>do_download</em>
+plugin pourrait alors prendre et télécharger. Un exemple de plugin de poll qui saisit toute la température et le niveau d’eau
+de la dernière heure de toutes les stations CO-OPS et les publient, sont incluses sous <em>plugins</em> comme
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_noaa.py">poll_noaa.py</a>.</p>
+<p>Un plugin <em>do_download</em> qui correspond à une une instance sarra pour télécharger ce fichier est inclus
+comme <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_noaa.py">download_noaa.py</a>.
+Des exemples de configurations pour sr_poll et sr_subscribe sont inclus sous
+<em>exemples</em>, nommés <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollnoaa.conf">pollnoaa.conf</a>
+et <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subnoaa.conf">subnoaa.conf</a>.
+Pour exécuter, ajoutez à la fois des plugins et des configurations à l’aide de l’action <code class="code docutils literal notranslate"><span class="pre">add</span></code>, modifiez les
+variables appropriées dans la config (le flowbroker, et la pollingUrl entre autres. Si vous exécutez à partir
+d’un serveur RabbitMQ local, de la documentation sous <a class="reference external" href="../Contribution/Développement.html">Contibution/Dev.rst</a>
+sur la façon de configurer le serveur peut être utile). Si tout a été configuré correctement, la sortie doit
+ressemblez à quelque chose comme ceci:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap:~]$ sr_poll foreground pollnoaa.conf
+2018-09-26 15:26:57,704 [INFO] sr_poll pollnoaa startup
+2018-09-26 15:26:57,704 [INFO] log settings start for sr_poll (version: 2.18.07b3):
+2018-09-26 15:26:57,704 [INFO]  inflight=unspecified events=create|delete|link|modify use_pika=False
+2018-09-26 15:26:57,704 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=Nonems
+2018-09-26 15:26:57,704 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+2018-09-26 15:26:57,705 [INFO]  heartbeat=300 default_mode=400 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+2018-09-26 15:26:57,705 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+2018-09-26 15:26:57,705 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=True
+2018-09-26 15:26:57,705 [INFO]  post_base_dir=None post_base_url=http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station={0:}&amp;product={1:}&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv/ sum=z,d blocksize=209715200
+2018-09-26 15:26:57,705 [INFO]  Plugins configured:
+2018-09-26 15:26:57,705 [INFO]          on_line: Line_Mode
+2018-09-26 15:26:57,705 [INFO]          on_html_page: Html_parser
+2018-09-26 15:26:57,705 [INFO]          do_poll: NOAAPoller
+2018-09-26 15:26:57,705 [INFO]          on_message:
+2018-09-26 15:26:57,705 [INFO]          on_part:
+2018-09-26 15:26:57,705 [INFO]          on_file: File_Log
+2018-09-26 15:26:57,705 [INFO]          on_post: Post_Log
+2018-09-26 15:26:57,705 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse
+2018-09-26 15:26:57,705 [INFO]          on_report:
+2018-09-26 15:26:57,705 [INFO]          on_start:
+2018-09-26 15:26:57,706 [INFO]          on_stop:
+2018-09-26 15:26:57,706 [INFO] log_settings end.
+2018-09-26 15:26:57,709 [INFO] Output AMQP broker(localhost) user(tsource) vhost(/)
+2018-09-26 15:26:57,710 [INFO] Output AMQP exchange(xs_tsource)
+2018-09-26 15:26:57,710 [INFO] declaring exchange xs_tsource (tsource@localhost)
+2018-09-26 15:26:58,403 [INFO] poll_noaa file posted: http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1611400&amp;product=water_temperature&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv
+2018-09-26 15:26:58,403 [INFO] post_log notice=20180926192658.403634 http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1611400&amp;product=water_temperature&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv CO-OPS__1611400__wt.csv headers={&#39;source&#39;: &#39;noaa&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;sum&#39;: &#39;z,d&#39;, &#39;from_cluster&#39;: &#39;localhost&#39;}
+2018-09-26 15:26:58,554 [INFO] poll_noaa file posted: http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1611400&amp;product=water_level&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv&amp;datum=STND
+2018-09-26 15:26:58,554 [INFO] post_log notice=20180926192658.554364 http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1611400&amp;product=water_level&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv&amp;datum=STND CO-OPS__1611400__wl.csv headers={&#39;source&#39;: &#39;noaa&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;sum&#39;: &#39;z,d&#39;, &#39;from_cluster&#39;: &#39;localhost&#39;}
+2018-09-26 15:26:58,691 [INFO] poll_noaa file posted: http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1612340&amp;product=water_temperature&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv
+2018-09-26 15:26:58,691 [INFO] post_log notice=20180926192658.691466 http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1612340&amp;product=water_temperature&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv CO-OPS__1612340__wt.csv headers={&#39;source&#39;: &#39;noaa&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;sum&#39;: &#39;z,d&#39;, &#39;from_cluster&#39;: &#39;localhost&#39;}
+2018-09-26 15:26:58,833 [INFO] poll_noaa file posted: http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1612340&amp;product=water_level&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv&amp;datum=STND
+2018-09-26 15:26:58,834 [INFO] post_log notice=20180926192658.833992 http://tidesandcurrents.noaa.gov/api/datagetter?range=1&amp;station=1612340&amp;product=water_level&amp;units=metric&amp;time_zone=gmt&amp;application=web_services&amp;format=csv&amp;datum=STND CO-OPS__1612340__wl.csv headers={&#39;source&#39;: &#39;noaa&#39;, &#39;to_clusters&#39;: &#39;ALL&#39;, &#39;sum&#39;: &#39;z,d&#39;, &#39;from_cluster&#39;: &#39;localhost&#39;}
+^C2018-09-26 15:26:58,965 [INFO] signal stop (SIGINT)
+2018-09-26 15:26:58,965 [INFO] sr_poll stop
+</pre></div>
+</div>
+<p>pour le polling et:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[aspymap:~]$ sr_subscribe foreground subnoaa.conf
+2018-09-26 15:26:53,473 [INFO] sr_subscribe subnoaa start
+2018-09-26 15:26:53,473 [INFO] log settings start for sr_subscribe (version: 2.18.07b3):
+2018-09-26 15:26:53,473 [INFO]  inflight=.tmp events=create|delete|link|modify use_pika=False
+2018-09-26 15:26:53,473 [INFO]  suppress_duplicates=False retry_mode=True retry_ttl=300000ms
+2018-09-26 15:26:53,473 [INFO]  expire=300000ms reset=False message_ttl=None prefetch=25 accept_unmatch=False delete=False
+2018-09-26 15:26:53,473 [INFO]  heartbeat=300 default_mode=000 default_mode_dir=775 default_mode_log=600 discard=False durable=True
+2018-09-26 15:26:53,473 [INFO]  preserve_mode=True preserve_time=True realpathPost=False base_dir=None follow_symlinks=False
+2018-09-26 15:26:53,473 [INFO]  mirror=False flatten=/ realpathPost=False strip=0 base_dir=None report=False
+2018-09-26 15:26:53,473 [INFO]  Plugins configured:
+2018-09-26 15:26:53,473 [INFO]          do_download: BaseURLDownloader
+2018-09-26 15:26:53,473 [INFO]          do_get     :
+2018-09-26 15:26:53,473 [INFO]          on_message:
+2018-09-26 15:26:53,474 [INFO]          on_part:
+2018-09-26 15:26:53,474 [INFO]          on_file: File_Log
+2018-09-26 15:26:53,474 [INFO]          on_post: Post_Log
+2018-09-26 15:26:53,474 [INFO]          on_heartbeat: Hb_Log Hb_Memory Hb_Pulse RETRY
+2018-09-26 15:26:53,474 [INFO]          on_report:
+2018-09-26 15:26:53,474 [INFO]          on_start:
+2018-09-26 15:26:53,474 [INFO]          on_stop:
+2018-09-26 15:26:53,474 [INFO] log_settings end.
+2018-09-26 15:26:53,474 [INFO] sr_subscribe run
+2018-09-26 15:26:53,474 [INFO] AMQP  broker(localhost) user(tsource) vhost(/)
+2018-09-26 15:26:53,478 [INFO] Binding queue q_tsource.sr_subscribe.subnoaa.90449861.55888967 with key v02.post.# from exchange xs_tsource on broker amqp://tsource@localhost/
+2018-09-26 15:26:53,480 [INFO] reading from to tsource@localhost, exchange: xs_tsource
+2018-09-26 15:26:53,480 [INFO] report suppressed
+2018-09-26 15:26:53,480 [INFO] sr_retry on_heartbeat
+2018-09-26 15:26:53,486 [INFO] No retry in list
+2018-09-26 15:26:53,488 [INFO] sr_retry on_heartbeat elapse 0.007632
+2018-09-26 15:26:58,751 [INFO] download_noaa: file noaa_20180926_1926_1611400_TP.csv
+2018-09-26 15:26:58,751 [INFO] file_log downloaded to: /home/ib/dads/map/hydro_examples_sarra/fetch/noaa//CO-OPS__1611400__wt.csv
+2018-09-26 15:26:58,888 [INFO] download_noaa: file noaa_20180926_1926_1611400_WL.csv
+2018-09-26 15:26:58,889 [INFO] file_log downloaded to: /home/ib/dads/map/hydro_examples_sarra/fetch/noaa//CO-OPS__1611400__wl.csv
+2018-09-26 15:26:59,026 [INFO] download_noaa: file noaa_20180926_1926_1612340_TP.csv
+2018-09-26 15:26:59,027 [INFO] file_log downloaded to: /home/ib/dads/map/hydro_examples_sarra/fetch/noaa//CO-OPS__1612340__wt.csv
+2018-09-26 15:26:59,170 [INFO] download_noaa: file noaa_20180926_1926_1612340_WL.csv
+2018-09-26 15:26:59,171 [INFO] file_log downloaded to: /home/ib/dads/map/hydro_examples_sarra/fetch/noaa//CO-OPS__1612340__wl.csv
+^C2018-09-26 15:27:00,597 [INFO] signal stop (SIGINT)
+2018-09-26 15:27:00,597 [INFO] sr_subscribe stop
+</pre></div>
+</div>
+<p>pour le téléchargement.</p>
+</section>
+<section id="service-web-shc-soap">
+<h3>Service Web SHC SOAP<a class="headerlink" href="#service-web-shc-soap" title="Link to this heading"></a></h3>
+<p>Un service Web SOAP (Simple Object Access Protocol) utilise un système de messagerie XML pour fournir les données demandées
+données sur un réseau. Le client peut spécifier des paramètres pour une opération prise en charge (par exemple une recherche) sur
+le service Web, noté avec une extension de fichier wdsl, et le serveur renverra une réponse SOAP au format XML.
+Le Service Hydrographique du Canada (SHC) utilise ce service Web comme API pour obtenir des données hydrométriques.
+données en fonction des paramètres envoyés.
+Il ne prend en charge qu’une seule opération, la recherche, qui accepte les éléments suivants
+paramètres : dataName, latitudeMin, latitudeMax, longitudeMin, longitudeMax, depthMin, depthMax, dateMin,
+dateMax, start, end, tailleMax, metadata, metadataSelection, order. Par exemple, une recherche renverra toutes les
+données sur le niveau d’eau disponibles à Acadia Cove au Nunavut le 1er septembre 2018 si votre recherche contient
+les paramètres suivants : ‘wl’, 40.0, 85.0, -145.0, -50.0, 0.0, 0.0, ‘2018-09-01 00:00:00’,
+‘2018-09-01 23:59:59’, 1, 1000, ‘true’, ‘station_id=4170, ‘asc’.</p>
+<p>La réponse peut ensuite être convertie en un fichier et vidé, qui peut être publié, ou les paramètres peuvent
+être annoncés eux-mêmes dans le rapport. Remarquez, qu’un plugin sarra <em>do_download</em> pourrait ensuite déchiffrer
+et traiter les données dans un fichier côté utilisateur. Afin de ne publier que de nouvelles données à partir de SHC, une instance de poll peut être configurée pour se mettre en veille toutes les 30 minutes,
+et un plugin <em>do_poll</em> pourrait définir la plage de début-fin sur la dernière demi-heure avant de former la demande.
+Chaque demande est renvoyée avec un message d’état confirmant s’il s’agissait d’un appel de fonction valide. Le plugin pourrait
+ensuite vérifier que le message d’état est correct avant de publier le message annonçant de nouvelles données sur l’échange.
+Un plugin <em>do_download</em> prend ces paramètres passés dans le message, forme une requête SOAP avec eux, et
+extrait les données/les enregistre dans un fichier. Des exemples de plugins qui effectuent ces deux étapes peuvent être trouvés sous
+<em>plugins</em>, nommés <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_shc_soap.py">poll_shc_soap.py</a>
+et <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_shc_soap.py">download_shc_soap.py</a>.
+Des exemples de configurations pour l’exécution des deux sont inclus sous <em>exemples</em>, nommés
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollsoapshc.conf">pollsoapshc.conf</a> et
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subsoapshc.conf">subsoapshc.conf</a>.</p>
+</section>
+<section id="service-web-de-valeurs-instantanees-usgs">
+<h3>Service Web de valeurs instantanées USGS<a class="headerlink" href="#service-web-de-valeurs-instantanees-usgs" title="Link to this heading"></a></h3>
+<p>Le United States Geological Survey publie ses données sur l’eau par son Service Web des valeurs instantanées RESTful
+, qui utilise des requêtes HTTP GET pour filtrer leurs données. Il renvoie les données dans les fichiers XML une fois
+demandé, et peut prendre en charge plus d’un argument d’ID de station à la fois (téléchargement de données en bloc). Plus d’infos sur
+le service peut être consulté <a class="reference external" href="https://waterservices.usgs.gov/rest/IV-Service.html">sur le site Web des services de l’eau</a>.
+Ils ont une longue liste de paramètres à spécifier en fonction du type de données sur l’eau que vous souhaitez récupérer,
+qui est passé par l’argument parameterCd. Par exemple, si vous vouliez aller chercher l’évacuation de l’eau, nivelez
+les données de température des trois dernières heures de North Fork Vermilion River près de Bismarck, IL, vous utiliseriez
+l’URL suivante :
+<a class="reference external" href="https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&amp;indent=on&amp;site=03338780&amp;period=PT3H&amp;parameterCd=00060,00065,00011">https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&amp;indent=on&amp;site=03338780&amp;period=PT3H&amp;parameterCd=00060,00065,00011</a>.
+Une liste de codes de paramètres à utiliser pour personnaliser vos résultats peut être trouvée
+<a class="reference external" href="https://help.waterdata.usgs.gov/code/parameter_cd_query?fmt=rdb&amp;inline=true&amp;group_cd=%25">ici</a>.
+Les plugins pour n’importe quel service Web GET peuvent être généralisés pour utilisation, de sorte que les plugins
+utilisés pour l’API NOAA CO-OPS peuvent également être réutilisés dans ce contexte. Par défaut, les ID de station
+à transmettre sont différents, ainsi que le méthode de les passer, de sorte que le code de plug-in qui détermine les
+ID de station à utiliser diffère, mais la méthode conceptuellement, c’est toujours la même chose. Vous transmettez
+une version généralisée de l’URL comme pollingUrl dans la config, par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>https://waterservices.usgs.gov/nwis/iv/?format=waterml,2.0&amp;indent=on&amp;site={0}&amp;period=PT3H&amp;parameterCd=00060,00065,00011
+</pre></div>
+</div>
+<p>et dans le plugin, vous remplaceriez le ‘{0}’ (Python rend cela facile avec le formatage de chaîne) par les sites qui
+vous intéressent, et si d’autres paramètres doivent être modifiés, ils peuvent être remplacés de la même manière.
+Si un fichier d’ID de site de station n’a pas été transmis en tant qu’option de configuration de plug-in,
+le plug-in saisit par défaut tout les identifiants de site enregistrés à partir de
+<a class="reference external" href="https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx">the USGS website</a>.
+Le service Web IV prend en charge les requêtes avec plusieurs ID de site spécifiés (séparés par des virgules).
+Si l’option plugin <em>poll_usgs_nb_stn</em> a été spécifié à la taille du bloc dans la configuration, il faudra des
+groupes de données de stations en fonction du nombre passé (cela réduit les requêtes Web et accélère
+la collecte de données en cas de collecte en bloc).</p>
+<p>Pour exécuter cet exemple, les configs et les plugins se trouvent sous <em>plugins</em>
+(<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/poll_usgs.py">poll_usgs.py</a>
+et <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/plugins/download_usgs.py">download_usgs.py</a>)
+et <em>examples</em> (<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/poll/pollusgs.conf">pollusgs.conf</a>
+et <a class="reference external" href="https://github.com/MetPX/sarracenia/blob/v2_stable/sarra/examples/subscribe/subusgs.conf">subusgs.conf</a>).</p>
+</section>
+</section>
+<section id="cas-d-utilisation">
+<h2>Cas d’utilisation<a class="headerlink" href="#cas-d-utilisation" title="Link to this heading"></a></h2>
+<p>Les plug-ins hydrométriques ont été développés pour le cas d’utilisation canhys d’Environnement Canada, où les fichiers
+contenant les métadonnées de la station seraient utilisées comme données d’entrée pour recueillir les données
+hydrométriques. Chaque plugin fonctionne également en générant tous les identifiants de station valides de l’autorité
+de l’eau elle-même et le branchement de ces entrées. Cette option alternative peut être a basculé en omettant la
+variable de configuration du plug-in qui spécifierait autrement le fichier de métadonnées de la station.
+Les plugins de téléchargement renomment également le fichier selon la convention spécifique de ce cas d’utilisation.</p>
+<p>La plupart de ces sources ont des avertissements que ces données ne sont pas de qualité assurée, mais elles sont rassemblées en soft
+en temps réel (annoncées a la secondes/minutes à partir du moment où elles ont été enregistré).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Ingestion_de_email_avec_Sarracenia.html" class="btn btn-neutral float-left" title="Ingestion par e-mail avec Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="source.html" class="btn btn-neutral float-right" title="Sources de données" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

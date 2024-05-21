@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sundew sender migration to sarracenia (PXATX) &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Reference" href="../../Reference/index.html" />
+    <link rel="prev" title="Sundew pull migration to sarracenia (PXATX)" href="sundew_pull_migration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Sundew Migration Guide</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="filter_conversion.html">Sundew filter migration to sarracenia (PXATX)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sundew_pull_migration.html">Sundew pull migration to sarracenia (PXATX)</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Sundew sender migration to sarracenia (PXATX)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup">SETUP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sundew-sender-conversion-process">SUNDEW SENDER CONVERSION PROCESS</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Explanation</a> &raquo;</li>
+          <li><a href="index.html">Sundew Migration Guide</a> &raquo;</li>
+      <li>Sundew sender migration to sarracenia (PXATX)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/Explanation/Sundew_Migration/sundew_sender_migration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sundew-sender-migration-to-sarracenia-pxatx">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Sundew sender migration to sarracenia (PXATX)</a><a class="headerlink" href="#sundew-sender-migration-to-sarracenia-pxatx" title="Link to this heading"></a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>&#64;Date&#64;</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>&#64;Version&#64;</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPx Sarracenia Suite</p>
+</dd>
+</dl>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sundew-sender-migration-to-sarracenia-pxatx" id="id1">Sundew sender migration to sarracenia (PXATX)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#description" id="id2">DESCRIPTION</a></p></li>
+<li><p><a class="reference internal" href="#setup" id="id3">SETUP</a></p></li>
+<li><p><a class="reference internal" href="#sundew-sender-conversion-process" id="id4">SUNDEW SENDER CONVERSION PROCESS</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="description">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">DESCRIPTION</a><a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>This document was written right after my presentation of August 8th.
+It will basically be a summary of what was said for the sundew sender
+migration part of it.</p>
+<p>The scripts used in the presentation use routing tables, sender
+configuration, logs and a dump of sarra database of products.</p>
+<p>I used a similar setup with similar tools on my desktop. All of this,
+is to be taken as a suggestion or a startup. I have heavily used some
+of it during the conversion of sundew pull to sarra poll-sarra pairs.</p>
+<p>Most if the time for pxatx senders, I would only use pxsender_2_sarra.sh.
+It converts sundew-sender to a sarra-sender in a dummy fashion… no extra.
+From the converted config, I would simply add the migrated polled products
+I had just migrated and drop the rest of the sundew sender config.</p>
+<p>The sender tools where an entire day of products is presented as messages
+to the sarra sender migrated I used 3 times… I simply coded that while
+I tried to migrate sundew-sender as part of my migration project.
+As porting sundew-sender to sarra showed to be a much greater task than
+I expected, I simply drop the idea. And did not use these tools anymore.</p>
+<p>Peter wanted me to present my work. The goal is to engage his troup
+in the project of migrating the sundew-sender to sarra.</p>
+<p>All of these facts must be considered when using the presented tools.
+I am not saying THEY ARE the tools to use in order to properly conduct
+I am not saying the are reliable enough to be used blindly.
+For myself, they would certainly be my starting point, should I be part
+of that project.</p>
+<p>So you the reader are part of that project now I guess if you read this.
+I propose the tools as a start for your own migration. Use them as
+tips, basis, ideas, or tools… make of them what you want…  and
+good luck for your journey in this big sundew-sender conversion
+project.</p>
+</section>
+<section id="setup">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">SETUP</a><a class="headerlink" href="#setup" title="Link to this heading"></a></h2>
+<p>Historically, after having poke the several clusters (sundew and sarra)
+with tools on data-lb-ops1 (under users px and sarra)… it was so
+annoying that I decided one day to get all the information available
+on all the clusters and work from my desktop. I am convinced that it
+strikes you as simpler than doing “srl grep” or “pxl grep” in all clusters.
+So my tools would work on a local copy of the needed files.</p>
+<p>In order to use the scripts provided as is, as a start, you would need
+to install the same setup as I was using when developping/using them.
+Of course, this is not mandatory, and should you prefer other setups,
+you can do so and modify the scripts accordingly… or write you own…</p>
+<p>So my setup was:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir ~/convert
+
+# and in this directory you place
+
+~/convert
+│
+├── tools
+│   ├── compare.sh
+│   ├── do_this_pull.sh
+│   ├── do_this_sender.sh
+│   ├── pull_2_pollsarra.sh
+│   ├── pxsender_2_sarra.sh
+│   ├── sr_sender_one_day.sh
+│   └── sundew_routing_2_sarra_subtopic.py
+│
+├── plugins
+│   ├── msg_from_file.py
+│   └── pxSender_log.py
+│
+├── config
+│   │
+│   ├── pxatx
+│   │   └── etc
+│   │       ├── rx
+│   │       ├── fx
+│   │       ├── scripts
+│   │       ├── trx
+│   │       ├── tx
+│   │       └── ...
+│   │
+│   ├── sundew
+│   │   └── etc
+│   │       ├── rx
+│   │       ├── fx
+│   │       ├── scripts
+│   │       ├── trx
+│   │       ├── tx
+│   │       └── ...
+│   │
+│   └── sarra
+│           ├── cpost
+│           ├── plugins
+│           ├── poll
+│           ├── post
+│           ├── sarra
+│           ├── sender
+│           ├── shovel
+│           └── watch
+│
+├── log
+│   │
+│   ├── pxatx
+│   │   └── ...
+│   │
+│   ├── sr_pxatx
+│   │   └── ...
+│   │
+│   ├── ddsr (sarra)
+│   │   ├── px2-ops
+│   │   ├── px3-ops
+│   │   ├── px4-ops
+│   │   ├── px5-ops
+│   │   ├── px6-ops
+│   │   ├── px7-ops
+│   │   └── px8-ops
+│   │
+│   └── sundew
+│       ├── px2-ops
+│       ├── px3-ops
+│       ├── px4-ops
+│       ├── px5-ops
+│       ├── px6-ops
+│       ├── px7-ops
+│       └── px8-ops
+│
+│
+└── data
+    └── ddsr.20190804  (sarra /apps/sarra/public_data/20190804 *)
+</pre></div>
+</div>
+<p>The files found in the tools directory can be taken from the
+sarracenia depot on github under ~/sarracania/tools. (If not in the master
+they would be found in branch issue199)</p>
+<p>For files found in the plugins directory directory can be taken from the
+sarracenia depot on github under ~/sarracania/sarra/plugins. (If not in the
+master they would be found in branch issue199)</p>
+<p>The config directory is just a straight copy of all the configs
+for each of the clusters… and here <strong>sr_pxatx</strong> means the sarra portion
+of pxatx.</p>
+<p>For the logs and the data, one would think to have a whole day and so
+I would always aim at getting all of “yesterday”.</p>
+<p>So one can go on each node and scp “yesterday’s log” where the setup is
+installed under the proper representing directory.</p>
+<p>The creation of data file (ddsr.20190804) was done as follow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">sarra</span><span class="nd">@data</span><span class="o">-</span><span class="n">lb</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. ./.bash_profile; cd ~/master/saa; srl &quot;cd /apps/sarra/public_data; find 20190804 -type f&quot;&#39;</span> <span class="o">&gt;&gt;</span> <span class="n">ddsr</span><span class="mf">.20190804</span>
+</pre></div>
+</div>
+<p>On the server where you would to the migration, you need sarracenia of course.
+The fact that px1-ops was off the sarra cluster was an opportunity since it
+provides the same environment as the targetted cluster. If one such node is
+not available when you a migration to a cluster (in fact I would be tempted
+to say any migration of any kinds) … I recommand you to have such a node
+available.</p>
+</section>
+<section id="sundew-sender-conversion-process">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">SUNDEW SENDER CONVERSION PROCESS</a><a class="headerlink" href="#sundew-sender-conversion-process" title="Link to this heading"></a></h2>
+<p>I cannot say for sure that all my tools get everything straight.
+Should you find better ways or modifications to do, dont hesitate.</p>
+<p>For now, should you use them out of the box, here is how I would
+proceed with the them.</p>
+<p>Under ~/convert, create your own working/migrating directory… ex.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">SENDERS</span>
+<span class="n">cd</span>    <span class="n">SENDERS</span>
+</pre></div>
+</div>
+<p>Select one config that you would like to start working with.
+(Perhaps to start, the senders with the smallest number of delivery
+would be a good start… dont do them all, keep some for the other
+team member to sharp their teeth too).</p>
+<p>To get ready, make sure that the plugins under ~/convert/plugins are
+sarra-wise available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">~/</span><span class="n">convert</span><span class="o">/</span><span class="n">plugins</span><span class="o">/*</span> <span class="o">~/.</span><span class="n">config</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">plugins</span>
+</pre></div>
+</div>
+<p>And perhaps adjust the path to be able to call the tools easily:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=.~/convert/tools:$PATH
+</pre></div>
+</div>
+<dl class="simple">
+<dt>NOTE::</dt><dd><p>PAS 2023/02/08 - PAS I could not locate these scripts.
+hmm…</p>
+</dd>
+</dl>
+<p>Ok now, convert that sender… Here I suppose as in the presentation
+that it is accessdepot-iml.conf for simplicity (or remainder):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert the sender place infos in directory ACCESSDEPOT_IML</span>
+<span class="c1"># The script will show an estimated of time to finish</span>
+<span class="c1"># that can be hours depending on the routing tables and sender configs</span>
+
+<span class="n">do_this_sender</span><span class="o">.</span><span class="n">sh</span> <span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span>
+
+<span class="c1"># access the resulting directory and have a look at the info</span>
+<span class="c1"># gathered by the script</span>
+
+<span class="n">cd</span> <span class="n">ACCESSDEPOT_IML</span>
+<span class="n">vi</span> <span class="n">INFO_accessdepot</span><span class="o">-</span><span class="n">iml</span>
+
+<span class="c1"># make sure the credential were extracted, ready for sarra</span>
+<span class="n">ls</span> <span class="n">credentials</span>
+<span class="n">cat</span> <span class="n">credentials</span>
+
+<span class="c1"># go check/edit/modify the configs and includes</span>
+<span class="n">cd</span> <span class="n">sender</span>
+<span class="n">vi</span> <span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="c1"># You think your sarra config/includes for this sender is ok</span>
+<span class="c1"># give it a try, run a whole day</span>
+<span class="c1"># *** CATCH in script sr_sender_one_day.sh</span>
+<span class="c1"># *** it appends to your sender config lines like</span>
+<span class="c1"># *** msg_file /local/home/sarra/convert/data/ddsr.20190804</span>
+<span class="c1"># *** THIS IS DATA DEPENDANT AND NEEDS TO BE TAKEN INTO ACCOUNT</span>
+
+<span class="n">sr_sender_one_day</span><span class="o">.</span><span class="n">sh</span> <span class="n">sender</span><span class="o">/</span><span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="c1"># check it out if this sender is done...</span>
+<span class="c1"># It will stop when all products of the data file are processed</span>
+
+<span class="n">tail</span> <span class="o">-</span><span class="n">f</span> <span class="o">~/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">sr_accessdepot</span><span class="o">-</span><span class="n">iml_01</span><span class="o">.</span><span class="n">log</span>
+
+<span class="c1"># When done compare the logs of the sundew sender</span>
+<span class="c1"># the sender&#39;s log have to be of the same date as the data product file</span>
+
+<span class="n">compare</span><span class="o">.</span><span class="n">sh</span> <span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span>
+
+<span class="c1"># IF the compare says the exact same number of products</span>
+<span class="c1"># and there are no product to be rejected or missing</span>
+<span class="c1"># the sender is ready.</span>
+
+<span class="c1"># If not... (and that is probably in most cases)</span>
+<span class="c1"># If there are no missing product... only some to be</span>
+<span class="c1"># rejected, would try restricting your accept/reject</span>
+<span class="c1"># and  you would loop doing the following until resolution</span>
+<span class="c1">#</span>
+<span class="c1"># 1- Fix the sender again</span>
+<span class="c1"># 2- Run through a whole day again</span>
+<span class="c1"># 3- check when finished</span>
+<span class="c1"># 4- compare</span>
+<span class="c1">#</span>
+<span class="c1"># a looping sequence like this :</span>
+
+<span class="n">vi</span> <span class="n">sender</span><span class="o">/</span><span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">sr_sender_one_day</span><span class="o">.</span><span class="n">sh</span> <span class="n">sender</span><span class="o">/</span><span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">tail</span> <span class="o">-</span><span class="n">f</span> <span class="o">~/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">sr_sender_accessdepot</span><span class="o">-</span><span class="n">iml_01</span><span class="o">.</span><span class="n">log</span>
+<span class="n">compare</span><span class="o">.</span><span class="n">sh</span> <span class="n">accessdepot</span><span class="o">-</span><span class="n">iml</span>
+
+<span class="c1"># missing products are more problematic</span>
+<span class="c1"># needs further investigation and perhaps</span>
+<span class="c1"># the addition of processes, or products to sarra</span>
+</pre></div>
+</div>
+<p>This was done, as is, in today’s presentation. I cannot say it enough…
+as I mentionned, I have not done many of these sundew senders conversions
+by gaving it a day of products… The few I did were enough to leave
+sundew-senders migration alone and focus on pxatx-sundew. I would certainly
+start from there should I be you. But again, this is a personal choice…
+Your ideas and methods being as good as mine.</p>
+<p>When using tools, one can trigger them on say 5 sender configs and
+have more work ahead. The experience gathered during these 5 migrations
+can be ported into the tools hoping to get better results for the next 5
+and so on. So always have 5 in the oven. It is important to run batches
+since some may take hours to be processed.</p>
+<p>If no change is done to the sarra db layout and products, the files in
+the setup are accurate enought to pursue the migration.</p>
+<p>On the opposite, changes to the sarra db layout and product additions,
+removals or whatever changes, requieres the files “sarra db for yesterday”
+and “sundew logs for yesterday”  to be updated… Or else, the results from
+the tools will not represent the current state of things.</p>
+<p>Have fun   :-)</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sundew_pull_migration.html" class="btn btn-neutral float-left" title="Sundew pull migration to sarracenia (PXATX)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Reference/index.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

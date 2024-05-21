@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.flowcb</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb</h1><div class="highlight"><pre>
+<span></span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Shared Services Canada, 2020</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">entry_points</span> <span class="o">=</span> <span class="p">[</span>
+
+    <span class="s1">&#39;ack&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;destfn&#39;</span><span class="p">,</span> <span class="s1">&#39;do_poll&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;download&#39;</span><span class="p">,</span> <span class="s1">&#39;gather&#39;</span><span class="p">,</span> <span class="s1">&#39;metricsReport&#39;</span><span class="p">,</span> <span class="s1">&#39;on_cleanup&#39;</span><span class="p">,</span> <span class="s1">&#39;on_declare&#39;</span><span class="p">,</span> <span class="s1">&#39;on_features&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;on_sanity&#39;</span><span class="p">,</span> <span class="s1">&#39;on_start&#39;</span><span class="p">,</span> <span class="s1">&#39;on_stop&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;please_stop&#39;</span><span class="p">,</span> <span class="s1">&#39;poll&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">,</span> <span class="s1">&#39;send&#39;</span><span class="p">,</span> 
+
+<span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="FlowCB">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB">[docs]</a>
+<span class="k">class</span> <span class="nc">FlowCB</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flow Callback is the main class for implementing plugin customization to flows.</span>
+
+<span class="sd">    sample activation in a configuration file:</span>
+<span class="sd">    </span>
+<span class="sd">    flowCallback sarracenia.flowcb.name.Name</span>
+<span class="sd">    </span>
+<span class="sd">    will instantiate an object of that type whose appropriately name methods</span>
+<span class="sd">    will be called at the right time.</span>
+<span class="sd">    </span>
+<span class="sd">    __init__ accepts options as an argument.</span>
+<span class="sd">    </span>
+<span class="sd">    options is a sarracenia.config.Config object, used to override default behaviour</span>
+<span class="sd">    </span>
+<span class="sd">    a setting is declared in a configuration file like so::</span>
+<span class="sd">    </span>
+<span class="sd">        set sarracenia.flowcb.filter.log.Log.level debug</span>
+<span class="sd">    </span>
+<span class="sd">    (the prefix for the setting matches the type hierarchy in flowCallback)</span>
+<span class="sd">    the plugin should get the setting::</span>
+<span class="sd">    </span>
+<span class="sd">        options.level = &#39;debug&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    worklist given to on_plugins...</span>
+<span class="sd">    </span>
+<span class="sd">    * worklist.incoming --&gt; new messages to continue processing</span>
+<span class="sd">    * worklist.ok       --&gt; successfully processed</span>
+<span class="sd">    * worklist.rejected --&gt; messages to not be further processed.</span>
+<span class="sd">    * worklist.failed   --&gt; messages for which processing failed. Failed messages will be retried.</span>
+<span class="sd">    * worklist.directories_ok --&gt; list of directories created during processing.</span>
+<span class="sd">    </span>
+<span class="sd">    Initially, all messages are placed in incoming.</span>
+<span class="sd">    if a plugin entry_point decides:</span>
+<span class="sd">    </span>
+<span class="sd">    - a message is not relevant, it is moved to the rejected worklist. </span>
+<span class="sd">    - all processing has been done, it moves it to the ok worklist</span>
+<span class="sd">    - an operation failed and it should be retried later, append it to the failed</span>
+<span class="sd">      worklist</span>
+<span class="sd">    </span>
+<span class="sd">    Do not remove any message from all lists, only move messages between them.</span>
+<span class="sd">    it is necessary to put rejected messages in the appropriate worklist</span>
+<span class="sd">    so they can be acknowledged as received. Messages can only removed after ack.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    def __init__(self,options) -&gt; None::</span>
+
+<span class="sd">        Task: initialization of the flowCallback at instantiation time.</span>
+
+<span class="sd">        usually contains:</span>
+
+<span class="sd">        self.o = options</span>
+
+<span class="sd">    def ack(self,messagelist) -&gt; None::</span>
+
+<span class="sd">        Task: acknowledge messages from a gather source.</span>
+
+<span class="sd">    def gather(self, messageCountMax) -&gt; (gather_more, messages) ::</span>
+
+<span class="sd">        Task: gather messages from a source... return a tuple:</span>
+
+<span class="sd">              * gather_more ... bool whether to continue gathering </span>
+<span class="sd">              * messages ... list of messages </span>
+
+<span class="sd">              or just return a list of messages.</span>
+
+<span class="sd">              In a poll, gather is always called, regardless of vip posession.</span>
+
+<span class="sd">              In all other components, gather is only called when in posession</span>
+<span class="sd">              of the vip.</span>
+
+<span class="sd">        return (True, list)</span>
+<span class="sd">         OR</span>
+<span class="sd">        return list</span>
+
+<span class="sd">    def after_accept(self,worklist) -&gt; None::</span>
+
+<span class="sd">         Task: just after messages go through accept/reject masks,</span>
+<span class="sd">               operate on worklist.incoming to help decide which messages to process further.</span>
+<span class="sd">               and move messages to worklist.rejected to prevent further processing.</span>
+<span class="sd">               do not delete any messages, only move between worklists.</span>
+
+<span class="sd">    def after_work(self,worklist) -&gt; None::</span>
+
+<span class="sd">        Task: operate on worklist.ok (files which have arrived.)</span>
+
+<span class="sd">        All messages on the worklist.ok list have been acknowledged, so to suppress posting</span>
+<span class="sd">        of them, or futher processing, the messages must be removed from worklist.ok.</span>
+
+<span class="sd">        worklist.failed processing should occur in here as it will be zeroed out after this step.</span>
+<span class="sd">        The flowcb/retry.py plugin, for example, processes failed messages.</span>
+
+<span class="sd">    def destfn(self,msg) -&gt; str::</span>
+
+<span class="sd">         Task: look at the fields in the message, and perhaps settings and</span>
+<span class="sd">               return a new file name for the target of the send or download.</span>
+
+<span class="sd">         kind of a last resort function, exists mostly for sundew compatibility.</span>
+<span class="sd">         can be used for selective renaming using accept clauses.</span>
+
+<span class="sd">    def download(self,msg) -&gt; bool::</span>
+
+<span class="sd">         Task: looking at msg[&#39;new_dir&#39;], msg[&#39;new_file&#39;], msg[&#39;new_inflight_file&#39;] </span>
+<span class="sd">               and the self.o options perform a download of a single file.</span>
+<span class="sd">               return True on a successful transfer, False otherwise.</span>
+
+<span class="sd">               if self.o.dry_run is set, simulate the output of a download without</span>
+<span class="sd">               performing it.</span>
+
+<span class="sd">         This replaces built-in download functionality, providing an override.</span>
+<span class="sd">         for individual file transfers. ideally you set checksums as you download.</span>
+<span class="sd">            </span>
+<span class="sd">    def metricsReport(self) -&gt; dict:</span>
+
+<span class="sd">        Return a dictionary of metrics. Example: number of messages remaining in retry queues.</span>
+
+<span class="sd">    def on_cleanup(self) -&gt; None::</span>
+<span class="sd">        allow plugins to perform additional work after broker resources are eliminated.</span>
+<span class="sd">        local state files are still present when this runs.</span>
+
+<span class="sd">    def on_declare(self) -&gt; None::</span>
+<span class="sd">        local state files are still already present when this runs.</span>
+<span class="sd">        allow plugins to perform additional work besides broker resource setup.</span>
+
+<span class="sd">    def on_housekeeping(self) -&gt; None::</span>
+
+<span class="sd">         do periodic processing.</span>
+
+<span class="sd">    def on_start(self) -&gt; None::</span>
+
+<span class="sd">         After the connection is established with the broker and things are instantiated, but</span>
+<span class="sd">         before any message transfer occurs.</span>
+
+<span class="sd">    def on_stop(self) -&gt; None::</span>
+<span class="sd">        </span>
+<span class="sd">         what it says on the tin... clean up processing when stopping.         </span>
+
+<span class="sd">    def poll(self) -&gt; list::</span>
+
+<span class="sd">        Task: gather messages from a destination... return a list of messages.</span>
+<span class="sd">              works like a gather, but...</span>
+
+<span class="sd">              When specified, poll replaces the built-in poll of the poll component.</span>
+<span class="sd">              it runs only when the machine running the poll has the vip.</span>
+<span class="sd">              in components other than poll, poll is never called.</span>
+<span class="sd">        return []</span>
+
+<span class="sd">    def post(self,worklist) -&gt; None::</span>
+<span class="sd">         </span>
+<span class="sd">         Task: operate on worklist.ok, and worklist.failed. modifies them appropriately.</span>
+<span class="sd">               message acknowledgement has already occurred before they are called.</span>
+
+<span class="sd">         to indicate failure to process a message, append to worklist.failed.</span>
+<span class="sd">         worklist.failed processing should occur in here as it will be zeroed out after this step.</span>
+
+<span class="sd">    def send(self,msg) -&gt; bool::</span>
+
+<span class="sd">         Task: looking at msg[&#39;new_dir&#39;], msg[&#39;new_file&#39;], and the self.o options perform a transfer</span>
+<span class="sd">               of a single file.</span>
+<span class="sd">               return True on a successful transfer, False otherwise.</span>
+
+<span class="sd">               if self.o.dry_run is set, simulate the output of a send without</span>
+<span class="sd">               performing it.</span>
+
+<span class="sd">         This replaces built-in send functionality for individual files.</span>
+
+<span class="sd">    def please_stop(self):</span>
+<span class="sd">         Pre-warn a flowcb that a stop has been requested, allowing processing to wrap up</span>
+<span class="sd">         before the full stop happens.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FlowCB.__init__">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">class_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_requested</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;logFormat&#39;</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logFormat</span><span class="p">,</span>
+                            <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;logLevel&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">class_logger</span><span class="p">:</span>
+            <span class="n">class_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span></div>
+
+
+
+<div class="viewcode-block" id="FlowCB.please_stop">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.FlowCB.please_stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           flow callbacks should not time.sleep for long periods, but only nap and check</span>
+<span class="sd">           between naps if a stop has been requested.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_requested</span> <span class="o">=</span> <span class="kc">True</span></div>
+</div>
+
+
+<div class="viewcode-block" id="load_library">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.flowcb.load_library">[docs]</a>
+<span class="k">def</span> <span class="nf">load_library</span><span class="p">(</span><span class="n">factory_path</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       Loading the entry points for a python module. It searches </span>
+<span class="sd">       the normal python module path using the importlib module. </span>
+
+<span class="sd">       the factory_path is a combined file specification with a dot separator</span>
+<span class="sd">       with a special last entry being the name of the class within the file.</span>
+
+<span class="sd">       factory_path  a.b.c.C</span>
+
+<span class="sd">       means import the module named a.b.c and instantiate an object of type</span>
+<span class="sd">       C. In that class-C object, look for the known callback entry points. </span>
+
+<span class="sd">       or C might be guessed by the last class in the path not following</span>
+<span class="sd">       python convention by not starting with a capital letter, in which case,</span>
+<span class="sd">       it will just guess.</span>
+
+<span class="sd">       re</span>
+<span class="sd">       note that the ~/.config/sr3/plugins will also be in the python library </span>
+<span class="sd">       path, so modules placed there will be found, in addition to those in the</span>
+<span class="sd">       package itself in the *sarracenia/flowcb*  directory</span>
+
+<span class="sd">       callback foo  -&gt; foo.Foo</span>
+<span class="sd">                        sarracenia.flowcb.foo.Foo</span>
+
+<span class="sd">       callback foo.bar -&gt; foo.bar.Bar</span>
+<span class="sd">                           sarracenia.flowcb.foo.bar.Bar</span>
+<span class="sd">                           foo.bar</span>
+<span class="sd">                           sarracenia.flowcb.foo.bar </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">factory_path</span><span class="p">:</span>
+        <span class="n">packagename</span> <span class="o">=</span> <span class="n">factory_path</span>
+        <span class="n">classname</span> <span class="o">=</span><span class="n">factory_path</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">factory_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">():</span>
+            <span class="n">packagename</span> <span class="o">=</span> <span class="n">factory_path</span>
+            <span class="n">classname</span> <span class="o">=</span> <span class="n">factory_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">packagename</span><span class="p">,</span> <span class="n">classname</span> <span class="o">=</span> <span class="n">factory_path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">packagename</span><span class="p">)</span>
+        <span class="n">class_</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s1">&#39;sarracenia.flowcb.&#39;</span> <span class="o">+</span> <span class="n">packagename</span><span class="p">)</span>
+        <span class="n">class_</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
+ 
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;settings&#39;</span><span class="p">):</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="c1"># strip off the class prefix.</span>
+        <span class="k">if</span> <span class="n">factory_path</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">settings</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">factory_path</span><span class="p">]:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="n">factory_path</span><span class="p">][</span><span class="n">s</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="n">options</span>
+
+    <span class="n">plugin</span> <span class="o">=</span> <span class="n">class_</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">plugin</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

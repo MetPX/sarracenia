@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015</span>
+<span class="c1">#</span>
+<span class="c1"># Questions or bugs report: dps-client@ec.gc.ca</span>
+<span class="c1"># Sarracenia repository: https://github.com/MetPX/sarracenia</span>
+<span class="c1"># Documentation: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+<span class="c1"># __init__.py : contains version number of sarracenia</span>
+<span class="c1">#</span>
+<span class="c1">########################################################################</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; version 2 of the License.</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#  along with this program; if not, write to the Free Software</span>
+<span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">._version</span> <span class="kn">import</span> <span class="n">__version__</span>
+
+
+<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64decode</span><span class="p">,</span> <span class="n">b64encode</span>
+<span class="kn">import</span> <span class="nn">calendar</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">humanize</span>
+<span class="kn">import</span> <span class="nn">importlib.util</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+<span class="kn">import</span> <span class="nn">stat</span> <span class="k">as</span> <span class="nn">os_stat</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">baseUrlParse</span><span class="p">(</span> <span class="n">url</span> <span class="p">):</span>
+    <span class="n">upr</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">()</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">scheme</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">scheme</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">netlog</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">netloc</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">params</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">query</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">fragment</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">fragment</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">upr</span><span class="o">.</span><span class="n">path</span>
+    <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">scheme</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;sftp&#39;</span><span class="p">,</span> <span class="s1">&#39;file&#39;</span> <span class="p">]:</span>
+        <span class="k">while</span> <span class="n">u</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">):</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="n">u</span>
+
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;filetypes&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+   <span class="kn">import</span> <span class="nn">magic</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+   <span class="kn">import</span> <span class="nn">paho.mqtt.client</span>
+   <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="n">paho</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="s1">&#39;MQTTv5&#39;</span> <span class="p">):</span>
+       <span class="c1"># without v5 support, mqtt is not useful.</span>
+       <span class="n">features</span><span class="p">[</span><span class="s1">&#39;mqtt&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># if humanize is not present, compensate...</span>
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;humanize&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">humanize</span>
+
+    <span class="k">def</span> <span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturalsize</span><span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaltime</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+  
+    <span class="k">def</span> <span class="nf">naturalSize</span><span class="p">(</span> <span class="n">num</span> <span class="p">):</span>
+       <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span>
+
+    <span class="k">def</span> <span class="nf">naturalTime</span><span class="p">(</span> <span class="n">dur</span> <span class="p">):</span>
+       <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dur</span>
+
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;appdirs&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">appdirs</span>
+
+    <span class="k">def</span> <span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="n">appdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># if appdirs is missing, pretend we&#39;re on Linux.</span>
+    <span class="kn">import</span> <span class="nn">pathlib</span>
+
+    <span class="k">def</span> <span class="nf">site_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;/etc/xdg/xdg-ubuntu-xorg/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
+
+    <span class="k">def</span> <span class="nf">user_config_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/.config/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
+ 
+    <span class="k">def</span> <span class="nf">user_cache_dir</span><span class="p">(</span> <span class="n">app</span><span class="p">,</span> <span class="n">author</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;/.cache/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">app</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"> end of extra feature scan. </span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia.filemetadata</span>
+
+<div class="viewcode-block" id="Sarracenia">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Sarracenia">[docs]</a>
+<span class="k">class</span> <span class="nc">Sarracenia</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Core utilities of Sarracenia. The main class here is sarracenia.Message.</span>
+<span class="sd">        a Sarracenia.Message is subclassed from a dict, so for most uses, it works like the </span>
+<span class="sd">        python built-in, but also we have a few major entry points some factoryies:</span>
+<span class="sd">    </span>
+
+<span class="sd">        **Building a message from a file**</span>
+
+<span class="sd">        m = sarracenia.Message.fromFileData( path, options, lstat )</span>
+<span class="sd">     </span>
+<span class="sd">        builds a notification message from a given existing file, consulting *options*, a parsed</span>
+<span class="sd">        in memory version of the configuration settings that are applicable</span>
+
+<span class="sd">        **Options**</span>
+
+<span class="sd">        see the sarracenia.config.Config class for functions to parse configuration files</span>
+<span class="sd">        and create corresponding python option dictionaries. One can supply small </span>
+<span class="sd">        dictionaries for example::</span>
+
+<span class="sd">          options[&#39;topicPrefix&#39;] = [ &#39;v02&#39;, &#39;post&#39; ]</span>
+<span class="sd">          options[&#39;bindings&#39;] = [ (&#39;xpublic&#39;, [ &#39;v02&#39;, &#39;post&#39;] , [ &#39;#&#39; ] )]</span>
+<span class="sd">          options[&#39;queueName&#39;] = &#39;q_anonymous_&#39; + socket.getfqdn() + &#39;_SomethingHelpfulToYou&#39;</span>
+
+<span class="sd">        Above is an example of a minimal options dictionary taken from the tutorial </span>
+<span class="sd">        example called moth_api_consumer.py. often </span>
+<span class="sd">        </span>
+
+<span class="sd">        **If you don&#39;t have a file**</span>
+
+<span class="sd">        If you don&#39;t have a local file, then build your notification message with:</span>
+<span class="sd">    </span>
+<span class="sd">        m = sarracenia.Message.fromFileInfo( path, options, lstat )</span>
+<span class="sd">    </span>
+<span class="sd">        where you can make up the lstat values to fill in some fields in the message.</span>
+<span class="sd">        You can make a fake lstat structure to provide these values using sarracenia.filemetadata</span>
+<span class="sd">        class which is either an alias for paramiko.SFTPAttributes </span>
+<span class="sd">        ( https://docs.paramiko.org/en/latest/api/sftp.html#paramiko.sftp_attr.SFTPAttributes )</span>
+<span class="sd">        if paramiko is installed, or a simple emulation if not.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">        from  sarracenia.filemetadata import FmdStat</span>
+<span class="sd">    </span>
+<span class="sd">        lstat = FmdStat()</span>
+<span class="sd">        lstat.st_mtime= utcinteger second count in UTC (numeric version of a Sarracenia timestamp.)</span>
+<span class="sd">        lstat.st_atime=</span>
+<span class="sd">        lstat.st_mode=0o644</span>
+<span class="sd">        lstat.st_size= size_in_bytes</span>
+<span class="sd">    </span>
+<span class="sd">        optional fields that may be of interest:</span>
+<span class="sd">        lstat.filename= &quot;nameOfTheFile&quot;</span>
+<span class="sd">        lstat.longname= &#39;lrwxrwxrwx    1 peter    peter          20 Oct 11 20:28 nameOfTheFile&#39;</span>
+<span class="sd">     </span>
+<span class="sd">        that you can then provide as an *lstat* argument to the above *fromFileInfo()* </span>
+<span class="sd">        call. However the notification message returned will lack an identity checksum field.</span>
+<span class="sd">        once you get the file, you can add the Identity field with:</span>
+<span class="sd">    </span>
+<span class="sd">        m.computeIdentity(path, o):</span>
+<span class="sd">    </span>
+<span class="sd">        In terms of consuming notification messages, the fields in the dictionary provide metadata</span>
+<span class="sd">        for the announced resource. The anounced data could be embedded in the notification message itself,</span>
+<span class="sd">        or available by a URL.</span>
+<span class="sd">    </span>
+<span class="sd">        Messages are generally gathered from a source such as the Message Queueing Protocol wrapper</span>
+<span class="sd">        class: moth... sarracenia.moth. </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">        data = m.getContent()</span>
+<span class="sd">    </span>
+<span class="sd">        will return the content of the announced resource as raw data.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="TimeConversions">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.TimeConversions">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeConversions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">     Time conversion routines.  </span>
+
+<span class="sd">     * os.stat, and time.now() return floating point </span>
+
+<span class="sd">     * The floating point representation is a count of seconds since the beginning of the epoch.</span>
+
+<span class="sd">     * beginning of epoch is platform dependent, and conversion to actual date is fraught (leap seconds, etc...)</span>
+
+<span class="sd">     * Entire SR_* formats are text, no floats are sent over the protocol </span>
+<span class="sd">       (avoids byte order issues, null byte / encoding issues, and enhances readability.) </span>
+
+<span class="sd">     * str format: YYYYMMDDHHMMSS.msec goal of this representation is that a naive </span>
+<span class="sd">       conversion to floats yields comparable numbers.</span>
+
+<span class="sd">     * but the number that results is not useful for anything else, so need these </span>
+<span class="sd">       special routines to get a proper epochal time.</span>
+
+<span class="sd">     * also OK for year 2032 or whatever (rollover of time_t on 32 bits.)</span>
+
+<span class="sd">     * string representation is forced to UTC timezone to avoid having to communicate timezone.</span>
+<span class="sd">    </span>
+<span class="sd">     timestr2flt() - accepts a string and returns a float.</span>
+<span class="sd">    </span>
+<span class="sd">     caveat</span>
+
+<span class="sd">     FIXME: this encoding will break in the year 10000 (assumes four digit year) </span>
+<span class="sd">     and requires leading zeroes prior to 1000. One will have to add detection of </span>
+<span class="sd">     the decimal point, and change the offsets at that point.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="stat">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.stat">[docs]</a>
+<span class="k">def</span> <span class="nf">stat</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       os.stat call replacement which improves on it by returning</span>
+<span class="sd">       and SFTPAttributes structure, in place of the OS stat one,</span>
+<span class="sd">       featuring:</span>
+<span class="sd"> </span>
+<span class="sd">       * mtime and ctime with subsecond accuracy </span>
+<span class="sd">       * fields that can be overridden (not immutable.)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">native_stat</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span>
+    
+    <span class="n">sa</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">()</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_mode</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_ino</span> <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_ino</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_dev</span>  <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_dev</span>
+    <span class="c1"># st_nlink does not exist in paramiko.SFTPAttributes()</span>
+    <span class="c1">#  FmdStat comes from that type.</span>
+    <span class="c1">#sa.st_nlink  = native_stat.st_nlink</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_uid</span>  <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_uid</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_gid</span>  <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_gid</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_size</span>  <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_size</span>
+
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_atime</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getctime</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">st_ctime</span> <span class="o">=</span> <span class="n">native_stat</span><span class="o">.</span><span class="n">st_atime</span>
+    <span class="k">return</span> <span class="n">sa</span></div>
+
+
+<span class="k">def</span> <span class="nf">nowflt</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">timestr2flt</span><span class="p">(</span><span class="n">nowstr</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">nowstr</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">timeflt2str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="timeflt2str">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.timeflt2str">[docs]</a>
+<span class="k">def</span> <span class="nf">timeflt2str</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        timeflt2str - accepts a float and returns a string.</span>
+
+<span class="sd">        flow is a floating point number such as returned by time.now()</span>
+<span class="sd">        (number of seconds since beginning of epoch.)</span>
+
+<span class="sd">        the str is YYYYMMDDTHHMMSS.sssss</span>
+
+<span class="sd">        20210921T011331.0123</span>
+
+<span class="sd">        translates to: Sept. 21st, 2021 at 01:13 and 31.0123 seconds.</span>
+<span class="sd">        always UTC timezone.    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nsec</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:.9g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span> <span class="o">%</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">T%H%M%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">(</span><span class="n">f</span><span class="p">)),</span> <span class="n">nsec</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">timeValidate</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">14</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">14</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;T&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">15</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;T&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">isalnum</span><span class="p">():</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">timestr2flt</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;T&quot;</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">dt_tuple</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">8</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">10</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">s</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">12</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">14</span><span class="p">])</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">dt_tuple</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">calendar</span><span class="o">.</span><span class="n">timegm</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;0&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">14</span><span class="p">:])</span>
+
+
+<span class="k">def</span> <span class="nf">timev2tov3str</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;T&#39;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
+
+<div class="viewcode-block" id="durationToString">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.durationToString">[docs]</a>
+<span class="k">def</span> <span class="nf">durationToString</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      given a numbner of seconds, return a short, human readable string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">humanize</span><span class="o">.</span><span class="n">naturaldelta</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;minutes&quot;</span><span class="p">,</span><span class="s2">&quot;m&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;seconds&quot;</span><span class="p">,</span><span class="s2">&quot;s&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;hours&quot;</span><span class="p">,</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;days&quot;</span><span class="p">,</span><span class="s2">&quot;d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;an hour&quot;</span><span class="p">,</span><span class="s2">&quot;1h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;a day&quot;</span><span class="p">,</span><span class="s2">&quot;1d&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;a minute&quot;</span><span class="p">,</span><span class="s2">&quot;1m&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="durationToSeconds">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.durationToSeconds">[docs]</a>
+<span class="k">def</span> <span class="nf">durationToSeconds</span><span class="p">(</span><span class="n">str_value</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   this function converts duration to seconds.</span>
+<span class="sd">   str_value should be a number followed by a unit [s,m,h,d,w] ex. 1w, 4d, 12h</span>
+<span class="sd">   return 0.0 for invalid string.</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">]:</span>
+        <span class="n">str_value</span> <span class="o">=</span> <span class="n">str_value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">str_value</span>
+    
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">str_value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span> <span class="p">]:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">default</span> <span class="ow">and</span> <span class="n">str_value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span> <span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;sS&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;mM&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*=</span> <span class="mi">60</span>
+    <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;hH&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span>
+    <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;dD&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span>
+    <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;wW&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">7</span>
+    <span class="k">if</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span> <span class="n">str_value</span> <span class="o">=</span> <span class="n">str_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;conversion failed for: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">str_value</span><span class="p">)</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">duration</span></div>
+
+
+
+<span class="n">known_report_codes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">201</span><span class="p">:</span>
+    <span class="s2">&quot;Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)&quot;</span><span class="p">,</span>
+    <span class="mi">203</span><span class="p">:</span> <span class="s2">&quot;Non-Authoritative Information: transformed during download.&quot;</span><span class="p">,</span>
+    <span class="mi">205</span><span class="p">:</span>
+    <span class="s2">&quot;Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.&quot;</span><span class="p">,</span>
+    <span class="mi">205</span><span class="p">:</span> <span class="s2">&quot;Reset Content: checksum recalculated on receipt.&quot;</span><span class="p">,</span>
+    <span class="mi">304</span><span class="p">:</span>
+    <span class="s2">&quot;Not modified (Checksum validated, unchanged, so no download resulted.)&quot;</span><span class="p">,</span>
+    <span class="mi">307</span><span class="p">:</span> <span class="s2">&quot;Insertion deferred (writing to temporary part file for the moment.)&quot;</span><span class="p">,</span>
+    <span class="mi">417</span><span class="p">:</span> <span class="s2">&quot;Expectation Failed: invalid notification message (corrupt headers)&quot;</span><span class="p">,</span>
+    <span class="mi">499</span><span class="p">:</span> <span class="s2">&quot;Failure: Not Copied. SFTP/FTP/HTTP download problem&quot;</span><span class="p">,</span>
+    <span class="c1">#FIXME : should  not have 503 error code 3 times in a row</span>
+    <span class="c1"># 503: &quot;Service unavailable. delete (File removal not currently supported.)&quot;,</span>
+    <span class="mi">503</span><span class="p">:</span> <span class="s2">&quot;Unable to process: Service unavailable&quot;</span><span class="p">,</span>
+    <span class="c1"># 503: &quot;Unsupported transport protocol specified in posting.&quot;</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="Message">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message">[docs]</a>
+<span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A notification message in Sarracenia is stored as a python dictionary, with a few extra management functions.</span>
+
+<span class="sd">        The internal representation is very close to the v03 format defined here: https://metpx.github.io/sarracenia/Reference/sr_post.7.html</span>
+
+<span class="sd">        Unfortunately, sub-classing of dict means that to copy it from a dict will mean losing the type,</span>
+<span class="sd">        and hence the need for the copyDict member.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Message.__init__">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;v03&#39;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;_format&#39;</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="Message.computeIdentity">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.computeIdentity">[docs]</a>
+    <span class="k">def</span> <span class="nf">computeIdentity</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           check extended attributes for a cached identity sum calculation.</span>
+<span class="sd">           if extended attributes are present, and </span>
+<span class="sd">           * the file mtime is not too new, and </span>
+<span class="sd">           * the cached sum us using the same method</span>
+<span class="sd">           then use the cached value.</span>
+
+<span class="sd">           otherwise, calculate a checksum. </span>
+<span class="sd">           set the file&#39;s extended attributes for the new value.</span>
+<span class="sd">           the method of checksum calculation is from options.identity.</span>
+<span class="sd">           </span>
+<span class="sd">           sets the message &#39;identity&#39; field if appropriate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xattr</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">randomize</span><span class="p">:</span>
+                <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;md5&#39;</span><span class="p">,</span> <span class="s1">&#39;md5name&#39;</span><span class="p">,</span> <span class="s1">&#39;sha512&#39;</span><span class="p">,</span> <span class="s1">&#39;cod,md5&#39;</span><span class="p">,</span> <span class="s1">&#39;cod,sha512&#39;</span>
+                <span class="p">]</span>
+                <span class="n">calc_method</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">xattr</span><span class="o">.</span><span class="n">x</span> <span class="ow">and</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">xattr</span><span class="o">.</span><span class="n">x</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">xattr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mtime remembered by xattr&quot;</span><span class="p">)</span>
+                    <span class="n">fxainteg</span> <span class="o">=</span> <span class="n">xattr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">fxainteg</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">:</span> 
+                         <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fxainteg</span>
+                         <span class="k">return</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;xattr different method than on disk&quot;</span><span class="p">)</span>
+                    <span class="n">calc_method</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;xattr sum too old&quot;</span><span class="p">)</span>
+                    <span class="n">calc_method</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">calc_method</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">calc_method</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span>
+
+        <span class="k">if</span> <span class="n">calc_method</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">xattr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mtime persisted, calc_method: </span><span class="si">{calc_method}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">calc_method</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cod,&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">calc_method</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">calc_method</span>
+        <span class="k">elif</span> <span class="n">calc_method</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;md5name&#39;</span><span class="p">,</span> <span class="s1">&#39;invalid&#39;</span> <span class="p">]:</span>
+            <span class="n">xattr</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>  <span class="c1"># persist the mtime, at least...</span>
+            <span class="k">return</span>  <span class="c1"># no checksum needed for md5name. </span>
+        <span class="k">elif</span> <span class="n">calc_method</span> <span class="o">==</span> <span class="s1">&#39;arbitrary&#39;</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;arbitrary&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_arbitrary_value</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># a &quot;normal&quot; calculation method, liks sha512, or md5</span>
+            <span class="n">sumalgo</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">Identity</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">calc_method</span><span class="p">)</span>
+            <span class="n">sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+            <span class="c1"># compute checksum</span>
+
+            <span class="k">if</span> <span class="n">calc_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;md5&#39;</span><span class="p">,</span> <span class="s1">&#39;sha512&#39;</span><span class="p">]:</span>
+
+                <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="c1">#logger.info( f&quot;offset: {offset}  size: {msg[&#39;size&#39;]} max: {offset+msg[&#39;size&#39;]} &quot; )</span>
+                <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">offset</span> <span class="p">)</span>
+
+                <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">offset</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]:</span>
+                    <span class="n">buf</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">buf</span><span class="p">:</span> <span class="k">break</span>
+                    <span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="c1"># setting sumstr</span>
+            <span class="n">checksum</span> <span class="o">=</span> <span class="n">sumalgo</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="n">calc_method</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">checksum</span><span class="p">}</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sumstr</span>
+        <span class="n">xattr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="n">sumstr</span><span class="p">)</span>
+        <span class="n">xattr</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Message.copyDict">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.copyDict">[docs]</a>
+    <span class="k">def</span> <span class="nf">copyDict</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          copy dictionary into message.</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">h</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Message.dumps">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.dumps">[docs]</a>
+    <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           FIXME: used to be msg_dumps.</span>
+<span class="sd">           print a message in a compact but relatively compact way.</span>
+<span class="sd">           msg is a python dictionary. if there is a field longer than maximum_field_length, </span>
+<span class="sd">           truncate.</span>
+<span class="sd">    </span>
+<span class="sd">       &quot;&quot;&quot;</span>
+
+        <span class="n">maximum_field_length</span> <span class="o">=</span> <span class="mi">255</span>
+
+        <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Wis&#39;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;{ &#39;</span>
+            <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> &#39;id&#39;: &#39;</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;, &#39;type&#39;:&#39;Feature&#39;, &quot;</span>
+            <span class="k">if</span> <span class="s1">&#39;geometry&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&#39;geometry&#39;:</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &#39;properties&#39;:</span><span class="se">{{</span><span class="s2"> &quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;&#39;geometry&#39;: None, &#39;properties&#39;:{ &quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;{ &quot;</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v04&#39;</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span> <span class="p">]:</span>
+               <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;properties&#39;</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="s2">&quot;{ &quot;</span>
+                <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="n">v</span> <span class="o">+=</span> <span class="s2">&quot; &#39;</span><span class="si">%s</span><span class="s2">&#39;:&#39;</span><span class="si">%s</span><span class="s2">&#39;,&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kk</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kk</span><span class="p">])</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> 
+                <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;properties&#39;</span><span class="p">:</span>
+                   <span class="n">v</span> <span class="o">+=</span> <span class="s2">&quot; }&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="s2">&quot;unprintable&quot;</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">maximum_field_length</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">maximum_field_length</span> <span class="o">-</span> <span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;{&#39;</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">+=</span> <span class="s1">&#39;}&#39;</span>
+
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; &#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;:&#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;,&quot;</span> 
+
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Wis&#39;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39; } &#39;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; }&quot;</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+
+
+<div class="viewcode-block" id="Message.fromFileData">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromFileData">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            create a message based on a given file, calculating the checksum.</span>
+<span class="sd">            returns a well-formed message, or none.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lstat</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISREG</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;filetypes&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">t</span> <span class="o">=</span> <span class="n">magic</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">mime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;contentType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;trying to determine mime-type. Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="c1">#else:</span>
+                <span class="c1">#    m[&#39;contentType&#39;] = &#39;application/octet-stream&#39; # https://www.rfc-editor.org/rfc/rfc2046.txt (default when clueless)</span>
+                <span class="c1"># I think setting a bad value is worse than none, so just omitting.</span>
+            <span class="k">elif</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;contentType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;text/directory&#39;</span> <span class="c1"># source: https://www.w3.org/2002/12/cal/rfc2425.html</span>
+            <span class="k">elif</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISLNK</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;contentType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;text/link&#39;</span> <span class="c1"># I invented this one, could not find any reference</span>
+        <span class="k">return</span> <span class="n">m</span></div>
+
+
+<div class="viewcode-block" id="Message.fromFileInfo">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromFileInfo">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            based on the fiven information about the file (it&#39;s name and a stat record if available)</span>
+<span class="sd">            and a configuration options object (sarracenia.config.Config) </span>
+<span class="sd">            return an sarracenia.Message suitable for placement on a worklist.</span>
+
+<span class="sd">            A message is a specialized python dictionary with a certain set of fields in it.</span>
+<span class="sd">            The message returned will have the necessary fields for processing and posting. </span>
+<span class="sd">    </span>
+<span class="sd">            The message is built for a file is based on the given path, options (o), and lstat (output of os.stat)</span>
+<span class="sd">             </span>
+<span class="sd">            The lstat record is used to build &#39;atime&#39;, &#39;mtime&#39; and &#39;mode&#39; fields if </span>
+<span class="sd">            timeCopy and permCopy options are set.</span>
+<span class="sd">    </span>
+<span class="sd">            if no lstat record is supplied, then those fields will not be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
+
+        <span class="c1">#FIXME no variable substitution... o.variableExpansion ?</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;post_format&#39;</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_format</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="s1">&#39;post_topicPrefix&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;v03&#39;</span> <span class="p">]:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;v03&#39;</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;post_exchange&#39;</span><span class="p">):</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">post_exchange</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">):</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">exchange</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;blocksize&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">blocksize</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">lstat</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="n">os_stat</span><span class="o">.</span><span class="n">S_IFMT</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">)</span> <span class="o">==</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_IFREG</span><span class="p">)</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span> <span class="o">&gt;</span> <span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">):</span>
+           <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;inplace&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span> <span class="s1">&#39;manifest&#39;</span><span class="p">:</span> <span class="p">{}</span>  <span class="p">}</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;exchange&#39;</span><span class="p">,</span> <span class="s1">&#39;local_offset&#39;</span><span class="p">,</span> <span class="s1">&#39;subtopic&#39;</span><span class="p">,</span> <span class="s1">&#39;_format&#39;</span><span class="p">])</span>
+
+        <span class="c1"># notice</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeflt2str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+
+        <span class="c1"># set new_dir, new_file, new_subtopic, etc...</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+        <span class="c1"># rename</span>
+        <span class="k">if</span> <span class="s1">&#39;new_relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">post_relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s1">&#39;relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">post_relPath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">post_relPath</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">newname</span> <span class="o">=</span> <span class="n">post_relPath</span>
+
+        <span class="c1"># rename path given with no filename</span>
+
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_retrievePath&#39;</span><span class="p">]</span>
+            <span class="n">newname</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">rename</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">newname</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># strip &#39;N&#39; heading directories</span>
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">strip</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">strip</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">strip</span>
+            <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span> <span class="n">strip</span> <span class="o">=</span> <span class="n">strip</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="c1"># if we strip too much... keep the filename</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="n">token</span><span class="p">[</span><span class="n">strip</span><span class="p">:]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)]</span>
+            <span class="n">newname</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">newname</span> <span class="o">!=</span> <span class="n">post_relPath</span><span class="p">:</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newname</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;to_clusters&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">to_clusters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;to_clusters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">to_clusters</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">cluster</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;from_cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">cluster</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">source</span>
+
+
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cod,&#39;</span><span class="p">):</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;cod&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+                <span class="p">}</span>
+            <span class="k">elif</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">]:</span>
+                <span class="n">algo</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">Identity</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">)</span>
+                <span class="n">algo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">post_relPath</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">,</span>
+                    <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">algo</span><span class="o">.</span><span class="n">value</span>
+                <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                   <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span>
+ 
+        <span class="c1"># for md5name/aka None aka omit identity... should just fall through.</span>
+
+        <span class="k">if</span> <span class="n">lstat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="n">msg</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%o</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">&amp;</span> <span class="mo">0o7777</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">o</span><span class="o">.</span><span class="n">permCopy</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;mode&#39;</span><span class="p">])</span>
+            
+            <span class="k">if</span> <span class="n">os_stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;directory&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span> <span class="p">}</span>
+                <span class="k">return</span> <span class="n">msg</span>
+
+        <span class="k">if</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span>
+
+        <span class="k">if</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeflt2str</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_atime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;atime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeflt2str</span><span class="p">(</span><span class="n">lstat</span><span class="o">.</span><span class="n">st_atime</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">o</span><span class="o">.</span><span class="n">timeCopy</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span> <span class="s1">&#39;atime&#39;</span><span class="p">,</span> <span class="s1">&#39;mtime&#39;</span> <span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">msg</span></div>
+
+
+<div class="viewcode-block" id="Message.fromStream">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.fromStream">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fromStream</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Create a file and message for the given path.  </span>
+<span class="sd">           The file will be created or overwritten with the provided data.</span>
+<span class="sd">           then invoke fromFileData() for the resulting file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;chmod&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">o</span><span class="o">.</span><span class="n">chmod</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">chmod</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Message.setReport">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.setReport">[docs]</a>
+    <span class="k">def</span> <span class="nf">setReport</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          FIXME: used to be msg_set_report</span>
+<span class="sd">          set message fields to indicate result of action so reports can be generated.</span>
+<span class="sd">    </span>
+<span class="sd">          set is supposed to indicate final message dispositions, so in the case</span>
+<span class="sd">          of putting a message on worklist.failed... no report is generated, since</span>
+<span class="sd">          it will be retried later.  FIXME: should we publish an interim failure report?</span>
+<span class="sd">    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">known_report_codes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">known_report_codes</span><span class="p">[</span><span class="n">code</span><span class="p">]</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;unknown report code supplied: </span><span class="si">%d</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                           <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;unknown disposition&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;report&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;overriding initial report: </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                           <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]))</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;timeCompleted&#39;</span><span class="p">:</span> <span class="n">nowstr</span><span class="p">(),</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">text</span><span class="p">}</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;report&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Message.updatePaths">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.updatePaths">[docs]</a>
+    <span class="k">def</span> <span class="nf">updatePaths</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">new_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        set the new_* fields in the message based on changed file placement.</span>
+<span class="sd">        if new_* options are ommitted updaste the rest of the fields in </span>
+<span class="sd">        the message based on their current values.</span>
+
+<span class="sd">        If you change file placement in a flow callback, for example.</span>
+<span class="sd">        One would change new_dir and new_file in the message.</span>
+<span class="sd">        This routines updates other fields in the message (e.g. relPath, </span>
+<span class="sd">        baseUrl, topic ) to match new_dir/new_file.</span>
+
+<span class="sd">        msg[&#39;post_baseUrl&#39;] defaults to msg[&#39;baseUrl&#39;]</span>
+<span class="sd">     </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># the headers option is an override.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;fixed_headers&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">fixed_headers</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">fixed_headers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span>
+            <span class="s1">&#39;new_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;new_file&#39;</span><span class="p">,</span> <span class="s1">&#39;new_relPath&#39;</span><span class="p">,</span> <span class="s1">&#39;new_baseUrl&#39;</span><span class="p">,</span> <span class="s1">&#39;new_subtopic&#39;</span><span class="p">,</span> <span class="s1">&#39;subtopic&#39;</span><span class="p">,</span> <span class="s1">&#39;post_format&#39;</span>
+        <span class="p">])</span>
+        <span class="k">if</span> <span class="n">new_dir</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_dir</span>
+        <span class="k">elif</span> <span class="s1">&#39;new_dir&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">new_dir</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_dir</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">new_file</span> <span class="ow">or</span> <span class="n">new_file</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_file</span>
+        <span class="k">elif</span> <span class="s1">&#39;new_file&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">new_file</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s1">&#39;new_relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">new_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;rel_relPath&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">new_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_file</span> <span class="o">=</span> <span class="s1">&#39;ErrorInSarraceniaMessageUpdatePaths.txt&#39;</span>
+    
+        <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">new_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">new_file</span>
+        
+        <span class="c1"># post_baseUrl option set in msg overrides other possible options</span>
+        <span class="k">if</span> <span class="s1">&#39;post_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_baseUrl&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">:</span>
+            <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">baseUrl_str</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;missing post_baseUrl setting&#39;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">post_format</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_format</span>
+        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">!=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;received message in </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> format, expected </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">post_topicPrefix</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;post_format&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_format&#39;</span><span class="p">]</span>
+           
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="s1">&#39;post_baseDir&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="nb">type</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="p">)</span> \
+            <span class="ow">and</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">pbd_str</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="n">parsed_baseUrl</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">baseUrlParse</span><span class="p">(</span><span class="n">baseUrl_str</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">pbd_str</span><span class="p">):</span>
+                <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">new_dir</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">pbd_str</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">new_file</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parsed_baseUrl</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                    <span class="n">parsed_baseUrl</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+                <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">parsed_baseUrl</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;new_dir&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">post_baseDir</span>
+            
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">baseUrl_str</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">newFullPath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">newFullPath</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">newFullPath</span> <span class="o">=</span> <span class="n">newFullPath</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newFullPath</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_subtopic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newFullPath</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">,</span> <span class="s1">&#39;subtopic&#39;</span><span class="p">,</span> <span class="s1">&#39;baseUrl&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;new_dir&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;[A-Z]:&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">currentDir</span><span class="p">),</span>
+                        <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Message.validate">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.validate">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        FIXME: used to be msg_validate</span>
+<span class="sd">        return True if message format seems ok, return True, else return False, log some reasons.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="ow">is</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;not a message&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">required_key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">,</span> <span class="s1">&#39;baseUrl&#39;</span><span class="p">,</span> <span class="s1">&#39;relPath&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">required_key</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;missing key: </span><span class="si">{</span><span class="n">required_key</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">timeValidate</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">]):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;malformed pubTime: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="Message.getContent">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.getContent">[docs]</a>
+    <span class="k">def</span> <span class="nf">getContent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Retrieve the data referred to by a message.  The data may be embedded</span>
+<span class="sd">           in the messate, or this routine may resolve a link to an external server </span>
+<span class="sd">           and download the data.</span>
+
+<span class="sd">           does not handle authentication.</span>
+<span class="sd">           This routine is meant to be used with small files. using it to download</span>
+<span class="sd">           large files may be very inefficient. Untested in that use-case.</span>
+
+<span class="sd">           Return value is the data.</span>
+
+<span class="sd">           often on server where one is publishing data, the file is available as</span>
+<span class="sd">           a local file, and one can avoid the network usage by using a options.baseDir setting.</span>
+<span class="sd">           this behaviour can be disabled by not providing the options or not setting baseDir.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># inlined/embedded case.</span>
+        <span class="k">if</span> <span class="s1">&#39;content&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;encoding&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;base64&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">b64decode</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+        <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;file:&#39;</span><span class="p">):</span>
+            <span class="n">pu</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">])</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">pu</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;path: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">options</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="s1">&#39;baseDir&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">options</span><span class="o">.</span><span class="n">baseDir</span><span class="p">:</span>
+            <span class="c1"># local file shortcut</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;reading local file path: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> exists?: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># case requiring resolution.</span>
+        <span class="k">if</span> <span class="s1">&#39;retrievePath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">retUrl</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">retUrl</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;retrieving from: </span><span class="si">{</span><span class="n">retUrl</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">retUrl</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

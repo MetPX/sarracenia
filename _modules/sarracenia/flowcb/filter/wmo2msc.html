@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.filter.wmo2msc &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.filter.wmo2msc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.filter.wmo2msc</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">wmo2msc.py is an on_message plugin script to convert WMO bulletins on local disk</span>
+<span class="sd">to MSC internal format in an alternate tree.  It is analogous to Sundew&#39;s &#39;bulletin-file&#39;.</span>
+<span class="sd">Meant to be called as an sr_shovel plugin.</span>
+
+<span class="sd">It prints an output line:</span>
+
+<span class="sd">wmo2msc: &lt;input_file&gt; -&gt; &lt;output_file&gt; (&lt;detected format&gt;)</span>
+
+<span class="sd">usage:</span>
+
+<span class="sd">Use the directory setting to know the root of tree where files are placed.</span>
+<span class="sd">FIXME: well, likely what you really what is something like::</span>
+
+<span class="sd">     &lt;date&gt;/&lt;source&gt;/dir1/dir2/dir3</span>
+
+<span class="sd">     &lt;date&gt;/&lt;source&gt;/dir1/dir2/newdir4/...</span>
+
+<span class="sd">     -- so Directory doesn&#39;t cut it.</span>
+
+<span class="sd">In a sr_shovel configuration:: </span>
+
+<span class="sd">    directory /.... </span>
+<span class="sd">    callback filter.wmo2msc</span>
+
+
+<span class="sd">Parameters:</span>
+
+<span class="sd">* filter_wmo2msc_replace_dir  old,new</span>
+
+<span class="sd">* filter_wmo2msc_uniquify hash|time|anything else</span>
+<span class="sd">  - whether to add a string in addition to the AHL to make the filename unique.</span>
+<span class="sd">  - hash - means apply a hash, so that the additional string is content based.</span>
+<span class="sd">  - if time, add a suffix _YYYYMMDDHHMMSS_99999 which ensures file name uniqueness.</span>
+<span class="sd">  - otherwise, no suffix will be added.</span>
+<span class="sd">  - default: hash</span>
+
+<span class="sd">* filter_wmo2msc_convert on|off</span>
+<span class="sd">  if on, then traditional conversion to MSC-BULLETINS is done as per TANDEM/APPS &amp; MetPX Sundew</span>
+<span class="sd">  this involves \n as termination character, and other charater substitutions.</span>
+
+<span class="sd">* filter_wmo2msc_tree  on|off</span>
+<span class="sd">  if tree is off, files are just placed in destination directory.</span>
+<span class="sd">  if tree is on, then the file is placed in a subdirectory tree, based on</span>
+<span class="sd">  the WMO 386 AHL::</span>
+
+<span class="sd">         TTAAii CCCC YYGGgg  ( example: SACN37 CWAO 300104 )</span>
+<span class="sd"> </span>
+<span class="sd">         TT = SA - surface observation.</span>
+<span class="sd">         AA = CN - Canada ( but the AA depends on TT value, in many cases not a national code. )</span>
+<span class="sd">         ii = 37 - a number.. there are various conventions, they are picked to avoid duplication.</span>
+<span class="sd">     </span>
+<span class="sd">  The first line of the file is expected to contain an AHL. and when we build a tree</span>
+<span class="sd">  from it, we build it as follows::</span>
+
+<span class="sd">      TT/CCCC/GG/TTAAii_CCCC_YYGGgg_&lt;uniquify&gt;</span>
+
+<span class="sd">  assuming tree=on, uniquify=hash:</span>
+
+<span class="sd">     SA/CWAO/01/SACN37_CWAO_300104_1c699da91817cc4a84ab19ee4abe4e22</span>
+
+<span class="sd">NOTE: Look at the end of the file for SUPPLEMENTARY INFORMATION </span>
+<span class="sd">      including hints about debugging.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Wmo2msc">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc">[docs]</a>
+<span class="k">class</span> <span class="nc">Wmo2msc</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<div class="viewcode-block" id="Wmo2msc.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_uniquify&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;hash&#39;</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_replace_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_treeify&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;filter_wmo2msc_convert&#39;</span><span class="p">,</span> <span class="s1">&#39;flag&#39;</span><span class="p">,</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;filter_wmo2msc_replace_dir&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;filter_wmo2msc_replace_dir setting is mandatory&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_replace_dir</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;filter_wmo2msc old-dir=</span><span class="si">%s</span><span class="s2">, newdir=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimre</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot; +</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Wmo2msc.replaceChar">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.replaceChar">[docs]</a>
+    <span class="k">def</span> <span class="nf">replaceChar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldchar</span><span class="p">,</span> <span class="n">newchar</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           replace all occurrences of oldchar by newchar in the the message byte stream.</span>
+<span class="sd">           started as a direct copy from sundew of routine with same name in bulletin.py</span>
+<span class="sd">           - the storage model is a bit different, we store the entire message as one bytearray.</span>
+<span class="sd">           - sundew stored it as a series of lines, so replaceChar implementation changed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">bytearray</span><span class="p">(</span><span class="n">oldchar</span><span class="p">,</span> <span class="s1">&#39;latin_1&#39;</span><span class="p">),</span>
+                                          <span class="nb">bytearray</span><span class="p">(</span><span class="n">newchar</span><span class="p">,</span> <span class="s1">&#39;latin_1&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Wmo2msc.doSpecificProcessing">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.filter.wmo2msc.Wmo2msc.doSpecificProcessing">[docs]</a>
+    <span class="k">def</span> <span class="nf">doSpecificProcessing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;doSpecificProcessing()</span>
+
+<span class="sd">           Modify bulletins received from Washington via the WMO socket protocol.</span>
+<span class="sd">           started as a direct copy from sundew of routine with same name in bulletinManagerWmo.py</span>
+<span class="sd">      </span>
+<span class="sd">           - encode/decode, and binary stuff came because of python3</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ahl2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+        <span class="n">ahl4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="s1">&#39;SD&#39;</span><span class="p">,</span> <span class="s1">&#39;SO&#39;</span><span class="p">,</span> <span class="s1">&#39;WS&#39;</span><span class="p">,</span> <span class="s1">&#39;SR&#39;</span><span class="p">,</span> <span class="s1">&#39;SX&#39;</span><span class="p">,</span> <span class="s1">&#39;FO&#39;</span><span class="p">,</span> <span class="s1">&#39;WA&#39;</span><span class="p">,</span> <span class="s1">&#39;AC&#39;</span><span class="p">,</span> <span class="s1">&#39;FA&#39;</span><span class="p">,</span> <span class="s1">&#39;FB&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;FD&#39;</span>
+        <span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1e</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SR&#39;</span><span class="p">,</span> <span class="s1">&#39;SX&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;UK&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x01</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl4</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SICO&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x01</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SO&#39;</span><span class="p">,</span> <span class="s1">&#39;SR&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x02</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SX&#39;</span><span class="p">,</span> <span class="s1">&#39;SR&#39;</span><span class="p">,</span> <span class="s1">&#39;SO&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SX&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x11</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x14</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x19</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SR&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\b</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1a</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x12</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;FX&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x10</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xf1</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;WW&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\xba</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;US&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x18</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl4</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SXUS&#39;</span><span class="p">,</span> <span class="s1">&#39;SXCN&#39;</span><span class="p">,</span> <span class="s1">&#39;SRCN&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x7f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl4</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SRCN&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x0e</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x11</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x16</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x19</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x1f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl4</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SXVX&#39;</span><span class="p">,</span> <span class="s1">&#39;SRUS&#39;</span><span class="p">,</span> <span class="s1">&#39;SRMT&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x7f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ahl2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SA&#39;</span><span class="p">,</span> <span class="s1">&#39;SM&#39;</span><span class="p">,</span> <span class="s1">&#39;SI&#39;</span><span class="p">,</span> <span class="s1">&#39;SO&#39;</span><span class="p">,</span> <span class="s1">&#39;UJ&#39;</span><span class="p">,</span> <span class="s1">&#39;US&#39;</span><span class="p">,</span> <span class="s1">&#39;FT&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\x03</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1">#trimming of trailing blanks.</span>
+        <span class="n">lenb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trimre</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lenb</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trimmed </span><span class="si">%d</span><span class="s1"> trailing blanks!&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lenb</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)))</span></div>
+
+
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="n">new_incoming</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;file:&#39;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;filter_wmo2msc needs local files invalid url: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]))</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">input_file</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+            <span class="c1"># read once to get headers and type.</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc reading file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">readline</span><span class="p">(),</span> <span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+
+            <span class="n">AHLfn</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39; &#39;</span><span class="p">,</span>
+                                              <span class="sa">b</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">AHLfn</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;filter_wmo2msc: not a WMO bulletin, malformed header: (</span><span class="si">%s</span><span class="s1">)&#39;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">AHLfn</span><span class="p">))</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># read second time for the body in one string.</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc read twice: </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">input_file</span><span class="p">))</span>
+
+            <span class="c1"># Determine file format (fmt) and apply transformation.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()[:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BUFR&#39;</span><span class="p">,</span> <span class="s1">&#39;GRIB&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\211</span><span class="s1">PNG&#39;</span><span class="p">]:</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;wmo-binary&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">replaceChar</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">11</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SFUK45 EGRR&#39;</span><span class="p">]:</span>
+                <span class="c1"># This file is encoded in an indecipherably non-standard format.</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;unknown-binary&#39;</span>
+
+                <span class="c1">#self.replaceChar(&#39;\r&#39;,&#39;&#39;,2) replace only the first 2 carriage returns.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">bytearray</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;latin_1&#39;</span><span class="p">),</span>
+                                                  <span class="nb">bytearray</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;latin_1&#39;</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;wmo-alphanumeric&#39;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">doSpecificProcessing</span><span class="p">()</span>
+
+            <span class="c1"># apply &#39;d&#39; checksum (md5)</span>
+
+            <span class="n">s</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;02x&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span>
+
+            <span class="c1"># Determine local file name.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_uniquify</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]:</span>
+
+                <span class="n">AHLfn</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span> <span class="p">)</span> <span class="o">+</span> \
+                         <span class="s1">&#39;_</span><span class="si">%05d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">9999</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_uniquify</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;hash&#39;</span><span class="p">]:</span>
+                <span class="c1">#AHLfn += &#39;_%s&#39; % &#39;&#39;.join( format(x, &#39;02x&#39;) for x in s.digest() )</span>
+                <span class="n">AHLfn</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">sumstr</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_treeify</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1"> start match: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">))</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_olddir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_newdir</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1"> after replace&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">7</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulletin</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">14</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc check </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">d</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+                <span class="n">local_file</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">local_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">currentDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">AHLfn</span>
+
+            <span class="c1"># write the data.</span>
+            <span class="n">fileOK</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">)</span>
+                    <span class="n">fileOK</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">filter_wmo2msc_convert</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">fileOK</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;wb+&#39;</span><span class="p">)</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bintxt</span><span class="p">)</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc </span><span class="si">%s</span><span class="s1"> -&gt; </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">fmt</span><span class="p">))</span>
+
+            <span class="c1"># set how the file will be announced</span>
+
+            <span class="n">baseDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">base_dir</span>
+            <span class="k">if</span> <span class="n">baseDir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="n">baseDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_base_dir</span>
+
+            <span class="n">relPath</span> <span class="o">=</span> <span class="n">local_file</span>
+            <span class="k">if</span> <span class="n">baseDir</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span> <span class="n">relPath</span> <span class="o">=</span> <span class="n">local_file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">baseDir</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="n">baseUrl</span> <span class="o">=</span> <span class="s1">&#39;file:&#39;</span>
+            <span class="c1"># from tolocal.py if used</span>
+            <span class="k">if</span> <span class="s1">&#39;savedUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span> <span class="n">baseUrl</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;savedUrl&#39;</span><span class="p">]</span>
+            <span class="c1"># from tolocalfile.py if used</span>
+            <span class="k">if</span> <span class="s1">&#39;saved_baseUrl&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">baseUrl</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;saved_baseUrl&#39;</span><span class="p">]</span>
+
+            <span class="n">relPath</span> <span class="o">=</span> <span class="n">relPath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;filter_wmo2msc relPath </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">relPath</span><span class="p">)</span>
+
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;set_topic&#39;</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">topic_prefix</span><span class="p">,</span> <span class="n">relPath</span><span class="p">)</span>
+            <span class="c1">#message[&#39;set_notice&#39;](baseUrl, relPath)</span>
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">baseUrl</span>
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relPath</span>
+            <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">new_incoming</span></div>
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">SUPPLEMENTARY INFORMATION</span>
+
+<span class="sd">SUNDEW COMPATIBILITY:   This script is the sarra version of a &#39;bulletin-file&#39; receiver.</span>
+
+<span class="sd">dod_filter_wmo2msc.py is a do_download plugin script used with sr_sarra to convert</span>
+<span class="sd">World Meteorological Organisation (WMO) standard (See WMO-386 and WMO-306) bulletins </span>
+<span class="sd">into the similar but different internal format used by the Meteorological Service of </span>
+<span class="sd">Canada (MSC.)</span>
+
+<span class="sd">transformation of bulletins is based on detecting the format by reading the first </span>
+<span class="sd">line of the file, and the first four bytes of after the first line.  detected format </span>
+<span class="sd">is one of:</span>
+<span class="sd">   wmo-binary: GRIB, BUFR, or PNG, which require carriage returns to be removed ?</span>
+<span class="sd">   wmo-alpha:  extensive filtering.</span>
+<span class="sd">   unknown-binary: unknown format, remove only carriage returns from AHL.</span>
+
+<span class="sd">The file is read entirely into memory as the WMO standard specifies a maximum message</span>
+<span class="sd">size of 500,000 bytes with no segmentation and re-assembly being ruled out.</span>
+
+<span class="sd">The output files are named based based on the Abbreviated Header Line (AHL)</span>
+<span class="sd">from first line of each input file. </span>
+
+<span class="sd">It operates on local files.  One subscribes to a source messages that are already </span>
+<span class="sd">downloaded, then this &#39;download&#39; filter produces a second tree of converted bulletins.</span>
+
+<span class="sd">STANDALONE DEBUGGING:</span>
+<span class="sd">Instead of being used purely as a plugin, the script can also be invoked directly.</span>
+<span class="sd">In that case, if given no arguments, it will read the current working directory,</span>
+<span class="sd">looking for files that start with a digit (which is what NWS feed provides.)</span>
+<span class="sd">and feed those file for processing.</span>
+
+<span class="sd">To process a particular files, go into the directory containing the file, and supply</span>
+<span class="sd">the file names as an arguments.</span>
+
+
+<span class="sd">MSC Format description:</span>
+
+<span class="sd">Given a file containing a single WMO 386 / WMO 306 conformant encoded bulletin,</span>
+<span class="sd">produce an MSC formatted one. Most obvious change is the line termination, but there</span>
+<span class="sd">are other subtle differences learned through pain, over a year or two of parallel testing.</span>
+
+<span class="sd">The MSC format is simply the output of the (late lamented Tandem computer system</span>
+<span class="sd">which was the bulletin switch from the 80&#39;s until 2007) The internal &#39;AM&#39; circuits</span>
+<span class="sd">used by the Meteorological Service of Canada used only line feed for termination, as</span>
+<span class="sd">is standard in Unix/Linux land, and not two carriage returns followed by a line feed required</span>
+<span class="sd">by the ancient tomes of the WMO.</span>
+
+<span class="sd">This processing was determined by blackbox reverse engineering for MetPX sundew in the mid-2000&#39;s.</span>
+<span class="sd">when a study was done over a few days in the mid 2000&#39;s, it was determined that approximately </span>
+<span class="sd">6% of traffic on the GTS is carriage returns, which seems sad, but the formats are too entrenched </span>
+<span class="sd">to be changed.  </span>
+
+<span class="sd">Hopefully identical logic has been ported to Sarracenia for use as a sarra plugin in 2017.</span>
+
+<span class="sd">Adaptation of sundew code to sarracenia by Peter Silva - 2017/01 </span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

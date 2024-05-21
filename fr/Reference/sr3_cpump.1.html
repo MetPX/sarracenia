@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR_CPUMP &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Sr3_Post" href="sr3_post.1.html" />
+    <link rel="prev" title="SR3" href="sr3.1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Référence</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sr3.1.html">SR3</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Sr3_cpump C Page de Référence</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sr-shovel-en-c">sr_shovel en C</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr3_post</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Référence</a> &raquo;</li>
+      <li>SR_CPUMP</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Reference/sr3_cpump.1.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr-cpump">
+<h1>SR_CPUMP<a class="headerlink" href="#sr-cpump" title="Link to this heading"></a></h1>
+<section id="sr-shovel-en-c">
+<h2>sr_shovel en C<a class="headerlink" href="#sr-shovel-en-c" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p><strong>sr_cpump</strong> foreground|start|stop|restart|reload|status configfile
+<strong>sr_cpump</strong> cleanup|declare configfile</p>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p><strong>sr_cpump</strong> est une implémentation alternative du composant <em>shovel</em> de <a class="reference external" href="sr3.1.html">sr3(1)</a>
+avec quelques limites.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ne télécharge pas de données, ne fait que diffuser des publications.</p></li>
+<li><p>fonctionne comme une seule instance (pas d’instances multiples).</p></li>
+<li><p>ne supporte aucun plugin.</p></li>
+<li><p>ne prend pas en charge vip pour une haute disponibilité.</p></li>
+<li><p>différentes bibliothèques d’expressions régulières : POSIX vs python.</p></li>
+<li><p>ne prend pas en charge les regex pour la commande strip (pas de regex non gourmand).</p></li>
+</ul>
+</div></blockquote>
+<p>Il peut donc agir comme un remplacement direct pour :</p>
+<blockquote>
+<div><p><a class="reference internal" href="sr3.1.html"><span class="doc">sr3 shovel</span></a> - traite les messages shovel.</p>
+<p><a class="reference internal" href="sr3.1.html"><span class="doc">sr3 winnow</span></a> - traite les messages winnow.</p>
+</div></blockquote>
+<p>L’implémentation C peut être plus facile à mettre à disposition dans des environnements spécialisés,
+comme le calcul haute performance, car il a beaucoup moins de dépendances que la version python.
+Il utilise également beaucoup moins de mémoire pour un rôle donné. Normalement la version python
+est recommandé, mais il y a des cas où l’utilisation de l’implémentation C est judicieuse.</p>
+<p><strong>sr_cpump</strong> se connecte à un <em>courtier</em> (broker) (souvent le même que le courtier de publication)
+et s’abonne aux notifications d’intérêt. A la réception d’une annonce,
+il recherche sa <strong>sum</strong> dans son cache. S’il est trouvé, le fichier est déjà arrivé,
+la notification est donc ignorée. Si ce n’est pas le cas, le fichier est nouveau et la <strong>sum</strong> est ajoutée
+dans le cache et la notification est publiée.</p>
+<p><strong>sr_cpump</strong> peut être utilisé, comme <a class="reference internal" href="sr3.1.html"><span class="doc">sr3 winnow(1)</span></a>, pour couper les messages
+de <a class="reference internal" href="sr3_post.1.html"><span class="doc">sr3_post(1)</span></a>, <a class="reference internal" href="sr3.1.html"><span class="doc">sr3 poll(1)</span></a>
+ou <a class="reference internal" href="sr3.1.html"><span class="doc">sr3 watch (1)</span></a> etc… Il est utilisé lorsqu’il y a plusieurs
+sources des mêmes données, de sorte que les clients ne téléchargent les données source qu’une seule fois à partir de
+la première source qui l’a posté.</p>
+<p>La commande <strong>sr3_cpump</strong> prend deux arguments: une action start|stop|restart|reload|status… (autodécrit)
+suivi d’un fichier de configuration.</p>
+<p>L’action <strong>foreground</strong> est utilisée lors du débogage d’une configuration, lorsque l’utilisateur veut
+exécuter le programme et son fichier de configuration de manière interactive… L’instance <strong>foreground</strong>
+n’est pas concerné par d’autres actions. L’utilisateur cesserait d’utiliser l’instance <strong>foreground</strong>
+en simplement &lt;ctrl-c&gt; sous linux ou utilisez d’autres moyens pour envoyer SIGINT ou SIGTERM au processus.</p>
+<p>Les actions <strong>cleanup</strong>, <strong>declare</strong>, peuvent être utilisées pour gérer les ressources sur
+le serveur rabbitmq. Les ressources sont soit des files d’attente, soit des échanges. <strong>déclarer</strong> crée
+les ressources.</p>
+<p>Les actions <strong>ajouter</strong>, <strong>supprimer</strong>, <strong>modifier</strong>, <strong>lister</strong>, <strong>activer</strong>, <strong>désactiver</strong> agissent
+sur les configurations.</p>
+</section>
+<section id="configuration">
+<h3>CONFIGURATION<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<p>En général, les options de ce composant sont décrites par
+la page <a class="reference external" href="sr3_options.7.html">sr3_options(7)</a> qui doit être lue en premier.
+Elle explique en détail la langue de configuration des options et comment trouver
+les paramètres des options.</p>
+<p><strong>REMARQUE</strong>: La bibliothèque d’expressions régulières utilisée dans l’implémentation C est celle POSIX
+et la grammaire est légèrement différente de l’implémentation de python. Quelques
+ajustements peuvent être nécessaires.</p>
+</section>
+<section id="variables-environnementales">
+<h3>VARIABLES ENVIRONNEMENTALES<a class="headerlink" href="#variables-environnementales" title="Link to this heading"></a></h3>
+<p>Si la variable SR_CONFIG_EXAMPLES est définie, la directive <em>add</em> peut être utilisée
+pour copier des exemples dans le répertoire de l’utilisateur à des fins d’utilisation et/ou de personnalisation.</p>
+<p>Une entrée dans ~/.config/sarra/default.conf (créé via sr_subscribe edit default.conf )
+pourrait être utilisé pour définir la variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">SR_CONFIG_EXAMPLES</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+<p>La valeur doit être disponible à partir de la sortie d’une commande de liste à partir de
+l’implémentation python.</p>
+</section>
+<section id="voir-aussi">
+<h3>VOIR AUSSI<a class="headerlink" href="#voir-aussi" title="Link to this heading"></a></h3>
+<p><strong>User Commands:</strong></p>
+<p><a class="reference external" href="sr3.1.html">sr3(1)</a> - Interface de ligne de commande principale de Sarracenia.</p>
+<p><a class="reference internal" href="sr3_post.1.html"><span class="doc">sr3_post(1)</span></a> - publication des annonces de fichiers (implémentation Python.)</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - publication des annonces de fichiers (implémentation C.)</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr3_credentials.7.html">sr3_credentials(7)</a> - le format des informations d’authentification.</p>
+<p><a class="reference external" href="sr3_options.7.html">sr3_options(7)</a> - liste de toute les options dans la langue de configuration.</p>
+<p><a class="reference external" href="sr3_post.7.rst">sr3_post(7)</a> - le format des annonces</p>
+<p><strong>Page d’acceuil:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia: une boîte à outils de gestion du partage de données pub/sub en temps réel</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sr3.1.html" class="btn btn-neutral float-left" title="SR3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sr3_post.1.html" class="btn btn-neutral float-right" title="Sr3_Post" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

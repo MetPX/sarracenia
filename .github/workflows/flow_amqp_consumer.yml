@@ -1,0 +1,81 @@
+name: Flow Tests / AMQP Consumer
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+  push:
+    branches:
+      - development
+
+    paths-ignore:
+      - '.github/**'
+      - 'debian/changelog'
+      - 'TODO.txt'
+
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: false
+
+jobs:
+
+  run_sr_insects_tests:
+
+    strategy:
+      # Don't cancel the entire matrix when one job fails
+      fail-fast: false
+      matrix:
+       which_test: [ static_flow, no_mirror, flakey_broker, dynamic_flow, restart_server ]
+       osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
+
+    runs-on: ${{ matrix.osver }}
+  
+    name: ${{ matrix.which_test }} on ${{ matrix.osver }}
+    timeout-minutes: 40
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+      # 2023-11-13 RS Added SSH config changes to see if it makes the tests more reliable
+        run: |
+          travis/flow_autoconfig.sh
+          travis/ssh_localhost.sh
+          sudo sh -c 'echo "MaxSessions 750" >> /etc/ssh/sshd_config'
+          sudo sh -c 'echo "MaxStartups 750" >> /etc/ssh/sshd_config'
+          sudo systemctl restart ssh
+          echo "amqp_consumer True" >> ${HOME}/.config/sr3/default.conf
+          #echo "set sarracenia.moth.amqpconsumer.AMQPConsumer.logLevel debug" >> ${HOME}/.config/sr3/default.conf
+      
+      - name: Setup ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}; pwd; ls ; 
+          echo hoho
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_setup.sh
+
+      - name: Limit ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_limit.sh
+
+      - name: Check results of ${{ matrix.which_test }} test.
+        run: |
+          cd ${HOME}/sr_insects/${{ matrix.which_test }}; ./flow_check.sh
+        
+      - name: Compress log files for artifacts
+        if: always()
+        continue-on-error: true
+        run: |
+          sr3 stop --dangerWillRobinson=1
+          cd ${HOME}/.cache/sr3/
+          tar -czf ${HOME}/cache_sr3.tar.gz *
+      
+      - name: Save run artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          name: sr3_${{ matrix.which_test }}_${{ matrix.osver }}_state_${{ github.sha }}
+          path: ~/cache_sr3.tar.gz

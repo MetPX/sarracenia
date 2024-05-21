@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration de Rabbitmq Adddendum &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="GUIDE DE MISE A NIVEAU" href="MiseANiveau.html" />
+    <link rel="prev" title="Administration des pompes de données AMQP" href="Admin.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Comment Faire</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="subscriber.html">Guide de l’abonné</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FlowCallbacks.html">Écriture de plugins FlowCallback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Ingestion_de_email_avec_Sarracenia.html">Ingestion par e-mail avec Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Exemples_Hydro.html">Utilisation de plugins pour récupérer des données hydrométriques</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html">Sources de données</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Docker.html">Exécution de MetPX via Docker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Admin.html">Administration des pompes de données AMQP</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Administration de Rabbitmq Adddendum</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-rabbitmq-server">installation RABBITMQ-SERVER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-d-un-rabbitmq-server">Installation d’un RABBITMQ-SERVER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-ldap-rabbitmq-server">installation ldap RABBITMQ-SERVER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilisation-de-lamqp-sur-dd-ddi-dd-beta">Utilisation de l’AMQP sur DD (DDI, DD.BETA)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilisation-damqp-avec-urp-bunny-pds-op">Utilisation d’AMQP avec URP, BUNNY, PDS-OP</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="MiseANiveau.html">GUIDE DE MISE A NIVEAU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v2ASr3.html">Portage des plugins V2 vers Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Comment Faire</a> &raquo;</li>
+      <li>Administration de Rabbitmq Adddendum</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/CommentFaire/Addenda_Admin_Rabbit.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="administration-de-rabbitmq-adddendum">
+<h1>Administration de Rabbitmq Adddendum<a class="headerlink" href="#administration-de-rabbitmq-adddendum" title="Link to this heading"></a></h1>
+<p>Les anciennes modifications que les gens voulaient garder?</p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>AMQP signifie Advanced Message Queuing Protocol.
+C’est la définition d’un protocole qui vient de la nécessité de standardiser un système de changement de message asynchrone.
+Dans le jargon de l’AMQP, nous parlerons des producteurs de messages, des consommateurs de messages et des courtiers.</p>
+</section>
+<section id="installation-rabbitmq-server">
+<h2>installation RABBITMQ-SERVER<a class="headerlink" href="#installation-rabbitmq-server" title="Link to this heading"></a></h2>
+<p>Sur nos machines qui doivent traiter les messages AMQP,
+nous installons le broker, en installant le paquet rabbitmq-server_3.3.5-1_all.deb.
+L’installation de base se fait comme suit sur toutes nos machines</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># installing package taken on the rabbitmq homepage</span>
+<span class="c1"># rabbitmq-server version &gt; 3.3.x  required to use ldap for passwords verification only</span>
+
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">erlang</span><span class="o">-</span><span class="n">nox</span>
+<span class="n">dpkg</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">server_3</span><span class="mf">.3.5</span><span class="o">-</span><span class="mi">1</span><span class="n">_all</span><span class="o">.</span><span class="n">deb</span>
+
+<span class="c1"># create anonymous user</span>
+<span class="c1"># password ********* provided in potato</span>
+<span class="c1">#                                          conf write read</span>
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">anonymous</span> <span class="o">*********</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">anonymous</span>   <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span>     <span class="s2">&quot;^amq.gen.*$|^cmc.*$&quot;</span>    <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span>
+<span class="n">rabbitmqctl</span> <span class="n">list_user_permissions</span> <span class="n">anonymous</span>
+
+<span class="c1"># create feeder user</span>
+<span class="c1"># password ********* provided in potato</span>
+<span class="c1">#                                       conf write read</span>
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">feeder</span> <span class="o">********</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">feeder</span>  <span class="s2">&quot;.*&quot;</span>  <span class="s2">&quot;.*&quot;</span>  <span class="s2">&quot;.*&quot;</span>
+<span class="n">rabbitmqctl</span> <span class="n">list_user_permissions</span> <span class="n">feeder</span>
+
+<span class="c1"># create administrator user</span>
+<span class="c1"># password ********* provided in potato</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">root</span>   <span class="o">*********</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_user_tags</span> <span class="n">root</span> <span class="n">administrator</span>
+
+<span class="c1"># takeaway administrator privileges from guest</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_user_tags</span> <span class="n">guest</span>
+<span class="n">rabbitmqctl</span> <span class="n">list_user_permissions</span> <span class="n">guest</span>
+<span class="n">rabbitmqctl</span> <span class="n">change_password</span> <span class="n">guest</span> <span class="o">*************</span>
+
+<span class="c1"># list users</span>
+<span class="n">rabbitmqctl</span> <span class="n">list_users</span>
+
+
+<span class="c1"># enabling management web application</span>
+<span class="c1"># this is important since sr_rabbit uses this management facility/port access</span>
+<span class="c1"># to retrieve some important info</span>
+
+<span class="n">rabbitmq</span><span class="o">-</span><span class="n">plugins</span> <span class="n">enable</span> <span class="n">rabbitmq_management</span>
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">restart</span>
+</pre></div>
+</div>
+</section>
+<section id="installation-d-un-rabbitmq-server">
+<h2>Installation d’un RABBITMQ-SERVER<a class="headerlink" href="#installation-d-un-rabbitmq-server" title="Link to this heading"></a></h2>
+<p>Sur le bunny, nous avons opté pour une installation en cluster.
+Pour ce faire, nous suivons les instructions suivantes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">on</span> <span class="nb">all</span> <span class="n">nodes</span><span class="o">....</span>
+
+<span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">/.</span><span class="n">erlang</span><span class="o">.</span><span class="n">cookie</span>  <span class="n">same</span> <span class="n">on</span> <span class="nb">all</span> <span class="n">nodes</span>
+
+<span class="n">on</span> <span class="n">each</span> <span class="n">node</span> <span class="n">restart</span>  <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">stop</span><span class="o">/</span><span class="n">start</span>
+
+<span class="n">on</span> <span class="n">one</span> <span class="n">of</span> <span class="n">the</span> <span class="n">node</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">stop_app</span>
+<span class="n">rabbitmqctl</span> <span class="n">join_cluster</span> <span class="n">rabbit</span><span class="o">@</span><span class="s2">&quot;other node&quot;</span>
+<span class="n">rabbitmqctl</span> <span class="n">start_app</span>
+<span class="n">rabbitmqctl</span> <span class="n">cluster_status</span>
+
+
+<span class="c1"># having high availability queue...</span>
+<span class="c1"># here all queues that starts with &quot;cmc.&quot; will be highly available on all the cluster nodes</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">set_policy</span> <span class="n">ha</span><span class="o">-</span><span class="nb">all</span> <span class="s2">&quot;^cmc\.&quot;</span> <span class="s1">&#39;{&quot;ha-mode&quot;:&quot;all&quot;}&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="installation-ldap-rabbitmq-server">
+<h2>installation ldap RABBITMQ-SERVER<a class="headerlink" href="#installation-ldap-rabbitmq-server" title="Link to this heading"></a></h2>
+<p>Sur les serveurs où nous voulons avoir une authentification en utilisant les instructions suivantes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">plugins</span> <span class="n">enable</span> <span class="n">rabbitmq_auth_backend_ldap</span>
+
+<span class="c1"># replace username by ldap username</span>
+<span class="c1"># clear password (will be verified through the ldap one)</span>
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">username</span> <span class="n">aaa</span>
+<span class="n">rabbitmqctl</span> <span class="n">clear_password</span> <span class="n">username</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">username</span> <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span> <span class="s2">&quot;^amq.gen.*$|^cmc.*$&quot;</span> <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span>
+</pre></div>
+</div>
+<p>Et nous configurons les services LDAP dans le fichier de configuration rabbitmq-server
+(ancienne configuration de test de ldap-dev qui ne fonctionnait que…):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">.</span><span class="n">config</span>
+<span class="p">[</span>
+<span class="p">{</span><span class="n">rabbit</span><span class="p">,</span> <span class="p">[{</span><span class="n">auth_backends</span><span class="p">,</span> <span class="p">[</span> <span class="p">{</span><span class="n">rabbit_auth_backend_ldap</span><span class="p">,</span><span class="n">rabbit_auth_backend_internal</span><span class="p">},</span> <span class="n">rabbit_auth_backend_internal</span><span class="p">]}]},</span>
+<span class="p">{</span><span class="n">rabbitmq_auth_backend_ldap</span><span class="p">,</span>
+    <span class="p">[</span>
+    <span class="p">{</span><span class="n">servers</span><span class="p">,</span>               <span class="p">[</span><span class="s2">&quot;ldap-dev.cmc.ec.gc.ca&quot;</span><span class="p">]},</span>
+    <span class="p">{</span><span class="n">user_dn_pattern</span><span class="p">,</span>       <span class="s2">&quot;uid=$</span><span class="si">{username}</span><span class="s2">,ou=People,ou=depot,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">use_ssl</span><span class="p">,</span>               <span class="n">false</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">port</span><span class="p">,</span>                  <span class="mi">389</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">log</span><span class="p">,</span>                   <span class="n">true</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">network</span><span class="p">,</span>               <span class="n">true</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">vhost_access_query</span><span class="p">,</span>    <span class="p">{</span><span class="n">in_group</span><span class="p">,</span>
+                            <span class="s2">&quot;ou=$</span><span class="si">{vhost}</span><span class="s2">-users,ou=vhosts,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+    <span class="p">{</span><span class="n">resource_access_query</span><span class="p">,</span>
+    <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">permission</span><span class="p">,</span> <span class="n">configure</span><span class="p">,</span> <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+            <span class="p">{</span><span class="n">permission</span><span class="p">,</span> <span class="n">write</span><span class="p">,</span>
+            <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">resource</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span>    <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="n">resource</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}},</span>
+            <span class="p">{</span><span class="n">permission</span><span class="p">,</span> <span class="n">read</span><span class="p">,</span>
+            <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">resource</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="n">resource</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span>    <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}}</span>
+            <span class="p">]</span>
+    <span class="p">}},</span>
+    <span class="p">{</span><span class="n">tag_queries</span><span class="p">,</span>           <span class="p">[{</span><span class="n">administrator</span><span class="p">,</span> <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">false</span><span class="p">}},</span>
+                            <span class="p">{</span><span class="n">management</span><span class="p">,</span>    <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+<span class="p">]</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="utilisation-de-lamqp-sur-dd-ddi-dd-beta">
+<h2>Utilisation de l’AMQP sur DD (DDI, DD.BETA)<a class="headerlink" href="#utilisation-de-lamqp-sur-dd-ddi-dd-beta" title="Link to this heading"></a></h2>
+<p>Nous (Peter) voulions faire une implémentation d’AMQP dans METPX.
+Pour ce faire, nous utilisons la bibliothèque python-amqplib qui implémente les fonctionnalités
+nécessaires d’AMQP en python.
+Nous avons ainsi développé un pxSender de type amqp qui est le producteur de messages de notification
+ainsi qu’un pxReceiver de type amqp qui sert de consommateur de messages de notification.
+En tant que courtier, nous utilisons rabbitmq-server qui est un paquet Debian standard d’un courtier AMQP.</p>
+<p>Un pxSender de type amqp, lit le contenu d’un fichier dans sa fil d’attente,
+crée un message auquel il joint un “topic” et l’envoie au broker.
+Un pxReceiver de type amqp annoncera au broker le “topic” pour lequel il est
+intéressé à recevoir des messages de notification, et le broker lui enverra
+chaque message correspondant à son choix.</p>
+<p>Comme un message peut être n’importe quoi, au niveau du pxSender,
+nous avons également joint le nom du fichier d’où provient le message.
+Ainsi, dans notre pxReceiver, nous pouvons assurer le contenu du message dans le nom de fichier correspondant.
+Cette astuce n’est inutile que pour les changements amqp entre un expéditeur et un récepteur amqp…</p>
+<section id="notifications-pour-dd">
+<h3>Notifications pour DD<a class="headerlink" href="#notifications-pour-dd" title="Link to this heading"></a></h3>
+<p>Nous avons trouvé dans AMQP une opportunité d’annoncer des produits lorsqu’ils arrivent sur DD.
+Donc un utilisateur, au lieu de vérifier constamment si un produit est présent sur DD.
+Pour le modifier, il pouvait s’abonner (topic AMQP) pour recevoir un message (l’url du produit)
+qui ne serait omis qu’à la livraison du produit sur DD.
+Nous ne ferions pas cet exercice pour les newsletters… mais pour d’autres produits (grib, images… etc.)</p>
+<p>Pour mettre cela en œuvre, nous avons utilisé une possibilité de pxSender, le sender_script.
+Nous avons écrit un script sftp_amqp.py qui effectue les livraisons à DD et pour chaque produit, il crée un fichier
+contenant l’URL sous laquelle le produit sera présent. Voici le début de la configuration de wxo-b1-oper-dd.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span> <span class="n">script</span>
+<span class="n">send_script</span> <span class="n">sftp_amqp</span><span class="o">.</span><span class="n">py</span>
+
+<span class="c1"># connection info</span>
+<span class="n">protocol</span>    <span class="n">ftp</span>
+<span class="n">host</span>        <span class="n">wxo</span><span class="o">-</span><span class="n">b1</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">user</span>        <span class="n">wxofeed</span>
+<span class="n">password</span>    <span class="o">**********</span>
+<span class="n">ftp_mode</span>    <span class="n">active</span>
+
+<span class="n">noduplicates</span> <span class="n">false</span>
+
+<span class="c1"># no filename validation (pds format)</span>
+<span class="n">validation</span>  <span class="kc">False</span>
+
+<span class="c1"># delivery method</span>
+<span class="n">lock</span>  <span class="n">umask</span>
+<span class="n">chmod</span> <span class="mi">775</span>
+<span class="n">batch</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>Nous voyons dans cette configuration que toutes les informations pour un expéditeur à fichier unique sont là.
+Mais parce que le type est script… et la send_script sftp_amqp.py est fournie, nous sommes en mesure de
+demander à notre expéditeur d’en faire plus…</p>
+<p>Le fichier contenant l’URL est placé sous le txq d’un expéditeur AMQP
+/apps/px/txq/dd-notify-wxo-b1 pour que la notification AMQP soit effectuée.
+Pour envoyer les fichiers dans cette fil d’attente, un expéditeur doit avoir
+écrit dd-notify-wxo-b1.conf qui est configuré comme suit</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>type amqp
+
+validation False
+noduplicates False
+
+protocol amqp
+host wxo-b1.cmc.ec.gc.ca
+user feeder
+password ********
+
+exchange_name cmc
+exchange_key  exp.dd.notify.${0}
+exchange_type topic
+
+reject ^ensemble.naefs.grib2.raw.*
+
+accept ^(.*)\+\+.*
+</pre></div>
+</div>
+<p>Encore une fois, le cl du topic contient une partie programmée.
+La partie ${0} contient l’arborescence où le produit est placé sur dd…
+Par exemple, voici une ligne de journal de dd-notify-wxo-b1.log:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2013</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">06</span> <span class="mi">14</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="mi">368</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="p">(</span><span class="mi">86</span> <span class="n">Bytes</span><span class="p">)</span> <span class="n">Message</span> <span class="n">radar</span><span class="mf">.24</span><span class="n">_HR_ACCUM</span><span class="o">.</span><span class="n">GIF</span><span class="o">.</span><span class="n">XSS</span><span class="o">++</span><span class="mi">201306061440</span><span class="n">_XSS_24_HR_ACCUM_MM</span><span class="o">.</span><span class="n">gif</span><span class="p">:</span><span class="n">URP</span><span class="p">:</span><span class="n">XSS</span><span class="p">:</span><span class="n">RADAR</span><span class="p">:</span><span class="n">GIF</span><span class="p">::</span><span class="mi">20130606144709</span>  <span class="n">delivered</span> <span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">1.368449</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="mf">168950.887119</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Et ainsi serait le cl.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">exp.dd.notify.radar.24_HR_ACCUM.GIF.XSS</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Et l’emplacement du fichier</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Et l’URL complète dans le message</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS/201306061440_XSS_24_HR_ACCUM_MM.gif</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="utilitaires-installes-sur-les-serveurs-dd">
+<h3>Utilitaires installés sur les serveurs DD<a class="headerlink" href="#utilitaires-installes-sur-les-serveurs-dd" title="Link to this heading"></a></h3>
+<p>Lorsqu’un client se connecte au broker (rabbitmq-server), il doit créer une file
+d’attente et l’attacher à un échange. Nous pouvons donner à cette fil d’attente
+l’option qu’elle s’autodétruit lorsqu’elle n’est plus utilisée ou qu’elle est
+conservée et continue d’empiler les produits si le client est hors ligne.
+En général, nous aimerions que la fil d’attente soit préservée et donc que la
+reprise de la connexion redémarre la collection de produits sans perte.</p>
+<dl>
+<dt>queue_manager.py</dt><dd><p>Le rabbitmq-server ne détruira jamais une fil d’attente créée par un client
+si elle n’est pas en mode de suppression automatique (et encore moins si elle est créée avec durabilité).
+Cela peut causer un problème. Par exemple, un client qui développe un processus, peut changer d’IDE plusieurs
+fois et entasser sur le serveur une multitude de files d’attente qui ne seront jamais utilisées.
+Nous avons donc créé un script queue_manager.py qui vérifie si les files d’attente inutilisées ont
+plus de X produits en attente ou prennent plus de Y Mo…
+Si c’est le cas, ils sont détruits par le script.</p>
+<p>Au moment de la rédaction du présent document, les limites sont les suivantes  : <code class="docutils literal notranslate"><span class="pre">25000</span> <span class="pre">messages</span> <span class="pre">and</span> <span class="pre">50Mb.</span></code></p>
+</dd>
+<dt>dd-xml-inotify.py</dt><dd><p>Sur notre datamart public, il y a des produits qui ne proviennent pas directement de pds/px/pxatx.
+Comme nos notifications sont effectuées à partir de la livraison du produit, nous n’avons pas de
+messages de notification pour eux. C’est le cas pour les produits XML sous les répertoires :
+<code class="docutils literal notranslate"><span class="pre">citypage_weather</span></code> and <code class="docutils literal notranslate"><span class="pre">marine_weather</span></code>. Pour surmonter cette situation, le démon dd-xml-inotify.py
+a été créé et installé. Ce script python utilise inotify pour surveiller la modification des produits
+sous leurs répertoires.
+Si un produit est modifié ou ajouté, une notification amqp est envoyée au serveur.
+Ainsi, tous les produits du datamart sont couverts par l’envoi de message.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="utilisation-damqp-avec-urp-bunny-pds-op">
+<h2>Utilisation d’AMQP avec URP, BUNNY, PDS-OP<a class="headerlink" href="#utilisation-damqp-avec-urp-bunny-pds-op" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>s’applique également au développement…</p>
+</div>
+<section id="de-urp-1-2-annoncer-a-bunny-op-quun-produit-est-pret">
+<h3>De URP-1/2 annoncer à BUNNY-OP qu’un produit est prêt<a class="headerlink" href="#de-urp-1-2-annoncer-a-bunny-op-quun-produit-est-pret" title="Link to this heading"></a></h3>
+<p>Sur urp-1/2 un metpx roule l’expéditeur amqp_expose_db.conf qui annonce qu’un produit
+vient d’arriver dans la db de metpx avec un message de la forme</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Md5sum</span> <span class="n">of</span> <span class="n">product</span> <span class="n">name</span>           <span class="n">file</span><span class="o">-</span><span class="n">size</span>  <span class="n">url</span>                        <span class="n">dbname</span>
+<span class="n">a985c32cbdee8af2ab5d7b8f6022e781</span> <span class="mi">498081</span>     <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">urp</span><span class="o">-</span><span class="mf">1.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="n">db</span><span class="o">/</span><span class="mi">20150120</span><span class="o">/</span><span class="n">RADAR</span><span class="o">/</span><span class="n">URP</span><span class="o">/</span><span class="n">IWA</span><span class="o">/</span><span class="mi">201501201810</span><span class="o">~~</span><span class="n">PA</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">PA_PRECIPET</span><span class="p">,</span><span class="n">MM_HR</span><span class="p">,</span><span class="n">MM</span><span class="p">:</span><span class="n">URP</span><span class="p">:</span><span class="n">IWA</span><span class="p">:</span><span class="n">RADAR</span><span class="p">:</span><span class="n">META</span><span class="p">::</span><span class="mi">20150120180902</span>
+</pre></div>
+</div>
+<p>Ces messages AMQP sont envoyés au serveur rabbitmq sur bunny-op avec une clé d’échange qui commence par
+<em>v00.urp.input</em> suivie par convention par le chemin de db avec le ‘/’ remplacé par ‘.’.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>que urp-1/2 exécute apache et que l’annonce du produit se trouve dans la base de données de
+metpx et est visible à partir de l’URL du message.</p>
+</div>
+</section>
+<section id="bunny-op-et-dd-dispatcher-py">
+<h3>BUNNY-OP et dd_dispatcher.py<a class="headerlink" href="#bunny-op-et-dd-dispatcher-py" title="Link to this heading"></a></h3>
+<p>bunny-op est un vip qui vit sur bunny1-op ou bunny2-op.
+C’est avec keepalived que nous nous assurons que ce vip réside sur l’un des bunny-op.
+Nous testons également que rabbitmq-server fonctionne sur le même serveur.
+La partie configuration de keepalived qui traite de le vip est:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vip</span> <span class="n">bunny</span><span class="o">-</span><span class="n">op</span> <span class="mf">142.135.12.59</span> <span class="n">port</span> <span class="mi">5672</span>
+
+<span class="n">vrrp_script</span> <span class="n">chk_rabbitmq</span> <span class="p">{</span>
+        <span class="n">script</span> <span class="s2">&quot;killall -0 rabbitmq-server&quot;</span>
+        <span class="n">interval</span> <span class="mi">2</span>
+<span class="p">}</span>
+
+<span class="n">vrrp_instance</span> <span class="n">bunny</span><span class="o">-</span><span class="n">op</span> <span class="p">{</span>
+        <span class="n">state</span> <span class="n">BACKUP</span>
+        <span class="n">interface</span> <span class="n">eth0</span>
+        <span class="n">virtual_router_id</span> <span class="mi">247</span>
+        <span class="n">priority</span> <span class="mi">150</span>
+        <span class="n">track_interface</span> <span class="p">{</span>
+                <span class="n">eth0</span>
+        <span class="p">}</span>
+        <span class="n">advert_int</span> <span class="mi">1</span>
+        <span class="n">preempt_delay</span> <span class="mi">5</span>
+        <span class="n">authentication</span> <span class="p">{</span>
+                <span class="n">auth_type</span> <span class="n">PASS</span>
+                <span class="n">auth_pass</span> <span class="n">bunop</span>
+        <span class="p">}</span>
+        <span class="n">virtual_ipaddress</span> <span class="p">{</span>
+<span class="c1"># bunny-op</span>
+                <span class="mf">142.135.12.59</span> <span class="n">dev</span> <span class="n">eth0</span>
+        <span class="p">}</span>
+        <span class="n">track_script</span> <span class="p">{</span>
+                <span class="n">chk_rabbitmq</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Les serveurs rabbitmq sur ces machines sont installés dans un cluster.
+Nous mettons la haute disponibilité sur les files d’attente en commençant par <code class="docutils literal notranslate"><span class="pre">cmc.*</span></code>.
+Sur chacune des machines, exécutez l’utilitaire <code class="docutils literal notranslate"><span class="pre">dd_dispatcher.py</span></code>.
+Ce programme vérifie si le vip bunny-op et proc dera a son travail uniquement sur le serveur où vit le vip.
+(S’il y a un commutateur, détection automatique en 5 secondes et les files d’attente restent inchangées)</p>
+<p>L’utilitaire dd_dispatcher.py s’abonne aux messages de notification <code class="docutils literal notranslate"><span class="pre">v00.urp.input.#</span></code> et redirige
+ainsi les messages de notification des 2 serveurs opérationnels URP.
+À la réception d’un premier produit, le md5dum du produit est placé dans une cache et le message est re-expédié
+mais cette fois avec <code class="docutils literal notranslate"><span class="pre">v00.urp.notify</span></code> comme clé d’échange.
+Si un autre message arrive de <code class="docutils literal notranslate"><span class="pre">v00.urp.input</span></code> avec le même md5sum que le premier, il est ignoré,
+de sorte que les produits annoncés à partir de la clé d’échange <code class="docutils literal notranslate"><span class="pre">v00.urp.notify</span></code>
+sont uniques et représentent la première arrivée des 2 URP opérationnels.</p>
+</section>
+<section id="receptions-pds-op-de-messages-de-notification-de-repartition-wget-de-produits-radar">
+<h3>Réceptions PDS-OP de messages de notification de répartition, wget de produits radar<a class="headerlink" href="#receptions-pds-op-de-messages-de-notification-de-repartition-wget-de-produits-radar" title="Link to this heading"></a></h3>
+<p>Sur pds-op, un récepteur pull_urp, exécutez le fx_script pull_amqp_wget.py.
+Dans ce script, la commande suivante</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># shared queue : each pull receive 1 message (prefetch_count=1)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">basic_qos</span><span class="p">(</span><span class="n">prefetch_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">prefetch_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">a_global</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>fait que la distribution des messages de notification <code class="docutils literal notranslate"><span class="pre">v00.urp.notify</span></code> sera répartie
+également sur les 5 serveurs sous pds-op. Nous garantissons donc une traction distribuée.
+Pour chaque message du formulaire</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a985c32cbdee8af2ab5d7b8f6022e781</span> <span class="mi">498081</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">urp</span><span class="o">-</span><span class="mf">1.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="n">db</span><span class="o">/</span><span class="mi">20150120</span><span class="o">/</span><span class="n">RADAR</span><span class="o">/</span><span class="n">URP</span><span class="o">/</span><span class="n">IWA</span><span class="o">/</span><span class="mi">201501201810</span><span class="o">~~</span><span class="n">PA</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">PA_PRECIPET</span><span class="p">,</span><span class="n">MM_HR</span><span class="p">,</span><span class="n">MM</span><span class="p">:</span><span class="n">URP</span><span class="p">:</span><span class="n">IWA</span><span class="p">:</span><span class="n">RADAR</span><span class="p">:</span><span class="n">META</span><span class="p">::</span><span class="mi">20150120180902</span>
+</pre></div>
+</div>
+<p>l’url est rebuted à partir des 2 derniers champs du message et un wget du produit est fait
+et placé dans la fil d’attente du récepteur qui est ensuite ignoré / acheminé de manière ordinaire.</p>
+</section>
+<section id="verification-depannage">
+<h3>Vérification / Dépannage<a class="headerlink" href="#verification-depannage" title="Link to this heading"></a></h3>
+<p>Dans l’ordre de production</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>Sur <code class="docutils literal notranslate"><span class="pre">urp-1/2</span></code>:</dt><dd><ul class="simple">
+<li><p>Vérifiez que les produits radar sont générés sur urp-1/2.</p></li>
+<li><p>Vérifiez que les notifications sont générées sur urp-1/2 /apps/px/log/tx_amqp_expose_db.log</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Sur <code class="docutils literal notranslate"><span class="pre">bunny1/2-op</span></code></dt><dd><ul class="simple">
+<li><p>Vérifiez où réside bunny-op</p></li>
+<li><p>Vérifiez les journaux de dd_dispatcher.py <code class="docutils literal notranslate"><span class="pre">/var/log/dd_dispatcher_xxxx.log</span></code> où xxxx est le processus pid</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Sur <code class="docutils literal notranslate"><span class="pre">pds-op</span></code></dt><dd><ul class="simple">
+<li><p>Vérifiez le pull_urp</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+<p>La réparation des processus qui ne fonctionnent pas correctement devrait résoudre les problèmes en général.
+Plus de détails seront ajoutés ici au fur et à mesure que les problèmes sont rencontrés et corrigés.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Admin.html" class="btn btn-neutral float-left" title="Administration des pompes de données AMQP" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="MiseANiveau.html" class="btn btn-neutral float-right" title="GUIDE DE MISE A NIVEAU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

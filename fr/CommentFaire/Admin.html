@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration des pompes de données AMQP &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Administration de Rabbitmq Adddendum" href="Addenda_Admin_Rabbit.html" />
+    <link rel="prev" title="Exécution de MetPX via Docker" href="Docker.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Comment Faire</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="subscriber.html">Guide de l’abonné</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FlowCallbacks.html">Écriture de plugins FlowCallback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Ingestion_de_email_avec_Sarracenia.html">Ingestion par e-mail avec Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Exemples_Hydro.html">Utilisation de plugins pour récupérer des données hydrométriques</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html">Sources de données</a></li>
+<li class="toctree-l3"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Docker.html">Exécution de MetPX via Docker</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Administration des pompes de données AMQP</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apercu">Aperçu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pre-requis">Pré-requis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#operations">Opérations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#routage">Routage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#que-se-passe-t-il">Que se passe-t-il ?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-rabbitmq">Installation Rabbitmq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installations-avancees">Installations avancées</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#crochets-de-sundew">Crochets de Sundew</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Addenda_Admin_Rabbit.html">Administration de Rabbitmq Adddendum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="MiseANiveau.html">GUIDE DE MISE A NIVEAU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v2ASr3.html">Portage des plugins V2 vers Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Comment Faire</a> &raquo;</li>
+      <li>Administration des pompes de données AMQP</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/CommentFaire/Admin.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="administration-des-pompes-de-donnees-amqp">
+<h1>Administration des pompes de données AMQP<a class="headerlink" href="#administration-des-pompes-de-donnees-amqp" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>FIXME</strong>: Les sections manquantes sont mises en évidence par <strong>FIXME</strong>. Ce qui est ici est exact.</p>
+</div>
+<section id="apercu">
+<h2>Aperçu<a class="headerlink" href="#apercu" title="Link to this heading"></a></h2>
+<p>Décrit la configuration et le fonctionnement d’une pompe de données MetPX-Sarracenia à l’aide de
+Rabbitmq en tant que courtier de protocole de mise en fil d’attente de messages. Pour l’administration,
+la plupart des tâches sont différentes, selon le courtier utilisé. Si vous utilisez
+un autre courtier, il doit y avoir un autre guide d’administration.</p>
+</section>
+<section id="pre-requis">
+<h2>Pré-requis<a class="headerlink" href="#pre-requis" title="Link to this heading"></a></h2>
+<p>Idéalement, il faut être familier avec l’accès au niveau de l’utilisateur aux pompes existantes comme un
+<a class="reference external" href="../How2Guides/subscriber.rst">subscriber</a> or a <a class="reference external" href="../How2Guides/source.rst">source</a>
+avant de passer à l’administration. Ce manuel se veut prescriptif plutôt qu’explicatif.
+Pour les raisons pour lesquelles les choses sont construites comme elles sont vues
+<a class="reference external" href="../Explanation/Concepts.rst">Concepts.rst</a></p>
+<section id="exigences-minimales">
+<h3>Exigences minimales<a class="headerlink" href="#exigences-minimales" title="Link to this heading"></a></h3>
+<p>Le courtier AMQP est extrêmement léger sur les serveurs d’aujourd’hui. Les
+exemples dans ce manuel a été implémenté sur un serveur privé virtuel
+commercial (VPS) avec 256 Mo de RAM, et 700 Mo de swap à partir d’un disque
+de 20 Go. Un tel une configuration minuscule est capable de suivre une
+alimentation presque complète à partir de dd.weather.gc.ca (qui comprend
+tous les services météorologiques et les services à l’intention du public).
+données environnementales d’Environnement et changements climatiques Canada.
+gros fichiers de prédiction numérique (GRIB et plusieurs GRIB dans les
+fichiers tar) ont été exclus pour réduire l’utilisation de la bande
+passante, mais en termes de performance dans la transmission des messages,
+il a assez bien supporter un client.</p>
+<p>Chaque processus Sarra représente environ 80 Mo de mémoire virtuelle, mais
+seulement 3 Mo environ est résident, et vous avez besoin d’en exécuter
+suffisamment pour suivre (sur le petit VPS,) donc environ 30 mégaoctets
+de RAM réellement utilisés. Le RAM du courtier est ce qui détermine le
+nombre de clients qui peuvent être servis. Plus lent les clients ont
+besoin de plus de RAM pour leurs files d’attente. Donc, s’occuper des tâches
+de courtage et un nettoyage agressif peut réduire l’empreinte mémoire globale.
+Le courtier était configuré pour utiliser 128 Mo de RAM dans les exemples de
+ce manuel. Le reste de la RAM a été utilisé par les processus apache pour le
+moteur de transport web.</p>
+<p>Bien que ce qui précède soit adéquat pour la preuve de concept, le nombre
+de clients qui peuvent être soutenu est assez limitée. 1 Go de RAM pour
+tous les sarra relatifs à la sarra les activités devraient être suffisantes
+pour de nombreux cas utiles.</p>
+</section>
+</section>
+<section id="operations">
+<h2>Opérations<a class="headerlink" href="#operations" title="Link to this heading"></a></h2>
+<p>Pour faire fonctionner une pompe, un utilisateur doit être désigné comme
+administrateur. L’administrateur est différent des autres usagers, surtout en
+ce qui concerne l’autorisation accordée de créer des échanges arbitraires, et
+la capacité d’exécuter des processus qui envoient des avis à des échanges
+communs (xpublic, xreport, etc….) Tous les autres utilisateurs sont limités
+à la possibilité de n’accéder qu’à leurs propres ressources (échange et
+files d’attente).</p>
+<p>Le nom d’utilisateur administratif est un choix d’installation, et exactement
+comme pour n’importe quel autre utilisateur. Les fichiers de configuration sont
+placés sous ~/.config/sarra/, les fichiers de configuration sont placés
+sous ~/.config/sarra/, avec l’option par défaut sous admin.conf, et les
+configurations pour les composants sous les répertoires nommés d’après chaque
+composant. Dans les répertoires des composants, Les fichiers de configuration
+ont le suffixe .conf.</p>
+<p>Les processus administratifs effectuent la validation des écritures à partir
+des sources. Une fois ils sont validés, transmettent les messages aux bourses
+publiques pour que les abonnés y aient accès.  Les processus qui sont
+généralement exécutés sur un courtier :</p>
+<ul class="simple">
+<li><p>sr_audit - purger les files d’attente inutiles, créer des échanges et des utilisateurs, définir les permissions des utilisateurs en fonction de leurs rôles.</p></li>
+<li><p>sr_poll - pour les sources qui ne produisent pas d´avis , retour au sondage
+explicite pour l’injection initiale de donneées.</p></li>
+<li><p>sr_sarra - diverses configurations pour extraire les données d’autres pompes
+afin de les rendre disponibles à partir de la pompe locale.</p></li>
+<li><p>sr_sender - envoyer des données aux clients ou à d’autres pompes qui ne peuvent
+pas s´abonner à la pompe locale (généralement à cause des pare-feu).</p></li>
+<li><p>sr_winnow - lorsqu’il y a plusieurs sources de données redondantes, sélectionner la première à arriver et alimenter sr_sarra.</p></li>
+<li><p>sr_shovel - copie des avis d’une pompe à une autre, généralement pour alimenter sr_winnow.</p></li>
+</ul>
+<p>Comme pour tout autre utilisateur, il peut y avoir un nombre illimité de configurations.
+à mettre en place, et il se peut qu’ils aient tous besoin de courir en même temps.
+Pour le faire facilement, on peut invoquer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>pour démarrer tous les fichiers avec les configurations nommées de chaque
+composant (sarra, subscribe, winnow, log, log, etc….) Il y a deux
+utilisateurs/rôles qui doivent être réglés pour utiliser une pompe. Ce sont
+les options admin et feeder. Ils sont définis dans ~/.config/sarra/admin.conf
+comme suit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feeder</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">pumpUser</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">admin</span>  <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">adminUser</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Ensuite, les composants du rapport et de l’audit sont également lancés. Il est
+la convention d’utiliser une utilisateur <em>feeder</em> (différente utilisateur
+administrateur AMQP) pour les movement d´avis et données à l´intérieur
+d´une pompe: des tâches de flux de données, telles que l’extraction et la
+comptabilisation des données, effectuées par l’utilisateur du serveur.
+Normalement, on place les informations d’identification dans
+~/.config/sarra/credentials.conf et les tâches ponctuels tel la
+création d´un l’échange ou un utilisateurs, sont effectuées par l’administrateur.</p>
+<section id="entretien-menager-sr-audit">
+<h3>Entretien ménager - sr_audit<a class="headerlink" href="#entretien-menager-sr-audit" title="Link to this heading"></a></h3>
+<p>Lorsqu’un client se connecte à un courtier, il crée une fil d’attente qui est
+ensuite liée à une bourse. L’utilisateur peut choisir d’avoir
+l’autodestruction du client lorsqu’il est déconnecté (<em>auto-delete</em>), ou il
+peut spécifier <em>durable</em> ce qui signifie qu’il doit rester, en attendant que
+le client se connecte à nouveau, même si le courtier ou serveur est reparti.
+Les clients veulent souvent reprendre là où ils se sont arrêtés, de sorte que
+les files d’attente doivent rester.</p>
+<p>Le courtier rabbitmq ne détruira jamais une fil d’attente qui n’est pas en
+auto-delete (ou durable).  Ils s’accumuleront au fil du temps, alors sr_audit
+périodiquement rechercher les files d’attente inutilisées et les nettoyer.
+Actuellement, la valeur par défaut est que toute fil d’attente inutilisée
+ayant plus de 25000 messages sera supprimée.  On peut changer cette limite
+en ayant l’option <em>max_queue_size 50000</em> dans default.conf.</p>
+</section>
+<section id="exces-de-fil-d-attente-performance">
+<h3>Excès de fil d’attente/performance<a class="headerlink" href="#exces-de-fil-d-attente-performance" title="Link to this heading"></a></h3>
+<p>Lorsque rabbitmq a des centaines de milliers de messages en fil d’attente, la
+performance du courtier peut en souffrir. Un tel accumulation peuvent se
+produire lorsque la destination d’un expéditeur est en panne pour une période
+prolongée, ou n’est pas disponible pour une raison quelconque. Dans de nombreux
+cas, on peut simplement fermer l’expéditeur et supprimer la fil d’attente du
+courtier. Bien que cela résout le problème de la performance des courtiers,
+l’utilisateur ne recevra pas les avis.</p>
+<p>D’un autre côté, on peut juste le laisser tranquille, et laisser Sarracenia s’en occuper en utilisant son
+files d’attente de relance sur disque. Essentiellement, il stockera les enregistrements liés aux transferts échoués sur le disque,
+et réessayez à intervalles raisonnables, sans rester bloqué sur un élément en particulier.</p>
+<p>Lorsqu’une destination revient en service, les données actuelles ont une priorité plus élevée et elles seront envoyées
+réessayez les données, qui sont déjà en retard, uniquement lorsqu’il y a de la place pour le faire dans le flux de données actuel.
+( plus de détails, en anglais: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/620">https://github.com/MetPX/sarracenia/issues/620</a> )</p>
+<p>Si l’on arrive au point où le trafic à travers une fil d’attente est excessif
+(plusieurs centaines de messages par seconde à une seule fil d’attente),
+surtout s’il y a plusieurs instances partageant la même fil d’attente.
+(si plus de 40 instances pour desservir une seule fil d’attente) alors on
+peut se heurter à un point où l’ajout d’instances n’améliore pas le débit
+global. Par exemple, rabbitmq utilise un seul processeur pour servir une file
+d’attente. Dans de tels cas, la création de configurations multiples,
+(chacun avec sa propre fil d’attente) diviser le trafic entre eux permettra
+d’autres améliorations de débit.</p>
+<p>sr_winnow est utilisé pour supprimer les doublons.
+<strong>Notez que le cache de suppression des doublons est local pour chaque instance</strong>.
+Lorsque N instances
+partagent une fil d’attente, la première fois qu’un message est reçu, il
+pourrait être choisi par une instance, et si un duplicata est reçu  il
+serait probablement pris en charge par une autre instance. <strong>Pour une suppression
+efficace des doublons avec les instances</strong>, il faut <strong>déployer deux couches
+d’abonnés</strong>. Utiliser une <strong>première couche d’abonnés (sr_shovels)</strong>
+avec la suppression de doublons désactivée et avec <em>post_exchange_split</em>, qui
+route les messages par checksum jusqu’à une
+<strong>seconde couche de d’abonnées (sr_winnow) dont les caches de suppression de doublons sont actives.</strong></p>
+</section>
+</section>
+<section id="routage">
+<h2>Routage<a class="headerlink" href="#routage" title="Link to this heading"></a></h2>
+<p>L’interconnexion de plusieurs pompes se fait, côté données, par chaînage en guirlande.
+sr_sarra et/ou sr_sender d’une pompe à l’autre.</p>
+<p>les en-têtes <em>to_clusters</em> et <em>source</em> sont utilisés pour les décisions de routage.
+implémenté dans les plugins <em>msg_to_clusters</em>, et <em>msg_by_source</em> respectivement.
+d’être utilisateur par émetteur ou par composants sarra pour limiter les
+transferts de données entre pompes.</p>
+<p>Pour la gamme d’états, l’en-tête <em>from_cluster</em> est interprété par l’attribut
+<em>msg_from_cluster</em> plugin. Les messages de rapport sont définis dans la page
+de manuel <a class="reference external" href="sr_report.1.rst">sr_report(7)</a> Ils sont émis par les
+<em>consommateurs</em> à la fin, ainsi que par les <em>feeders</em> comme les les messages
+traversent les pompes. Les messages de rapport sont envoyés à l’échange
+xs_&lt;user&gt; exchange, et après validation envoyée à l’échange xreport par
+des configurations shovel créées par sr_audit.</p>
+<p>Les messages dans xreports destinés à d’autres clusters sont routés vers des destinations par
+pelles configurées manuellement. Voir la section <a class="reference internal" href="#rapports">Rapports</a> pour plus de détails.</p>
+</section>
+<section id="que-se-passe-t-il">
+<h2>Que se passe-t-il ?<a class="headerlink" href="#que-se-passe-t-il" title="Link to this heading"></a></h2>
+<p>La commande sr_report peut être invoquée pour lier à ‘xreport’ au lieu de
+l’échange d’utilisateurs par défaut pour obtenir des informations de
+rapport pour l’ensemble d’un courtier.</p>
+<p>La configuration sr_report avec une action <em>on_message</em> peut être configurée pour
+recueillir de l’information statistique.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME:<strong>FIXME:</strong> la première configuration sr_report en conserve serait speedo…..
+speedo : taux total de poteaux/seconde, taux total de logs/seconde.
+question : les messages doivent-ils aussi aller dans le journal ?
+avant les opérations, nous devons trouver comment Nagios va le surveiller.</p>
+<p>Est-ce que tout cela est nécessaire, ou est-ce que l’interface utilisateur
+graphique du lapin est suffisante ?</p>
+</div>
+<section id="integration-init">
+<h3>Intégration Init<a class="headerlink" href="#integration-init" title="Link to this heading"></a></h3>
+<p>Par défaut, lorsque sarracenia est installé, il s’agit d’un outil utilisateur
+et non d’une ressource à l’échelle du système. Le répertoire
+tools/sous-répertoire permet l’intégration avec des outils pour différents
+scénarios d’utilisation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>tools/sr.init – script pour sysv-init où upstart
+tools/sarra_system.service – pour systemd et déploiment système
+tools/sarra_user.service – pour systemd par usage.</p>
+</div>
+<p>Processus d’installation du système, par l’administrateur:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupadd</span> <span class="n">sarra</span>
+<span class="n">useradd</span> <span class="n">sarra</span>
+<span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sarra_system</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">service</span>  <span class="p">(</span><span class="k">if</span> <span class="n">a</span> <span class="n">package</span> <span class="n">installs</span> <span class="n">it</span><span class="p">,</span> <span class="n">it</span> <span class="n">should</span> <span class="n">go</span> <span class="ow">in</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span> <span class="p">)</span>
+<span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sarra_user</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">service</span> <span class="p">(</span><span class="ow">or</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">user</span><span class="p">,</span> <span class="k">if</span> <span class="n">installed</span> <span class="n">by</span> <span class="n">a</span> <span class="n">package</span> <span class="p">)</span>
+<span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+</pre></div>
+</div>
+<p>Il est alors supposé que l’on utilise le compte ‘sarra’ pour
+stocker la configuration sarra orientée démon (ou à l’échelle du système).
+Les utilisateurs peuvent également exécuter leur configuration personnelle
+dans les sessions via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">enable</span> <span class="n">sarra</span>
+<span class="n">systemctl</span> <span class="o">--</span><span class="n">user</span> <span class="n">start</span> <span class="n">sarra</span>
+</pre></div>
+</div>
+<p>Sur un système basé sur upstart ou sysv-init:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="n">tools</span><span class="o">/</span><span class="n">sr</span><span class="o">.</span><span class="n">init</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">sr</span>
+<span class="o">&lt;</span><span class="n">insert</span> <span class="n">magic</span> <span class="n">here</span> <span class="n">to</span> <span class="n">get</span> <span class="n">that</span> <span class="n">activated</span><span class="o">.&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="installation-rabbitmq">
+<h2>Installation Rabbitmq<a class="headerlink" href="#installation-rabbitmq" title="Link to this heading"></a></h2>
+<p>Exemple d’information sur l´implantation d’un courtier rabbitmq pour Sarracenia. Le
+courtier n’est pas tenu de être sur le même hôte que n’importe quoi d’autre,
+mais il doit y être accessible à partir d’au moins l’un de ces hôtes
+moteurs de transport.</p>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h3>
+<p>D’une manière générale, nous voulons rester au-dessus de la version 3.x.</p>
+<p><a class="reference external" href="https://www.rabbitmq.com/install-debian.html">https://www.rabbitmq.com/install-debian.html</a></p>
+<p>Brièvement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">erlang</span><span class="o">-</span><span class="n">nox</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+<p>Dans les distributions à jour, vous pouvez probablement simplement prendre la version de distribution.</p>
+</section>
+<section id="webui">
+<h3>WebUI<a class="headerlink" href="#webui" title="Link to this heading"></a></h3>
+<p>Fondamentalement, à partir d’un shell administrative, il faut:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">plugins</span> <span class="n">enable</span> <span class="n">rabbitmq_management</span>
+</pre></div>
+</div>
+<p>qui activera l’interface web pour le courtier. Pour empêcher l’accès
+à la gestion interface pour les indésirables, l’utilisation de
+pare-feu, ou l’écoute uniquement de localhost interface pour
+la gestion ui est suggérée.</p>
+</section>
+<section id="tls">
+<h3>TLS<a class="headerlink" href="#tls" title="Link to this heading"></a></h3>
+<p>Il faut crypter le trafic des courtiers. L’obtention de certificats
+n’entre pas dans le champ d’application de ces instructions, de
+sorte qu’il n’est pas discuté en détail. Aux fins de l’exemple,
+une méthode consiste à obtenir des certificats à partir
+de <a class="reference external" href="http://www.letsencrypt.org">http://www.letsencrypt.org</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>root@boule:~# git clone https://github.com/letsencrypt/letsencrypt
+Cloning into &#39;letsencrypt&#39;...
+remote: Counting objects: 33423, done.
+remote: Total 33423 (delta 0), reused 0 (delta 0), pack-reused 33423
+Receiving objects: 100% (33423/33423), 8.80 MiB | 5.74 MiB/s, done.
+Resolving deltas: 100% (23745/23745), done.
+Checking connectivity... done.
+root@boule:~# cd letsencrypt
+root@boule:~/letsencrypt#
+root@boule:~/letsencrypt# ./letsencrypt-auto certonly --standalone -d boule.example.com
+Checking for new version...
+Requesting root privileges to run letsencrypt...
+   /root/.local/share/letsencrypt/bin/letsencrypt certonly --standalone -d boule.example.com
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at
+   /etc/letsencrypt/live/boule.example.com/fullchain.pem. Your
+   cert will expire on 2016-06-26. To obtain a new version of the
+   certificate in the future, simply run Let&#39;s Encrypt again.
+ - If you like Let&#39;s Encrypt, please consider supporting our work by:
+
+   Donating to ISRG / Let&#39;s Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
+root@boule:~# ls /etc/letsencrypt/live/boule.example.com/
+cert.pem  chain.pem  fullchain.pem  privkey.pem
+root@boule:~#
+</pre></div>
+</div>
+<p>Ce processus produit des fichiers clés lisibles uniquement par root. Pour faire les fichiers
+lisible par le courtier (qui fonctionne sous le nom d’utilisateur rabbitmq) on aura
+pour ajuster les permissions afin de permettre au courtier de lire les fichiers.
+probablement que la façon la plus simple de le faire est de les copier ailleurs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># cd /etc/letsencrypt/live/boule*</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">archive</span><span class="c1"># mkdir /etc/rabbitmq/boule.example.com</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">archive</span><span class="c1"># cp -r * /etc/rabbitmq/boule.example.com</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># cd /etc/rabbitmq</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># chown -R rabbitmq.rabbitmq boule*</span>
+</pre></div>
+</div>
+<p>Maintenant que nous avons la bonne chaîne de certificats, configurez
+rabbitmq pour utilisez que le <a class="reference external" href="https://www.rabbitmq.com/ssl.html">RabbitMQ TLS Support</a> (voir
+également <a class="reference external" href="https://www.rabbitmq.com/management.html">RabbitMQ Management</a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1">#  cat &gt;/etc/rabbitmq/rabbitmq.config &lt;&lt;EOT</span>
+
+<span class="p">[</span>
+  <span class="p">{</span><span class="n">rabbit</span><span class="p">,</span> <span class="p">[</span>
+     <span class="p">{</span><span class="n">tcp_listeners</span><span class="p">,</span> <span class="p">[{</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="mi">5672</span><span class="p">}]},</span>
+     <span class="p">{</span><span class="n">ssl_listeners</span><span class="p">,</span> <span class="p">[</span><span class="mi">5671</span><span class="p">]},</span>
+     <span class="p">{</span><span class="n">ssl_options</span><span class="p">,</span> <span class="p">[{</span><span class="n">cacertfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/fullchain.pem&quot;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="n">certfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/cert.pem&quot;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="n">keyfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/privkey.pem&quot;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="n">verify</span><span class="p">,</span><span class="n">verify_peer</span><span class="p">},</span>
+                    <span class="p">{</span><span class="n">fail_if_no_peer_cert</span><span class="p">,</span><span class="n">false</span><span class="p">}]}</span>
+   <span class="p">]}</span>
+  <span class="p">{</span><span class="n">rabbitmq_management</span><span class="p">,</span> <span class="p">[{</span><span class="n">listener</span><span class="p">,</span>
+     <span class="p">[{</span><span class="n">port</span><span class="p">,</span>     <span class="mi">15671</span><span class="p">},</span>
+           <span class="p">{</span><span class="n">ssl</span><span class="p">,</span>      <span class="n">true</span><span class="p">},</span>
+           <span class="p">{</span><span class="n">ssl_opts</span><span class="p">,</span> <span class="p">[{</span><span class="n">cacertfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/fullchain.pem&quot;</span><span class="p">},</span>
+                          <span class="p">{</span><span class="n">certfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/cert.pem&quot;</span><span class="p">},</span>
+                          <span class="p">{</span><span class="n">keyfile</span><span class="p">,</span><span class="s2">&quot;/etc/rabbitmq/boule.example.com/privkey.pem&quot;</span><span class="p">}</span> <span class="p">]}</span>
+     <span class="p">]}</span>
+  <span class="p">]}</span>
+<span class="p">]</span><span class="o">.</span>
+
+<span class="n">EOT</span>
+</pre></div>
+</div>
+<p>Maintenant, le courtier et l’interface de gestion sont configurés pour
+crypter tout le trafic entre le client et le courtier. Un écouteur non crypté
+a été configuré pour localhost, où le cryptage sur la machine locale est
+inutile, et ajoute la charge du processeur. Mais la direction seulement
+a un seul écouteur crypté configuré.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Actuellement, sr_audit sr_audit s’attend à ce que l’interface de gestion
+soit sur le port 15671 si elle est cryptée, 15672 sinon. Sarra n’a pas de
+réglage de configuration pour lui dire le contraire. Choisir un autre
+port brisera sr_audit. <strong>FIXME</strong>.</p>
+</div>
+</section>
+<section id="modifier-les-valeurs-par-defaut">
+<h3>Modifier les valeurs par défaut<a class="headerlink" href="#modifier-les-valeurs-par-defaut" title="Link to this heading"></a></h3>
+<p>Afin d’effectuer des changements de configuration, le courtier doit être en
+cours d’exécution. Il faut démarrer le courtier rabbitmq. Sur les systèmes
+ubuntu plus anciens, cela serait fait par:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">service</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>Sur les nouveaux systèmes avec systemd, la meilleure méthode est:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="n">start</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+<p>Par défaut, l’installation d’un serveur rabbitmq fait de l’utilisateur guest l’administrateur…. avec mot de passe guest.
+Avec un serveur rabbitmq en cours d’exécution, on peut maintenant changer cela pour une implémentation opérationnelle…..
+Pour annuler l’utilisateur invité, nous suggérons:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmqctl</span> <span class="n">delete_user</span> <span class="n">guest</span>
+</pre></div>
+</div>
+<p>Un autre administrateur doit être défini…. appelons-le <em>bunnymaster</em>, en fixant le mot de passe à <em>MaestroDelConejito</em>…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># rabbitmqctl add_user bunnymaster MaestroDelConejito</span>
+<span class="n">Creating</span> <span class="n">user</span> <span class="s2">&quot;bunnymaster&quot;</span> <span class="o">...</span>
+<span class="o">...</span><span class="n">done</span><span class="o">.</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
+
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># rabbitmqctl set_user_tags bunnymaster administrator</span>
+<span class="n">Setting</span> <span class="n">tags</span> <span class="k">for</span> <span class="n">user</span> <span class="s2">&quot;bunnymaster&quot;</span> <span class="n">to</span> <span class="p">[</span><span class="n">administrator</span><span class="p">]</span> <span class="o">...</span>
+<span class="o">...</span><span class="n">done</span><span class="o">.</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># rabbitmqctl set_permissions bunnymaster &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;</span>
+<span class="n">Setting</span> <span class="n">permissions</span> <span class="k">for</span> <span class="n">user</span> <span class="s2">&quot;bunnymaster&quot;</span> <span class="ow">in</span> <span class="n">vhost</span> <span class="s2">&quot;/&quot;</span> <span class="o">...</span>
+<span class="o">...</span><span class="n">done</span><span class="o">.</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>Créez un compte linux local sous lequel les tâches administratives de sarra s’exécuteront (disons Sarra).
+C’est là que les informations d’identification et la configuration pour les activités au niveau de la pompe seront stockées.
+Comme la configuration est maintenue avec cet utilisateur, on s’attend à ce qu’il soit utilisé activement.
+par les humains, et devrait donc avoir un environnement de coquille interactif approprié. Un peu d’administration
+l’accès est nécessaire, donc l’utilisateur est ajouté au groupe sudo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># useradd -m sarra</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># usermod -a -G sudo sarra</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># mkdir ~sarra/.config</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># mkdir ~sarra/.config/sarra</span>
+</pre></div>
+</div>
+<p>d’abord besoin d’entrées dans les fichiers credentials.conf et admin.conf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># echo &quot;amqps://bunnymaster:MaestroDelConejito@boule.example.com/&quot; &gt;~sarra/.config/sarra/credentials.conf</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># echo &quot;admin amqps://bunnymaster@boule.example.com/&quot; &gt;~sarra/.config/sarra/admin.conf</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># chown -R sarra.sarra ~sarra/.config</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># passwd sarra</span>
+<span class="n">Enter</span> <span class="n">new</span> <span class="n">UNIX</span> <span class="n">password</span><span class="p">:</span>
+<span class="n">Retype</span> <span class="n">new</span> <span class="n">UNIX</span> <span class="n">password</span><span class="p">:</span>
+<span class="n">passwd</span><span class="p">:</span> <span class="n">password</span> <span class="n">updated</span> <span class="n">successfully</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
+<span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">~</span><span class="c1"># chsh -s /bin/bash sarra  # for comfort</span>
+</pre></div>
+</div>
+<p>l’aide de TLS (aka amqps), la vérification empêche l’utilisation
+de <em>localhost</em>  même pour l’accès sur la machine locale, le nom d’hôte
+pleinement qualifié doit être utilisé.  Suivant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>root@boule:~#  cd /usr/local/bin
+root@boule:/usr/local/bin# wget https://boule.example.com:15671/cli/rabbitmqadmin
+--2016-03-27 23:13:07--  https://boule.example.com:15671/cli/rabbitmqadmin
+Resolving boule.example.com (boule.example.com)... 192.184.92.216
+Connecting to boule.example.com (boule.example.com)|192.184.92.216|:15671... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 32406 (32K) [text/plain]
+Saving to: ‘rabbitmqadmin’
+
+rabbitmqadmin              100%[=======================================&gt;]  31.65K  --.-KB/s   in 0.04s
+
+2016-03-27 23:13:07 (863 KB/s) - ‘rabbitmqadmin’ saved [32406/32406]
+
+root@boule:/usr/local/bin#
+root@boule:/usr/local/bin# chmod 755 rabbitmqadmin
+</pre></div>
+</div>
+<p>Il est nécessaire de télécharger <em>rabbitmqadmin</em>, une commande
+d’aide qui est incluse dans RabbitMQ, mais qui n’est pas installée
+automatiquement.  Il faut le télécharger à partir de l’interface de
+gestion, et le placer dans un emplacement raisonnable dans le chemin
+d’accès, donc qu’il sera trouvé lorsqu’il est appelé par sr_admin:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="nb">bin</span><span class="c1"># su - sarra</span>
+</pre></div>
+</div>
+<p>A partir de ce point, la racine n’est généralement pas nécessaire, car toute
+la configuration peut être effectuée à partir du compte <em>sarra</em> non privilégié.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hors de la portée de cette discussion, mais à part les permissions du système de fichiers,
+il est pratique de permettre à l’utilisateur de sarra sudo d’accéder à rabbitmqctl.
+Grâce à cela, l’ensemble du système peut être administré sans accès administratif au système.</p>
+</div>
+</section>
+<section id="gestion-des-utilisateurs-d-une-pompe-a-l-aide-de-sr-audit">
+<h3>Gestion des utilisateurs d’une pompe à l’aide de Sr_audit<a class="headerlink" href="#gestion-des-utilisateurs-d-une-pompe-a-l-aide-de-sr-audit" title="Link to this heading"></a></h3>
+<p>Pour configurer une pompe, on a besoin d’un utilisateur administratif courtier
+(dans les exemples : sarra.). et un utilisateur de feeder (dans les exemples:
+feeder.) La gestion des autres utilisateurs se fait à l’aide de le programme
+sr_audit.</p>
+<p>Tout d’abord, écrivez les informations d’identification correctes pour les
+utilisateurs admin et feeder dans le fichier le fichier
+credentials.config/sarra/credentials.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">bunnymaster</span><span class="p">:</span><span class="n">MaestroDelConejito</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+<span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="p">:</span><span class="n">NoHayPanDuro</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="p">:</span><span class="n">NoHayPanDuro</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="p">:</span><span class="n">anonyomous</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">peter</span><span class="p">:</span><span class="n">piper</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Notez que les informations d’identification du serveur sont présentées deux
+fois, une fois pour permettre un accès non crypté par l’intermédiaire de
+localhost, et une deuxième fois pour permettre l’accès par TLS, potentiellement
+à partir d’autres hôtes (nécessaire) lorsqu’un courtier opère dans un cluster,
+avec des processus d’alimentation fonctionnant sur plusieurs transports nœuds
+du moteur.) L’étape suivante est de mettre les rôles
+dans .config/sarra/admin.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">admin</span>  <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">root</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+<span class="n">feeder</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="nd">@localhost</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Spécifiez tous les utilisateurs connus que vous voulez implémenter avec leurs rôles.
+dans le fichier .config/sarra/admin.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">subscriber</span> <span class="n">anonymous</span>
+<span class="n">declare</span> <span class="n">source</span> <span class="n">peter</span>
+</pre></div>
+</div>
+<p>Maintenant, pour configurer la pompe, exécutez ce qui suit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
+</pre></div>
+</div>
+<p>Resultat:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">56</span><span class="p">,</span><span class="mi">211</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">rabbitmq_admin</span> <span class="n">add_user</span> <span class="n">permission</span> <span class="n">user</span> <span class="s1">&#39;ender&#39;</span> <span class="n">role</span> <span class="n">source</span>  <span class="n">configure</span><span class="o">=</span><span class="s1">&#39;^q_ender.*|^xs_ender.*&#39;</span> <span class="n">write</span><span class="o">=</span><span class="s1">&#39;^q_ender.*|^xs_ender.*&#39;</span> <span class="n">read</span><span class="o">=</span><span class="s1">&#39;^q_ender.*|^x[lrs]_ender.*|^x.*public$&#39;</span>
+<span class="o">...</span>
+<span class="mi">020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">903</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">cpost</span><span class="o">/</span><span class="n">pelle_dd1_f04</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">907</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__putSetup</span> <span class="n">exchange</span> <span class="n">declared</span><span class="p">:</span> <span class="n">xcvan00</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">908</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__putSetup</span> <span class="n">exchange</span> <span class="n">declared</span><span class="p">:</span> <span class="n">xcvan01</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">908</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">cpost</span><span class="o">/</span><span class="n">veille_f34</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">912</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__putSetup</span> <span class="n">exchange</span> <span class="n">declared</span><span class="p">:</span> <span class="n">xcpublic</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">912</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">cpost</span><span class="o">/</span><span class="n">pelle_dd2_f05</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">916</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__putSetup</span> <span class="n">exchange</span> <span class="n">declared</span><span class="p">:</span> <span class="n">xcvan00</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="mi">020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">973</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">post</span><span class="o">/</span><span class="n">shim_f63</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">973</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">post</span><span class="o">/</span><span class="n">test2_f61</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">973</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">report</span><span class="o">/</span><span class="n">tsarra_f20</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">queue</span> <span class="n">declared</span> <span class="n">q_tfeed</span><span class="o">.</span><span class="n">sr_report</span><span class="o">.</span><span class="n">tsarra_f20</span><span class="mf">.76069129.80068939</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">binding</span> <span class="n">q_tfeed</span><span class="o">.</span><span class="n">sr_report</span><span class="o">.</span><span class="n">tsarra_f20</span><span class="mf">.76069129.80068939</span> <span class="k">with</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="c1"># to xsarra (as: amqp://tfeed@localhost/)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">sarra</span><span class="o">/</span><span class="n">download_f20</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">982</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">queue</span> <span class="n">declared</span> <span class="n">q_tfeed</span><span class="o">.</span><span class="n">sr_sarra</span><span class="o">.</span><span class="n">download_f20</span><span class="mf">.01191787.94585787</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">982</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">binding</span> <span class="n">q_tfeed</span><span class="o">.</span><span class="n">sr_sarra</span><span class="o">.</span><span class="n">download_f20</span><span class="mf">.01191787.94585787</span> <span class="k">with</span> <span class="n">v03</span><span class="o">.</span><span class="c1"># to xsarra (as: amqp://tfeed@localhost/)</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">982</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">declare</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">sender</span><span class="o">/</span><span class="n">tsource2send_f50</span>
+<span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">06</span> <span class="mi">23</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span><span class="mi">987</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarra</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">queue</span> <span class="n">declared</span> <span class="n">q_tsource</span><span class="o">.</span><span class="n">sr_sender</span><span class="o">.</span><span class="n">tsource2send_f50</span><span class="mf">.60675197.29220410</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tsource</span><span class="nd">@localhost</span><span class="o">/</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Le programme  <em>sr3</em> :</p>
+<ul>
+<li><p>utilise le compte <em>admin</em> de .config/sarra/admin.conf pour s’authentifier auprès du courtier.</p></li>
+<li><p>crée des échanges <em>xpublic</em> et <em>xreport</em> s’ils n’existent pas.</p></li>
+<li><p>lit les rôles dans .config/sarra/admin.conf.</p></li>
+<li><p>obtient une liste d’utilisateurs et d’échanges sur la pompe.</p></li>
+<li><p>pour chaque utilisateur dans une option <em>déclarer</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">the</span> <span class="n">user</span> <span class="n">on</span> <span class="n">the</span> <span class="n">broker</span> <span class="k">if</span> <span class="n">missing</span><span class="o">.</span>
+<span class="nb">set</span>    <span class="n">user</span> <span class="n">permissions</span> <span class="n">corresponding</span> <span class="n">to</span> <span class="n">its</span> <span class="n">role</span> <span class="p">(</span><span class="n">on</span> <span class="n">creation</span><span class="p">)</span>
+<span class="n">create</span> <span class="n">user</span> <span class="n">exchanges</span>   <span class="n">corresponding</span> <span class="n">to</span> <span class="n">its</span> <span class="n">role</span>
+</pre></div>
+</div>
+</li>
+<li><p>les utilisateurs qui n’ont pas de rôle déclaré sont supprimés.</p></li>
+<li><p>les échanges d’utilisateurs qui ne correspondent pas aux rôles des utilisateurs sont supprimés (‘xl_*,xs_*,xs_*’)</p></li>
+<li><p>les échanges qui ne commencent pas par “x” (à l’exception de ceux qui sont intégrés) sont supprimés.</p></li>
+</ul>
+<p>On peut inspecter si la commande sr_audit a fait tout ce qu’elle devait faire en utilisant l’interface graphique de gestion.
+ou l’outil en ligne de commande:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ sudo rabbitmqctl  list_exchanges
+Listing exchanges ...
+      direct
+amq.direct    direct
+amq.fanout    fanout
+amq.headers   headers
+amq.match     headers
+amq.rabbitmq.log      topic
+amq.rabbitmq.trace    topic
+amq.topic     topic
+xl_peter      topic
+xreport       topic
+xpublic       topic
+xs_anonymous  topic
+xs_peter      topic
+...done.
+sarra@boule:~$
+sarra@boule:~$ sudo rabbitmqctl  list_users
+Listing users ...
+anonymous     []
+bunnymaster   [administrator]
+feeder        []
+peter []
+...done.
+sarra@boule:~$ sudo rabbitmqctl  list_permissions
+Listing permissions in vhost &quot;/&quot; ...
+anonymous     ^q_anonymous.*  ^q_anonymous.*|^xs_anonymous$   ^q_anonymous.*|^xpublic$
+bunnymaster   .*      .*      .*
+feeder        .*      .*      .*
+peter ^q_peter.*      ^q_peter.*|^xs_peter$   ^q_peter.*|^xl_peter$|^xpublic$
+...done.
+sarra@boule:~$
+</pre></div>
+</div>
+<p>De ce qui précède, il semble que <em>sr_audit</em> a fait son travail.
+En bref, voici les permissions et les échanges <em>sr_audit</em> gère:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">admin</span> <span class="n">user</span>        <span class="p">:</span> <span class="n">the</span> <span class="n">only</span> <span class="n">one</span> <span class="n">creating</span> <span class="n">users</span><span class="o">...</span>
+<span class="n">admin</span><span class="o">/</span><span class="n">feeder</span> <span class="n">users</span><span class="p">:</span> <span class="n">have</span> <span class="nb">all</span> <span class="n">permission</span> <span class="n">over</span> <span class="n">queues</span> <span class="ow">and</span> <span class="n">exchanges</span>
+
+<span class="n">subscribe</span> <span class="n">user</span>    <span class="p">:</span> <span class="n">can</span> <span class="n">write</span> <span class="n">report</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">exchanged</span> <span class="n">beginning</span> <span class="k">with</span>  <span class="n">xs_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span>
+                    <span class="n">can</span> <span class="n">read</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span> <span class="n">xpublic</span>
+                    <span class="n">have</span> <span class="nb">all</span> <span class="n">permissions</span> <span class="n">on</span> <span class="n">queue</span> <span class="n">named</span>  <span class="n">q_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;*</span>
+
+<span class="n">source</span> <span class="n">user</span>       <span class="p">:</span> <span class="n">can</span> <span class="n">write</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">exchanges</span> <span class="n">beginning</span> <span class="k">with</span> <span class="n">xs_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span>
+                    <span class="n">can</span> <span class="n">read</span> <span class="n">post</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span>  <span class="n">xpublic</span>
+                    <span class="n">can</span> <span class="n">read</span>  <span class="n">report</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">exchange</span>  <span class="n">xl_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span> <span class="n">created</span> <span class="k">for</span> <span class="n">him</span>
+                    <span class="n">have</span> <span class="nb">all</span> <span class="n">permissions</span> <span class="n">on</span> <span class="n">queue</span> <span class="n">named</span>   <span class="n">q_</span><span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;*</span>
+</pre></div>
+</div>
+<p>Pour ajouter Alice en utilisant sr_audit, on ajouterait ce qui suit à ~/.config/sarra/admin.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">source</span> <span class="n">Alice</span>
+</pre></div>
+</div>
+<p>puis ajoutez une entrée amqp appropriée dans ~/.config/sarra/credentials.conf pour définir le mot de passe,
+puis lancez:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">users</span> <span class="n">declare</span>
+</pre></div>
+</div>
+<p>Pour supprimer des utilisateurs, il suffit de supprimer <em>declare source Alice</em>
+du fichier admin.conf, et d’exécuter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># FIXME: functionality not present.</span>
+</pre></div>
+</div>
+<p>encore. Pour supprimer des utilisateurs, on peut utiliser directement les interfaces de gestion rabbitmq existantes.
+La création est automatisée car les modèles de lecture/écriture/configuration sont lourds à faire manuellement.</p>
+<ul class="simple">
+<li><p>Remarque: Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur
+la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,</p>
+<ul>
+<li><p><em>sr3 --users declare</em> déclarera tous les utilisateurs</p></li>
+<li><p><em>sr3 --users declare subscribe/dd_amis</em> ne déclarera que les utilisateurs spécifiés dans <em>subscribe/dd_amis</em></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="premier-abonnement">
+<h3>Premier abonnement<a class="headerlink" href="#premier-abonnement" title="Link to this heading"></a></h3>
+<p>Lors de la configuration d’une pompe, le but est normalement de la connecter à une autre pompe. Pour régler
+le paramétrage d’un abonnement nous aide à paramétrer les paramètres pour sarra plus tard. Donc d’abord
+essayer un abonnement à une pompe amont:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ ls
+sarra@boule:~$ cd ~/.config/sarra/
+sarra@boule:~/.config/sarra$ mkdir subscribe
+sarra@boule:~/.config/sarra$ cd subscribe
+sarra@boule:~/.config/sarra/subscribe$ sr_subscribe edit dd.conf
+broker amqps://anonymous@dd.weather.gc.ca/
+
+mirror True
+directory /var/www/html
+
+# numerical weather model files will overwhelm a small server.
+reject .*/\.tar
+reject .*/model_giops/.*
+reject .*/grib2/.*
+
+accept .*
+</pre></div>
+</div>
+<p>ajouter le mot de passe de la pompe amont dans credentials.conf</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra$ echo &quot;amqps://anonymous:anonymous@dd.weather.gc.ca/&quot; &gt;&gt;../credentials.conf
+</pre></div>
+</div>
+<p>puis faites un court passage au premier plan, pour voir si ça marche. Appuyez sur Ctrl-C pour
+l’arrêter après quelques messages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra$ sr_subscribe foreground dd
+2016-03-28 09:21:27,708 [INFO] sr_subscribe start
+2016-03-28 09:21:27,708 [INFO] sr_subscribe run
+2016-03-28 09:21:27,708 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+2016-03-28 09:21:28,375 [INFO] Binding queue q_anonymous.sr_subscribe.dd.78321126.82151209 with key v02.post.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+2016-03-28 09:21:28,933 [INFO] Received notice  20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml
+2016-03-28 09:21:29,297 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160328.CWRM 20160328130240.645 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml 201 boule.example.com anonymous 1128.560235 parts=1,6451,1,0,0 sum=d,f17299b2afd78ae8d894fe85d3236488 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWRM/2016-03-28-1300-CWRM-AUTO-swob.xml message=Downloaded
+2016-03-28 09:21:29,389 [INFO] Received notice  20160328130240.646 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml
+2016-03-28 09:21:29,662 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160328.CWSK 20160328130240.646 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml 201 boule.example.com anonymous 1128.924688 parts=1,7041,1,0,0 sum=d,8cdc3420109c25910577af888ae6b617 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWSK/2016-03-28-1300-CWSK-AUTO-swob.xml message=Downloaded
+2016-03-28 09:21:29,765 [INFO] Received notice  20160328130240.647 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml
+2016-03-28 09:21:30,045 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160328.CWWA 20160328130240.647 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml 201 boule.example.com anonymous 1129.306662 parts=1,7027,1,0,0 sum=d,aabb00e0403ebc9caa57022285ff0e18 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CWWA/2016-03-28-1300-CWWA-AUTO-swob.xml message=Downloaded
+2016-03-28 09:21:30,138 [INFO] Received notice  20160328130240.649 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml
+2016-03-28 09:21:30,431 [INFO] 201 Downloaded : v02.report.observations.swob-ml.20160328.CXVG 20160328130240.649 http://dd2.weather.gc.ca/ observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml 201 boule.example.com anonymous 1129.690082 parts=1,7046,1,0,0 sum=d,186fa9627e844a089c79764feda781a7 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM rename=/var/www/html/observations/swob-ml/20160328/CXVG/2016-03-28-1300-CXVG-AUTO-swob.xml message=Downloaded
+2016-03-28 09:21:30,524 [INFO] Received notice  20160328130240.964 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/CA/CWAO/13/CACN00_CWAO_281300__TBO_05037
+^C2016-03-28 09:21:30,692 [INFO] signal stop
+2016-03-28 09:21:30,693 [INFO] sr_subscribe stop
+sarra@boule:~/.config/sarra/subscribe$
+</pre></div>
+</div>
+<p>La connexion à l’amont est donc fonctionnelle. La connexion au serveur signifie
+qu’une fil d’attente est allouée sur le serveur, et il continuera à accumuler
+des messages, en attendant que le client se connecte à nouveau. Ce n’était qu’un test
+alors on veut que le serveur supprime la fil d’attente:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra/subscribe$ sr_subscribe cleanup dd
+</pre></div>
+</div>
+<p>permet maintenant de s’assurer que l’abonnement ne démarre pas automatiquement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra/subscribe$ mv dd.conf dd.off
+</pre></div>
+</div>
+<p>et se tourner vers une application de sarra.</p>
+</section>
+<section id="sarra-d-une-autre-pompe">
+<h3>Sarra d’une autre pompe<a class="headerlink" href="#sarra-d-une-autre-pompe" title="Link to this heading"></a></h3>
+<p>Sarra est utilisé pour permettre à une pompe en aval de ré-annoncer des
+produits à partir d’une pompe en amont. Sarra a besoin de toute la
+configuration d’un abonnement, mais a aussi besoin de la configuration pour
+poster vers le courtier en aval. Le compte d’alimentation du courtier est
+utilisé pour ce travail, et est un utilisateur semi-administratif, capable
+de publier des avis à n’importe quel échange. Supposons qu’Apache est
+configuré (non couvert ici) avec un racine du document /var/www/html. Le
+compte linux que nous avons créé pour exécuter tous les processus sr3 est’<em>sarra</em>’.
+la racine du document est inscriptible dans ces processus:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ cd ~/.config/sarra/sarra
+sarra@boule:~/.config/sarra/sarra$ sudo chown sarra.sarra /var/www/html
+</pre></div>
+</div>
+<p>Ensuite, nous créons une configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~$ cat &gt;&gt;dd.off &lt;&lt;EOT
+
+broker amqps://anonymous@dd.weather.gc.ca/
+exchange xpublic
+
+msg_to_clusters DD
+on_message msg_to_clusters
+
+mirror False  # usually True, except for this server!
+
+# Numerical Weather Model files will overwhelm a small server.
+reject .*/\.tar
+reject .*/model_giops/.*
+reject .*/grib2/.*
+
+directory /var/www/html
+accept .*
+
+url http://boule.example.com/
+document_root /var/www/html
+post_broker amqps://feeder@boule.example.com/
+
+EOT
+</pre></div>
+</div>
+<p>Par rapport à l’exemple précédent, Nous avons ajouté :</p>
+<dl class="simple">
+<dt>exchange xpublic</dt><dd><p>sarra est souvent utilisé pour les transferts spécialisés, de sorte que l’échangexpublic n’est pas supposé, comme c’est le cas pour les abonnements.</p>
+</dd>
+</dl>
+<p>msg_to_clusters DD</p>
+<p>on_message msg_to_clusters</p>
+<blockquote>
+<div><p>sarra implémente le routage par cluster, donc si les données ne sont pas destinées à ce cluster, il sautera (et non pas téléchargera) un produit.
+L’inspection de la sortie sr_subscribe ci-dessus révèle que les produits sont destinés à la grappe DD.
+pour cela, afin que le téléchargement se fasse.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>url et document_root</dt><dd><p>ces derniers sont nécessaires pour construire les postes locaux qui seront affichés sur le ….</p>
+</dd>
+<dt>post_broker</dt><dd><p>où nous annoncerons à nouveau les fichiers que nous avons téléchargés.</p>
+</dd>
+<dt>miroir Faux</dt><dd><p>Ceci n’est généralement pas nécessaire, quand on copie entre pompes, il est normal de faire des copies directes.
+Cependant, la pompe dd.weather.gc.ca est antérieure à la norme du préfixe jour/source.
+facilité de nettoyage.</p>
+</dd>
+</dl>
+<p>alors essayez-le:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra/sarra$ sr_sarra foreground dd.off
+2016-03-28 10:38:16,999 [INFO] sr_sarra start
+2016-03-28 10:38:16,999 [INFO] sr_sarra run
+2016-03-28 10:38:17,000 [INFO] AMQP  broker(dd.weather.gc.ca) user(anonymous) vhost(/)
+2016-03-28 10:38:17,604 [INFO] Binding queue q_anonymous.sr_sarra.dd.off with key v02.post.# from exchange xpublic on broker amqps://anonymous@dd.weather.gc.ca/
+2016-03-28 10:38:19,172 [INFO] Received v02.post.bulletins.alphanumeric.20160328.UA.CWAO.14 &#39;20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422&#39; parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM
+2016-03-28 10:38:19,172 [INFO] downloading/copying into /var/www/html/bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422
+2016-03-28 10:38:19,515 [INFO] 201 Downloaded : v02.report.bulletins.alphanumeric.20160328.UA.CWAO.14 20160328143820.166 http://dd2.weather.gc.ca/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 201 boule.bsqt.example.com anonymous -0.736602 parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM message=Downloaded
+2016-03-28 10:38:19,517 [INFO] Published: &#39;20160328143820.166 http://boule.bsqt.example.com/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422&#39; parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM
+2016-03-28 10:38:19,602 [INFO] 201 Published : v02.report.bulletins.alphanumeric.20160328.UA.CWAO.14.UANT01_CWAO_281438___22422 20160328143820.166 http://boule.bsqt.example.com/ bulletins/alphanumeric/20160328/UA/CWAO/14/UANT01_CWAO_281438___22422 201 boule.bsqt.example.com anonymous -0.648599 parts=1,124,1,0,0 sum=d,cfbcb85aac0460038babc0c5a8ec0513 from_cluster=DD source=metpx to_clusters=DD,DDI.CMC,DDI.EDM message=Published
+^C2016-03-28 10:38:20,328 [INFO] signal stop
+2016-03-28 10:38:20,328 [INFO] sr_sarra stop
+sarra@boule:~/.config/sarra/sarra$
+</pre></div>
+</div>
+<p>Le fichier a le suffixe ‘off’ de sorte qu’il ne sera pas invoqué par défaut lorsque
+toute la configuration de sarra est démarrée. On peut toujours démarrer le fichier
+quand il est dans le réglage off, en spécifiant le chemin (dans ce cas, il est dans
+le répertoire courant) donc initialement avoir des fichiers ‘off’ pendant le
+débogage des paramètres. Comme la configuration fonctionne correctement,
+renommez-la pour qu’elle soit utilisée au démarrage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sarra@boule:~/.config/sarra/sarra$ mv dd.off dd.conf
+sarra@boule:~/.config/sarra/sarra$
+</pre></div>
+</div>
+</section>
+<section id="rapports">
+<h3>Rapports<a class="headerlink" href="#rapports" title="Link to this heading"></a></h3>
+<p>Maintenant que les données circulent, nous devons jeter un coup d’oeil au
+flux des messages de rapport, qui sont essentiellement utilisés par chaque
+pompe pour indiquer en amont que les données ont été téléchargées. Sr_audit
+aide au routage en créant les configurations suivantes:</p>
+<ul class="simple">
+<li><p>Pour chaque abonné, une configuration de pelle nommée rr_&lt;user&gt;2xreport.conf est créée.</p></li>
+<li><p>Pour chaque source, une configuration de pelle nommée rr_xreport2&lt;user&gt;user&gt;user.conf est créée.</p></li>
+</ul>
+<p>Les pelles <em>2xreport</em> s’abonne aux messages postés dans l’échange xs_ de
+chaque utilisateur et les poste à l’échange xreport commun. Exemple de fichier
+de configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initial report routing configuration created by sr_audit, tune to taste.</span>
+<span class="c1">#     To get original back, just remove this file, and run sr_audit (or wait a few minutes)</span>
+<span class="c1">#     To suppress report routing, rename this file to rr_anonymous2xreport.conf.off</span>
+
+<span class="n">broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">exchange</span> <span class="n">xs_anonymous</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span><span class="o">.</span><span class="n">report</span>
+<span class="n">subtopic</span> <span class="c1">#</span>
+<span class="n">accept_unmatch</span> <span class="kc">True</span>
+<span class="n">on_message</span> <span class="kc">None</span>
+<span class="n">on_post</span> <span class="kc">None</span>
+<span class="n">report</span> <span class="kc">False</span>
+<span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">post_exchange</span> <span class="n">xreport</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Explications :</dt><dd><ul class="simple">
+<li><p>Les pelles de routage de rapports sont des fonctions administratives, et c’est donc l’utilisateur de l’alimentateur qui est utilisé.</p></li>
+<li><p>Cette configuration permet d’acheminer les rapports soumis par l’utilisateur “ anonyme “.</p></li>
+<li><p>on_message None, on_post None, réduire la journalisation non désirée sur le système local.</p></li>
+<li><p>report_back Faux réduire les rapports non désirés (les sources veulent-elles comprendre la circulation des pelleteuses ?</p></li>
+<li><p>poster sur l’échange xreport.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Les pelles <em>2&lt;user&gt;</em> regardent tous les messages dans l’échange xreport, et les copient aux utilisateurs xr_ exchange.
+Échantillon:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Routage du rapport initial vers la configuration des sources, par sr_audit, réglage au goût.</span>
+<span class="c1"># Pour récupérer l&#39;original, supprimez simplement ce fichier, et lancez sr_audit (ou attendez quelques minutes)</span>
+<span class="c1"># Pour supprimer le routage des rapports, renommez ce fichier en rr_xreport2tsource2tsource2.conf.off.</span>
+
+
+<span class="n">broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">exchange</span> <span class="n">xreport</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span><span class="o">.</span><span class="n">report</span>
+<span class="n">subtopic</span> <span class="c1">#</span>
+<span class="n">accept_unmatch</span> <span class="kc">True</span>
+<span class="n">msg_by_source</span> <span class="n">tsource2</span>
+<span class="n">on_message</span> <span class="n">msg_by_source</span>
+<span class="n">on_post</span> <span class="kc">None</span>
+<span class="n">report</span> <span class="kc">False</span>
+<span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">tfeed</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">post_exchange</span> <span class="n">xr_tsource2</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Explications :</dt><dd><p>msg_by_source tsource2 sélectionne que seuls les rapports pour les données
+injectées par l’utilisateur tsource2 doivent être sélectionnés.
+les rapports sélectionnés doivent être copiés dans l’échange xr_ de
+l’utilisateur, où l’utilisateur qui invoque sr_report les trouvera.</p>
+</dd>
+</dl>
+<p>Lorsqu’une source invoque le composant sr_report, l’échange par défaut sera
+xr_ (eXchange for Reporting). Tous les rapports reçus des abonnés aux données
+de cette source seront acheminées vers cet échange.</p>
+<p>Si un administrateur invoque sr_report, il sera par défaut sur l’échange
+xreport, et affichera les rapports de tous les abonnés sur le cluster.</p>
+<p>Exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">blacklab</span><span class="o">%</span> <span class="n">more</span> <span class="n">boulelog</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="nd">@boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span>
+<span class="n">exchange</span> <span class="n">xreport</span>
+<span class="n">accept</span> <span class="o">.*</span>
+
+<span class="n">blacklab</span><span class="o">%</span>
+
+<span class="n">blacklab</span><span class="o">%</span> <span class="n">sr_report</span> <span class="n">foreground</span> <span class="n">boulelog</span><span class="o">.</span><span class="n">conf</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">53</span><span class="p">,</span><span class="mi">721</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sr_report</span> <span class="n">start</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">53</span><span class="p">,</span><span class="mi">721</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sr_report</span> <span class="n">run</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">53</span><span class="p">,</span><span class="mi">722</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">AMQP</span>  <span class="n">broker</span><span class="p">(</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="p">)</span> <span class="n">user</span><span class="p">(</span><span class="n">feeder</span><span class="p">)</span> <span class="n">vhost</span><span class="p">(</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">54</span><span class="p">,</span><span class="mi">484</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Binding</span> <span class="n">queue</span> <span class="n">q_feeder</span><span class="o">.</span><span class="n">sr_report</span><span class="o">.</span><span class="n">boulelog</span><span class="mf">.06413933.71328785</span> <span class="k">with</span> <span class="n">key</span> <span class="n">v02</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="c1"># from exchange xreport on broker amqps://feeder@boule.example.com/</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">732</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202955.139</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">radar</span><span class="o">/</span><span class="n">CAPPI</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">XLA</span><span class="o">/</span><span class="mi">201603282030</span><span class="n">_XLA_CAPPI_1</span><span class="mf">.5</span><span class="n">_RAIN</span><span class="o">.</span><span class="n">gif</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.040751</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">56</span><span class="p">,</span><span class="mi">393</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202956.212</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">radar</span><span class="o">/</span><span class="n">CAPPI</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">XMB</span><span class="o">/</span><span class="mi">201603282030</span><span class="n">_XMB_CAPPI_1</span><span class="mf">.5</span><span class="n">_RAIN</span><span class="o">.</span><span class="n">gif</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.159043</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">56</span><span class="p">,</span><span class="mi">479</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202956.179</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">radar</span><span class="o">/</span><span class="n">CAPPI</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">XLA</span><span class="o">/</span><span class="mi">201603282030</span><span class="n">_XLA_CAPPI_1</span><span class="mf">.0</span><span class="n">_SNOW</span><span class="o">.</span><span class="n">gif</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="mf">0.143819</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">56</span><span class="p">,</span><span class="mi">561</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202956.528</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">radar</span><span class="o">/</span><span class="n">CAPPI</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">XMB</span><span class="o">/</span><span class="mi">201603282030</span><span class="n">_XMB_CAPPI_1</span><span class="mf">.0</span><span class="n">_SNOW</span><span class="o">.</span><span class="n">gif</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.119164</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">57</span><span class="p">,</span><span class="mi">557</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202957.405</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20160328</span><span class="o">/</span><span class="n">SN</span><span class="o">/</span><span class="n">CWVR</span><span class="o">/</span><span class="mi">20</span><span class="o">/</span><span class="n">SNVD17_CWVR_282000___01910</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.161522</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">57</span><span class="p">,</span><span class="mi">642</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202957.406</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20160328</span><span class="o">/</span><span class="n">SN</span><span class="o">/</span><span class="n">CWVR</span><span class="o">/</span><span class="mi">20</span><span class="o">/</span><span class="n">SNVD17_CWVR_282000___01911</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.089808</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">57</span><span class="p">,</span><span class="mi">729</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202957.408</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20160328</span><span class="o">/</span><span class="n">SN</span><span class="o">/</span><span class="n">CWVR</span><span class="o">/</span><span class="mi">20</span><span class="o">/</span><span class="n">SNVD17_CWVR_282000___01912</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.043441</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">58</span><span class="p">,</span><span class="mi">723</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Received</span> <span class="n">notice</span>  <span class="mf">20160328202958.471</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="n">radar</span><span class="o">/</span><span class="n">CAPPI</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">WKR</span><span class="o">/</span><span class="mi">201603282030</span><span class="n">_WKR_CAPPI_1</span><span class="mf">.5</span><span class="n">_RAIN</span><span class="o">.</span><span class="n">gif</span> <span class="mi">201</span> <span class="n">blacklab</span> <span class="n">anonymous</span> <span class="o">-</span><span class="mf">0.131236</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">59</span><span class="p">,</span><span class="mi">400</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">signal</span> <span class="n">stop</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">16</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">59</span><span class="p">,</span><span class="mi">400</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sr_report</span> <span class="n">stop</span>
+<span class="n">blacklab</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>on peut voir qu’un abonné sur blacklab télécharge activement depuis la
+nouvelle pompe sur boule.  Fondamentalement, les deux sortes de pelles
+construites automatiquement par sr_audit feront tout le routage nécessaire
+au sein d’un cluster. Lorsqu’il y a des problèmes de volume, ces configurations
+peuvent être modifiées pour augmenter le nombre d’instances ou l’utilisation.
+post_exchange_split le cas échéant.</p>
+<p>La configuration manuelle de la pelle est également nécessaire pour acheminer
+les messages entre les groupes. C’est juste une variation de routage des
+rapports intra-cluster.</p>
+</section>
+<section id="sarra-d-une-source">
+<h3>Sarra D’une source<a class="headerlink" href="#sarra-d-une-source" title="Link to this heading"></a></h3>
+<p>Lorsque l’on lit les messages directement depuis une source, il faut activer
+la validation. FIXME : exemple de la façon dont les messages des utilisateurs
+sont traités.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>set source_from_exchange - set source_from_exchange</p></li>
+<li><p>set mirror False to get date/source tree prepended</p></li>
+<li><p>valider que la somme de contrôle fonctionne……</p></li>
+</ul>
+</div></blockquote>
+<p>autre chose ?</p>
+</section>
+<section id="nettoyage">
+<h3>Nettoyage<a class="headerlink" href="#nettoyage" title="Link to this heading"></a></h3>
+<p>Ce sont des exemples, la mise en œuvre du nettoyage n’est pas couverte par
+Sarracenia. Étant donné qu’un arbre raisonnablement petit comme donné
+ci-dessus, il peut être pratique de scanner l’arbre et d’élaguer les anciens
+fichiers à partir de celui-ci. Un travail de cron comme ça:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">cron</span><span class="o">.</span><span class="n">d</span><span class="c1"># more sarra_clean</span>
+<span class="c1"># remove files one hour after they show up.</span>
+<span class="c1"># for weather production, 37 minutes passed the hour is a good time.</span>
+<span class="c1"># remove directories the day after the last time they were touched.</span>
+<span class="mi">37</span> <span class="mi">4</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>  <span class="n">root</span> <span class="n">find</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">html</span> <span class="o">-</span><span class="n">mindepth</span> <span class="mi">1</span> <span class="o">-</span><span class="n">maxdepth</span> <span class="mi">1</span> <span class="o">-</span><span class="nb">type</span> <span class="n">d</span> <span class="o">-</span><span class="n">mtime</span> <span class="o">+</span><span class="mi">0</span>  <span class="o">|</span> <span class="n">xargs</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span>
+</pre></div>
+</div>
+<p>Cela peut sembler un peu agressif, mais ce fichier se trouvait sur un
+très petit serveur virtuel qui n’était qu’un petit serveur virtuel.
+pour le transfert de données en temps réel afin de conserver les données
+pendant des périodes prolongées a rempli le disque et arrêté tous les
+transferts. Dans les transferts à grande échelle, il y a toujours un échange
+entre l’aspect pratique de conserver les données pour toujours et le besoin
+de performance ce qui nous oblige à tailler régulièrement les arborescences
+de répertoires. Les performances du système de fichiers sont optimales avec
+les arbres de taille raisonnable, et quand les arbres deviennent trop grands,
+le processus de “find” pour les traverser peut deviennent trop onéreux.</p>
+<p>On peut plus facilement maintenir de plus petits arbres de répertoires en
+les faisant rouler régulièrement. Si vous avoir assez d’espace disque pour
+durer un ou plusieurs jours, puis une seule tâche cron logique qui
+fonctionnerait sur les arbres quotidiens sans encourir la pénalité d’une
+découverte, est une bonne approche.</p>
+<p>Remplacer le contenu ci-dessus par:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">34</span> <span class="mi">4</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="n">root</span> <span class="n">find</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">html</span> <span class="o">-</span><span class="n">mindepth</span> <span class="mi">1</span> <span class="o">-</span><span class="n">maxdepth</span> <span class="mi">1</span>  <span class="o">-</span><span class="nb">type</span> <span class="n">d</span> <span class="o">-</span><span class="n">regex</span> <span class="s1">&#39;/var/www/html/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]&#39;</span> <span class="o">-</span><span class="n">mtime</span> <span class="o">+</span><span class="mi">1</span> <span class="o">|</span> <span class="n">xargs</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span>
+</pre></div>
+</div>
+<p>où le +1 peut être remplacé par le nombre de jours à conserver. (…) (….)
+aurait préféré [0-9]{8}, mais il semblerait que la syntaxe de find
+regex n’inclut pas les répétitions. )</p>
+<p>Il est à noter que les logs se nettoieront par eux-mêmes, par défaut, après 5 rotations le log
+le plus ancien sera enlevé à minuit, seulement si la configuration par défaut a été utilisée
+depuis la première rotation. Il est possible de racourcir ce nombre en ajoutant <em>logRotateCount 3</em>
+à default.conf.</p>
+</section>
+<section id="sassurer-que-les-choses-sont-en-place">
+<h3>S’assurer que les choses sont en place<a class="headerlink" href="#sassurer-que-les-choses-sont-en-place" title="Link to this heading"></a></h3>
+<p>Les processus peuvent planter. On peut avoir un redémarrage automatisé
+en exécutant <em>sr3 sanity</em> périodiquement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@boule</span><span class="p">:</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">cron</span><span class="o">.</span><span class="n">d</span><span class="c1"># more sanity</span>
+<span class="c1"># remove files one hour after they show up.</span>
+<span class="c1"># for weather production, 37 minutes passed the hour is a good time.</span>
+<span class="c1"># remove directories the day after the last time they were touched.</span>
+<span class="mi">7</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">21</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">35</span><span class="p">,</span><span class="mi">42</span><span class="p">,</span><span class="mi">49</span><span class="p">,</span><span class="mi">56</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="n">sr3</span> <span class="n">sanity</span>
+</pre></div>
+</div>
+</section>
+<section id="demarrage">
+<h3>Démarrage<a class="headerlink" href="#demarrage" title="Link to this heading"></a></h3>
+<p>Le paquet Debian installe une unité systemd, mais l’installation de python3 ne s’en occupe pas.</p>
+</section>
+<section id="sr-poll">
+<h3>Sr_Poll<a class="headerlink" href="#sr-poll" title="Link to this heading"></a></h3>
+<p>FIXME: alimenter la sarra à partir de la source configurée avec un sr_poll. configuré.</p>
+</section>
+<section id="sr-winnow">
+<h3>Sr_winnow<a class="headerlink" href="#sr-winnow" title="Link to this heading"></a></h3>
+<p>FIXME: exemple de configuration sr_winnow expliqué, avec quelques pelles aussi.</p>
+</section>
+<section id="sr-sender">
+<h3>Sr_sender<a class="headerlink" href="#sr-sender" title="Link to this heading"></a></h3>
+<p>Lorsque les pare-feu empêchent l’utilisation de sarra pour tirer d’une pompe comme le ferait un abonné, on peut inverser l’alimentation en ayant la commande
+la pompe amont alimente explicitement la pompe aval.</p>
+<p>FIXME : configuration élaborée de l’échantillon sr_sender.</p>
+</section>
+<section id="ajout-manuel-d-utilisateurs">
+<h3>Ajout manuel d’utilisateurs<a class="headerlink" href="#ajout-manuel-d-utilisateurs" title="Link to this heading"></a></h3>
+<p>Pour éviter l’utilisation de sr_admin, ou pour contourner les problèmes,
+on peut ajuster les paramètres utilisateur manuellement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="nb">bin</span>
+<span class="n">wget</span> <span class="o">-</span><span class="n">q</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">boule</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="mi">15671</span><span class="o">/</span><span class="n">cli</span><span class="o">/</span><span class="n">rabbitmqadmin</span>
+<span class="n">chmod</span> <span class="mi">755</span> <span class="n">rabbitmqadmin</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">Alice</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">Alice</span>   <span class="s2">&quot;^q_Alice.*$&quot;</span> <span class="s2">&quot;^q_Alice.*$|^xs_Alice$&quot;</span> <span class="s2">&quot;^q_Alice.*$|^xl_Alice$|^xpublic$&quot;</span>
+
+<span class="n">rabbitmqadmin</span> <span class="o">-</span><span class="n">u</span> <span class="n">root</span> <span class="o">-</span><span class="n">p</span> <span class="o">*****</span> <span class="n">declare</span> <span class="n">exchange</span> <span class="n">name</span><span class="o">=</span><span class="n">xs_Alice</span> <span class="nb">type</span><span class="o">=</span><span class="n">topic</span> <span class="n">auto_delete</span><span class="o">=</span><span class="n">false</span> <span class="n">durable</span><span class="o">=</span><span class="n">true</span>
+<span class="n">rabbitmqadmin</span> <span class="o">-</span><span class="n">u</span> <span class="n">root</span> <span class="o">-</span><span class="n">p</span> <span class="o">*****</span> <span class="n">declare</span> <span class="n">exchange</span> <span class="n">name</span><span class="o">=</span><span class="n">xl_Alice</span> <span class="nb">type</span><span class="o">=</span><span class="n">topic</span> <span class="n">auto_delete</span><span class="o">=</span><span class="n">false</span> <span class="n">durable</span><span class="o">=</span><span class="n">true</span>
+</pre></div>
+</div>
+<p>ou paramétré:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>u=Alice
+rabbitmqctl add_user ${u} &lt;password&gt;
+rabbitmqctl set_permissions -p / ${u} &quot;^q_${u}.$&quot; &quot;^q_${u}.*$|^xs_${u}$&quot; &quot;^q_${u}.*$|^xl_${u}$|^xpublic$&quot;
+
+rabbitmqadmin -u root -p ***** declare exchange name=xs_${u} type=topic auto_delete=false durable=true
+rabbitmqadmin -u root -p ***** declare exchange name=xl_${u} type=topic auto_delete=false durable=true
+</pre></div>
+</div>
+<p>Ensuite, vous devez effectuer le même travail pour les serveurs sftp et / ou apache si
+nécessaire, car l’authentification requise par le protocole de transport de charge
+utile (SFTP, FTP ou HTTP(S)) est gérée séparément.</p>
+</section>
+</section>
+<section id="installations-avancees">
+<h2>Installations avancées<a class="headerlink" href="#installations-avancees" title="Link to this heading"></a></h2>
+<p>Sur certaines configurations (nous les appelons généralement <em>bunny</em>),
+nous utilisons un rabbitmq clustered, comme ceci:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">/.</span><span class="n">erlang</span><span class="o">.</span><span class="n">cookie</span>  <span class="n">same</span> <span class="n">on</span> <span class="nb">all</span> <span class="n">nodes</span>
+
+<span class="n">on</span> <span class="n">each</span> <span class="n">node</span> <span class="n">restart</span>  <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span> <span class="n">stop</span><span class="o">/</span><span class="n">start</span>
+
+<span class="n">on</span> <span class="n">one</span> <span class="n">of</span> <span class="n">the</span> <span class="n">node</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">stop_app</span>
+<span class="n">rabbitmqctl</span> <span class="n">join_cluster</span> <span class="n">rabbit</span><span class="o">@</span><span class="s2">&quot;other node&quot;</span>
+<span class="n">rabbitmqctl</span> <span class="n">start_app</span>
+<span class="n">rabbitmqctl</span> <span class="n">cluster_status</span>
+
+
+<span class="c1"># having high availability queue...</span>
+<span class="c1"># here all queues that starts with &quot;cmc.&quot; will be highly available on all the cluster nodes</span>
+
+<span class="n">rabbitmqctl</span> <span class="n">set_policy</span> <span class="n">ha</span><span class="o">-</span><span class="nb">all</span> <span class="s2">&quot;^(cmc|q_)\.*&quot;</span> <span class="s1">&#39;{&quot;ha-mode&quot;:&quot;all&quot;}&#39;</span>
+</pre></div>
+</div>
+<section id="configuration-keepalived-d-un-courtier-clustered">
+<h3>Configuration keepalived d’un courtier Clustered<a class="headerlink" href="#configuration-keepalived-d-un-courtier-clustered" title="Link to this heading"></a></h3>
+<p>Dans cet exemple, bunny-op est un vip qui migre entre bunny1-op et bunny2-op.
+Keepalived déplace le vip entre les deux:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#=============================================</span>
+<span class="c1"># vip bunny-op 192.101.12.59 port 5672</span>
+<span class="c1">#=============================================</span>
+
+<span class="n">vrrp_script</span> <span class="n">chk_rabbitmq</span> <span class="p">{</span>
+        <span class="n">script</span> <span class="s2">&quot;killall -0 rabbitmq-server&quot;</span>
+        <span class="n">interval</span> <span class="mi">2</span>
+<span class="p">}</span>
+
+<span class="n">vrrp_instance</span> <span class="n">bunny</span><span class="o">-</span><span class="n">op</span> <span class="p">{</span>
+        <span class="n">state</span> <span class="n">BACKUP</span>
+        <span class="n">interface</span> <span class="n">eth0</span>
+        <span class="n">virtual_router_id</span> <span class="mi">247</span>
+        <span class="n">priority</span> <span class="mi">150</span>
+        <span class="n">track_interface</span> <span class="p">{</span>
+                <span class="n">eth0</span>
+        <span class="p">}</span>
+        <span class="n">advert_int</span> <span class="mi">1</span>
+        <span class="n">preempt_delay</span> <span class="mi">5</span>
+        <span class="n">authentication</span> <span class="p">{</span>
+                <span class="n">auth_type</span> <span class="n">PASS</span>
+                <span class="n">auth_pass</span> <span class="n">bunop</span>
+        <span class="p">}</span>
+        <span class="n">virtual_ipaddress</span> <span class="p">{</span>
+<span class="c1"># bunny-op</span>
+                <span class="mf">192.101.12.59</span> <span class="n">dev</span> <span class="n">eth0</span>
+        <span class="p">}</span>
+        <span class="n">track_script</span> <span class="p">{</span>
+                <span class="n">chk_rabbitmq</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="integration-ldap">
+<h3>Intégration LDAP<a class="headerlink" href="#integration-ldap" title="Link to this heading"></a></h3>
+<p>Pour activer l’authentification LDAP pour rabbitmq:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">plugins</span> <span class="n">enable</span> <span class="n">rabbitmq_auth_backend_ldap</span>
+
+<span class="c1"># replace username by ldap username</span>
+<span class="c1"># clear password (will be verified through the ldap one)</span>
+<span class="n">rabbitmqctl</span> <span class="n">add_user</span> <span class="n">username</span> <span class="n">aaa</span>
+<span class="n">rabbitmqctl</span> <span class="n">clear_password</span> <span class="n">username</span>
+<span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">username</span> <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span> <span class="s2">&quot;^amq.gen.*$|^cmc.*$&quot;</span> <span class="s2">&quot;^xpublic|^amq.gen.*$|^cmc.*$&quot;</span>
+</pre></div>
+</div>
+<p>Et vous devez configurer les paramètres LDAP dans le fichier de configuration du courtier :
+(cet exemple de configuration ldap-dev test config a fonctionné lorsque nous l’avons testé….):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">.</span><span class="n">config</span>
+<span class="p">[</span> <span class="p">{</span><span class="n">rabbit</span><span class="p">,</span> <span class="p">[{</span><span class="n">auth_backends</span><span class="p">,</span> <span class="p">[</span> <span class="p">{</span><span class="n">rabbit_auth_backend_ldap</span><span class="p">,</span><span class="n">rabbit_auth_backend_internal</span><span class="p">},</span> <span class="n">rabbit_auth_backend_internal</span><span class="p">]}]},</span>
+  <span class="p">{</span><span class="n">rabbitmq_auth_backend_ldap</span><span class="p">,</span>
+   <span class="p">[</span> <span class="p">{</span><span class="n">servers</span><span class="p">,</span>               <span class="p">[</span><span class="s2">&quot;ldap-dev.cmc.ec.gc.ca&quot;</span><span class="p">]},</span>
+     <span class="p">{</span><span class="n">user_dn_pattern</span><span class="p">,</span>       <span class="s2">&quot;uid=$</span><span class="si">{username}</span><span class="s2">,ou=People,ou=depot,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">},</span>
+     <span class="p">{</span><span class="n">use_ssl</span><span class="p">,</span>               <span class="n">false</span><span class="p">},</span>
+     <span class="p">{</span><span class="n">port</span><span class="p">,</span>                  <span class="mi">389</span><span class="p">},</span>
+     <span class="p">{</span><span class="n">log</span><span class="p">,</span>                   <span class="n">true</span><span class="p">},</span>
+     <span class="p">{</span><span class="n">network</span><span class="p">,</span>               <span class="n">true</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">vhost_access_query</span><span class="p">,</span>    <span class="p">{</span><span class="n">in_group</span><span class="p">,</span>
+                             <span class="s2">&quot;ou=$</span><span class="si">{vhost}</span><span class="s2">-users,ou=vhosts,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+    <span class="p">{</span><span class="n">resource_access_query</span><span class="p">,</span>
+     <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">permission</span><span class="p">,</span> <span class="n">configure</span><span class="p">,</span> <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+            <span class="p">{</span><span class="n">permission</span><span class="p">,</span> <span class="n">write</span><span class="p">,</span>
+             <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">resource</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span>    <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="n">resource</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}},</span>
+            <span class="p">{</span><span class="n">permission</span><span class="p">,</span> <span class="n">read</span><span class="p">,</span>
+             <span class="p">{</span><span class="k">for</span><span class="p">,</span> <span class="p">[{</span><span class="n">resource</span><span class="p">,</span> <span class="n">exchange</span><span class="p">,</span> <span class="p">{</span><span class="n">in_group</span><span class="p">,</span> <span class="s2">&quot;cn=admin,dc=ec,dc=gc,dc=ca&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="n">resource</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span>    <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}}</span>
+           <span class="p">]</span>
+     <span class="p">}},</span>
+  <span class="p">{</span><span class="n">tag_queries</span><span class="p">,</span>           <span class="p">[{</span><span class="n">administrator</span><span class="p">,</span> <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">false</span><span class="p">}},</span>
+                           <span class="p">{</span><span class="n">management</span><span class="p">,</span>    <span class="p">{</span><span class="n">constant</span><span class="p">,</span> <span class="n">true</span><span class="p">}}]}</span>
+ <span class="p">]</span>
+<span class="p">}</span>
+<span class="p">]</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="necessite-rabbitmq-3-3-3-x">
+<h3>Nécessite RABBITMQ &gt; 3.3.3.x<a class="headerlink" href="#necessite-rabbitmq-3-3-3-x" title="Link to this heading"></a></h3>
+<p>Cherchait à savoir comment utiliser LDAP strictement pour l’authentification par mot de passe.
+La réponse que j’ai eue des gourous de Rabbitmq:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>On 07/08/14 20:51, michel.grenier@ec.gc.ca wrote:
+&gt; I am trying to find a way to use our ldap server  only for
+&gt; authentification...
+&gt; The user&#39;s  permissions, vhost ... etc  would already be set directly
+&gt; on the server
+&gt; with rabbitmqctl...  The only thing ldap would be used for would be
+&gt; logging.
+&gt; Is that possible... ?   I am asking because our ldap schema is quite
+&gt; different from
+&gt; what rabbitmq-server requieres.
+
+Yes (as long as you&#39;re using at least 3.3.x).
+
+You need something like:
+
+{rabbit,[{auth_backends,
+           [{rabbit_auth_backend_ldap, rabbit_auth_backend_internal}]}]}
+
+See http://www.rabbitmq.com/ldap.html and in particular:
+
+&quot;The list can contain names of modules (in which case the same module is used for both authentication and authorisation), *or 2-tuples like {ModN, ModZ} in which case ModN is used for authentication and ModZ is used for authorisation*.&quot;
+
+Here ModN is rabbit_auth_backend_ldap and ModZ is rabbit_auth_backend_internal.
+
+Cheers, Simon
+</pre></div>
+</div>
+</section>
+<section id="support">
+<h3>Support<a class="headerlink" href="#support" title="Link to this heading"></a></h3>
+<p>Il est maintenant possible d’activer MQTT dans Sarracenia via le plugin RabbitMQ MQTT.
+Voici un guide pratique minimal pour notre support RabbitMQTT:</p>
+<ul>
+<li><p>Après que tout autre service MQTT écoutant le port 1883 a été désactivé,
+activez le plugin RabbitMQ MQTT.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmq</span><span class="o">-</span><span class="n">plugins</span> <span class="n">enable</span> <span class="n">rabbitmq_mqtt</span>
+<span class="n">cat</span> <span class="o">&gt;&gt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">/</span><span class="n">rabbitmq</span><span class="o">.</span><span class="n">config</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span>
+<span class="p">[{</span><span class="n">rabbitmq_mqtt</span><span class="p">,</span> <span class="p">[{</span><span class="n">default_user</span><span class="p">,</span>     <span class="o">&lt;&lt;</span><span class="s2">&quot;anonymous&quot;</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="n">default_pass</span><span class="p">,</span>     <span class="o">&lt;&lt;</span><span class="s2">&quot;anonymous&quot;</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="n">allow_anonymous</span><span class="p">,</span>  <span class="n">true</span><span class="p">},</span>
+                  <span class="p">{</span><span class="n">vhost</span><span class="p">,</span>            <span class="o">&lt;&lt;</span><span class="s2">&quot;/&quot;</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="n">exchange</span><span class="p">,</span>         <span class="o">&lt;&lt;</span><span class="s2">&quot;xmqtt_public&quot;</span><span class="o">&gt;&gt;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="n">ssl_listeners</span><span class="p">,</span>    <span class="p">[]},</span>
+                  <span class="p">{</span><span class="n">tcp_listeners</span><span class="p">,</span>    <span class="p">[</span><span class="mi">1883</span><span class="p">]},</span>
+                  <span class="p">{</span><span class="n">tcp_listen_options</span><span class="p">,</span> <span class="p">[{</span><span class="n">backlog</span><span class="p">,</span> <span class="mi">4096</span><span class="p">},</span>
+                                        <span class="p">{</span><span class="n">nodelay</span><span class="p">,</span> <span class="n">true</span><span class="p">}]}]}</span>
+<span class="p">]</span><span class="o">.</span>
+<span class="n">EOF</span>
+<span class="n">systemctl</span> <span class="n">restart</span> <span class="n">rabbitmq</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+</div>
+</li>
+<li><p>Modifier les autorisations d’utilisateur anonyme (rabbit_mqtt.default_user)
+pour permettre à l’utilisateur partenaire de s’abonner à votre flux mqtt
+(c’est-à-dire en utilisant mosquitto_sub):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rabbitmqctl</span> <span class="n">set_permissions</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span> <span class="n">anonymous</span> <span class="s2">&quot;^q_anonymous.*|^mqtt-subscription&quot;</span> <span class="s2">&quot;^q_anonymous.*|^xs_anonymous$|^mqtt-subscription&quot;</span> <span class="s2">&quot;^q_anonymous.*|^x[lrs]_anonymous.*|^x.*public$&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Écrivez vos configurations qui seront publiées sur rabbitmqtt exchange:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Voici un shovel/myshovel.conf minimal
+# S’abonner à partir d’un échange amqp source
+broker amqp://${afeeder}@${abroker}
+exchange ${from_exchange}
+
+# publication sur rabbitmqtt exchange
+post_broker amqp://${afeeder}@${abroker}
+post_exchange xmqtt_public
+post_topicPrefix  v03.${from_exchange}
+report False
+</pre></div>
+</div>
+</li>
+<li><p>ou consommer à partir de rabbitmqtt échange:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Voici un subscribe/mysub.conf minimal
+broker amqp://${asub}@${abroker}/
+exchange xmqtt_public
+topicPrefix v03.${from_exchange}
+
+# Imprimer tous les msg reçus
+accept .*
+on_message msg_rawlog
+download off
+</pre></div>
+</div>
+<p>Notez que nous utilisons <em>xmqtt_public</em> comme (post_)échange qui est défini comme
+le <em>rabbitmq_mqtt.exchange</em> dans le fichier rabbitmq.config. Nous ajoutons également
+l’échange de sources au (post_)topicPrefix, qui mappe l’échange source et pourrait
+être utile si nous mappons plusieurs échanges à mqtt.</p>
+</li>
+<li><p>Démarrez et testez votre configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr_shovel</span> <span class="n">start</span> <span class="n">myshovel</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">sr_subscribe</span> <span class="n">foreground</span> <span class="n">mysub</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+</li>
+<li><p>Sur une autre machine, vous pouvez maintenant exécuter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mosquitto_sub -h ${abroker} -t &#39;#&#39; -d
+</pre></div>
+</div>
+<p>Les messages reçus de sr_subscribe et de mosquitto_sub doivent être les mêmes.</p>
+</li>
+</ul>
+</section>
+</section>
+<section id="crochets-de-sundew">
+<h2>Crochets de Sundew<a class="headerlink" href="#crochets-de-sundew" title="Link to this heading"></a></h2>
+<p>Cette information n’est très probablement pas pertinente pour presque tous les utilisateurs. Sundew est un autre module de MetPX qui est essentiellement en cours de développement.
+remplacé par Sarracénie. Cette information n’est utile qu’à ceux qui ont une base installée de Sundew souhaitant faire le pont
+à la sarracénie. Les premiers travaux sur la sarracénie n’ont utilisé que le client d’abonnement comme téléchargeur, et le module de commutation de l’OMM existant.
+de MetPX comme source de données. Il n’y avait pas de concept d’utilisateurs multiples, car le commutateur fonctionne comme une diffusion unique.
+et outil de routage. Cette section décrit les types de <em>colle</em> utilisés pour nourrir les abonnés à la sarracénie à partir d’une source Sundew.
+Il suppose une compréhension profonde de MetPX-Sundew. Actuellement, le script dd_notify.py crée des messages pour le fichier
+protocole exp., v00. et v02 (dernière version du protocole de sarracénie)</p>
+<section id="notifications-sur-dd">
+<h3>Notifications sur DD<a class="headerlink" href="#notifications-sur-dd" title="Link to this heading"></a></h3>
+<p>En remplacement des flux Atom/RSS qui indiquent aux abonnés quand de nouvelles données sont disponibles, nous mettons un courtier en ligne
+sur notre serveur de diffusion de données (dd.weather.gc.ca.) Les clients peuvent s’y abonner. Pour créer les notifications, nous avons
+un Sundew Sender (nommé wxo-b1-oper-dd.conf) avec un script d’envoi:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span> <span class="n">script</span>
+<span class="n">send_script</span> <span class="n">sftp_amqp</span><span class="o">.</span><span class="n">py</span>
+
+<span class="c1"># connection info</span>
+<span class="n">protocol</span>    <span class="n">ftp</span>
+<span class="n">host</span>        <span class="n">wxo</span><span class="o">-</span><span class="n">b1</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">user</span>        <span class="n">wxofeed</span>
+<span class="n">password</span>    <span class="o">**********</span>
+<span class="n">ftp_mode</span>    <span class="n">active</span>
+
+<span class="n">noduplicates</span> <span class="n">false</span>
+
+<span class="c1"># no filename validation (pds format)</span>
+<span class="n">validation</span>  <span class="kc">False</span>
+
+<span class="c1"># delivery method</span>
+<span class="n">lock</span>  <span class="n">umask</span>
+<span class="n">chmod</span> <span class="mi">775</span>
+<span class="n">batch</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>Nous voyons toutes les informations de configuration pour un expéditeur à fichier unique, mais le script send_script remplace le paramètre
+expéditeur normal avec quelque chose qui construit aussi des messages AMQP. Cette configuration de l’expéditeur Sundew
+invoque <em>sftp_amqp.py</em> comme un script pour faire l’envoi proprement dit, mais aussi pour placer la charge utile d’un fichier
+Message AMQP dans le fichier /apps/px/txq/dd-notify-wxo-b1/, le mettant en fil d’attente pour un expéditeur AMQP Sundew.
+Cette configuration sender´s c’est:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>type amqp
+
+validation False
+noduplicates False
+
+protocol amqp
+host wxo-b1.cmc.ec.gc.ca
+user feeder
+password ********
+
+exchange_name cmc
+exchange_key  v02.post.${0}
+exchange_type topic
+
+reject ^ensemble.naefs.grib2.raw.*
+
+accept ^(.*)\+\+.*
+</pre></div>
+</div>
+<p>La clé du sujet comprend une substitution. L’arborescence <em>${0}</em> contient l’arborescence des répertoires dans laquelle la balise
+a été placé sur dd (avec le / remplacé par .) Par exemple, voici une entrée de fichier journal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2013</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">06</span> <span class="mi">14</span><span class="p">:</span><span class="mi">47</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="mi">368</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="p">(</span><span class="mi">86</span> <span class="n">Bytes</span><span class="p">)</span> <span class="n">Message</span> <span class="n">radar</span><span class="mf">.24</span><span class="n">_HR_ACCUM</span><span class="o">.</span><span class="n">GIF</span><span class="o">.</span><span class="n">XSS</span><span class="o">++</span><span class="mi">201306061440</span><span class="n">_XSS_24_HR_ACCUM_MM</span><span class="o">.</span><span class="n">gif</span><span class="p">:</span><span class="n">URP</span><span class="p">:</span><span class="n">XSS</span><span class="p">:</span><span class="n">RADAR</span><span class="p">:</span><span class="n">GIF</span><span class="p">::</span><span class="mi">20130606144709</span>  <span class="n">delivered</span> <span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">1.368449</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="mf">168950.887119</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>alors la clé (thème) est: v02.post.radar.24_HR_ACCUM.GIF.XSS</p></li>
+<li><p>le fichier est placé sous:  <a class="reference external" href="http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS">http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS</a></p></li>
+<li><p>et l´url complète sera: <a class="reference external" href="http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS/201306061440_XSS_24_HR_ACCUM_MM.gif">http://dd1.weather.gc.ca/radar/24_HR_ACCUM/GIF/XSS/201306061440_XSS_24_HR_ACCUM_MM.gif</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Docker.html" class="btn btn-neutral float-left" title="Exécution de MetPX via Docker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Addenda_Admin_Rabbit.html" class="btn btn-neutral float-right" title="Administration de Rabbitmq Adddendum" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

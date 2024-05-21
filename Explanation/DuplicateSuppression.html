@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duplicate Suppression &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Delivery Completion (inflight)" href="FileCompletion.html" />
+    <link rel="prev" title="File Detection Strategies" href="DetectFileReady.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Duplicate Suppression</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#standard-path-and-data-oriented">Standard (path and data oriented)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-oriented">Data Oriented</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#name-oriented">Name Oriented</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#urp">URP</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#files-that-change-too-often-mdelaylatest">Files That Change Too Often (mdelaylatest)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#weatheroffice-citypages">Weatheroffice citypages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hpc-mirrorring">HPC mirrorring</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#files-that-are-too-old">Files That are Too Old</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#roll-your-own">Roll Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Duplicate Suppression</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/DuplicateSuppression.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="duplicate-suppression">
+<h1>Duplicate Suppression<a class="headerlink" href="#duplicate-suppression" title="Link to this heading"></a></h1>
+<p>When forwarding products in networks, one needs to avoid <em>storms</em> or loops of data transmission,
+where the same data circulates infinitely in the network, (for example: A sends a file to B, B sends it to C,
+C sends it back to A. If A sends it to B again, we have an infinite loop or <em>storm</em> if the volume is large enough. )</p>
+<p>Another main feature of mission critical processing is having multiple systems produce the same data, or
+hot backup systems being available. If the strategy is to have both production and backup systems both
+running at once, one will always have multiple copies of the same data being in the network, with the
+backup being blocked at some point. The potential for loops, or sending out redundant copies of data,
+consuming excessive bandwidth and processing power, is high.</p>
+<p>It turns out that duplicate suppression is deceptively complex. There is not one method of
+duplicate suppression that is appropriate for all cases, so sr3 allows for customization.
+The <em>sarracenia.flowcb.nodupe</em> module implements duplicate suppression by default but can be used
+for more flexible filtering.</p>
+<dl class="simple">
+<dt>Duplicate suppression must:</dt><dd><ul class="simple">
+<li><p>derive a notification message key.</p></li>
+<li><p>if a notification message has been received with the same key and and path, then it is a duplicate.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Duplicates are dropped to avoid further processing.</p>
+<p>A notification message key is preferably derived from the <em>Identity</em> field of the notification
+message. If the producer does not provide an identity checksum, algorithms may fall
+back on other metadata: <em>mtime</em>, <em>size</em>, <em>pubTime.</em> Since pubTime is a mandatory
+field, a key can always be derived, but it’s effectiveness in a particular use case
+is not assured. (the sarracenia.flowcb.nodupe.NoDupe.deriveKey(self,msg) helper routine
+provides a standard key, given a message.)</p>
+<p>in all methods, one can turn on duplicate suppression with the following option
+in the config file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_ttl</span> <span class="mi">300</span><span class="o">|</span><span class="n">off</span><span class="o">|</span><span class="n">on</span>
+</pre></div>
+</div>
+<p>When supplied a number, that indicates the lifetime, in seconds of entries in the
+duplicate suppresion memory (e.g. 300 seconds == 5 minutes.)</p>
+<section id="standard-path-and-data-oriented">
+<h2>Standard (path and data oriented)<a class="headerlink" href="#standard-path-and-data-oriented" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: when products have the same key and path, they are duplicates.</p>
+<p>Two routes can receive the same product, with the same relative path. In normal processing,
+the products should be identical, and <em>Identity</em> checksums for it should be the same,</p>
+<p>FIXME: the normal case when multiple intervening pumps.</p>
+</section>
+<section id="data-oriented">
+<h2>Data Oriented<a class="headerlink" href="#data-oriented" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: when products the same key, they are duplicates.</p>
+<p>in the config file either:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span>
+</pre></div>
+</div>
+<p>overrides the standard duplicate suppression key generation to include only the data
+checksum. This module adjusts the <em>path</em> field that the standard duplicateion suppression field uses.
+The <em>flowcb_prepend</em> directive ensures that it is called before the built-in duplicate suppression.</p>
+<p>products that are the same should have identical checksums, regardless of path. Used when
+multiple sources produce the same product. (Note: all zero-length files are identical,
+it could be that products with unrelated purpose have identical content. scoping is
+usually important when this option is applied.)</p>
+</section>
+<section id="name-oriented">
+<h2>Name Oriented<a class="headerlink" href="#name-oriented" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: when products have the same file name, they are duplicates.</p>
+<p>In the config file, either:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">Name</span>
+</pre></div>
+</div>
+<p>Override the standard duplicate suppression key generation to use only the file name.</p>
+<p>When multiple sources produce a product, but the result is not binary identical, and no
+appropriate Identity method is available, then then one needs a different approach.
+Since the two sources are not, generally, synchronized,</p>
+<section id="urp">
+<h3>URP<a class="headerlink" href="#urp" title="Link to this heading"></a></h3>
+<p>Radar production is done, in one case, on many different (6? ) operational servers producing
+“identical” products. They are identical in the sense that they are based on the same
+input, and have the same semantic meaning, but details of processing mean that none of
+the products are binary identical.</p>
+<p>The different servers are used as different “sources” so the relative path of products
+from the different sources will not be the same, but every product that has the same
+file name is interchangeable (“identical” for our purposes.) So using the file name
+is correct in this case.</p>
+</section>
+</section>
+<section id="files-that-change-too-often-mdelaylatest">
+<h2>Files That Change Too Often (mdelaylatest)<a class="headerlink" href="#files-that-change-too-often-mdelaylatest" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: wait until file is x seconds old before forwarding.</p>
+<p>NOTE: This is an additional filter to duplicate suppression, and the above
+methods can be used in conjunction with mdelaylatest. this filter is ideally
+applied before duplicate suppression to reduce the database size.</p>
+<p>In the configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mdelay</span> <span class="mi">30</span>
+<span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">mdelaylatest</span><span class="o">.</span><span class="n">MDelayLatest</span>
+</pre></div>
+</div>
+<p>Delay all files by 30 seconds, if multiple versions are produced before the file
+is 30 seconds old, then only send the last one, when it is 30 seconds old.</p>
+<p>use case:
+In some cases, there are data sources that overwrite files very often.
+If the files are large (take a long time to copy) or there is queuing (the subscriber
+is some time behind the producer.), an algorithm could overwrite a file, or
+append to it, three or four times before having a “final” version that will last some time.</p>
+<p>if network has a propagation delay that is longer than the overwrite period, then by
+the time the consumer requests the file, it will be different (potentially causing checksum mismatches.)
+or, if it is fast enough, copying a file that will not last more than a few seconds
+could be a waste of bandwidth and processing.</p>
+<section id="weatheroffice-citypages">
+<h3>Weatheroffice citypages<a class="headerlink" href="#weatheroffice-citypages" title="Link to this heading"></a></h3>
+<p>( <a class="reference external" href="https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/">https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/</a> )</p>
+<p>The citypages are a compound product (derived from many separate upstream products.)
+The script that creates the citypage products seems to write a header, then some records,
+then at the very end, a footer.  there were many cases of files being transmitted
+as <em>invalid xml</em> because the footer is missing, leaving some XML entities incomplete.
+One must wait until the script has finished writing the file before creating a notification message.</p>
+</section>
+<section id="hpc-mirrorring">
+<h3>HPC mirrorring<a class="headerlink" href="#hpc-mirrorring" title="Link to this heading"></a></h3>
+<p>In the high speed mirroring of data between high performance computing clusters,
+shell scripts often spend time appending records to files, perhaps hundreds of times per second.
+Once the script is complete, the file becomes read-only for consumers.  It is not useful
+to transmit these intermediate values. A 100 byte file monitored using the shim library
+or an sr_watch, could be modified hundreds of times, causing a copy for every modification potentially
+triggering hundreds of copies. It is better to wait for the end of the update process,
+for the file to be quiescent, before posting a notification message.</p>
+</section>
+</section>
+<section id="files-that-are-too-old">
+<h2>Files That are Too Old<a class="headerlink" href="#files-that-are-too-old" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: files that are too old are dropped.</p>
+<p>in the configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileAgeMax</span> <span class="mi">600</span>
+</pre></div>
+</div>
+<p>Files which are older than 600 seconds (10 minutes) will not be considerred for transfer.</p>
+<p>This is usually used with polls that have very long lasting directories on a remote
+server. example: a remote server has a permanent database of remote files.</p>
+<p>It is often the case that nodupe_ttl should be greater than nodupe_fileAgeMax to prevent
+files from aging out of the cache before they are considered “too old” and then being
+(erroneously) re-ingested.  A warning message is emitted if this is the case in a poll
+on startup.</p>
+</section>
+<section id="roll-your-own">
+<h2>Roll Your Own<a class="headerlink" href="#roll-your-own" title="Link to this heading"></a></h2>
+<p>In the configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">your_settings</span>
+<span class="n">flowcb_prepend</span> <span class="n">your_class</span><span class="o">.</span><span class="n">YourClass</span>
+</pre></div>
+</div>
+<p>If none of the built-in methods of duplicate suppression work for your use case, you can
+subclass sarracenia.flowcb.nodupe and derive keys in a different way. See the
+sarracenia.flowcb.nodupe.name and sarracenia.flowcb.nodupe.data classes for examples of
+how to do so.</p>
+<p>One can also implement a filter that sets the <em>nodupe_override</em> field in the message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override] = { &#39;</span><span class="n">key</span><span class="s1">&#39;: your_key, &#39;</span><span class="n">path</span><span class="s1">&#39;: your_path }</span>
+</pre></div>
+</div>
+<p>and the standard duplicate suppression method will use the provided key and value.
+There is also a helper function available in the nodupe class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">deriveKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">--&gt;</span> <span class="nb">str</span>
+</pre></div>
+</div>
+<p>which will look at the fields in the message and derive the <em>normal</em> key that would be
+generated for a message, which you can then modify if only looking for a small change.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DetectFileReady.html" class="btn btn-neutral float-left" title="File Detection Strategies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="FileCompletion.html" class="btn btn-neutral float-right" title="Delivery Completion (inflight)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

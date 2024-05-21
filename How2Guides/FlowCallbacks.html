@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writing FlowCallback Plugins &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Administering AMQP Data Pumps" href="Admin.html" />
+    <link rel="prev" title="Data Sources" href="source.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">HOWTOS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="subscriber.html">Subscribing to Data Feeds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source.html">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Using Flow Callback Plugins</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#config-file-entries-to-use-flow-callbacks">Config File Entries to use Flow_Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#worklists">Worklists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initialization-and-settings">Initialization and Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#entry-points">Entry Points</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-fields">new_* Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#override-fields">Override Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-duplicate-suppression">Customizing Duplicate Suppression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-post-exchangesplit">Customizing post_exchangeSplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sample-flowcb-sub-class">Sample Flowcb Sub-Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-renaming">Download Renaming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#web-sites-with-non-standard-file-listings">Web Sites with non-standard file listings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-examples">Other Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modifying-files-in-flight">Modifying Files in Flight</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subclassing-flow">Subclassing Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Admin.html">Administering AMQP Data Pumps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin_Rabbit_Addendum.html">Administering Rabbitmq Adddendum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UPGRADING.html">Release Notes (Advice on Upgrades)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v2ToSr3.html">Porting V2 Plugins to Sr3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Email_Ingesting_With_Sarracenia.html">Email Ingesting with Sarracenia (v2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hydro_Examples.html">Using Plugins to Grab Hydrometric Data (v2)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">HOWTOS</a> &raquo;</li>
+      <li>Writing FlowCallback Plugins</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/How2Guides/FlowCallbacks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="writing-flowcallback-plugins">
+<h1>Writing FlowCallback Plugins<a class="headerlink" href="#writing-flowcallback-plugins" title="Link to this heading"></a></h1>
+<p>All Sarracenia components implement <em>the Flow</em> algorithm.
+Sarracenia’s main class is <em>sarracenia.flow</em> and the a great
+deal of core functionality is implemented using the class created to add
+custom processing to a flow, the flowcb (flow callback) class.</p>
+<p>For a detailed discussion of the flow algorithm itself, have a look
+at <a class="reference internal" href="../Explanation/Concepts.html"><span class="doc">Concepts</span></a> manual. For any flow, one can
+add custom processing at a variety of times during processing by sub-classing
+the <a class="reference external" href="../../sarracenia/flowcb/__init__.py">sarracenia.flowcb</a> class.</p>
+<p>Briefly, the algorithm has the following steps:</p>
+<ul class="simple">
+<li><p><strong>gather</strong> – passively collect notification messages to be processed.</p></li>
+<li><p><strong>poll</strong> – actively collect notification messages to be processed.</p></li>
+<li><p><strong>filter</strong> – apply accept/reject regular expression matches to the notification message list.</p>
+<ul>
+<li><p><em>after_accept</em> callback entry point</p></li>
+</ul>
+</li>
+<li><p><strong>work</strong> – perform a transfer or transformation on a file.</p>
+<ul>
+<li><p><em>after_work</em> callback entry point</p></li>
+</ul>
+</li>
+<li><p><strong>post</strong>  – post the result of the work done for the next step.</p></li>
+</ul>
+<p>A flow callback, is a python class built with routines named to
+indicate when the programmer wants them to be called.</p>
+<p>There are a number of examples of flowcallback classes included
+with Sarracenia, given in the
+<a class="reference external" href="../Reference/flowcb.html">Flowcallback Reference</a>
+that can be used as the basis for building custom ones.</p>
+<p>This guide describes how to build flow callback classes from scratch.</p>
+<section id="config-file-entries-to-use-flow-callbacks">
+<h2>Config File Entries to use Flow_Callbacks<a class="headerlink" href="#config-file-entries-to-use-flow-callbacks" title="Link to this heading"></a></h2>
+<p>To add a callback to a a flow, a line is added to the config file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">Log</span>
+</pre></div>
+</div>
+<p>If you follow the convention, and the name of the class is a capitalized
+version (Log) of the file name (log), then a shorthand is available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="n">log</span>
+</pre></div>
+</div>
+<p>The class constructor accepts a sarracenia.config.Config class object,
+called options, that stores all the settings to be used by the running flow.
+Options is used to override default behaviour of both flows and callbacks.
+The argument to the flowcb is a standard python class that needs to be
+in the normal python path for python <em>import</em>, and the last element
+is the name of the class in within the file that needs to be instantiated
+as a flowcb instance.</p>
+<p>a setting for a callback is declared as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">filter</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">Log</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>(the prefix for the setting matches the type hierarchy in flowCallback)</p>
+<p>when the constructor for the callback is called, it’s options
+argument will contain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="o">.</span><span class="n">logLevel</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+</pre></div>
+</div>
+<p>If no module specific override is present, then the more global
+setting is used.</p>
+</section>
+<section id="worklists">
+<h2>Worklists<a class="headerlink" href="#worklists" title="Link to this heading"></a></h2>
+<p>Besides option, the other main argument to after_accept and after_work callback
+routines is the worklist. The worklist is given to entry points occurring during notification message
+processing, and is a number of worklists of notification messages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">--&gt;</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">process</span> <span class="p">(</span><span class="n">either</span> <span class="n">new</span> <span class="ow">or</span> <span class="n">retries</span><span class="o">.</span><span class="p">)</span>
+<span class="n">worklist</span><span class="o">.</span><span class="n">ok</span>       <span class="o">--&gt;</span> <span class="n">successfully</span> <span class="n">processed</span>
+<span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span> <span class="o">--&gt;</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">to</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">further</span> <span class="n">processed</span><span class="o">.</span>
+<span class="n">worklist</span><span class="o">.</span><span class="n">failed</span>   <span class="o">--&gt;</span> <span class="n">notification</span> <span class="n">messages</span> <span class="k">for</span> <span class="n">which</span> <span class="n">processing</span> <span class="n">failed</span><span class="o">.</span>
+                      <span class="n">failed</span> <span class="n">notification</span> <span class="n">messages</span> <span class="n">will</span> <span class="n">be</span> <span class="n">retried</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Initially, all notification messages are placed in worklists.incoming.
+if a plugin decides:</p>
+<ul class="simple">
+<li><p>a notification message is not relevant, moved it to the rejected worklist.</p></li>
+<li><p>a no further processing of the notification message is needed, move it to ok worklist.</p></li>
+<li><p>an operation failed and it should be retried later, move to failed worklist.</p></li>
+</ul>
+<p>Do not remove from all lists, only move notification messages between the worklists.
+it is necessary to put rejected notification messages in the appropriate worklist
+so that they are acknowledged as received. Messages can only removed
+after the acknowledgement has been taken care of.</p>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading"></a></h2>
+<p>Python has great built-in logging, and once has to just use the module
+in a normal, pythonic way, with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+</pre></div>
+</div>
+<p>After all imports in your python source file, then define a logger
+for the source file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As is normal with the Python logging module, notification messages can then
+be posted to the log:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got here&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each notification message in the log will be prefixed with the class and routine
+emitting the log notification message, as well as the date/time.</p>
+<p>One can also implement a per module override to log levels.
+See sarracenia/moth/amqp.py as and example. For that module,
+the notification message logging level is upped to warning by default.
+One can override it with a config file setting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">AMQP</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">info</span>
+</pre></div>
+</div>
+<p>in the <em>__init__(self,options)</em> function of the callback,
+include the lines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">me</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span> <span class="vm">__class__</span><span class="o">.</span><span class="vm">__module__</span> <span class="p">,</span> <span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="p">)</span>
+<span class="k">if</span> <span class="s1">&#39;logLevel&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">][</span><span class="n">me</span><span class="p">]:</span>
+             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;logLevel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="initialization-and-settings">
+<h2>Initialization and Settings<a class="headerlink" href="#initialization-and-settings" title="Link to this heading"></a></h2>
+<p>The next step is declaring a class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Myclass</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>as a subclass as FlowCB.  The main routines in the class  are entry points
+that will be called at the time their name implies. If you a class is missing a
+given entry point, it will just not be called. The __init__() class is used to
+initialize things for the callback class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logFormat</span><span class="p">,</span>
+                        <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span> <span class="s1">&#39;myoption&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;usuallythis&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The logging setup lines in __init__ allow setting a specific logging level
+for this flowCallback class. Once the logging boiler-plate is done,
+the add_option routine to define settings to for the class.
+users can include them in configuration files, just like built-in options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myoption</span> <span class="n">IsReallyNeeded</span>
+</pre></div>
+</div>
+<p>The result of such a setting is that the <em>self.o.myoption = ‘IsReallyNeeded’</em>.
+If no value is set in the configuration, <em>self.o.myoption</em> will default to <em>‘usuallyThis’</em>
+There are various <em>kinds</em> of options, where the declared type modifies the parsing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;count&#39;</span>    <span class="n">integer</span> <span class="n">count</span> <span class="nb">type</span><span class="o">.</span>
+<span class="s1">&#39;duration&#39;</span> <span class="n">a</span> <span class="n">floating</span> <span class="n">point</span> <span class="n">number</span> <span class="n">indicating</span> <span class="n">a</span> <span class="n">quantity</span> <span class="n">of</span> <span class="n">seconds</span> <span class="p">(</span><span class="mf">0.001</span> <span class="ow">is</span> <span class="mi">1</span> <span class="n">milisecond</span><span class="p">)</span>
+           <span class="n">modified</span> <span class="n">by</span> <span class="n">a</span> <span class="n">unit</span> <span class="n">suffix</span> <span class="p">(</span> <span class="n">m</span><span class="o">-</span><span class="n">minute</span><span class="p">,</span> <span class="n">h</span><span class="o">-</span><span class="n">hour</span><span class="p">,</span> <span class="n">w</span><span class="o">-</span><span class="n">week</span> <span class="p">)</span>
+<span class="s1">&#39;flag&#39;</span>     <span class="n">boolean</span> <span class="p">(</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span> <span class="n">option</span><span class="o">.</span>
+<span class="s1">&#39;list&#39;</span>     <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">string</span> <span class="n">values</span><span class="p">,</span> <span class="n">each</span> <span class="n">succeeding</span> <span class="n">occurrence</span> <span class="n">catenates</span> <span class="n">to</span> <span class="n">the</span> <span class="n">total</span><span class="o">.</span>
+           <span class="nb">all</span> <span class="n">v2</span> <span class="n">plugin</span> <span class="n">options</span> <span class="n">are</span> <span class="n">declared</span> <span class="n">of</span> <span class="nb">type</span> <span class="nb">list</span><span class="o">.</span>
+<span class="s1">&#39;size&#39;</span>     <span class="n">integer</span> <span class="n">size</span><span class="o">.</span> <span class="n">Suffixes</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="ow">and</span> <span class="n">g</span> <span class="k">for</span> <span class="n">kilo</span><span class="p">,</span> <span class="n">mega</span><span class="p">,</span> <span class="ow">and</span> <span class="n">giga</span> <span class="p">(</span><span class="n">base</span> <span class="mi">2</span><span class="p">)</span> <span class="n">multipliers</span><span class="o">.</span>
+<span class="s1">&#39;str&#39;</span>      <span class="n">an</span> <span class="n">arbitrary</span> <span class="n">string</span> <span class="n">value</span><span class="p">,</span> <span class="k">as</span> <span class="n">will</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">the</span> <span class="n">above</span> <span class="n">types</span><span class="p">,</span> <span class="n">each</span>
+           <span class="n">succeeding</span> <span class="n">occurrence</span> <span class="n">overrides</span> <span class="n">the</span> <span class="n">previous</span> <span class="n">one</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="entry-points">
+<h2>Entry Points<a class="headerlink" href="#entry-points" title="Link to this heading"></a></h2>
+<p>Other entry_points, extracted from sarracenia/flowcb/__init__.py</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">messagelist</span><span class="p">):</span>
+     <span class="n">Task</span><span class="p">:</span> <span class="n">acknowledge</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">gather</span> <span class="n">source</span><span class="o">.</span>
+
+<span class="w"> </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   application of the accept/reject clauses happens here, so after_accept callbacks</span>
+<span class="sd">   run on a filtered set of notification messages.</span>
+
+<span class="sd"> &quot;&quot;&quot;</span>
+
+ <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      Task: just after notification messages go through accept/reject masks,</span>
+<span class="sd">            operate on worklist.incoming to help decide which notification messages to process further.</span>
+<span class="sd">            and move notification messages to worklist.rejected to prevent further processing.</span>
+<span class="sd">            do not delete any notification messages, only move between worklists.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+
+ <span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+     <span class="n">Task</span><span class="p">:</span> <span class="n">operate</span> <span class="n">on</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="p">(</span><span class="n">files</span> <span class="n">which</span> <span class="n">have</span> <span class="n">arrived</span><span class="o">.</span><span class="p">)</span>
+
+ <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">::</span>
+
+      <span class="n">Task</span><span class="p">:</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_inflight_file&#39;</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="n">the</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="n">options</span> <span class="n">perform</span> <span class="n">a</span> <span class="n">download</span> <span class="n">of</span> <span class="n">a</span> <span class="n">single</span> <span class="n">file</span><span class="o">.</span>
+            <span class="k">return</span> <span class="kc">True</span> <span class="n">on</span> <span class="n">a</span> <span class="n">successful</span> <span class="n">transfer</span><span class="p">,</span> <span class="kc">False</span> <span class="n">otherwise</span><span class="o">.</span>
+
+
+ <span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+     <span class="n">Task</span><span class="p">:</span> <span class="n">gather</span> <span class="n">notification</span> <span class="n">messages</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">source</span><span class="o">...</span> <span class="k">return</span> <span class="n">either</span><span class="p">:</span>
+           <span class="o">*</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">notification</span> <span class="n">messages</span><span class="p">,</span> <span class="ow">or</span>
+           <span class="o">*</span> <span class="n">a</span> <span class="nb">tuple</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">:</span><span class="n">keep_going</span><span class="p">,</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">messages</span><span class="p">)</span>
+           <span class="o">*</span> <span class="n">to</span> <span class="n">curtail</span> <span class="n">further</span> <span class="n">gathers</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">cycle</span><span class="o">.</span>
+
+     <span class="k">return</span> <span class="p">[]</span>
+
+ <span class="k">def</span> <span class="nf">metrics_report</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+
+     <span class="n">Return</span> <span class="n">a</span> <span class="n">dictionary</span> <span class="n">of</span> <span class="n">metrics</span><span class="o">.</span> <span class="n">Example</span><span class="p">:</span> <span class="n">number</span> <span class="n">of</span> <span class="n">messages</span> <span class="n">remaining</span> <span class="ow">in</span> <span class="n">retry</span> <span class="n">queues</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">do</span> <span class="n">periodic</span> <span class="n">processing</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">page</span><span class="p">):</span>
+      <span class="n">Task</span><span class="p">:</span> <span class="n">modify</span> <span class="n">an</span> <span class="n">html</span> <span class="n">page</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">line</span><span class="p">):</span>
+      <span class="n">used</span> <span class="ow">in</span> <span class="n">FTP</span> <span class="n">polls</span><span class="p">,</span> <span class="n">because</span> <span class="n">servers</span> <span class="n">have</span> <span class="n">different</span> <span class="n">formats</span><span class="p">,</span> <span class="n">modify</span> <span class="n">to</span> <span class="n">canonical</span> <span class="n">use</span><span class="o">.</span>
+
+      <span class="n">Task</span><span class="p">:</span> <span class="k">return</span> <span class="n">modified</span> <span class="n">line</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">After</span> <span class="n">the</span> <span class="n">connection</span> <span class="ow">is</span> <span class="n">established</span> <span class="k">with</span> <span class="n">the</span> <span class="n">broker</span> <span class="ow">and</span> <span class="n">things</span> <span class="n">are</span> <span class="n">instantiated</span><span class="p">,</span> <span class="n">but</span>
+      <span class="n">before</span> <span class="nb">any</span> <span class="n">notification</span> <span class="n">message</span> <span class="n">transfer</span> <span class="n">occurs</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">cleanup</span> <span class="n">processing</span> <span class="n">when</span> <span class="n">stopping</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+     <span class="n">Task</span><span class="p">:</span> <span class="n">build</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">,</span> <span class="n">a</span> <span class="n">form</span> <span class="n">of</span> <span class="n">gather</span><span class="p">()</span>
+
+ <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+      <span class="n">Task</span><span class="p">:</span> <span class="n">operate</span> <span class="n">on</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">,</span> <span class="ow">and</span> <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span> <span class="n">modifies</span> <span class="n">them</span> <span class="n">appropriately</span><span class="o">.</span>
+            <span class="n">notification</span> <span class="n">message</span> <span class="n">acknowledgement</span> <span class="n">has</span> <span class="n">already</span> <span class="n">occurred</span> <span class="n">before</span> <span class="n">they</span> <span class="n">are</span> <span class="n">called</span><span class="o">.</span>
+
+<span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">::</span>
+
+      <span class="n">Task</span><span class="p">:</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">],</span> <span class="ow">and</span> <span class="n">the</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="n">options</span> <span class="n">perform</span> <span class="n">a</span> <span class="n">transfer</span>
+            <span class="n">of</span> <span class="n">a</span> <span class="n">single</span> <span class="n">file</span><span class="o">.</span>
+            <span class="k">return</span> <span class="kc">True</span> <span class="n">on</span> <span class="n">a</span> <span class="n">successful</span> <span class="n">transfer</span><span class="p">,</span> <span class="kc">False</span> <span class="n">otherwise</span><span class="o">.</span>
+
+      <span class="n">This</span> <span class="n">replaces</span> <span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">send</span> <span class="n">functionality</span> <span class="k">for</span> <span class="n">individual</span> <span class="n">files</span><span class="o">.</span>
+
+ <span class="k">def</span> <span class="nf">stop_requested</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="n">Pre</span><span class="o">-</span><span class="n">warn</span> <span class="n">a</span> <span class="n">flowcb</span> <span class="n">that</span> <span class="n">a</span> <span class="n">stop</span> <span class="n">has</span> <span class="n">been</span> <span class="n">requested</span><span class="p">,</span> <span class="n">allowing</span> <span class="n">processing</span> <span class="n">to</span> <span class="n">wrap</span> <span class="n">up</span>
+      <span class="n">before</span> <span class="n">the</span> <span class="n">full</span> <span class="n">stop</span> <span class="n">happens</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="new-fields">
+<h2>new_* Fields<a class="headerlink" href="#new-fields" title="Link to this heading"></a></h2>
+<p>During processing of notification messages, the original standard field values are generally left un-changed (as-read in.)
+To change fields of notification messages forwarded to downstream consumers, one modifies new_field instead
+of the one from the message, as the original is necessary for successful upstream retrieval:</p>
+<ul class="simple">
+<li><p>msg[‘new_baseUrl’] … baseUrl to pass to downstream consumers.</p></li>
+<li><p>msg[‘new_dir’] … the directory into which a file will be downloaded or sent.</p></li>
+<li><p>msg[‘new_file’] …. final name of the file to write.</p></li>
+<li><p>msg[‘new_inflight_path’] … calculated name of the temporary file to be written before renaming to msg[‘new_file’] … do not set manually.</p></li>
+<li><p>msg[‘new_relPath’] … calculated from ‘new_baseUrl’, ‘post_baseDir’, ‘new_dir’, ‘new_file’ … do not set manually.</p></li>
+<li><p>msg[‘post_version’] … calculated the encoding format of the message to post (from settings)</p></li>
+<li><p>msg[‘new_subtopic’] … the subtopic hierarchy that will be encoded in the notification message for downstream consumers.</p></li>
+</ul>
+</section>
+<section id="override-fields">
+<h2>Override Fields<a class="headerlink" href="#override-fields" title="Link to this heading"></a></h2>
+<p>To change processing of messages, one can set overrides to change how built-in algorithms work.
+For example:</p>
+<ul class="simple">
+<li><p>msg[‘nodupe_override’] = { ‘key’: …, ‘path’: … }   changes how the duplicate detection operates.</p></li>
+<li><p>msg[‘topic’] … defines the topic of a published message (instead of being calculated from other fields.)</p></li>
+<li><p>msg[‘exchangeSplitOverride’] = int … changes how post_ExchangeSplit chooses among multiple postExchanges.</p></li>
+</ul>
+</section>
+<section id="customizing-duplicate-suppression">
+<h2>Customizing Duplicate Suppression<a class="headerlink" href="#customizing-duplicate-suppression" title="Link to this heading"></a></h2>
+<p>The built-in processing for duplicates is to use the identity field as a key, and store the path as the value.
+So if a file is received with the same key, and the path is already present, then it is considered a duplicate
+and dropped.</p>
+<p>In some cases, we may want only the file name to be used, so if any file with the same name is received twice,
+regardless of content, then it should be considered a duplicate and dropped. This is useful when multiple systems
+are producing the same products, but they are not bitwise identical.  The built-in flowcb that implements
+that functionality is below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Name</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      Override the the comparison so that files with the same name,</span>
+<span class="sd">      regardless of what directory they are in, are considered the same.</span>
+<span class="sd">      This is useful when receiving data from two different sources (two different trees)</span>
+<span class="sd">      and winnowing between them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;nodupe_override&#39;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> \<span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">])</span>
+                <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nodupe_override&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="customizing-post-exchangesplit">
+<h2>Customizing post_exchangeSplit<a class="headerlink" href="#customizing-post-exchangesplit" title="Link to this heading"></a></h2>
+<p>The exchangeSplit function allows a single flow to send outputs to different exchanges,
+numbered 1…n to provide load distribution. The built-in processing does this in a
+fixed way based on the hash of the identify field. The purpose of exchangeSplit is to
+allow a common set of downstream paths to receive a subset of the total flow, and for
+products with similar “routing” to land on the same downstream node. For example, a file
+with a given checksum, for winnowing to work, has to land on the same downstream node.</p>
+<p>It could be that, rather than using a checksum, one would prefer to use some other
+method to decide which exchange is used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Distbydir</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Override the use of the identity field so that products can be grouped by directory in the relPath</span>
+<span class="sd">    This ensures that all products received from the same directory get posted to the same</span>
+<span class="sd">    exchange when post_exchangeSplit is active.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+          <span class="n">m</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;exchangeSplitOverride&#39;</span><span class="p">])</span>
+          <span class="n">m</span><span class="p">[</span><span class="s1">&#39;exchangeSplitOverride&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This routine sets the exchangeSplitOverride field, which needs to be an integer
+that will be used to pick which of the n exchanges in the post_exchangeSplit
+exchanges defined. This routine calculates a checksum of the directory
+containing the file and then converts the first character of that checksum
+to an integer. If the directory is the same, the exchange chosen will be the same.</p>
+</section>
+<section id="sample-flowcb-sub-class">
+<h2>Sample Flowcb Sub-Class<a class="headerlink" href="#sample-flowcb-sub-class" title="Link to this heading"></a></h2>
+<p>This is an example callback class file (gts2wis2.py) that accepts files whose
+names begin with AHL’s, and renames the directory tree to a different standard,
+the evolving one for the WMO WIS 2.0 (for more information on that module:
+<a class="reference external" href="https://github.com/wmo-im/GTStoWIS2">https://github.com/wmo-im/GTStoWIS2</a>)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">GTStoWIS2</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">GTS2WIS2</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+      <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">=</span><span class="n">GTStoWIS2</span><span class="o">.</span><span class="n">GTStoWIS2</span><span class="p">()</span>
+
+  <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+
+      <span class="n">new_incoming</span><span class="o">=</span><span class="p">[]</span>
+
+      <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+
+          <span class="c1"># fix file name suffix.</span>
+          <span class="n">type_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoExtension</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
+          <span class="n">tpfx</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;subtopic&#39;</span><span class="p">]</span>
+
+          <span class="c1"># input has relpath=/YYYYMMDD/... + pubTime</span>
+          <span class="c1"># need to move the date from relPath to BaseDir, adding the T hour from pubTime.</span>
+          <span class="k">try</span><span class="p">:</span>
+              <span class="n">new_baseSubDir</span><span class="o">=</span><span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">][</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+              <span class="n">t</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tpfx</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="o">+</span><span class="n">new_baseSubDir</span>
+              <span class="n">new_baseDir</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_baseSubDir</span>
+              <span class="n">new_relDir</span> <span class="o">=</span> <span class="s1">&#39;WIS&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">topic_builder</span><span class="o">.</span><span class="n">mapAHLtoTopic</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">])</span>
+              <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_relDir</span>
+              <span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">new_baseDir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">new_relDir</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="p">)</span>
+
+          <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+              <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s2">&quot;skipped&quot;</span> <span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+              <span class="n">worklist</span><span class="o">.</span><span class="n">failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+              <span class="k">continue</span>
+
+          <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span> <span class="s1">&#39;from_cluster&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;to_clusters&#39;</span> <span class="p">]</span> <span class="p">)</span>
+          <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+      <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">=</span><span class="n">new_incoming</span>
+</pre></div>
+</div>
+<p>The <em>after_accept</em> routine is one of the two most common ones in use.</p>
+<p>The after_accept routine has an outer loop that cycles through the entire
+list of incoming notification messages. The normal processing is that is builds a new list of
+incoming notification messages, appending all the rejected ones to <em>worklist.failed.</em> The
+list is just a list of notification messages, where each notification message is a python dictionary with
+all the fields stored in a v03 format notification message. In the notification message there are,
+for example, <em>baseURL</em> and <em>relPath</em> fields:</p>
+<ul class="simple">
+<li><p>baseURL - the baseURL of the resource from which a file would be obtained.</p></li>
+<li><p>relPath - the relative path to append to the baseURL to get the complete download URL.</p></li>
+</ul>
+<p>This is happenning before transfer (download or sent, or processing) of the file
+has occurred, so one can change the behaviour by modifying fields in the notification message.
+Normally, the download paths (called new_dir, and new_file) will reflect the intent
+to mirror the original source tree. so if you have <em>a/b/c.txt</em>  on the source tree, and
+are downloading in to directory <em>mine</em> on the local system, the new_dir would be
+<em>mine/a/b</em> and new_file would be <em>c.txt</em>.</p>
+<p>The plugin above changes the layout of the files that are to be downloaded, based on the
+<a class="reference external" href="https://github.com/wmo-im/GTStoWIS">GTStoWIS</a> class, which prescribes a different
+directory tree on output.  There are a lot of fields to update when changing file
+placement, so best to use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">new_dir</span><span class="p">,</span> <span class="n">new_file</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>to update all necessary fields in the notification message properly. It will update
+‘new_baseURL’, ‘new_relPath’, ‘new_subtopic’ for use when posting.</p>
+<p>The try/except part of the routine deals with the case that, should
+a file arrive with a name from which a topic tree cannot be built, then an exception
+may occur, and the notification message is added to the failed worklist, and will not be
+processed by later plugins.</p>
+</section>
+<section id="download-renaming">
+<h2>Download Renaming<a class="headerlink" href="#download-renaming" title="Link to this heading"></a></h2>
+<p>Sometimes the URL used to obtain data from a server isn’t the same as the name
+one wants to assign to the downloaded result. This occurs often when polling upstream
+arbitrary web services. For such cases the message format defines the <em>retrievePath</em>, or
+retrieval path, used as follows:</p>
+<ul class="simple">
+<li><p>msg[‘retrievePath’] = <a class="reference external" href="https://server/cgi-bin/get">https://server/cgi-bin/get</a>?param1=hoho&amp;…. The retrieval URL</p></li>
+<li><p>msg[‘relPath’] = <a class="reference external" href="https://server/relPath/defining/local/placement">https://server/relPath/defining/local/placement</a> … where to download it to.</p></li>
+</ul>
+<p>Standard subscribers will download using <em>retrievePath</em> but assign the download path using <em>relPath.</em>
+When forwarding after download, the <em>retrievePath</em> should often be removed (to avoid downstream clients
+pulling from the original source instead of the downloaded copy.)</p>
+<p>While the above is a preferred way of defining messages where the download will have a different
+name from the upstream source, a second method is available, the <em>rename</em> used as follows:</p>
+<ul class="simple">
+<li><p>msg[‘rename’] = alternate <em>relPath</em> … download it to here instead of using relPath.</p></li>
+</ul>
+<p>again, once downloaded, the <em>rename</em> header should be removed from the message prior to
+forwarding to downstream clients. the <em>relPath</em> needs to be adjusted.</p>
+<p>Note that both of these methods work the same for senders as well. The term ‘download’ is
+used for simplicity.</p>
+</section>
+<section id="web-sites-with-non-standard-file-listings">
+<h2>Web Sites with non-standard file listings<a class="headerlink" href="#web-sites-with-non-standard-file-listings" title="Link to this heading"></a></h2>
+<p>The poll/nasa_mls</p>
+</section>
+<section id="other-examples">
+<h2>Other Examples<a class="headerlink" href="#other-examples" title="Link to this heading"></a></h2>
+<p>Subclassing of Sarracenia.flowcb is used internally to do a lot of core work.
+It’s a good idea to look at the sarracenia source code itself. For example:</p>
+<ul class="simple">
+<li><p>sr3 list fcb  is a command to list all the callback classes that are
+included in the metpx-sr3 package.</p></li>
+<li><p><em>sarracenia.flowcb</em> have a look at the __init__.py file in there, which
+provides this information on a more programmatically succinct format.</p></li>
+<li><p><em>sarracenia.flowcb.gather.file.File</em>  is a class that implements
+file posting and directory watching, in the sense of a callback that
+implements the <em>gather</em> entry point, by reading a file system and building a
+list of notification messages for processing.</p></li>
+<li><p><em>sarracenia.flowcb.gather.message.Message</em> is a class that implements
+reception of notification messages from message queue protocol flows.</p></li>
+<li><p><em>sarracenia.flowcb.nodupe.NoDupe</em> This modules removes duplicates from message
+flows based on Identity checksums.</p></li>
+<li><p><em>sarracenia.flowcb.post.message.Message</em> is a class that implements posting
+notification messages to Message queue protocol flows</p></li>
+<li><p><em>sarracenia.flowcb.retry.Retry</em> when the transfer of a file fails,
+Sarracenia needs to persist the relevant notification message to a state file for
+a later time when it can be tried again.  This class implements
+that functionality.</p></li>
+</ul>
+</section>
+<section id="modifying-files-in-flight">
+<h2>Modifying Files in Flight<a class="headerlink" href="#modifying-files-in-flight" title="Link to this heading"></a></h2>
+<p>The sarracenia.transfer class has an on_data entry point:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">on_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         transform data as it is being read.</span>
+<span class="sd">         Given a buffer, return the transformed buffer.</span>
+<span class="sd">         Checksum calculation is based on pre transformation... likely need</span>
+<span class="sd">         a post transformation value as well.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="c1"># modify the chunk in this body...</span>
+     <span class="k">return</span> <span class="n">chunk</span>
+
+<span class="k">def</span> <span class="nf">registered_as</span><span class="p">():</span>
+     <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;scr&#39;</span> <span class="p">]</span>
+
+<span class="c1"># copied from sarracenia.transfer.https</span>
+
+<span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+     <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;scr&#39;</span><span class="p">,</span> <span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span>
+
+     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="p">():</span> <span class="k">return</span> <span class="kc">False</span>
+
+     <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>to perform inflight data modification, one can sub-class the relevant transfer class.
+Such a class (scr - strip carriage returns) can be added by putting an import in the configuration
+file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scr.py</span>
+</pre></div>
+</div>
+<p>then messages where the retrieval url is set to use the <em>scr</em> retrieval scheme will use this
+custome transfer protocol.</p>
+</section>
+<section id="subclassing-flow">
+<h2>Subclassing Flow<a class="headerlink" href="#subclassing-flow" title="Link to this heading"></a></h2>
+<p>If none of the built-in components ( poll, post, sarra, shovel, subscribe, watch, winnow ) have the
+behaviour desired, one can build a custom component to do the right thing by sub-classing flow.</p>
+<p>Copy one of the flow sub-classes from the source code, and modify to taste.  In the configuration
+file, add the line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowMain</span> <span class="n">myComponent</span>
+</pre></div>
+</div>
+<p>to have the flow use the new component.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="source.html" class="btn btn-neutral float-left" title="Data Sources" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Admin.html" class="btn btn-neutral float-right" title="Administering AMQP Data Pumps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

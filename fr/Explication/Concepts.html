@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concepts généraux de Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Guide De Ligne De Commande" href="GuideLigneDeCommande.html" />
+    <link rel="prev" title="Aperçu" href="Aper%C3%A7u.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Concepts généraux de Sarracenia</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#l-algorithme-de-flux">L’algorithme de Flux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#multiple-processes-instances-singletons-and-vip">Multiple processes: Instances, Singletons and VIP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#correspondance-des-concepts-amqp-avec-sarracenia">Corréspondance des concepts AMQP avec Sarracenia</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#le-flux-a-travers-des-pompes">Le flux à travers des Pompes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utilisateurs-et-roles">Utilisateurs et rôles</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Histoire/index.html">Histoire</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Explication</a> &raquo;</li>
+      <li>Concepts généraux de Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Explication/Concepts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="concepts-generaux-de-sarracenia">
+<h1>Concepts généraux de Sarracenia<a class="headerlink" href="#concepts-generaux-de-sarracenia" title="Link to this heading"></a></h1>
+<p>Les pompes Sarracenia forment un réseau. Le réseau utilise
+des courtiers amqp ( <em>broker</em> )  <a class="reference external" href="https://en.wikipedia.org/wiki/Message_queue">Message Queueing Protocol (MQP)</a>
+pour modéré les transferts de fichiers entre les pompes. On
+envoie les avis de nouveau fichiers dans un sens et les rapports de succès ou
+trouble dans la direction opposée. Les administrateurs configurent les chemins
+d’accès à travers lesquels les données circulent. Chaque pompe agit de façon
+indépendante, en gérant les activités des moteurs de transfert
+qu’il peut atteindre, sans connaissance de l’ensemble du réseau. Les
+emplacements de pompes et les directions du flux de circulation sont
+choisis pour travailler avec les débits autorisés. Idéalement, aucune
+exception de règle de pare-feu et nécessaire.</p>
+<p>Sarracenia ne transporte pas de données. Il s’agit d’une couche de gestion pour
+coordonner les activités de l’utilisation d´engins de transport. Donc, pour
+obtenir une pompe fonctionnelle, les mécanismes de transport réels doivent
+également être mis en place, le cas d’utilisation
+le plus commun est <a class="reference external" href="https://www.rabbitmq.com/">RabbitMQ</a>.
+Les deux mécanismes actuelles sont le web et SFTP.
+Dans le cas le plus simple, tous les composants se trouvent sur le site
+Web du même serveur, mais cela n’est pas nécessaire. Le courtier pourrait
+être sur un serveur différent de l´origine et la destination d’un transfert.</p>
+<p>La meilleure façon d’effectuer des transferts de données est d’éviter les
+sondages (examination récurrente de répertoires afin de détecter des
+changements de fichiers.) C’est plus efficace si les rédacteurs peuvent
+être amenés à émettre des messages d’annonce en format sr3_post appropriés. De même,
+lors de la livraison, il est idéal si les destinataires utilisent
+sr_subscribe, et un plugin on_file pour déclencher leur traitement ultérieur,
+de sorte que le fichier est qui leur a été remis sans sondage. C’est la façon
+la plus efficace de travailler, mais… il est entendu que pas tous les logiciels
+ne seront coopératifs. Pour démarrer le flot en Sarracenia dans ces cas,
+ca prend des outils de sondage:  sr_poll (à distance), et sr3_watch (locale.)</p>
+<p>D’une manière générale, Linux est la principale cible de déploiement et la
+seule plate-forme sur laquelle les configurations de serveur sont déployées.
+D’autres plates-formes sont utilisées en configuration client.  Ceci
+n´est pas une limitation, c’est juste ce qui est utilisé et testé.
+Implémentations de la pompe sur Windows devrait fonctionner, ils ne
+sont tout simplement pas testés.</p>
+<p>Une pompe de données Sarracénia peut être implanté avec un seul serveur, ou bien une grappe, avec des rôles identiques ou spécialisés.
+Voir <cite>Options de déploiement &lt;ConsiderationDeployments.rst&gt;</cite> pour plus de détails. À l´intérieur d´une pompe, les conceptes décrites
+dans les sections suivantes s’appliquent.</p>
+<section id="l-algorithme-de-flux">
+<h2>L’algorithme de Flux<a class="headerlink" href="#l-algorithme-de-flux" title="Link to this heading"></a></h2>
+<p>Tous les composants qui s’abonnent (subscribe, sarra, sarra, sender, shovel, winnow)
+partagent un code substantiel et ne diffèrent que par leur reglages de défaut.
+Chaque composant suit le même algorithme général, l’algorithme de Flux.
+Les étapes de l’algorithme Flux sont les suivantes :</p>
+<ul class="simple">
+<li><p>Rassembler une liste de messages d’annonce</p></li>
+<li><p>Filtrez-les avec des clauses d’accept/reject</p></li>
+<li><p>Travailler sur les messages d’annonce acceptés</p></li>
+<li><p>Afficher le travail accompli pour le prochain flux</p></li>
+</ul>
+<p>En plus de detail:</p>
+<table class="docutils align-center" id="id1">
+<caption><span class="caption-text"><strong>Tableau 1 : Algorithme pour tous les composants</strong></span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>PHASE</p></td>
+<td><p>DESCRIPTION</p></td>
+</tr>
+<tr class="row-even"><td><p><em>gather</em></p></td>
+<td><p>Obtenez de l’information sur une liste initiale de fichiers</p>
+<p>A partir: d’une fil d’attente, un répertoire,
+un script de polling.</p>
+<p>Sortie: worklist.incoming rempli de messages d’annonce.</p>
+<p>Chaque message d’annonce est un dictionnaire python</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><em>Filter</em></p></td>
+<td><p>Réduire la liste de fichiers sur lesquels agir.</p>
+<p>Appliquer les clauses accept/reject.</p>
+<p>callbacks after_accept
+déplacer les messages d´annonce de worklist.incoming à
+worklist.rejected</p>
+<p>Ceux a éxécuter: flowcb/nodupe.py (suppresion des doublons.)</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><em>work</em></p></td>
+<td><p>Traitez le message en le téléchargeant ou en l’envoyant.</p>
+<p>exécuter le transfert (télécharger ou envoyer.)</p>
+<p>Exécuter after_work</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><em>post</em></p></td>
+<td><p>Publier l’annonce des téléchargements/envois de fichiers à
+post_broker ou se débarrasser de la tache (à file/retry… )</p></td>
+</tr>
+</tbody>
+</table>
+<p>Les principaux composants de l’implémentation python de Sarracenia implémentent
+tous le même algorithme décrit ci-dessus. L’algorithme comporte différents endroits
+où un traitement personnalisé peut être inséré (à l’aide de flowCallbacks) ou
+dériver des classes de flux, d’intégrité ou de transfert.</p>
+<p>Les composants ont juste des paramètres par défaut différents:</p>
+<table class="docutils align-center" id="id2">
+<caption><span class="caption-text"><strong>Tableau 2 : Utilisation de l’algorithme de flux par chaque composant</strong></span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>Composant</p></td>
+<td><p>Utilisation de l’algorithme</p></td>
+<td><p>options clé</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><em>subscribe</em></p>
+<blockquote>
+<div><p>Télécharger un
+fichier d’une pompe</p>
+<p>défaut mirror=False
+(True pour tous les
+autres)</p>
+</div></blockquote>
+</td>
+<td><p>Gather = gather.message</p>
+<p>Filter</p>
+<p>Work = Télécharger</p>
+<p>Post = facultatif</p>
+</td>
+<td><p>flowMain subscribe</p>
+<p>mirror off
+(dans les autres</p>
+<blockquote>
+<div><p>composants, c’est
+mirror on )</p>
+</div></blockquote>
+<p>download on</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><em>sarra</em></p>
+<p>Utilisé sur des
+pompes.</p>
+<p>Télécharge un fichier</p>
+<p>Publié un message par
+la suite aux consom-
+mateurs.</p>
+<p>Abonnés de la pompe
+locale puissent
+télécharer à leur
+tour</p>
+</td>
+<td><p>Gather = gather.message</p>
+<p>Work = Télécharger</p>
+<p>Post = publier</p>
+</td>
+<td><p>flowMain sarra</p>
+<p>mirror on
+download on</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><em>poll</em></p>
+<p>Trouver des fichiers
+sur d’autre serveurs
+pour publier.</p>
+<p>Utilise has_vip*
+(voir ci-dessous)</p>
+</td>
+<td><p>Gather
+if has_vip: poll</p>
+<p>Filter</p>
+<dl>
+<dt>if has_vip:</dt><dd><p>Work = nil</p>
+<p>Post = oui</p>
+</dd>
+</dl>
+</td>
+<td><p>flowMain poll</p>
+<p>pollUrl</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><em>shovel</em></p>
+<p>Déplacer les messages
+de place.</p>
+</td>
+<td><p>Gather = gather.message</p>
+<p>Filter (shovel cache=off)</p>
+<p>Work = nil</p>
+<p>Post = oui</p>
+</td>
+<td><p>acceptUnmatched True</p>
+<p>nodupe_ttl 0
+download off</p>
+<p>callback gather.message</p>
+<p>callback post.message</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><em>winnow</em></p>
+<p>Déplacer les messages
+de place.</p>
+<p>Suppression de
+doublons à l’aide
+du cache et d’un VIP
+partagé</p>
+</td>
+<td><p>Gather = gather.message</p>
+<p>Filter (shovel cache=on)</p>
+<p>Work = nil</p>
+<p>Post = oui</p>
+</td>
+<td><p>acceptUnmatched true</p>
+<p>nodupe_ttl 300</p>
+<p>callback gather.message</p>
+<p>callback post.message</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><em>post/watch</em></p>
+<p>Trouve un fichier sur
+un serveur <strong>local</strong>
+pour le publier</p>
+</td>
+<td><p>Gather = gather.file</p>
+<p>Filter</p>
+<p>Work = nil</p>
+<p>Post = oui</p>
+<blockquote>
+<div><p>Message?, File?</p>
+</div></blockquote>
+</td>
+<td><p>path /file/a/afficher</p>
+<p>sleep -1 # pour post</p>
+<p>sleep 5  # pour watch</p>
+<p>callback gather.file</p>
+<p>callback post.message</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><em>sender</em></p>
+<p>Enovoyer des fichiers</p>
+<p>Optionnel
+Publie un message après
+l’envoie</p>
+</td>
+<td><p>Gather = gather.message</p>
+<p>Filter</p>
+<p>Do = sendfile</p>
+<p>Outlet = facultatif</p>
+</td>
+<td><p>flowMain sender</p>
+<p>sendTo</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Dans la colonne de gauche, on peut voir le nom et la description générale de chaque composant.
+dans la colonne du milieu, on voit à quoi s’appliquent les différentes phases de l’algorithme Flow.
+A droite, on voit comment exprimer, dans un fichier de configuration de flux générique, le composant.
+La plupart des composants peuvent utiliser la classe de flux parent, mais ceux qui ont besoin
+de plus utilise des sous-classes de flux. Ces cas sont configurés à l’aide de l’option flowMain.</p>
+<p>Les composants sont facilement composés à l’aide de courtiers AMQP, qui créent
+des réseaux élégants de communiquer des processus séquentiels. (CSP dans
+le sens <a class="reference external" href="http://dl.acm.org/citation.cfm?doid=359576.359585">Hoare</a> )</p>
+</section>
+<section id="multiple-processes-instances-singletons-and-vip">
+<h2>Multiple processes: Instances, Singletons and VIP<a class="headerlink" href="#multiple-processes-instances-singletons-and-vip" title="Link to this heading"></a></h2>
+<p>L’algorithme de flux ne se limite pas à un seul processus. De nombreux processus
+peuvent exécuter la même configuration de flux. Pour les composants sarra, sender, shovel
+et subscribe, on définit le paramètre <em>instance</em> au nombre de processus à exécuter
+et à consommer à partir de la <em>queue</em> configurée qu’ils partagent.</p>
+<p>Les composantes de poll, de post, et de watch, en revanche, sont limitées à un
+processus unique sur un serveur donné. Dans le tableau ci-dessus, il y a une note
+à propos de <em>has_vip</em>. Lorsque plusieurs serveurs participent à une
+configuration, la directive vip peut être utilisée pour que les serveurs
+coopérent pour fournir un service unique (où un seul serveur est
+actif à la fois.) Pour la plupart des composants, la directive VIP dans un
+fichier de configuration définit une adresse IP virtuelle qu’un serveur doit
+activement avoir pour que ce composant soit actif. Si Sarracenia
+détecte que l’interface n’est pas présente sur le serveur, le composant
+s’exécutera en mode passif.</p>
+<p>Pour presque tous les composants, le mode passif signifie qu’aucun traitement n’est effectué.
+Le nœud vérifiera passivement s’il a obtenu le
+Vip. Si le nœud n’a pas le vip, il restera en stand-by indéfiniment.</p>
+<p>L’exception à cela est le sondage (poll), qui fonctionne différemment. Dans le sondage,
+lorsque vous n’avez pas le vip, la boucle algorithmique suivante
+continue:</p>
+<ul class="simple">
+<li><p>gather</p></li>
+<li><p>filter</p></li>
+<li><p>after_accept</p></li>
+</ul>
+<p>Le gather (et/ou le sondage) du sondage s’abonne à l’échange ou d’autres
+participants qui ont le vip publient et met à jour sa cache à partir des messages d´annonce, pour
+éviter que les autres sondages interrogent le même point de terminaison pour la
+même liste de fichiers.</p>
+</section>
+<section id="correspondance-des-concepts-amqp-avec-sarracenia">
+<h2>Corréspondance des concepts AMQP avec Sarracenia<a class="headerlink" href="#correspondance-des-concepts-amqp-avec-sarracenia" title="Link to this heading"></a></h2>
+<p>Une chose que l’on peut dire sans risque est qu’il faut comprendre un peu l’AMQP
+pour travailler avec Sarracenia. L’AMQP est un sujet vaste et intéressant en
+soi. On ne tente pas de toute expliquer ici. Cette section fournit juste
+un peu de contexte, et introduit seulement les concepts de base nécessaires à la
+compréhension et/ou à l’utilisation de la Sarracenia. Pour plus d’informations
+sur l’AMQP lui-même, un ensemble de liens est maintenu à l’adresse suivante
+le site web <a class="reference external" href="sarra.rst#amqp">Metpx web site</a>
+mais un moteur de recherche révèlera aussi une richesse matérielle.</p>
+<a class="reference internal image-reference" href="../../_images/amqp_notion_de_flux.svg"><img alt="../../_images/amqp_notion_de_flux.svg" class="align-center" height="302" src="../../_images/amqp_notion_de_flux.svg" width="434" /></a>
+<p>Un serveur AMQP s’appelle un courtier. Le mot <em>Courtier</em> est parfois utilisé pour
+faire référence au logiciel, d’autres fois serveur exécutant le logiciel de
+courtage (même confusion que <em>serveur web</em>).  ci-dessus, le vocabulaire de
+l’AMQP est en orange, et les termes de Sarracenia sont en bleu. Il y a
+de nombreuses et différentes implémentations de logiciels de courtage. Nous
+utilisons rabbitmq. Nous n’essayons pas d´être spécifique au rabbitmq, mais
+les fonctions de gestion diffèrent d’une implémentation à l’autre.</p>
+<dl class="simple">
+<dt>Les <em>Queues</em> (files d´attentes) sont généralement prises en charge de manière transparente, mais vous avez besoin de connaître</dt><dd><ul class="simple">
+<li><p>Un consommateur/abonné crée une fil d’attente pour recevoir des messages d’annonce.</p></li>
+<li><p>Les files d’attente des consommateurs sont <em>liées</em> aux échanges (langage AMQP).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Un <em>exchange</em> est un entremeteur entre <em>publisher</em> et les files d´attentes du
+<em>consumer</em></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Un message  d’annonce arrive d’une source de données.</p></li>
+<li><p>l´avis passe à travers l’échange, est-ce que quelqu’un est intéressé par ce message d’annonce?</p></li>
+<li><p>dans un échange basé sur un <em>topic</em>, le thème du message d’annonce fournit la <em>clé d’échange</em>.</p></li>
+<li><p>intéressé : comparer la clé de message d’annonce aux liaison des <em>queues de consommateurs</em>.</p></li>
+<li><p>le message d’annonce est acheminé vers les <em>files d’attente des consommateurs</em> intéressés, ou supprimé s’il n’y en a pas.</p></li>
+<li><p>n’existe pas dans MQTT, utilisé comme racine de la hiérarchie des thèmes.</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>Plusieurs processus peuvent partager une <em>queue</em>, d´ou ils prélève les messages d’annonce à tour de rôle.</dt><dd><ul class="simple">
+<li><p>Ceci est fortement utilisé pour sr_sarra et sr_subscribe multiples instances.</p></li>
+<li><p>Le même concept est disponible en tant qu’<em>abonnements partagés</em> dans MQTT.</p></li>
+</ul>
+</dd>
+<dt>Comment décider si quelqu’un est intéressé.</dt><dd><ul class="simple">
+<li><p>Pour la Sarracenia, nous utilisons (standard AMQP) <em>échanges thématiques</em>.</p></li>
+<li><p>Les abonnés indiquent les thèmes qui les intéressent et le filtrage se fait côté serveur/courtier.</p></li>
+<li><p>Les thèmes sont juste des mots-clés séparés par un point. wildcards : # correspond à n’importe quoi, * correspond à un mot.</p></li>
+<li><p>Nous créons la hiérarchie des thèmes à partir du nom du chemin d’accès (mappage à la syntaxe AMQP).</p></li>
+<li><p>La résolution et la syntaxe du filtrage des serveurs sont définies par l’AMQP. (. séparateur, # et * caractères génériques)</p></li>
+<li><p>Le filtrage côté serveur est grossier, les messages d’annonce peuvent être filtrés après le téléchargement en utilisant regexp</p></li>
+</ul>
+</dd>
+</dl>
+<section id="amqp-v09-rabbitmq-settings">
+<h3>AMQP v09 (Rabbitmq) Settings<a class="headerlink" href="#amqp-v09-rabbitmq-settings" title="Link to this heading"></a></h3>
+<p>MetPX-Sarracenia n’est qu’un léger revêtement autour des protocoles de
+fil d’attente des messages. Pour ceux qui sont familiers avec
+les protocoles sous-jacents, voici les mappages:</p>
+<ul>
+<li><p>Une pompe de données MetPX-Sarracenia est une application python AMQP qui utilise un (rabbitmq).
+pour coordonner les transferts de données des clients SFTP et HTTP, et accompagne un
+serveur web (apache) et serveur sftp (openssh), souvent sur la même adresse en face de l’utilisateur.</p></li>
+<li><p>Une pompe de données MetPX-Sarracenia peut également fonctionner avec rabbitmq remplacé par
+un courtier MQTT tel que mosquitto.org (mais certaines administrations doivent être gérées manuellement).</p></li>
+<li><p>Dans la mesure du possible, nous utilisons leur terminologie et leur syntaxe.
+Si quelqu’un connaît l’AMQP, il comprend. Si ce n’est pas le cas, ils peuvent faire des recherches.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Les utilisateurs configurent un <em>courtier</em>, au lieu d’une pompe.</p></li>
+<li><p>par convention, le serveur virtuel par défaut’/’ est toujours utilisé. (n’a pas encore ressenti le besoin d’utiliser d’autres serveurs virtuels)</p></li>
+<li><p>les utilisateurs peuvent explicitement choisir leurs noms <em>files d’attente</em>.</p></li>
+<li><p>les utilisateurs définissent <em>subtopic</em>,</p></li>
+<li><p>les sujets avec séparateur de points sont transformés au minimum, plutôt qu’encodés.</p></li>
+<li><p>La fil d’attente est définie sur <em>durable</em> afin que les messages ne soient pas perdus lors des redémarrages du broker.</p></li>
+<li><p>nous utilisons des <em>en-têtes de message</em> (langage AMQP pour les paires clé-valeur) plutôt que d’encoder en JSON ou dans un autre format de charge utile.</p></li>
+<li><p><em>expire</em> combien de temps pour conserver une fil d’attente inactive ou un échange.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><dl class="simple">
+<dt>réduire la complexité par le biais de conventions.</dt><dd><ul class="simple">
+<li><p>n’utiliser qu’un seul type d’échanges (Topic), prendre soin des fixations.</p></li>
+<li><dl class="simple">
+<dt>conventions de nommage pour les échanges et les files d’attente.</dt><dd><ul>
+<li><p>les échanges commencent par x.
+- xs_Weather - l’échange pour la source (utilisateur amqp) nommé Weather pour poster des messages.
+- xpublic – central utilisé pour la plupart des abonnés.</p></li>
+<li><p>les files d’attente commencent par q</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="mqtt-version-5-parametres">
+<h3>MQTT (version =5) Paramètres<a class="headerlink" href="#mqtt-version-5-parametres" title="Link to this heading"></a></h3>
+<p>MQTT est en fait un meilleur match à Sarracenia que AMQP, car il est
+entièrement basé sur des thèmes hiérarchiques. Alors que les sujets
+ne sont qu’un parmi une variété de choix pour les méthodes de routage dans AMQP.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Dans MQTT, le séparateur de thème est / au lieu de .</p></li>
+<li><p>Le caractère générique de la rubrique MQTT <em>#</em> est le même que dans AMQP (correspond au reste du sujet)</p></li>
+<li><p>Le caractère générique de la rubrique MQTT <em>+</em> est le même que l’AMQP <em>*</em> (correspond à un thème).</p></li>
+<li><p>Un « Échange » AMQP est mappé à la racine de l’arborescence des thèmes MQTT,</p></li>
+<li><p>Une « fil d’attente » AMQP est représentée dans MQTT par <em>client-id</em> et un <em>abonnement partagé</em>. Remarque : Les abonnements partagés ne sont présents que dans MQTTv5.</p>
+<ul>
+<li><p>AMQP: Une fil d’attente nommée <em>queuename</em> est liée à un échange xpublic avec clé: v03.observations …</p></li>
+<li><p>Abonnement MQTT: thème $shared/<em>queuename</em>/xpublic/v03/observations …</p></li>
+</ul>
+</li>
+<li><p>Les connexions sont normalement clean_sesssion = 0, pour récupérer les messages lorsqu’une connexion est rompue.</p></li>
+<li><p>MQTT QoS==1 est utilisé pour s’assurer que les messages sont envoyés au moins une fois et éviter les frais généraux
+de ne s’assurer qu’une seule fois.</p></li>
+<li><p>AMQP <em>prefetch</em> mappé à MQTT <em>receiveMaximum</em></p></li>
+<li><p><em>expire</em> a la même signification en MQTT que dans AMQP.</p></li>
+</ul>
+</div></blockquote>
+<p>MQTT v3 manque d’abonnements partagés et la logique de récupération est très différente. Sarracenia ne prend en charge que la v5.</p>
+</section>
+</section>
+<section id="le-flux-a-travers-des-pompes">
+<h2>Le flux à travers des Pompes<a class="headerlink" href="#le-flux-a-travers-des-pompes" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="../../_images/sr3_exemple_de_flux.svg"><img alt="../../_images/sr3_exemple_de_flux.svg" class="align-center" height="793" src="../../_images/sr3_exemple_de_flux.svg" width="1122" /></a>
+<p>Une description du flux conventionnel de messages par le biais d’échanges sur une pompe :</p>
+<ul class="simple">
+<li><p>Les abonnés se lient généralement à l’échange public pour obtenir le flux de données principal.</p></li>
+<li><p>Un utilisateur user aura deux échanges :</p>
+<ul>
+<li><p>xs_user l’échange où Alice poste ses notifications de fichiers et ses messages de rapports</p></li>
+<li><p>xr_user l’échange où user lit ses messages de rapport</p></li>
+<li><p>Remarque: les échanges « user » seront le nom d’utilisateur spécifié par l’utilisateur. Pas explicitement « xs_user » ou « xr_user ».</p></li>
+</ul>
+</li>
+<li><p>Habituellement, le composant sarra lira à partir de xs_user, récupérera les données correspondant au
+message <em>post</em> des utilisateurs, puis les rendra disponibles sur la pompe, en les ré-annonçant sur l’échange xpublic.</p></li>
+<li><p>Les administrateurs auront accès à un échange xreport pour obtenir une surveillance à l’échelle du système.
+L’utilisateur n’aura pas l’autorisation de le faire, il ne peut regarder que xr_user, qui aura les messages
+de rapport spécifiques pour l’utilisateur uniquement.</p></li>
+</ul>
+<p>Le but de ces conventions est d’encourager un moyen d’exploitation raisonnablement sûr. Si un message
+provient d’xs_user, le processus de lecture est chargé de s’assurer qu’il est marqué comme provenant
+de l’utilisateur sur ce cluster. Cela empêche certains types de spoofing d’identité, car les messages
+ne peuvent être publiés que par les propriétaires appropriés.</p>
+</section>
+<section id="utilisateurs-et-roles">
+<h2>Utilisateurs et rôles<a class="headerlink" href="#utilisateurs-et-roles" title="Link to this heading"></a></h2>
+<p>Les noms d’utilisateur pour l’authentification des pompes sont significatifs
+dans la mesure où ils sont visibles par tous. Ils sont utilisés dans le chemin
+du répertoire sur les arbres publics, ainsi que pour authentifier le courtier.
+Ils doivent être compréhensibles. Ils ont souvent une portée plus large qu’une
+personne, peut-être les appeler “Comptes”. Il peut être élégant de configurer
+les mêmes noms d’utilisateur pour une utilisation dans les moteurs de transport.</p>
+<p>Tous les noms de compte doivent être uniques, mais rien n’évitera les conflits
+lorsque les sources proviennent de différents réseaux de pompes, et des clients
+à différentes destinations. Dans la pratique, les conflits de noms sont les
+suivants adressée par routage pour éviter que deux sources différentes’ avec
+le même nom aient leur nom. les offres de données combinées sur un seul arbre.
+D’autre part, les conflits de noms ne sont pas toujours une erreur.
+L’utilisation d’un nom de compte source commun sur différents clusters peut
+être utilisée pour implémenter des dossiers qui sont partagés entre les deux
+comptes portant le même nom.</p>
+<p>Les utilisateurs de pompe sont définis avec l’option <em>declare</em>. Chaque option
+commence avec l’option <em>declare</em> suivi du rôle spécifié, et enfin le nom
+de l’utilisateur qui a ce rôle.  rôle peut en être un de :</p>
+<dl>
+<dt>subscriber</dt><dd><p>Un <em>subscriber</em> ( abonné ) est un utilisateur qui ne peut s’abonner qu’aux messages de données et de rapport. Interdiction d’injecter des données.
+Chaque abonné reçoit un xs_&lt;user&gt; named exchange sur la pompe, où si un utilisateur est nommé <em>Acme</em>,
+l’échange correspondant sera <em>xs_Acme</em>. Cet échange est l’endroit où un sr_subscribe sr_subscribe
+enverra ses messages de rapport.</p>
+<p>Par convention/défaut, l’utilisateur <em>anonyme</em> est créé sur toutes les pompes pour permettre l’abonnement sans
+un compte spécifique.</p>
+</dd>
+<dt>source</dt><dd><p>Un utilisateur autorisé à s’abonner ou à générer des données. Une source ne
+représente pas nécessairement une personne ou un type de données, mais plutôt
+une organisation responsable des données produites. Ainsi, si une organisation
+recueille et met à disposition dix types de données avec un seul interlocuteur
+email ou numéro de téléphone pour des questions sur les données et leur
+disponibilité, alors tous les ces activités de recouvrement pourraient
+utiliser un seul compte “source”.</p>
+<p>Chaque source a un échange xs_&lt;user&gt; pour l’injection de messages de données,
+et, similaire à un abonné, pour envoyer des messages de rapport sur le
+traitement et la réception des données.</p>
+<p>Chaque source est en mesure de visualiser tous les messages pour les données
+qu’elle a injectées, mais l’endroit où tous ces messages sont disponibles
+varie en fonction de la configuration de l’administrateur du routage des
+rapports. Ainsi, une source peut injecter des données sur la pompe A, mais
+peut s’abonner à des rapports sur une pompe différente. Les rapports
+correspondant aux données que la source injectée est écrite en échange xr_&lt;user&gt;.</p>
+<p>Lors de l´injection initiale des données, le chemin est modifié par Sarracenia
+pour préparer une partie supérieure fixe de l’arborescence des répertoires.
+Le premier niveau d’annuaire est le jour de l’ingestion dans le réseau en
+format AAAAMMJJ. Le répertoire de deuxième niveau est le nom de la source.
+Donc pour une utilisatrice Alice, s’injecter le 4 mai 2016, la racine de
+l’arborescence du répertoire est : 20160504/Alice. Notez que tous les on
+s’attend à ce que les pompes fonctionnent dans le fuseau horaire UTC.</p>
+<p>Il y a des annuaires quotidiens parce qu’il y a une durée de vie à l’échelle
+du système pour les données, elle est supprimée.</p>
+<p>Puisque tous les clients verront les répertoires, et donc les configurations
+des clients les incluront.  il serait sage de considérer le nom du compte
+public, et relativement statique.</p>
+<p>Les sources déterminent qui peut accéder à leurs données, en spécifiant à
+quelle grappe envoyer les données.</p>
+</dd>
+<dt>feeder</dt><dd><p>un utilisateur autorisé à s’abonner ou à générer des données, mais considéré
+comme représentant une pompe. Cet utilisateur local de pompe serait utilisé
+pour exécuter des processus tels que sarra, le routage des rapports report
+avec des shovels, etc….</p>
+</dd>
+<dt>Admin</dt><dd><p>Un utilisateur autorisé à gérer la pompe locale. C’est le vrai rabbitmq-server
+administrateur. L’administrateur exécute sr_audit pour créer/supprimer des échanges,
+utilisateurs, ou nettoyer les files d’attente inutilisées, etc.</p>
+</dd>
+</dl>
+<p>Exemple d’un fichier admin.conf valide complet, pour un hôte nommé <em>blacklab</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cluster</span> <span class="n">blacklab</span>
+<span class="n">admin</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">hbic</span><span class="nd">@blacklab</span><span class="o">/</span>
+<span class="n">feeder</span>  <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="nd">@blacklab</span><span class="o">/</span>
+<span class="n">declare</span> <span class="n">source</span> <span class="n">goldenlab</span>
+<span class="n">declare</span> <span class="n">subscriber</span> <span class="n">anonymous</span>
+</pre></div>
+</div>
+<p>Un credentials.conf correspondant ressemblerait à:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">hbic</span><span class="p">:</span><span class="n">hbicpw</span><span class="nd">@blacklab</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="p">:</span><span class="n">feederpw</span><span class="nd">@blacklab</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">goldenlab</span><span class="p">:</span><span class="n">puppypw</span><span class="nd">@blacklab</span><span class="o">/</span>
+<span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="p">:</span><span class="n">anonymous</span><span class="nd">@blacklab</span><span class="o">/</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Aper%C3%A7u.html" class="btn btn-neutral float-left" title="Aperçu" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="GuideLigneDeCommande.html" class="btn btn-neutral float-right" title="Guide De Ligne De Commande" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

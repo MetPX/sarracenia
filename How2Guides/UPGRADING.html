@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UPGRADE GUIDE &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Porting V2 Plugins to Sr3" href="v2ToSr3.html" />
+    <link rel="prev" title="Administering Rabbitmq Adddendum" href="Admin_Rabbit_Addendum.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">HOWTOS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="subscriber.html">Subscribing to Data Feeds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source.html">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FlowCallbacks.html">Using Flow Callback Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin.html">Administering AMQP Data Pumps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin_Rabbit_Addendum.html">Administering Rabbitmq Adddendum</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Release Notes (Advice on Upgrades)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation-instructions">Installation Instructions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#git">git</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">3.0.54</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">3.0.53</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">3.0.52</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">3.0.51</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">3.0.47</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">3.0.45</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">3.0.41</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3.0.40</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">3.0.37</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">3.0.26</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">3.0.25</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">3.0.23</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">3.0.22</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">3.0.17</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">3.0.15</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id16">3.0.14</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#v2-to-sr3">V2 to Sr3</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="v2ToSr3.html">Porting V2 Plugins to Sr3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Email_Ingesting_With_Sarracenia.html">Email Ingesting with Sarracenia (v2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hydro_Examples.html">Using Plugins to Grab Hydrometric Data (v2)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">HOWTOS</a> &raquo;</li>
+      <li>UPGRADE GUIDE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/How2Guides/UPGRADING.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="upgrade-guide">
+<h1>UPGRADE GUIDE<a class="headerlink" href="#upgrade-guide" title="Link to this heading"></a></h1>
+<p>This document describes changes in behaviour to provide guidance to those upgrading
+from a previous version. Sections are titled to indicate changes needed when
+upgrading to that version. To upgrade across several versions, one needs to start
+at the version after the one installed, and heed all notifications for interim
+versions. While configuration language stability is an important
+goal, on occasion changes cannot be avoided. This file does not document new
+features, but only changes that cause concern during upgrades. The notices
+take the form:</p>
+<dl class="simple">
+<dt><strong>CHANGE</strong></dt><dd><p>Indicates where configurations files must be changed to get the same behaviour as prior to release.</p>
+</dd>
+<dt><strong>ACTION</strong></dt><dd><p>Indicates a maintenance activity required as part of an upgrade process.</p>
+</dd>
+<dt><strong>BUG</strong></dt><dd><p>Indicates a bug serious to indicate that deployment of this version is not recommended.</p>
+</dd>
+<dt><em>NOTICE</em></dt><dd><p>A behaviour change that will be noticeable during upgrade, but is no cause for concern.</p>
+</dd>
+<dt><em>SHOULD</em></dt><dd><p>Indicates recommended interventions that are recommended, but not mandatory. If prescribed activity is not done,
+the consequence is either a configuration line that has no effect (wasteful) or the application
+may generate notification messages.</p>
+</dd>
+</dl>
+<p>The sections in are entitled by the changes taking place at the level in question.</p>
+<section id="installation-instructions">
+<h2>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="../Tutorials/Install.html"><span class="doc">Installation Guide</span></a></p>
+</section>
+<section id="git">
+<h2>git<a class="headerlink" href="#git" title="Link to this heading"></a></h2>
+</section>
+<section id="id1">
+<h2>3.0.54<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: <em>sr3 sanity</em> only restarts missing instances, not stopped ones.
+this is considered more in accordance with analyst expectations (POLA)</p>
+</section>
+<section id="id2">
+<h2>3.0.53<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: <em>directory</em> option in poll will no longer be converted to <em>path</em> silently.
+Use <em>path</em> explicitly instead. It is still converted when upgrading from v2 with
+<em>sr3 convert</em>, but in v3 configurations, <em>directory</em> now acts as it does in all other
+components as a download specifier.</p>
+</section>
+<section id="id3">
+<h2>3.0.52<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: Additional messageCountMax arugment to flowcb.gather() entry point.
+when implementing flow callbacks for scheduled flows, or poll overrides, the
+gather entry point now takes one additional argument indicating the maximum
+number of messages that the routine should return.</p>
+<p>To be compatible with previous versions, one can establish a default value
+on the gather:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messageMaxCount</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>With the default value, plugins are downward compatible. (earlier versions
+will call with only self as an argument.)</p>
+</section>
+<section id="id4">
+<h2>3.0.51<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: Additional <em>action</em> argument sarracenia.config.one_config() indicating
+how the configuration will be used.  When used for readonly operations (status,
+show, dump) the configuration should avoid filling values that should only
+be defines when used.  Examples have been updated appropriately.</p>
+<p><em>CHANGE</em>: <em>action</em> setting now mandatory for the sarracenia.config.finalize().</p>
+</section>
+<section id="id5">
+<h2>3.0.47<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: config option, strftime options, offset grammar changed:
+in v2 you had ${YYYYMMDD-70m}, in sr3 it should be ${%o-70m%Y%m%d}
+in 3.0.47, moved the time offset parsing to the beginning of the pattern.</p>
+<p><em>CHANGE</em>: default value of <em>filename</em> setting is now <em>None</em> instead of
+‘WHATFN’, which reduces compatibility with Sundew, but makes behaviour
+less surprising when not using/familiar with Sundew. This <em>None</em> setting
+is the same as used by v2, so it should improve compatibility with
+sarracenia v2 configurations.</p>
+</section>
+<section id="id6">
+<h2>3.0.45<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>CHANGE</em>: config option: logRotateInterval units was days, is now</dt><dd><p>a time interval (seconds) like all other intervals.</p>
+</dd>
+</dl>
+</section>
+<section id="id7">
+<h2>3.0.41<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: v03 post format field renamed: “integrity” is now “identity”</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>current version will read messsages with <em>integrity</em> and map them to <em>identity</em>.</p></li>
+<li><p>current version will post with <em>identity</em>, so older versions will miss them.</p></li>
+<li><p><a class="reference external" href="https://github.com/MetPX/sarracenia/issues/703">https://github.com/MetPX/sarracenia/issues/703</a></p></li>
+<li><p>metpx-sr3c &gt;= v3.23.06  (equivalent compatible C implementation)</p></li>
+<li><p>metpx-sarracenia &gt;= v2.23.06 (equivalent v2 compatible (legacy) version.)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id8">
+<h2>3.0.40<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>CHANGE</em>: the default format in which messages are posted is v03, but as of this</dt><dd><p>version, to override the format, one must use <em>post_format v02</em>
+prior to this version, setting of post_topicPrefix was sufficient.
+Now both settings are needed.</p>
+</dd>
+</dl>
+<p><em>CHANGE</em>:  Python API breaking changes</p>
+<blockquote>
+<div><p>for sarracenia.moth, now specify broker as options[‘broker’] instead of as
+a separate parameter:</p>
+<p>before:</p>
+<ul class="simple">
+<li><p>Moth(broker: url, options: dict, is_subsubscriber: bool) -&gt; Config</p></li>
+<li><p>pubFactory( broker, options ) -&gt; Config</p></li>
+<li><p>subFactory( broker, options ) -&gt; Config</p></li>
+</ul>
+<p>after:</p>
+<ul class="simple">
+<li><p>Moth( options: dict, is_subscribe: bool) -&gt; Config</p></li>
+<li><p>pubFactory( options ) -&gt; Config</p></li>
+<li><p>subFactory( options ) -&gt; Config</p></li>
+</ul>
+<p>sarracenia.config API:</p>
+<blockquote>
+<div><p>now should call <strong>sarracenia.config.finalize()</strong>
+after having set options  and before being used.
+This routine reconciles the settings provided and builds
+some derived ones.</p>
+</div></blockquote>
+</div></blockquote>
+</section>
+<section id="id9">
+<h2>3.0.37<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>BUG</em>: <em>sr3 cleanup</em> does not work at all.</dt><dd><p><a class="reference external" href="https://github.com/MetPX/sarracenia/issues/669">https://github.com/MetPX/sarracenia/issues/669</a></p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>3.0.26<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>CHANGE</em>: event options (logEvents, and fileEvents) now replace previous value</dt><dd><p>used to be unioned (or’d) with previous value.  now can preface
+the set elements with + to get the previous behaviour.
+Also - is available to remove an element from a set option.
+(sr3 convert now prefixes v2 values with +)</p>
+</dd>
+<dt><em>CHANGE</em>: fileEvents, new events present <em>mkdir</em>, and <em>rmdir</em>, some adjustment</dt><dd><p>to fileEvents settings may now be required.</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h2>3.0.25<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>CHANGE</em>: default value for acceptUnmatched is now True for all components.</dt><dd><p>prior to this release, default was False in subscribe component,
+and True for all others.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h2>3.0.23<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>NOTICE</em>: now prefer strftime date specification in patterns, in place of</dt><dd><p>ones inherited from Sundew. converted by sr3 convert.</p>
+</dd>
+<dt><em>CHANGE</em>: removed <em>please_stop_immediately</em> option added in 3.0.22</dt><dd><p>(all components now stop more quickly, so not needed.)</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h2>3.0.22<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<p><em>CHANGE</em>: <em>destination</em>, when used in a poll is replaced by <em>pollUrl</em></p>
+<p><em>CHANGE</em>: <em>destination</em>, when used in a sender is replaced by <em>sendTo</em></p>
+<dl class="simple">
+<dt><em>ACTION</em>: replace <em>destination</em> settings in affected configurations.</dt><dd><p>(automatically taken care of in v2 when converting.)</p>
+</dd>
+<dt><em>NOTICE</em>: when a file is renamed, sr3 has always only processed one of the two messages</dt><dd><p>produced to announce it, for compatibility with v2 naming.
+there is now an option: v2compatRenameDoublePost in sr3 to post only a single message
+when a file is renamed.  This is now the default behaviour.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h2>3.0.17<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>CHANGE</em>: The “Vendor” string is now “MetPX” instead of “science.gc.ca”.</dt><dd><p>This affects some file placement particularly on Windows.</p>
+</dd>
+<dt><em>CHANGE</em>: v03 notification message encoding changed: <em>Identity</em> checksum is now optional.</dt><dd><p>(details: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/547">https://github.com/MetPX/sarracenia/issues/547</a> )
+<em>md5sum</em> is no longer defined, replaced with <em>none</em> in sr3.</p>
+</dd>
+<dt><em>CHANGE</em>: v03 notification message encoding changed for symbolic links, and file renames</dt><dd><p>and removals. There is now a ‘fileOp’ field for these dataless file operations.
+The <em>Identity</em> sum is now used exclusively for checksums.</p>
+</dd>
+</dl>
+</section>
+<section id="id15">
+<h2>3.0.15<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>NOTICE</em>: re-instating debian and windows packages by removing hard requirements for python modules</dt><dd><p>which are difficult to satisfy. From 3.0.15, dependencies are modular.</p>
+</dd>
+</dl>
+<p><em>CHANGE</em>: there are now four “extras” configured for pip packages for metpx-sr3.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>amqp - ability to communicate with AMQP (rabbitmq) brokers</p></li>
+<li><p>mqtt - ability to communicate with MQTT brokers</p></li>
+<li><p>ftppoll - ability to poll FTP servers</p></li>
+<li><p>vip  - enable vip (Virtual IP) settings to implement singleton processing for high availability support.</p></li>
+</ul>
+<p>with pip installation, one can include all the extras via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="p">[</span><span class="nb">all</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>with Linux packages, install the corresponding native packages to activate the corresponding features</p>
+<p>on Ubuntu, respectively:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span>
+<span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">magic</span>
+<span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">paramiko</span>
+<span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span>
+<span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">dateparser</span> <span class="n">python3</span><span class="o">-</span><span class="n">tz</span>
+<span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">netifaces</span>
+</pre></div>
+</div>
+<p>sr3 looks for the relevant modules on startup and automatically enables support for the relevant features.</p>
+</div></blockquote>
+<dl class="simple">
+<dt><strong>CHANGE</strong>: file placement of denoting disabled configurations. it used to be that</dt><dd><p>~/.config/sr3/component/x.conf would be renamed x.conf.off when disabling.
+Now instead a file called ~/.cache/sr3/component/x/disabled is created.
+Configuration files are no longer changed by this sort of routine intervention.</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h2>3.0.14<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<p>initial beta.</p>
+<dl class="simple">
+<dt><em>NOTICE</em>: only pip packages currently work. No Debian packages on launchpad.net</dt><dd><p>nor any windows packages.</p>
+</dd>
+</dl>
+</section>
+<section id="v2-to-sr3">
+<h2>V2 to Sr3<a class="headerlink" href="#v2-to-sr3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><em>NOTICE</em>: Sr3 is a very deep refactor of Sarracenia. For more detail on the nature</dt><dd><p>of the changes, <a class="reference external" href="../Contribution/v03.html">go here</a> Briefly, where v2
+is an application written in python that had a small extension facility,
+Sr3 is a toolkit that naturally provides an API and is far more
+pythonic. Sr3 is built with less code, more maintainable code, and
+supports more features, and more naturally.</p>
+</dd>
+<dt><strong>CHANGE</strong>: log messages look completely different. Any log parsing will have to be reviewed.</dt><dd><p>New log format includes a prefix with process-id and the routine generating the notification message.</p>
+</dd>
+</dl>
+<p><strong>CHANGE</strong>: default message format in sr3 is v03. in v2, the default format was v2.</p>
+<dl>
+<dt><strong>CHANGE</strong>: default topicPrefix and post_topicPrefix in sr3 is ‘v03’ … in v2 it</dt><dd><p>was ‘v02.post’</p>
+</dd>
+<dt><em>NOTICE</em>: When migrating from v2 to sr3, simple configurations will mostly “just work.”</dt><dd><p>However, cases relying on user built plugins will require effort to port.
+The built-in plugins provided with Sarracenia have been ported as updated
+examples.</p>
+</dd>
+<dt><strong>CHANGE</strong>: file placement. On Linux: ~/.cache/sarra -&gt; ~/.cache/sr3</dt><dd><p>~/.config/sarra -&gt; ~/.config/sr3
+Similar change on other platforms. The different placement
+allows to run both v2 and sr3 at the same time on the same server.</p>
+</dd>
+<dt><em>NOTICE</em>: to change configurations from v2 to sr3, rather than copying the file</dt><dd><p>from one directory to the other, use of the convert directive is recommended:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">convert</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">mine</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>will make all mechanical conversions of directive names from v2 to sr3 automatically.
+only custom plugin work need to be manually ported, as described below.</p>
+</dd>
+<dt><em>NOTICE</em>: In sr3 the winnowing or duplicate suppression algorithm (implemented by sarracenia.flowcb.nodupe.NoDupe.py)</dt><dd><p>is separate from the data source’s checksum algorithm.</p>
+<p>In v2, the checksum algorithm had to be harmonized with the
+data source checksum. In sr3 one can select any checksumming method,
+and still customize how message key and path are selected to allow for
+full customization of duplicate suppression.</p>
+</dd>
+<dt><strong>CHANGE</strong>: Command line interface (CLI) is different. There is only one main entry_point: sr3.</dt><dd><p>so most invocations are different in a pattern like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr_subscribe</span> <span class="n">start</span> <span class="n">config</span> <span class="o">-&gt;</span> <span class="n">sr3</span> <span class="n">start</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">config</span>
+</pre></div>
+</div>
+<p>in sr3 one can specify a series of configurations to operate on in a single
+command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">start</span> <span class="n">poll</span><span class="o">/</span><span class="n">airnow</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">airnow</span> <span class="n">sender</span><span class="o">/</span><span class="n">cmqb</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>CHANGE</strong>: in sr3, use – for full word options, like –config, or –broker.  In v2 you</dt><dd><p>could use -config and -broker, but single dash is reserved for single character options.
+This is a result of sr3 using python standard ArgParse class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">config</span> <span class="n">hoho</span><span class="o">.</span><span class="n">conf</span>  <span class="o">-&gt;</span> <span class="ow">in</span> <span class="n">v2</span> <span class="n">refers</span> <span class="n">to</span> <span class="n">loading</span> <span class="n">the</span> <span class="n">hoho</span><span class="o">.</span><span class="n">conf</span> <span class="n">file</span> <span class="k">as</span> <span class="n">a</span> <span class="n">configuration</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>In sr3, it will be interpreted as -c (config) load the onfig.conf file, and hoho.conf
+is part of some subsequent option. in sr3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">config</span> <span class="n">hoho</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>does that as intended.</p>
+</dd>
+</dl>
+<p><strong>CHANGE</strong>: sr3 poll works very differently from v2.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>v2 behaviour</p></td>
+<td><p>sr3 behaviour</p></td>
+</tr>
+<tr class="row-even"><td><p>all participants in a vip poll remote always</p></td>
+<td><p>One node (with vip) polls remote.</p></td>
+</tr>
+<tr class="row-odd"><td><p>all participants in a vip update ls_files</p></td>
+<td><p>nodes subscribe to the output exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>poll builds strings to describe files</p></td>
+<td><p>poll builds stat(2) like paramiko.SftpAttributes()</p></td>
+</tr>
+<tr class="row-odd"><td><p>participants rely on their ls_files for state</p></td>
+<td><p>poll uses flowcb.nodupe module like rest of sr3</p></td>
+</tr>
+<tr class="row-even"><td><p>file_time_limit to ignore older files</p></td>
+<td><p>fileAgeMax</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>destination</em> gives where to poll</p></td>
+<td><p><em>pollUrl</em></p></td>
+</tr>
+<tr class="row-even"><td><p><em>directory</em> gives remote directory to list</p></td>
+<td><p><em>path</em> used like in <em>post</em> and <em>watch</em></p></td>
+</tr>
+<tr class="row-odd"><td><p>need <em>accept</em> per <em>directory</em></p></td>
+<td><p>need only one <em>accept</em></p></td>
+</tr>
+<tr class="row-even"><td><p><em>get</em> is a sort of remote pattern filtering</p></td>
+<td><p><em>accept</em> same as used by all other components.</p></td>
+</tr>
+<tr class="row-odd"><td><p>do_poll plugins used to override default</p></td>
+<td><p><em>poll</em> entry point in flow callbacks</p></td>
+</tr>
+<tr class="row-even"><td><p><em>do_poll</em> used to <em>HTTP GET</em> periodically</p></td>
+<td><p>flowcb.scheduled more elegant.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The sr3 convert function takes care of the necessary configuration changes, but plugins
+need ground up rewrites, as they work completely differently.</p>
+<p>All of the changes makes poll’s use of the configuration language less different than how it is
+used in other components. For example, <em>directory</em> was confusing because it is used to determine
+the source directory to be polled. In all other components it refers to the download location.
+The <em>path</em> option replaces it, poll uses it the same <em>post</em> and <em>watch</em> do:
+to denote the paths that should be observed.</p>
+<p>In sr3 when vip setting is present, poll will create a queue bound to the post_broker/post_exchange
+in order to see the posts done by other participants in the queue. queue naming options are therefore
+useful in sr3</p>
+</div></blockquote>
+<p><strong>CHANGE</strong>: In general, underscores in options are replaced with camelCase. e.g.:</p>
+<blockquote>
+<div><p>v2 loglevel -&gt; sr3 logLevel</p>
+<p>v2 options that are renamed will be understood, but an informational message will be produced on
+startup. Underscore is still use for grouping purposes. Options which have changed:</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>v2 Option</strong></p></td>
+<td><p><strong>v3 Option</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>accel_scp_threshold</p></td>
+<td><p>accelThreshold</p></td>
+</tr>
+<tr class="row-odd"><td><p>accel_wget_threshold</p></td>
+<td><p>accelThreshold</p></td>
+</tr>
+<tr class="row-even"><td><p>accept_unmatch</p></td>
+<td><p>acceptUnmatched</p></td>
+</tr>
+<tr class="row-odd"><td><p>accept_unmatched</p></td>
+<td><p>acceptUnmatched</p></td>
+</tr>
+<tr class="row-even"><td><p>base_dir</p></td>
+<td><p>baseDir</p></td>
+</tr>
+<tr class="row-odd"><td><p>basedir</p></td>
+<td><p>baseDir</p></td>
+</tr>
+<tr class="row-even"><td><p>baseurl</p></td>
+<td><p>baseUrl</p></td>
+</tr>
+<tr class="row-odd"><td><p>bind_queue</p></td>
+<td><p>queueBind</p></td>
+</tr>
+<tr class="row-even"><td><p>cache</p></td>
+<td><p>nodupe_ttl</p></td>
+</tr>
+<tr class="row-odd"><td><p>cache_basis</p></td>
+<td><p>nodupe_basis</p></td>
+</tr>
+<tr class="row-even"><td><p>caching</p></td>
+<td><p>nodupe_ttl</p></td>
+</tr>
+<tr class="row-odd"><td><p>chmod</p></td>
+<td><p>permDefault</p></td>
+</tr>
+<tr class="row-even"><td><p>chmod_dir</p></td>
+<td><p>permDirDefault</p></td>
+</tr>
+<tr class="row-odd"><td><p>chmod_log</p></td>
+<td><p>permLog</p></td>
+</tr>
+<tr class="row-even"><td><p>declare_exchange</p></td>
+<td><p>exchangeDeclare</p></td>
+</tr>
+<tr class="row-odd"><td><p>declare_queue</p></td>
+<td><p>queueDeclare</p></td>
+</tr>
+<tr class="row-even"><td><p>default_dir_mode</p></td>
+<td><p>permDirDefault</p></td>
+</tr>
+<tr class="row-odd"><td><p>default_log_mode</p></td>
+<td><p>permLog</p></td>
+</tr>
+<tr class="row-even"><td><p>default_mode</p></td>
+<td><p>permDefault</p></td>
+</tr>
+<tr class="row-odd"><td><p>destination</p></td>
+<td><p>pollUrl in Poll</p></td>
+</tr>
+<tr class="row-even"><td><p>destination</p></td>
+<td><p>sendTo in Sender</p></td>
+</tr>
+<tr class="row-odd"><td><p>document_root</p></td>
+<td><p>documentRoot</p></td>
+</tr>
+<tr class="row-even"><td><p>e</p></td>
+<td><p>fileEvents</p></td>
+</tr>
+<tr class="row-odd"><td><p>events</p></td>
+<td><p>fileEvents</p></td>
+</tr>
+<tr class="row-even"><td><p>exchange_split</p></td>
+<td><p>exchangeSplit</p></td>
+</tr>
+<tr class="row-odd"><td><p>file_time_limit</p></td>
+<td><p>fileAgeMax</p></td>
+</tr>
+<tr class="row-even"><td><p>hb_memory_baseline_file</p></td>
+<td><p>MemoryBaseLineFile</p></td>
+</tr>
+<tr class="row-odd"><td><p>hb_memory_max</p></td>
+<td><p>MemoryMax</p></td>
+</tr>
+<tr class="row-even"><td><p>hb_memory_multiplier</p></td>
+<td><p>MemoryMultiplier</p></td>
+</tr>
+<tr class="row-odd"><td><p>heartbeat</p></td>
+<td><p>housekeeping</p></td>
+</tr>
+<tr class="row-even"><td><p>instance</p></td>
+<td><p>instances</p></td>
+</tr>
+<tr class="row-odd"><td><p>ll</p></td>
+<td><p>logLevel</p></td>
+</tr>
+<tr class="row-even"><td><p>logRotate</p></td>
+<td><p>logRotateCount</p></td>
+</tr>
+<tr class="row-odd"><td><p>logRotate_interval</p></td>
+<td><p>logRotateInterval</p></td>
+</tr>
+<tr class="row-even"><td><p>log_format</p></td>
+<td><p>logFormat</p></td>
+</tr>
+<tr class="row-odd"><td><p>log_reject</p></td>
+<td><p>logReject</p></td>
+</tr>
+<tr class="row-even"><td><p>logdays</p></td>
+<td><p>logRotateCount</p></td>
+</tr>
+<tr class="row-odd"><td><p>loglevel</p></td>
+<td><p>logLevel</p></td>
+</tr>
+<tr class="row-even"><td><p>no_duplicates</p></td>
+<td><p>nodupe_ttl</p></td>
+</tr>
+<tr class="row-odd"><td><p>post_base_dir</p></td>
+<td><p>post_baseDir</p></td>
+</tr>
+<tr class="row-even"><td><p>post_base_url</p></td>
+<td><p>post_baseUrl</p></td>
+</tr>
+<tr class="row-odd"><td><p>post_basedir</p></td>
+<td><p>post_baseDir</p></td>
+</tr>
+<tr class="row-even"><td><p>post_baseurl</p></td>
+<td><p>post_baseUrl</p></td>
+</tr>
+<tr class="row-odd"><td><p>post_document_root</p></td>
+<td><p>post_documentRoot</p></td>
+</tr>
+<tr class="row-even"><td><p>post_exchange_split</p></td>
+<td><p>post_exchangeSplit</p></td>
+</tr>
+<tr class="row-odd"><td><p>post_rate_limit</p></td>
+<td><p>messageRateMax</p></td>
+</tr>
+<tr class="row-even"><td><p>post_topic_prefix</p></td>
+<td><p>post_topicPrefix</p></td>
+</tr>
+<tr class="row-odd"><td><p>preserve_mode</p></td>
+<td><p>permCopy</p></td>
+</tr>
+<tr class="row-even"><td><p>preserve_time</p></td>
+<td><p>timeCopy</p></td>
+</tr>
+<tr class="row-odd"><td><p>queue_name</p></td>
+<td><p>queueName</p></td>
+</tr>
+<tr class="row-even"><td><p>report_back</p></td>
+<td><p>report</p></td>
+</tr>
+<tr class="row-odd"><td><p>source_from_exchange</p></td>
+<td><p>sourceFromExchange</p></td>
+</tr>
+<tr class="row-even"><td><p>sum</p></td>
+<td><p>identity</p></td>
+</tr>
+<tr class="row-odd"><td><p>suppress_duplicates</p></td>
+<td><p>nodupe_ttl</p></td>
+</tr>
+<tr class="row-even"><td><p>suppress_duplicates_basis</p></td>
+<td><p>nodupe_basis</p></td>
+</tr>
+<tr class="row-odd"><td><p>topic_prefix</p></td>
+<td><p>topicPrefix</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl>
+<dt><strong>CHANGE</strong>: default topic_prefix v02.post -&gt; topicPrefix  v03</dt><dd><p>may need to change configurations to override default to get
+compatible configurations.</p>
+</dd>
+<dt><strong>CHANGE</strong>: v2: <em>mirror</em> defaults to False on all components except sarra.</dt><dd><p>sr3: <em>mirror</em> defaults to True on all components except subscribe.</p>
+</dd>
+<dt><em>NOTICE</em>: The most common v2 plugins are on_message, and on_file</dt><dd><p>(as per <em>plugin</em> and <em>on_</em> directives in v2 configuration files) which can
+be honoured via the <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.v2wrapper">v2wrapper sr3 plugin class</a>
+Many other plugins were ported, and the the configuration module
+recognizes the old configuration settings and they are interpreted
+in the new style. the known conversions can be viewed by starting
+a python interpreter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="mf">3.8.10</span> <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">Nov</span> <span class="mi">26</span> <span class="mi">2021</span><span class="p">,</span> <span class="mi">20</span><span class="p">:</span><span class="mi">14</span><span class="p">:</span><span class="mi">08</span><span class="p">)</span>
+<span class="p">[</span><span class="n">GCC</span> <span class="mf">9.3.0</span><span class="p">]</span> <span class="n">on</span> <span class="n">linux</span>
+<span class="n">Type</span> <span class="s2">&quot;help&quot;</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">,</span> <span class="s2">&quot;credits&quot;</span> <span class="ow">or</span> <span class="s2">&quot;license&quot;</span> <span class="k">for</span> <span class="n">more</span> <span class="n">information</span><span class="o">.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">sarracenia.config</span><span class="o">,</span><span class="nn">pprint</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pp</span><span class="o">=</span><span class="n">pprint</span><span class="o">.</span><span class="n">PrettyPrinter</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">convert_to_v3</span><span class="p">)</span>
+<span class="p">{</span>
+ <span class="s1">&#39;do_send&#39;</span><span class="p">:</span>   <span class="p">{</span>
+                <span class="s1">&#39;file_email&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;flowCallback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.send.email.Email&#39;</span><span class="p">]</span>
+              <span class="p">},</span>
+ <span class="s1">&#39;ls_file_index&#39;</span><span class="p">:</span>                       <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;no_download&#39;</span><span class="p">:</span>                         <span class="p">[</span><span class="s1">&#39;download&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;False&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;notify_only&#39;</span><span class="p">:</span>                         <span class="p">[</span><span class="s1">&#39;download&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;False&#39;</span><span class="p">],</span>
+
+ <span class="s1">&#39;on_message&#39;</span><span class="p">:{</span>
+                <span class="s1">&#39;msg_2http&#39;</span><span class="p">:</span>            <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.tohttp.ToHttp&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_2local&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.tolocal.ToLocal&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_2localfile&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.tolocalfile.ToLocalFile&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_WMO_type_suffix&#39;</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.wmotypesuffix.WmoTypeSuffix&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_by_source&#39;</span><span class="p">:</span>        <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_by_user&#39;</span><span class="p">:</span>          <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_delay&#39;</span><span class="p">:</span>            <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.messagedelay.MessageDelay&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_delete&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.filter.deleteflowfiles.DeleteFlowFiles&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_download&#39;</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_download_baseurl&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.downloadbaseurl.DownloadBaseUrl&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_dump&#39;</span><span class="p">:</span>             <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_fdelay&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_from_cluster&#39;</span><span class="p">:</span>     <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_gts2wistopic&#39;</span><span class="p">:</span>     <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_hour_tree&#39;</span><span class="p">:</span>        <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.hourtree.HourTree&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_http_to_https&#39;</span><span class="p">:</span>    <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.httptohttps.HttpToHttps&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_log&#39;</span><span class="p">:</span>              <span class="p">[</span><span class="s1">&#39;logEvents&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;after_accept&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_overwrite_sum&#39;</span><span class="p">:</span>    <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_print_lag&#39;</span><span class="p">:</span>        <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.printlag.PrintLag&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_rawlog&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;logEvents&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_rename4jicc&#39;</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.rename4jicc.Rename4Jicc&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_rename_dmf&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.renamedmf.RenameDMF&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_rename_whatfn&#39;</span><span class="p">:</span>    <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.renamewhatfn.RenameWhatFn&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_renamer&#39;</span><span class="p">:</span>          <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.renamer.Renamer&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_save&#39;</span><span class="p">:</span>             <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.save.Save&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_skip_old&#39;</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.skipold.SkipOld&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_speedo&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.speedo.Speedo&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_stdfiles&#39;</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_stopper&#39;</span><span class="p">:</span>          <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_sundew_pxroute&#39;</span><span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.sundewpxroute.SundewPxRoute&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_test_retry&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.testretry.TestRetry&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_to_clusters&#39;</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.toclusters.ToClusters&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_total&#39;</span><span class="p">:</span>            <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_total_save&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;post_hour_tree&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.posthourtree.PostHourTree&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;post_long_flow&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.longflow.LongFLow&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;post_override&#39;</span><span class="p">:</span>        <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.accept.postoverride.PostOverride&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;post_total&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;post_total_save&#39;</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;wmo2msc&#39;</span><span class="p">:</span>              <span class="p">[</span><span class="s1">&#39;flow_callback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.filter.wmo2msc.Wmo2Msc&#39;</span><span class="p">]</span>
+               <span class="p">},</span>
+ <span class="s1">&#39;on_post&#39;</span><span class="p">:</span>    <span class="p">{</span>
+                <span class="s1">&#39;post_log&#39;</span><span class="p">:</span>             <span class="p">[</span><span class="s1">&#39;logEvents&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">]</span>
+               <span class="p">},</span>
+ <span class="s1">&#39;plugin&#39;</span><span class="p">:</span>     <span class="p">{</span>
+                <span class="s1">&#39;accel_scp&#39;</span><span class="p">:</span>            <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;accel_wget&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_fdelay&#39;</span><span class="p">:</span>           <span class="p">[</span><span class="s1">&#39;flowCallback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.filter.fdelay.FDelay&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_pclean_f90&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flowCallback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.filter.pclean_f90.PClean_F90&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;msg_pclean_f92&#39;</span><span class="p">:</span>       <span class="p">[</span><span class="s1">&#39;flowCallback&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sarracenia.flowcb.filter.pclean_f92.PClean_F92&#39;</span><span class="p">]</span>
+               <span class="p">},</span>
+ <span class="s1">&#39;windows_run&#39;</span><span class="p">:</span>                         <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+ <span class="s1">&#39;xattr_disable&#39;</span><span class="p">:</span>                       <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>The options listed as ‘continue’ are obsolete ones, superceded by default processing, or rendered
+unnecessary by changes in the implementation.</p>
+</dd>
+<dt><em>NOTICE</em>: for API users and plugin writers, the v2 plugin format is entirely replaced by</dt><dd><p>the <a class="reference external" href="FlowCallbacks.html">Flow Callback</a> class. New plugin functionality
+can mostly be implemented as plugins.</p>
+</dd>
+<dt><strong>CHANGE</strong>: the v2 do_poll plugins must be replaced by subclassing for <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.poll">poll</a></dt><dd><p>Example in <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+</dd>
+</dl>
+<p><strong>CHANGE</strong>: The v2 on_html_page plugins are also replaced by subclassing <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.poll">poll</a></p>
+<p><strong>CHANGE</strong>: v2 do_send replaced by send entrypoint in a Flowcb plugin <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<dl class="simple">
+<dt><em>NOTICE</em>: the v2 accellerator plugins are replaced by built-in accelleration.</dt><dd><p>accel_wget_command, accel_scp_command, accel_ftpget_command, accel_ftpput_command,
+accel_scp_command, are now built-in options used by the
+<a class="reference external" href="../Reference/flowcb.html#module-sarracenia.transfer">Transfer</a> class.
+Adding new transfer protocols is done by sub-classing Transfer.</p>
+</dd>
+</dl>
+<p><em>SHOULD</em>: v2 on_message -&gt; after_accept should be re-written <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<p><em>SHOULD</em>: v2 on_file -&gt; after_work should be re-written <a class="reference external" href="v2ToSr3.html">plugin porting</a></p>
+<dl>
+<dt><em>SHOULD</em>: v2 plugins should to be re-written.  <a class="reference external" href="v2ToSr3.html">plugin porting</a></dt><dd><p>there are many built-in plugins that are ported and automatically
+converted, but external ones must be re-written.</p>
+<p>There are some performance consequences from this compatibility however, so high traffic
+flows will run with less cpu and memory load if the plugins are ported to sr3.
+To build native sr3 plugins, One should investigate the flowCallback (flowcb) class.</p>
+</dd>
+</dl>
+<p><strong>CHANGE</strong>: on_watch plugins entry_point becomes an sr3 after_accept entrypoint in a flowcb in a watch.</p>
+<dl class="simple">
+<dt><em>ACTION</em>: The <strong>sr_audit component is gone</strong>. Replaced by running <em>sr sanity</em> as a cron</dt><dd><p>job (or scheduled task on windows.) to make sure that necessary processes continue to run.</p>
+</dd>
+<dt><strong>CHANGE</strong>: obsolete settings: use_amqplib, use_pika. the new <a class="reference external" href="../Reference/code.html#module-sarracenia.moth.amqp">sarracenia.moth.amqp</a></dt><dd><p>uses the amqp library.  To use other libraries, one should create new subclasses of sarracenia.moth.</p>
+</dd>
+<dt><strong>CHANGE</strong>: statehost is now a boolean flag, fqdn option no longer implemented.</dt><dd><p>if this is a problem, submit an issue. It’s just not considered worthwhile for now.</p>
+</dd>
+<dt><strong>CHANGE</strong>: sr_retry became <a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.retry">retry.py</a>.</dt><dd><p>Any plugins accessing internal structures of sr_retry.py need to be re-written.
+This access is no longer necessary, as the API defines how to put notification messages on
+the retry queue (move notification messages to worklist.failed. )</p>
+</dd>
+<dt><em>NOTICE</em>: sr3 watch, with the <em>force_polling</em> option, is much less efficient</dt><dd><p>on sr3 than v2 for large directory trees (see issue #403 )
+Ideally, one does not use <em>force_polling</em> at all.</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Admin_Rabbit_Addendum.html" class="btn btn-neutral float-left" title="Administering Rabbitmq Adddendum" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="v2ToSr3.html" class="btn btn-neutral float-right" title="Porting V2 Plugins to Sr3" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

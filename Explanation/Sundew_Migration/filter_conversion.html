@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sundew filter migration to sarracenia (PXATX) &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Sundew pull migration to sarracenia (PXATX)" href="sundew_pull_migration.html" />
+    <link rel="prev" title="Sundew Migration Guide" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Sundew Migration Guide</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Sundew filter migration to sarracenia (PXATX)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#one-to-one-filter">ONE TO ONE FILTER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#considerations-with-one-to-one-filters">CONSIDERATIONS WITH ONE TO ONE FILTERS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#final-remarks-on-one-to-one-filter">FINAL REMARKS ON ONE TO ONE FILTER</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#one-to-many-filter">ONE TO MANY FILTER</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sundew_pull_migration.html">Sundew pull migration to sarracenia (PXATX)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sundew_sender_migration.html">Sundew sender migration to sarracenia (PXATX)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Explanation</a> &raquo;</li>
+          <li><a href="index.html">Sundew Migration Guide</a> &raquo;</li>
+      <li>Sundew filter migration to sarracenia (PXATX)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/Explanation/Sundew_Migration/filter_conversion.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sundew-filter-migration-to-sarracenia-pxatx">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Sundew filter migration to sarracenia (PXATX)</a><a class="headerlink" href="#sundew-filter-migration-to-sarracenia-pxatx" title="Link to this heading"></a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>&#64;Date&#64;</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>&#64;Version&#64;</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPx Sarracenia Suite</p>
+</dd>
+</dl>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sundew-filter-migration-to-sarracenia-pxatx" id="id1">Sundew filter migration to sarracenia (PXATX)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#description" id="id2">DESCRIPTION</a></p></li>
+<li><p><a class="reference internal" href="#one-to-one-filter" id="id3">ONE TO ONE FILTER</a></p></li>
+<li><p><a class="reference internal" href="#considerations-with-one-to-one-filters" id="id4">CONSIDERATIONS WITH ONE TO ONE FILTERS</a></p></li>
+<li><p><a class="reference internal" href="#final-remarks-on-one-to-one-filter" id="id5">FINAL REMARKS ON ONE TO ONE FILTER</a></p></li>
+<li><p><a class="reference internal" href="#one-to-many-filter" id="id6">ONE TO MANY FILTER</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="description">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">DESCRIPTION</a><a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>This document suppose that the reader is familiar with the concepts and usage
+of <strong>sundew</strong> and <strong>sarracenia</strong>.</p>
+<p><strong>sundew</strong> filters supports a plugin mechanism that allows processing onto
+received products in order to generate derivated products and insert them
+in the sundew product flow. The <em>pxFilter</em> process reads its configuration
+where an <em>fx_script</em> is declared, installed and used on all ingested products.</p>
+<p>There are 2 types of such filters. The first type, most common, is a one to
+one filter where one received product is converted into one filtered product.
+An example is where a GIF image is converted into a PNG one. The second type
+is where on received product generates a bunch of filtered products we will
+call it a one to many filter. An example if the collected wmo bulletins we
+get from UKMET. A filter split each file into several individual files. We
+might have to do a third type for example if we collect a bunch of individual
+files into one product all of this into a sarra plugin…</p>
+<p><strong>sarracenia</strong> supports a lot of possible plugins in all of its programs.
+If we take the simpler form of filter one to one, and we want to translated
+this into a <strong>sarra</strong> process we need to receive the posting of a local product,
+generate a resulting product and post the notification for it. It is easy to
+see that can be done using an <strong>sr-sarra</strong> process.</p>
+</section>
+<section id="one-to-one-filter">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">ONE TO ONE FILTER</a><a class="headerlink" href="#one-to-one-filter" title="Link to this heading"></a></h2>
+<p>I will present one way that I used to implement a one to one filter.
+There could be other alternatives… but this one worked nicely for me.</p>
+<p>Lets go through the steps of making a one to one filter plugin.
+The <strong>sarra</strong> configuration will start similar to an sr_sender one
+because both require the announced products to be local to the server.
+So typically something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># broker is localhost</span>
+
+<span class="n">broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">feeder</span><span class="nd">@localhost</span><span class="o">/</span>
+<span class="n">exchange</span>   <span class="n">xpublic</span>
+
+<span class="c1"># queueing local</span>
+
+<span class="n">prefetch</span>   <span class="mi">10</span>
+
+<span class="c1"># the root of the tree implicit in baseUrl&#39;s.</span>
+
+<span class="n">baseDir</span> <span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">public_data</span>
+
+<span class="c1"># only the selected product</span>
+<span class="n">acceptUnmatch</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Of course this is only an example. You can narrow down the products
+with more precise subtopic and even different exchanges. And of course,
+we want to post the newly created product hence our config will also
+have something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># posting
+
+post_broker   amqp://feeder@localhost/
+post_exchange xpublic
+post_baseUrl http://${HOSTNAME}
+post_baseDir /apps/sarra/public_data
+</pre></div>
+</div>
+<p>In between these two sections we need to set the plugin to convert the
+products and also define where the products will be placed. I will
+pretend that my filter converts images to PNG format images. The config
+could look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># converting the products
+
+callback convert.png
+
+# example for directory and product selection
+
+directory ${PBD}/${YYYYMMDD}/SSC-DATAINTERCHANGE/CHARTS/PNG/${HH}
+
+subtopic  *.SSC-DATAINTERCHANGE.CHARTS.IMV6.#
+accept   .*/SSC-DATAINTERCHANGE/CHARTS/IMV6/.*
+</pre></div>
+</div>
+<p>Now lets explain the converting part of this configuration. As you guest, the
+plugin cvt_topng is where the image will be converted. Here is how it is
+implemented. Our converting class needs to register itself as a replacement
+for the http protocol. Why ?  because all the local product will be announced
+as <a class="reference external" href="http://hostname">http://hostname</a> and we want to catch what should be an http download and
+turn it into a converting process.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="k">class</span> <span class="nc">Cvt_Topng</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Next, it is very important to give a new name to the converted product.
+If you leave the target name as is, <strong>sarra</strong> will match the notice
+with the local product and will skip this message as an already downloaded
+product. The next function in our class will be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">worklist</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.imv6&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">updatePaths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now this new_file is unavailable on the localhost, we can use a <strong>do_download</strong>
+or a <strong>download</strong> function to proceed with our conversion. I have implemented
+my one to one filters with a <strong>download</strong> and in our case it looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span> <span class="vm">__name__</span> <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+    <span class="n">ipath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+    <span class="n">opath</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;converting </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">ipath</span><span class="p">),</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">opath</span><span class="p">)))</span>
+
+    <span class="c1"># here an example of command</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;topng &#39;</span> <span class="o">+</span> <span class="n">ipath</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">opath</span>
+
+    <span class="k">try</span> <span class="p">:</span>
+            <span class="n">outp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unable to convert file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ipath</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>There is more work left with the existance of the new product. Each one to one
+filter needs to adjust the message that will be posted. Since this is a common
+task to all one to one filters, I made it a plugin itself and it is called
+<strong>on_file_converted</strong>. Basically it contains an <strong>on_file</strong> function for the
+task:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># once the file converted, adjust message</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+
+<span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span> <span class="p">):</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">component</span> <span class="o">!=</span> <span class="s1">&#39;sarra&#39;</span> <span class="p">:</span> <span class="k">return</span>
+
+    <span class="n">new_ok</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+        <span class="n">path</span>    <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
+
+        <span class="n">lstat</span>   <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">new_message</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span> <span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span> <span class="p">)</span>
+        <span class="n">new_ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_message</span><span class="p">)</span>
+    <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">=</span><span class="n">new_ok</span>
+</pre></div>
+</div>
+<p>It is nice to think that, should there be changes in the message, this plugin
+could be modified without having to modify all one to one filters.</p>
+</section>
+<section id="considerations-with-one-to-one-filters">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">CONSIDERATIONS WITH ONE TO ONE FILTERS</a><a class="headerlink" href="#considerations-with-one-to-one-filters" title="Link to this heading"></a></h2>
+<p>I wrote some of the migrated filters and there are some considerations
+to be taken while implementing filters from <strong>sundew</strong>.</p>
+<p>I have tried to make the less use of the <strong>sundew-extension</strong> but when
+required for some clients, a filter must change this inforemation too.
+In our example, I also have this function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">correct_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="p">:</span>
+
+    <span class="k">if</span>  <span class="ow">not</span> <span class="s1">&#39;sundew_extension&#39;</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">headers</span> <span class="p">:</span> <span class="k">return</span>
+
+    <span class="n">ext</span>   <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;sundew_extension&#39;</span><span class="p">]</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">ext</span>    <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;:PNG&#39;</span>
+
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;sundew_extension&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ext</span>
+</pre></div>
+</div>
+<p>And in the code, it is called right after the conversion:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">try</span> <span class="p">:</span>
+         <span class="n">outp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+         <span class="bp">self</span><span class="o">.</span><span class="n">correct_extension</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+         <span class="k">return</span> <span class="kc">True</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>It might also be required, depending on the products and the clients,
+to add (or update) to the extension a datetime suffix for the new products.</p>
+</section>
+<section id="final-remarks-on-one-to-one-filter">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">FINAL REMARKS ON ONE TO ONE FILTER</a><a class="headerlink" href="#final-remarks-on-one-to-one-filter" title="Link to this heading"></a></h2>
+<p>Usually a converter, say topng, will add the extension .png to the end product.
+This was not the case in <strong>sundew</strong> where the <em>whatfn</em> was kept as is but
+part of the <em>sundew_extension</em> was modified to show the new format.</p>
+<p>Examining <strong>on_file_converted</strong> you will find an after_accept function
+that removes filter extensions from the filename. This was required because
+old sundew clients needed to receive sarracenia converted products without
+their specific extension name. When this is required, the <strong>on_file_converted</strong>
+plugin can be added to the sender config. So example, a converted product
+to PNG, in sarra would have a .png extension. Should it be required to send
+it to a sundew client with option <em>filename NONE</em>  without the plugin
+the client would receive  <em>WHATFN.png:…:…</em>  with the plugin, it receives
+the correct <em>WHATFN:…:…</em></p>
+<p>Note also that the on_file function of the <strong>on_file_converted</strong> plugin
+is restricted to an <strong>sr_sarra</strong> process while the after_accept function
+is restricted to an <strong>sr_sender</strong> process.</p>
+<p>If part of this document needs to be clarified please let me know</p>
+</section>
+<section id="one-to-many-filter">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">ONE TO MANY FILTER</a><a class="headerlink" href="#one-to-many-filter" title="Link to this heading"></a></h2>
+<p>I will present one way that I have used to implement a one to many filter.
+Most of what was said earlier in the <strong>one to one filter</strong> still holds.
+The configuration of such an <strong>sarra</strong> process follows the same rules.
+The plugin requires the same http registering. An <strong>after_accept</strong> function
+needs to change the value of <strong>msg[‘new_file’]</strong> (the value may not be
+relevant to the filename you will give to the extracted individual files.</p>
+<p>Each file extracted will require an individual message to be posted.
+Use a message constructor, as presented above (<strong>sarracnie.fromFileData()</strong>)
+to build a new message, and then append that to the list of messages
+being processed.</p>
+<p>Many things could be considered in this function (parts?) but for the
+general usage it should be ok.  I used the <strong>after_work</strong> function to
+do the extraction, and publishing as follow</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">after_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span> <span class="p">):</span>
+
+    <span class="n">new_ok</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+        <span class="n">ipath</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;splitting </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">ipath</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="c1"># HERE IS A FUNCTION THAT EXTRACTS/GENERATES THE FILES</span>
+        <span class="c1"># AND RETURNS A LIST CONTAINING THE ABSOLUTE PATH FOR</span>
+        <span class="c1"># THE FILES GENERATED</span>
+
+        <span class="n">opaths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FILE_PARSER</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ipath</span><span class="p">)</span>
+
+        <span class="c1"># if it did not work it is an error</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">opaths</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">opaths</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># publish all parsed files but last</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">opaths</span> <span class="p">:</span>
+            <span class="n">new_msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">fromFileData</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="p">)</span>
+            <span class="n">new_ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_msg</span><span class="p">)</span>
+
+    <span class="c1"># replace worklist.ok if you don&#39;t wont to republish the inputs.</span>
+    <span class="n">worklist</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="n">new_ok</span>
+    <span class="c1"># OR could append if you do...</span>
+    <span class="c1"># worklist.extend(new_ok)</span>
+</pre></div>
+</div>
+<p>From the template plugin, one should implement the extraction of the files.
+Each file will get its uniq name. All generated product absolute filepath
+are collected in the <strong>opaths</strong> python
+list. This list is returned and the <strong>after_work</strong> function will take care
+of publishing these new products. A snippet of code, just as a reference
+is provided in the template</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># file parsing here</span>
+
+<span class="k">def</span> <span class="nf">FILE_PARSER</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ipath</span> <span class="p">):</span>
+
+    <span class="n">opaths</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># PARSE THE FILE HERE</span>
+
+    <span class="c1"># EACH GENERATED FILE SHOULD HAVE A DIFFERENT PATH</span>
+    <span class="c1"># THAT SHOULD LOOK LIKE</span>
+
+    <span class="c1"># opath  = msg[&#39;new_dir&#39;] + &#39;/&#39; + new_extracted_filename</span>
+
+    <span class="c1"># EACH SUCCESSFULL PATH IS APPENDED TO THE LIST</span>
+
+    <span class="c1"># opaths.append(opath)</span>
+
+    <span class="c1"># RETURN THE LIST OF ALL GENERATED FILES</span>
+
+    <span class="k">return</span> <span class="n">opaths</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Sundew Migration Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sundew_pull_migration.html" class="btn btn-neutral float-right" title="Sundew pull migration to sarracenia (PXATX)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

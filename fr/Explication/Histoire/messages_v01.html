@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Message v01 Format &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Description du protocole / format du message v02" href="messages_v02.html" />
+    <link rel="prev" title="Échange de données de type maillé pour le WIS-GTS en 2019" href="mesh_gts.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Histoire</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Annoncements_v03.html">Annonce de Sr3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deploiement_2018.html">Sarracenia Janvier 2018</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Evolution.html">Histoire/Contexte de Sarracenia</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HPC_mirroring_cas_dutilisation.html">Étude de cas : Mise en miroir HPC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mesh_gts.html">Échange de données de type maillé pour le WIS-GTS en 2019</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Message v01 Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v02.html">Description du protocole / format du message v02</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v03.html">Modifications apportées pour créer la v03</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="../index.html">Explication</a> &raquo;</li>
+          <li><a href="index.html">Histoire</a> &raquo;</li>
+      <li>Message v01 Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/fr/Explication/Histoire/messages_v01.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="message-v01-format">
+<h1>Message v01 Format<a class="headerlink" href="#message-v01-format" title="Link to this heading"></a></h1>
+<p>Status: Approved-Draft1-20150805</p>
+<p>Description du protocole / format du message.</p>
+<p>Ce dossier documente les conclusions/propositions finales, les raisonnements/débats vont ailleurs.</p>
+<p>Les messages publiés incluent un “sujet” et un “corps”.</p>
+<p>La sujet du message se décompose comme suit</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;version&gt;.&lt;type&gt;.[Varie selon la version].&lt;dir&gt;.&lt;dir&gt;.&lt;dir&gt;...
+
+&lt;version&gt;:
+        exp -- Version initiale, obsolète (non traitée dans ce document)
+        v00 -- utilisé pour NURP &amp; PAN-AM en 2013-2014. (non couvert dans le présent document)
+        v01 -- version 2015.
+
+&lt;type&gt;:
+        adm  - Modifier les paramètres
+                ´admin´, ´config´, etc...
+
+        log  - rendre compte de l’état des opérations.
+
+        notify - ´post´ mais dans les versions exp et v00. (Non couvert ici.)
+
+        post - annoncer ou notifier qu’un nouveau bloc de produits est disponible.
+                Chaînes possibles : post,ann(ounce), not(ify)
+
+&lt;source&gt;:
+</pre></div>
+</div>
+<p>Le reste de ce document suppose la version 1 (sujet v01) :</p>
+<p>sujet: &lt;version&gt;.&lt;type&gt;.&lt;src&gt;(.&lt;dir&gt;.)*.&lt;nom de fichier&gt;
+contenu: 1ère ligne:
+&lt;horodatage&gt; &lt;taille de bloc en octets&gt; &lt;taille du fichier en blocs&gt; &lt;bloc#&gt; &lt;reste&gt; &lt;flags&gt; &lt;md5sum&gt; &lt;flowid&gt; &lt;srcpath&gt; &lt;relpath&gt;</p>
+<p>se décompose en:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;horodatage&gt;: date
+      YYYYMMDDHHMMSS.&lt;decimal&gt;
+
+&lt;taille de bloc en octets&gt;: bsz
+      Nombre d’octets dans un bloc.
+      Les sommes de contrôle sont calculées par bloc, donc un post
+
+&lt;taille du fichier en blocs&gt;: fzb
+      Nombre total entier de blocs dans le fichier
+      FIXME: (y compris le dernier bloc ou pas?)
+      si ce paramètre est défini sur 1.
+
+&lt;block#&gt;: bno
+      0 origine, le numéro de bloc couvert par cette publication.
+
+&lt;remainder&gt;: brem
+      normalement 0, sur le dernier bloc, il reste des blocs dans le fichier
+      à transférer.
+
+      -- si (fzb=1 and brem=0)
+             alors bsz=fsz en octets.
+             -- fichiers entiers remplacés.
+             -- C’est la même chose que le mode --whole-file de rsync.
+
+&lt;flags&gt;:Une liste de lettres d’option séparées par des virgules, certaines avec des arguments après &#39;=&#39;.
+
+      Paramètre de somme de contrôle contenu dans le champ &#39;flags&#39;, mais n’est pas tout.
+  D’autres lettres / chiffres pourraient être là pour désigner d’autres choses.
+      &#39;=&#39; sépare les indicateurs des arguments.
+
+
+      donne lieu à l’entrée &#39;flags&#39;:
+
+      0 - Aucune somme de contrôle (copie inconditionnelle.)
+      d - Additionner l’intégralité des données
+      n - checksum le nom du fichier
+      c=&lt;script&gt; - somme de contrôle avec un script, nommée &lt;script&gt;
+
+      &lt;script&gt; doit être &quot;enregistré&quot; dans le réseau de commutateurs.
+                      enregistré signifie que tous les abonnés en aval
+                      peuvent obtenir le script pour valider la somme de contrôle.
+                      Il faut un mécanisme de récupération.
+
+      Autres valeurs d’indicateur possibles :
+
+      u - unlinked... pour les fichiers qui ont été supprimés ? &#39;r&#39;?
+
+      Stratégie de segment de fichier :
+              i - inplace (ne pas créer de fichiers temporaires, juste chercher
+                      dans le fichier.)
+                  peut entraîner la création d’un fichier .ddsig?
+              p - part files.  Utilisez .part fichiers, suffixe fixe.
+                  Je ne sais pas lequel sera par défaut.
+         - La stratégie de segment de fichier peut être remplacée par le client. Juste une suggestion.
+         - analogues aux options rsync : --inplace, --partial,
+
+&lt;flowid&gt;
+      Une balise arbitraire utilisée pour le suivi des données via le réseau.
+
+Les deux voies sont subtilement liées.  Ni l’un ni l’autre ne peuvent être interprétés seuls.
+Il faut considérer les deux composantes du chemin.
+------
+
+  Que se passe-t-il s’il y a des espaces dans le nom du fichier ?
+      Il est codé en URL, donc un espace doit se transformer en : %20
+</pre></div>
+</div>
+<hr class="docutils" />
+<blockquote>
+<div><p>&lt;srcpath&gt; – URL de base utilisée pour récupérer les données.</p>
+<blockquote>
+<div><p>options: URL Complet:</p>
+<p>sftp://afsiext&#64;cmcdataserver/data/NRPDS/outputs/NRPDS_HiRes_000.gif</p>
+<p>dans le cas où l’URL ne se termine pas par un séparateur de chemin (‘/’),
+le chemin src est considéré comme la source complète du fichier à récupérer.</p>
+<p>URL Statique:</p>
+<p>sftp://afsiext&#64;cmcdataserver/</p>
+<p>Si l’URL se termine par un séparateur de chemin (‘/’), alors l’URL src est
+considéré comme un préfixe pour la partie variable de l’URL de récupération.</p>
+</div></blockquote>
+<p>&lt;relpath&gt; – Chemin d’accès relatif du répertoire actif dans lequel placer le fichier.</p>
+<blockquote>
+<div><blockquote>
+<div><p>Deux cas basés sur la fin étant un séparateur de chemin ou non.</p>
+<p>cas 1: NURP/GIF/</p>
+<p>basé sur le répertoire de travail actuel du client de téléchargement,
+créer un sous-répertoire appelé URP, et à l’intérieur de celui-ci, un sous-répertoire
+appelé GIF sera créé.  Le nom du fichier sera tiré du
+srcpath.</p>
+</div></blockquote>
+<dl>
+<dt>Si le srcpath se termine par pathsep, alors le relpath ici sera</dt><dd><p>concaténé au srcpath, formant l’URL de récupération complète.</p>
+<p>cas 2: NRP/GIF/mine.gif</p>
+<p>Si le srcpath se termine par pathsep, le relpath sera concaténé
+à srcpath pour former l’URL de récupération complète.</p>
+</dd>
+<dt>si le chemin src ne se termine pas par pathsep, l’URL src est prise</dt><dd><p>comme terminé, et le fichier est renommé lors du téléchargement conformément à la
+spécification (dans ce cas, la mienne.gif)</p>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>FIXME: Vérifiez les points suivants :</dt><dd><p>fsz = taille du fichier en octeta = ( bsz * (fsb-1) ) + brem ?</p>
+</dd>
+</dl>
+<p>exemple 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v01</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">ec_cmc</span><span class="o">.</span><span class="n">NRDPS</span><span class="o">.</span><span class="n">GIF</span><span class="o">.</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+<span class="mf">201506011357.345</span> <span class="mi">457</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span> <span class="n">d</span> <span class="o">&lt;</span><span class="n">md5sum</span><span class="o">&gt;</span> <span class="n">exp13</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">afsiext</span><span class="nd">@cmcdataserver</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">NRPDS</span><span class="o">/</span><span class="n">outputs</span><span class="o">/</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span> <span class="n">NRDPS</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span>
+
+      <span class="n">v01</span> <span class="o">-</span> <span class="n">version</span> <span class="n">du</span> <span class="n">protocol</span>
+      <span class="n">post</span> <span class="o">-</span> <span class="n">indique</span> <span class="n">le</span> <span class="nb">type</span> <span class="n">de</span> <span class="n">message</span>
+
+      <span class="n">La</span> <span class="n">version</span> <span class="n">et</span> <span class="n">le</span> <span class="nb">type</span> <span class="n">déterminent</span> <span class="n">ensemble</span> <span class="n">le</span> <span class="nb">format</span> <span class="n">des</span> <span class="n">sujets</span> <span class="n">suivantes</span> <span class="n">et</span> <span class="n">le</span> <span class="n">corps</span> <span class="n">du</span> <span class="n">message</span><span class="o">.</span>
+
+      <span class="n">ec_cmc</span> <span class="o">-</span> <span class="n">le</span> <span class="n">compte</span> <span class="n">utilisé</span> <span class="n">pour</span> <span class="n">émettre</span> <span class="n">le</span> <span class="n">post</span> <span class="p">(</span><span class="n">unique</span> <span class="n">dans</span> <span class="n">un</span> <span class="n">réseau</span><span class="p">)</span><span class="o">.</span>
+
+        <span class="o">--</span> <span class="n">blocksize</span> <span class="n">est</span> <span class="mi">457</span>  <span class="p">(</span><span class="o">==</span> <span class="n">taille</span> <span class="n">du</span> <span class="n">fichier</span><span class="p">)</span>
+        <span class="o">--</span> <span class="n">Le</span> <span class="n">nombre</span> <span class="n">de</span> <span class="n">blocs</span> <span class="n">est</span> <span class="n">de</span> <span class="mi">1</span>
+        <span class="o">--</span> <span class="n">le</span> <span class="n">reste</span> <span class="n">est</span> <span class="n">égal</span> <span class="n">à</span> <span class="mf">0.</span>
+        <span class="o">--</span> <span class="n">le</span> <span class="n">numéro</span> <span class="n">de</span> <span class="n">bloc</span> <span class="n">est</span> <span class="mf">0.</span>
+        <span class="o">--</span> <span class="n">d</span> <span class="o">-</span> <span class="n">La</span> <span class="n">somme</span> <span class="n">de</span> <span class="n">contrôle</span> <span class="n">a</span> <span class="n">été</span> <span class="n">calculée</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">corps</span><span class="o">.</span>
+        <span class="o">--</span> <span class="n">flow</span> <span class="n">est</span> <span class="n">un</span> <span class="n">argument</span> <span class="n">après</span> <span class="n">le</span> <span class="n">chemin</span> <span class="n">relatif</span><span class="o">.</span>
+        <span class="o">--</span> <span class="n">URL</span> <span class="n">source</span> <span class="n">complète</span> <span class="n">spécifiée</span> <span class="p">(</span><span class="n">ne</span> <span class="n">se</span> <span class="n">termine</span> <span class="n">pas</span> <span class="n">par</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="o">--</span> <span class="n">chemin</span> <span class="n">relatif</span> <span class="n">spécifié</span> <span class="n">pour</span>
+
+      <span class="n">pull</span> <span class="n">de</span><span class="p">:</span>
+              <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">afsiext</span><span class="nd">@cmcdataserver</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">NRPDS</span><span class="o">/</span><span class="n">outputs</span><span class="o">/</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+
+      <span class="n">Chemin</span> <span class="n">de</span> <span class="n">téléchargement</span> <span class="n">relatif</span> <span class="n">complet</span> <span class="p">:</span>
+              <span class="n">NRDPS</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">NRDPS_HiRes_000</span><span class="o">.</span><span class="n">gif</span>
+
+              <span class="o">--</span> <span class="n">Prend</span> <span class="n">le</span> <span class="n">nom</span> <span class="n">de</span> <span class="n">fichier</span> <span class="n">de</span> <span class="n">srcpath</span><span class="o">.</span>
+              <span class="o">--</span> <span class="n">peut</span> <span class="n">être</span> <span class="n">modifié</span> <span class="n">par</span> <span class="n">un</span> <span class="n">processus</span> <span class="n">de</span> <span class="n">validation</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>exemple 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>v01.post.ec_cmc.NRDPS.GIF.NRDPS_HiRes_000.gif
+201506011357.345 457 1 0 0 d &lt;md5sum&gt; exp13 http://afsiext@cmcdataserver/data/  NRDPS/GIF/NRDPS_HiRes_000.gif
+
+Dana ce cas,
+      pull de:
+              http://afsiext@cmcdataserver/data/NRPDS/GIF/NRDPS_HiRes_000.gif
+              -- srcpath se termine par &#39;/&#39;, donc concaténé, prend le fichier de l’URL relative.
+              -- véritable &#39;miroir&#39;
+
+      Chemin de téléchargement relatif complet :
+              NRDPS/GIF/NRDPS_HiRes_000.gif
+
+  -- peut être modifié par un processus de validation.
+</pre></div>
+</div>
+<section id="journaux-des-messages">
+<h2>Journaux des messages<a class="headerlink" href="#journaux-des-messages" title="Link to this heading"></a></h2>
+<p>Le message du journal contient :</p>
+<p>n’est émis qu’une fois le traitement terminé, pour indiquer un état final.</p>
+<p>Le sujet correspond au message de notification sauf…</p>
+<p>v01.log. &lt;source&gt;. &lt;consumer&gt;……</p>
+<p>version est la version du protocole, doit incrémenter en synchronisation avec notifier.</p>
+<p>Le début est comme par post… Il suffit d’ajouter des champs après:</p>
+<p>&lt;date&gt; blksz blckcnt rest blocknum flags &lt;flow&gt; baseurl relativeurl &lt;status&gt; &lt;host&gt; &lt;client&gt; &lt;duration&gt;</p>
+</section>
+<section id="messages-du-cfg">
+<h2>Messages du CFG<a class="headerlink" href="#messages-du-cfg" title="Link to this heading"></a></h2>
+<p>juste un espace réservé.</p>
+<p>vraiment pas encore fini. La pensée est en configuration.txt</p>
+<p>v01.cfg</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mesh_gts.html" class="btn btn-neutral float-left" title="Échange de données de type maillé pour le WIS-GTS en 2019" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="messages_v02.html" class="btn btn-neutral float-right" title="Description du protocole / format du message v02" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

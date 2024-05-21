@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modifications apportées pour créer la v03 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tutoriel" href="../../Tutoriel/index.html" />
+    <link rel="prev" title="Description du protocole / format du message v02" href="messages_v02.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Histoire</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="Annoncements_v03.html">Annonce de Sr3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deploiement_2018.html">Sarracenia Janvier 2018</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Evolution.html">Histoire/Contexte de Sarracenia</a></li>
+<li class="toctree-l4"><a class="reference internal" href="HPC_mirroring_cas_dutilisation.html">Étude de cas : Mise en miroir HPC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mesh_gts.html">Échange de données de type maillé pour le WIS-GTS en 2019</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v01.html">Message v01 Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="messages_v02.html">Description du protocole / format du message v02</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Modifications apportées pour créer la v03</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="../index.html">Explication</a> &raquo;</li>
+          <li><a href="index.html">Histoire</a> &raquo;</li>
+      <li>Modifications apportées pour créer la v03</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/fr/Explication/Histoire/messages_v03.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="modifications-apportees-pour-creer-la-v03">
+<h1>Modifications apportées pour créer la v03<a class="headerlink" href="#modifications-apportees-pour-creer-la-v03" title="Link to this heading"></a></h1>
+<p>Le format réel est défini <a class="reference external" href="../../Reference/sr_post.7.html">ici</a>
+Une explication de la motivation des changements est ci-dessous:</p>
+<section id="differences-par-rapport-a-v02">
+<h2>Différences par rapport à v02<a class="headerlink" href="#differences-par-rapport-a-v02" title="Link to this heading"></a></h2>
+<p>La version 03 est un changement d’encodage, mais la sémantique des champs
+sont inchangés par rapport à la version 02. Les modifications sont limitées à la façon dont les champs
+sont placés dans les messages. Dans v02, les en-têtes AMQP étaient utilisés pour stocker la valeur des
+paires nom-valeur</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Les en-têtes v03 ont une longueur pratiquement illimitée. Dans la v02, individuel
+Les paires nom-valeur sont limitées à 255 caractères. Cela a prouvé
+limitant dans la pratique. Dans v03, la limite n’est pas définie par le standard JSON,
+mais par des implémentations d’analyseur spécifiques. Les limites
+dans les analyseurs commun sont suffisamment élevés pour ne pas causer de problèmes pratiques.</p></li>
+<li><p>L’utilisation de la charge utile des messages pour stocker les en-têtes permet d’envisager
+d’autres protocoles de messagerie, tels que MQTT 3.1.1, à l’avenir.</p></li>
+<li><p>Dans la version v03, la charge utile JSON pure simplifie les implémentations, réduit la
+documentation requise et la quantité d’analyse à implémenter. L’utilisation d’un format couramment
+implémenté permet d’utiliser des analyseurs optimisés existants.</p></li>
+<li><p>Dans la v03, l’encodage JSON de l’ensemble de la charge utile réduit les fonctionnalités requises
+pour qu’un protocole transfère les messages Sarracenia. Par exemple, on pourrait envisager d’utiliser
+Sarracenia avec des courtiers MQTT v3.11 qui sont plus standardisés et donc plus facilement
+interopérables que AMQP.</p></li>
+<li><p>Les champs fixes v02 sont maintenant des clés “pubTime”, “baseURL” et “relPath”
+dans l’objet JSON qui est le corps du message.</p></li>
+<li><p>L’en-tête v02 <em>sum</em> avec valeur codée hexadécimale, est remplacé par l’en-tête v03 <em>identity</em> avec codage base64.</p></li>
+<li><p>L’en-tête v03 <em>content</em> permet l’intégration du contenu du fichier.</p></li>
+<li><p>Changement de frais généraux… Environ +75 octets par message (variable.)</p>
+<ul>
+<li><p>Objet JSON marquant les accolades ‘{’ ‘}’, virgules et guillemets pour
+trois champs fixes. net: +10</p></li>
+<li><p>La section AMQP <em>Propriétés de l’application</em> n’est plus incluse dans la charge utile, ce qui permet d’économiser
+un en-tête de 3 octets (remplacé par 2 octets de charge utile entre accolades ouvertes et fermées.)
+net: -1 octet</p></li>
+<li><p>chaque champ a un en-tête d’un octet pour indiquer l’entrée de table dans un paquet AMQP
+contre 4 guillemets, un deux-points, un espace et probablement une virgule : 7 au total.
+Le changement net est donc de +6 caractères, par en-tête. La plupart des messages v02 ont 6 en-têtes,
+net : +36 octets</p></li>
+<li><p>les champs fixes sont maintenant nommés : pubTime, baseUrl, relPath, en ajoutant 10 caractères
+chaque. +30 octets.</p></li>
+</ul>
+</li>
+<li><p>Dans v03, le format des fichiers de sauvegarde est le même que la charge utile du message.
+Dans v02, il s’agissait d’un tuple json qui incluait un champ de sujet, le corps et les en-têtes.</p></li>
+<li><p>Dans v03, le format de rapport est un message de publication avec un en-tête, plutôt que
+d’être analysé différemment. Cette spécification unique s’applique donc aux deux.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="messages_v02.html" class="btn btn-neutral float-left" title="Description du protocole / format du message v02" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../Tutoriel/index.html" class="btn btn-neutral float-right" title="Tutoriel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

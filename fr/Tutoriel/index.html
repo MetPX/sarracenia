@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutoriel &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Téléchargement en utilisant la console" href="1_CLI_introduction.html" />
+    <link rel="prev" title="Modifications apportées pour créer la v03" href="../Explication/Histoire/messages_v03.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutoriel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+      <li>Tutoriel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="tutoriel">
+<h1>Tutoriel<a class="headerlink" href="#tutoriel" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1_CLI_introduction.html#Prérequis">Prérequis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="1_CLI_introduction.html#SR3">SR3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="1_CLI_introduction.html#Conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Entrées-de-fichier-de-configuration-et-rappels">Entrées de fichier de configuration et rappels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Écrire-Vos-Propres-Rappels">Écrire Vos Propres Rappels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Listes-De-Travail">Listes De Travail</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Sortie-d’Exécution">Sortie d’Exécution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Exemple-de-sous-classe-Flowcb">Exemple de sous-classe Flowcb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Plugins-qui-changent-la-façon-dont-un-fichier-est-téléchargé">Plugins qui changent la façon dont un fichier est téléchargé</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Plugins-qui-Traitent-un-Fichier-après-son-Téléchargement">Plugins qui Traitent un Fichier après son Téléchargement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Plugins-qui-renomment-les-fichiers">Plugins qui renomment les fichiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Plugins-qui-Créent-de-Nouveaux-Fichiers">Plugins qui Créent de Nouveaux Fichiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2_CLI_with_flowcb_demo.html#Other-Examples">Other Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#démareurs.">démareurs.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#cfg.download">cfg.download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#cfg.batch">cfg.batch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#cfg.messageCountMax">cfg.messageCountMax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#cfg.masks">cfg.masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#cfg.no,-cfg.pid_filename">cfg.no, cfg.pid_filename</a></li>
+<li class="toctree-l2"><a class="reference internal" href="3_api_flow_demo.html#Conclusion:">Conclusion:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#Liaisons">Liaisons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#queue_name">queue_name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#Messages">Messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#Ack">Ack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#Télécharger-des-données-avec-Python">Télécharger des données avec Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="4_api_moth_sub_demo.html#Conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installer.html">Installation de MetPX Sarracenia</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Installer.html#enregistrement-de-revision">Enregistrement de révision</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Installer.html#lavez-vous-deja">L’avez-vous déjà?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Installer.html#installation-client">Installation Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Installer.html#source">Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Installer.html#sarrac">Sarrac</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html#mise-en-place">Mise en Place</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html#demarrage">Démarrage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html#nettoyage">Nettoyage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Windows.html#execution-de-sarracenia-avec-une-invite-de-commandes">Exécution de Sarracenia avec une invite de commandes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Windows.html#execution-de-sarracenia-sans-invite-de-commandes">Exécution de Sarracenia sans invite de commandes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Explication/Histoire/messages_v03.html" class="btn btn-neutral float-left" title="Modifications apportées pour créer la v03" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="1_CLI_introduction.html" class="btn btn-neutral float-right" title="Téléchargement en utilisant la console" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

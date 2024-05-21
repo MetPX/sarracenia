@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1 Strawman Design &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Discussion of File Modification Propagation" href="deltas.html" />
+    <link rel="prev" title="Basic Idea" href="BasicIdea.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AMQPprimer.html">AMQP - Primer for Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html">MetPX-Sarracenia Developer’s Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="on_part_assembly.html">File Re-assembling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Evolution.html">Design Changes since Original (2015)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicIdea.html">Original (2015) Basic Idea</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Original (2015) Design</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#assumptions-constraints"><span class="sectnum">1.1 </span>Assumptions/Constraints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#number-of-switches"><span class="sectnum">1.2 </span>Number of Switches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#amqp-feature-selection"><span class="sectnum">1.3 </span>AMQP Feature Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#application"><span class="sectnum">1.4 </span>Application</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#routing"><span class="sectnum">1.5 </span>Routing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#routing-posts"><span class="sectnum">1.5.1 </span>Routing Posts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#routing-logs"><span class="sectnum">1.5.2 </span>Routing Logs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#security-model"><span class="sectnum">1.6 </span>Security Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#users-queues-exchanges"><span class="sectnum">1.6.1 </span>Users, Queues &amp; Exchanges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pre-validation"><span class="sectnum">1.6.2 </span>Pre-Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#post-validation"><span class="sectnum">1.6.3 </span>Post-Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log-validation"><span class="sectnum">1.6.4 </span>Log Validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#private-vs-public-data-transfer"><span class="sectnum">1.6.5 </span>Private vs. Public Data Transfer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#https-private-access"><span class="sectnum">1.6.6 </span>HTTPS Private Access</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#topologies"><span class="sectnum">1.7 </span>Topologies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#standalone"><span class="sectnum">1.7.1 </span>Standalone</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ddsr-switching-routing-configuration"><span class="sectnum">1.7.2 </span>DDSR: Switching/Routing Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#independent-ddsr"><span class="sectnum">1.7.3 </span>Independent DDSR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shared-broker-ddsr"><span class="sectnum">1.7.4 </span>Shared Broker DDSR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dd-data-dissemination-configuration-aka-data-mart"><span class="sectnum">1.7.5 </span>DD: Data Dissemination Configuration (AKA: Data Mart)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#independent-dd"><span class="sectnum">1.7.6 </span>Independent DD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shared-broker-dd"><span class="sectnum">1.7.7 </span>Shared-Broker DD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shared-data-dd"><span class="sectnum">1.7.8 </span>Shared-Data DD</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sep-shared-end-point-configuration"><span class="sectnum">1.7.9 </span>SEP: Shared End-Point Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="deltas.html">Discussion of File Modification Propagation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Philosophy/index.html">Philosophy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li><span class="sectnum">1 </span>Strawman Design</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Contribution/Design.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<p>Status: Draft</p>
+<section id="strawman-design">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink"><span class="sectnum">1 </span>Strawman Design</a><a class="headerlink" href="#strawman-design" title="Link to this heading"></a></h1>
+<p>This document reflects the current design resulting from discussions and thinking
+at a more detailed level that the outline document.  See <a class="reference external" href="Outline.html">Outline</a>
+for an overview of the design requirements.  See <a class="reference external" href="use-cases.html">use-cases</a> for
+an exploration of functionality of how this design works in different situations.
+The way to make progress towards a working implementation is described in <a class="reference external" href="plan.html">plan</a>.</p>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="auto-toc simple">
+<li><p><a class="reference internal" href="#strawman-design" id="id1"><span class="sectnum">1 </span>Strawman Design</a></p>
+<ul class="auto-toc">
+<li><p><a class="reference internal" href="#assumptions-constraints" id="id2"><span class="sectnum">1.1 </span>Assumptions/Constraints</a></p></li>
+<li><p><a class="reference internal" href="#number-of-switches" id="id3"><span class="sectnum">1.2 </span>Number of Switches</a></p></li>
+<li><p><a class="reference internal" href="#amqp-feature-selection" id="id4"><span class="sectnum">1.3 </span>AMQP Feature Selection</a></p></li>
+<li><p><a class="reference internal" href="#application" id="id5"><span class="sectnum">1.4 </span>Application</a></p></li>
+<li><p><a class="reference internal" href="#routing" id="id6"><span class="sectnum">1.5 </span>Routing</a></p>
+<ul class="auto-toc">
+<li><p><a class="reference internal" href="#routing-posts" id="id7"><span class="sectnum">1.5.1 </span>Routing Posts</a></p></li>
+<li><p><a class="reference internal" href="#routing-logs" id="id8"><span class="sectnum">1.5.2 </span>Routing Logs</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#security-model" id="id9"><span class="sectnum">1.6 </span>Security Model</a></p>
+<ul class="auto-toc">
+<li><p><a class="reference internal" href="#users-queues-exchanges" id="id10"><span class="sectnum">1.6.1 </span>Users, Queues &amp; Exchanges</a></p></li>
+<li><p><a class="reference internal" href="#pre-validation" id="id11"><span class="sectnum">1.6.2 </span>Pre-Validation</a></p></li>
+<li><p><a class="reference internal" href="#post-validation" id="id12"><span class="sectnum">1.6.3 </span>Post-Validation</a></p></li>
+<li><p><a class="reference internal" href="#log-validation" id="id13"><span class="sectnum">1.6.4 </span>Log Validation</a></p></li>
+<li><p><a class="reference internal" href="#private-vs-public-data-transfer" id="id14"><span class="sectnum">1.6.5 </span>Private vs. Public Data Transfer</a></p></li>
+<li><p><a class="reference internal" href="#https-private-access" id="id15"><span class="sectnum">1.6.6 </span>HTTPS Private Access</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#topologies" id="id16"><span class="sectnum">1.7 </span>Topologies</a></p>
+<ul class="auto-toc">
+<li><p><a class="reference internal" href="#standalone" id="id17"><span class="sectnum">1.7.1 </span>Standalone</a></p></li>
+<li><p><a class="reference internal" href="#ddsr-switching-routing-configuration" id="id18"><span class="sectnum">1.7.2 </span>DDSR: Switching/Routing Configuration</a></p></li>
+<li><p><a class="reference internal" href="#independent-ddsr" id="id19"><span class="sectnum">1.7.3 </span>Independent DDSR</a></p></li>
+<li><p><a class="reference internal" href="#shared-broker-ddsr" id="id20"><span class="sectnum">1.7.4 </span>Shared Broker DDSR</a></p></li>
+<li><p><a class="reference internal" href="#dd-data-dissemination-configuration-aka-data-mart" id="id21"><span class="sectnum">1.7.5 </span>DD: Data Dissemination Configuration (AKA: Data Mart)</a></p></li>
+<li><p><a class="reference internal" href="#independent-dd" id="id22"><span class="sectnum">1.7.6 </span>Independent DD</a></p></li>
+<li><p><a class="reference internal" href="#shared-broker-dd" id="id23"><span class="sectnum">1.7.7 </span>Shared-Broker DD</a></p></li>
+<li><p><a class="reference internal" href="#shared-data-dd" id="id24"><span class="sectnum">1.7.8 </span>Shared-Data DD</a></p></li>
+<li><p><a class="reference internal" href="#sep-shared-end-point-configuration" id="id25"><span class="sectnum">1.7.9 </span>SEP: Shared End-Point Configuration</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="assumptions-constraints">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink"><span class="sectnum">1.1 </span>Assumptions/Constraints</a><a class="headerlink" href="#assumptions-constraints" title="Link to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Are there cluster file systems available everywhere? No.</p></li>
+<li><p>an operational team might want to monitor/alert when certain transfers experience difficulty.</p></li>
+<li><p>security may want to run different scanning on different traffic (each block?)
+security might want us to refuse certain file types, so they go through heavier scanning.
+or perform heavier scanning on those file types.</p></li>
+<li><p>extranet zones cannot initiate connections to internal zones.
+extranet zones receive inbound connections from anywhere.</p></li>
+<li><p>Government operations zones can initiate connections anywhere.
+however, Science is considered a sort of extranet to all the partners.</p></li>
+<li><p>No-one can initiate connections into partner networks, but all partner departments can initiate
+connections into science.gc.ca zone.  Within the science zones, there is the shared file system
+area, where servers access a common cluster oriented file system, as well as some small restricted
+zones, where very limited access is afforded to ensure availability.</p></li>
+<li><p>Within NRC, there are labs with equipment which cannot be maintained, software-wise,
+to address disclosed vulnerabilities because of excessive testing dependencies (ie. certifying
+that a train shaker still works after applying a patch.)  These systems are not given access
+to the internet, only to a few other systems on the site.</p></li>
+<li><p>collaborators are academic, other-governmental, or commercial entities which which government
+scientists exchange data.</p></li>
+<li><p>collaborators connect to extranet resources from their own networks.  Similarly to partners,
+(subject to exceptions) no connections can be initiated into any collaborator network.</p></li>
+<li><p>There are no proxies, no systems in the extranet are given exceptional permissions to
+initiate inbound connections.  File storage protocols etc… are completely isolated between
+them.  There are no file systems that cross network zone boundaries.</p></li>
+<li><p>One method of improving service reliability is to use internal services for internal use
+and reserve public facing services for external users.  Isolated services on the inside
+are completely impervious to internet ´weather´ (DDOS of various forms, load, etc…)
+internal and external loads can be scaled independently.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="number-of-switches">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink"><span class="sectnum">1.2 </span>Number of Switches</a><a class="headerlink" href="#number-of-switches" title="Link to this heading"></a></h2>
+<p>The application is supposed to support any number of topologies, that is any number of pumps S=0,1,2,3
+may exist between origin and final delivery, and do the right thing.</p>
+<p>Why isn´t everything point to point, or when do you insert a pumps?</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>network topology/firewall rules sometimes require being at rest in a transfer area between two
+organizations.  Exception to these rules create vulnerabilities, so prefer to avoid.
+whenever traffic prevents initiating a connection, that indicates a store &amp; forward pumps
+may be needed.</p></li>
+<li><p>physical topology.  While connectivity may be present, optimal bandwidth use may involve
+not taking the default path from A to B, but perhaps passing through C.</p></li>
+<li><p>when the transfer is not 1:1, but 1:&lt;source does not know how&gt; many. The pumping takes
+care of sending it to multiple points.</p></li>
+<li><p>when the source data needs to be reliably available.  This translates to making many copies,
+rather than just one, so it is easier for the source to post once, and have the network
+take care of replication.</p></li>
+<li><p>for management reasons, you want to centrally observe data large transfers.</p></li>
+<li><p>for management reasons, to have transfers  routed a certain way.</p></li>
+<li><p>for management reasons, to ensure that transfer failures are detected and escalated
+when appropriate. They can be fixed rather than waiting for ad-hoc monitoring to detect
+the issue.</p></li>
+<li><p>For asynchronous transfers.  If the source has many other activities, it may want
+to give responsibility to another service to do potentially lengthy file transfers.
+the pump is inserted very near to the source, and is full store &amp; forward. sr_post
+completes (nearly instant), and from then on the pumping network manages transfers.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="amqp-feature-selection">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink"><span class="sectnum">1.3 </span>AMQP Feature Selection</a><a class="headerlink" href="#amqp-feature-selection" title="Link to this heading"></a></h2>
+<p>AMQP is a universal message passing protocol with many different options to support many
+different messaging patterns.  MetPX-sarracenia specifies and uses a small subset of AMQP
+patterns.  Indeed an important element of sarracenia development was to select from the
+many possibilities a small subset of methods are general and easily understood, in order
+to maximize potential for interoperability.</p>
+<p>Specifying the use of a protocol alone may be insufficient to provide enough information for
+data exchange and interoperability.  For example when exchanging data via FTP, a number of choices
+need to be made above and beyond the basic protocol.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>authenticated or anonymous use?</p></li>
+<li><p>how to signal that a file transfer has completed (permission bits? suffix? prefix?)</p></li>
+<li><p>naming convention.</p></li>
+<li><p>text or binary transfer.</p></li>
+</ul>
+</div></blockquote>
+<p>Agreed conventions above and beyond simply FTP (IETF RFC 959) are needed.</p>
+<p>Similar to the use of FTP alone as a transfer protocol is insufficient to specify a complete data
+transfer procedure, use of AMQP, without more information, is incomplete.</p>
+<p>AMQP 1.0 standardizes the on the wire protocol, but leaves out many features of broker interaction.
+As the use of brokers is key to sarracenia´s use of, was a fundamental element of earlier standards,
+and as the 1.0 standard is relatively controversial, this protocol assumes a pre 1.0 standard broker,
+as is provided by many free brokers, such as rabbitmq, often referred to as 0.8, but 0.9 and post
+0.9 brokers are also likely to inter-operate well.</p>
+<p>In AMQP, many different actors can define communication parameters. To create a clearer
+security model, sarracenia constrains that model: sr3_post clients are not expected to declare
+Exchanges.  All clients are expected to use existing exchanges which have been declared by
+broker administrators.  Client permissions are limited to creating queues for their own use,
+using agreed upon naming schemes.  Queue for client: qc_&lt;user&gt;.????</p>
+<p>Topic-based exchanges are used exclusively. AMQP supports many other types of exchanges,
+but sr3_post have the topic sent in order to support server side filtering by using topic
+based filtering.  The topics mirror the path of the files being announced, allowing
+straight-forward server-side filtering, to be augmented by client-side filtering on
+message reception.</p>
+<p>The root of the topic tree is the version of the message payload. This allows single brokers
+to easily support multiple versions of the protocol at the same time during transitions. v02
+is the third iteration of the protocol and existing servers routinely support previous versions
+simultaneously in this way. The second topic in the topic tree defines the type of message.
+at the time of writing:  v02.post is the topic prefix for current notification messages.</p>
+<p>The AMQP messages contain notification messages, no actual file data. AMQP is optimized for and assumes
+small messages. Keeping the messages small allows for maximum message throughtput and permits
+clients to use priority mechanisms based on transfer of data, rather than the notification messages.
+Accomodating large messages would create many practical complications, and inevitably require
+the definition of a maximum file size to be included in the message itself, resulting in
+complexity to cover multiple cases.</p>
+<p>sr_post is intended for use with arbitrarily large files, via segmentation and multi-streaming.
+blocks of large files are announced independently. and blocks can follow different paths
+between initial pump and final delivery.</p>
+<p>AMQP vhosts are not used. Never saw any need for them. The commands support their optional
+use, but there was no visible purpose to using them is apparent.</p>
+<p>Aspects of AMQP use can be either constraints or features:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>interaction with a broker are always authenticated.</p></li>
+<li><p>We define the <em>anonymous</em> for use in many configurations.</p></li>
+<li><p>users authenticate to local cluster only. We don´t impose any sort of credential or identity propagation
+or federation, or distributed trust.</p></li>
+<li><p>pumps represent users by forwarding files on their behalf, there is no need to include
+information about the source users later on in the network.</p></li>
+<li><p>This means that if user A from S0 is defined, and a user is given the same name on S1, then they may
+collide. sad. Accepted as a limitation.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="application">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink"><span class="sectnum">1.4 </span>Application</a><a class="headerlink" href="#application" title="Link to this heading"></a></h2>
+<p>Description of application logic relevant to discussion. There is a ´control plane´ where notification messages about new
+data available are made, and log messages reporting status of transfers of the same data are routed among
+control plane users and pumps. A pump is an AMQP broker, and users authenticate to the broker. Data
+may (most of the time does) have a different other authentication method.</p>
+<p>There are very different security use cases for file transfer:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><strong>Public Dissemination</strong> data is being produced, whose confidentiality is not an issue, the purpose is to
+disseminate to all who are interested as quickly and reliably as possible, potentially involving many
+copies. The data authentication is typically null for this case. Users just issue HTTP GET requests with
+no authentication. For AMQP authentication, it can be done as anonymous, with no ability for providers to
+monitor.  If there is to be support from the data source, then the source would assign a non-anonymous user
+for the AMQP traffic, and the client would ensure logging was working, enabling the provider to monitor and
+alert when problems arise.</p></li>
+<li><p><strong>Private Transfer</strong> proprietary data is being generated, and needs to be moved to somewhere where it can be
+archived and/or processed effectively, or shared with specific collaborators.  AMQP and HTTP traffic must
+be encrypted with SSL/TLS.  Authentication is typically common between AMQP and HTTPS. For Apache httpd
+servers, the htpasswd/htaccess method will need to be continuously configured by the delivery system.
+These transfers can have requirements for be high availability.</p></li>
+<li><p><strong>Third Party Transfer</strong> the control plane is explicitly used only to control the transfer, authentication
+at both ends is done separately.  Users authenticate to the data-less, or SEP pump with AMQP, but the
+authentication at both ends is outside sarracenia control.  Third-party transfer is limited to S=0.
+If the data does not cross the pump, it cannot be forwarded. So no routing is relevant to this case.
+Also dependent on the availability of the two end points throughout, so more difficult to assure in practice.</p></li>
+</ol>
+</div></blockquote>
+<p>Both public and private transfers are intended to support arbitrary chains of pumps between <em>source</em> and <em>consumer</em>.
+The cases depend on routing of notification messages and log messages.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>forward routing…  Private and Public transfers… not yet clear, still considering.
+what is written here on that subject is tentative. wondering if split, and do public
+first, then private later?</p>
+</div>
+<p>To simplify discussions, names will be selected with a prefix things according to the type
+of entity:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>exchanges start with x.</p></li>
+<li><p>queues start with q.</p></li>
+<li><p>users start with u. users are also referred to as <em>sources</em></p></li>
+<li><p>servers start with svr</p></li>
+<li><p>clusters start with c</p></li>
+<li><p>´pumps´ is used as a synonym for cluster, and they start with S (capital S.): S0, S1, S2…</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>on pumps:</dt><dd><ul class="simple">
+<li><p>users that pumps used to authenticate to each other are <strong>interpump accounts</strong>. Another word: <strong>feeder</strong> , <strong>concierge</strong>  ?</p></li>
+<li><p>users that inject data into the network are called <strong>sources</strong>.</p></li>
+<li><p>users that subscribe to data are called <strong>consumers</strong>.</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="routing">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink"><span class="sectnum">1.5 </span>Routing</a><a class="headerlink" href="#routing" title="Link to this heading"></a></h2>
+<p>There are two distinct flows to route: notification messages, and logs.
+The following header in messages relate to routing, which are set in all messages.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>source</em> - the user that injected the original notification messages.</p></li>
+<li><p><em>source_cluster</em> - the cluster where the source injected the notification messages.</p></li>
+<li><p><em>to_clust</em> - the comma separated list of destination clusters.</p></li>
+<li><p><em>private</em> - the flag to indicate whether the data is private or public.</p></li>
+</ul>
+</div></blockquote>
+<p>An important goal of notification messages routing is that the <em>source</em> decides where notification messages go, so
+pumping of individual products must be done only on the contents of the notification messages, not
+some administrator configuration.</p>
+<p>Administrators configure the inter pump connections (via SARRA and other components)
+to align with network topologies, but once set up, all data should flow properly with
+only source initiated routing commands. Some configuration may be needed on all pumps
+whenever a new pump is added to the network.</p>
+<section id="routing-posts">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink"><span class="sectnum">1.5.1 </span>Routing Posts</a><a class="headerlink" href="#routing-posts" title="Link to this heading"></a></h3>
+<p>Post routing is the routing of the notification messages announced by data <em>sources</em>.
+The data corresponding to the source follows the same sequence of pumps as the notification messages
+themselves.  When a notification message is processed on a pump, it is downloaded, and then the
+notification message is modified to reflect that´s availability from the next-hop pump.</p>
+<p>Post messages are defined in the sr_post(7) man page.  They are initially emitted by <em>sources</em>,
+published to xs_source.  After Pre-Validation, they go (with modifications described in Security) to
+either xPrivate or xPublic.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: Tentative!?
+if not separate exchange, then anyone can see any notification message (not the data, but yes the notification message)
+I think that´s not good.</p>
+</div>
+<p>For Public data, <em>feeders</em> for downstream pumps connect to xPublic.
+They look at the to_clust Header in each message, and consult a post2cluster.conf file.
+post2cluster.conf is just a list of cluster names configured by the administrator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ddi</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">ddi</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+<p>This list of clusters is supposed to be the clusters that are reachable by traversing
+this pump.  If any cluster in post2cluster.conf is listed in the to_clust of the
+message field, then the data needs to tr</p>
+<p>Separate Downstream <em>feeders</em> connect to xPrivate for private data.  Only <em>feeders</em> are
+allowed to connect to xprivate.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: perhaps feed specific private exchanges for each feeder?  x2ddiedm, x2ddidor, x2ddisci ?
+using one xPrivate means pumps can see messages they may not be allowed to download
+(lesser issue than with xPublic, but depends how trusted downstream pump is.)</p>
+</div>
+</section>
+<section id="routing-logs">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink"><span class="sectnum">1.5.2 </span>Routing Logs</a><a class="headerlink" href="#routing-logs" title="Link to this heading"></a></h3>
+<p>Log messages are defined in the sr_log(7) man page.  They are emitted by <em>consumers</em> at the end,
+as well as <em>feeders</em> as the messages traverse pumps.  log messages are posted to
+the xl_&lt;user&gt; exchange, and after log validation queued for the xlog exchange.</p>
+<p>Messages in xlog destined for other clusters are routed to destinations by
+log2cluster component using log2cluster.conf configuration file.  log2cluster.conf
+uses space separated fields: First field is the cluster name (set as per soclust in
+notification messages, the second is the destination to send the log messages for posting
+originating from that cluster to) Sample, log2cluster.conf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">clustername</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="nd">@broker</span><span class="o">/</span><span class="n">vhost</span> <span class="n">exchange</span><span class="o">=</span><span class="n">xlog</span>
+</pre></div>
+</div>
+<p>Where message destination is the local cluster, log2user (log2source?) will copy
+the messages where source=&lt;user&gt; to sx_&lt;user&gt;.</p>
+<p>When a user wants to view their messages, they connect to sx_&lt;user&gt;. and subscribe.
+this can be done using <em>sr_subscribe -n  –topic_prefix=v02.log</em> or the equivalent <em>sr_log</em>.</p>
+</section>
+</section>
+<section id="security-model">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink"><span class="sectnum">1.6 </span>Security Model</a><a class="headerlink" href="#security-model" title="Link to this heading"></a></h2>
+<section id="users-queues-exchanges">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink"><span class="sectnum">1.6.1 </span>Users, Queues &amp; Exchanges</a><a class="headerlink" href="#users-queues-exchanges" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Each user Alice, on a broker to which she has access:</dt><dd><ul class="simple">
+<li><p>has an exchange xs_Alice, where she writes her notification messages, and reads her logs from.</p></li>
+<li><p>has an exchange xl_Alice, where she writes her log messages.</p></li>
+<li><p>can create queues qs_Alice_.* to bind to exchanges.</p></li>
+</ul>
+</dd>
+<dt>Switches connect with one another using inter-exchange accounts.</dt><dd><ul class="simple">
+<li><p>Alice can create and destroy her own queues, but no-one else’s.</p></li>
+<li><p>Alice can only write to her xs_exchange,</p></li>
+<li><p>Exchanges are managed by the administrator, and not any user.</p></li>
+<li><p>Alice can only post data that she is publishing (it will refer back to her)</p></li>
+</ul>
+</dd>
+<dt>..NOTE::</dt><dd><p>tester  ^q_tester.*     ^q_tester.*|xs_tester   ^q_tester.*|^xl_tester$
+leaving all permissions for queues for an amqp users also gives the permission
+do create/configure/write any amqp objects with a name starting with q_tester
+in this example.</p>
+</dd>
+</dl>
+</section>
+<section id="pre-validation">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink"><span class="sectnum">1.6.2 </span>Pre-Validation</a><a class="headerlink" href="#pre-validation" title="Link to this heading"></a></h3>
+<p>Pre-Validation refers to security and correctness checks performed on
+the information provided by the notification message before the data itself is downloaded.
+Some tools may refer to this as <em>message validation</em></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>input sanitizing (looking for errors/malicious input.)</p></li>
+<li><p>an undefined number of checks that need to be configurable (script?)</p></li>
+<li><p>vary per configuration, and installation (sizes)</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>When reading from a source:</dt><dd><ul class="simple">
+<li><p>a notification message arrives on xs_Alice, from a user logged in as Alice.</p></li>
+<li><p>overwrites the source to be Alice: source=Alice … or reject?</p></li>
+<li><p>sets some headers that we do not trust users to do: cluster=</p></li>
+<li><p>set cluster header to local one.</p></li>
+</ul>
+</dd>
+<dt>Reading from a feeder:</dt><dd><ul class="simple">
+<li><p>source doesn´t matter. (feeders can represent other users)</p></li>
+<li><p>do not overwrite source.</p></li>
+<li><p>ensure cluster is not local cluster (as that would be a lie.) ?</p></li>
+</ul>
+</dd>
+<dt>Regardless:</dt><dd><ul class="simple">
+<li><p>check the partitioning size, if it exceeds pump maximum, Reject.</p></li>
+<li><p>check the bandwidth limitations in place. If exceeded, Hold.</p></li>
+<li><p>check the disk usage limit in place. If exceeded, Hold.</p></li>
+<li><p>If the private flag is set, then accept by copying to xPrivate</p></li>
+<li><p>If the private flag is not set, then accept by copy to xPublic</p></li>
+</ul>
+</dd>
+<dt>Results:</dt><dd><ul class="simple">
+<li><p>Accept means: queue the message to another exchange (xinput) for downloading.</p></li>
+<li><p>Reject means: do not copy message (still accept &amp; ack so it leaves queue) product log message.</p></li>
+<li><p>Hold means:  do not consume… but sleep for a while.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Hold is for temporary failure type reasons, such as bandwidth of disk space reasons.
+as these reasons are independent of the particular message, hold applies for
+the entire queue, not just the message.</p>
+<p>After Pre-Processing, a component like sr_sarra assumes the notification message is good,
+and just processes it.  That means it will fetch the data from the posting source.
+Once the data is downloaded, it goes through Post-Validation.</p>
+</section>
+<section id="post-validation">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink"><span class="sectnum">1.6.3 </span>Post-Validation</a><a class="headerlink" href="#post-validation" title="Link to this heading"></a></h3>
+<p>When a file is downloaded, before re-announcing it for later hops it goes
+through some analysis.  The tools may call this <em>file validation</em>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>when a file is downloaded, it goes through post-validation,</p></li>
+<li><p>invoke one or more virus scanners chosen by security</p></li>
+<li><p>the scanners will not be the same everywhere, even different locations within
+same org, may have different scanning standards (function on security zone.)</p></li>
+<li><p>Accept means:  it is OK to send this data to further hops in the network.</p></li>
+<li><p>Reject menas:  do not forward this data (potentially delete local copy.) Essentially <em>quarantine</em></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="log-validation">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink"><span class="sectnum">1.6.4 </span>Log Validation</a><a class="headerlink" href="#log-validation" title="Link to this heading"></a></h3>
+<p>When a client like sarra or subscribe completes an operation, it creates a log message
+corresponding to the result of the operation.  (This is much lower granularity than a
+local log files.) It is important for one client not to be able to impersonate another
+in creating log messages.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Messages in exchanges have no reliable means of determining who inserted them.</p></li>
+<li><p>so users publish their log messages to sl_&lt;user&gt; exchange.</p></li>
+<li><p>For each user, log reader reads the message, and overwrites the consuminguser to force match. (if reading a message from sl_Alice, it forces the consuminguser field to be Alice) see sr_log(7) for user field</p></li>
+<li><p>sl_* are write-only for all users, they cannot read their own notification messages for that.</p></li>
+<li><p>is there some check about consuminghost?</p></li>
+<li><p>Accepting a log message means publishing on the xlog exchange.</p></li>
+<li><p>Only admin functions can read from xlog.</p></li>
+<li><p>downstream processing is from xlog exchange which is assumed clean.</p></li>
+<li><p>Rejecting a log message means not copying it anywhere.</p></li>
+<li><p>sourcce check does not make sense when channels are used for inter-pump log routing.
+Essentially, all downstream pumps can do is forward to the source cluster.
+The pumps receiving the log messages must not convert the consuminguser on those links.
+evidence of need of some sort of setting: user vs. inter-pump setting.</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>… NOTE::</dt><dd><p>FIXME: if you reject a log message, does it generate a log message?
+Denial of service potential by just generating infinite bogs log messages.
+It is sad that if a connection is mis-configured as a user one, when it is inter-pump,
+that will cause messages to be dropped.  how to detect configuration error?</p>
+</dd>
+</dl>
+</section>
+<section id="private-vs-public-data-transfer">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink"><span class="sectnum">1.6.5 </span>Private vs. Public Data Transfer</a><a class="headerlink" href="#private-vs-public-data-transfer" title="Link to this heading"></a></h3>
+<p>Transfers in the past have been public, just a matter of sharing public information.
+A crucial requirement of the package is to support private data copies, where the
+ends of the transfer are not sharing with arbitrary others.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: This section is a half-baked idea! not sure how things will turn out.
+basic problem:  Alice connecting to S1 wants to share with Bob, who has an
+account on S3.  To get from S1 to S3, one needs to traverse S2.  the normal
+way such routing is done is via a sr_sarra subscription to xpublic on S1, and
+S2.  So Eve, a user on S1 or S2, can see the data, and presumably download it.
+unless the http permissions are set to deny on S1 and S2. Eve should not have
+access.  Implement via http/auth permitting inter-pump accounts on S2
+to access S1/&lt;private&gt; and S3 account to S2/&lt;private&gt;. then permit bob on
+S3.</p>
+</div>
+<p>There are two modes of sending products through a network, private vs. public.
+With public sending, the information transmitted is assumed to be public and available
+to all comers,  If someone sees the data on an intervening pump, then they are likely
+to be able to download it at will without further arrangements.  public data is posted
+for inter-pump copies using the xPublic exchange, which all users may access as well.</p>
+<p>Private data is only made available to those who are explicitly permitted access.
+private data is made available only on the xPrivate exchange.  Only Interpump channel
+users are given access to these messages.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Is two exchanges needed, or is setting permissions enough?</p></li>
+<li><p>if nobody on B is permitted, then only C is able to download from B, which just works.</p></li>
+<li><p>This only works with http because setting sftp permissions is going to be hell.</p></li>
+<li><p>If only using http, then Even can still see all postings, just not get data, unless xprivate happens.</p></li>
+</ul>
+</div>
+<p>For SEP topologies (see Topologies) things are much simpler as end users can just use mode bits.</p>
+</section>
+<section id="https-private-access">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink"><span class="sectnum">1.6.6 </span>HTTPS Private Access</a><a class="headerlink" href="#https-private-access" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: Not designed yet.
+Really not baked yet.  For https, need to create/manage .htaccess (canned but generated every day)
+and .htpasswd (generated every day) files.</p>
+</div>
+<p>Need some kind of adm message that sources can send N pumps later to alter the contents of .htpasswd
+CRUD? or just overwrite every time?  query?</p>
+<p>Sarra likely needs to look at this and add the ht* files every day.   Need to talk with the webmailteam guys.</p>
+<p>How to change passwords</p>
+</section>
+</section>
+<section id="topologies">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink"><span class="sectnum">1.7 </span>Topologies</a><a class="headerlink" href="#topologies" title="Link to this heading"></a></h2>
+<p>Questions… There are many choices for cluster layout. One can do simple H/A on a pair of nodes,
+simple active/passive?  One can go to scalable designs on an array of nodes, which requires a load
+balancer ahead of the processing nodes.  The disks of a cluster can be shared or individual to
+the processing nodes, as can broker state.  Exploring whether to support any/all configurations,
+or to determine if there is a particular design pattern that can be applied generally.</p>
+<p>To make these determinations, considerable exploration is needed.</p>
+<p>We start with naming the topologies so they can be referred to easily in further discussions.
+None of the topologies assume that disks are pumped among servers in the traditional HA style.</p>
+<p>Based on experience, disk pumping is considered unreliable in practice, as it involves complex
+interaction with many layers, including the application.  Disks are either dedicated to nodes,
+or a cluster file system is to be used. The application is expected to deal with those two
+cases.</p>
+<p>most of the cluster management is taken care of by the sr3_tools project:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://github.com/MetPX/sr3_tools">https://github.com/MetPX/sr3_tools</a></p>
+</div></blockquote>
+<p>A review of that project to manage deployments regardless of topology, would be helpful.</p>
+<p>Some document short-hand:</p>
+<dl>
+<dt>Bunny</dt><dd><p>A shared/clustered broker instance, where multiple nodes use a common broker to co-ordinate.</p>
+</dd>
+<dt>Capybara Effect</dt><dd><p><em>capybara through a snake</em>  where a large rodent distorts the body of a snake
+as it is being digested.  Symbolic of poor load balancing, where one node
+experiences a spike in load and slows down inordinately.</p>
+</dd>
+<dt>Fingerprint Winnowing</dt><dd><p>Each product has a checksum and size intended to identify it uniquely, referred to as
+as fingerprint.  If two products have the same fingerprint, they are considered
+equivalent, and only one may be forwarded.  In cases where multiple sources of equivalent
+data are available but downstream consumers would prefer to receive single notification messages
+of products, processes may elect to publish notifications of the first product
+with a given fingerprint, and ignore subsequent ones.</p>
+<p>This is the basis for the most robust strategy for high availability, but setting up
+multiple sources for the same data, accepting notification messages for all of them, but only
+forwarding one downstream.  In normal operation, one source may be faster than the
+other, and so the second source’s products are usually ‘winnowed’. When one source
+disappears, the other source’s data is automatically selected, as the fingerprints
+are now <em>fresh</em> and used, until a faster source becomes available.</p>
+<p>The advantage of this method is that now A/B decision is required, so the time
+to <em>pumpover</em> is zero.  Other strategies are subject to considerable delays
+in making the decision to pumpover, and pathologies one could summarize as flapping,
+and/or deadlocks.</p>
+</dd>
+</dl>
+<section id="standalone">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink"><span class="sectnum">1.7.1 </span>Standalone</a><a class="headerlink" href="#standalone" title="Link to this heading"></a></h3>
+<p>In a standalone configuration, there is only one node in the configuration.  I runs all components
+and shares none with any other nodes.  That means the Broker and data services such as sftp and
+apache are on the one node.</p>
+<p>One appropriate usage would be a small non-24x7 data acquisition setup, to take responsibility of data
+queueing and transmission away from the instrument.</p>
+</section>
+<section id="ddsr-switching-routing-configuration">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink"><span class="sectnum">1.7.2 </span>DDSR: Switching/Routing Configuration</a><a class="headerlink" href="#ddsr-switching-routing-configuration" title="Link to this heading"></a></h3>
+<p>This is a more scalable configuration involving several data mover nodes, and potentially several brokers.
+These clusters are not destinations of data transfers, but intermediaries.  Data flows through them, but
+querying them is more complicated because no one node has all data available.   The downstream clients
+of DDSR’s are essentially other sarracenia instances.</p>
+<p>There are still multiple options available within this configuration pattern.
+ddsr one broker per node?  (or just one broker ( clustered,logical ) broker?)</p>
+<p>On a pumping/router, once delivery has occurred to all contexts, can you delete the file?
+Just watch the log files and tick off as each scope confirms receipt.
+when last one confirmed, delete. (makes re-xmit difficult ;-)</p>
+<p>Based on a file size threshold? if the file is too big, don´t keep it around?</p>
+<p>The intended purpose has a number of implementation options, which must be further sub-divided for analysis.</p>
+</section>
+<section id="independent-ddsr">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink"><span class="sectnum">1.7.3 </span>Independent DDSR</a><a class="headerlink" href="#independent-ddsr" title="Link to this heading"></a></h3>
+<p>In Independent DDSR, there is a load balancer which distributes each incoming connection to
+an individual broker running on a single node.</p>
+<p>ddsr - broker</p>
+<p>pre-fetch validation would happen on the broker.  then re-post for the sarra’s on the movers.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>each node broker and transfer engines act independently. Highest robustness to failure.</p></li>
+<li><p>load balancer removes mover nodes from operation on detection of a failure.</p></li>
+<li><p>individual files land, mostly entirely on single nodes.</p></li>
+<li><p>no single data mover sees all of the files of all of the users in a cluster.</p></li>
+</ul>
+</div></blockquote>
+<p>CONFIRM: Processes running on the individual nodes, are subscribed to the local broker.
+Highly susceptible to the <em>Capybara Effect</em> where all of the blocks of
+the large file are channelled though a single processing node.  Large file transfers
+with trigger it.</p>
+<p>CONFIRM: Maximum performance for a single transfer is limited to a single node.</p>
+</section>
+<section id="shared-broker-ddsr">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink"><span class="sectnum">1.7.4 </span>Shared Broker DDSR</a><a class="headerlink" href="#shared-broker-ddsr" title="Link to this heading"></a></h3>
+<p>While the data nodes disk space remain independent, the brokers are clustered together to
+form a single logical entity.</p>
+<p>on all nodes, the mover processes use common exchanges and queues.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>each node transfers independently, but dependent on the broker cluster.</p></li>
+<li><p>load balancer removes nodes (broker or mover) from operation.</p></li>
+<li><p>external users connect to shared queues, not node specific ones.</p></li>
+<li><p>transfer engines connect to cluster queues, obtaining blocks.</p></li>
+<li><p>no single data mover sees all of the files of all of the users in a cluster.</p></li>
+<li><p>requires broker to be clustered, adding complexity there.</p></li>
+</ul>
+</div></blockquote>
+<p>In Shared Broker DDSR, <em>Capybara Effect</em> is minimized as individual blocks of a transfer
+are distributed across all the mover nodes.  When a large file arrives, all of the movers
+on all of the nodes may pick up individual blocks, so the work automatically is
+distributed across them.</p>
+<p>This assumes that large files are segmented.  As different transfer nodes will have
+different blocks of a file, and the data view is not shared, no re-assembly of files
+is done.</p>
+<p>Broker clustering is considered mature technology, and therefore relatively trustworthy.</p>
+</section>
+<section id="dd-data-dissemination-configuration-aka-data-mart">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink"><span class="sectnum">1.7.5 </span>DD: Data Dissemination Configuration (AKA: Data Mart)</a><a class="headerlink" href="#dd-data-dissemination-configuration-aka-data-mart" title="Link to this heading"></a></h3>
+<p>The sr3 deployment configuration is more of an end-point configuration. Each node is expected to
+have a complete copy of all the data downloaded by all the nodes. Giving a unified view makes
+it much more compatible with a variety of access methods, such as a file browser (over http,
+or sftp) rather than being limited to AMQP notification messages. This is the type of view presented by
+dd.weather.gc.ca.</p>
+<p>Given this view, all files must be fully reassembled on receipt, prior to announcing downstream
+availability. Files may have been fragmented for transfer across intervening pumps.</p>
+<p>There are multiple options for achieving this end user visible effect, each with tradeoffs.
+In all cases, there is a load balancer in front of the nodes which distributes incoming
+connection requests to a node for processing.</p>
+<blockquote>
+<div><ul>
+<li><p>multiple server nodes.  Each standalone.</p></li>
+<li><p>sr3 - load balancer, just re-directs to a sr3 node?
+dd1,dd2,</p>
+<p>broker on sr3 node has connection thereafter.</p>
+</li>
+</ul>
+</div></blockquote>
+</section>
+<section id="independent-dd">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink"><span class="sectnum">1.7.6 </span>Independent DD</a><a class="headerlink" href="#independent-dd" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul>
+<li><p>The load balancer hands the incoming requests to multiple <a class="reference internal" href="#standalone">Standalone</a> configurations.</p></li>
+<li><p>Each node downloads all data.  Disk space requirements for nodes in this configuration
+are far larger than for DDSR nodes, where each node only has 1/n of the data.</p></li>
+<li><p>Each node announces each product that it has downloaded, using it’s own node name, because
+it does not know if other nodes have that product.</p></li>
+<li><p>Once a connection is established, the client will communicate exclusively with that node.
+ultimate performance is limited by the individual node performance.</p></li>
+<li><p>The data movers can (for maximum reliability) be configured independently, but if inputs
+are across the WAN, one can reduce bandwidth usage N times by havng N nodes
+share queues for distant sources and then have local transfers between the nodes.</p>
+<p>CONFIRM: is <em>Fingerprint Winnowing</em> required for intra-cluster copies?</p>
+<p>When a single node fails, it ceases to download, and the other n-1 nodes continue transferring.</p>
+</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: shared broker and shared file system… hmm…  Could use second broker
+instance to do cooperating download via fingerpring winnowing.</p>
+</div>
+</section>
+<section id="shared-broker-dd">
+<h3><a class="toc-backref" href="#id23" role="doc-backlink"><span class="sectnum">1.7.7 </span>Shared-Broker DD</a><a class="headerlink" href="#shared-broker-dd" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul>
+<li><p>a single clustered broker is shared by all nodes.</p></li>
+<li><p>Each node downloads all data.  Disk space requirements for nodes in this configuration
+are far larger than for DDSR nodes, where each node only has 1/n of the data.</p></li>
+<li><p>clients connect to a cluster-wide broker instance, so the download links can be from any
+node in the cluster.</p></li>
+<li><p>if the clustered broker fails, the service is down. (should be reliable)</p></li>
+<li><p>A node cannot announce each product that it has downloaded, using it’s own node name, because
+it does not know if other nodes have that product.   (announce as dd1 vs. dd)</p></li>
+<li><p>Either:</p>
+<blockquote>
+<div><p>– Can only announce a product once it is clear that every active node has the product.
+– 1st come, 1st serve:  apply fingerprint winnowing. Announce only node that got the data first.</p>
+</div></blockquote>
+</li>
+<li><p>as in the independent configuration, nodes share queues and download a fraction upstream data.
+They therefore need to exchange data amongst each other, but that means using a non-clustered
+broker. So likely there will be two brokers access by the nodes, one node local, and one shared.</p></li>
+<li><p>this is more complicated, but avoids the need for a clustered file system. hmm… pick your poison.
+demo both?</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="shared-data-dd">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink"><span class="sectnum">1.7.8 </span>Shared-Data DD</a><a class="headerlink" href="#shared-data-dd" title="Link to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>The load balancer hands the incoming request to multiple nodes.</p></li>
+<li><p>Each node has read/write access to a shared/cluster file system.</p></li>
+<li><p>clustered broker configuration, all nodes see the same broker.</p></li>
+<li><p>downloaded once means available everywhere (written to a shared disk)</p></li>
+<li><p>so can advertise immediately with shared host spec (dd vs. dd1)</p></li>
+<li><p>if the clustered broker fails, the service is down. (should be reliable)</p></li>
+<li><p>if the clustered file system fails, the service is down. (??)</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="sep-shared-end-point-configuration">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink"><span class="sectnum">1.7.9 </span>SEP: Shared End-Point Configuration</a><a class="headerlink" href="#sep-shared-end-point-configuration" title="Link to this heading"></a></h3>
+<p>The SEP configuration, all of the mover nodes are directly accessible to users.
+The broker does not provide data service, just a pure message broker. Can be called
+<em>data-less</em> pump, or a <em>bunny</em>.</p>
+<p>The broker is run clustered, and nothing can be said about the mover nodes.
+Consumers and watchers can be started up by anyone on any collection of nodes,
+and all data visible from any node where cluster file systems provide that benefit.</p>
+<p>Disk space administration is entirely a user configuration setting, not in
+control of the application (users set ordinary quotas for their file systems directly)</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="BasicIdea.html" class="btn btn-neutral float-left" title="Basic Idea" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="deltas.html" class="btn btn-neutral float-right" title="Discussion of File Modification Propagation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

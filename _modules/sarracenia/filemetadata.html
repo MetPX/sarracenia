@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.filemetadata &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.filemetadata</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.filemetadata</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015</span>
+<span class="c1">#</span>
+<span class="c1"># Questions or bugs report: dps-client@ec.gc.ca</span>
+<span class="c1"># Sarracenia repository: https://github.com/MetPX/sarracenia</span>
+<span class="c1"># Documentation: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+<span class="c1"># sr_post.py : python3 program allowing users to post an available product</span>
+<span class="c1">#</span>
+<span class="c1"># Code contributed by:</span>
+<span class="c1">#  Michel Grenier - Shared Services Canada</span>
+<span class="c1">#  Last Changed   : Nov  8 22:10:16 UTC 2017</span>
+<span class="c1">#</span>
+<span class="c1">########################################################################</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; version 2 of the License.</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#  along with this program; if not, write to the Free Software</span>
+<span class="c1">#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;sftp&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">paramiko</span>
+
+    <span class="n">FmdStat</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">FmdStat</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            (PAS: copied from paramiko)</span>
+<span class="sd">            Create a new (empty) SFTPAttributes object.  All fields will be empty.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flags</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_gid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_atime</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;xattr&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">xattr</span>
+    <span class="n">supports_extended_attributes</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">supports_extended_attributes</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">supports_alternate_data_streams</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;win32&#39;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">sarracenia.pyads</span> <span class="kn">import</span> <span class="n">ADS</span>
+        <span class="n">supports_alternate_data_streams</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">STREAM_NAME</span> <span class="o">=</span> <span class="s1">&#39;sr_.json&#39;</span>
+
+<span class="n">xattr_disabled</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">disable_xattr</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">xattr_disabled</span>
+    <span class="n">xattr_disabled</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="FileMetadata">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata">[docs]</a>
+<span class="k">class</span> <span class="nc">FileMetadata</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      This class implements storing metadata *with* a file.</span>
+
+<span class="sd">      on unlix/linux/mac systems, we use extended attributes,</span>
+<span class="sd">      where we apply a *user.sr\_* prefix to the attribute names to avoid clashes.</span>
+<span class="sd">    </span>
+<span class="sd">      on Windows NT, create an &quot;sr\_.json&quot; Alternate Data Stream  to store them.</span>
+
+<span class="sd">      API:</span>
+<span class="sd">    </span>
+<span class="sd">      All values are utf-8, hence readable by some subset of humans. </span>
+<span class="sd">      not bytes.  no binary, go away...</span>
+
+<span class="sd">      x = sr_attr( path )  &lt;- read metadata from file.</span>
+<span class="sd">      x.list()  &lt;- list all extant extended attributes.</span>
+<span class="sd">      </span>
+<span class="sd">      * sample return value: [ &#39;sum&#39;, &#39;mtime&#39; ]</span>
+
+<span class="sd">      x.get(&#39;sum&#39;) &lt;- look at one value.</span>
+
+<span class="sd">      * returns None if missing.</span>
+
+<span class="sd">      x.set(&#39;sum&#39;, &#39;hoho&#39;) &lt;- set one value.</span>
+
+<span class="sd">      * fails silently (fall-back gracefully.)</span>
+
+<span class="sd">      x.persist() &lt;- write metadata back to file, if necessary.</span>
+
+<span class="sd">   &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FileMetadata.__init__">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+
+        <span class="k">global</span> <span class="n">supports_alternate_data_streams</span>
+        <span class="k">global</span> <span class="n">supports_extended_attributes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">xattr_disabled</span><span class="p">:</span>
+            <span class="n">supports_alternate_data_streams</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">supports_extended_attributes</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">supports_alternate_data_streams</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ads</span> <span class="o">=</span> <span class="n">ADS</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ads</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">STREAM_NAME</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ads</span><span class="o">.</span><span class="n">get_stream_content</span><span class="p">(</span><span class="n">STREAM_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">supports_extended_attributes</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">xattr</span><span class="o">.</span><span class="n">listxattr</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;user.sr_&#39;</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;user.sr_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">xattr</span><span class="o">.</span><span class="n">getxattr</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;{&#39;</span><span class="p">:</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="s1">&#39;integrity&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">:</span> <span class="c1"># id transition.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;integrity&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;integrity&#39;</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     return a dictionary of extended attributes.</span>
+
+<span class="sd">   &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FileMetadata.list">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.list">[docs]</a>
+    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           return the list of defined extended attributes. (keys to the dict.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FileMetadata.get">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           return the value of the named extended attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;blocks&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;manifest&#39;</span><span class="p">,</span> <span class="s1">&#39;waiting&#39;</span> <span class="p">]:</span>
+                    <span class="n">m</span><span class="o">=</span><span class="p">{}</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]:</span>
+                        <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]:</span> <span class="c1"># when json&#39;d for writing, numeric indices are stringified.</span>
+                            <span class="n">m</span><span class="p">[</span><span class="n">db</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">db</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">db</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">db</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FileMetadata.set">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           set the name &amp; value pair to the extended attributes for the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="FileMetadata.persist">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.filemetadata.FileMetadata.persist">[docs]</a>
+    <span class="k">def</span> <span class="nf">persist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           write the in-memory extended attributes to disk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">global</span> <span class="n">supports_alternate_data_streams</span>
+        <span class="k">global</span> <span class="n">supports_extended_attributes</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">supports_alternate_data_streams</span><span class="p">:</span>
+
+                <span class="c1">#replace STREAM_NAME with json.dumps(self.x)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ads</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">STREAM_NAME</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ads</span><span class="o">.</span><span class="n">delete_stream</span><span class="p">(</span><span class="n">STREAM_NAME</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">ads</span><span class="o">.</span><span class="n">add_stream_from_string</span><span class="p">(</span>
+                    <span class="n">STREAM_NAME</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">supports_extended_attributes</span><span class="p">:</span>
+                <span class="c1">#set the attributes in the list. encoding utf8...</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span>
+                        <span class="n">s</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">xattr</span><span class="o">.</span><span class="n">setxattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;user.sr_&#39;</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span>
+                                   <span class="nb">bytes</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># not really sure what to do in the exception case...</span>
+            <span class="c1"># permission would be a normal thing and just silently fail...</span>
+            <span class="c1"># could also be on windows, but not on an NTFS file system.</span>
+            <span class="c1"># silent failure means it falls back to using other means.</span>
+            <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dirty</span> <span class="o">=</span> <span class="kc">False</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

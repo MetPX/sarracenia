@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sundew pull migration to sarracenia (PXATX) &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Sundew sender migration to sarracenia (PXATX)" href="sundew_sender_migration.html" />
+    <link rel="prev" title="Sundew filter migration to sarracenia (PXATX)" href="filter_conversion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Sundew Migration Guide</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="filter_conversion.html">Sundew filter migration to sarracenia (PXATX)</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Sundew pull migration to sarracenia (PXATX)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#methodology">METHODOLOGY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sr-poll-config">SR_POLL CONFIG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sr-sarra-config">SR_SARRA CONFIG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#testing">TESTING</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#related-clients">RELATED CLIENTS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#migrating-filters">MIGRATING FILTERS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#migrating-sender">MIGRATING SENDER</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sundew_sender_migration.html">Sundew sender migration to sarracenia (PXATX)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Explanation</a> &raquo;</li>
+          <li><a href="index.html">Sundew Migration Guide</a> &raquo;</li>
+      <li>Sundew pull migration to sarracenia (PXATX)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/Explanation/Sundew_Migration/sundew_pull_migration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sundew-pull-migration-to-sarracenia-pxatx">
+<h1><a class="toc-backref" href="#id1" role="doc-backlink">Sundew pull migration to sarracenia (PXATX)</a><a class="headerlink" href="#sundew-pull-migration-to-sarracenia-pxatx" title="Link to this heading"></a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>&#64;Date&#64;</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>&#64;Version&#64;</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPx Sarracenia Suite</p>
+</dd>
+</dl>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sundew-pull-migration-to-sarracenia-pxatx" id="id1">Sundew pull migration to sarracenia (PXATX)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#description" id="id2">DESCRIPTION</a></p></li>
+<li><p><a class="reference internal" href="#methodology" id="id3">METHODOLOGY</a></p></li>
+<li><p><a class="reference internal" href="#sr-poll-config" id="id4">SR_POLL CONFIG</a></p></li>
+<li><p><a class="reference internal" href="#sr-sarra-config" id="id5">SR_SARRA CONFIG</a></p></li>
+<li><p><a class="reference internal" href="#testing" id="id6">TESTING</a></p></li>
+<li><p><a class="reference internal" href="#related-clients" id="id7">RELATED CLIENTS</a></p></li>
+<li><p><a class="reference internal" href="#migrating-filters" id="id8">MIGRATING FILTERS</a></p></li>
+<li><p><a class="reference internal" href="#migrating-sender" id="id9">MIGRATING SENDER</a></p>
+<ul>
+<li><p><a class="reference internal" href="#see-also" id="id10">SEE ALSO</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="description">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">DESCRIPTION</a><a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>This document suppose that the reader is familiar with the concepts and usage
+of <strong>sundew</strong> and <strong>sarracenia</strong>.</p>
+<p><strong>sundew</strong> receiver supports a pull mechanism that allow querying a remote
+server for new products to be ingested in the sundew product flow. There are
+two types namely <em>pull-file</em> and <em>pull-bulletin</em>. The difference between them
+is the way in which the product is processed/routed once downloaded.</p>
+<p><strong>sarracenia</strong> supports the same mechanism. <strong>sr-poll</strong> announces the
+new products from the remote site and <strong>sr-sarra</strong> makes the products
+available, downloading and annoncing the product locally.</p>
+<p>It is fairly straight forward to convert a pull reveiver configuration file
+to both an <strong>sr-poll</strong> and <strong>sr-sarra</strong> that play the same role.  There
+is a new concept in <em>sarracenia</em> where the <em>source</em> of the product
+needs to be specified in the path of the file tree.</p>
+<p>Fortunately, in the context of this <em>PXATX</em> conversion, in our sundew system,
+the products are placed properly in a sarracenia tree and announced with amqp
+under a defined <em>source</em> directory. We will use these sources informations.</p>
+<p>This document is solely based on the PXATX experience and so one should take
+the ideas and apply them to his/her context.</p>
+</section>
+<section id="methodology">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">METHODOLOGY</a><a class="headerlink" href="#methodology" title="Link to this heading"></a></h2>
+<p>I did this document using a very simple <em>sundew</em> pull receiver to make
+sure to put just the right amount of details.</p>
+<p>First set up a conversion environment. Where sarracenia is downloaded,
+make sure you can use the bash script <em>pull_2_pollsarra.sh</em> by updating
+your PATH environment variable. Use <em>git clone</em> to get an updated version
+of <em>sarracenia</em> ( See <a class="reference external" href="Dev.rst">Dev</a> ).  Make sarracenia tools available
+for direct shell commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=...wherever.../sarracenia/tools:$PATH
+</pre></div>
+</div>
+<p>Define a place where you want to convert pxatx pull:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">convert</span><span class="o">/</span><span class="n">pxatx</span>
+<span class="n">cd</span> <span class="n">convert</span><span class="o">/</span><span class="n">pxatx</span>
+</pre></div>
+</div>
+<p>Get all the sundew configurations of sundew pxatx:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">px</span><span class="nd">@pxatx1</span><span class="o">-</span><span class="n">ops</span><span class="p">:</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">px</span><span class="o">/</span><span class="n">etc</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>Here we pick the configuration pull-BC-ENV_AQ-WAMR.conf, and proceed
+to its converstion:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">etc</span><span class="o">/</span><span class="n">rx</span>
+<span class="n">pull_2_pollsarra</span><span class="o">.</span><span class="n">sh</span> <span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>The original file looks like this</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
+<span class="c1"># STATUS:       Operational</span>
+<span class="c1">#</span>
+<span class="c1"># DESCRIPTION:  pull Wamr data from British Columbia Ministry of Environment (BC MoE)</span>
+<span class="c1">#</span>
+<span class="c1"># CONTACT:      BC MoE contact:  AQHIDSI@Victoria1.gov.bc.ca</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+<span class="nb">type</span> <span class="n">pull</span><span class="o">-</span><span class="n">file</span>
+
+<span class="n">routemask</span>        <span class="n">true</span>
+<span class="n">routing_version</span>  <span class="mi">1</span>
+<span class="n">routingTable</span>     <span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">px</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">pdsRouting</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">protocol</span> <span class="n">ftp</span>
+<span class="n">host</span>     <span class="n">fake</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">user</span>     <span class="n">fakeuser</span>
+<span class="n">password</span> <span class="n">fakepass</span>
+
+<span class="n">delete</span> <span class="kc">False</span>
+<span class="n">timeout_get</span> <span class="mi">90</span>
+<span class="n">pull_sleep</span>  <span class="mi">180</span>
+
+<span class="n">extension</span> <span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="p">:</span><span class="n">GOV</span><span class="o">-</span><span class="n">BC</span><span class="p">:</span><span class="n">WAMR</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="n">ASCII</span>
+
+<span class="n">directory</span> <span class="o">/</span><span class="n">pub</span><span class="o">/</span><span class="n">outgoing</span><span class="o">/</span><span class="n">WAMR</span><span class="o">/</span><span class="n">EarthNetworks2</span><span class="o">/</span>
+<span class="n">get</span> <span class="o">.*.</span><span class="n">lsi</span>
+
+<span class="c1"># generate key with accept</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="p">(</span><span class="n">lsi</span><span class="p">:</span><span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="p">:</span><span class="n">GOV</span><span class="o">-</span><span class="n">BC</span><span class="p">:</span><span class="n">WAMR</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="n">ASCII</span><span class="p">)</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>The script created these files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="n">credentials</span> <span class="o">*</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">credentials</span>
+<span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">poll_pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">sarra_get_pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>My personal renaming convention is to rename the files</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mv</span> <span class="n">poll_pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span> <span class="n">BC_ENV_AQ_WAMR</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">mv</span> <span class="n">sarra_get_pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">conf</span> <span class="n">get_BC_ENV_AQ_WAMR</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>So now we have the sr_poll BC_ENV_AQ_WAMR.conf and
+the sr_sarra get_BC_ENV_AQ_WAMR.conf.</p>
+</section>
+<section id="sr-poll-config">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">SR_POLL CONFIG</a><a class="headerlink" href="#sr-poll-config" title="Link to this heading"></a></h2>
+<p>The generated <em>sr_poll</em> config looks like this:
+cat BC_ENV_AQ_WAMR.conf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
+<span class="c1"># STATUS:       Operational</span>
+<span class="c1">#</span>
+<span class="c1"># DESCRIPTION:  pull Wamr data from British Columbia Ministry of Environment (BC MoE)</span>
+<span class="c1">#</span>
+<span class="c1"># CONTACT:      BC MoE contact:  AQHIDSI@Victoria1.gov.bc.ca</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+<span class="c1"># on doit avoir le vip de ddsr.cmc.ec.gc.ca</span>
+
+<span class="n">vip</span> <span class="mf">142.135.12.146</span>
+
+<span class="c1"># post_broker is DDSR spread the poll messages</span>
+
+<span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">SOURCE</span><span class="nd">@ddsr</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span>
+<span class="n">post_exchange</span> <span class="n">xs_SOURCE</span>
+
+<span class="c1"># options</span>
+
+<span class="n">sleep</span> <span class="mi">180</span>
+<span class="n">timeout</span> <span class="mi">90</span>
+
+<span class="c1"># to useless... left for backward compat</span>
+<span class="n">to</span> <span class="n">DDSR</span><span class="o">.</span><span class="n">CMC</span><span class="p">,</span><span class="n">DDI</span><span class="o">.</span><span class="n">CMC</span><span class="p">,</span><span class="n">CMC</span><span class="p">,</span><span class="n">SCIENCE</span><span class="p">,</span><span class="n">EDM</span>
+
+<span class="c1"># where to get the products</span>
+
+<span class="n">pollUrl</span> <span class="n">ftp</span><span class="p">:</span><span class="o">//</span><span class="n">fakeuser</span><span class="p">:</span><span class="n">fakepass</span><span class="nd">@fakehost</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+
+<span class="c1">#where/how to get the products</span>
+<span class="n">path</span> <span class="o">/</span><span class="n">pub</span><span class="o">/</span><span class="n">outgoing</span><span class="o">/</span><span class="n">WAMR</span><span class="o">/</span><span class="n">EarthNetworks2</span><span class="o">/</span>
+
+<span class="c1"># generate key with accept</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="p">(</span><span class="n">lsi</span><span class="p">:</span><span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="p">:</span><span class="n">GOV</span><span class="o">-</span><span class="n">BC</span><span class="p">:</span><span class="n">WAMR</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="n">ASCII</span><span class="p">)</span><span class="o">.*</span>
+
+<span class="c1"># usually no accept... in sr_poll</span>
+<span class="n">reject</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>The follows all the original option of the sundew pull as a reference.
+To continue we need to know what product is ingested by that pull:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">px</span><span class="nd">@pxatx1</span><span class="o">-</span><span class="n">ops</span> <span class="n">grep</span> <span class="n">Ingested</span> <span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">px</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">rx_pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>We find that one of the product “today” is
+29_05_2019_04_25.lsi:pull-BC-ENV_AQ-WAMR:GOV-BC:WAMR:3:ASCII
+Lets try to find it on pxatx sarracenia side how it is announced:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">sarra</span><span class="nd">@data</span><span class="o">-</span><span class="n">lb</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;cd master/pxatx; srl grep 29_05_2019_04_25.lsi \*.log&#39;</span>
+</pre></div>
+</div>
+<p>Just picking one of the notice leads us to this place</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">20190529</span><span class="o">/</span><span class="n">PROVINCIAL</span><span class="o">/</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="o">/</span><span class="mi">12</span><span class="o">/</span><span class="mf">29_05_2019_04_25.</span><span class="n">lsi</span><span class="p">:</span><span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="p">:</span><span class="n">GOV</span><span class="o">-</span><span class="n">BC</span><span class="p">:</span><span class="n">WAMR</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="n">ASCII</span>
+</pre></div>
+</div>
+<p>By convention the directory after the date is the name of the SOURCE
+for these products. So here PROVINCIAL is used as an amqp source user
+for announcement and as one of the top directory leaf for its products
+With theses informations we can finalized the <strong>sr_poll</strong> config</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="n">BC_ENV_AQ_WAMR</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">change</span>
+<span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">SOURCE</span><span class="nd">@ddsr</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">post_exchange</span> <span class="n">xs_SOURCE</span><span class="o">**</span>
+
+<span class="k">for</span>
+<span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">PROVINCIAL</span><span class="nd">@ddsr</span><span class="o">.</span><span class="n">cmc</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">post_exchange</span> <span class="n">xs_PROVINCIAL</span>
+</pre></div>
+</div>
+<p>The destination put by the script always contain all the credentials.
+So we just edit to keep  protocol://user#host:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">change</span>
+<span class="n">pollUrl</span> <span class="n">ftp</span><span class="p">:</span><span class="o">//</span><span class="n">fakeuser</span><span class="p">:</span><span class="n">fakepass</span><span class="nd">@fake</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+
+<span class="k">for</span>
+<span class="n">pollUrl</span> <span class="n">ftp</span><span class="p">:</span><span class="o">//</span><span class="n">fakeuser</span><span class="nd">@fake</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+<p>Starting at comment  <em># where to get the products</em>
+down to the end of the file, the script attempted to reproduce
+the <em>directory</em>, <em>get</em> and <em>accept/reject</em> options as in the original.
+And finally it placed all the options of the original file as reference.
+Make sure the sr_poll config is reflecting the original sundew one
+Get rid of duplicated options, scrutening the rest of the file.
+It is not our case here but if there are <em>reject</em> options in this config
+keep them. For <em>accept</em> option, you dont really need them since option
+<em>get</em> plays the same role:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remove</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="p">(</span><span class="n">lsi</span><span class="p">:</span><span class="n">pull</span><span class="o">-</span><span class="n">BC</span><span class="o">-</span><span class="n">ENV_AQ</span><span class="o">-</span><span class="n">WAMR</span><span class="p">:</span><span class="n">GOV</span><span class="o">-</span><span class="n">BC</span><span class="p">:</span><span class="n">WAMR</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="n">ASCII</span><span class="p">)</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>After, change the <em>get</em> for <em>accept</em>.
+So a cleaned version of the last lines of the <em>sr_poll</em> config would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># where to get the products</span>
+
+<span class="n">pollUrl</span> <span class="n">ftp</span><span class="p">:</span><span class="o">//</span><span class="n">fakeuser</span><span class="nd">@fake</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+
+<span class="c1"># product source directories</span>
+
+<span class="n">path</span> <span class="o">/</span><span class="n">pub</span><span class="o">/</span><span class="n">outgoing</span><span class="o">/</span><span class="n">WAMR</span><span class="o">/</span><span class="n">EarthNetworks2</span><span class="o">/</span>
+<span class="n">accept</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">lsi</span>
+</pre></div>
+</div>
+</section>
+<section id="sr-sarra-config">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">SR_SARRA CONFIG</a><a class="headerlink" href="#sr-sarra-config" title="Link to this heading"></a></h2>
+<p>The generated <em>sr_sarra</em> config looks like this:
+cat get_BC_ENV_AQ_WAMR.conf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#
+# STATUS:       Operational
+#
+# DESCRIPTION:  pull Wamr data from British Columbia Ministry of Environment (BC MoE)
+#
+# CONTACT:      BC MoE contact:  AQHIDSI@Victoria1.gov.bc.ca
+#
+#
+
+# source
+
+instances 1
+
+# receives messages from same DDSR queue spreads the messages
+
+broker amqp://feeder@ddsr.cmc.ec.gc.ca/
+exchange   xs_SOURCE
+
+# listen to spread the poll messages
+
+prefetch  10
+queue_name q_feeder.${PROGRAM}.${CONFIG}.SHARED
+
+sourceFromExchange True
+
+# what to do with product
+
+mirror        False
+preserve_time False
+
+# MG CHECK DELETE
+#delete False
+delete False
+
+# directories
+
+directory ${PBD}/${YYYYMMDD}/${SOURCE}/--${0}-- to be determined ----
+accept    .*(something).*
+
+# destination
+
+post_broker   amqp://feeder@localhost/
+post_exchange xpublic
+post_baseUrl http://${HOSTNAME}
+post_baseDir /apps/sarra/public_data
+</pre></div>
+</div>
+<p>Again we need to adjust to the SOURCE value which is PROVINCIAL:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="n">get_BC_ENV_AQ_WAMR</span><span class="o">.</span><span class="n">conf</span>
+
+<span class="n">change</span>
+<span class="n">exchange</span>   <span class="n">xs_SOURCE</span>
+
+<span class="k">for</span>
+<span class="n">exchange</span>   <span class="n">xs_PROVINCIAL</span>
+</pre></div>
+</div>
+<p>A special attention must be given to the <em>delete</em> option.
+If the sundew pull configuration is deleting the products once
+downloaded, to test our <em>sr_sarra</em> process we must not delete
+products. By default, the script writes</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># MG CHECK DELETE</span>
+<span class="c1">#delete value</span>
+<span class="n">delete</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Where <em>value</em> is the setting of the <em>delete</em> option in the sundew pull.
+The <em>sr_sarra</em> configuration, when ready, can be tested without deletion.
+When placed in operation, and the sundew pull withdrawn, if the <em>delete</em>
+option should be <em>true</em>  just delete the ‘delete False’ and uncomment the
+‘delete True’.</p>
+<p>To have the proper <em>directory</em>, <em>accept</em> settings (there might be more than
+one), we want to search how the products are disposed on the sarracenia side.
+Because it is sundew processes that mimic sarracenia we find theses informatios
+in the sundew senders:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>% grep PROVINCIAL/BC-ENV_AQ-WAMR ../tx/*
+% tx/ddsr-PROVINCIAL.inc:directory //apps/sarra/public_data/${RYYYY}${RMM}${RDD}/PROVINCIAL/BC-ENV_AQ-WAMR/${RHH}
+</pre></div>
+</div>
+<p>And looking for the conplete configuration setting for these products in
+this include file we get:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>directory //apps/sarra/public_data/${RYYYY}${RMM}${RDD}/PROVINCIAL/BC-ENV_AQ-WAMR/${RHH}
+accept .*.lsi:pull-BC-ENV_AQ-WAMR:GOV-BC:WAMR:.*
+</pre></div>
+</div>
+<p>The final changes in our <em>sr_poll</em> config is to reflect that finding:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>change**
+directory \${PBD}/\${YYYYMMDD}/\${SOURCE}/--\${0}-- to be determined ----
+accept    .*(something).*
+
+for
+directory ${PBD}/${YYYYMMDD}/${SOURCE}/BC-ENV_AQ-WAMR/${HH}
+accept .*\.lsi.*
+</pre></div>
+</div>
+<p>And we are all set for testing.</p>
+</section>
+<section id="testing">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">TESTING</a><a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<p>We install <em>sr_poll</em> BC_ENV_AQ_WAM.conf and <em>sr_sarra</em> get_BC_ENV_AQ_WAM.conf
+on DDSR_DEV. (on ddsr_dev, there are various things to modify. Setting <em>xattr_disable true</em>, changing ddsr.cmc for ddsr_dev.cmc, in broker… <em>document_root</em> option in senders and perhaps more)</p>
+<p>Leave the processes running and check the right disposal/announcement of the products.</p>
+</section>
+<section id="related-clients">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">RELATED CLIENTS</a><a class="headerlink" href="#related-clients" title="Link to this heading"></a></h2>
+<p>There are five clusters to check in order to see where the products
+are going. Because these products are regularly coming in, we can
+check in the logs.</p>
+<p>1- are the products delivered on pxatx sundew</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">px</span><span class="nd">@px</span><span class="o">-</span><span class="n">lvs</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. .bash_profile; cd /apps/master/pxatx; pxl grep BC-ENV_AQ-WAMR [ft]x*.log&#39;</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;s/:.*$//&#39;</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">u</span>
+<span class="c1"># which gives</span>
+<span class="o">---</span> <span class="n">pxatx</span><span class="o">-</span><span class="n">new</span>
+<span class="n">tx_ddsr</span><span class="o">-</span><span class="n">PROVINCIAL</span><span class="o">.</span><span class="n">log</span>
+<span class="n">tx_ddsr</span><span class="o">-</span><span class="n">notify</span><span class="o">-</span><span class="n">PROVINCIAL</span><span class="o">.</span><span class="n">log</span>
+<span class="n">tx_dms</span><span class="o">-</span><span class="n">op1</span><span class="o">.</span><span class="n">log</span>
+<span class="n">tx_dms</span><span class="o">-</span><span class="n">op2</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>The <em>ddsr</em> processes are used to put the products on the sarra side of pxatx.
+So the only senders to migrate would be <em>dms-op1</em> and <em>dms-op2</em>. We should use
+and include for specific products whenever it is suitable.</p>
+<dl>
+<dt>2- lets check on the sarracenia side of pxatx (senders should be migrated to</dt><dd><p>ddsr when the migration will occur):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">sarra</span><span class="nd">@data</span><span class="o">-</span><span class="n">lb</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. .bash_profile; cd master/pxatx; srl grep BC-ENV_AQ-WAMR *.log&#39;</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;s/log:.*$/log/&#39;</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">u</span>
+<span class="n">pxatx1</span><span class="o">-</span><span class="n">ops</span><span class="p">:</span> <span class="n">sr_shovel_copy</span><span class="o">-</span><span class="n">ddsr</span><span class="o">-</span><span class="n">PROVINCIAL_0001</span><span class="o">.</span><span class="n">log</span>
+<span class="n">pxatx2</span><span class="o">-</span><span class="n">ops</span><span class="p">:</span> <span class="n">sr_shovel_copy</span><span class="o">-</span><span class="n">ddsr</span><span class="o">-</span><span class="n">PROVINCIAL_0001</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>Ok so the messages are shoveled to ddsr (the products stay on pxatx)</p>
+</dd>
+</dl>
+<p>3- are the products flowing on sundew</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">px</span><span class="nd">@px</span><span class="o">-</span><span class="n">lvs</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. .bash_profile; cd /apps/master/sundew; pxl grep BC-ENV_AQ-WAMR [rft]x*.log&#39;</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;s/:.*$//&#39;</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">u</span>
+
+<span class="o">---</span> <span class="n">px1</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px2</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px3</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px4</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px5</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px6</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px7</span><span class="o">-</span><span class="n">ops</span>
+<span class="o">---</span> <span class="n">px8</span><span class="o">-</span><span class="n">ops</span>
+</pre></div>
+</div>
+<p>4- are the products flowing on ddsr : (this is slowwww):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">sarra</span><span class="nd">@data</span><span class="o">-</span><span class="n">lb</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. .bash_profile; cd master/sarra; srl grep BC-ENV_AQ-WAMR *.log&#39;</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;s/log:.*$/log/&#39;</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">u</span>
+</pre></div>
+</div>
+<p>5- are the products flowing on ddsr.science</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="n">sarra</span><span class="nd">@data</span><span class="o">-</span><span class="n">lb</span><span class="o">-</span><span class="n">ops1</span> <span class="s1">&#39;. .bash_profile; cd master/ddsr_science; srl grep BC-ENV_AQ-WAMR \*.log&#39;</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;s/log:.*$/log/&#39;</span> <span class="o">|</span> <span class="n">sort</span> <span class="o">-</span><span class="n">u</span>
+</pre></div>
+</div>
+</section>
+<section id="migrating-filters">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">MIGRATING FILTERS</a><a class="headerlink" href="#migrating-filters" title="Link to this heading"></a></h2>
+<p>Will do another paper for sundew filters that become <em>sr_sarra</em>.</p>
+</section>
+<section id="migrating-sender">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">MIGRATING SENDER</a><a class="headerlink" href="#migrating-sender" title="Link to this heading"></a></h2>
+<p>Will do another paper on how to migrate senders.</p>
+<section id="see-also">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">SEE ALSO</a><a class="headerlink" href="#see-also" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr_poll.1.rst">sr_poll(1)</a> - post announcemensts of specific files.</p>
+<p><a class="reference external" href="sr_sarra.8.rst">sr_sarra(8)</a> - Subscribe, Acquire, and ReAdvertise tool.</p>
+<p><a class="reference external" href="https://github.com/MetPX/">https://github.com/MetPX/</a> - sr_subscribe is a component of MetPX-Sarracenia, the AMQP based data pump.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="filter_conversion.html" class="btn btn-neutral float-left" title="Sundew filter migration to sarracenia (PXATX)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sundew_sender_migration.html" class="btn btn-neutral float-right" title="Sundew sender migration to sarracenia (PXATX)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

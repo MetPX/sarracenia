@@ -1,0 +1,389 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "chubby-tenant",
+   "metadata": {},
+   "source": [
+    "# Téléchargement en utilisant la console\n",
+    "\n",
+    "Ce [bloc-notes jupyter](https://jupyter.org) présente l'utilisation de [Sarracenia version 3](https://metpx.github.io/sarracenia) à partir de la ligne de commande (principalement avec Linux, mais devrait être similaire avec Windows et Mac, la principale différence étant des conventions différentes pour l'emplacement de stockage des préférences et des sorties d'éxécution. C'est probablement la façon la plus simple de travailler avec Sarracenia. Vous configurez un flux pour télécharger des fichiers dans un répertoire, et vous pouvez lire le répertoire pour y traiter les fichiers."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "neither-shannon",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import sarracenia\n",
+    "!mkdir -p ~/.config/sr3/subscribe\n",
+    "!mkdir -p ~/.cache/sr3/log"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "varying-armor",
+   "metadata": {},
+   "source": [
+    "\n",
+    "## Prérequis\n",
+    "\n",
+    "Ce code qui précède n'est qu'un moyen d'obtenir des bloc-notes jupyter pour installer metpx-sr3 sur un serveur.\n",
+    "Créer des répertoires au cas où les gens utiliseraient l'accès à l'API sans exécuter les choses via l'API. Le prérequis de base est d'avoir installé metpx-sr3 d'une manière ou d'une autre, soit en tant que package .deb, soit en utilisant pip (ou pip3) disponible pour l'environnement utilisé par jupyter.\n",
+    "\n",
+    "Le reste de ce bloc-notes suppose que [metpx-sr3](https://metpx.github.io/sarracenia) est installé."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "absolute-integral",
+   "metadata": {},
+   "source": [
+    "## SR3\n",
+    "\n",
+    "L'interface de ligne de commande s'appelle [sr3](../Reference/sr3.1.html) (abréviation de Sarracenia version 3). On définit les\n",
+    "flux à exécuter à l'aide de fichiers de configuration dans un format simple : format  _keyword_ _value_  (mot clé, valeur).\n",
+    "Voici des exemples de configurations pour vous aider à démarrer:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "drawn-opposition",
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Sample Configurations: (from: /home/peter/Sarracenia/sr3/sarracenia/examples )\r\n",
+      "cpump/cno_trouble_f00.inc        poll/airnow.conf                 \r\n",
+      "poll/aws-nexrad.conf             poll/mail.conf                   \r\n",
+      "poll/nasa-mls-nrt.conf           poll/noaa.conf                   \r\n",
+      "poll/soapshc.conf                poll/usgs.conf                   \r\n",
+      "post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              \r\n",
+      "sender/ec2collab.conf            sender/pitcher_push.conf         \r\n",
+      "shovel/no_trouble_f00.inc        subscribe/aws-nexrad.conf        \r\n",
+      "subscribe/dd_2mqtt.conf          subscribe/dd_all.conf            \r\n",
+      "subscribe/dd_amis.conf           subscribe/dd_aqhi.conf           \r\n",
+      "subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf       \r\n",
+      "subscribe/dd_cmml.conf           subscribe/dd_gdps.conf           \r\n",
+      "subscribe/dd_radar.conf          subscribe/dd_rdps.conf           \r\n",
+      "subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf       \r\n",
+      "subscribe/ddc_normal.conf        subscribe/downloademail.conf     \r\n",
+      "subscribe/ec_ninjo-a.conf        subscribe/hpfxWIS2DownloadAll.conf \r\n",
+      "subscribe/hpfx_amis.conf         subscribe/local_sub.conf         \r\n",
+      "subscribe/ping.conf              subscribe/pitcher_pull.conf      \r\n",
+      "subscribe/sci2ec.conf            subscribe/subnoaa.conf           \r\n",
+      "subscribe/subsoapshc.conf        subscribe/subusgs.conf           \r\n",
+      "sender/ec2collab.conf            sender/pitcher_push.conf         \r\n",
+      "watch/master.conf                watch/pitcher_client.conf        \r\n",
+      "watch/pitcher_server.conf        watch/sci2ec.conf                \r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!sr3 list examples"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "affecting-marking",
+   "metadata": {},
+   "source": [
+    "Il existe différents types de flux : les exemples sont classés selon le type de flux (poll, post, sarra, sender, shovel...)\n",
+    "Un _subscribe_ (abonnement) est utilisé par les clients pour télécharger à partir d'une pompe de données. Choisissons-en un."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "egyptian-suicide",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "add: 2022-03-19 13:17:47,786 2724188 [INFO] sarracenia.sr add copying: /home/peter/Sarracenia/sr3/sarracenia/examples/subscribe/hpfx_amis.conf to /home/peter/.config/sr3/subscribe/hpfx_amis.conf \r\n",
+      "\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!sr3 add subscribe/hpfx_amis.conf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "overall-instruction",
+   "metadata": {},
+   "source": [
+    "Les fichiers qui sont actifs pour vous sont placés dans ~/.config/sr3/<flow_type>/config_name. Vous pouvez y naviguer\n",
+    "et les modifier avec un éditeur si vous le souhaitez. Vous pouvez également le faire avec _sr3 edit subscribe/hpfx_amis.conf_\n",
+    "\n",
+    "    # this is a feed of wmo bulletin (a set called AMIS in the old times)\n",
+    "\n",
+    "    broker amqps://hpfx.collab.science.gc.ca/\n",
+    "    exchange xpublic\n",
+    "\n",
+    "    # instances: number of downloading processes to run at once.  defaults to 1. Not enough for this case\n",
+    "    instances 5\n",
+    "   \n",
+    "    # expire, in operational use, should be longer than longest expected interruption\n",
+    "    expire 10m\n",
+    "\n",
+    "    topic_prefix v02.post\n",
+    "    subtopic *.WXO-DD.bulletins.alphanumeric.#\n",
+    "    mirror false\n",
+    "    directory /tmp/amis/\n",
+    "    accept .*\n",
+    "\n",
+    "ajouté messageCountMax, donc il ne s'exécute pas éternellement."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "primary-score",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!mkdir /tmp/amis\n",
+    "!echo messageCountMax 10 >>~/.config/sr3/subscribe/hpfx_amis.conf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ancient-scholarship",
+   "metadata": {},
+   "source": [
+    "Le répertoire racine où les fichiers doivent être placés doit exister avant de commencer.\n",
+    "les commandes ci-dessus sont à configurer sur une machine Linux, vous pourriez avoir besoin d'autre chose sur un Mac ou Windows.\n",
+    "\n",
+    "Vous pouvez ensuite exécuter un flux de manière interactive avec l'action _foreground_, et il se terminera rapidement, comme ceci:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "nominated-nerve",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2022-03-19 13:18:34,230 2724487 [INFO] sarracenia.config fill_missing_options overriding batch for consistency with messageCountMax: 10\n",
+      ".2022-03-19 13:18:34,442 [INFO] 2724489 sarracenia.config fill_missing_options overriding batch for consistency with messageCountMax: 10\n",
+      "2022-03-19 13:18:34,444 [INFO] 2724489 sarracenia.config fill_missing_options overriding batch for consistency with messageCountMax: 10\n",
+      "2022-03-19 13:18:34,444 [INFO] 2724489 sarracenia.flow loadCallbacks plugins to load: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.log.Log']\n",
+      "2022-03-19 13:18:34,803 [INFO] 2724489 sarracenia.flowcb.log __init__ subscribe initialized with: {'on_housekeeping', 'after_accept', 'after_work'}\n",
+      "2022-03-19 13:18:34,803 [INFO] 2724489 sarracenia.flow run options:\n",
+      "_Config__admin=\"...st/ None True True False False None None\",\n",
+      "_Config__broker=\"...ca/ None True True False False None None\",\n",
+      "_Config__post_broker=None, accel_threshold=0, acceptSizeWrong=False,\n",
+      "acceptUnmatched=False, action='foreground', attempts=3, auto_delete=False,\n",
+      "baseDir=None, baseUrl_relPath=False, batch=10,\n",
+      "bindings=\"... ['*.WXO-DD.bulletins.alphanumeric.#'])]\", bufsize=1048576,\n",
+      "bytes_per_second=None, bytes_ps=0,\n",
+      "cfg_run_dir=\"...me/peter/.cache/sr3/subscribe/hpfx_amis'\",\n",
+      "component='subscribe', config='hpfx_amis.conf',\n",
+      "configurations=['subscribe/hpfx_amis.conf'], currentDir=None,\n",
+      "dangerWillRobinson=False, debug=False, declared_exchanges=[],\n",
+      "declared_users=\"...': 'source', 'eggmeister': 'subscriber'}\", delete=False,\n",
+      "destfn_script=None, directory='/tmp/hpfx_amis/', discard=False,\n",
+      "documentRoot=None, download=True, durable=True,\n",
+      "env_declared=\"...OKER', 'MQP', 'SFTPUSER', 'TESTDOCROOT']\", exchange='xpublic',\n",
+      "exchangeDeclare=True, expire=600.0, feeder=amqp://tfeed@localhost,\n",
+      "fileEvents={'delete', 'link', 'modify', 'create'}, filename='WHATFN',\n",
+      "fixed_headers={}, flatten='/', hostdir='fractal', hostname='fractal',\n",
+      "housekeeping=300, imports=[], inflight=None, inline=False,\n",
+      "inline_encoding='guess', inline_max=4096, inline_only=False, instances=5,\n",
+      "identity_arbitrary_value=None, identity_method='sha512',\n",
+      "logEvents=\"...ekeeping', 'after_accept', 'after_work'}\",\n",
+      "logFormat=\"...me)s] %(name)s %(funcName)s %(message)s'\", logLevel='info',\n",
+      "logStdout=False, log_flowcb_needed=False, lr_backupCount=5, lr_interval=1,\n",
+      "lr_when='midnight', masks=\"...pile('.*'), True, False, 0, False, '/')]\",\n",
+      "messageAgeMax=0, messageCountMax=10, messageDebugDump=False, messageRateMax=0,\n",
+      "messageRateMin=0,\n",
+      "message_strategy=\"...ubborn': True, 'failure_duration': '5m'}\", message_ttl=0,\n",
+      "mirror=False, no=0, fileAgeMax=0, nodupe_ttl=0, overwrite=True,\n",
+      "permCopy=True, permDefault=0, permDirDefault=509, permLog=384,\n",
+      "pid_filename=\"...e/hpfx_amis//subscribe_hpfx_amis_00.pid'\", plugins_early=[],\n",
+      "plugins_late=['sarracenia.flowcb.log.Log'], post_baseDir=None,\n",
+      "post_baseUrl=None, post_documentRoot=None, post_exchanges=[],\n",
+      "post_topicPrefix=['v02', 'post'], prefetch=25, pstrip=False, queueBind=True,\n",
+      "queueDeclare=True, queueName=\"...s_subscribe.hpfx_amis.81537164.67226020'\",\n",
+      "queue_filename=\"...mis/subscribe.hpfx_amis.anonymous.qname'\", randid='2067',\n",
+      "randomize=False, realpathPost=False, rename=None, report_back=False,\n",
+      "reset=False, retry_path=\"...hpfx_amis//subscribe_hpfx_amis_00.retry'\",\n",
+      "retry_ttl=600.0, settings={}, sleep=0.1, statehost=False, strip=0, subtopic=[],\n",
+      "timeCopy=True, timeout=300, timezone='UTC', tls_rigour='normal',\n",
+      "topicPrefix=['v02', 'post'], undeclared=[], users=False, v2plugin_options=[],\n",
+      "v2plugins={}, vhost='/', vip=None\n",
+      "2022-03-19 13:18:34,803 [INFO] 2724489 sarracenia.flow run callbacks loaded: ['sarracenia.flowcb.gather.message.Message', 'sarracenia.flowcb.retry.Retry', 'sarracenia.flowcb.housekeeping.resources.Resources', 'sarracenia.flowcb.log.Log']\n",
+      "2022-03-19 13:18:34,803 [INFO] 2724489 sarracenia.flow run pid: 2724489 subscribe/hpfx_amis.conf instance: 0\n",
+      "2022-03-19 13:18:35,043 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 2.94 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRCN40_KWAL_191718___39822 \n",
+      "2022-03-19 13:18:35,221 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191718___39822 \n",
+      "2022-03-19 13:18:36,276 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 2.36 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRWA20_KWAL_191718___44601 \n",
+      "2022-03-19 13:18:36,398 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRWA20_KWAL_191718___44601 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 2.65 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRCN40_KWAL_191718___38142 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 4.06 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRMT60_KWAL_191718___7676 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 4.05 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRCN40_KWAL_191718___30876 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 2.55 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SX/CWEG/17/SXCN03_CWEG_191700___24546 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 2.55 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRND30_KWAL_191718___32815 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 1.64 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SX/KWAL/17/SXCN40_KWAL_191718___41131 \n",
+      "2022-03-19 13:18:40,766 [INFO] 2724489 sarracenia.flowcb.log after_accept accepted: (lag: 0.94 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SR/KWAL/17/SRCN40_KWAL_191718___22785 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191718___38142 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRMT60_KWAL_191718___7676 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191718___30876 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXCN03_CWEG_191700___24546 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRND30_KWAL_191718___32815 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXCN40_KWAL_191718___41131 \n",
+      "2022-03-19 13:18:41,592 [INFO] 2724489 sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191718___22785 \n",
+      "2022-03-19 13:18:41,611 [INFO] 2724489 sarracenia.flowcb.gather.message on_stop closing\n",
+      "2022-03-19 13:18:41,611 [INFO] 2724489 sarracenia.flow close flow/close completed cleanly pid: 2724489 subscribe/hpfx_amis.conf instance: 0\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!sr3 foreground subscribe/hpfx_amis.conf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "foreign-european",
+   "metadata": {},
+   "source": [
+    "comme vous pouvez le voir, il a téléchargé cinq fichiers dans /tmp/amis.\n",
+    "L'action _foreground_ est destinée à aider au débogage, plutôt qu'aux opérations réelles."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "split-writing",
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2022-03-19 13:18:52,445 2724517 [INFO] sarracenia.config fill_missing_options overriding batch for consistency with messageCountMax: 10\r\n",
+      "status: \r\n",
+      "Component/Config                         State        Run  Miss   Exp Retry\r\n",
+      "----------------                         -----        ---  ----   --- -----\r\n",
+      "subscribe/hpfx_amis                      stopped        0     0     0     0\r\n",
+      "      total running configs:   0 ( processes: 0 missing: 0 stray: 0 )\r\n"
+     ]
+    }
+   ],
+   "source": [
+    "!sr3 status"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "rocky-unemployment",
+   "metadata": {},
+   "source": [
+    "Il y a 1 configuration dans votre liste. Vous pouvez en avoir des centaines. Les colonnes de droite indiquent le nombre d'instances dont vous disposez pour chaque configuration. Dans l'exemple ci-dessus, _instances_ est défini sur 5, donc on s'attendrait à voir 5 instances en cours d'exécution lors de l'exécution. Vous pouvez démarrer une configuration spécifique avec _sr3 start subscribe/*_ ou démarrer toutes les instances actives avec : _sr3 start_"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "neural-laugh",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2022-03-19 13:18:58,254 2724529 [INFO] sarracenia.config fill_missing_options overriding batch for consistency with messageCountMax: 10\n",
+      "2022-03-19 11:10:07,282 [INFO] sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SOVX45_KWAL_191509___38991 \n",
+      "2022-03-19 11:10:07,282 [INFO] sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191509___52945 \n",
+      "2022-03-19 11:10:07,282 [INFO] sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SXCN40_KWAL_191509___11643 \n",
+      "2022-03-19 11:10:07,282 [INFO] sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SRCN40_KWAL_191509___30237 \n",
+      "2022-03-19 11:10:07,738 [INFO] sarracenia.flowcb.log after_accept accepted: (lag: 12.03 ) https://hpfx.collab.science.gc.ca /20220319/WXO-DD/bulletins/alphanumeric/20220319/SO/KWNB/15/SOVD83_KWNB_191200_RRX__37893 \n",
+      "2022-03-19 11:10:07,898 [INFO] sarracenia.flowcb.log after_work downloaded ok: /tmp/hpfx_amis/SOVD83_KWNB_191200_RRX__37893 \n",
+      "2022-03-19 11:10:17,165 [INFO] root stop_signal signal 15 received\n",
+      "2022-03-19 11:10:18,562 [INFO] sarracenia.flow run clean stop from run loop\n",
+      "2022-03-19 11:10:18,577 [INFO] sarracenia.flowcb.gather.message on_stop closing\n",
+      "2022-03-19 11:10:18,577 [INFO] sarracenia.flow close flow/close completed cleanly pid: 2231352 subscribe/hpfx_amis instance: 1\n"
+     ]
+    }
+   ],
+   "source": [
+    "!sr3 log subscribe/hpfx_amis.conf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "leading-matthew",
+   "metadata": {},
+   "source": [
+    "Lors de l'exécution en arrière-plan, la sortie doit aller dans un fichier journal (sortie d'exécution). Comme nous n'avons exécuté ce fichier de configuration qu'au premier plan, demander à voir le journal imprime une erreur indiquant que le journal est manquant. Cela vous indique que les journaux se trouvent dans le répertoire _~/.cache/sr3/log_. Les journaux peuvent être surveillés en temps réel avec des outils traditionnels tels que _tail -f_ ou _grep_.\n",
+    "\n",
+    "_sr3 stop_ fait ce que vous pensez.\n",
+    "\n",
+    "Les processus peuvent planter. Dans la sortie _sr3 status_ ci-dessus, si le nombre de processus dans la colonne Run est inférieur à celui dans la colonne Exp (for Expected), cela signifie que certaines instances ont planté. Vous pouvez le réparer (démarrez simplement les instances manquantes) avec :\n",
+    "\n",
+    "_sr3 sanity_ - démarre les instances manquantes, tue également les parasites s'il en trouve.\n",
+    "\n",
+    "Voilà, une introduction à l'exécution des configurations dans Sarracenia à partir de la ligne de commande.\n",
+    "\n",
+    "\n",
+    "## Conclusion\n",
+    "\n",
+    "Si tout ce que vous voulez faire est d'obtenir des données à partir d'une pompe de données en temps réel, utiliser l'interface de ligne de commande pour contrôler certains processus qui s'exécutent tout le temps, afin qu'ils vident les fichiers dans un certain répertoire est la méthode la plus simple.\n",
+    "\n",
+    "Ce n'est pas très efficace cependant. Lorsque vous avez un grand nombre de fichiers sur lesquels travailler et que vous souhaitez un traitement à grande vitesse, il est préférable, dans le sens d'une charge CPU et d'E/S (I/O) réduite et en termes de vitesse de traitement\n",
+    "d'avoir votre propre application informée de l'arrivée des fichiers, plutôt que de scanner un répertoire.\n",
+    "\n",
+    "La façon la plus simple de le faire est d'ajouter des rappels à vos flux. Nous couvrirons cela ensuite."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "artistic-purple",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,897 @@
+
+===============================
+Refactorisation de la version 3
+===============================
+
+Résumé
+------
+
+Ce document s’adresse aux développeurs qui ont besoin de travailler à la fois avec du code v2 et
+le refactor qui s’appelait à l’origine v3, mais qui s’appelait finalement sr3.
+Pour les développeurs familiers avec la v2, le document peut servir un peu de carte
+au code source de sr3, qui est maintenant suffisamment stabilisé pour qu’il
+passe les flow_tests. Sr3 n’est peut-être pas encore vraiment utilisable, mais la direction
+est bien établi et le développement ultérieur est maintenant décrit en utilisant le problème
+tracker (regardez l’étiquette v3only.) Donc, ce document est maintenant essentiellement
+historique. Si quelqu’un ne connaît pas la v2, ce document n’aidera pas parce que c'est
+exclusivement le mappage de v2 à sr3. La lecture du reste de la documentation v03
+devrait être plus utile.
+
+Objectifs abstraits de sr3:
+
+* compatibilité de configuration (compatible vers le haut à partir de v2.) y compris tous les plugins.
+
+* prise en charge de protocoles multiples.
+  possibilité de mettre des urls pour mqtt, ou différentes bibliothèques amqp, peut-être d’autres.
+
+* représenter en interne les choses dans les messages de notification v03, avoir quelque chose qui construit
+  v02 pour la compatibilité, mais fonctionnent dans v03.
+
+* moins de code, code plus simple.
+  code pythonique plus lisible, élégant.
+  faciliter l’entretien.
+
+objectifs d’opportunité
+~~~~~~~~~~~~~~~~~~~~~~~
+
+  * ajouter des choses pour le faire fonctionner comme une API?
+  * potentiellement nouvelle api de plugin pour autoriser des groupes (de messages de notification et / ou de fichiers.)
+  * Terminez la rotation des journaux.
+  * Supposons que python > = 3.4 supprimer l’ancienne croûte.
+  * Supposons que ubuntu > = 18.04 supprimer l’ancienne croûte.
+  * Supposons systèmed, supprimez l’intégration sysv.
+  * avoir des options qui adoptent camelCase dans la mesure du possible.
+  * entièrement asynchrone, multi-sources et récepteurs.
+
+État du Code
+~~~~~~~~~~~~
+
+À partir du 24/08/2021, le code sr3 réussit tous les mêmes tests de flux que la v2
+sur un ordinateur portable (sauf dynamique dans sr3 #407). Il exécute ces mêmes tests en utilisant les mêmes configurations, donc la compatibilité
+objectif est atteint. Sr3 accepte les URL du courtier mqtt et un problème est créé #389 pour amqp v1.
+Sr3 est utilisé pour alimenter un aliment expérimental de WMO, bien qu’avec le besoin
+pour le redémarrer régulièrement ( numéro #388 )
+
+Le nouveau code sr3 a 4000 lignes de moins que la v2 et inclut mqtt.py (protocole broker supplémentaire)
+ainsi qu’un module implémentant une couche de compatibilité avec les plugins v2. Par exemple,
+la nouvelle routine de configuration est 30 % plus courte et plus cohérente en sr3 qu’en v2.
+Le code est également beaucoup plus pythonique, car l’API est beaucoup plus
+naturel avec plusieurs niveaux d’API qui peuvent être appris en consultant des jupyter notebooks.
+
+code v2::
+
+  fractal% find -name '*.py' | grep -v .pybuild | grep -v debian | grep -v plugins | xargs wc -l
+   133 ./sr_winnow.py
+   544 ./sr_sftp.py
+    47 ./sr_tailf.py
+   365 ./sr_cache.py
+   164 ./sr_xattr.py
+  1136 ./sr_message.py
+    51 ./sr_checksum.py
+   129 ./pyads.py
+   306 ./sr_http.py
+  2204 ./sr_subscribe.py
+   403 ./sr_consumer.py
+  1636 ./sr_post.py
+   265 ./sr1.py
+    54 ./sr_log2save.py
+   206 ./sr_sarra.py
+   286 ./sr_rabbit.py
+   567 ./sr_file.py
+    28 ./__init__.py
+   107 ./sr_report.py
+    74 ./sr_watch.py
+   126 ./sr_shovel.py
+   505 ./sr_retry.py
+   956 ./sr_util.py
+   355 ./sr_sender.py
+   368 ./sr_cfg2.py
+  1119 ./sr.py
+   753 ./sr_poll.py
+   729 ./sr_audit.py
+   308 ./sr_credentials.py
+   988 ./sr_instances.py
+   608 ./sr_amqp.py
+   455 ./sr_ftp.py
+  3062 ./sr_config.py
+    33 ./sum/checksum_s.py
+    34 ./sum/checksum_d.py
+    34 ./sum/__init__.py
+    26 ./sum/checksum_0.py
+    30 ./sum/checksum_n.py
+    29 ./sum/checksum_a.py
+  19223 total
+  fractal%
+
+code sr3::
+
+  2157 ./config.py
+   342 ./credentials.py
+   384 ./diskqueue.py
+   183 ./filemetadata.py
+   768 ./flowcb/gather/file.py
+    53 ./flowcb/gather/message.py
+     7 ./flowcb/housekeeping/__init__.py
+   130 ./flowcb/housekeeping/resources.py
+   250 ./flowcb/__init__.py
+   145 ./flowcb/log.py
+    24 ./flowcb/nodupe/data.py
+   345 ./flowcb/nodupe/__init__.py
+    24 ./flowcb/nodupe/name.py
+   454 ./flowcb/poll/__init__.py
+    14 ./flowcb/post/__init__.py
+    55 ./flowcb/post/message.py
+   117 ./flowcb/retry.py
+   461 ./flowcb/v2wrapper.py
+  1617 ./flow/__init__.py
+    80 ./flow/poll.py
+    34 ./flow/post.py
+    18 ./flow/report.py
+    29 ./flow/sarra.py
+    27 ./flow/sender.py
+    16 ./flow/shovel.py
+    29 ./flow/subscribe.py
+    35 ./flow/watch.py
+    16 ./flow/winnow.py
+   793 ./__init__.py
+   226 ./instance.py
+    36 ./identity/arbitrary.py
+    93 ./identity/__init__.py
+    24 ./identity/md5.py
+    17 ./identity/random.py
+    24 ./identity/sha512.py
+    17 ./moth/amq1.py
+   585 ./moth/amqp.py
+   313 ./moth/__init__.py
+   548 ./moth/mqtt.py
+    16 ./moth/pika.py
+   135 ./pyads.py
+   349 ./rabbitmq_admin.py
+    26 ./sr_flow.py
+    52 ./sr_post.py
+  2066 ./sr.py
+    50 ./sr_tailf.py
+   383 ./transfer/file.py
+   514 ./transfer/ftp.py
+   361 ./transfer/https.py
+   437 ./transfer/__init__.py
+   607 ./transfer/sftp.py
+  15519 total
+
+
+V02 Plugin Points douloureux
+----------------------------
+L’écriture de plugins devrait être une activité simple pour les personnes ayant une connaissance rudimentaire
+de Python et compréhension de la tâche à accomplir. Dans la version 2,
+écrire des plugins est beaucoup plus difficile qu’il ne devrait l’être.
+
+* erreur de syntaxe, v2 donne essentiellement une réponse binaire, soit la lecture dans le plugin a fonctionné
+  ou il ne l’a pas fait... il est très hostile par rapport au python normal.
+
+* lorsqu’un paramètre est placé dans un fichier de configuration, sa valeur est [ valeur ], et non valeur (il est dans une liste.)
+
+* problème de portée étrange de l’importation (l’importation dans l’ensemble ne se reporte pas sur on_message, besoin d’importer
+  dans le corps principal de la routine ainsi que dans le fichier python.)
+
+* Qu’est-ce qu'est self, qu’est-ce qu'est parent? Ces arguments pour les plugins ne sont pas évidents.
+  self se réfère généralement à l’appelant, pas au self dans une classe normale, et le parent est le flux,
+  donc aucun état ne peut être stocké dans self, et tout doit être stocké dans parent. Parent est une sorte de
+  fourre-tout pour les paramètres et les valeurs dynamiques dans une seule pile.
+
+* utilisation bizarre de l’API python logger ... self.logger?
+
+* impossibilité d’appeler à partir de code python (pas d’API.)
+
+* impossibilité d'*ajouter* des messages de notification dans un plugin (ne peut traiter que le message que vous avez.)
+
+* incapacité de traiter des groupes de messages de notification à la fois (par exemple pour les envois simultanés ou
+  téléchargements, plutôt qu’un seul à la fois.
+
+* mauvaise gestion des accusés de réception des messages. v02 ne fait qu’accepter le message précédent
+  lorsqu’un nouveau est reçu.
+
+* manque de clarté sur les options, par rapport aux variables de travail, car elles se trouvent dans le même espace de noms
+  dans un plugin, si vous trouvez self.setting==True ... est-ce parce que l’application l’a défini quelque part,
+  ou parce qu’une option a été définie par un client... s’agit-il d’un paramètre ou d’une variable ?
+
+* apporter des modifications aux messages de notification est un peu compliqué, car ils ont évolué sur différents formats de message.
+
+
+Modifications apportées pour résoudre les problèmes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* utilisez importlib à partir de python, moyen beaucoup plus standard d’enregistrer des plugins.
+  maintenant les erreurs de syntaxe seront détectées comme n’importe quel autre module python importé,
+  avec un message d’erreur raisonnable.
+
+* pas de décoration étrange à la fin des plugins (self.plugin = , etc... juste du python ordinaire.)
+
+* Le choix étrange de *parent* comme lieu de stockage des paramètres est déroutant pour les gens.
+  La variable d’instance *parent* devient *option*, *self.parent* devient *self.o*
+
+* les rappels d’événements pluriels remplacent les rappels singuliers :
+
+    * after_accept (self, worklist) remplace on_message (self, parent)
+    * after_work (self, worklist) remplace on_part / on_file (self, parent)
+
+* les messages de notification ne sont que des dictionnaires python. champs définis par json.loads( format de charge utile v03 )
+  les messages de notification ne contiennent que les champs réels, pas de paramètres ou d’autres choses...
+  données simples.
+
+* les rappels déplacent les messages de notification entre les listes de travail. Une liste de travail n’est qu’une liste
+  de messages de notification. Il y en a quatre :
+
+  * worklist.incoming - messages de notification à traiter.
+  * worklist.rejected - message de notification qui ne doit pas être traité ultérieurement.
+  * worklist.ok - messages de notification qui ont été traités avec succès.
+  * worklist.retry : messages de notification pour lesquels le traitement a été tenté, mais qui a échoué.
+
+pourrait en ajouter d’autres... nombre important de demandes pour quelque chose comme *différé*
+
+* acks effectués de manière plus proactive, dès qu’un message est traité
+  (pour les messages de notification rejetés ou ayant échoué, c’est beaucoup plus tôt que dans la version 2.)
+
+* ajouter un mécanisme de cadrage pour définir les propriétés du plugin.
+
+* propriétés alimentées à __init__ du plugin, le parent a disparu des plugins, ils devraient
+  juste se référer à self.o pour les options / paramètres dont ils ont besoin. (self.o sépare clairement les options
+  à partir de données de travail.)
+
+* analyse en ligne de commande à l’aide de la bibliothèque argParse standard python.  Signifie que les mots-clés ne fonctionnent plus
+  avec un seul -.  Choix de l’utilisation standard de -- pour les options basées sur des mots, et - pour les abréviations.
+  exemples : Bon : --config, et -c, BAD : -config --c .
+
+Navire de Thésée
+----------------
+
+Il se peut que la refactorisation inhérent à v03 aboutisse à un
+Vaisseau de Thésée, où il fonctionne de la même manière que v02, mais toutes
+les pièces sont différentes... évidemment une préoccupation/un risque...
+pourrait être une fonctionnalité.
+
+Maintenant que nous avons vu un bon bout du processus, un
+mappage des transcriptions de code source entre
+les deux versions, est clair:
+
+
++--------------------------+---------------------------+
+| Fichier Version 2        | Fichier Version 3         |
++--------------------------+---------------------------+
+| sr_config.py             | config.py                 |
++--------------------------+---------------------------+
+| sr_instances.py          | sr.py la plus part du mgmt|
+|                          | instance.py un seul proc  |
+|                          |                           |
++--------------------------+---------------------------+
+| sr_consumer.py           | moth/__init__.py          |
+|                          |                           |
+| sr_amqp.py               | moth/amqp.py              |
+|                          |                           |
+| sr_message.py            |                           |
++--------------------------+---------------------------+
+| sr_checksum.py           | identity/                 |
+|                          |      __init__.py          |
+| sum/*                    |      *                    |
++--------------------------+---------------------------+
+| sr_cache.py              | flowcb/nodupe.py          |
++--------------------------+---------------------------+
+| sr_retry.py              | flowcb/retry.py           |
+|                          |                           |
+|                          | diskqueue.py              |
++--------------------------+---------------------------+
+| sr_post.py               | flowcb/gather/file.py     |
+|                          |                           |
+|                          | flow/post.py              |
++--------------------------+---------------------------+
+| sr_poll.py               | flowcb/poll/              |
+|                          |        __init__.py        |
+|                          |                           |
+|                          | flow/poll.py              |
+|                          |                           |
++--------------------------+---------------------------+
+|                          | transfer/__init__.py      |
+| sr_util.py/sr_proto      |  * transfer.Protocol      |
+|                          |                           |
+| sr_util.py/sr_transport  | flow/__init__.py          |
+|                          |                           |
+| sr_file.py               | transfer/file.py          |
+|                          |                           |
+| sr_ftp.py                | transfer/ftp.py           |
+|                          |                           |
+| sr_http.py               | transfer/http.py          |
+|                          |                           |
+| sr_sftp.py               | transfer/sftp.py          |
+|                          |                           |
++--------------------------+---------------------------+
+| plugins/                 | flowcb/  (celles sr3)     |
+|                          | plugins/ toujours la pour |
+|                          | celles de v2.             |
+|                          |                           |
++--------------------------+---------------------------+
+| overall flow             | flow/__init__.py          |
++--------------------------+---------------------------+
+|                          |                           |
+| sr_poll.py               | sr_flow.py                |
+|                          | comme point d'entré       |
+| sr_post.py               |                           |
+|                          | mais normalment juste à   |
+| sr_subscribe.py          | utiliser sr.py comme un   |
+|                          |                           |
+| sr_shovel.py             |                           |
+|                          |                           |
+| sr_report.py             |                           |
+|                          |                           |
+| sr_sarra.py              |                           |
+|                          |                           |
+| sr_sender.py             |                           |
+|                          |                           |
+| sr_watch.py              |                           |
+|                          |                           |
+| sr_winnow.py             |                           |
+|                          |                           |
++--------------------------+---------------------------+
+
+
+Mappages
+~~~~~~~~
+
+v2->sr3 variables d'instance::
+
+    self.user_cache_dir --> self.o.cfg_run_dir
+
+Modifications nécessaires dans les plugins v2::
+
+    from sarra.sr_util import --> from sarracenia import
+
+
+
+Dictionnaires ou membres pour les propriétés ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Il semble y avoir une tension entre l’utilisation les membres de classe et les dictionnaires
+pour les paramètres. Les membres semblent plus pratiques, mais plus difficiles à manipuler,
+bien que nous ayons des idiomes équivalents. Argparse renvoie les options comme leurs propre
+membres de cet objet d’analyse. Il existe une hiérarchie à concilier :
+
+* protocole par défaut
+* consommateurs par défauts
+* composants par défaut
+* paramètres de configuration (remplacements)
+* options de ligne de commande (remplacements)
+
+les résoudre pour appliquer des remplacements, mais plus de sens en tant qu’opérations
+sur les dictionnaires, l’impression, l’enregistrement du chargement, encore une fois a plus de sens
+sous forme de dictionnaires. Dans le code, les membres sont légèrement plus courts, et peut-être
+plus idiomatique::
+
+   hasattr(cfg,'member') vs. 'member' in cfg (dictionary)
+
+Ce qui a plus de sens... Cela fait-il une différence pratique?
+Pas sûr... besoin de garder les membres pour les endroits où
+les rappels sont appelés, mais peuvent utiliser des propriétés ailleurs, si vous le souhaitez.
+
+
+Problèmes connus (résolus dans sr3)
+-----------------------------------
+
+* le passage des messages de journal est vraiment étrange. Nous n’avons pas compris ce que
+  les objets de journalisation python étaient. Besoin de les utiliser de la manière normale.
+  de nouveaux modules sont construits de cette façon...
+
+  Dans les nouveaux modules, utilisez la convention logging.getLogger( __name__ ), mais
+  souvent, le nom ne correspond pas au fichier source réel...  pourquoi?
+  Par exemple, un message de journal d'analyse de config.py  s’affiche comme::
+
+     2020-08-13 ...  [INFO] sarra.sr_credentials parse_file ... msg text...
+
+  pourquoi est-il étiqueté sr_credentials? aucune idée.
+
+* cette chose bizarre de try/except pour l’importation de modules ... essayé de supprimer
+  mais il a cassé l’analyse des sommes de contrôle... doit passer du temps
+  sur ce problème en particulier. Sur les nouveaux modules ( sarra.config,
+  sarra.tmpc.*, sr.py ) en utilisant des importations normales. besoin probablement de
+  refactorisez le fonctionnement du mécanisme du plug-in de somme de contrôle, puis réessayez.
+
+totalement remanié maintenant. La classe d’intégrité est normale et distincte de flowcb.
+
+Plan concret (Fait)
+-------------------
+
+Remplacez sarra/sr_config par sarra/sr_cfg2. La nouvelle sr_cfg2 utilise argparse
+et un modèle plus simple pour l’analyse des fichiers de configuration. C’est devenu config.py
+
+faire sr.py accepter des opérations sur des sous-ensembles, de sorte qu’il deviennent le point d’entrée unique.
+internaliser la mise en œuvre de tous les éléments de gestion, déclarer etc...
+
+HMPC -  Topic Message Protocol Client... une généralisation de la bibliothèque du passage de message avec
+une API simplifiée.  résume les différences de protocole
+(Ce dernier est devenu le module Moth.)
+
+La méthode d’essai consiste à apporter des modifications et à les vérifier par rapport à la branche
+sr_insects development. En général, un sr_insects non modifié devrait
+fonctionner, mais comme les journaux changent, il y a une logique ajoutée sur cette branche
+pour analyser les versions v2 et sr3 de la même manière. Ainsi, les tests de branche development
+sont compatibles avec les versions stables et en cours de développement.
+
+Pour que chaque composant fonctionne, entraînez-vous avec des tests unitaires individuels, puis
+accédez à des tests de flux statique.  Peut également faire flakey_broker. Le travail ne fait que se poursuivre
+dans la mesure où tous les composants sont convertis. Une fois la conversion complète réalisée,
+il faudra examiner dynamic_flow.
+
+Le but n’est pas un produit fini, mais un produit avec une structure suffisammen te et appropriée
+afin que les tâches puissent être déléguées avec un espoir raisonnable de succès.
+
+
+Fait
+----
+La fonctionnalité de sr_amqp.py est entièrement reproduite dans moth/amqp.py
+Toute la logique importante est préservée, mais elle est transcrite dans de nouvelles classes.
+Devrait avoir un comportement de récupération en cas d’échec identique. Mais ce n’est pas le cas. Nous avons le
+test de flux statique qui réussi, mais le courtier flakey, qui teste une telle récupération,
+est actuellement cassé. (2022/03 tout va bien maintenant!)
+
+sr_cfg2.py était encore un talon, il a beaucoup de fonctionnalités et d’options, mais
+ca n’est pas clair comment l’étendre à tous. la chose à propos des instances qui
+héritent de configure... c’est étrange, mais difficile de voir comment changer cela
+ne cassera pas tout, en termes de plugins... penser à avoir des valeurs par défaut
+distribué aux classes qui utilisent les paramètres, et ayant quelque chose
+qui les rassemble, au lieu d’une seule chose de configuration massive.
+renommé à config.py (aka: sarra.config) et l’exerçant avec
+sr.py. C’est maintenant un remplacement complet.
+
+Penser à simplement supprimer sr\_ le préfixe des classes pour les remplacements,
+puisqu’ils sont dans le répertoire sarra de toute façon. donc avoir une classe interne
+sarra/instances, sarra/sarra <- remplacer le consommateur... C’est ce qui s’est passé
+et est devenu un espace réservé pour la progression, ce qui signifie que les fichiers avec le préfixe sr\_
+dans le nom, qui ne sont pas des points d’entrée, indiquent le code v2 qui
+n’a pas encore été retiré/remplacé.
+
+Ajout d’une sélection de configuration à sr.py (par exemple, subscribe/\*) et
+options *setup* et *cleanup*.
+
+add/remove/enable/disable/edit (dans sr.py) terminé.
+
+'log' abandonné pour l’instant... (quel journal ?)
+
+ajout de list, show, et d’un prototype construit de shovel... Obligatoire
+une instance (définit les fichiers d’état et les journaux) puis appelle le flux...
+flow/run() est visiblement l’algorithme général,
+le shovel est une sous-classe de flux.
+
+On a un squelette pour les plugins v2 qui fonctionnent (v2wrapper.py)
+implémentation basé sur l’importation et orienté groupe sur le sr3 plugin framework. ( #213 )
+
+
+cache (maintenant appelé noDupe) fonctionnant.
+
+réécrit le fonctionnement des rappels sr3 pour utiliser des listes de travail, puis refondre la
+cache et le réessayez des plug-ins v2 en tant que rappels sr3 eux-mêmes.
+
+classe abstraite de fil d’attente de messages renommée de tmpc à moth
+(que mange une Sarracenia?)
+
+Avec le shovel et le winnow remplacés par de nouvelles implémentations, il passe
+le test de flux dynamique, y compris le module Retry porté sur sr3, et
+un certain nombre de modules v2 utilisés tels quels.
+
+Terminé une version initiale du composant sr3_post maintenant (dans sr3 : flowcb.gather.file.File)
+Maintenant, on travaille sur sr_poll, ce qui prendra un certain temps car il implique un refactoring: sr_file, sr_http,
+sr_ftp, sr_sftp dans le module de transfert.
+
+Principalement effectué sr_subscribe, qui, dans l’ancienne version, est une classe de base pour tous les autres composants,
+mais dans sr3 n’est que le premier composant qui télécharge réellement les données. Donc rencontrer tout les
+problèmes avec le téléchargement de données et flowcb qui font des choses intéressantes. La plupart de fait, mais
+flowcb ne fonctionne pas tout à fait.
+
+sr_sarra était simple une fois sr_subscribe fait.
+
+Transfert réimplémenté pour obtenir une valeur de retour conventionnelle comme le nombre d’octets
+transférés, et s’ils diffèrent, cela signale un problème.
+
+sr_sender d'envoi maintenant terminé, impliquait beaucoup plus de réflexion sur la façon de définir de nouveaux\_ champs
+dans les messages de notification. Mais une fois cela fait, on a pu supprimer à la fois l’expéditeur et sr_subscribe
+(la classe parente de la plupart des composants) et a permis la suppression des sr_cache, sr_consumer, sr_file,
+sr_ftp, sr_http, sr_message, sr_retry et sr_sftp, sum/\*, sr_util.
+
+C’est la fin de la partie la plus difficile.
+
+Il y avait un engagement à reformater l’ensemble de la base du code en style PEP à l’aide de yapf3.
+Maintenant, on a le hook de pré-commit yapf3 qui reformate les modifications afin que toute la base du code
+reste au format yapf3.
+
+Ont également une limitation du débit de messages écrits dans le noyau, donc maintenant on a message_rate_min, et message_rate_max
+comme paramètres qui remplacent/déprécient le plugin v2 post_rate_limit.
+
+Inquiétudes abordées
+~~~~~~~~~~~~~~~~~~~~
+
+Cette section contient des problèmes qui ont été résolus.  Ils ont été gênants pendant un certain temps,
+donc en notant quelle était la solution.
+
+* la journalisation à l’aide de __name__ finit parfois par prétendre provenir du mauvais fichier.
+  exemple::
+
+
+    2020-08-16 01:31:52,628 [INFO] sarra.sr_credentials set_newMessageFields FIXME new_dir=/home/peter/sarra_devdocroot/download
+
+  set_newMessageFields est dans config.py pas sr_credentials... pourquoi fait-il cela?
+  Attends probablement que tout le code hérité soit remplacé avant d'attaquer à ce problème.
+  si cela n’est pas corrigé, faites-en un rapport de bogue.
+
+  corrigé : note... le problème était que la déclaration de l’enregistreur qui devait être APRÈS toutes
+  Importations.  Concrètement::
+
+    logger = logging.getLogger( __name__ )
+
+  doit être placé après toutes les importations.
+
+* sr_audit ? que faire. Supprimé.
+
+* tous les fichiers non entry_point sr_*.py peuvent être supprimés.
+  supprimer le sous-répertoire sum. sr_util.py
+
+
+Révision de l’Accel
+~~~~~~~~~~~~~~~~~~~
+la compatibilité des plugins est à l’étude... on a décidé de réécrire les plugins accel_* pour sr3, et
+changer l’API car celle de la v2 présente des lacunes fondamentales :
+
+* l’api do_get traite l’échec en soulevant une exception... il n’y a pas de vérification
+  des codes de retour sur les routines intégrées... Il est possible de s’en occuper par try/except,
+  mais on préférerait qu’un flux de programme normal puisse tracer et
+  signaler lorsqu’une défaillance d’i/o se produit (gardez try/except à une échelle aussi petite que possible.)
+
+* il y a une nature très idiosyncratique du do_get, par exemple dans la accel_scp v2,
+  où il appelle do_get, puis décide de ne pas s'éxecuter et tombe à celui qui est intégré.
+  Cette logique est rarement utile, difficile à expliquer et déroutante à diagnostiquer
+  pratiquement.
+
+Avoir réécrit accel_wget, et accel_scp à la nouvelle api... on travaille via static-flow
+pour les tester. Il est également logique de repérer les invocations v2 d’entre eux, et de les remplacer par sr3
+dans la configuration. Et la première tentative a été assez alambiquée... on n’était pas content.
+pareil pour la 2ème tentative... on travaille sur une troisième.
+
+Réécrit à nouveau, il suffit d’ajouter getAccelerated() à l’API de transfert, afin qu’il soit intégré
+au lieu d’être un plugin.  N’importe quelle classe de Transfer peut spécifier un accélérateur et il
+sera déclenché par accel_threshold. Les accélérateurs https et sftp/scp sont implémentés.
+
+
+ToDo
+----
+
+Éléments de la liste todo qui ont été traités.
+
+
+* migrer sr_xattr.py vers sarra/xattr.py (maintenant appelé sarracenia/filemetadata.py)
+
+* corriger flakey_broker test poir qu'il réussise. (terminé!)
+
+* mise à jour de la documentation... tout changer pour utiliser le point d’entrée sr3, oui c’est fait.
+  (Voir le point de transition ci-dessous.)
+
+* considérer la transition, la vie avec les deux versions... faut-il sr.py --> sr3.py ? Oui. Fait.
+  devrions-nous avoir un paquet Debian séparé avec des points d’entrée de transition
+  (sr_subscribe et amis uniquement inclus dans le forfait compact, et tout)
+  l’interactivité native ne se produit que via sr3 ?
+  maintenant appelé metpx-sr3
+
+* peut-être déplacer tout le plugin d’un niveau (se débarrasser du répertoire)
+  donc Plugin devient une classe instanciée en sarra/__init__.py... Ca mets les
+  plugins et le code intégré à un niveau plus égal... par exemple comment
+  les protocoles de transfert de plugins fonctionnent-ils ?  idée... C’est en quelque sorte fait
+  maintenant: plugin est devenu flowcb. L’intégrité est supprimée de la hiérarchie.
+  L’extension de classe est maintenant un type de plugin séparé (via l’importation)
+
+* changer le topic_prefix par défaut en v03.post. effectué 2021/02
+
+* changer le topic_prefix par défaut en v03. effectué 2021/03
+
+* changer topic_prefix à topicPrefix. effectué 2021/03
+
+* Ajustez le Guide du programmeur pour refléter le nouvel API. effectué 2021/02
+
+* l’incohérence des journaux entre 'info' et logging.INFO empêche un contrôle correct des journaux.
+  CORRIGÉ 2021/02.
+
+* accélérateurs manquants: sftp.putAcc, ftp.putAc, ftp.getAc, file.getAc,
+
+* migrer sr_credentials.py vers sarracenia/credentials.py.
+
+* supprimer *post* des arborescences de rubriques v03. Fait!
+
+* points d’entrée de nettoyage: sr_audit, sr_tailf, sr_log2save,
+
+* test avec dynamic-flow.
+
+* Support MQTT (Terminé!)
+
+BUGS/Préoccupations/Problèmes
+-----------------------------
+
+migré vers github issues avec la balise de v3only.
+
+Après la parité : de vraies améliorations
+-----------------------------------------
+
+TODO
+----
+
+À ce stade, je suis en mesure de signaler les problèmes existants en tant que problèmes avec la balise v03only.
+voici donc les choses restantes après la refactorisation:
+
+* ajouté le message "missing defaults", examiner la liste et voir si nous devons tous les définir.
+  check_undeclared_options valeurs par défaut manquantes : {'discard', 'exchangeSplit',
+  'pipe', 'post_total_maxlag', 'exchangeSuffix', 'destination', 'inplace',
+  'report_exchange', 'post_exchangeSplit', 'set_passwords', 'declare_exchange',
+  'sanity_log_dead', 'report_daemons', 'realpathFilter', 'reconnect',
+  'post_exchangeSuffix', 'save', 'pump_flag', 'cache_stat', 'declare_queue', 'restore',
+  'bind_queue', 'dry_run', 'sourceFromExchange', 'retry_mode', 'poll_without_vip', 'header'}
+  #405
+
+* #369 ... clean shutdown
+
+* déterminer une implémentation AsyncAPI pour l’abonnement au moins. #401
+
+* faire en sorte que les transferts de fichiers partitionnés fonctionnent à nouveau. #396
+  `<on_part_assembly.rst>`_
+
+* convertir un poll existant en poll0 ? ancien poll. #394
+
+* alarm_set tronque en entiers... Hmm.. utiliser setitimer à la place?  #397
+
+* l’option outlet est manquante. #398
+
+* Support vhost nécessaire. #384
+
+* sr_poll bug actif/passif #29
+
+* realpathFilter est utilisé par CMOI. Semble avoir disparu dans sr3. C’est là dans la version C. #399
+
+* porter le reste des plugins v02 vers des équivalents v03 et ajoutez des mappages dans config.py, #400
+  de sorte qu’il ne nous reste presque plus de v2.
+
+* transfert / sftp.py supprimer file_index de l’implémentation ( # 367 ) dépendent de NoDupe.py
+
+* mode asynchrone complet pour les MQP. nécessite des fonctionnalités publish_retry.
+  (encore une fois dans les plans futurs ci-dessus.) #392
+
+* une fois le mode asynchrone complet disponible, autorisez plusieurs collectes(gathers) et publications.
+  (encore une fois dans les plans futurs ci-dessus.) #392
+
+* #33 ajouter le nom d’hôte à la fil d’attente par défaut.
+
+* #348 ajouter statehost à l’arborescence de répertoires .cache.
+
+
+Pas cuit / À penser
+-------------------
+
+Les choses du code structurel qui ne sont pas réglées peuvent changer.
+Probablement besoin d’être réglé avant que quelqu’un d’autre ne plonge.
+
+* propriétés scopables pour les classes internes, comme elles existent pour les plugins. #402
+  Je pense que c’est fait.  Il faudrait documenter quelque part,
+  tester et faire des démonstrations en même temps.
+
+* on a pris le code requis pour implémenter set_newMessageFields (maintenant appelé
+  Sarracenia.Message.updateFieldsAccept) textuellement à partir de la v2.
+  C’est assez poilu... peut-être se transformer en plugin, pour le sortir du
+  code principal? Ne pas qu’il disparaîtra un jour. C’est assez laid, mais
+  très utile et très utilisé dans les configurations existantes. probablement OK.
+
+* modification du modèle de récupération, de sorte que toute la nouvelle logique/tentative soit dans la
+  boucle principale, #392
+  et moth revient immédiatement. Le but est qu'on pourrait avoir plusieurs
+  gathers pour plusieurs flux en amont et reçevoir des messages de notification de la part de celui qui est
+  vivant... on se retrouve également avec une seule boucle de cette façon... plus propre.
+  probablement équivalent au mode asynchrone mentionné ci-dessus.
+
+* *gather* comme un moyen de séparer le fait d’avoir plusieurs courtiers d'entrées.  #392
+  donc on pourrait éviter d’avoir besoin d’un winnow, mais juste d'avoir un abonné qui se connecte à
+  plusieurs en amont directement.
+  probablement équivalent à async et multi-gather.
+
+* pensez à l’API en sous-classant le flux... et l’intégration automatique
+  avec le point d’entrée sr... Hmm... probablement regarder cela lors de la mise à jour
+  Guide du programmeur.
+
+* plus de worklists? échec de renommage  -> nouvelle tentative ou différé.  Ajouter un nouvel échec
+  où l'échec représente un échec permanent. et l’autre représente
+  à réessayer plus tard.
+
+
+* `MQTT issues <mqtt_issues.rst>`_
+
+
+FIXME/Différé
+-------------
+
+Le but du travail principal de sr3 est d’obtenir un refactorisation au point où
+le code est compréhensible pour les nouveaux codeurs, de sorte que les tâches peuvent être attribuées.
+Cette section comprend un mélange de tâches qui, espérons-le, peuvent être assignées,
+
+FIXME sont des choses laissées de côté qui doivent être vues.
+
+* **RELEASE BLOCKER** poilu. #403
+  watch ne fait pas de lot par lots. Il jette juste un arbre entier.
+  Cela devra être re-écrit avec une approche de style itérateur.
+  Donc si vous commencez dans une arborescence avec un million de fichiers, il analysera le million entier
+  et les présentera comme une liste de travail unique en mémoire.  Cela aura des problèmes performances.
+  Vous souhaitez procéder de manière incrémentielle à l’aide de listes d’un lot 'prefetch'
+  à la fois.
+
+  Il existe une correction provisoire pour prétendre qu’il fait le traitement par lots correctement, mais
+  l’impacte de la mémoire et le retard de production du premier fichier sont toujours là, mais au moins
+  renvoie un lot à la fois.
+
+* **RELEASE BLOCKER** journaux de poll et watch ont tendance à devenir énormes beaucoup trop rapidement. #389
+
+* essayez jsonfile pour créer des messages de notification à publier. peut construire json de manière incrémentielle, # 402
+  vous n’avez donc pas besoin de supprimer les éléments _deleteOnPost (vous pouvez simplement les ignorer)
+
+* euh... ajouter les protocoles. mqtt et qpid-proton (amq1) #389
+
+* assurez-vous que l’arrêt fonctionne réellement... voir des égarés après les tests... mais trop de changement
+  pour vraiment savoir. besoin de vérifier... C’est le cas!
+
+* Nous avons renoncé à l’envoi partitionné comme un retranchement pour le refactor. Il viendra dans un
+  version ultérieure.
+
+* la plupart des fonctionnalités de reporting sont supprimées.
+
+Transition
+----------
+
+Je ne sais pas si une mise à niveau simple (de remplacement) est une bonne approche. Sera-t-il possible de tester sarra
+suffisamment pour que des mises à niveau de pompes entières soient possibles? ou des mises à niveau incrémentielles
+(parallèles) soit requis?
+
+Cela dépend si sr3 fonctionnera comme un remplacement drop-in ou non. Il y a une certaine incompatibilité
+que nous savons va se produira avec les plugins do_*. Si cela est suffisamment bien documenté et facilement
+traité, alors ce n’est peut-être pas un problème. D’autre part, s’il y a des subtilités,
+alors une approche parallèle pourrait être nécessaire.
+
+Remplacement
+~~~~~~~~~~~~
+
+Le paquet a le même nom que ceux de la v2 (metpx-sarracenia) qui différent que par le numéro de version.
+L’installation du nouveau remplace complètement l’ancien. Cela nécessite que la nouvelle version soit égale
+ou mieux que l’ancien dans tous les aspects, ou que l’installation soit limitée aux machines d’essai
+jusqu’à ce que ce point soit atteint.
+
+Cela prend plus de temps pour obtenir l’installation initiale, mais a une démarcation beaucoup plus claire (vous savez
+lorsque vous avez terminé.)
+
+
+Parallel
+~~~~~~~~
+
+Nommez le paquet metpx-sarra3 et demandez au répertoire de classe python d’être sarra3 (au lieu de sarra.)
+(aussi ~/.config/sr3 et ~/.cache/sr3. Les fichiers .cache doivent probablement être différents car
+les fichiers de nouvelle tentative ont des formats différents? valider. ) On peut donc copier des configurations de l’ancien vers
+le nouveau et exécuter les deux versions en parallèle. Le point d’entrée central serait sr3 (plutôt que
+sr), et pour éviter toute confusion, les autres points d’entrée (sr_subscribe etc...) seraient omis
+de sorte que le code v2 fonctionnerait inchangé. Peut nécessiter quelques ajustements pour que les classes sr
+ignorent les instances des autres versions.
+
+Ceci est similaire à la transition de python2 vers python3. Cela permet le déploiement de sr3 sans avoir
+à s’y convertir entièrement. Cela permet d’exécuter certains composants et de gagner lentement en maturité
+tandis que d’autres ne sont pas prêts. Cela facilite les tests A:B, en exécutant la même configuration
+avec une version ou l’autre sans avoir l’installation ou l’utilisation d’une machine différente,
+ce qui facilite la vérification de la compatibilité.
+
+Conclusion
+~~~~~~~~~~
+
+Avoir implémenté le modèle parallèle, avec APPNAME=sr3 ( ~/.config/sr3, ~/.cache/sr3 )
+le préfixe sr3\_ remplace sr\_ pour toutes les commandes et change la classe Python sarra au
+nom complet de sarracenia pour éviter les conflits entre les classes de python.
+
+Incompatibilités
+----------------
+
+Il n’est pas censé y en avoir. Il s’agit d’une liste en cours d’exécution de choses à corriger ou à documenter.
+gros changements:
+
+* dans sr3, utilisez -- pour les options de mots complets, comme --config ou --broker.  Dans la v2, vous pouvez utiliser -config et -broker,
+  mais cela finira mal dans sr3.  Dans l’ancien analyseur de ligne de commande, -config et --config étaient identiques, ce qui
+  était idiosyncratique.  Le nouvel analyseur d’options de ligne de commande est construit sur
+  ArgParse et interprète un seul - comme préfixe une seule option où le
+  les lettres suivantes sont et argumentent.  Exemple:
+
+  -config hoho.conf -> dans la v2 fait référence au chargement du fichier hoho.conf en tant que configuration.
+
+  dans sr3, il sera interprété comme -c (config) charger le fichier config.conf, et hoho.conf fait partie d’une option ultérieure.
+
+* loglevel none -> loglevel notset (maintenant on passe le paramètre directement au module de journalisation python, none n’est pas défini.)
+
+* les messages de journal et la sortie en interactif seront complètement différents.
+
+* paramètres abandonnés: use_amqplib, use_pika... remplacé par des bibliothèques d’implémentation
+  distinctes par protocole. amqp utilise la bibliothèque 'amqp' qui n’est ni l’une ni l’autre des choses ci-dessus.
+  ( commit 02fad37b89c2f51420e62f2f883a3828d2056de1 )
+
+* laissant tomber on_watch plugins. pour autant que je sache, personne ne les utilise.
+  La façon don’t v03 fonctionne, ce serait un after_accept pour un watch.
+  c’est plus logique de cette façon.
+
+* les plugins qui accèdent aux internes de sr_retry doivent être réécrits, car la classe est maintenant plugin/retry.py.
+  la façon de mettre en fil d’attente quelque chose pour une nouvelle tentative dans les plugins actuels consiste
+  à les ajouter à la fil d’attente ayant échoué.
+  Ce n’est qu’un problème dans les tests de débit de sr_insects.
+
+* do_download et do_send étaient 1er passage aux plugins *schemed*, je pense qu’ils devraient être déconseillés / remplacés
+  par do_get et do_put. Ca n’est plus clair si ils sont utiles (télécharger et envoyer des plugins sont
+  au mauvais niveau d’abstraction)
+
+* do_download, do_send, do_get, do_put sont des téléchargements *schemed*... c’est-à-dire, plutôt que d’empiler de sorte que
+  tous sont appelés, ils sont enregistrés pour des protocoles particuliers.  Dans la v2, par exemple, les plugins accel_*
+  enregistrent le schéma "download". Un point d’entrée on_message modifierait le schéma de sorte que la routine do_*
+  serait invoqué. Dans la v2, la signature d’appel pour tous les plugins est la même (self, parent) mais pour
+  les cas do_get et do_put, c’est contre-productif. Ayez donc à la place une signature d’appel
+  identique au protocole intégré get/put... src_file, dst_file, src_offset, dst_offset, len )
+  Résolution: il suffit d’implémenter de nouvelles classes de transfert, ne s’intègre pas naturellement dans flowcb.
+
+* Dans la v2, les paramètres par défaut du miroir étaient False dans tous les composants, à l’exception de sr_sarra.
+  mais le réglage du miroir n’a pas été honoré dans shovel, et winnow (bug #358)
+  ce bogue est corrigé dans sr3, mais vous remarquez alors que la valeur par défaut est incorrecte.
+
+  Dans sr3, la valeur par défaut pour mirror est remplacée par True pour tous les flux, à l’exception de subscribe, qui
+  est le comportement le moins surprenant étant donné que la valeur par défaut est False dans la v2.
+
+* dans la v2, le téléchargement ne vérifie pas la longueur d’un fichier pendant le téléchargement.
+  dans sr3, c’est le cas. Par exemple, lors de l’utilisation de sftp comme sondage, ls répertorie la taille d’un lien symbolique.
+  Lorsqu’il télécharge, il obtient le fichier réel, et non le lien symbolique, de sorte que la taille est différente.
+
+Exemple tiré du test de débit ::
+
+       2021-04-03 10:13:07,310 [ERROR] sarracenia.transfer read_writelocal util/writelocal mismatched file length writing FCAS31_KWBC_031412___39224.slink. Message said to expect 135 bytes.  Got 114 bytes.
+
+  le fichier est de 114 octets, mais le chemin de liaison est de 135 octets...
+  v2 et sr3 téléchargent le fichier et non le lien, mais sr3 produit ce message d’erreur.
+  En pensant à celui-ci...  est-ce un bug dans le poll?
+
+* Dans la v2, si vous supprimez un fichier, puis le recréez, un événement sera créé.
+  Dans sr3, si vous faites de même, l’ancienne entrée sera dans la cache nodupe et l’événement sera supprimé.
+  J’ai remarqué cette différence, mais je ne sais pas quelle version est correcte.
+  cela pourrait être corrigé, si nous décidons que l’ancien comportement est juste.
+
+
+Fonctionnalités
+---------------
+
+* Tous les composants sont maintenant dérivés de la classe *flow* et exécutent déjà l’algorithme général
+  conçu comme la base de la v2, mais jamais implémenté en tant que tel.
+
+* L’API d’extension est maintenant du python simple sans paramètres magiques. Juste des classes standard, en utilisant un mécanisme
+  d’importation standard. Le débogage devrait être beaucoup plus simple maintenant car l’interpréteur fournira de
+  bien meilleurs messages d’erreur au démarrage. Les plugins de style v2 sont maintenant appelés *flow callbacks*,
+  et il existe un certain nombre de classes (identity, moth, transfert, peut-être flux) qui permettent l’extension
+  par une sous-classification simple. Cela devrait faire en sorte que ce soit beaucoup plus facile d’ajouter
+  des protocoles supplémentaires pour le transport et les messages, ainsi que des algorithmes de somme de
+  contrôle pour les nouveaux types de données.
+
+* La classe sarra.moth fait l'abstraction de l’AMQP, de sorte que le protocole de messagerie devient enfichable.
+
+* utiliser le préfixe sarracenia/ (déjà présent) pour remplacer le préfixe sr\_ sur les modules.
+
+* Un accès API aux flux. (ainsi on peut construire des programmes entièrement nouveaux en python en sous-classant.)
+
+* les propriétés/options des classes sont désormais hiérarchiques, de sorte qu’elles peuvent définir le débogage sur des classes spécifiques dans l’application.
+
+* sr3 ability pour sélectionner plusieurs composants et configurations sur lesquels on peut opérer.
+
+* sr3 list examples est maintenant utilisé pour afficher des exemples distincts de ceux installés.
+
+* sr3 show est maintenant utilisé pour afficher la configuration analysée.
+
+* les messages de notification sont accusés de réception plus rapidement, ce qui devrait aider au débit.
+
+* Les entry_points de plug-in FlowCB sont désormais basées sur des groupes de messages de notification, plutôt que sur des messages individuels, permettant aux gens
+  d'organiser le travail simultané.
+
+* l’intégrité (sommes de contrôle) sont maintenant des plugins.
+
+* gather (entrée ? sources de messages de notification) sont désormais des plugins.
+
+* ajout du typage des paramètres d’options, afin que les plugins puissent déclarer: taille, durée, chaîne ou liste.

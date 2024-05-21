@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why SFTP is More Often Chosen than FTPS &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sundew Migration Guide" href="Sundew_Migration/index.html" />
+    <link rel="prev" title="Announcing Sr3" href="History/sr3_Announcement.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Why SFTP is More Often Chosen than FTPS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ftp">FTP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#product-exchangers-supporting-large-numbers-of-transfers">Product Exchangers: Supporting Large Numbers of Transfers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ftps">FTPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cost">Cost</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functionality-byte-ranges">Functionality: Byte Ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#security-vulnerability">Security/Vulnerability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reliability-complexity">Reliability/Complexity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Why SFTP is More Often Chosen than FTPS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/sftps.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="why-sftp-is-more-often-chosen-than-ftps">
+<h1>Why SFTP is More Often Chosen than FTPS<a class="headerlink" href="#why-sftp-is-more-often-chosen-than-ftps" title="Link to this heading"></a></h1>
+<p>There has been some discussion around where to place an S in order to
+secure file transfers. Among a variety of competing technologies, there
+are two that may appear fairly equivalent: SFTP and FTPS. Both of these
+technologies are candidates to replace the venerable FTP method
+of transferring files.</p>
+<p>It is pertinent to review the reasons why SFTP was chosen in place of FTPS.
+In this discussion please keep in mind:</p>
+<ul class="simple">
+<li><p>I am not a security expert, this just reflects my current understanding</p></li>
+<li><p>We have not deployed FTPS, therefore we have little experience with it.</p></li>
+</ul>
+<p>If there are some misapprehensions, then we would be pleased to learn
+about them.</p>
+<section id="ftp">
+<h2>FTP<a class="headerlink" href="#ftp" title="Link to this heading"></a></h2>
+<p>In the early days of the internet, before even the advent
+of the world-wide web, one of the earliest applications was
+file transfer, as first defined by the Internet Engineering Task
+Force standard Request for Comments (original IETF RFC 114,
+dating from 1971 ). It evolved over the following decades with
+the same basic ideas.  On the internet, every device
+has an internet address, and for every address there is
+on the order of 65,000 ports available (kind of sub-addresses).</p>
+<p>If Alice wants to communicate with Bob, she initiates
+a connection to Bob’s device on port 21.  Bob indicates he
+is ready to receive the file, and then they agree on a second
+connection that is established over which the file data actually
+flows. How the second connection is established has varied a lot
+over time. The information to set up the data path naturally
+passes over the control path previously set up.</p>
+<p>In those early days, Alice and Bob would have two servers
+directly on the internet. The internet was a collegial place, and
+firewalls did not exist. Fast-forward thirty years, and the reality is
+quite different.</p>
+</section>
+<section id="product-exchangers-supporting-large-numbers-of-transfers">
+<h2>Product Exchangers: Supporting Large Numbers of Transfers<a class="headerlink" href="#product-exchangers-supporting-large-numbers-of-transfers" title="Link to this heading"></a></h2>
+<p>In modern times, if one is transferring hundreds of thousands or millions
+of files, there will likely be a large number of network devices
+between Alice and Bob’s servers.  The following diagram is a typical
+simple case one is likely to meet in reality:</p>
+<img alt="../_images/ftp_proxy_today.svg" class="align-center" src="../_images/ftp_proxy_today.svg" /><p>To send large numbers of files and withstand failures of
+individual servers, there will typically be an array of servers
+to send files. Let’s call them a product exchange array.
+The purpose of such arrays of servers is to process and/or
+transfer more data than could be transferred in a given time
+by a single server, and to provide transparent redundancy
+for component failures.</p>
+<p>To make it look to outsiders as a single server, there will
+be a load balancer in front of the real servers.  When initiating
+connections or receiving inbound ones, the load balancer
+will map the real servers’ actual addresses to a public facing
+one. The load balancer maintains a table of who is connected
+to whom, so that when a packet is received from an external
+server, it can map it back to the correct real server.
+This is called Network Address Translation, or NAT.</p>
+<p>Recall that there are 65,000 ports available, so several servers
+could choose, from their real addresses, to use the same source
+port to initiate their connection. When the load balancer
+maps the connection to an publically visible address, you could
+have more than one server claiming the same source port.
+So the load balancer has to map ports as well as just addresses.
+This is called Port Address Translation, or PAT.</p>
+<p>So there is a table stored in some fashion (on higher end devices
+in content addressable memory, or CAM)</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>10.2.3.4:67</p></td>
+<td><p>134.67.7.8:45</p></td>
+</tr>
+</tbody>
+</table>
+<p>Which maintains the mapping of a private address &amp; port to a public
+address &amp; port for every connection traversing a given device.</p>
+<p>When we get to a firewall, especially when organizations use
+private addressing, the process is repeated. So the address
+and port might get re-mapped to different ones again.</p>
+<p>The same operations happen at the other end, with the firewall
+and the load balancer maintaining tables of who is connected
+to what, and mapping addresses and port numbers in order
+to allow the servers at each end to communicate.</p>
+<p>With a straight-forward protocol, like Secure Shell, or Hypertext
+Transfer Protocol, there is only a single channel and only a single
+table entry in each of these devices is necessary per connection.
+The algorithmic complexity of such operations is a small
+constant amount, small in terms of memory and cpu.</p>
+<p>Recall that the control path indicates the method by which the data
+connection is established.  In order to have the FTP data channel connect the
+two servers, each firewall or load balancer between the two servers
+ideally observes the control path, looks for the data port specification,
+and proactively creates a mapping for it, creating a second pair of relationships
+to manage in the table for every connection.  This activity is termed
+FTP proxying.  A proxy should be run at any point where network or port
+translation occurs, with at least double the (still small) memory overhead
+of other protocols, but the cpu work is about the same (just using
+two entries in mapping tables instead of one).  Optimally, some sort of
+proxy or watcher on firewalls is able to adjust firewall rules
+dynamically to permit only specific data connections in use through
+when they need to, minimizing exposure to the internet to only double
+that of other protocols.</p>
+<p>In practice, there may be many NAT/PAT firewalls between A
+and B, and neither Alice nor Bob will be in charge of the configuration
+of all of the intervening devices. Because the FTP control path
+is easily inspected, there is just a bit of proxy code commonly
+implemented on network devices to cover this special case.</p>
+</section>
+<section id="ftps">
+<h2>FTPS<a class="headerlink" href="#ftps" title="Link to this heading"></a></h2>
+<p>FTPS - is FTP with Transport Level Security added to it.
+The control path is now encrypted, and thus not available
+to proxies on each of the firewalls and load balancers (such
+as LVS (linux virtual server), or standard products from F5, barracuda or
+a number of others). The straightforward answer to that problem is to
+terminate the encryption on each firewall and load balancer, so that
+the control traffic can be viewed to obtain the needed port numbers,
+and then re-encrypted. Essentially one would need to decrypt and
+re-encrypt the control information at least four times in between
+the source and destination servers.</p>
+<p>Ideally one would decrypt only the control path, the router would intercept
+connection requests and return a local encryption response. But if the data path
+is not also intercepted, then the server will have one encryption key for the control
+path and another for the data path, which will break TLS. So most likely,
+each intervening router and firewall is obligated to decrypt and re-encrypt
+all the data going through as well.</p>
+<p>Essentially, this means that Alice and Bob accept that every
+NAT/PAT device between them is allowed to impersonate the other
+entity (performing what is known as a man-in-the-middle attack).
+This is the only way to traverse a long chain of NAT/PAT devices.</p>
+<p>As the above is quite onerous, my supposition is that those deploying FTPS
+do not do <em>correct</em> proxying as described above. Instead, they
+reserve a port range for these types of traffic and put some static NAT/PAT
+rules in place, likely reserving a port range per node behind a load balancer.
+That is cumbersome and difficult to manage, and works for one level deep, but
+it does not generalize. Further, the port reservation increases the surface area of
+attack to outsiders, as ports are opened permanently, rather than
+mapping specific ports at specific times, because the firewall
+cannot read the control path traffic.</p>
+<p>In the original <em>active</em> case of FTPS, the client initiates the control
+connection, and the server initiates the data connection, requiring the
+client firewall to permit an arbitrary inbound connection. This method
+is basically limited to functioning where there no NAT at all, and extremely
+limited firewalling in both directions for a transfer to occur at all.</p>
+<p>The <em>passive</em> case, where the client initiates both control and data
+connections, is much more common in modern environments. That one
+complicates NAT/PAT and the use of load balancers on the
+destination server side. When setting up two way exchanges,
+FTPS complicates  both sides’ use of load balancers or NAT
+and reduces the effectiveness of firewalling measures available.</p>
+<p>FTPS is fundamentally more difficult to configure for many common configurations. One
+has to build a cluster differently, and arguably <em>worse</em>, because standard
+mechanisms used for other protocols do not work. That lowers a variety of
+configuration choices available only to support FTPS, with less protection
+than is afforded when using other protocols.</p>
+<p>Lastly, all of the peers one exchanges traffic with will face the same
+issues and will find it difficult to deploy. It is rare to
+find a peer that prefers FTPS.</p>
+</section>
+<section id="cost">
+<h2>Cost<a class="headerlink" href="#cost" title="Link to this heading"></a></h2>
+<p>If one assumes that the control path alone can be intercepted, leaving
+the data path alone, then from the point of view of computational complexity,
+the control path, rather than simply passing packets through each NAT/PAT device
+must be decrypted, and re-encrypted, which is likely still small, but much larger overhead
+than other protocols require. This places a higher load on load balancers and firewalls,
+which are more complex to parallellize and generally more expensive than
+the general purpose servers used in a product exchange array. This effect will
+be more pronounced for short sessions (primarily related to connection
+establishment, rather than sustained transfer).</p>
+<p>In actuality, it is more likely that the data must be re-encrypted as well
+as the control path, in which case the capacity for encryption of an array
+of servers must be equalled by the network device to prevent a bottleneck forming.
+The purpose of a product exchange array is to distribute computational load
+across a variety of low cost servers. The processing power in the commodity
+servers is several orders of magnitude beyond what is available to
+network devices. In the encryption offload case, the load imposed on the
+network devices is exponentially higher than what is required for
+other protocols.</p>
+<p>Network equipment vendors may tout encryption offloading, but what that amounts
+to in practice, is offloading cpu work from an array of cheap redundant
+servers, to a large relatively expensive and proprietary box.</p>
+<p>One can avoid the cost of encryption and decryption on network devices
+by limiting all configuration to being placed in a DMZ with no load balancer,
+or a load balancer with static port maps per real server, and lesser firewall
+protection. In which case the cost of equipment is likely no different,
+but the maintenance load will be slightly heavier (more frequent credential
+updates, need to maintain additional static maps, more firewall monitoring).</p>
+</section>
+<section id="functionality-byte-ranges">
+<h2>Functionality: Byte Ranges<a class="headerlink" href="#functionality-byte-ranges" title="Link to this heading"></a></h2>
+<p>In addition to the much greater complexity of firewall support for
+FTPS, and the added load on expensive firewalls, there is also reduced
+functionality available when compared to newer protocols,
+such as SSH transfer protocol, and HTTP(S). Both of these are secured
+using the same encryption algorithms as FTPS, but are single channel
+protocols, and they both provide the ability to retrieve byte ranges
+within files. Some newer transfer technologies use byte ranges provided
+by HTTP and SFTP to permit files to be transferred by multiple parallel
+streams, which is not possible with FTP or FTPS.</p>
+</section>
+<section id="security-vulnerability">
+<h2>Security/Vulnerability<a class="headerlink" href="#security-vulnerability" title="Link to this heading"></a></h2>
+<p>FTPS, like FTP, is usually authenticated using passwords which are secret.
+If the peer in an exchange suffers an intrusion, the hash of the password,
+which can be used to obtain the password itself using so-called brute
+force methods in a reasonable period of time because of its limited
+complexity. Most passwords are much shorter than the keys typical of
+SSH.</p>
+<p>One also faces the problem of intercepting the secret when it is shared.
+This problem is compounded by modern security standards which force
+changing of these secrets at frequent intervals, increasing the opportunity
+for interception, as well as imposing extra workload on the staff
+for maintenance.</p>
+<p>There are configurations where passwords are permitted with SSH/SFTP, but for
+data transfer applications these options are routinely disabled, which
+is possible in a clean and simple manner. Usually, data exchange
+involves the exchange of public keys (no secrets need be exchanged at all.)
+Public keys are stronger than passwords, and most security organizations
+permit much longer intervals before a change of credentials is required.</p>
+<p>With SSH, if a remote server is compromised, the malicious party
+obtains only the public key.  Since it is already public, the attacker has
+gained nothing of value. As the keys are substantially longer
+than a password, the traffic is more likely to be secure in transit (though
+in practice there are many details which may render this point moot.)</p>
+<p>As per IETF RFC 2228, FTPS servers can be FTP servers with enhanced
+security available when explicitly requested, so called <em>explicit</em> mode.
+It is therefore possible to connect to FTPS servers and transfer in FTP
+(unsecured mode). Careful configuration of servers is required to
+ensure this is not inadvertantly permitted.</p>
+<p>On receiving systems, it is true that a default OpenSSH configuration permits
+shell level access, however the use of restricted shells and chroot jails is
+commonplace in both FTP and SFTP based configurations. There is no practical
+difference between FTPS and SFTP from the server account point of view.</p>
+<p>In terms of firewalling, assuming the static port mapping method is used, then
+a relatively simple attack on an FTPS server with that sort of configuration
+would be to DDOS the data ports. Assuming the ability to watch the traffic at
+some point between the ends points, an evildoer could determine the port range
+mapped, and then constantly send traffic to the data ports with either incorrect
+data, or to close the connection immediately preventing actual data transfer.
+This is additional surface area to defend when compared to other protocols.</p>
+<p>The use of the encrypted second port, where the port range used is variable
+from site to site, means that most normal firewalls operating at the TCP level
+will less easily distinguish file transfer traffic from web or other traffic
+as there is no specific port number involved. For example, note this
+bug report from checkpoint which says that to permit FTPS to traverse it,
+one must disable various checks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;FTP over SSL is not supported.</span>
+
+<span class="n">Since</span> <span class="n">FTP</span> <span class="n">over</span> <span class="n">SSL</span> <span class="ow">is</span> <span class="n">encrypted</span><span class="p">,</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">way</span> <span class="n">to</span> <span class="n">inspect</span> <span class="n">the</span> <span class="n">port</span> <span class="n">command</span>
+<span class="n">to</span> <span class="n">decide</span> <span class="n">what</span> <span class="n">port</span> <span class="n">to</span> <span class="nb">open</span> <span class="ow">and</span> <span class="n">therefore</span> <span class="n">the</span> <span class="n">traffic</span> <span class="ow">is</span> <span class="n">blocked</span><span class="o">.</span>  <span class="o">...</span>
+
+<span class="n">If</span> <span class="n">you</span> <span class="n">still</span> <span class="n">cannot</span> <span class="n">get</span> <span class="n">this</span> <span class="n">traffic</span> <span class="n">through</span> <span class="n">the</span> <span class="n">gateway</span><span class="p">,</span> <span class="n">there</span> <span class="n">are</span> <span class="n">several</span>
+<span class="n">ways</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">FTP</span> <span class="n">enforcement</span><span class="o">.</span> <span class="n">Usually</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">done</span> <span class="n">through</span> <span class="n">SmartDefense</span><span class="o">/</span><span class="n">IPS</span><span class="p">,</span>
+<span class="n">by</span> <span class="n">disabling</span> <span class="n">the</span> <span class="n">FTP</span> <span class="n">Bounce</span> <span class="n">attack</span> <span class="n">protection</span><span class="o">.</span>
+<span class="n">Note</span> <span class="n">that</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">NOT</span> <span class="n">recommended</span><span class="o">.</span>  <span class="p">[</span><span class="o">*</span><span class="p">]</span><span class="n">_</span>
+</pre></div>
+</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">*</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&amp;solutionid=sk39793">https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&amp;solutionid=sk39793</a></p>
+</aside>
+</aside>
+</section>
+<section id="reliability-complexity">
+<h2>Reliability/Complexity<a class="headerlink" href="#reliability-complexity" title="Link to this heading"></a></h2>
+<p>There are several modes of FTP:  ascii/binary, active/passive, that create more cases to allow for.
+FTPS adds more cases: explicit/implicit to the number to allow for. Encryption can be
+enabled and disabled at various points in the control and data paths.</p>
+<p>Example of the mode causing additional complexity: active or passive? Very common issue. Yes, the question
+can be answered in practice, but one must ask: why does this question need to be answered? No other protocol
+needs it.</p>
+<p>Example of mode causing complexity from a decade ago: a common FTP server on linux systems is set by
+default to ignore the ‘ascii’ setting on ftp sessions for performance reasons. It took quite a
+while to understand why data acquisition from VAX/VMS machines were failing.</p>
+<p>The inherent requirement for all the intervening NAT/PAT devices to be configured <em>just so</em>
+to support FTPS makes it, in practice less likely to be reliable. Even in cases when
+everything is correctly configured, there is room for difficulties. Recall that for FTP and FTPS,
+tables need to be maintained to associate control and data connections with the correct end points.
+When connections are closed, the entries have to be shutdown.</p>
+<p>Example of correct configuration still having issues: in our experience, very rarely, the mapping tables get
+confused. At the main Canadian weather data product exchange array, occasionally with one file out of many millions,
+the file name would not match the file content. Although neither the file name, nor the content was corrupted,
+the data set did not correspond to the name given the file. Many possible sources were examined, but the suspected
+cause was some sort of timing issue with ports being re-used and the mapping on load balancers, where the
+file name flows over the control path, and the data flows over the other port. As a test, the transfers
+were migrated to SFTP, and the symptoms disappeared.</p>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p>Either FTPS proxying is done in a fully general manner:</p>
+<ul class="simple">
+<li><p>the intervening devices must perform man-in-the-middle
+decryption on at least the control path, which is quite undesirable from
+a security perspective. Decryption of only the control path is likely not
+possible without breaking TLS, so the entire data stream must
+be decrypted and re-encrypted at each firewall or load balancer.</p></li>
+<li><p>FTPS requires complex configuration of all intervening devices
+that are common in modern configurations. In many cases, the
+owners of the intervening devices will refuse to support the technology.</p></li>
+<li><p>FTPS imposes a higher computational load on all intervening
+devices than most alternatives available. By imposing an increased load
+on specialized devices, it is generally more expensive to deploy at scale.</p></li>
+<li><p>Since the above is impractical and undesirable, it is rarely done.
+There are therefore commonplace situations where one simply cannot deploy
+the protocol.</p></li>
+</ul>
+<p>Or, if only static port mapping is done:</p>
+<ul class="simple">
+<li><p>Usual FTPS firewall configurations leave a larger surface of attack for
+evildoers because the lack of visibility into the control path forces
+the firewall to open more ports than is strictly necessary, increasing
+surface area for attack.</p></li>
+<li><p>The static data port mapping per real-server on load balancers is more
+complex to maintain than what is required for other protocols.</p></li>
+</ul>
+<p>In either case:</p>
+<ul class="simple">
+<li><p>One generally uses passwords, which tend to be of limited length, reducing
+the overall security when compared to SSH/SFTP where use of long public/private key pairs
+is commonplace, and lengthening the key length requirement is straight-forward.</p></li>
+<li><p>FTPS does not support byte ranges which are useful in some applications,
+and is supported by SFTP and HTTP (with or without (S)).</p></li>
+<li><p>In the event of a compromise of a remote server, the password of the account
+is easily determined. While best practice would mean this password is of little
+or no value, some bad habits, such as password re-use, may mean the password has
+some value. Contrast with SFTP: only already public information is disclosed.</p></li>
+<li><p>Some FTPS server software has fall-back mechanisms and options that may cause
+users or administrators to unintentionally send unencrypted information.
+This could result in revealing passwords. In SFTP, the passwords are usually
+not sent, the keys are an element of encryption, so there are no passwords
+to intercept.</p></li>
+<li><p>FTPS is inherently more complex making it more difficult to deploy and operate.</p></li>
+<li><p>The limitations of supported configurations constrains firewalling approaches,
+likely reducing the protection afforded internet facing servers.</p></li>
+</ul>
+<p>In contrast to FTPS, SFTP:</p>
+<ul class="simple">
+<li><p>will traverse any number of NAT/PAT points on an intervening network without difficulty.</p></li>
+<li><p>works behind any type of load balancers, making scaling of product exchange arrays simple.</p></li>
+<li><p>does not require any intervening party to decrypt anything.</p></li>
+<li><p>puts less load (both cpu and memory) on intervening network devices.</p></li>
+<li><p>has similar commonplace methods for securing accounts on servers (e.g. restricted shells in chroot jails).</p></li>
+<li><p>supports byte ranges, which are useful.</p></li>
+<li><p>is simpler, with fewer options, therefore more reliable.</p></li>
+<li><p>is simpler to monitor and firewall, and permits more constrained firewall configurations.</p></li>
+<li><p>is much more common (e.g. Microsoft announcing built-in support in an upcoming Windows version <a class="footnote-reference brackets" href="#id1" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>*<span class="fn-bracket">]</span></a> ).</p></li>
+<li><p>normally uses public/private key pairs, which are usually considered <em>stronger</em> than passwords.</p></li>
+<li><p>does not require any shared secrets (or a mechanism to send them.), and usually the credentials need to be replaced less
+often.</p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>†<span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="http://blogs.msdn.com/b/powershell/archive/2015/06/03/looking-forward-microsoft-support-for-secure-shell-ssh.aspx">http://blogs.msdn.com/b/powershell/archive/2015/06/03/looking-forward-microsoft-support-for-secure-shell-ssh.aspx</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="History/sr3_Announcement.html" class="btn btn-neutral float-left" title="Announcing Sr3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Sundew_Migration/index.html" class="btn btn-neutral float-right" title="Sundew Migration Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

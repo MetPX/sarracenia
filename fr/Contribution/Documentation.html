@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Normes de documentation &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Publier une Version de MetPX-Sarracenia" href="Publication.html" />
+    <link rel="prev" title="Guide du développeur MetPX-Sarracenia" href="D%C3%A9veloppement.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Normes de documentation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#structure-des-dossiers">Structure des dossiers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#processus">Processus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#guide-de-style">Guide de Style</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#localisation">Localisation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Publication.html">Publier une Version de MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Contribuer à Sarracenia</a> &raquo;</li>
+      <li>Normes de documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/Documentation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="normes-de-documentation">
+<h1>Normes de documentation<a class="headerlink" href="#normes-de-documentation" title="Link to this heading"></a></h1>
+<section id="structure-des-dossiers">
+<h2>Structure des dossiers<a class="headerlink" href="#structure-des-dossiers" title="Link to this heading"></a></h2>
+<p>Avant de commencer à travailler avec la documentation, lire <a class="reference external" href="https://documentation.divio.com/">l’intégralité de l’article de documentation Divo</a> (et les liens sur la barre latérale gauche).
+Cela ne prendra pas plus de 30 minutes et vous obtiendrez une compréhension complète de
+la structure, du style et du contenu attendus de la documentation ici.</p>
+<a class="reference external image-reference" href="https://documentation.divio.com/"><img alt="https://documentation.divio.com/_images/overview.png" src="https://documentation.divio.com/_images/overview.png" />
+</a>
+<p>Nous regardons la directive unix dans notre documentation, chaque fichier de documentation fait une chose
+et le fait bien en ce qui concerne les 4 quadrants.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>TODO:Ajoutez des exemples de liens vers chacune des sections ci-dessous:</p>
+</div>
+<section id="traitement">
+<h3>Traitement<a class="headerlink" href="#traitement" title="Link to this heading"></a></h3>
+<p>Toute la documentation se trouve sous l’arborescence docs/source. Il est traité à l’aide de sphinx,
+invoqué à l’aide du Makefil dans docs/.  On peut installer sphinx localement, et exécuter make pour
+construire localement et déboguer. Le résultat est produit dans docs/build/html:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">f</span> <span class="n">requirements</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">cd</span> <span class="n">docs</span>
+<span class="n">make</span> <span class="n">html</span>
+</pre></div>
+</div>
+<p>Pointez ensuite un navigateur sur docs/Build/HTML.</p>
+<p>Il existe un travail Github Actions qui effectue cette opération à chaque push vers les branches
+appropriées pour mettre à jour la documentation principale. L’URL principale du site Web résultant est:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://metpx.github.io/sarracenia/">https://metpx.github.io/sarracenia/</a></p>
+</div></blockquote>
+<p>Le processus de publication est automatisé par deux actions github CI/CD :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>exécutez sphinx et validez les résultats dans une branche gh-pages: <a class="reference external" href="https://github.com/MetPX/sarracenia/actions/workflows/docs.yml">https://github.com/MetPX/sarracenia/actions/workflows/docs.yml</a></p></li>
+<li><p>mettre à jour le site web de la branche: <a class="reference external" href="https://github.com/MetPX/sarracenia/actions/workflows/pages/pages-build-deployment">https://github.com/MetPX/sarracenia/actions/workflows/pages/pages-build-deployment</a></p></li>
+</ul>
+</div></blockquote>
+<p>C´est une bonne pratique de jeter un coup d´œil aux messages d’erreur sphinx générés par le premier action. Il y a typiquement
+des centaines de petits problèmes à corriger (liens qui ne sont pas tout à fait corrects, formatage de tableau cassé, etc…)</p>
+</section>
+<section id="tutoriels">
+<h3>Tutoriels<a class="headerlink" href="#tutoriels" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Orienté vers l’apprentissage, en particulier apprendre comment plutôt que d’apprendre <em>cela</em>.</p></li>
+<li><p>Permettez à l’utilisateur d’apprendre en faisant pour le faire démarrer, assurez-vous que votre
+tutoriel fonctionne et que les utilisateurs peuvent voir les résultats immédiatement.</p></li>
+<li><p>Les tutoriels doivent être reproductibles de manière fiable et axés sur des étapes concrètes
+(et non sur des concepts abstraits) avec le minimum d’explications nécessaires.</p></li>
+</ul>
+<p>De nombreux didacticiels sont créés à l’aide de jupyter notebooks. Voir docs/source/fr/Tutoriels/README.md pour
+apprendre comment travailler avec eux.</p>
+</section>
+<section id="how2guides-comment-faire">
+<h3>How2Guides (Comment Faire)<a class="headerlink" href="#how2guides-comment-faire" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Axé sur le problème et l’objectif : “<strong>Je veux… Comment puis-je…</strong>” Différent des tutoriels parce que
+les tutoriels sont pour les débutants, et how2guides (comment faire) suppose une certaine connaissance
+et compréhension avec une configuration et des outils de base.</p></li>
+<li><p>Fournir une série d’étapes axées sur les résultats d’un problème particulier.</p></li>
+<li><p>N’expliquez pas les concepts, s’ils sont importants, ils peuvent être liés à <cite>.. /Explication/</cite></p></li>
+<li><p>Il existe plusieurs façons d’écorcher un chat, restez flexible dans votre guide afin que les utilisateurs
+puissent voir <em>comment</em> les choses sont faites.</p></li>
+<li><p><strong>NOMMEZ BIEN LES GUIDES</strong> assez pour dire à l’utilisateur <em>exactement</em> ce qu’il fait en un coup d’œil.</p></li>
+</ul>
+</section>
+<section id="explication">
+<h3>Explication<a class="headerlink" href="#explication" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Axé sur la compréhension: peut également être considéré comme des discussions. Version beaucoup
+plus détendue de la documentation où les concepts sont explorés à partir d’un niveau supérieur
+ou de perspectives différentes.</p></li>
+<li><p>Fournir un contexte, discuter des alternatives et des opinions tout en fournissant une référence
+technique (pour les autres sections).</p></li>
+</ul>
+</section>
+<section id="reference">
+<h3>Référence<a class="headerlink" href="#reference" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Style dictionnaire.</p></li>
+<li><p>Orienté vers l’information: descriptions des fonctionnalités déterminées par le code.</p></li>
+<li><p>Strictement pour les pages de manuel et la référence directe des différents programmes, protocoles et fonctions.</p></li>
+</ul>
+</section>
+<section id="contribution">
+<h3>Contribution<a class="headerlink" href="#contribution" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Informations essentielles à l’amélioration et à la progression du projet Sarracenia, c’est-à-dire: pour
+ceux qui cherchent à développer Sarracenia.</p></li>
+<li><p>Guide(s) de style</p></li>
+<li><p>Modèle(s)</p></li>
+</ul>
+</section>
+</section>
+<section id="processus">
+<h2>Processus<a class="headerlink" href="#processus" title="Link to this heading"></a></h2>
+<p>Le processus de développement consiste à écrire ce que l’on a l’intention de faire ou ce que l’on a fait dans
+un fichier <a class="reference external" href="https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html">reStructuredText</a>
+dans <cite>/docs/Explanation/Design/</cite>. Idéalement, la discussion de l’information y agit
+comme point de départ qui peut être édité dans la documentation pour la ou les fonctionnalités au fur et à
+mesure qu’elles sont mises en œuvre. Chaque nouveau composant sr_&lt;whatever&gt;, doit avoir des pages de manuel
+pertinentes implémentées. Les how2guides et tutoriels devraient également être révisés pour tenir compte des
+ajouts ou des modifications apportés au nouveau composant.</p>
+<div class="admonition error">
+<p class="admonition-title">Error</p>
+<p>Besoin de Peter pour identifier les informations importantes dans doc/design pour tirer sur le
+/docs/Explanation/Design/</p>
+</div>
+</section>
+<section id="guide-de-style">
+<h2>Guide de Style<a class="headerlink" href="#guide-de-style" title="Link to this heading"></a></h2>
+<p>L’exécution sur la ligne de commande doit être écrite dans le style suivant.
+Un commentaire initial décrivant les étapes ou processus suivants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ command 1
+  relevant output
+$command 2
+  .
+  .
+  relevant output
+  newline relevant output
+</pre></div>
+</div>
+<p>Remarques importantes:</p>
+<ul class="simple">
+<li><p>Le commentaire initial se termine par <cite>::</cite> suivi d’une nouvelle ligne vide</p></li>
+<li><p>Ensuite, se trouve le bloc de code indenté (deux espaces)</p></li>
+<li><p>Syntaxe des commandes: ‘<cite>$ &lt;cmd&gt;</cite>’</p></li>
+<li><p>Vous pouvez également indiquer les commandes de niveau root avec ‘<cite># &lt;cmd&gt;</cite>’</p></li>
+<li><p>La sortie de la commande est (deux espaces) en retrait de la commande principale.</p>
+<ul>
+<li><p>Les lignes de sortie non pertinentes peuvent être remplacées par des points ou carrément omises.</p></li>
+</ul>
+</li>
+</ul>
+<p>Choisissez et respectez une hiérarchie d’en-tête par défaut (ie : = &gt; ~ &gt; - &gt; … pour un titre &gt; h1 &gt; h2 &gt; h3… etc)</p>
+<section id="style-de-code">
+<h3>Style de Code<a class="headerlink" href="#style-de-code" title="Link to this heading"></a></h3>
+<p>Nous suivons généralement les standards <a class="reference external" href="https://peps.python.org/pep-0008/">PEP 8</a> pour la mise en forme du code,
+et on utilise <a class="reference external" href="https://github.com/google/yapf">YAPF</a> pour reformater automatiquement le code.
+Une exception au PEP 8 est que nous utilisons une longueur de ligne de 119 caractères.</p>
+<p>Pour les docstrings dans le code, nous suivons le Guide de style Google.
+Ces docstrings seront analysés dans une documentation formatée par Sphinx.</p>
+<p>Des exemples détaillés peuvent être trouvés dans le
+<a class="reference external" href="https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html">Documents du plugin Napoleon Sphinx</a>
+et les <a class="reference external" href="https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings">Guide Google de Style Python</a>.</p>
+<p>Exemples choisis de <code class="docutils literal notranslate"><span class="pre">credentials.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Credential</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Objet qui contient des informations sur les informations d’identification, lues à partir d’un fichier</span>
+<span class="sd">     credentials, qui a une information d’identification par ligne, en format::</span>
+<span class="sd">        url option1=value1, option2=value2</span>
+
+<span class="sd">    Exemples::</span>
+<span class="sd">        sftp://alice@herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa</span>
+<span class="sd">        ftp://georges:Gpass@hishost/  passive = True, binary = True</span>
+
+<span class="sd">    `Format de la Documentation. &lt;https://metpx.github.io/sarracenia/Reference/sr3_credentials.7.html&gt;`_</span>
+
+<span class="sd">    Attributs:</span>
+<span class="sd">        url (urllib.parse.ParseResult): object with URL, password, etc.</span>
+<span class="sd">        ssh_keyfile (str): path to SSH key file for SFTP</span>
+<span class="sd">        passive (bool): use passive FTP mode, defaults to ``True``</span>
+<span class="sd">        binary (bool): use binary FTP mode, defaults to ``True``</span>
+<span class="sd">        tls (bool): use FTPS with TLS, defaults to ``False``</span>
+<span class="sd">        prot_p (bool): use a secure data connection for TLS</span>
+<span class="sd">        bearer_token (str): bearer token for HTTP authentication</span>
+<span class="sd">        login_method (str): force a specific login method for AMQP (PLAIN,</span>
+<span class="sd">            AMQPLAIN, EXTERNAL or GSSAPI)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urlstr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Créer un objet Credential.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                urlstr (str): a URL in string form to be parsed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">isValid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Valide un objet URL et Credential. Vérifie les mots de passe vides, les schémas, etc.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (urllib.parse.ParseResult): ParseResult objet pour un URL.</span>
+<span class="sd">        details (sarracenia.credentials.Credential): objet Crednetial sarra qui contient des details additionels</span>
+<span class="sd">        à propos de l&#39;URL.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: ``True`` si un URL est valide, ``False`` sinon.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="why-rst">
+<h3>Why rST?<a class="headerlink" href="#why-rst" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html">reStructuredText</a> a été choisi principalement parce qu’il prend en charge la création automatique d’une
+table des matières avec la directive ‘<code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">Table</span> <span class="pre">des</span> <span class="pre">matières::</span></code>’.
+Comme beaucoup d’autres langages de Markup, il prend également en charge le style en ligne,
+les tableaux, les en-têtes et les blocs littéraux.</p>
+<p>Dans Jupyter Notebooks, malheureusement, seul Markdown est pris en charge, sinon RST est génial.</p>
+</section>
+</section>
+<section id="localisation">
+<h2>Localisation<a class="headerlink" href="#localisation" title="Link to this heading"></a></h2>
+<p>Ce projet est destiné à être traduit en Français et en anglais à un minimum tel qu’il est
+utilisé dans l’ensemble du gouvernement du Canada, qui possède ces deux langues officielles.</p>
+<p>La documentation Française a la même structure de fichiers et les mêmes noms que la documentation anglaise, mais
+est placé dans le sous-répertoire fr/.  C’est plus facile si la documentation est produite
+dans les deux langues à la fois. Utilisez au moins un outil de traduction automatique (tel que
+<a class="reference external" href="https://deepl.com">deepl</a>) pour fournir un point de départ. Même procédure pour les francophones.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="D%C3%A9veloppement.html" class="btn btn-neutral float-left" title="Guide du développeur MetPX-Sarracenia" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Publication.html" class="btn btn-neutral float-right" title="Publier une Version de MetPX-Sarracenia" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

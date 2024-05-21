@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.mdelaylatest &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.mdelaylatest</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.mdelaylatest</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">timestr2flt</span><span class="p">,</span> <span class="n">nowflt</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MDelayLatest">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.mdelaylatest.MDelayLatest">[docs]</a>
+<span class="k">class</span> <span class="nc">MDelayLatest</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      This plugin delays processing of messages by *message_delay* seconds</span>
+<span class="sd">      If multiple versions of a file are published within the interval, only the latest one</span>
+<span class="sd">      will be published.</span>
+
+
+<span class="sd">      mdelay 30</span>
+<span class="sd">      flowcb sarracenia.flowcb.mdelaylatest.MDelayLatest</span>
+
+<span class="sd">      every message will be at least 30 seconds old before it is forwarded by this plugin.</span>
+<span class="sd">      In the meantime, the message is placed on the retry queue by marking it as failed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MDelayLatest.__init__">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.mdelaylatest.MDelayLatest.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_requested</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logFormat</span><span class="p">,</span>
+                            <span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;mdelay&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mdelay set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">mdelay</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+
+        <span class="c1"># Check message in ok list</span>
+        <span class="c1"># get time at beginning of loop, less system calls.</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
+
+        <span class="n">new_incoming</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">m1</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+            <span class="c1">#logger.info(&#39;1 relPath=%s&#39; %  m1[&#39;relPath&#39;])</span>
+            <span class="c1">#logger.info(&#39;1 pubTime=%s&#39; %  m1[&#39;pubTime&#39;])</span>
+            <span class="n">elapsedtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timestr2flt</span><span class="p">(</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
+            <span class="c1">#logger.info(&#39;1 Time=%s&#39; %  str(elapsedtime))</span>
+            <span class="n">wait</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># If same message found in the delay list, replaced it with the one in ok list.</span>
+            <span class="n">new_ok_delay</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">m2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">m1</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">m2</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;intermediate version suppressed: </span><span class="si">{</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+                    <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+                    <span class="n">wait</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+                    <span class="c1">#new_incoming.append(m1)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span> <span class="o">=</span> <span class="n">new_ok_delay</span>
+
+            <span class="c1"># If it&#39;s new, put it in delay list too.</span>
+            <span class="c1"># else if replacing a message in delay, do nothing</span>
+            <span class="c1"># else put it back to incoming</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">wait</span> <span class="ow">and</span> <span class="n">elapsedtime</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">mdelay</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">wait</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+
+        <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">new_incoming</span>
+
+        <span class="c1"># Check message in the delay list</span>
+        <span class="n">new_ok_delay</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">m1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="p">:</span>
+            <span class="c1">#logger.info(&#39;2 relPath=%s&#39; %  m1[&#39;relPath&#39;])</span>
+            <span class="c1">#logger.info(&#39;2 pubTime=%s&#39; %  m1[&#39;pubTime&#39;])</span>
+            <span class="n">elapsedtime</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="n">timestr2flt</span><span class="p">(</span><span class="n">m1</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
+            <span class="c1">#logger.info(&#39;Time=%s&#39; %  str(elapsedtime))</span>
+            <span class="c1"># if it&#39;s time, the message is putting back to the ok list to publish</span>
+            <span class="k">if</span> <span class="n">elapsedtime</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">mdelay</span><span class="p">:</span>
+                <span class="c1">#logger.info(&#39;OK&#39;)</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_ok_delay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span> <span class="o">=</span> <span class="n">new_ok_delay</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_requested</span><span class="p">:</span>
+            <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;stop requested, ok_delay queue drained&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;suppressions=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span><span class="si">}</span><span class="s1"> currently delay queue length:</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ok_delay</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppressions</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

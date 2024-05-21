@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sr3_Post &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SR3 CREDENTIALS" href="sr3_credentials.7.html" />
+    <link rel="prev" title="SR_CPUMP" href="sr3_cpump.1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Référence</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sr3.1.html">SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_cpump.1.html">Sr3_cpump C Page de Référence</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">sr3_post CLI poster</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#publie-la-disponibilitee-d-un-fichier-aux-abonnes">Publie la Disponibilitée d’un fichier aux abonnés.</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr3_post</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Référence</a> &raquo;</li>
+      <li>Sr3_Post</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Reference/sr3_post.1.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr3-post">
+<h1>Sr3_Post<a class="headerlink" href="#sr3-post" title="Link to this heading"></a></h1>
+<section id="publie-la-disponibilitee-d-un-fichier-aux-abonnes">
+<h2>Publie la Disponibilitée d’un fichier aux abonnés.<a class="headerlink" href="#publie-la-disponibilitee-d-un-fichier-aux-abonnes" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPx Sarracenia Suite</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p><strong>sr3_post|sr3_cpost</strong> [ <em>OPTIONS</em> ][ <em>-pb|–post_broker broker</em> ][ <em>-pbu|–post_baseUrl url[,url]…*</em> ]
+[ <em>-p|–path ] path1 path2…pathN</em> ]</p>
+<p>( aussi <strong>libsrshim.so</strong> )</p>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p><strong>sr3_post</strong> affiche la disponibilité d’un fichier en créant une annonce.
+Contrairement à la plupart des autres composants de Sarracenia qui agissent comme des démons,
+sr3_post est une invocation unique qui publie et quitte.
+Pour faire des fichiers
+disponible pour les abonnés, <strong>sr3_post</strong> envoie les annonces
+à un serveur AMQP, également appelé courtier (broker).</p>
+<p>Cette page de manuel principalement sur l’implémentation en python,
+il existe également une implémentation en C qui fonctionne presque identiquement.
+Les différences sont:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>les plugins ne sont pas supportés dans l’implémentation en C.</p></li>
+<li><p>L’implémentation en C utilise des expressions régulières POSIX, la grammaire python3 est légèrement différente.</p></li>
+<li><dl class="simple">
+<dt>lorsque l’option <em>sleep</em> (utilisée uniquement dans l’implémentation C) est définie comme &gt; 0,</dt><dd><p>il transforme sr_cpost en démon qui fonctionne comme le composant <em>watch</em>
+de <a class="reference external" href="sr3.1.html">sr3(1)</a>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<section id="options-obligatoires">
+<h4>Options obligatoires<a class="headerlink" href="#options-obligatoires" title="Link to this heading"></a></h4>
+<p>L’option <em>post_base_url url,url,…</em> spécifie l’emplacement
+où les abonnés téléchargeront le fichier. Il y a généralement un article (post) par fichier.
+le format de l’argument des options de <em>post_base_url</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">ftp</span><span class="o">|</span><span class="n">http</span><span class="o">|</span><span class="n">sftp</span><span class="p">]:</span><span class="o">//</span><span class="p">[</span><span class="n">user</span><span class="p">[:</span><span class="n">password</span><span class="p">]</span><span class="o">@</span><span class="p">]</span><span class="n">host</span><span class="p">[:</span><span class="n">port</span><span class="p">]</span><span class="o">/</span>
+<span class="n">ou</span>
+<span class="n">file</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>Lorsque plusieurs URL sont données sous forme de liste séparée par des virgules à <em>post_base_url</em>,
+les URL fournies sont utilisées dans le style round-robin pour fournir une forme grossière d’équilibrage de charge.</p>
+<p>L’option [<em>-p|–path path1 path2 .. pathN</em>] spécifie le chemin des fichiers
+Être annoncé. Il y a généralement un article par fichier.
+Format de l’argument pour les option <em>path</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">absolute_path_to_the</span><span class="o">/</span><span class="n">filename</span>
+<span class="n">ou</span>
+<span class="n">relative_path_to_the</span><span class="o">/</span><span class="n">filename</span>
+</pre></div>
+</div>
+<p>L’option <em>-pipe</em> peut être spécifiée pour que sr3_post lise les noms de chemin des fichiers également à partir
+de l’entrée standard.</p>
+<p>Un exemple d’invocation de <em>sr3_post</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">amqp</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseUrl</span> <span class="n">sftp</span><span class="p">:</span><span class="o">//</span><span class="n">stanley</span><span class="nd">@mysftpserver</span><span class="o">.</span><span class="n">com</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">shared</span><span class="o">/</span><span class="n">products</span><span class="o">/</span><span class="n">foo</span>
+</pre></div>
+</div>
+<p>Par défaut, sr3_post lit le fichier /data/shared/products/foo et calcule sa somme de contrôle (checksum).
+Il crée ensuite un message de publication, se connecte à broker.com en tant qu’utilisateur “invité” (informations d’identification par défaut)
+et envoie l’article au vhost par défaut ‘/’ et à l’échange par défaut. L’échange par défaut
+est le préfixe <em>xs_</em> suivi du nom d’utilisateur du courtier, donc par défaut ‘xs_guest’.
+Un abonné peut télécharger le fichier /data/shared/products/foo en s’authentifiant en tant qu’utilisateur stanley
+sur mysftpserver.com en utilisant le protocole sftp vers broker.com en supposant qu’il possède des informations d’identification appropriées.
+La sortie de la commande est</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Published</span> <span class="n">xs_guest</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">products</span><span class="o">.</span><span class="n">foo</span> <span class="s1">&#39;20150813161959.854 sftp://stanley@mysftpserver.com/ /data/shared/products/foo&#39;</span> <span class="nb">sum</span><span class="o">=</span><span class="n">d</span><span class="p">,</span><span class="mi">82</span><span class="n">edc8eb735fd99598a1fe04541f558d</span> <span class="n">parts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">4574</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>Dans MetPX-Sarracenia, chaque article est publié sous un certain sujet.
+La ligne de la sortie d’exécution (log) commence par ‘[INFO]’, suivi du <strong>sujet</strong> de
+l’article. Les rubriques dans <em>AMQP</em> sont des champs séparés par un point. Le sujet complet commence par
+un topicPrefix (voir option), version <em>V02</em>, une action <em>post</em>,
+suivi d’un sous-thème (voir option) ici la valeur par défaut, le chemin du fichier séparé par des points
+<em>data.shared.products.foo</em>.</p>
+<p>Le deuxième champ de la ligne de la sortie d’exécution est l’avis de message. Il se compose d’un horodatage (timestamp)
+<em>20150813161959.854</em>, et l’URL source du fichier dans les 2 derniers champs.</p>
+<p>Le reste des informations est stocké dans des en-têtes de message AMQP, constitués de paires clé=valeur.
+L’en-tête <em>sum=d,82edc8eb735fd99598a1fe04541f558d</em> donne l’informations surl’empreinte du fichier (ou somme de contrôle).
+Ici, <em>d</em> signifie somme de contrôle md5 effectuée sur les données, et <em>82edc8eb735fd99598a1fe04541f558d</em>
+est la valeur de la somme de contrôle. Le <em>parts=1,4574,1,0,0</em> indiquent que le fichier est disponible en 1 partie de 4574 octets
+(la taille du fichier.) Le <em>1,0,0</em> restant n’est pas utilisé pour les transferts de fichiers avec une seule partie.</p>
+<p>Un autre exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3_post</span> <span class="o">--</span><span class="n">post_broker</span> <span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">broker</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">post_baseDir</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">web</span><span class="o">/</span><span class="n">public_data</span> <span class="o">--</span><span class="n">postBaseUrl</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span> <span class="o">--</span><span class="n">path</span> <span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="n">SACN32_CWAO_123456</span>
+</pre></div>
+</div>
+<p>Par défaut, sr3_post lit le fichier /data/web/public_data/bulletins/alphanumeric/SACN32_CWAO_123456
+(en concaténant le post_base_dir et le chemin relatif de l’url source pour obtenir le chemin du fichier local)
+et calcule sa somme de contrôle. Il crée ensuite un message d’article, se connecte à broker.com en tant qu’utilisateur “invité”
+(informations d’identification par défaut) et envoie l’article au vhost par défaut ‘/’ et échange ‘xs_guest’, résultant
+à la publication au broker MQTT sous le topic : <em>xs_guest/v03/bulletins/alphanumeric/SACN32_CWAO_123456</em></p>
+<p>Un abonné peut télécharger le fichier <a class="reference external" href="http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456">http://dd.weather.gc.ca/bulletins/alphanumeric/SACN32_CWAO_123456</a> en utilisant http
+sans authentification sur dd.meteo.gc.ca.</p>
+</section>
+</section>
+<section id="arguments-et-options">
+<h3>ARGUMENTS ET OPTIONS<a class="headerlink" href="#arguments-et-options" title="Link to this heading"></a></h3>
+<p>Veuillez vous référer à la page de manuel <a class="reference external" href="sr3_options(7)">sr3_options(7)</a> pour une description détaillée de
+tous les paramètres et les méthodes pour les spécifier.</p>
+<section id="path-path1-path2-pathn">
+<h4>path path1 path2 … pathN<a class="headerlink" href="#path-path1-path2-pathn" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p><strong>sr3_post</strong> évalue les chemins du système de fichiers à partir de l’option <strong>path</strong>
+et éventuellement le <strong>baseDir</strong> si l’option est utilisée.</p>
+<p>Si un chemin définit un fichier, ce fichier est annoncé.</p>
+<p>Si un chemin définit un répertoire, alors tous les fichiers de ce répertoire sont
+annoncés…</p>
+</div></blockquote>
+</section>
+<section id="post-broker-broker">
+<h4>post_broker &lt;broker&gt;<a class="headerlink" href="#post-broker-broker" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>le courtier auquel l’article est envoyé.</p>
+</div></blockquote>
+</section>
+<section id="post-basedir-path">
+<h4>post_baseDir &lt;path&gt;<a class="headerlink" href="#post-basedir-path" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>L’option <em>base_dir</em> fournit le chemin du répertoire qui,
+lorsqu’ils sont combinés (ou trouvés) dans le <em>chemin</em> donné,
+donne le chemin local absolu du fichier de données à afficher.
+La partie racine du document du chemin local sera supprimée de l’annonce publiée.
+Pour les URL sftp : il peut être approprié de spécifier un chemin relatif à un compte utilisateur.
+Un exemple de cette utilisation serait : -dr ~user -post_base_url sftp:user&#64;host
+Pour les URL de fichiers: base_dir n’est généralement pas approprié. Pour afficher un chemin absolu,
+omettez le paramètre -dr et spécifiez simplement le chemin complet comme argument.</p>
+</div></blockquote>
+</section>
+<section id="post-exchange-exchange">
+<h4>post_exchange &lt;exchange&gt;<a class="headerlink" href="#post-exchange-exchange" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Sr_post publie sur un échange nommé <em>xs_</em>”broker_username” par défaut.
+Utilisez l’option <em>post_exchange</em> pour remplacer cette valeur par défaut.</p>
+</div></blockquote>
+</section>
+<section id="h-help">
+<h4>-h|–help<a class="headerlink" href="#h-help" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Afficher les options du programme.</p>
+</div></blockquote>
+</section>
+<section id="blocksize-value">
+<h4>blocksize &lt;value&gt;<a class="headerlink" href="#blocksize-value" title="Link to this heading"></a></h4>
+<p><strong>Inutile pour le moment, sera rétabli après la version v3</strong></p>
+<p>Cette option contrôle la stratégie de partitionnement utilisée pour publier les fichiers.
+La valeur doit être l’une des suivantes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="o">-</span> <span class="n">calcule</span> <span class="n">automatiquement</span> <span class="n">une</span> <span class="n">stratégie</span> <span class="n">de</span> <span class="n">partitionnement</span> <span class="n">appropriée</span> <span class="p">(</span><span class="n">par</span> <span class="n">défaut</span><span class="p">)</span>
+<span class="mi">1</span> <span class="o">-</span> <span class="n">toujours</span> <span class="n">envoyer</span> <span class="n">des</span> <span class="n">fichiers</span> <span class="n">entiers</span> <span class="n">en</span> <span class="n">une</span> <span class="n">seule</span> <span class="n">partie</span><span class="o">.</span>
+<span class="o">&lt;</span><span class="n">blocksize</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">utilise</span> <span class="n">une</span> <span class="n">taille</span> <span class="n">de</span> <span class="n">partition</span> <span class="n">fixe</span> <span class="p">(</span><span class="n">taille</span> <span class="n">d</span><span class="s1">&#39;exemple : 1M )</span>
+</pre></div>
+</div>
+<p>Les fichiers peuvent être annoncés en plusieurs parties. Chaque partie a une somme de contrôle distincte.
+Les pièces et leurs sommes de contrôle sont stockées dans le cache. Les partitions peuvent traverser
+le réseau séparément et en parallèle. Lorsque les fichiers changent, les transferts sont
+optimisé en n’envoyant que les pièces qui ont changé.</p>
+<p>La valeur de <em>blocksize</em> est un nombre entier pouvant être suivi de la lettre <em>[B|K|M|G|T]</em> signifiant:
+pour Octets, Kilooctets, Mégaoctets, Gigaoctets, Teraoctets respectivement. Toutes ces références sont des puissances de 2.
+Les fichiers plus gros que cette valeur seront annoncés avec des parties de taille <em>blocksize</em>.</p>
+<p>L’algorithme d’autocomputation détermine une taille de bloc qui encourage un nombre raisonnable de pièces
+pour des fichiers de différentes tailles. Comme la taille du fichier varie, le calcul automatique donnera différents
+résultats. Cela entraînera le renvoi d’informations qui n’ont pas changé en tant que partitions d’un autre
+size aura des sommes différentes et sera donc étiqueté comme différent.</p>
+<p>Par défaut, <strong>sr_post</strong> calcule une taille de bloc raisonnable qui dépend de la taille du fichier.
+L’utilisateur peut définir une <em>blocksize</em> fixe si c’est mieux pour ses produits ou s’il veut
+tirer avantage du mécanisme de <strong>cache</strong>. Dans les cas où des fichiers volumineux sont ajoutés, par exemple,
+il est logique de spécifier une taille de partition fixe afin que les blocs du cache soient les
+mêmes blocs que ceux générés lorsque le fichier est plus volumineux, et ainsi éviter la retransmission. Alors utiliser
+‘10M’ aurait du sens dans ce cas.</p>
+<p>Dans les cas où un téléchargeur personnalisé est utilisé qui ne comprend pas le partitionnement, il est nécessaire
+d’éviter que le fichier ne soit divisé en plusieurs parties. Il faudrait donc spécifier ‘1’ pour forcer l’envoi de tous les fichiers
+comme une seule pièce.</p>
+</section>
+<section id="post-baseurl-url">
+<h4>post_baseUrl &lt;url&gt;<a class="headerlink" href="#post-baseurl-url" title="Link to this heading"></a></h4>
+<p>L’option <strong>url</strong> définit le protocole, les informations d’identification, l’hôte et le port
+où le produit peut être récupéré.</p>
+<p>L’annonce AMQP est composée des trois champs, l’heure de l’annonce,
+cette valeur <strong>url</strong> et le <strong>chemin</strong> donné vers lequel a été retiré du <em>base_dir</em>
+si nécessaire.</p>
+<p>La concaténation des deux derniers champs de l’annonce définit
+ce que les abonnés utiliseront pour télécharger le produit.</p>
+</section>
+<section id="reset">
+<h4>reset<a class="headerlink" href="#reset" title="Link to this heading"></a></h4>
+<p>Quand on a utilisé <strong>–suppress_duplicates|–cache</strong>, cette option vide le cache.</p>
+</section>
+<section id="rename-path">
+<h4>rename &lt;path&gt;<a class="headerlink" href="#rename-path" title="Link to this heading"></a></h4>
+<p>Avec l’option <em>renommer</em>, l’utilisateur peut suggérer un chemin de destination vers ses fichiers. Si le chemin donné
+se termine par ‘/’, il suggère un chemin de répertoire… Si ce n’est pas le cas, l’option spécifie un changement de nom de fichier.</p>
+<p><em>sr3_post</em>, et <em>sr3 watch</em> utilisent un modèle basé sur un fichier basé sur un processus et un cache disque,
+dont la conception est à filetage unique. La bibliothèque shim est généralement utilisée par de nombreux processus
+à la fois, et aurait des problèmes de conflit de ressources et/ou de corruption avec le cache.
+La bibliothèque shim a donc un cache purement basé sur la mémoire, réglable avec
+les options de shim_ suivantes.</p>
+</section>
+<section id="shim-defer-posting-to-exit-experimental">
+<h4>shim_defer_posting_to_exit EXPERIMENTAL<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Repousse la publication du fichier jusqu’à la fin du processus.
+Dans les cas où un même fichier est ouvert et ajouté à plusieurs reprises, ce
+paramètre peut éviter les publications redondantes. (par défaut: Faux)</p>
+</div></blockquote>
+</section>
+<section id="shim-post-minterval-interval-experimental">
+<h4>shim_post_minterval <em>interval</em> EXPERIMENTAL<a class="headerlink" href="#shim-post-minterval-interval-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Si un fichier est ouvert en écriture et fermé plusieurs fois dans l’intervalle,
+il ne sera affiché qu’une seule fois. Lorsqu’un fichier est écrit plusieurs fois, en particulier
+dans un script shell, cela fait de nombreux messages et le script shell affecte les performances.
+les abonnés ne pourront en aucun cas faire des copies assez rapidement, donc
+il y a peu d’avantages, par exemple, à 100 messages du même fichier dans la même seconde.
+Il est sage de fixer une limite supérieure à la fréquence de publication d’un fichier donné. (par défaut : 5s)
+Remarque: si un fichier est toujours ouvert ou a été fermé après sa publication précédente, alors
+lors du traitement de la sortie du processus, il sera réenregistré, même si l’intervalle
+n’est pas respecté, afin de fournir le message final le plus précis.</p>
+</div></blockquote>
+</section>
+<section id="shim-skip-parent-open-files-experimental">
+<h4>shim_skip_parent_open_files EXPERIMENTAL<a class="headerlink" href="#shim-skip-parent-open-files-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>L’option shim_skip_ppid_open_files signifie qu’un processus vérifie
+si le processus parent a le même fichier ouvert, et n’affiche
+pas si c’est le cas. (par défaut: Vrai)</p>
+</div></blockquote>
+</section>
+<section id="sleep-time">
+<h4>sleep <em>time</em><a class="headerlink" href="#sleep-time" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p><strong>Cette option n’est disponible que dans l’implémentation c (sr_cpost)</strong></p>
+<p>Lorsque l’option est définie, elle transforme cpost en sr3 watch, <em>sleep</em> étant le temps d’attente entre
+la génération des événements. Lorsque les fichiers sont écrits fréquemment, il est contre-productif de produire un message pour
+chaque changement, car cela peut produire un flux continu de changements où les transferts ne peuvent pas être effectués assez rapidement
+pour suivre. Dans de telles circonstances, on peut regrouper toutes les modifications apportées à un fichier
+en <em>sleep</em>, et produisez un seul message.</p>
+<dl class="simple">
+<dt>REMARQUE::</dt><dd><p>dans sr_cpost, lorsqu’il est combiné avec force_polling (voir <a class="reference external" href="sr3.1.html">sr3 watch(1)</a> ) l’intervalle de
+sommeil ne doit pas être inférieur à environ cinq secondes, car il peut manquer la publication de certains fichiers.</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+<section id="subtopic-key">
+<h4>subtopic &lt;key&gt;<a class="headerlink" href="#subtopic-key" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Le sous-thème par défaut peut être remplacé par l’option <em>subtopic</em>.</p>
+</div></blockquote>
+</section>
+<section id="nodupe-ttl-on-off-999">
+<h4>nodupe_ttl on|off|999<a class="headerlink" href="#nodupe-ttl-on-off-999" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Évitez de publier des doublons en comparant chaque fichier à ceux vus lors de l’inverval
+<em>suppress_duplicates</em>. Lors de la publication de répertoires, ceci entraînera
+<em>sr_post</em> a publier uniquement les fichiers (ou parties de fichiers) qui étaient nouveaux lorsqu’ils sont invoqués à nouveau.</p>
+<p>Au fil du temps, le nombre de fichiers dans le cache peut devenir trop grand, et il est donc nettoyé des
+anciennes entrées. La durée de vie par défaut d’une entrée de cache est de cinq minutes (300 secondes). Cette
+durée de vie peut être remplacé par un intervalle de temps comme argument (le 999 ci-dessus).</p>
+<p>Si la suppression des doublons est utilisée, il faut s’assurer qu’un <strong>blocksize</strong> fixe est
+utilisé (défini sur une valeur autre que 0) car sinon la taille de bloc variera à mesure que les fichiers grandissent,
+et beaucoup de transfert de données en double en résultera.</p>
+</div></blockquote>
+</section>
+<section id="identity-method-value">
+<h4>identity &lt;method&gt;[,&lt;value&gt;]<a class="headerlink" href="#identity-method-value" title="Link to this heading"></a></h4>
+<p>Toutes les publications de fichiers incluent une somme de contrôle. L’option <em>sum</em> spécifie comment la calculer.
+C’est une chaîne séparée par des virgules. Les méthodes d’intégrité valides sont</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cod</span><span class="p">,</span><span class="n">x</span> <span class="o">-</span> <span class="n">Calculer</span> <span class="n">au</span> <span class="n">téléchargement</span> <span class="n">en</span> <span class="n">appliquant</span> <span class="n">x</span>
+<span class="n">sha512</span> <span class="o">-</span> <span class="n">faire</span> <span class="n">SHA512</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span> <span class="p">(</span><span class="n">par</span> <span class="n">défaut</span><span class="p">)</span>
+<span class="n">md5</span> <span class="o">-</span> <span class="n">faire</span> <span class="n">md5sum</span> <span class="n">sur</span> <span class="n">le</span> <span class="n">contenu</span> <span class="n">du</span> <span class="n">fichier</span>
+<span class="n">random</span> <span class="o">-</span> <span class="n">inventez</span> <span class="n">une</span> <span class="n">valeur</span> <span class="n">aléatoire</span> <span class="n">pour</span> <span class="n">chaque</span> <span class="n">publication</span><span class="o">.</span>
+<span class="n">arbitrary</span> <span class="o">-</span> <span class="n">appliquer</span> <span class="n">la</span> <span class="n">valeur</span> <span class="n">fixe</span> <span class="n">littérale</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Les sommes de contrôle sont stockées dans les attributs de fichier étendus (ou Alternate Data Streams sous Windows).
+Ceci est nécessaire pour que la méthode <em>arbitrary</em> fonctionne, puisque nous n’avons aucun moyen de la calculer.</p>
+</div>
+</section>
+<section id="topicprefix-key">
+<h4>topicPrefix &lt;key&gt;<a class="headerlink" href="#topicprefix-key" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p><em>Pas habituellement utilisé</em>
+Par défaut, le topic est composé du topicPrefix par défaut : version <em>V03</em>
+suivi du sous-sujet par défaut: le chemin du fichier séparé par des points (le point étant le séparateur de sujet pour amqp).
+Vous pouvez écraser le topicPrefix en définissant cette option.</p>
+<p><em>Not usually used</em>
+By default, the topic is made of the default topicPrefix : version <em>V03</em>
+followed by the default subtopic: the file path separated with dots (dot being the topic separator for amqp).
+You can overwrite the topicPrefix by setting this option.</p>
+</div></blockquote>
+</section>
+<section id="header-name-value">
+<h4>header &lt;name&gt;=&lt;value&gt;<a class="headerlink" href="#header-name-value" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>Ajoutez une en-tête &lt;name&gt; avec la valeur donnée aux annonces. Utilisé pour transmettre des chaînes en tant que métadonnées.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="utilisation-de-la-librairie-shim">
+<h3>UTILISATION DE LA LIBRAIRIE SHIM<a class="headerlink" href="#utilisation-de-la-librairie-shim" title="Link to this heading"></a></h3>
+<p>Plutôt qu’invoquer un sr3_post pour poster chaque fichier à publier, on peut avoir des processus automatiquement
+publiez les fichiers qu’ils écrivent en leur faisant utiliser une bibliothèque de shim interceptant certains appels d’i/o de fichiers vers la libc
+et le noyau. Pour activer la bibliothèque shim, dans l’environnement shell, ajoutez</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SR_POST_CONFIG</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">export</span> <span class="n">LD_PRELOAD</span><span class="o">=</span><span class="s2">&quot;libsrshim.so.1&quot;</span>
+</pre></div>
+</div>
+<p>où <em>shimpost.conf</em> est un fichier de configuration sr_cpost dans
+le répertoire ~/.config/sarra/post/. Un fichier de configuration sr_cpost est le même
+qu’un sr_post, sauf que les plugins ne sont pas pris en charge. Avec la
+bibliothèque shim en place, chaque fois qu’un fichier est écrit, les clauses <em>accept/reject</em> du
+fichier shimpost.conf sont consultés, et s’il est accepté, le fichier est affiché
+comme ce serait par sr_post. Si vous utilisez ssh, où l’on veut des fichiers
+scp à publier, il faut inclure l’activation dans le .bashrc et y passer
+la configuration à utiliser</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expoert</span> <span class="n">LC_SRSHIM</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>Puis dans le ~/.bashrc sur le serveur exécutant la commande à distance</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ &quot;$LC_SRSHIM&quot; ]; then
+    export SR_POST_CONFIG=$LC_SRSHIM
+    export LD_PRELOAD=&quot;libsrshim.so.1&quot;
+fi
+</pre></div>
+</div>
+<p>SSH ne transmettra que les variables d’environnement qui commencent par LC_ (locale) afin d’obtenir
+les variables passées avec un minimum d’effort, nous utilisons ce préfixe.</p>
+<section id="trucs-d-utilisation-de-shim">
+<h4>Trucs d’utilisation de shim<a class="headerlink" href="#trucs-d-utilisation-de-shim" title="Link to this heading"></a></h4>
+<p>Cette méthode de notification nécessite une certaine configuration de l’environnement utilisateur.
+L’environnement utilisateur a besoin du jeu de variables d’environnement LD_PRELOAD
+avant le lancement du processus. Des complications qui restent telles que nous les avons
+testées depuis deux ans depuis la première mise en œuvre de la bibliothèque de shim:</p>
+<ul class="simple">
+<li><p>si nous voulons remarquer les fichiers créés par des processus scp distants (qui créent des shells sans connexion)
+alors le crochet d’environnement doit être dans .bashrc. et en utilisant un environnement
+variable qui commence par <em>LC_</em> pour que ssh transmette la valeur de configuration sans
+avoir à modifier la configuration sshd dans les distributions Linux typiques.
+( discussion complète : <a class="reference external" href="https://github.com/MetPX/sarrac/issues/66">https://github.com/MetPX/sarrac/issues/66</a> )</p></li>
+<li><p>code qui a certaines faiblesses, comme dans FORTRAN un manque d’IMPLICIT NONE
+<a class="reference external" href="https://github.com/MetPX/sarracenia/issues/69">https://github.com/MetPX/sarracenia/issues/69</a> peut planter lorsque la bibliothèque shim
+est introduit. La correction nécessaire dans ces cas a jusqu’à présent consisté à corriger
+l’application, et non la bibliothèque.
+( aussi : <a class="reference external" href="https://github.com/MetPX/sarrac/issues/12">https://github.com/MetPX/sarrac/issues/12</a> )</p></li>
+<li><p>code utilisant l’appel <em>exec</em> vers <a class="reference external" href="www.tcl.tk">tcl/tk</a>, considère par défaut tout
+sortie vers le descripteur de fichier 2 (erreur standard) comme condition d’erreur.
+ces messages peuvent être étiquetés comme priorité INFO ou WARNING, mais ils vont
+faire en sorte que l’appelant tcl indique qu’une erreur fatale s’est produite. Ajouter
+<em>-ignorestderr</em> aux invocations de <em>exec</em> évite de tels abandons injustifiés.</p></li>
+<li><p>Les scripts shell complexes peuvent avoir un impact démesuré sur les performances.
+Puisque <em>scripts shell hautes performances</em> est un oxymore, la meilleure solution,
+du point de vue des performances consiste à réécrire les scripts dans un langage de script plus efficace
+tel que python ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/15">https://github.com/MetPX/sarrac/issues/15</a> )</p></li>
+<li><p>Les bases de code qui déplacent les hiérarchies de fichiers volumineux (par exemple, <em>mv tree_with_thousands_of_files new_tree</em> )
+verra un coût beaucoup plus élevé pour cette opération, car elle est mise en œuvre comme
+un renommage de chaque fichier dans l’arborescence, plutôt qu’une seule opération sur la racine.
+Ceci est actuellement considéré comme nécessaire car la correspondance du modèle accept/reject
+peut entraîner une arborescence très différente sur la destination, plutôt que simplement
+même arbre en miroir. Voir <a class="reference internal" href="#traitement-de-renommage">Traitement de renommage</a> ci-dessous pour plus de détails.</p></li>
+<li><p><em>export SR_SHIMDEBUG=1</em> obtiendra plus de sortie que vous ne le souhaitez. utiliser avec précaution.</p></li>
+</ul>
+</section>
+<section id="traitement-de-renommage">
+<h4>Traitement de renommage<a class="headerlink" href="#traitement-de-renommage" title="Link to this heading"></a></h4>
+<p>Il est à noter que renommer le fichier n’est pas aussi simple dans le cas de la mise en miroir que dans le système opérateur
+sous-jacent. Alors que l’opération est une opération atomique unique dans un système d’exploitation, lorsque
+en utilisant les notifications, il existe des cas d’acceptation/rejet qui créent quatre effets possibles.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td colspan="2"><p>old name est:</p></td>
+</tr>
+<tr class="row-even"><td><p>new name est:</p></td>
+<td><p><em>Accepté</em></p></td>
+<td><p><em>Rejeté</em></p></td>
+</tr>
+<tr class="row-odd"><td><p><em>Accepté</em></p></td>
+<td><p>renommer</p></td>
+<td><p>copier</p></td>
+</tr>
+<tr class="row-even"><td><p><em>Rejeté</em></p></td>
+<td><p>retirer</p></td>
+<td><p>rien</p></td>
+</tr>
+</tbody>
+</table>
+<p>Lorsqu’un fichier est déplacé, deux notifications sont créées:</p>
+<ul class="simple">
+<li><p>Une notification a le nouveau nom dans le <em>relpath</em>, tout en contenant un champ <em>oldname</em>
+pointant vers l’ancien nom. Cela déclenchera des activités dans la moitié supérieure de
+la table, soit un renommage, en utilisant le champ <em>oldname</em>, soit une copie s’il n’est pas présent
+à destination.</p></li>
+<li><p>Une deuxième notification avec l’ancien nom dans <em>relpath</em> sera acceptée
+encore une fois, mais cette fois, il contiendra le champ <em>newname</em> et traite l’action de suppression.</p></li>
+</ul>
+<p>Renommer un répertoire à la racine d’un grand arbre est une opération atomique efficace
+sous Linux/Unix, la mise en miroir de cette opération nécessite la création d’une publication de renommage pour chaque fichier
+dans l’arbre, et est donc beaucoup plus cher.</p>
+</section>
+</section>
+<section id="variables-environnementales">
+<h3>VARIABLES ENVIRONNEMENTALES<a class="headerlink" href="#variables-environnementales" title="Link to this heading"></a></h3>
+<p>Dans l’implémentation C (sr_cpost), si la variable SR_CONFIG_EXAMPLES est définie, alors la directive <em>add</em> peut être utilisée
+pour copier des exemples dans le répertoire de l’utilisateur à des fins d’utilisation et/ou de personnalisation.</p>
+<p>Une entrée dans le ~/.config/sarra/default.conf (créé via sr_subscribe edit default.conf )
+pourrait être utilisé pour définir la variable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">SR_CONFIG_EXAMPLES</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+<p>la valeur doit être disponible à partir de la sortie d’une commande de liste à partir de
+l’implémentation python.</p>
+</section>
+<section id="voir-aussi">
+<h3>Voir aussi<a class="headerlink" href="#voir-aussi" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.html">sr3(1)</a> - Interface de ligne de commande principale de Sarracenia.</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - publication des annonces de fichiers (implémentation c.)</p>
+<p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - implémentation en c du composant shovel. (copier les messages)</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr3_credentials.7.html">sr3_credentials(7)</a> - Convertir les lignes du fichier journal au format .save pour recharger/renvoyer.</p>
+<p><a class="reference external" href="sr_options.7.html">sr3_options(7)</a> - les options de configuration</p>
+<p><a class="reference external" href="sr_post.7.html">sr3_post(7)</a> - le format des annonces</p>
+<p><strong>Page d’acceuil:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia: une boîte à outils de gestion du partage de données pub/sub en temps réel</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sr3_cpump.1.html" class="btn btn-neutral float-left" title="SR_CPUMP" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sr3_credentials.7.html" class="btn btn-neutral float-right" title="SR3 CREDENTIALS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

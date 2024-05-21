@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Detection Strategies &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Duplicate Suppression" href="DuplicateSuppression.html" />
+    <link rel="prev" title="Deployment Considerations" href="DeploymentConsiderations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">File Detection Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#file-detection-strategy-table">File Detection Strategy Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#shim-library-usage">SHIM LIBRARY USAGE</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#shim-usage-notes">Shim Usage Notes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rename-processing">Rename Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>File Detection Strategies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/DetectFileReady.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="file-detection-strategies">
+<h1>File Detection Strategies<a class="headerlink" href="#file-detection-strategies" title="Link to this heading"></a></h1>
+<p>The fundamental job of watch is to notice when files are available to be transferred.
+The appropriate strategy varies according to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the <strong>number of files in the tree</strong> to be monitored,</p></li>
+<li><p>the <strong>minimum time to notice changes</strong> to files that is acceptable, and</p></li>
+<li><p>the <strong>size of each file</strong> in the tree.</p></li>
+</ul>
+</div></blockquote>
+<p><strong>The easiest tree to monitor is the smallest one.</strong> With a single directory to
+watch where one is posting for an <em>sr_sarra</em> component, then use of the
+<em>delete</em> option will keep the number of files in directory at any one point
+small and minimize the time to notice new ones. In such optimal conditions,
+noticing files in a hundredth of a second is reasonable to expect. Any method
+will work well for such trees, but the watch defaults (inotify) are usually
+the lowest overhead.</p>
+<p>When the tree gets large, the decision can change based on a number of factors,
+described in the following table. It describes the approaches which will be lowest
+latency and highest throughput first, and works its way to the least efficient
+options that insert the most delay per detection.</p>
+<section id="file-detection-strategy-table">
+<h2>File Detection Strategy Table<a class="headerlink" href="#file-detection-strategy-table" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="3"><p>File Detection Strategies (Order: Fastest to Slowest )
+Faster Methods Work for Larger Trees.</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Application</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>Implicit
+posting
+using shim
+library</p>
+<p>(LD_PRELOAD)</p>
+<p>(in C)</p>
+</td>
+<td><dl class="simple">
+<dt>File delivery advertised by libsrshim</dt><dd><ul class="simple">
+<li><p>requires C package.</p></li>
+<li><p>export LD_PRELOAD=libsrshim.so.1</p></li>
+<li><p>must tune rejects as everything
+might be posted.</p></li>
+<li><p>works on any size file tree.</p></li>
+<li><p>very multi-threaded.</p></li>
+<li><p>I/O by writer (better localized)</p></li>
+<li><p>very multi-threaded (user processes)</p></li>
+</ul>
+</dd>
+</dl>
+</td>
+<td><p>Many user jobs which cannot be
+modified to post explicitly.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>multi-million file trees.</p></li>
+<li><p>most efficient.</p></li>
+<li><p>more complicated to setup.</p></li>
+<li><p>use where python3 not available.</p></li>
+<li><p>no watch needed.</p></li>
+<li><p>no plugins.</p></li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-even"><td><p>Explicit
+posting by
+clients</p>
+<p>C: sr_cpost
+or
+Python:
+sr_post</p>
+</td>
+<td><p>File delivery advertised by
+<a class="reference external" href="sr_post.1.rst">sr_post(1)</a>
+or other sr_ components
+after file writing complete.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>poster builds checksums</p></li>
+<li><p>fewer round trips (no renames)</p></li>
+<li><p>only a little slower than shim.</p></li>
+<li><p>no directory scanning.</p></li>
+<li><p>many sr_posts can run at once.</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>User posts only when file is complete.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>user has finest grain control.</p></li>
+<li><p>usually best.</p></li>
+<li><p>if available, do not use sr_watch.</p></li>
+<li><p>requires explicit posting by user
+scripts/jobs.</p></li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_cpost</p>
+<p>(in C)</p>
+</td>
+<td><p>works like watch if sleep &gt; 0</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>faster than watch</p></li>
+<li><p>uses less memory than sr_watch.</p></li>
+<li><p>practical with a bit bigger trees.</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><ul class="simple">
+<li><p>where python3 is hard to get.</p></li>
+<li><p>where speed is critical.</p></li>
+<li><p>where plugins not needed.</p></li>
+<li><p>same issues with tree size
+as sr_watch, just a little later.
+(see following methods)</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>sr_watch with
+reject
+: .*\.tmp$
+(suffix)</p>
+<blockquote>
+<div><p>(default)</p>
+</div></blockquote>
+<p>(in Python)</p>
+</td>
+<td><p>Files transferred with a <em>.tmp</em> suffix.
+When complete, renamed without suffix.
+Actual suffix is settable.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>requires extra round trips for
+rename (a little slower)</p></li>
+<li><p>Assume 1500 limited to files/second</p></li>
+<li><p>Large trees mean long startup.</p></li>
+<li><p>each node in a cluster may need
+to run an instance</p></li>
+<li><p>each watch single threaded.</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>Receiving from most other systems
+(.tmp support built-in)
+Use to receive from Sundew.</p>
+<p>best choice for most trees on a
+single server or workstation. Full
+plugin support.</p>
+<p>works great with 10000 files
+only a few seconds startup.</p>
+<p>too slow for millions of files.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>sr_watch with
+reject
+^\..*
+(Prefix)</p></td>
+<td><p>Use Linux convention to <em>hide</em> files.
+Prefix names with ‘.’
+that need that. (compatibility)
+same performance as previous method.</p></td>
+<td><p>Sending to systems that
+do not support suffix.</p></td>
+</tr>
+<tr class="row-even"><td><p>sr_watch with
+inflight
+number
+(mtime)</p>
+<p>Alternate
+setting</p>
+<p>fileAgeMin</p>
+</td>
+<td><p>Minimum age (modification time)
+of the file before it is considered
+complete. (aka: fileAgeMin)</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Adds delay in every transfer.</p></li>
+<li><p>Vulnerable to network failures.</p></li>
+<li><p>Vulnerable to clock skew.</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>Last choice, guarantees delay only if
+no other method works.</p>
+<p>Receiving from uncooperative
+sources.</p>
+<p>(ok choice with PDS)</p>
+<p>If a process is re-writing a file
+often, can use mtime to smooth out
+the i/o pattern, by slowing posts.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>force_polling
+using reject
+or mtime
+methods above</p></td>
+<td><p>As per above 3, but uses plain old
+directory listings.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Large trees means slower to notice
+new files</p></li>
+<li><p>should work anywhere.</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>Only use when INOTIFY has some sort
+of issue, such as cluster file
+system in a supercomputer.</p>
+<p>needed on NFS shares with multiple
+writing nodes.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>sr_watch is sr3_post with the added <em>sleep</em> option that will cause it to loop
+over directories given as arguments.  sr3_cpost is a C version that functions
+identically, except it is faster and uses much less memory, at the cost of the
+loss of plugin support.  With a watch (and sr3_cpost), the default method of
+noticing changes in directories uses OS specific mechanisms (on Linux: INOTIFY)
+to recognize changes without having to scan the entire directory tree manually.
+Once primed, file changes are noticed instantaneously, but requires an
+initial walk across the tree, <em>a priming pass</em>.</p>
+<p>For example, <strong>assume a server can examine 1500 files/second</strong>. If a <strong>medium
+sized tree is 30,000 files, then it will take 20 seconds for a priming pass</strong>.
+Using the fastest method available, one must assume that on startup for such a
+directory tree it will take 20 seconds or so before it starts reliably posting
+all files in the tree. After that initial scan, files are noticed with
+sub-second latency.  So a <strong>sleep of 0.1 (check for file changes every tenth
+of a second) is reasonable, as long as we accept the intial priming pass.</strong>
+If one selects <strong>force_polling</strong> option, then that 20 second delay is incurred
+for each polling pass, plus the time to perform the posting itself. <strong>For the
+same tree, a *sleep* setting of 30 seconds would be the minimum to recommend.
+Expect that files will be noticed about 1.5* the *sleep* settings on average.</strong>
+In this example, about when they are about 45 seconds. Some will be picked up
+sooner, others later. Apart from special cases where the default method misses
+files, it is much slower on medium sized trees than the default and should not
+be used if timeliness is a concern.</p>
+<p>In supercomputing clusters, distributed files systems are used, and the OS
+optimized methods for recognizing file modifications (INOTIFY on Linux) do not
+cross node boundaries. To use watch with the default strategy on a
+directory in a compute cluster, one usually must have a watch process
+running on every node. If that is undesirable, then one can deploy it on a
+single node with <em>force_polling</em> but the timing will be constrained by the
+directory size.</p>
+<p>As the tree being monitored grows in size, sr_watch’s latency on startup grows,
+and if polling is used the latency to notice file modifications will grow as
+well. For example, with a tree with 1 million files, one should expect, at best,
+a startup latency of 11 minutes. If using polling, then a reasonable expectation
+of the time it takes to notice new files would be in the 16 minute range.</p>
+<p>If the performance above is not sufficient, then one needs to consider the use
+of the shim library instead of sr_watch. First, install the C version of
+Sarracenia, then set the environment for all processes writing files that
+need to be posted to call it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SR_POST_CONFIG</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">export</span> <span class="n">LD_PRELOAD</span><span class="o">=</span><span class="s2">&quot;libsrshim.so.1&quot;</span>
+</pre></div>
+</div>
+<p>where <em>shimpost.conf</em> is an sr_cpost configuration file in
+the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
+as an sr3_post one, except that plugins are not supported.  With the shim
+library in place, whenever a file is written, the <em>accept/reject</em> clauses of
+the shimpost.conf file are consulted, and if accepted, the file is posted just
+as it would be by sr_watch.</p>
+<p>So far, the discussion has been about the time to notice a file has changed.
+Another consideration is the time to post files once they have been noticed.
+There are tradeoffs based on the checksum algorithm chosen. The most robust
+choice is the default: <em>s</em> or SHA-512. When using the <em>s</em> sum method, the
+entire file will be read in order to calculate it’s checksum, which is
+likely to determine the time to posting. The check sum will used by
+downstream consumers to determine whether the file being announced is new,
+or one that has already been seen, and is really handy.</p>
+<p><strong>For smaller files, checksum calculation time is negligible, but it is
+generally true that bigger files take longer to post.</strong> When <strong>using the
+shim library</strong> method, the same process that wrote the file is the one
+<strong>calculating the checksum</strong>, the likelihood of the file data being in a
+locally accessible cache is quite high, so it <strong>is as inexpensive as
+possible</strong>. It should also be noted that the sr_watch/sr_cpost <strong>directory
+watching processes are single threaded, while when user jobs call sr_post, or
+use the shim library, there can be as many processes posting files as there are
+file writers.</strong></p>
+<p>To shorten posting times, one can select <em>sum</em> algorithms that do not read
+the entire file, such as <em>N</em> (SHA-512 of the file name only), but then one
+loses the ability to differentiate between versions of the file.</p>
+<dl class="simple">
+<dt>note ::</dt><dd><p>should think about using N on the watch, and having multi-instance shovels
+recalculate checksums so that part becomes easily parallellizable. Should be
+straightforward, but not yet explored as a result of use of shim library. FIXME.</p>
+</dd>
+</dl>
+<p>A last consideration is that in many cases, other processes are writing files
+to directories being monitored by sr_watch. Failing to properly set file
+completion protocols is a common source of intermittent and difficult to
+diagnose file transfer issues. For reliable file transfers, it is critical
+that both the writer and watch agree on how to represent a file that
+isn’t complete.</p>
+</section>
+<section id="shim-library-usage">
+<h2>SHIM LIBRARY USAGE<a class="headerlink" href="#shim-library-usage" title="Link to this heading"></a></h2>
+<p>Rather than invoking a sr3_post to post each file to publish, one can have processes automatically
+post the files they right by having them use a shim library intercepting certain file i/o calls to libc
+and the kernel. To activate the shim library, in the shell environment add:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">SR_POST_CONFIG</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">export</span> <span class="n">LD_PRELOAD</span><span class="o">=</span><span class="s2">&quot;libsrshim.so.1&quot;</span>
+</pre></div>
+</div>
+<p>where <em>shimpost.conf</em> is an sr_cpost configuration file in
+the ~/.config/sarra/post/ directory. An sr_cpost configuration file is the same
+as an sr3_post one, except that plugins are not supported.  With the shim
+library in place, whenever a file is written, the <em>accept/reject</em> clauses of
+the shimpost.conf file are consulted, and if accepted, the file is posted just
+as it would be by sr3_post. If using with ssh, where one wants files which are
+scp’d to be posted, one needs to include the activation in the .bashrc and pass
+it the configuration to use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expoert</span> <span class="n">LC_SRSHIM</span><span class="o">=</span><span class="n">shimpost</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>Then in the ~/.bashrc on the server running the remote command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ &quot;$LC_SRSHIM&quot; ]; then
+    export SR_POST_CONFIG=$LC_SRSHIM
+    export LD_PRELOAD=&quot;libsrshim.so.1&quot;
+fi
+</pre></div>
+</div>
+<p>SSH will only pass environment variables that start with LC_ (locale) so to get it
+passed with minimal effort, we use that prefix.</p>
+<section id="shim-usage-notes">
+<h3>Shim Usage Notes<a class="headerlink" href="#shim-usage-notes" title="Link to this heading"></a></h3>
+<p>This method of notification does require some user environment setup.
+The user environment needs to the LD_PRELOAD environment variable set
+prior to launch of the process. Complications that remain as we have
+been testing for two years since the shim library was first implemented:</p>
+<ul class="simple">
+<li><p>if we want to notice files created by remote scp processes (which create non-login shells)
+then the environment hook must be in .bashrc. and using an environment
+variable that starts with <em>LC_</em> to have ssh transmit the configuration value without
+having to modify sshd configuration in typical linux distributions.
+( full discussion: <a class="reference external" href="https://github.com/MetPX/sarrac/issues/66">https://github.com/MetPX/sarrac/issues/66</a> )</p></li>
+<li><p>code that has certain weaknesses, such as in FORTRAN a lack of IMPLICIT NONE
+<a class="reference external" href="https://github.com/MetPX/sarracenia/issues/69">https://github.com/MetPX/sarracenia/issues/69</a> may crash when the shim library
+is introduced. The correction needed in those cases has so far been to correct
+the application, and not the library.
+( also: <a class="reference external" href="https://github.com/MetPX/sarrac/issues/12">https://github.com/MetPX/sarrac/issues/12</a> )</p></li>
+<li><p>codes using the <em>exec</em> call ot <a class="reference external" href="www.tcl.tk">tcl/tk</a>, by default considers any
+output to file descriptor 2 (standard error) as an error condition.
+these notification messages can be labelled as INFO, or WARNING priority, but it will
+cause the tcl caller to indicate a fatal error has occurred.  Adding
+<em>-ignorestderr</em>  to invocations of <em>exec</em> avoids such unwarranted aborts.</p></li>
+<li><p>Complex shell scripts can experience an inordinate performance impact.
+Since <em>high performance shell scripts</em> is an oxymoron, the best solution,
+performance-wise is to re-write the scripts in a more efficient scripting
+language such as python  ( <a class="reference external" href="https://github.com/MetPX/sarrac/issues/15">https://github.com/MetPX/sarrac/issues/15</a> )</p></li>
+<li><p>Code bases that move large file hierarchies (e.g. <em>mv tree_with_thousands_of_files new_tree</em> )
+will see a much higher cost for this operation, as it is implemented as
+a renaming of each file in the tree, rather than a single operation on the root.
+This is currently considered necessary because the accept/reject pattern matching
+may result in a very different tree on the destination, rather than just the
+same tree mirrored. See below for details.</p></li>
+<li><p><em>export SR_SHIMDEBUG=1</em> will get your more output than you want. use with care.</p></li>
+</ul>
+</section>
+<section id="rename-processing">
+<h3>Rename Processing<a class="headerlink" href="#rename-processing" title="Link to this heading"></a></h3>
+<p>It should be noted that file renaming is not as simple in the mirroring case as in the underlying
+operating system. While the operation is a single atomic one in an operating system, when
+using notifications, there are accept/reject cases that create four possible effects.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td colspan="2"><p>old name is:</p></td>
+</tr>
+<tr class="row-even"><td><p>New name is:</p></td>
+<td><p><em>Accepted</em></p></td>
+<td><p><em>Rejected</em></p></td>
+</tr>
+<tr class="row-odd"><td><p><em>Accepted</em></p></td>
+<td><p>rename</p></td>
+<td><p>copy</p></td>
+</tr>
+<tr class="row-even"><td><p><em>Rejected</em></p></td>
+<td><p>remove</p></td>
+<td><p>nothing</p></td>
+</tr>
+</tbody>
+</table>
+<p>When a file is moved, two notifications are created:</p>
+<ul>
+<li><p>One notification has the new name in the <em>relpath</em>, while containing and <em>oldname</em>
+field pointing at the old name.  This will trigger activities in the top half of
+the table, either a rename, using the oldname field, or a copy if it is not present</p>
+<p>at the destination.</p>
+</li>
+<li><p>A second notification with the oldname in <em>relpath</em> which will be accepted
+again, but this time it has the <em>newname</em> field, and process the remove action.</p></li>
+</ul>
+<p>While the renaming of a directory at the root of a large tree is a cheap atomic operation
+in Linux/Unix, mirroring that operation requires creating a rename posting for each file
+in the tree, and thus is far more expensive.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DeploymentConsiderations.html" class="btn btn-neutral float-left" title="Deployment Considerations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DuplicateSuppression.html" class="btn btn-neutral float-right" title="Duplicate Suppression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suppression de Doublons &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Assurer la livraison (inflight)" href="AssurerLaLivraison.html" />
+    <link rel="prev" title="File Detection Strategies" href="StrategieDetectionFichiers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Suppression de Doublons</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#standard-base-sur-le-chemin-et-contenu">Standard (basé sur le chemin et contenu)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data-base-uniquement-sur-le-contenu">Data (basé uniquement sur le contenu)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#name-base-uniquement-sur-le-nom">Name (basé uniquement sur le nom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#le-fichiers-trop-changeant-mdelaylatest">Le fichiers trop changeant (mdelaylatest)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fichiers-trop-vieux">Fichiers trop vieux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-votre-gout">A votre gout!</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Histoire/index.html">Histoire</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Explication</a> &raquo;</li>
+      <li>Suppression de Doublons</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Explication/SupprimerLesDoublons.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="suppression-de-doublons">
+<h1>Suppression de Doublons<a class="headerlink" href="#suppression-de-doublons" title="Link to this heading"></a></h1>
+<p>Lors qu’on achemine les données à travers de réseaux, il faut se préoccuper des “orages” de données
+causé par des boucles de transfert (un serveur A envoit à B, qui renvoit à C, qui renvoit à A.  Si A
+ne sait pas qu´il l´a déjà vu, on a un boucle infini, qui peut etre décrit comme un orage le volume
+est dérangeant.)</p>
+<p>Un attribut commun des flots de données critiques est d´avoir plusieurs serveurs qui produisent ces
+données. Si la stratégie de disponibilité requiert que les deux serveurs soient actifs en même temps,
+on a besoin de supprimer la production de la deuxième source. le potentiel pour des boucles, ou
+des transmissions redondantes de données est haut.</p>
+<p>Il s´avère supprimer les duplicat d´envoi a plein de cas d´usage et qu´un seule méthode ne suffit
+pas, alors sr3 permet la modification de la méthode implanté dans le module <em>sarracenia.flowcb.nodupe</em>
+pour augmenter la fléxibilité.</p>
+<p>La supression de doublons:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>* crée un clé à partir d´un message d´annonce.
+* crée un chemin (path) à partir d´un message d´annonce.
+</pre></div>
+</div>
+<p>Quand un message est à propos d´un message jugé un doublons, on cesse de le traiter.</p>
+<p>la clé d´un message d´annonce est préférablement simplement la somme de contrôle
+du champs <em>Identity</em>. Si la source de données ne fournit pas de champs <em>Identity</em>,
+on se fie sur d´autres champes dans le message: <em>mtime</em>, <em>size</em>, <em>pubTime.</em>
+Le champs <em>pubTime</em> étant mandatoire assure qu´un clé peut toujour être généré pour
+chaque message, mais des fois peut être inefficace.</p>
+<p>On peut allumer la suppresion de doublons, ou bien le supprimer avec la
+ligne suivante dans le fichier de configuraation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_ttl</span> <span class="mi">300</span><span class="o">|</span><span class="n">off</span><span class="o">|</span><span class="n">on</span>
+</pre></div>
+</div>
+<p>(les | indique les choix… alors soit nodupe_ttl 300 où nodup_ttl on, où nodupe_ttl off )
+quand on y fournit un chiffre c´est l´intervalle, en secondes, dont on se souvient
+d´un messages.</p>
+<section id="standard-base-sur-le-chemin-et-contenu">
+<h2>Standard (basé sur le chemin et contenu)<a class="headerlink" href="#standard-base-sur-le-chemin-et-contenu" title="Link to this heading"></a></h2>
+<p><strong>méthode</strong>: Quand les produits on le même clé et chemin, ils sont des doublons.</p>
+<p>Deux serveur peuvent envoyer le même produit, aven le même <em>relPath</em> à un serveur plus
+loin.</p>
+</section>
+<section id="data-base-uniquement-sur-le-contenu">
+<h2>Data (basé uniquement sur le contenu)<a class="headerlink" href="#data-base-uniquement-sur-le-contenu" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: Quand les produits on le même clé, ils sont des doublons.</p>
+<p>dans le ficher de configuration on devrait voir:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>ou bien:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span>
+</pre></div>
+</div>
+<p>remplace la génération de clé de suppression des doublons standard pour inclure uniquement
+la somme de contrôle du contenu du fichier. Ce module ajuste le champ <em>path</em> (chemin) utilisé par
+le champ standard de suppression des doublons. La directive <em>flowcb_prepend</em> assure qu’elle
+est appelée avant la traitement de doublons integrée.</p>
+<p>Le produits identiques ont le même somme de contrôle.  à utiliser lorsque deux sources
+génèrent le même produit.</p>
+</section>
+<section id="name-base-uniquement-sur-le-nom">
+<h2>Name (basé uniquement sur le nom)<a class="headerlink" href="#name-base-uniquement-sur-le-nom" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: Quand les fichiers ont le même nom, ils sont identiques.</p>
+<p>dans le fichier de configuration, soit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nodupe_basis</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>ou bien:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">nodupe</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">Name</span>
+</pre></div>
+</div>
+<p>remplace la générations de clé de suppression de doublons en utilisant uniquement
+le nom de fichier.</p>
+<p>Quand plusieurs source génèrent un produit, mais les résultats ne sont pas identique
+au niveau binaire, il faut une autre approche.</p>
+<section id="urp">
+<h3>URP<a class="headerlink" href="#urp" title="Link to this heading"></a></h3>
+<p>Dans le cas des systèmes de traitement de données RADAR, il y 6 serveurs qui génèrent
+les mêmes produits (bien qu´il ne soient pas exactement le même séquence d´octets.)
+Les produit sont les même parce qu´ils sont dérivé de les même données en amont,
+ont suivi une traitement semblable, mais les détails de traitement font en sorte
+que les résultats ne sont pas identiques au niveau binaire.</p>
+<p>Les serveur sont identifié commes sources distinctes, alors le chemin d´acces relatif
+(<em>relPath</em>) diffèrent. Mais les noms de fichier pour les produits sont les mêmes,
+alors on peut utiliser le nom dans ce cas.</p>
+</section>
+</section>
+<section id="le-fichiers-trop-changeant-mdelaylatest">
+<h2>Le fichiers trop changeant (mdelaylatest)<a class="headerlink" href="#le-fichiers-trop-changeant-mdelaylatest" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: retard les fichiers x secondes pour assurer qu´il n´y a pas de nouvelle version.</p>
+<p>NB:
+Il s’agit d’un filtre supplémentaire à la suppression des doublons, et ce qui précède
+méthodes peuvent être utilisées conjointement avec mdelaylatest. ce filtre est idéalement
+appliqué avant la suppression des doublons pour réduire la taille de la base de données.</p>
+<p>Dans le fichier de configuration, soit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mdelay</span> <span class="mi">30</span>
+<span class="n">flowcb_prepend</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">mdelaylatest</span><span class="o">.</span><span class="n">MDelayLatest</span>
+</pre></div>
+</div>
+<p>va retarder la distribution des messages d´annonce par 30 secondes.
+Si plusieurs versions sont produites avant que le fichier a 30 secondes d´age,
+on envoie uniquement la dernière version lorsqu´il aura 30 secondes d´age.</p>
+<section id="cas-d-usage">
+<h3>cas d´usage<a class="headerlink" href="#cas-d-usage" title="Link to this heading"></a></h3>
+<p>Dans certains cas, certaines sources de données re-écrivent très souvent les fichiers.
+Si les fichiers sont volumineux (la copie prend beaucoup de temps) ou s’il y a une fil d’attente (l’abonné
+a un certain temps de retard sur le producteur.), un algorithme pourrait écraser un fichier, ou
+y ajouter trois ou quatre fois avant d’avoir une version “finale” qui durera un certain temps.</p>
+<p>si le réseau a un délai de propagation supérieur à la période de remplacement, alors par
+le moment où le consommateur demande le fichier, il sera différent (provoquant potentiellement
+des incompatibilités de somme de contrôle.) ou, si c’est assez rapide, copier un fichier qui
+ne durera pas plus de quelques secondes pourrait être un gaspillage de bande passante et de traitement.</p>
+</section>
+<section id="les-citypages-du-site-meteo-gc-ca">
+<h3>les citypages du site météo.gc.ca<a class="headerlink" href="#les-citypages-du-site-meteo-gc-ca" title="Link to this heading"></a></h3>
+<p>( <a class="reference external" href="https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/">https://hpfx.collab.science.gc.ca/YYYYMMDD/WXO-DD/citypage_weather/</a> )</p>
+<p>là, les citypages sont un produit composé (dérivé de nombreux produits en amont distincts.)
+le script qui crée les produits citypage semble écrire un en-tête, puis un enregistrement,
+puis à la toute fin, une bande-annonce. il y a eu de nombreux cas de transmission de fichiers
+comme <em>xml invalide</em> parce que la bande-annonce était manquante. Il faut attendre que le script ait
+fini d’écrire le fichier</p>
+</section>
+<section id="miroitage-chp">
+<h3>Miroitage CHP<a class="headerlink" href="#miroitage-chp" title="Link to this heading"></a></h3>
+<p>Dans la miroitage à grande vitesse des données entre des grappes de calcul haute performance, les programmes
+passent souvent du temps à ajouter des enregistrements aux fichiers, peut-être des centaines de fois par seconde.
+Une fois le script terminé, le fichier devient en lecture seule pour les consommateurs. Ce n’est pas utile
+transmettre ces valeurs intermédiaires. Un fichier de 100 octets surveillé à l’aide de la bibliothèque shim
+ou un sr_watch, pourrait être modifié des centaines de fois, provoquant une copie pour chaque modification potentiellement
+déclenchant des centaines d’exemplaires. Il vaut mieux attendre la fin du processus de mise à jour,
+pour que le fichier soit inactif, avant de poster un message d´annonce.</p>
+</section>
+</section>
+<section id="fichiers-trop-vieux">
+<h2>Fichiers trop vieux<a class="headerlink" href="#fichiers-trop-vieux" title="Link to this heading"></a></h2>
+<p><strong>method</strong>: les messages à propos des fichiers trop vieux sont supprimés.</p>
+<p>dans les fichiers de configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fileAgeMax</span> <span class="mi">600</span>
+</pre></div>
+</div>
+<p>Les messages notificationsfichiers pour des fichiers qui sont agés de plus que 600 secondes (10 minutes) seront
+supprimés.</p>
+<p>Ceci est généralement utilisé avec des sondages (poll) qui ont des répertoires de très longue durée.
+Exemple : un serveur distant dispose d’une base de données permanente de fichiers distants. ca ne sert à rien
+de reexaminer de fichiers vieux de deux ans.</p>
+<p>Il arrive souvent que nodupe_ttl soit supérieur à nodupe_fileAgeMax pour éviter
+les fichiers soient oubliés par la cache avant d’être considérés comme “trop vieux” et ensuite d’être
+(à tort) ré-ingéré. Un message d’avertissement est émis si c’est le cas dans un sondage
+au démarrage.</p>
+</section>
+<section id="a-votre-gout">
+<h2>A votre gout!<a class="headerlink" href="#a-votre-gout" title="Link to this heading"></a></h2>
+<p>Dans le fichier de configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vos_parametres</span>
+<span class="n">flowcb_prepend</span> <span class="n">votre_class</span><span class="o">.</span><span class="n">VotreClass</span>
+</pre></div>
+</div>
+<p>Si aucune des méthodes intégrées de suppression des doublons ne fonctionne pour votre cas d’utilisation, vous pouvez
+sous-classe sarracenia.flowcb.nodupe et dériver les clés d’une manière différente. Voir le
+les classes sarracenia.flowcb.nodupe.name et sarracenia.flowcb.nodupe.data pour des exemples de
+comment faire.</p>
+<p>On peut également implémenter un filtre qui définit le champ <em>nodupe_override</em> dans le message</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;nodupe_override] = { &#39;</span><span class="n">key</span><span class="s1">&#39;: votre_clé, &#39;</span><span class="n">path</span><span class="s1">&#39;: votre_chemin }</span>
+</pre></div>
+</div>
+<p>et la méthode standard de suppression des doublons utilisera la clé et la valeur fournies.
+Il existe également une fonction d’assistance disponible dans la classe nodupe</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">deriveKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span> <span class="o">--&gt;</span> <span class="nb">str</span>
+</pre></div>
+</div>
+<p>qui examinera les champs du message et dérivera la clé <em>normale</em> qui sera
+généré pour un message, que vous pouvez ensuite modifier si vous ne recherchez qu’un petit changement.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="StrategieDetectionFichiers.html" class="btn btn-neutral float-left" title="File Detection Strategies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="AssurerLaLivraison.html" class="btn btn-neutral float-right" title="Assurer la livraison (inflight)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

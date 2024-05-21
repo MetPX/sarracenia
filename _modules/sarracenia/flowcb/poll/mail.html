@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.poll.mail &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+          <li><a href="../poll.html">sarracenia.flowcb.poll</a> &raquo;</li>
+      <li>sarracenia.flowcb.poll.mail</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.poll.mail</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Posts any new emails from an email server, connected to using </span>
+<span class="sd">the specified protocol, either pop3 or imap. The imaplib/poplib </span>
+<span class="sd">implementations in Python use the most secure SSL settings by </span>
+<span class="sd">default: PROTOCOL_TLS, OP_NO_SSLv2, and OP_NO_SSLv3.</span>
+<span class="sd">Compatible with Python 2.7+.</span>
+
+<span class="sd">A sample do_poll option for sr_poll.</span>
+<span class="sd">connects to an email server with the provided</span>
+<span class="sd">credentials and posts all new messages by their msg ID.</span>
+
+<span class="sd">usage:</span>
+<span class="sd">        in an sr_poll configuration file:</span>
+
+<span class="sd">        pollUrl [imap|imaps|pop|pops]://[user[:password]@]host[:port]/</span>
+
+<span class="sd">        IMAP over SSL uses 993, POP3 over SSL uses 995</span>
+<span class="sd">        IMAP unsecured uses 143, POP3 unsecured uses 110</span>
+
+<span class="sd">        Full credentials must be in credentials.conf.</span>
+<span class="sd">        If port is not specified it&#39;ll default to the ones above based on protocol/ssl setting.</span>
+
+<span class="sd">This posts what messages are available. A separate component is needed to </span>
+<span class="sd">download the message, which would need:</span>
+
+<span class="sd">     callback download.mail_ingest</span>
+<span class="sd"> </span>
+<span class="sd">to process these posts.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">email</span>
+<span class="kn">import</span> <span class="nn">imaplib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">poplib</span>
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb.poll</span> <span class="kn">import</span> <span class="n">Poll</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Mail">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.poll.mail.Mail">[docs]</a>
+<span class="k">class</span> <span class="nc">Mail</span><span class="p">(</span><span class="n">Poll</span><span class="p">):</span>
+<div class="viewcode-block" id="Mail.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.poll.mail.Mail.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;poll_email_ingest init&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+
+        <span class="n">ok</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="n">setting</span> <span class="o">=</span> <span class="n">details</span><span class="o">.</span><span class="n">url</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">username</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">password</span>
+            <span class="n">server</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">hostname</span>
+            <span class="n">protocol</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">scheme</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">setting</span><span class="o">.</span><span class="n">port</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;pollUrl valid&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;pollUrl: invalid credentials&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">port</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;imaps&quot;</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="mi">993</span>
+            <span class="k">elif</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;pops&quot;</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="mi">995</span>
+            <span class="k">elif</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;imap&quot;</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="mi">143</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="mi">110</span>
+
+        <span class="n">gathered_messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;imap&quot;</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;imaps&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mailman</span> <span class="o">=</span> <span class="n">imaplib</span><span class="o">.</span><span class="n">IMAP4_SSL</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">imaplib</span><span class="o">.</span><span class="n">IMAP4</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;poll_email_ingest imaplib connection error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                    <span class="k">return</span>
+
+            <span class="k">elif</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;imap&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mailman</span> <span class="o">=</span> <span class="n">imaplib</span><span class="o">.</span><span class="n">IMAP4</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">imaplib</span><span class="o">.</span><span class="n">IMAP4</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;poll_email_ingest imaplib connection error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                    <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="c1"># only retrieves unread mail from inbox, change these values as to your preference</span>
+            <span class="n">mailman</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">mailbox</span><span class="o">=</span><span class="s1">&#39;INBOX&#39;</span><span class="p">)</span>
+            <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">mailman</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;(UNSEEN)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;transferRxBytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+                <span class="n">r</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">mailman</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;(RFC822)&#39;</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">msg_subject</span> <span class="o">=</span> <span class="n">email</span><span class="o">.</span><span class="n">message_from_string</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Subject&#39;</span><span class="p">)</span>
+                <span class="n">msg_filename</span> <span class="o">=</span> <span class="n">msg_subject</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M</span><span class="si">%s</span><span class="s1">_</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">msg_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span>
+                <span class="n">gathered_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+            <span class="n">mailman</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">mailman</span><span class="o">.</span><span class="n">logout</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="s2">&quot;pop&quot;</span> <span class="ow">in</span> <span class="n">protocol</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;pops&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mailman</span> <span class="o">=</span> <span class="n">poplib</span><span class="o">.</span><span class="n">POP3_SSL</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">pass_</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;poll_email_ingest connection started&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">poplib</span><span class="o">.</span><span class="n">error_proto</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;poll_email_ingest pop3 connection error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">e</span><span class="p">))</span>
+                    <span class="k">return</span>
+
+            <span class="k">elif</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;pop&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">mailman</span> <span class="o">=</span> <span class="n">poplib</span><span class="o">.</span><span class="n">POP3</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+                    <span class="n">mailman</span><span class="o">.</span><span class="n">pass_</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">poplib</span><span class="o">.</span><span class="n">error_proto</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;poll_email_ingest pop3 connection error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">e</span><span class="p">))</span>
+                    <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="c1"># only retrieves msgs that haven&#39;t triggered internal pop3 &#39;read&#39; flag</span>
+            <span class="n">numMsgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mailman</span><span class="o">.</span><span class="n">list</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMsgs</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">mailman</span><span class="o">.</span><span class="n">retr</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;transferRxBytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">msg</span> <span class="o">+=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">msg_subject</span> <span class="o">=</span> <span class="n">email</span><span class="o">.</span><span class="n">message_from_string</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Subject&#39;</span><span class="p">)</span>
+                <span class="n">msg_filename</span> <span class="o">=</span> <span class="n">msg_subject</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                    <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M</span><span class="si">%s</span><span class="s1">_</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">msg_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span>
+                <span class="n">gathered_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+            <span class="n">mailman</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;poll_email_ingest pollUrl protocol must be one of &#39;imap/imaps&#39; or &#39;pop/pops&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">gathered_messages</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assurer la livraison (inflight) &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Considérations relatives au déploiement" href="ConsiderationsDeployments.html" />
+    <link rel="prev" title="Suppression de Doublons" href="SupprimerLesDoublons.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Explication</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Aper%C3%A7u.html">Aperçu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Assurer la livraison (inflight)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tableau-de-inflight">Tableau de Inflight</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#erreurs-de-configuration-frequentes">Erreurs de configuration fréquentes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Histoire/index.html">Histoire</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Explication</a> &raquo;</li>
+      <li>Assurer la livraison (inflight)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Explication/AssurerLaLivraison.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="assurer-la-livraison-inflight">
+<h1>Assurer la livraison (inflight)<a class="headerlink" href="#assurer-la-livraison-inflight" title="Link to this heading"></a></h1>
+<p>Le fait de ne pas établir correctement les protocoles de complétion de fichiers est
+une source commune d’incohérences intermittentes, difficile de diagnostiquer.
+Pour des transferts de fichiers fiables, Il est essentiel que l’expéditeur et
+le destinataire s’entendent sur la façon de représenter un fichier qui n’est pas complet.
+L’option <em>inflight</em> (c’est-à-dire qu’un fichier est <em>en vol</em> entre l’expéditeur et
+le destinataire) s´offre pour accommoder différentes situations :</p>
+<section id="tableau-de-inflight">
+<h2>Tableau de Inflight<a class="headerlink" href="#tableau-de-inflight" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="3"><p>Protocoles d’assurance de la livraison (par ordre de préférence)</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Méthode</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Application</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>NONE</p></td>
+<td><p>Fichier envoyé avec le bon nom
+message`sr3_post(7) &lt;sr3_post.7.rst&gt;`_
+AMQP après que le transfert.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>moins d´aller-retours</p></li>
+<li><p>plus efficace / vite</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>Envoyer à Sarracenia, et
+publié quand le fichier est complet</p>
+<blockquote>
+<div><p>(Meilleur quand disponible)
+défaut pour sr_sarra.
+défaut sur sr_subscribe et sender
+quand post_broker est spécifié.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="row-even"><td><p>.tmp
+(Suffixe)</p></td>
+<td><p>avec un suffixe <em>.tmp</em>.
+Lorsqu’il est complet, renommé au fin
+Le suffixe réel est réglable.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>-voyages aller-retour supplémentaires</dt><dd><p>pour renommer (un peu plus lent)</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+<td><p>Envoi à la plupart des autres systèmes
+(.tmp intégré)
+Utiliser pour envoyer à Sundew.</p>
+<dl class="simple">
+<dt>(généralement un bon choix)</dt><dd><ul class="simple">
+<li><p>défaut quand il n´y a pas de
+post_broker</p></li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p>tmp/
+(subdir)
+/repertoie</p></td>
+<td><p>Fichier placés dans un sous-répertoire
+ou répertoire. Déplacé au fin de
+transfert
+Même performance que Suffixe</p></td>
+<td><p>Envoi à des systèmes qui n´acceptent
+les suffixes</p></td>
+</tr>
+<tr class="row-even"><td><p>.
+(Préfixe)</p></td>
+<td><p>la convention Linux pour <em>masquer</em> les
+fichiers. renommé au fin de transfert
+Préfixer les noms par ‘.’
+Même performance que Suffixe</p></td>
+<td><p>Envoi à des systèmes qui n´acceptent
+les suffixes</p></td>
+</tr>
+<tr class="row-odd"><td><p>entier
+(mtime)</p>
+<p>fileAgeMin</p>
+</td>
+<td><p>Âge minimum (temps de modification)
+du fichier avant que le transfer soit
+considéré Complèté. (fileAgeMin pareil)</p>
+<p>Retarde tous les avis
+Vulnérable aux pannes de réseau.
+Vulnérable aux horloges en désaccord</p>
+</td>
+<td><p>Dernier choix, ne garantit un délai
+que si aucun autre moyen peut servir</p>
+<p>Réception de ceux qui ne coopèrent pas</p>
+<blockquote>
+<div><p>(choix acceptable pour PDS)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Par défaut ( quand aucune option <em>inflight</em> n’est donnée), si le post_broker est défini,
+alors une valeur de NONE est utilisée parce qu’on suppose qu’elle est livrée à un autre
+courtier. S´il n´y a pas de post_broker est définie, la valeur de ‘.tmp’ est supposée être
+la meilleure option.</p>
+<p>NOTES :</p>
+<blockquote>
+<div><p>Sur les versions de sr_sender antérieures à 2.18, la valeur par défaut était AUCUNE, mais
+était documentée par ‘.tmp’’. Pour assurer la compatibilité avec les versions ultérieures,
+il est probablement préférable d’écrire explicitement le réglage <em>inflight</em>.</p>
+<p><em>inflight</em> a été renommé de l’ancienne option <em>lock</em> en janvier 2017. Pour la compatibilité avec
+les versions plus anciennes, peuvent utiliser <em>lock</em>, mais le nom est obsolète.</p>
+<p>L’ancien logiciel <em>PDS</em> (qui précède MetPX Sundew) ne supporte que le FTP. Le protocole d’achèvement
+utilisé par <em>PDS</em> était d’envoyer le fichier avec la permission 000 dans un premier temps, puis chmod à un fichier
+fichier lisible. Ceci ne peut pas être implémenté avec le protocole SFTP, et n’est pas supporté du tout.
+par Sarracenia.</p>
+</div></blockquote>
+</section>
+<section id="erreurs-de-configuration-frequentes">
+<h2>Erreurs de configuration fréquentes<a class="headerlink" href="#erreurs-de-configuration-frequentes" title="Link to this heading"></a></h2>
+<p><strong>Réglage de NONE lors de l’envoi à Sundew.</strong></p>
+<blockquote>
+<div><p>Le réglage correct ici est ‘.tmp’.  Sans cela, presque tous les fichiers passeront correctement,
+mais les dossiers incomplets seront parfois ramassés par Sundew.</p>
+</div></blockquote>
+<p><strong>utilisant la méthode mtime pour recevoir de Sundew ou Sarracenia</strong></p>
+<blockquote>
+<div><p>L’utilisation de mtime est un dernier recours. Cette approche injecte du retard
+et ne devrait être utilisée que lorsque qu´on n’a aucune influence
+pour que l’autre extrémité du transfert utilise une meilleure méthode.</p>
+<p>mtime est vulnérable aux systèmes dont les horloges diffèrent (fichiers incomplets).
+mtime est vulnérable aux transferts lents, où les fichiers incomplets peuvent être
+ramassés à cause d’un problème de réseautage interrompant ou retardant les transferts.</p>
+</div></blockquote>
+<p><strong>utilisant NONE lors de la livraison à une destination autre que Sarracenia</strong></p>
+<blockquote>
+<div><p>NONE doit être utilisé seulement lorsqu’il existe d’autres moyens de déterminer si un fichier
+est livré. Par exemple, lors de l’envoi à une autre pompe, l’expéditeur informera
+le destinataire le fichier est complet en publiant l´avis à ce courtier après
+sa livraison, il n’y a donc aucun danger d’être ramassé trop tôt.</p>
+<p>Lorsqu’il est mal-utilisé, il arrive que des fichiers incomplets soient traitée
+par la réception.</p>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="SupprimerLesDoublons.html" class="btn btn-neutral float-left" title="Suppression de Doublons" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ConsiderationsDeployments.html" class="btn btn-neutral float-right" title="Considérations relatives au déploiement" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

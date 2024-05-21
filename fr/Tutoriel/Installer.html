@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation de MetPX Sarracenia &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Comment configurer un abonné distant" href="Mettre_en_place_un_subscriber_distant.html" />
+    <link rel="prev" title="Publication à partir du code Python" href="5_api_moth_post_demo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Tutoriel</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="1_CLI_introduction.html">Téléchargement en utilisant la console</a></li>
+<li class="toctree-l3"><a class="reference internal" href="2_CLI_with_flowcb_demo.html">Personnalisez la gestion des fichiers avec les rappels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="3_api_flow_demo.html">Exemple d’API de flux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="4_api_moth_sub_demo.html">Un premier exemple utilisant l’API Sarracenia Moth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="5_api_moth_post_demo.html">Publication à partir du code Python</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Installation de MetPX Sarracenia</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#enregistrement-de-revision">Enregistrement de révision</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lavez-vous-deja">L’avez-vous déjà?</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installation-client">Installation Client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#source">Source</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sarrac">Sarrac</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_distant.html">Comment configurer un abonné distant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Mettre_en_place_un_subscriber_local.html">Administrateur du serveur : un abonné local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Windows.html">Manuel de l’utilisateur Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Tutoriel</a> &raquo;</li>
+      <li>Installation de MetPX Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Tutoriel/Installer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="installation-de-metpx-sarracenia">
+<h1>Installation de MetPX Sarracenia<a class="headerlink" href="#installation-de-metpx-sarracenia" title="Link to this heading"></a></h1>
+<section id="enregistrement-de-revision">
+<h2>Enregistrement de révision<a class="headerlink" href="#enregistrement-de-revision" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+</dl>
+</section>
+<section id="lavez-vous-deja">
+<h2>L’avez-vous déjà?<a class="headerlink" href="#lavez-vous-deja" title="Link to this heading"></a></h2>
+<p>Si vous êtes sur un serveur avec celui-ci déjà installé, vous pouvez l’appeler comme suit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">status</span>
+<span class="n">status</span><span class="p">:</span>
+<span class="n">Component</span><span class="o">/</span><span class="n">Config</span>                         <span class="n">State</span>        <span class="n">Run</span>  <span class="n">Miss</span>   <span class="n">Exp</span> <span class="n">Retry</span>
+<span class="o">----------------</span>                         <span class="o">-----</span>        <span class="o">---</span>  <span class="o">----</span>   <span class="o">---</span> <span class="o">-----</span>
+      <span class="n">total</span> <span class="n">running</span> <span class="n">configs</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span> <span class="n">processes</span><span class="p">:</span> <span class="mi">0</span> <span class="n">missing</span><span class="p">:</span> <span class="mi">0</span> <span class="n">stray</span><span class="p">:</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>Si cela fonctionne, alors vous n’avez pas besoin de l’installer. En supposant que ce n’est pas déjà fait
+installé, le package doit-il être installé à l’échelle du système ? ou seulement pour
+un seul utilisateur ?  Pour une utilisation par un seul utilisateur, la méthode python  <a class="reference external" href="#PIP">#PIP</a> doit fonctionner,
+donnant accès à sr3 a toutes les bibliothèques nécessaires à l’accès programmatique.</p>
+<p>Pour une utilisation opérationnelle, un accès administratif peut être nécessaire pour l’installation du package,
+et l’intégration avec systemd. Quelle que soit la façon dont il est installé, du traitement
+périodique (sur Linux généralement connu sous le nom de <em>cron jobs</em>) peut également avoir besoin d’être configuré.</p>
+<p>Des fois, Sarracenia peut être partiellement installé. Pour voir un inventaire des modules de Sarracenia
+qui sont disponible, on peut se servir de <em>sr3 features</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">features</span>
+
+<span class="n">Status</span><span class="p">:</span>    <span class="n">feature</span><span class="p">:</span>   <span class="n">python</span> <span class="n">imports</span><span class="p">:</span>      <span class="n">Description</span><span class="p">:</span>
+<span class="n">Installed</span>  <span class="n">amqp</span>       <span class="n">amqp</span>                 <span class="n">can</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">rabbitmq</span> <span class="n">brokers</span>
+<span class="n">Installed</span>  <span class="n">appdirs</span>    <span class="n">appdirs</span>              <span class="n">place</span> <span class="n">configuration</span> <span class="ow">and</span> <span class="n">state</span> <span class="n">files</span> <span class="n">appropriately</span> <span class="k">for</span> <span class="n">platform</span> <span class="p">(</span><span class="n">windows</span><span class="o">/</span><span class="n">mac</span><span class="o">/</span><span class="n">linux</span><span class="p">)</span>
+<span class="n">Installed</span>  <span class="n">filetypes</span>  <span class="n">magic</span>                <span class="n">able</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">content</span> <span class="n">headers</span>
+<span class="n">Installed</span>  <span class="n">ftppoll</span>    <span class="n">dateparser</span><span class="p">,</span><span class="n">pytz</span>      <span class="n">able</span> <span class="n">to</span> <span class="n">poll</span> <span class="k">with</span> <span class="n">ftp</span>
+<span class="n">Installed</span>  <span class="n">humanize</span>   <span class="n">humanize</span>             <span class="n">humans</span> <span class="n">numbers</span> <span class="n">that</span> <span class="n">are</span> <span class="n">easier</span> <span class="n">to</span> <span class="n">read</span><span class="o">.</span>
+<span class="n">Absent</span>     <span class="n">mqtt</span>       <span class="n">paho</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">client</span>     <span class="n">cannot</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">mqtt</span> <span class="n">brokers</span>
+<span class="n">Installed</span>  <span class="n">redis</span>      <span class="n">redis</span><span class="p">,</span><span class="n">redis_lock</span>     <span class="n">can</span> <span class="n">use</span> <span class="n">redis</span> <span class="n">implementations</span> <span class="n">of</span> <span class="n">retry</span> <span class="ow">and</span> <span class="n">nodupe</span>
+<span class="n">Installed</span>  <span class="n">sftp</span>       <span class="n">paramiko</span>             <span class="n">can</span> <span class="n">use</span> <span class="n">sftp</span> <span class="ow">or</span> <span class="n">ssh</span> <span class="n">based</span> <span class="n">services</span>
+<span class="n">Installed</span>  <span class="n">vip</span>        <span class="n">netifaces</span>            <span class="n">able</span> <span class="n">to</span> <span class="n">use</span> <span class="n">the</span> <span class="n">vip</span> <span class="n">option</span> <span class="k">for</span> <span class="n">high</span> <span class="n">availability</span> <span class="n">clustering</span>
+<span class="n">Installed</span>  <span class="n">watch</span>      <span class="n">watchdog</span>             <span class="n">watch</span> <span class="n">directories</span>
+<span class="n">Installed</span>  <span class="n">xattr</span>      <span class="n">xattr</span>                <span class="n">on</span> <span class="n">linux</span><span class="p">,</span> <span class="n">will</span> <span class="n">store</span> <span class="n">file</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="n">extended</span> <span class="n">attributes</span>
+<span class="n">MISSING</span>    <span class="n">clamd</span>      <span class="n">pyclamd</span>              <span class="n">cannot</span> <span class="n">use</span> <span class="n">clamd</span> <span class="n">to</span> <span class="n">av</span> <span class="n">scan</span> <span class="n">files</span> <span class="n">transferred</span>
+
+ <span class="n">state</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sr3</span>
+ <span class="n">config</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span>
+
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>le sens de chaque <em>feature</em> est expliqué (en anglais) et le modules python nécessaire pour
+permettre cette fonctionalité sont indiqué dans la troisième colonne.</p>
+<p>Dans l´exemple on peut voir que pyclamd manque à l´appel, tandis que <em>paramiko</em> nécessaire
+pour la fonctionallité SFTP est disponible.</p>
+</section>
+<section id="installation-client">
+<h2>Installation Client<a class="headerlink" href="#installation-client" title="Link to this heading"></a></h2>
+<p>Le package est conçu pour python version 3.6 ou supérieure. Sur les systèmes où
+ils sont disponibles, les paquets debian sont recommandés. Ceux-ci peuvent être obtenus auprès du
+référentiel launchpad. Si vous ne pouvez pas utiliser les paquets Debian, envisagez les paquets pip
+avialable de PyPI. Dans les deux cas, les autres paquets python (ou dépendances) nécessaires
+seront installé automatiquement par le gestionnaire de paquets.</p>
+<p>Notez que dans certains cas, le système d’exploitation ne fournit pas tous les
+fonctionnalité pour toutes les fonctionnalités, de sorte que l’on peut compléter avec des packages pip, qui
+peut être installé à l’échelle du système, dans l’environnement d’un utilisateur ou même dans
+venv. Tant que <em>sr3 features</em> signale la fonctionnalité comme disponible, elle
+être utilisé.</p>
+<section id="ubuntu-debian-apt-dpkg-recommande">
+<h3>Ubuntu/Debian (apt/dpkg) <strong>Recommandé</strong><a class="headerlink" href="#ubuntu-debian-apt-dpkg-recommande" title="Link to this heading"></a></h3>
+<p>Sur Ubuntu 22.04 et dérivés du même:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ssc</span><span class="o">-</span><span class="n">hpc</span><span class="o">-</span><span class="n">chp</span><span class="o">-</span><span class="n">spc</span><span class="o">/</span><span class="n">metpx</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span>  <span class="c1"># pacquet principale.</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3c</span> <span class="c1"># client binaire (en C) .</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span>  <span class="c1"># support optionnel pour les courtiers AMWP (rabbitmq)</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">paramiko</span>  <span class="c1"># support optionnel pour SFTP/SSH</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">magic</span>  <span class="c1"># support optionnel pour les entêtes &quot;content-type&quot; dans les messages</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">xattr</span>  <span class="c1"># support optionnel pour stocker les checksum des fichiers dans les attributs étendus.</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span>  <span class="c1"># support optionnel pour les courtiers MQTT</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">netifaces</span> <span class="c1"># support optionnel pour les vip (haut-disponibilité)</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">dateparser</span> <span class="n">python3</span><span class="o">-</span><span class="n">pytz</span> <span class="c1"># support optionnel pour les sondages ftp.</span>
+</pre></div>
+</div>
+<p>Si les paquets ne sont pas disponibles, on peut les remplacer en utilisant python install package (pip)
+Actuellement, seuls les paquets Debian incluent des pages de manuel. Les guides sont seulement
+disponible dans le référentiel de source. Pour les versions antérieures d’Ubuntu, installez
+via pip est requis en raison de dépendances manquantes dans l’environnement python
+livré avec des systèmes d’exploitation antérieurs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>pour bien juger si in fichier est un duplicat, dans le cas d’un application ou le checksum ne peut
+être dérivé du contenu (méthode: <em>abritrary</em> ( arbitraire ) ) le module python3-xattr est nécessaire.
+Un example d’un source affecté sera les données DMS.</p>
+</div>
+<p>Si une option n’est pas installée, mais est nécessaire pour une configuration donnée, alors sr3 le
+détectera et se plaindra, et il faut installer le support manquant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">foreground</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">data</span><span class="o">-</span><span class="n">ingest</span>
+<span class="mf">.2022</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">01</span> <span class="mi">13</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">48</span><span class="p">,</span><span class="mi">551</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">2428565</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">plugins</span> <span class="n">to</span> <span class="n">load</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.post.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.log.Log&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">01</span> <span class="mi">13</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">48</span><span class="p">,</span><span class="mi">551</span> <span class="p">[</span><span class="n">CRITICAL</span><span class="p">]</span> <span class="mi">2428565</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span> <span class="n">ProtocolPresent</span> <span class="n">support</span> <span class="k">for</span> <span class="n">amqp</span> <span class="n">missing</span><span class="p">,</span> <span class="n">please</span> <span class="n">install</span> <span class="n">python</span> <span class="n">packages</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;amqp&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">01</span> <span class="mi">13</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">48</span><span class="p">,</span><span class="mi">564</span> <span class="mi">2428564</span> <span class="p">[</span><span class="n">CRITICAL</span><span class="p">]</span> <span class="n">root</span> <span class="n">run_command</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span> <span class="n">failed</span> <span class="n">err</span><span class="o">=</span><span class="n">Command</span> <span class="s1">&#39;[&#39;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python3</span><span class="s1">&#39;, &#39;</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">instance</span><span class="o">.</span><span class="n">py</span><span class="s1">&#39;, &#39;</span><span class="o">--</span><span class="n">no</span><span class="s1">&#39;, &#39;</span><span class="mi">0</span><span class="s1">&#39;, &#39;</span><span class="n">foreground</span><span class="s1">&#39;, &#39;</span><span class="n">subscribe</span><span class="o">/</span><span class="n">data</span><span class="o">-</span><span class="n">ingest</span><span class="s1">&#39;]&#39;</span> <span class="n">returned</span> <span class="n">non</span><span class="o">-</span><span class="n">zero</span> <span class="n">exit</span> <span class="n">status</span> <span class="mf">1.</span>
+
+<span class="n">fractal</span><span class="o">%</span>
+<span class="n">fractal</span><span class="o">%</span>
+<span class="n">fractal</span><span class="o">%</span> <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span>
+<span class="p">[</span><span class="n">sudo</span><span class="p">]</span> <span class="n">password</span> <span class="k">for</span> <span class="n">peter</span><span class="p">:</span>
+<span class="n">Reading</span> <span class="n">package</span> <span class="n">lists</span><span class="o">...</span> <span class="n">Done</span>
+<span class="n">Building</span> <span class="n">dependency</span> <span class="n">tree</span><span class="o">...</span> <span class="n">Done</span>
+<span class="n">Reading</span> <span class="n">state</span> <span class="n">information</span><span class="o">...</span> <span class="n">Done</span>
+<span class="n">The</span> <span class="n">following</span> <span class="n">packages</span> <span class="n">were</span> <span class="n">automatically</span> <span class="n">installed</span> <span class="ow">and</span> <span class="n">are</span> <span class="n">no</span> <span class="n">longer</span> <span class="n">required</span><span class="p">:</span>
+  <span class="n">fonts</span><span class="o">-</span><span class="n">lyx</span> <span class="n">g</span><span class="o">++-</span><span class="mi">9</span> <span class="n">libblosc1</span> <span class="n">libgdk</span><span class="o">-</span><span class="n">pixbuf</span><span class="o">-</span><span class="n">xlib</span><span class="o">-</span><span class="mf">2.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libgdk</span><span class="o">-</span><span class="n">pixbuf2</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span> <span class="n">libjs</span><span class="o">-</span><span class="n">jquery</span><span class="o">-</span><span class="n">ui</span> <span class="n">liblbfgsb0</span> <span class="n">libnetplan0</span> <span class="n">libqhull</span><span class="o">-</span><span class="n">r8</span><span class="mf">.0</span> <span class="n">libstdc</span><span class="o">++-</span><span class="mi">9</span><span class="o">-</span><span class="n">dev</span> <span class="n">python</span><span class="o">-</span><span class="n">babel</span><span class="o">-</span><span class="n">localedata</span>
+  <span class="n">python</span><span class="o">-</span><span class="n">matplotlib</span><span class="o">-</span><span class="n">data</span> <span class="n">python</span><span class="o">-</span><span class="n">tables</span><span class="o">-</span><span class="n">data</span> <span class="n">python3</span><span class="o">-</span><span class="n">alabaster</span> <span class="n">python3</span><span class="o">-</span><span class="n">brotli</span> <span class="n">python3</span><span class="o">-</span><span class="n">cycler</span> <span class="n">python3</span><span class="o">-</span><span class="n">decorator</span> <span class="n">python3</span><span class="o">-</span><span class="n">et</span><span class="o">-</span><span class="n">xmlfile</span> <span class="n">python3</span><span class="o">-</span><span class="n">imagesize</span> <span class="n">python3</span><span class="o">-</span><span class="n">jdcal</span> <span class="n">python3</span><span class="o">-</span><span class="n">kiwisolver</span>
+  <span class="n">python3</span><span class="o">-</span><span class="n">lz4</span> <span class="n">python3</span><span class="o">-</span><span class="n">mpmath</span> <span class="n">python3</span><span class="o">-</span><span class="n">numexpr</span> <span class="n">python3</span><span class="o">-</span><span class="n">openpyxl</span> <span class="n">python3</span><span class="o">-</span><span class="n">pandas</span><span class="o">-</span><span class="n">lib</span> <span class="n">python3</span><span class="o">-</span><span class="n">protobuf</span> <span class="n">python3</span><span class="o">-</span><span class="n">pymacaroons</span> <span class="n">python3</span><span class="o">-</span><span class="n">pymeeus</span> <span class="n">python3</span><span class="o">-</span><span class="n">regex</span> <span class="n">python3</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python3</span><span class="o">-</span><span class="n">sip</span>
+  <span class="n">python3</span><span class="o">-</span><span class="n">smartypants</span> <span class="n">python3</span><span class="o">-</span><span class="n">snowballstemmer</span> <span class="n">python3</span><span class="o">-</span><span class="n">sympy</span> <span class="n">python3</span><span class="o">-</span><span class="n">tables</span> <span class="n">python3</span><span class="o">-</span><span class="n">tables</span><span class="o">-</span><span class="n">lib</span> <span class="n">python3</span><span class="o">-</span><span class="n">tornado</span> <span class="n">python3</span><span class="o">-</span><span class="n">unicodedata2</span> <span class="n">python3</span><span class="o">-</span><span class="n">xlrd</span> <span class="n">python3</span><span class="o">-</span><span class="n">xlwt</span> <span class="n">sphinx</span><span class="o">-</span><span class="n">common</span>
+  <span class="n">unicode</span><span class="o">-</span><span class="n">data</span>
+<span class="n">Use</span> <span class="s1">&#39;sudo apt autoremove&#39;</span> <span class="n">to</span> <span class="n">remove</span> <span class="n">them</span><span class="o">.</span>
+<span class="n">Suggested</span> <span class="n">packages</span><span class="p">:</span>
+  <span class="n">python</span><span class="o">-</span><span class="n">amqp</span><span class="o">-</span><span class="n">doc</span>
+<span class="n">The</span> <span class="n">following</span> <span class="n">NEW</span> <span class="n">packages</span> <span class="n">will</span> <span class="n">be</span> <span class="n">installed</span><span class="p">:</span>
+  <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span>
+<span class="mi">0</span> <span class="n">upgraded</span><span class="p">,</span> <span class="mi">1</span> <span class="n">newly</span> <span class="n">installed</span><span class="p">,</span> <span class="mi">0</span> <span class="n">to</span> <span class="n">remove</span> <span class="ow">and</span> <span class="mi">1</span> <span class="ow">not</span> <span class="n">upgraded</span><span class="o">.</span>
+<span class="n">Need</span> <span class="n">to</span> <span class="n">get</span> <span class="mi">0</span> <span class="n">B</span><span class="o">/</span><span class="mf">43.2</span> <span class="n">kB</span> <span class="n">of</span> <span class="n">archives</span><span class="o">.</span>
+<span class="n">After</span> <span class="n">this</span> <span class="n">operation</span><span class="p">,</span> <span class="mi">221</span> <span class="n">kB</span> <span class="n">of</span> <span class="n">additional</span> <span class="n">disk</span> <span class="n">space</span> <span class="n">will</span> <span class="n">be</span> <span class="n">used</span><span class="o">.</span>
+<span class="n">Selecting</span> <span class="n">previously</span> <span class="n">unselected</span> <span class="n">package</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span><span class="o">.</span>
+<span class="p">(</span><span class="n">Reading</span> <span class="n">database</span> <span class="o">...</span> <span class="mi">460430</span> <span class="n">files</span> <span class="ow">and</span> <span class="n">directories</span> <span class="n">currently</span> <span class="n">installed</span><span class="o">.</span><span class="p">)</span>
+<span class="n">Preparing</span> <span class="n">to</span> <span class="n">unpack</span> <span class="o">.../</span><span class="n">python3</span><span class="o">-</span><span class="n">amqp_5</span><span class="mf">.0.9</span><span class="o">-</span><span class="mi">1</span><span class="n">_all</span><span class="o">.</span><span class="n">deb</span> <span class="o">...</span>
+<span class="n">Unpacking</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span> <span class="p">(</span><span class="mf">5.0.9</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">...</span>
+<span class="n">Setting</span> <span class="n">up</span> <span class="n">python3</span><span class="o">-</span><span class="n">amqp</span> <span class="p">(</span><span class="mf">5.0.9</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">...</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>On peut satisfaire les exigences manquantes en utilisant des paquets Debian ou pip.  pour utiliser les courtiers mqtt avec
+ubuntu 18.04, il faut obtenir la bibliothèque via pip, car les paquets debian sont pour une version trop ancienne.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">pip3</span> <span class="n">install</span> <span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span>
+<span class="n">Defaulting</span> <span class="n">to</span> <span class="n">user</span> <span class="n">installation</span> <span class="n">because</span> <span class="n">normal</span> <span class="n">site</span><span class="o">-</span><span class="n">packages</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">writeable</span>
+<span class="n">Collecting</span> <span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span>
+  <span class="n">Using</span> <span class="n">cached</span> <span class="n">paho_mqtt</span><span class="o">-</span><span class="mf">1.6.1</span><span class="o">-</span><span class="n">py3</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span>
+<span class="n">Installing</span> <span class="n">collected</span> <span class="n">packages</span><span class="p">:</span> <span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span>
+<span class="n">Successfully</span> <span class="n">installed</span> <span class="n">paho</span><span class="o">-</span><span class="n">mqtt</span><span class="o">-</span><span class="mf">1.6.1</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+</section>
+<section id="distributions-redhat-suse-basees-sur-rpm">
+<h3>Distributions Redhat/Suse (basées sur rpm)<a class="headerlink" href="#distributions-redhat-suse-basees-sur-rpm" title="Link to this heading"></a></h3>
+<p>Python distutils sur les distributions basées sur le gestionnaire de paquets redhat ne gère pas les dépendances
+avec l’emballage actuel, il faut donc les installer manuellement.
+Par exemple, sur fedora 28 obligatoirement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo dnf install python3-appdirs
+$ sudo dnf install python3-humanize
+$ sudo dnf install python3-psutil
+$ sudo dnf install python3-watchdog
+</pre></div>
+</div>
+<p>Facultatifs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo dnf install python3-paramiko  # support pour SFTP/SSH
+$ sudo dnf install python3-amqp   # support pour les messages AMQP (couriers rabbitmq)
+$ sudo dnf install python3-file-magic   # support optionnel pour le champs ¨content-type¨
+$ sudo dnf install python3-xattr   # support optionnel stocké certains métadonnées dans les attributs étendus.
+$ sudo dnf install python3-netifaces # support optionnel pour l´optio vip
+$ sudo dnf install python3-paho-mqtt # support optionnel pour les courtiers MQTT
+
+$ sudo dnf install python3-setuptools # needed to build rpm package.
+</pre></div>
+</div>
+<p>Si les paquets ne sont pas disponibles, l’un peut remplacer en utilisant python install package (pip)</p>
+<p>Une fois les dépendances en place, on peut construire un fichier RPM en utilisant <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/MetPX/sarracenia
+$ cd sarracenia
+
+$ python3 setup.py bdist_rpm
+$ sudo rpm -i dist/*.noarch.rpm
+</pre></div>
+</div>
+<p>Cette procédure installe uniquement l’application python (pas celle en C).
+Aucune page de manuel ni aucune autre documentation n’est installée non plus.</p>
+<p>The paquet RPM n’inclut pas non plus l’intégration avec Systemd (pour rouler sarra
+comme une service.) Il faut faire cette installation manuellement:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupadd</span> <span class="n">sarra</span>
+<span class="n">useradd</span> <span class="o">-</span><span class="n">g</span> <span class="n">sarra</span> <span class="n">sarra</span>
+<span class="n">wget</span>  <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">blob</span><span class="o">/</span><span class="n">development</span><span class="o">/</span><span class="n">debian</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span>
+<span class="n">cp</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span>
+<span class="n">cp</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span>
+</pre></div>
+</div>
+<p>Après cette intervention, on peut utiliser les commandes de SystemD normalement.</p>
+<p>(Oui, on est d´accord que ceci est triste, plus d´informations: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/863">https://github.com/MetPX/sarracenia/issues/863</a> )</p>
+</section>
+<section id="id1">
+<h3>PIP<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>Sur les distributions Windows ou Linux où les packages de système ne sont pas
+disponible, ou d’autres cas particuliers, tels que l’utilisation de python dans un virtual env, où
+il est plus pratique d’installer le paquet en utilisant pip (python install package)
+de <a class="reference external" href="http://pypi.python.org/">http://pypi.python.org/</a>.</p>
+<p>Il est simple de le faire juste l’essentiel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install metpx-sr3
+</pre></div>
+</div>
+<p>on pourrait aussi ajouter les extras:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install metpx-sr3[amqp,mqtt,vip]
+</pre></div>
+</div>
+<p>Si veut avoir tous les extras:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install metpx-sr3[all]
+</pre></div>
+</div>
+<p>et à mettre à niveau après l’installation initiale:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install metpx-sr3
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Pour installer à l’échelle du serveur sur un serveur Linux, préfixez avec <em>sudo</em></p></li>
+</ul>
+<p>NOTE:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">Sur</span> <span class="n">de</span> <span class="n">nombreux</span> <span class="n">systèmes</span> <span class="n">sur</span> <span class="n">lesquels</span> <span class="n">pythons</span> <span class="mi">2</span> <span class="n">et</span> <span class="mi">3</span> <span class="n">sont</span> <span class="n">installés</span><span class="p">,</span> <span class="n">vous</span> <span class="n">devrez</span> <span class="n">peut</span><span class="o">-</span><span class="n">être</span> <span class="n">spécifier</span> <span class="n">pip3</span> <span class="n">plutôt</span> <span class="n">que</span> <span class="n">pip</span><span class="o">.</span>
+
+<span class="o">*</span> <span class="n">En</span> <span class="n">Windows</span><span class="p">,</span> <span class="n">pour</span> <span class="n">que</span> <span class="n">la</span> <span class="n">fonction</span> <span class="n">de</span> <span class="nb">type</span> <span class="n">de</span> <span class="n">fichier</span> <span class="n">fonctionne</span><span class="p">,</span> <span class="n">il</span> <span class="n">faut</span> <span class="n">manuellement</span> <span class="o">*</span><span class="n">pip</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">magic</span><span class="o">-</span><span class="nb">bin</span><span class="o">*</span>
+  <span class="n">Pour</span> <span class="n">plus</span> <span class="n">de</span> <span class="n">détails</span> <span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pypi</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">python</span><span class="o">-</span><span class="n">magic</span><span class="o">/</span>
+</pre></div>
+</div>
+</section>
+<section id="demarrage-et-arret-du-systeme">
+<h3>Démarrage et arrêt du système<a class="headerlink" href="#demarrage-et-arret-du-systeme" title="Link to this heading"></a></h3>
+<p>Si l’intention est d’implémenter une pompe de données, il s’agit d’un serveur ayant un rôle à jouer dans la réalisation
+de grandes quantités de transferts de données, alors la convention est de créer une application <em>sarra</em>
+et de l’organiser pour qu’elle soit démarré au démarrage et arrêté à l’arrêt.</p>
+<p>Lorsque Sarracenia est installé à l’aide d’un paquet Debian :</p>
+<ul class="simple">
+<li><p>Le fichier d’unité <a class="reference external" href="https://systemd.io">SystemD</a> est installé au bon endroit.</p></li>
+<li><p>l’utilisateur sarra est créé,</p></li>
+</ul>
+<p>Si vous effectuez l’installation à l’aide de méthodes python3 (pip), ce fichier doit être installé :</p>
+<blockquote>
+<div><p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service">https://github.com/MetPX/sarracenia/blob/development/debian/metpx-sr3.service</a></p>
+</div></blockquote>
+<p>au bon endroit. Il peut être installé dans:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">service</span>
+</pre></div>
+</div>
+<p>une fois installé, il peut être activé de la manière normale. Il s’attendait à un utilisateur de sarra
+pour exister, qui pourrait être créé comme ça:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupadd</span> <span class="n">sarra</span>
+<span class="n">useradd</span> <span class="o">--</span><span class="n">system</span> <span class="o">--</span><span class="n">create</span><span class="o">-</span><span class="n">home</span> <span class="n">sarra</span>
+</pre></div>
+</div>
+<p>Les répertoires doivent être read/write pour sarra.  Les préférences iront dans
+~sarra/.config, et les fichiers d’état seront dans ~sarra/.cache, et le
+le traitement périodique (voir la prochaine session) doit également être mis en œuvre.</p>
+</section>
+<section id="traitement-periodique-taches-cron">
+<h3>Traitement périodique/Tâches Cron<a class="headerlink" href="#traitement-periodique-taches-cron" title="Link to this heading"></a></h3>
+<p>Quelle que soit la façon dont il est installé, un traitement périodique supplémentaire peut être nécessaire:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>pour exécuter <em>sr3 sanity</em> pour s’assurer que les processus appropriés sont en cours d’exécution.</p></li>
+<li><p>pour nettoyer les anciens répertoires et éviter de remplir le systèmes de fichiers.</p></li>
+</ul>
+</div></blockquote>
+<p>exemples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># tuer les processus errants ou redémarrer ceux qui auraient pu mourir.
+# en évitant le haut de l’heure ou le bas.
+7,14,21,28,35,42,49,56 * * * sr3 sanity
+# exemple de travaux de nettoyage de répertoire, le script est inclus dans exemples / sous-répertoire.
+17 5,11,17,23 * * *    IPALIAS=&#39;192.168.1.27&#39;;RESULT=`/sbin/ip addr show | grep $IPALIAS|wc|awk &#39;{print $1}&#39;`; if [ $RESULT -eq 1 ]; then tools/old_hour_dirs.py 6 /Projects/web_root ; fi
+</pre></div>
+</div>
+</section>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h3>
+<p>Sous Windows, il existe 2 (autres) options possibles :</p>
+<dl>
+<dt><strong>Sans Python</strong></dt><dd><p>Téléchargez le fichier d’installation de Sarracenia à partir de <a class="reference external" href="https://hpfx.collab.science.gc.ca/~pas037/Sarracenia_Releases">here</a>,
+exécutez-le et suivez les instructions.
+N’oubliez pas d’ajouter <em>Le répertoire Python de Sarracenia</em> à votre <em>PATH</em>.</p>
+</dd>
+<dt><strong>Avec Anaconda</strong></dt><dd><p>Créez votre environnement avec le <a class="reference external" href="../windows/sarracenia_env.yml">file</a> suggéré par ce référentiel.
+L’exécution de cette commande à partir de l’invite Anaconda devrait tout installer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda env create -f sarracenia_env.yml
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Voir <a class="reference internal" href="Windows.html"><span class="doc">Windows user manual</span></a> pour plus d’informations sur la façon d’exécuter Sarracenia sous Windows.</p>
+</section>
+<section id="paquets">
+<h3>Paquets<a class="headerlink" href="#paquets" title="Link to this heading"></a></h3>
+<p>Les paquets Debian et les roues python peuvent être téléchargés directement
+De: <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx/+packages">launchpad</a></p>
+</section>
+</section>
+<section id="source">
+<h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
+<p>Le code source de chaque module est disponible <a class="reference external" href="https://github.com/MetPX">https://github.com/MetPX</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/MetPX/sarracenia sarracenia
+$ cd sarracenia
+</pre></div>
+</div>
+<p>Le développement se fait sur la branche principale.  On veut probablement une vraie release,
+alors exécutez git tag et faites un checkout de la dernière (la dernière version stable):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git tag
+  .
+  .
+  .
+  v3.00.48
+  v3.00.49
+$ git checkout v3.00.49
+$ python3 -m build --no-isolation
+$ pip3 install dist/metpx_sarracenia-3.00.49-py3-none-any.whl
+</pre></div>
+</div>
+</section>
+<section id="sarrac">
+<h2>Sarrac<a class="headerlink" href="#sarrac" title="Link to this heading"></a></h2>
+<p>Le client C est disponible dans des binaires prédéfinis dans les launchpad référentiels aux côtés des paquets python</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo add-apt-repository ppa:ssc-hpc-chp-spc/metpx
+$ sudo apt-get update
+$ sudo apt-get install metpx-sr3c
+</pre></div>
+</div>
+<p>Pour toute version récente d’ubuntu. Le librabbitmq-0.8.0 a été rétroporté dans le PPA.
+la dépendance de sarrac. Pour d’autres architectures ou distributions, on peut construire à partir de la source</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/MetPX/sarrac
+</pre></div>
+</div>
+<p>sur n’importe quel système Linux, tant que la dépendance librabbitmq est satisfaite. Notez que le package ne peux
+pas se construire ou s’exécuter sur des systèmes non-Linux.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="5_api_moth_post_demo.html" class="btn btn-neutral float-left" title="Publication à partir du code Python" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Mettre_en_place_un_subscriber_distant.html" class="btn btn-neutral float-right" title="Comment configurer un abonné distant" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

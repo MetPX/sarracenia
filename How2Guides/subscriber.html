@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscriber Guide &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Sources" href="source.html" />
+    <link rel="prev" title="HOWTOS" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">HOWTOS</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Subscribing to Data Feeds</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#receiving-data-from-a-metpx-sarracenia-data-pump">Receiving Data from a MetPX-Sarracenia Data Pump</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#revision-record">Revision Record</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#server-side-resources-allocated-for-subscribers">Server-Side Resources Allocated for Subscribers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#working-with-multiple-configurations">Working with Multiple Configurations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#high-priority-delivery">High Priority Delivery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#refining-selection">Refining Selection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data-loss">Data Loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#performance">Performance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plugins">Plugins</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#file-rxpipe">file_rxpipe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#anti-virus-scanning">Anti-Virus Scanning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#logging-and-debugging">Logging and Debugging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#housekeeping-metrics">Housekeeping Metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#redundant-file-reception">Redundant File Reception</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#web-proxies">Web Proxies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#api-level-access">API Level Access</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#more-information">More Information</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="source.html">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source.html#quickly-announcing-very-large-trees-on-linux">Quickly Announcing Very Large Trees On Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FlowCallbacks.html">Using Flow Callback Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin.html">Administering AMQP Data Pumps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Admin_Rabbit_Addendum.html">Administering Rabbitmq Adddendum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UPGRADING.html">Release Notes (Advice on Upgrades)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v2ToSr3.html">Porting V2 Plugins to Sr3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Email_Ingesting_With_Sarracenia.html">Email Ingesting with Sarracenia (v2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hydro_Examples.html">Using Plugins to Grab Hydrometric Data (v2)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">HOWTOS</a> &raquo;</li>
+      <li>Subscriber Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/How2Guides/subscriber.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="subscriber-guide">
+<h1>Subscriber Guide<a class="headerlink" href="#subscriber-guide" title="Link to this heading"></a></h1>
+<section id="receiving-data-from-a-metpx-sarracenia-data-pump">
+<h2>Receiving Data from a MetPX-Sarracenia Data Pump<a class="headerlink" href="#receiving-data-from-a-metpx-sarracenia-data-pump" title="Link to this heading"></a></h2>
+<section id="revision-record">
+<h3>Revision Record<a class="headerlink" href="#revision-record" title="Link to this heading"></a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+</dl>
+</section>
+<section id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h3>
+<p>A Sarracenia data pump is a web server with notifications
+for subscribers to know, quickly, when new data has arrived.
+To find out what data is already available on a pump,
+view the tree with a web browser.
+For simple immediate needs, one can download data using the
+browser itself, or a standard tool such as wget.</p>
+<p>The usual intent is to automatically download the dsesired data to a directory on a subscriber
+machine where other software can process it.  Please note:</p>
+<ul class="simple">
+<li><p>The tool is entirely command line driven (there is no GUI). More accurately, it is mostly configuration file driven.
+Most of the <em>interface</em> involves using a text editor to modify configuration files.</p></li>
+<li><p>While written to be compatible with other environments, the focus is on Linux usage.</p></li>
+<li><p>The tool can be used as either an end-user tool, or a system-wide transfer engine.
+This guide is focused on the end-user case.</p></li>
+<li><p>All documentation of the package is available
+at <a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a></p></li>
+</ul>
+<p>While Sarracenia can work with any web tree, or any URL
+that sources choose to post, there is a conventional layout, for example at:</p>
+<blockquote>
+<div><p><a class="reference external" href="http://hpfx.collab.science.gc.ca">http://hpfx.collab.science.gc.ca</a></p>
+</div></blockquote>
+<p>A data pump’s web server will just expose web accessible folders
+and the root of the tree is the date, in YYYYMMDD format.
+These dates do not represent anything about the data other than
+when it was put into the pumping network, and since Sarracenia
+always uses Universal Co-ordinated Time, the dates might not correspond to
+the current date/time in the location of the subscriber:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span> <span class="n">of</span> <span class="o">/</span>
+
+<span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
+<span class="n">Parent</span> <span class="n">Directory</span>                            <span class="o">-</span>
+<span class="mi">20151105</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="mi">20151106</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="mi">20151107</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="mi">20151108</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="mi">20151109</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="mi">20151110</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+</pre></div>
+</div>
+<p>A variable number of days are stored on each data pump; for those
+with an emphasis on real-time reliable delivery, the number of days
+will be shorter.  For other pumps, where long term outages need
+to be tolerated, more days will be kept.</p>
+<p>Under the first level of date trees, there is a directory
+per source. A Source in Sarracenia is an account used to inject
+data into the pump network.  Data can cross many pumps on its
+way to the visible ones:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Index</span> <span class="n">of</span> <span class="o">/</span><span class="mi">20151110</span>
+
+<span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
+<span class="n">Parent</span> <span class="n">Directory</span>                            <span class="o">-</span>
+<span class="n">UNIDATA</span><span class="o">-</span><span class="n">UCAR</span><span class="o">/</span>           <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="n">NOAAPORT</span><span class="o">/</span>               <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="n">MSC</span><span class="o">-</span><span class="n">CMC</span><span class="o">/</span>                <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="n">UKMET</span><span class="o">-</span><span class="n">RMDCN</span><span class="o">/</span>            <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="n">UKMET</span><span class="o">-</span><span class="n">Internet</span><span class="o">/</span>         <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+<span class="n">NWS</span><span class="o">-</span><span class="n">OPSNET</span><span class="o">/</span>             <span class="mi">2015</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">27</span> <span class="mi">06</span><span class="p">:</span><span class="mi">44</span>    <span class="o">-</span>
+</pre></div>
+</div>
+<p>The data under each of these directories was obtained from the named
+source. In these examples, it is actually injected by Data Interchange
+staff, and the names are chosen to represent the origin of the data.</p>
+<p>The original Environment and Climate Change Canada data mart is
+one “source” in this sense, showing up on hpfx as WXO-DD, or the same
+tree being available at the root of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+<p>Once down to the viewing the content from a given source,
+products are organized in a way defined by the source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Icon</span>  <span class="n">Name</span>                    <span class="n">Last</span> <span class="n">modified</span>      <span class="n">Size</span>  <span class="n">Description</span>
+<span class="p">[</span><span class="n">TXT</span><span class="p">]</span> <span class="n">about_dd_apropos</span><span class="o">.</span><span class="n">txt</span>    <span class="mi">2021</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">17</span> <span class="mi">13</span><span class="p">:</span><span class="mi">23</span>   <span class="mf">1.0</span><span class="n">K</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">air_quality</span><span class="o">/</span>            <span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">10</span> <span class="mi">14</span><span class="p">:</span><span class="mi">47</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">alerts</span><span class="o">/</span>                 <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">12</span><span class="p">:</span><span class="mi">00</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">analysis</span><span class="o">/</span>               <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">17</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">barometry</span><span class="o">/</span>              <span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">22</span> <span class="mi">22</span><span class="p">:</span><span class="mi">00</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">bulletins</span><span class="o">/</span>              <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">19</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">citypage_weather</span><span class="o">/</span>       <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">21</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">climate</span><span class="o">/</span>                <span class="mi">2020</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">03</span> <span class="mi">16</span><span class="p">:</span><span class="mi">30</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">doc</span><span class="o">/</span>                    <span class="mi">2022</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">28</span> <span class="mi">20</span><span class="p">:</span><span class="mi">00</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">ensemble</span><span class="o">/</span>               <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">34</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">hydrometric</span><span class="o">/</span>            <span class="mi">2021</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">14</span> <span class="mi">14</span><span class="p">:</span><span class="mi">12</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">marine_weather</span><span class="o">/</span>         <span class="mi">2020</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">15</span> <span class="mi">14</span><span class="p">:</span><span class="mi">51</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">meteocode</span><span class="o">/</span>              <span class="mi">2022</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">13</span> <span class="mi">14</span><span class="p">:</span><span class="mi">01</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">model_gdsps</span><span class="o">/</span>            <span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">01</span> <span class="mi">21</span><span class="p">:</span><span class="mi">41</span>    <span class="o">-</span>
+<span class="p">[</span><span class="n">DIR</span><span class="p">]</span> <span class="n">model_gdwps</span><span class="o">/</span>            <span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">01</span> <span class="mi">16</span><span class="p">:</span><span class="mi">50</span>    <span class="o">-</span>
+</pre></div>
+</div>
+<p>Directories below that level are related to the date being sought.</p>
+<p>One can run sr3 to download selected products from Data pumps like these.
+The configuration files are a few lines of configuration, and sr3
+includes some examples.</p>
+<p>You can list the available configurations with <em>sr3 list</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 list examples
+  Sample Configurations: (from: /usr/lib/python3/dist-packages/sarracenia/examples )
+  cpump/cno_trouble_f00.inc        poll/aws-nexrad.conf             poll/pollingest.conf             poll/pollnoaa.conf               poll/pollsoapshc.conf
+  poll/pollusgs.conf               poll/pulse.conf                  post/WMO_mesh_post.conf          sarra/wmo_mesh.conf              sender/ec2collab.conf
+  sender/pitcher_push.conf         shovel/no_trouble_f00.inc        subscribe/WMO_Sketch_2mqtt.conf  subscribe/WMO_Sketch_2v3.conf    subscribe/WMO_mesh_CMC.conf
+  subscribe/WMO_mesh_Peer.conf     subscribe/aws-nexrad.conf        subscribe/dd_2mqtt.conf          subscribe/dd_all.conf            subscribe/dd_amis.conf
+  subscribe/dd_aqhi.conf           subscribe/dd_cacn_bulletins.conf subscribe/dd_citypage.conf       subscribe/dd_cmml.conf           subscribe/dd_gdps.conf
+  subscribe/dd_ping.conf           subscribe/dd_radar.conf          subscribe/dd_rdps.conf           subscribe/dd_swob.conf           subscribe/ddc_cap-xml.conf
+  subscribe/ddc_normal.conf        subscribe/downloademail.conf     subscribe/ec_ninjo-a.conf        subscribe/hpfx_amis.conf         subscribe/local_sub.conf
+  subscribe/pitcher_pull.conf      subscribe/sci2ec.conf            subscribe/subnoaa.conf           subscribe/subsoapshc.conf        subscribe/subusgs.conf
+  sender/ec2collab.conf            sender/pitcher_push.conf         watch/master.conf                watch/pitcher_client.conf        watch/pitcher_server.conf
+  watch/sci2ec.conf
+</pre></div>
+</div>
+<p>AMIS, the Canadian AES (Atmospheric Environment Service) Meteorological Information Service, was a satellite
+broadcast system for weather data in the 1980’s. It is a continuous stream of text messages (originally at 4800 bps!)
+and each message is limited to 14000 bytes. The service was transitioned to an internet streaming feed in the early 2000’s,
+and the streaming version is still fed to those interested in air and maritime navigation across the country.</p>
+<p>One can download a continuous feed of such traditional weather bulletins from the original data mart using the subscribe/dd_amis.conf
+configuration example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 add subscribe/dd_amis.conf
+add: 2021-01-26 01:13:54,047 [INFO] sarracenia.sr add copying: /usr/lib/python3/dist-packages/sarracenia/examples/subscribe/dd_amis.conf to /home/peter/.config/sr3/subscribe/dd_amis.conf
+</pre></div>
+</div>
+<p>Now files in <cite>.config/</cite> can be used directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 list
+User Configurations: (from: /home/peter/.config/sr3 )
+subscribe/dd_amis.conf           admin.conf                       credentials.conf                 default.conf
+logs are in: /home/peter/.cache/sr3/log
+</pre></div>
+</div>
+<p>To view a configuration, give it to <cite>sr3 list</cite> as an argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 list subscribe/dd_amis.conf
+# this is a feed of wmo bulletin (a set called AMIS in the old times)
+
+broker amqps://dd.weather.gc.ca/
+topicPrefix v02.post
+
+# instances: number of downloading processes to run at once.  defaults to 1. Not enough for this case
+instances 5
+
+# expire, in operational use, should be longer than longest expected interruption
+expire 10m
+
+subtopic bulletins.alphanumeric.#
+
+directory /tmp/dd_amis
+accept .*
+</pre></div>
+</div>
+<p>Then it can be run interactively with <em>sr3 foreground subscribe/dd_amis</em> or as a service
+with <em>sr3 start subscribe/dd_amis</em>.  In both cases, files will be downloaded from
+dd.weather.gc.ca into the local machine’s /tmp/dd_amis directory.</p>
+<p>More information:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Tutorials/1_CLI_introduction.html">CLI Introduction (Jupyter Notebook)</a></p></li>
+<li><p><a class="reference external" href="../Tutorials/Setup_a_remote_subscriber.html">Set up a Remote Subscriber</a></p></li>
+<li><p><a class="reference internal" href="../Reference/sr3_options.7.html"><span class="doc">Options in the configuration file</span></a></p></li>
+</ul>
+</section>
+<section id="server-side-resources-allocated-for-subscribers">
+<h3>Server-Side Resources Allocated for Subscribers<a class="headerlink" href="#server-side-resources-allocated-for-subscribers" title="Link to this heading"></a></h3>
+<p>Every configuration results in corresponding resources being declared on the broker,
+whose lifetime is controlled by the <em>expire</em> setting. The default <em>expire</em> is set
+to 300 seconds to avoid cluttering up servers with small experiments.  Set <em>expire</em>
+to the value that makes the most sense for your application (long enough to cover
+outages you may experience). In a configuration file, something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expire</span> <span class="mi">3</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>might be appropriate. When changing <em>subtopic</em> or <em>queue</em> settings, or when one
+expects to not use a configuration for an extended period of time, it is best to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">cleanup</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">swob</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>which will de-allocate the queue (and its bindings) on the server.</p>
+<p>Why? Whenever a subscriber is started, a queue is created on the data pump, with
+the topic bindings set by the configuration file. If the subscriber is stopped,
+the queue keeps getting notification messages as defined by subtopic selection, and when the
+subscriber starts up again, the queued notification messages are forwarded to the client.
+So when the <em>subtopic</em> option is changed, since it is already defined on the
+server, one ends up adding a binding rather than replacing it.  For example,
+if one has a subtopic that contains SATELLITE, and then stops the subscriber,
+edits the file and now the topic contains only RADAR, when the subscriber is
+restarted, not only will all the queued satellite files be sent to the consumer,
+but the RADAR is added to the bindings, rather than replacing them, so the
+subscriber will get both the SATELLITE and RADAR data even though the configuration
+no longer contains the former.</p>
+<p>Also, if one is experimenting, and a queue is to be stopped for a very long
+time, it may accumulate a large number of notification messages. The total number of notification messages
+on a data pump has an effect on the pump performance for all users. It is therefore
+advisable to have the pump de-allocate resources when they will not be needed
+for an extended period, or when experimenting with different settings.</p>
+</section>
+<section id="working-with-multiple-configurations">
+<h3>Working with Multiple Configurations<a class="headerlink" href="#working-with-multiple-configurations" title="Link to this heading"></a></h3>
+<p>Place all configuration files, with the .conf suffix, in a standard
+directory: ~/.config/sr3/subscribe/ For example, if there are two files in
+that directory: dd_amis.conf and hpfx_amis.conf, one could then run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">start</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_amis</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">starting</span><span class="p">:</span><span class="o">.</span><span class="p">(</span> <span class="mi">5</span> <span class="p">)</span> <span class="n">Done</span>
+
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>to start the CMC downloading configuration. One can use the sr3 command to start/stop multiple configurations at once.
+The sr3 command will go through the default directories and start up
+all the configurations it finds:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">status</span>
+<span class="n">status</span><span class="p">:</span>
+<span class="n">Component</span><span class="o">/</span><span class="n">Config</span>                         <span class="n">State</span>             <span class="n">Run</span>  <span class="n">Miss</span>   <span class="n">Exp</span> <span class="n">Retry</span>
+<span class="o">----------------</span>                         <span class="o">-----</span>             <span class="o">---</span>  <span class="o">----</span>   <span class="o">---</span> <span class="o">-----</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">dd_amis</span>                        <span class="n">stopped</span>             <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>                      <span class="n">stopped</span>             <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+      <span class="n">total</span> <span class="n">running</span> <span class="n">configs</span><span class="p">:</span>   <span class="mi">0</span> <span class="p">(</span> <span class="n">processes</span><span class="p">:</span> <span class="mi">0</span> <span class="n">missing</span><span class="p">:</span> <span class="mi">0</span> <span class="n">stray</span><span class="p">:</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">edit</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>
+
+<span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">start</span>
+<span class="n">starting</span><span class="p">:</span><span class="o">.</span><span class="p">(</span> <span class="mi">10</span> <span class="p">)</span> <span class="n">Done</span>
+
+<span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">status</span>
+<span class="n">status</span><span class="p">:</span>
+<span class="n">Component</span><span class="o">/</span><span class="n">Config</span>                         <span class="n">State</span>             <span class="n">Run</span>  <span class="n">Miss</span>   <span class="n">Exp</span> <span class="n">Retry</span>
+<span class="o">----------------</span>                         <span class="o">-----</span>             <span class="o">---</span>  <span class="o">----</span>   <span class="o">---</span> <span class="o">-----</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">dd_amis</span>                        <span class="n">running</span>             <span class="mi">5</span>     <span class="mi">0</span>     <span class="mi">5</span>     <span class="mi">0</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>                      <span class="n">running</span>             <span class="mi">5</span>     <span class="mi">0</span>     <span class="mi">5</span>     <span class="mi">0</span>
+      <span class="n">total</span> <span class="n">running</span> <span class="n">configs</span><span class="p">:</span>   <span class="mi">2</span> <span class="p">(</span> <span class="n">processes</span><span class="p">:</span> <span class="mi">10</span> <span class="n">missing</span><span class="p">:</span> <span class="mi">0</span> <span class="n">stray</span><span class="p">:</span> <span class="mi">0</span> <span class="p">)</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>will start up some sr3 processes as configured by CMC.conf and others
+to match hpfx_amis.conf. Sr3 stop will also do what you would expect. As will sr3 status.
+Note that there are 5 sr_subscribe processes that start with the CMC
+configuration and 3 NWS ones. These are <em>instances</em> and share the same
+download queue.</p>
+<p>More information:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Explanation/CommandLineGuide.html">Command line Guide</a></p></li>
+<li><p><a class="reference external" href="../Reference/sr3.1.html">Sr3 Manual page</a></p></li>
+</ul>
+</section>
+<section id="high-priority-delivery">
+<h3>High Priority Delivery<a class="headerlink" href="#high-priority-delivery" title="Link to this heading"></a></h3>
+<p>While the Sarracenia protocol does not provide explicit prioritization, the use
+of multiple queues provides similar benefits. Each configuration results
+in a queue declaration on the server side. Group products at like priority into
+a queue by selecting them using a common configuration. The smaller the groupings,
+the lower the delay of processing. While all queues are processed at the same priority,
+data passes though shorter queues more quickly. One can summarize with:</p>
+<blockquote>
+<div><p><strong>Use Multiple Configurations to Prioritize</strong></p>
+</div></blockquote>
+<p>To make the advice concrete, take the example of the Environment Canada data
+mart ( dd.weather.gc.ca ), which distributes gridded binaries, GOES satellite
+imagery, many thousands of city forecasts, observations, RADAR products, etc…
+For real-time weather, warnings and RADAR data are the highest priority. At certain
+times of the day, or in cases of backlogs, many hundreds of thousands of products
+can delay receipt of high priority products if only a single queue is used.</p>
+<p>To ensure prompt processing of data in this case, define one configuration to subscribe
+to weather warnings (which are a very small number of products), a second for the RADARS
+(a larger but still relatively small group), and a third (largest grouping) for all
+the other data. Each configuration will use a separate queue. Warnings will be
+processed the fastest, RADARS will queue up against each other and so experience some
+more delay, and other products will share a single queue and be subject to more
+delay in cases of backlog.</p>
+<p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_cap-xml.conf">https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_cap-xml.conf</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>broker amqps://dd.weather.gc.ca/
+topicPrefix v02.post
+
+#expiration du file d´attende sur le serveur. doit excèder la durée maximale
+#     de panne qu´on veut tolérer sans perte. (1d un jour?)
+expire 10m
+subtopic alerts.cap.#
+
+mirror
+
+directory ${HOME}/datamartclone
+</pre></div>
+</div>
+<p><a class="reference external" href="https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_normal.conf">https://github.com/MetPX/sarracenia/blob/main/sarracenia/examples/subscribe/ddc_normal.conf</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>broker amqps://dd.weather.gc.ca/
+topicPrefix v02.post
+
+subtopic #
+
+# reject hi priority data captured by other configuration.
+reject .*alerts/cap.*
+
+#expire, needs to be longer than the longest expected interruption in service.
+expire 10m
+
+mirror
+directory ${HOME}/datamartclone
+</pre></div>
+</div>
+<p>Where you want the mirror of the data mart to start at $(HOME)/datamartclone (presumably there is a web
+server configured do display that directory.) Likely, the <em>ddc_normal</em> configuration
+will experience a lot of queueing, as there is a lot of data to download. The <em>ddc_hipri.conf</em> is
+only subscribed to weather warnings in Common Alerting Protocol format, so there will be
+little to no queueing for that data.</p>
+</section>
+<section id="refining-selection">
+<h3>Refining Selection<a class="headerlink" href="#refining-selection" title="Link to this heading"></a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>FIXME</strong>: Make a picture, with a:</p>
+<ul class="simple">
+<li><p>broker at one end, and the subtopic apply there.</p></li>
+<li><p>client at the other end, and the accept/reject apply there.</p></li>
+</ul>
+</div>
+<p>Pick <em>subtopics</em> ( which are applied on the broker with no notification message downloads ) to narrow
+the number of notification messages that traverse the network to get to the sarracenia client processes.
+The <em>reject</em> and <em>accept</em> options are evaluated by the sr_subscriber processes themselves,
+providing regular expression based filtering of the posts which are transferred.
+<em>accept</em> operates on the actual path (well, URL), indicating what files within the
+notification stream received should actually be downloaded. Look in the <em>Downloads</em>
+line of the log file for examples of this transformed path.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Brief Introduction to Regular Expressions</p>
+<p>Regular expressions are a very powerful way of expressing pattern matches.
+They provide extreme flexibility, but in these examples we will only use a
+very trivial subset: The . is a wildcard matching any single character. If it
+is followed by an occurrence count, it indicates how many letters will match
+the pattern. the * (asterisk) character, means any number of occurrences.
+so:</p>
+<ul class="simple">
+<li><p>.* means any sequence of characters of any length. In other words, match anything.</p></li>
+<li><p>cap.* means any sequence of characters that starts with cap.</p></li>
+<li><p>.*CAP.* means any sequence of characters with CAP somewhere in it.</p></li>
+<li><p>.*cap means any sequence of characters that ends with CAP.  In case where multiple portions of the string could match, the longest one is selected.</p></li>
+<li><p>.*?cap same as above, but <em>non-greedy</em>, meaning the shortest match is chosen.</p></li>
+</ul>
+<p>Please consult various internet resources for more information on the full
+variety of matching possible with regular expressions:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/re.html">https://docs.python.org/3/library/re.html</a></p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Regular_expression">https://en.wikipedia.org/wiki/Regular_expression</a></p></li>
+<li><p><a class="reference external" href="http://www.regular-expressions.info/">http://www.regular-expressions.info/</a></p></li>
+</ul>
+</div>
+<p>back to sample configuration files:</p>
+<p>Note the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob
+</pre></div>
+</div>
+<blockquote>
+<div><p>broker amqps://anonymous&#64;dd.weather.gc.ca
+topicPrefix v02.post
+accept .*/observations/swob-ml/.*</p>
+<p>#write all SWOBS into the current working directory
+#BAD: THIS IS NOT AS GOOD AS THE PREVIOUS EXAMPLE
+#     NOT having a “subtopic” and filtering with “accept” MEANS EXCESSIVE NOTIFICATIONS are processed.</p>
+</div></blockquote>
+<p>This configuration, from the subscriber point of view, will likely deliver
+the same data as the previous example. However, the default subtopic being
+a wildcard means that the server will transfer all notifications for the
+server (likely millions of them) that will be discarded by the subscriber
+process applying the accept clause. It will consume a lot more CPU and
+bandwidth on both server and client. One should choose appropriate subtopics
+to minimize the notifications that will be transferred only to be discarded.
+The <em>accept</em> (and <em>reject</em>) patterns is used to further refine <em>subtopic</em> rather
+than replace it.</p>
+<p>By default, the files downloaded will be placed in the current working
+directory when sr_subscribe was started. This can be overridden using
+the <em>directory</em> option.</p>
+<p>If downloading a directory tree, and the intent is to mirror the tree,
+then the option mirror should be set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/swob
+
+  broker amqps://anonymous@dd.weather.gc.ca
+  topicPrefix v02.post
+  subtopic observations.swob-ml.#
+  directory /tmp
+  mirror True
+  #
+  # instead of writing to current working directory, write to /tmp.
+  # in /tmp. Mirror: create a hierarchy like the one on the source server.
+</pre></div>
+</div>
+<p>One can also intersperse <em>directory</em> and <em>accept/reject</em> directives to build
+an arbitrarily different hierarchy from what was on the source data pump.
+The configuration file is read from top to bottom, so then sr_subscribe
+finds a ‘’directory’’ option setting, only the ‘’accept’’ clauses after
+it will cause files to be placed relative to that directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 edit subscribe/ddi_ninjo_part1.conf
+
+broker amqps://ddi.cmc.ec.gc.ca/
+topicPrefix v02.post
+subtopic ec.ops.*.*.ninjo-a.#
+
+directory /tmp/apps/ninjo/import/point/reports/in
+accept .*ABFS_1.0.*
+accept .*AQHI_1.0.*
+accept .*AMDAR_1.0.*
+
+directory /tmp/apps/ninjo/import/point/catalog_common/in
+accept .*ninjo-station-catalogue.*
+
+directory /tmp/apps/ninjo/import/point/scit_sac/in
+accept .*~~SAC,SAC_MAXR.*
+
+directory /tmp/apps/ninjo/import/point/scit_tracker/in
+accept .*~~TRACKER,TRACK_MAXR.*
+acceptUnmatched off
+</pre></div>
+</div>
+<p>In the above example, ninjo-station catalog data is placed in the
+catalog_common/in directory, rather than in the point data
+hierarchy used to store the data that matches the first three
+accept clauses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that .* in the subtopic directive, where
+it means ´match any one topic´ (ie. no period characters allowed in
+topic names) has a different meaning than it does in an accept
+clause, where it means match any string.</p>
+<p>Yes, this is confusing. No, it cannot be helped.</p>
+</div>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Tutorials/1_CLI_introduction.html">Downloading using the Command Line (Jupyter Notebook)</a></p></li>
+</ul>
+</section>
+<section id="data-loss">
+<h3>Data Loss<a class="headerlink" href="#data-loss" title="Link to this heading"></a></h3>
+<section id="outage">
+<h4>Outage<a class="headerlink" href="#outage" title="Link to this heading"></a></h4>
+<p>The <em>expire</em> determines how long the data pump will hold onto your queued subscription,
+after a disconnection. The setting needs to be set longer than the longest outage your
+feed needs to survive without data loss.</p>
+</section>
+<section id="too-slow-queue-too-large">
+<h4>Too slow, Queue Too Large<a class="headerlink" href="#too-slow-queue-too-large" title="Link to this heading"></a></h4>
+<p>The performance of a feed
+is important, as, serving the internet, a one client´s slow download affects all the other ones,
+and a few slow clients can overwhelm a data pump.  Often there are server policies in place
+to prevent mis-configured (i.e. too slow) subscriptions from resulting in very long queues.</p>
+<p>When the queue becomes too long, the data pump may start discarding messages, and
+the subscriber will perceive that as data loss.</p>
+<p>To identify slow downloads, examine the lag in the download log. For example, create
+a sample subscriber like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="nb">list</span> <span class="n">ie</span>
+
+<span class="n">Sample</span> <span class="n">Configurations</span><span class="p">:</span> <span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">examples</span> <span class="p">)</span>
+<span class="n">cpump</span><span class="o">/</span><span class="n">cno_trouble_f00</span><span class="o">.</span><span class="n">inc</span>        <span class="n">flow</span><span class="o">/</span><span class="n">amserver</span><span class="o">.</span><span class="n">conf</span>               <span class="n">flow</span><span class="o">/</span><span class="n">poll</span><span class="o">.</span><span class="n">inc</span>                    <span class="n">flow</span><span class="o">/</span><span class="n">post</span><span class="o">.</span><span class="n">inc</span>                    <span class="n">flow</span><span class="o">/</span><span class="n">report</span><span class="o">.</span><span class="n">inc</span>                  <span class="n">flow</span><span class="o">/</span><span class="n">sarra</span><span class="o">.</span><span class="n">inc</span>
+<span class="n">flow</span><span class="o">/</span><span class="n">sender</span><span class="o">.</span><span class="n">inc</span>                  <span class="n">flow</span><span class="o">/</span><span class="n">shovel</span><span class="o">.</span><span class="n">inc</span>                  <span class="n">flow</span><span class="o">/</span><span class="n">subscribe</span><span class="o">.</span><span class="n">inc</span>               <span class="n">flow</span><span class="o">/</span><span class="n">watch</span><span class="o">.</span><span class="n">inc</span>                   <span class="n">flow</span><span class="o">/</span><span class="n">winnow</span><span class="o">.</span><span class="n">inc</span>                  <span class="n">poll</span><span class="o">/</span><span class="n">airnow</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">poll</span><span class="o">/</span><span class="n">aws</span><span class="o">-</span><span class="n">nexrad</span><span class="o">.</span><span class="n">conf</span>             <span class="n">poll</span><span class="o">/</span><span class="n">mail</span><span class="o">.</span><span class="n">conf</span>                   <span class="n">poll</span><span class="o">/</span><span class="n">nasa</span><span class="o">-</span><span class="n">mls</span><span class="o">-</span><span class="n">nrt</span><span class="o">.</span><span class="n">conf</span>           <span class="n">poll</span><span class="o">/</span><span class="n">noaa</span><span class="o">.</span><span class="n">conf</span>                   <span class="n">poll</span><span class="o">/</span><span class="n">soapshc</span><span class="o">.</span><span class="n">conf</span>                <span class="n">poll</span><span class="o">/</span><span class="n">usgs</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">post</span><span class="o">/</span><span class="n">WMO_mesh_post</span><span class="o">.</span><span class="n">conf</span>          <span class="n">sarra</span><span class="o">/</span><span class="n">wmo_mesh</span><span class="o">.</span><span class="n">conf</span>              <span class="n">sender</span><span class="o">/</span><span class="n">am_send</span><span class="o">.</span><span class="n">conf</span>              <span class="n">sender</span><span class="o">/</span><span class="n">ec2collab</span><span class="o">.</span><span class="n">conf</span>            <span class="n">sender</span><span class="o">/</span><span class="n">pitcher_push</span><span class="o">.</span><span class="n">conf</span>         <span class="n">shovel</span><span class="o">/</span><span class="n">no_trouble_f00</span><span class="o">.</span><span class="n">inc</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">aws</span><span class="o">-</span><span class="n">nexrad</span><span class="o">.</span><span class="n">conf</span>        <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_2mqtt</span><span class="o">.</span><span class="n">conf</span>          <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_all</span><span class="o">.</span><span class="n">conf</span>            <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_amis</span><span class="o">.</span><span class="n">conf</span>           <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_aqhi</span><span class="o">.</span><span class="n">conf</span>           <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_cacn_bulletins</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">dd_citypage</span><span class="o">.</span><span class="n">conf</span>       <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_cmml</span><span class="o">.</span><span class="n">conf</span>           <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_gdps</span><span class="o">.</span><span class="n">conf</span>           <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_radar</span><span class="o">.</span><span class="n">conf</span>          <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_rdps</span><span class="o">.</span><span class="n">conf</span>           <span class="n">subscribe</span><span class="o">/</span><span class="n">dd_swob</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">ddc_cap</span><span class="o">-</span><span class="n">xml</span><span class="o">.</span><span class="n">conf</span>       <span class="n">subscribe</span><span class="o">/</span><span class="n">ddc_normal</span><span class="o">.</span><span class="n">conf</span>        <span class="n">subscribe</span><span class="o">/</span><span class="n">downloademail</span><span class="o">.</span><span class="n">conf</span>     <span class="n">subscribe</span><span class="o">/</span><span class="n">ec_ninjo</span><span class="o">-</span><span class="n">a</span><span class="o">.</span><span class="n">conf</span>        <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfxWIS2DownloadAll</span><span class="o">.</span><span class="n">conf</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_citypage</span><span class="o">.</span><span class="n">conf</span>     <span class="n">subscribe</span><span class="o">/</span><span class="n">local_sub</span><span class="o">.</span><span class="n">conf</span>         <span class="n">subscribe</span><span class="o">/</span><span class="n">ping</span><span class="o">.</span><span class="n">conf</span>              <span class="n">subscribe</span><span class="o">/</span><span class="n">pitcher_pull</span><span class="o">.</span><span class="n">conf</span>      <span class="n">subscribe</span><span class="o">/</span><span class="n">sci2ec</span><span class="o">.</span><span class="n">conf</span>            <span class="n">subscribe</span><span class="o">/</span><span class="n">subnoaa</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">subscribe</span><span class="o">/</span><span class="n">subsoapshc</span><span class="o">.</span><span class="n">conf</span>        <span class="n">subscribe</span><span class="o">/</span><span class="n">subusgs</span><span class="o">.</span><span class="n">conf</span>           <span class="n">sender</span><span class="o">/</span><span class="n">am_send</span><span class="o">.</span><span class="n">conf</span>              <span class="n">sender</span><span class="o">/</span><span class="n">ec2collab</span><span class="o">.</span><span class="n">conf</span>            <span class="n">sender</span><span class="o">/</span><span class="n">pitcher_push</span><span class="o">.</span><span class="n">conf</span>         <span class="n">watch</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">watch</span><span class="o">/</span><span class="n">pitcher_client</span><span class="o">.</span><span class="n">conf</span>        <span class="n">watch</span><span class="o">/</span><span class="n">pitcher_server</span><span class="o">.</span><span class="n">conf</span>        <span class="n">watch</span><span class="o">/</span><span class="n">sci2ec</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>pick one ane add it local configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">add</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">missing</span> <span class="n">state</span> <span class="k">for</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>
+<span class="n">add</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">513</span> <span class="mi">3286889</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">root</span> <span class="n">add</span> <span class="n">matched</span> <span class="n">existing</span> <span class="p">[</span><span class="s1">&#39;subscribe/hpfx_amis&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">513</span> <span class="mi">3286889</span> <span class="p">[</span><span class="n">ERROR</span><span class="p">]</span> <span class="n">root</span> <span class="n">add</span> <span class="n">nothing</span> <span class="n">specified</span> <span class="n">to</span> <span class="n">add</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>run it in foreground for a few seconds and stop it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">foreground</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>
+<span class="mf">.2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span><span class="mi">977</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">flowCallback</span> <span class="n">plugins</span> <span class="n">to</span> <span class="n">load</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">194</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">queue</span> <span class="n">declared</span> <span class="n">q_anonymous_subscribe</span><span class="o">.</span><span class="n">hpfx_amis</span><span class="mf">.67711727.37906289</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">194</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">binding</span> <span class="n">q_anonymous_subscribe</span><span class="o">.</span><span class="n">hpfx_amis</span><span class="mf">.67711727.37906289</span> <span class="k">with</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span><span class="o">.*.</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">.</span><span class="n">bulletins</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="c1"># to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="fm">__init__</span> <span class="n">subscribe</span> <span class="n">initialized</span> <span class="k">with</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">}</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">callbacks</span> <span class="n">loaded</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">pid</span><span class="p">:</span> <span class="mi">3286919</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span> <span class="n">instance</span><span class="p">:</span> <span class="mi">0</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">241</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">now</span> <span class="n">active</span> <span class="n">on</span> <span class="n">vip</span> <span class="kc">None</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.20</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRWA20_KWAL_071739___7440</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">3.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRMN70_KWAL_071739___39755</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___132</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRMN20_KWAL_071739___19368</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">1.19</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SX</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SXAK50_KWAL_071739___15077</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRWA20_KWAL_071739___7440</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRMN70_KWAL_071739___39755</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___132</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRMN20_KWAL_071739___19368</span>
+<span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="n">foreground</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span>
+<span class="mf">.2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span><span class="mi">977</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">loadCallbacks</span> <span class="n">flowCallback</span> <span class="n">plugins</span> <span class="n">to</span> <span class="n">load</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">194</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">queue</span> <span class="n">declared</span> <span class="n">q_anonymous_subscribe</span><span class="o">.</span><span class="n">hpfx_amis</span><span class="mf">.67711727.37906289</span> <span class="p">(</span><span class="k">as</span><span class="p">:</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="p">)</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">194</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span> <span class="n">__getSetup</span> <span class="n">binding</span> <span class="n">q_anonymous_subscribe</span><span class="o">.</span><span class="n">hpfx_amis</span><span class="mf">.67711727.37906289</span> <span class="k">with</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span><span class="o">.*.</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">.</span><span class="n">bulletins</span><span class="o">.</span><span class="n">alphanumeric</span><span class="o">.</span><span class="c1"># to xpublic (as: amqps://anonymous@hpfx.collab.science.gc.ca/)</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="fm">__init__</span> <span class="n">subscribe</span> <span class="n">initialized</span> <span class="k">with</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="s1">&#39;on_housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;after_accept&#39;</span><span class="p">,</span> <span class="s1">&#39;after_work&#39;</span><span class="p">,</span> <span class="s1">&#39;after_post&#39;</span><span class="p">}</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">callbacks</span> <span class="n">loaded</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sarracenia.flowcb.gather.message.Message&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.retry.Retry&#39;</span><span class="p">,</span> <span class="s1">&#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">]</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">226</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">pid</span><span class="p">:</span> <span class="mi">3286919</span> <span class="n">subscribe</span><span class="o">/</span><span class="n">hpfx_amis</span> <span class="n">instance</span><span class="p">:</span> <span class="mi">0</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">241</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">run</span> <span class="n">now</span> <span class="n">active</span> <span class="n">on</span> <span class="n">vip</span> <span class="kc">None</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.20</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRWA20_KWAL_071739___7440</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">3.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRMN70_KWAL_071739___39755</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___132</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">2.17</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRMN20_KWAL_071739___19368</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">564</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">1.19</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SX</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SXAK50_KWAL_071739___15077</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRWA20_KWAL_071739___7440</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRMN70_KWAL_071739___39755</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___132</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRMN20_KWAL_071739___19368</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SXAK50_KWAL_071739___15077</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">42</span><span class="p">,</span><span class="mi">957</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SXAK50_KWAL_071739___15077</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">227</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">0.71</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___40860</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">227</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">0.71</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SA</span><span class="o">/</span><span class="n">KNKA</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SAAK41_KNKA_071739___36105</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">227</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">0.71</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___19641</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">457</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___40860</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">457</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SAAK41_KNKA_071739___36105</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">457</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___19641</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">924</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">0.40</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___44806</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">924</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_accept</span> <span class="n">accepted</span><span class="p">:</span> <span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="mf">0.40</span> <span class="p">)</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">bulletins</span><span class="o">/</span><span class="n">alphanumeric</span><span class="o">/</span><span class="mi">20221207</span><span class="o">/</span><span class="n">UA</span><span class="o">/</span><span class="n">CWAO</span><span class="o">/</span><span class="mi">17</span><span class="o">/</span><span class="n">UANT01_CWAO_071739___24012</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">44</span><span class="p">,</span><span class="mi">098</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">SRCN40_KWAL_071739___44806</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">07</span> <span class="mi">12</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">44</span><span class="p">,</span><span class="mi">098</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">3286919</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">after_work</span> <span class="n">downloaded</span> <span class="n">ok</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">hpfx_amis</span><span class="o">/</span><span class="n">UANT01_CWAO_071739___24012</span>
+</pre></div>
+</div>
+<p>The <strong>lag:</strong> numbers reported in the foreground display indicate how old the data is (in seconds, based on the time it was added to the network
+by the source. If you see that lag grow unreasonably, your subscription has a performance problem.</p>
+</section>
+</section>
+<section id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Link to this heading"></a></h3>
+<p>There are many aspects of Performance that we won’t go into here.</p>
+<p>more:</p>
+<p>Minimizing the time after a file has been delivered, and before it is picked up by the next hop:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Explanation/DetectFileReady.html">Knowing when to pick up a file</a></p></li>
+<li><p><a class="reference external" href="../Explanation/FileCompletion.html">Knowing when a file is delivered</a></p></li>
+</ul>
+<p>Getting file changes noticed rapidly, filtering frequent file re-writes, scheduling copies:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Explanation/History/HPC_Mirroring_Use_Case.html">Case Study: HPC Mirroring</a></p></li>
+<li><p>C implementation: <a class="reference internal" href="../Reference/sr3_post.1.html"><span class="doc">sr3_cpost</span></a> <a class="reference internal" href="../Reference/sr3_cpump.1.html"><span class="doc">sr3_cpump</span></a>
+used mostly when python isn’t easy to get working.</p></li>
+</ul>
+<p>The most common desire when performance is raised is speed up their downloads.
+the steps are as follows:</p>
+<section id="optimize-file-selection-per-process">
+<h4>Optimize File Selection per Process<a class="headerlink" href="#optimize-file-selection-per-process" title="Link to this heading"></a></h4>
+<ul>
+<li><p>Often users specif # as their subtopic, meaning the accept/rejects do all the work. In many cases, users are only interested in a small fraction of the files being published.  For best performance, <strong>Make *subtopic* as specific as possible</strong> to have minimize sending notification messages that are send by the broker and arrive on the subscriber only to be rejected. (use <em>log_reject</em> option to find such products.)</p></li>
+<li><p><strong>Place *reject* statements as early as possible in the configuration</strong>. As rejection saves processing of any later regex’s in the configuration.</p></li>
+<li><p><strong>Have few accept/reject clauses</strong>: because it involves a regular expression
+match, accept/reject clauses are expensive, but evaluating a complex
+regex is not much more expensive than a simple one, so it is better to have
+a few complicated ones than many simple ones.  Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*/</span><span class="n">SR</span><span class="o">/</span><span class="n">KWAL</span><span class="o">.*</span>
+<span class="n">accept</span> <span class="o">.*/</span><span class="n">SO</span><span class="o">/</span><span class="n">KWAL</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>will run at rougly half the speed (or double the cpu overhead) compared to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*/</span><span class="n">S</span><span class="p">[</span><span class="n">OR</span><span class="p">]</span><span class="o">/</span><span class="n">KWAL</span><span class="o">.*</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Use suppress_duplicates</strong>.  In some cases, there is a risk of the same file
+being announced more than once.  Usually clients do not want redundant copies
+of files transferred.  The <em>suppress_duplicates</em> option sets up a cache of
+checksums of the files which have gone by, and prevents their being processed
+again.</p></li>
+<li><p>If you are transferring small files, the built-in transfer processing is quite
+good, but <strong>if there are large files</strong> in the mix, then oflloading to a C
+binary is going to go faster. <strong>Use plugins such as accel_wget, accel_sftp,
+accel_cp</strong> (for local files.) These plugins have threshold settings so that
+the optimial python transer methods are still used for files smaller than the
+threshold.</p></li>
+<li><p><strong>increasing prefetch</strong> can reduce the average latency (being amortised over
+the number of notification messages prefetched.) It can improve performance over long
+distances or in high notification message rates within an data centre.</p></li>
+<li><p>If you control the origin of a product stream, and the consumers will want a
+very large proportion of the products announced, and the products are small
+(a few K at most), then consider combining use of v03 with inlining for
+optimal transfer of small files.  Note, if you have a wide variety of users
+who all want different data sets, inlining can be counter-productive. This
+will also result in larger notification messages and mean much higher load on the broker.
+It may optimize a few specific cases, while slowing the broker down overall.</p></li>
+</ul>
+</section>
+<section id="use-instances">
+<h4>Use Instances<a class="headerlink" href="#use-instances" title="Link to this heading"></a></h4>
+<p>Once you have optimized what a single subscriber can do, if it is not fast enough,
+then use the <em>instances</em> option to have more processes participate in the
+processing.  Having 10 or 20 instances is not a problem at all.  The maximum
+number of instances that will increase performance will plateau at some point
+that varies depending on latency to broker, how fast the instances are at processing
+each file, the prefetch in use, etc…  One has to experiment.</p>
+<p>Examining instance logs, if they seem to be waiting for notification messages for a long time,
+not actually doing any transfer, then one might have reached queue saturation.
+This often happens at around 40 to 75 instances. Rabbitmq manages a single queue
+with a single CPU, and there is a limit to how many notification messages a queue can process
+in a given unit of time.</p>
+<p>If the queue becomes saturated, then we need to partition the subscriptions
+into multiple configurations.  Each configuration will have a separate queue,
+and the queues will get their own CPU’s.  With such partitioning, we have gone
+to a hundred or so instances and not seen saturation.  We don’t know when we run
+out of performance.</p>
+<p>We haven’t needed to scale the broker itself yet.</p>
+</section>
+<section id="high-performance-duplicate-suppression">
+<h4>High Performance Duplicate Suppression<a class="headerlink" href="#high-performance-duplicate-suppression" title="Link to this heading"></a></h4>
+<p>One caveat to the use of <em>instances</em> is that <em>suppress_duplicates</em> is ineffective
+as the different occurrences of the same file will not be received by the same
+instance, and so with n instances, roughly n-1/n duplicates will slip through.</p>
+<p>In order to properly suppress duplicate file notification messages in data streams
+that need multiple instances, one uses winnowing with <em>post_exchangeSplit</em>.
+This option sends data to multiple post exchanges based on the data checksum,
+so that all duplicate files will be routed to the same winnow process.
+Each winnow process runs the normal duplicate suppression used in single instances,
+since all files with the same checksum end up with the same winnow, it works.
+The winnow processes then post to the exchange used by the real processing
+pools.</p>
+<p>Why is high performance duplicate suppresion a good thing? Because the
+availability model of Sarracenia is to have individual application stacks
+blindly produce redudant copies of products. It requires no application
+adjustment from single node to participating in a cluster.  Sarracenia
+selects the first result we receive for forwarding. This avoids any sort
+of quorum protocol, a source if great complexity in high availability
+schemes, and by measuring based on output, minimizes the potential for
+systems to appear up, when not actually being completely functional. The
+applications do not need to know that there is another stack producing the same
+products, which simplifies them as well.</p>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../Explanation/DuplicateSuppression.html"><span class="doc">Duplicate Suppression</span></a></p></li>
+</ul>
+</section>
+</section>
+<section id="plugins">
+<h3>Plugins<a class="headerlink" href="#plugins" title="Link to this heading"></a></h3>
+<p>Default file processing is often fine, but there are also pre-built customizations that
+can be used to change processing done by components. The list of pre-built plugins is
+in a ‘plugins’ directory wherever the package is installed (viewable with <em>sr_subscribe list</em>)
+sample output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sr3 list help
+blacklab% sr3 list help
+Valid things to list: examples,eg,ie flow_callback,flowcb,fcb v2plugins,v2p
+
+$ sr3 list fcb
+
+
+Provided callback classes: ( /home/peter/Sarracenia/sr3/sarracenia )
+flowcb/accept/delete.py          flowcb/accept/downloadbaseurl.py
+flowcb/accept/hourtree.py        flowcb/accept/httptohttps.py
+flowcb/accept/longflow.py        flowcb/accept/posthourtree.py
+flowcb/accept/postoverride.py    flowcb/accept/printlag.py
+flowcb/accept/rename4jicc.py     flowcb/accept/renamedmf.py
+flowcb/accept/renamewhatfn.py    flowcb/accept/save.py
+flowcb/accept/speedo.py          flowcb/accept/sundewpxroute.py
+flowcb/accept/testretry.py       flowcb/accept/toclusters.py
+flowcb/accept/tohttp.py          flowcb/accept/tolocal.py
+flowcb/accept/tolocalfile.py     flowcb/accept/wmotypesuffix.py
+flowcb/filter/deleteflowfiles.py flowcb/filter/fdelay.py
+flowcb/filter/pclean_f90.py      flowcb/filter/pclean_f92.py
+flowcb/filter/wmo2msc.py         flowcb/gather/file.py
+flowcb/gather/message.py         flowcb/housekeeping/hk_police_queues.py
+flowcb/housekeeping/resources.py flowcb/line_log.py
+flowcb/log.py                    flowcb/mdelaylatest.py
+flowcb/nodupe/data.py            flowcb/nodupe/name.py
+flowcb/pclean.py                 flowcb/poll/airnow.py
+flowcb/poll/mail.py              flowcb/poll/nasa_mls_nrt.py
+flowcb/poll/nexrad.py            flowcb/poll/noaa_hydrometric.py
+flowcb/poll/usgs.py              flowcb/post/message.py
+flowcb/retry.py                  flowcb/sample.py
+flowcb/script.py                 flowcb/send/email.py
+flowcb/shiftdir2baseurl.py       flowcb/v2wrapper.py
+flowcb/wistree.py                flowcb/work/delete.py
+flowcb/work/rxpipe.py
+$
+</pre></div>
+</div>
+<p>One can browse built-in plugins via the <a class="reference external" href="../Reference/flowcb.html">FlowCallback Reference</a>
+Plugins are written in python, and users can create their own and place them in ~/.config/sr3/plugins,
+or anywhere in the PYTHONPATH (available for <em>import</em> )</p>
+<p>Another way view documentation and source code of any plugin, the directory containing
+them is listed on the first line of the <em>list</em> directive above, and the rest of the path
+to the plugin is in the listing, so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/</span><span class="n">Sarracenia</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">sarracenia</span><span class="o">/</span><span class="n">flowcb</span><span class="o">/</span><span class="n">nodupe</span><span class="o">/</span><span class="n">name</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>will start the vi editor to view the source of the plugin in question, which
+also contains its documentation. Another way to view documentation, in addition
+to the above, is the standard pythonic way:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">python3</span>
+<span class="n">Python</span> <span class="mf">3.10.6</span> <span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="n">Nov</span>  <span class="mi">2</span> <span class="mi">2022</span><span class="p">,</span> <span class="mi">18</span><span class="p">:</span><span class="mi">53</span><span class="p">:</span><span class="mi">38</span><span class="p">)</span> <span class="p">[</span><span class="n">GCC</span> <span class="mf">11.3.0</span><span class="p">]</span> <span class="n">on</span> <span class="n">linux</span>
+<span class="n">Type</span> <span class="s2">&quot;help&quot;</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">,</span> <span class="s2">&quot;credits&quot;</span> <span class="ow">or</span> <span class="s2">&quot;license&quot;</span> <span class="k">for</span> <span class="n">more</span> <span class="n">information</span><span class="o">.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">sarracenia.flowcb.run</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">help</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Of importing the class in question, and then invoking python help() on the class.</p>
+<p>Plugins can be included in flow configurations by adding ‘flow_callback’ lines like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback</span> <span class="n">work</span><span class="o">.</span><span class="n">rxpipe</span>
+</pre></div>
+</div>
+<p>which appends the given callback to the list of callbacks to be invoked.
+There is also:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">callback_prepend</span> <span class="n">work</span><span class="o">.</span><span class="n">rxpipe</span>
+</pre></div>
+</div>
+<p>which will prepend this callback to the list, so that is is called before the
+non prepended ones.</p>
+<p>To recap:</p>
+<ul class="simple">
+<li><p>To view the plugins currently available on the system  <em>sr3 list fcb</em></p></li>
+<li><p>To view the contents of a plugin, browse the <a class="reference external" href="../Reference/flowcb.html">FlowCallback Reference</a> use,
+or use a text editor, or import in a python interpreter, and use python help()</p></li>
+<li><p>Plugins can have option settings, just like built-in ones. They are described
+in each plugin’s documentation.</p></li>
+<li><p>To set them, place the options in the configuration file before the plugin call itself</p></li>
+<li><p>To make your own plugins, start with <a class="reference internal" href="FlowCallbacks.html"><span class="doc">Writing Flow Callbacks</span></a>, and
+put them in ~/.config/sr3/plugins, or anythere in your python environment’s search path.</p></li>
+</ul>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Explanation/Concepts.html">Sarracenia General Concepts</a></p></li>
+<li><p><a class="reference external" href="../Tutorials/2_CLI_with_flowcb_demo.html">using callbacks from command line (Jupyter Notebook)</a></p></li>
+</ul>
+<p>Even more:
+* <a class="reference external" href="../Explanation/SarraPluginDev.html">Sarracenia Programming Guide</a>
+* <a class="reference internal" href="FlowCallbacks.html"><span class="doc">Writing Flow Callbacks</span></a></p>
+</section>
+<section id="file-rxpipe">
+<h3>file_rxpipe<a class="headerlink" href="#file-rxpipe" title="Link to this heading"></a></h3>
+<p>The file_rxpipe plugin that writes the names of files downloaded to a named pipe.
+Setting this up required two lines in an flow configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mknod /home/peter/test/.rxpipe p
+$ sr3 edit subscribe/swob
+</pre></div>
+</div>
+<blockquote>
+<div><p>broker amqps://anonymous&#64;dd.weather.gc.ca
+topicPrefix v02.post
+subtopic observations.swob-ml.#</p>
+<p>rxpipe_name /home/peter/test/.rxpipe</p>
+<p>callback work.rxpipe</p>
+<p>directory /tmp
+mirror True
+accept .*
+# rxpipe is a builtin after_work plugin which writes the name of the file received to
+# a pipe named ‘.rxpipe’ in the current working directory.</p>
+</div></blockquote>
+<p>With rxpipe, every time a file transfer has completed and is ready for
+post-processing, its name is written to the linux pipe (named .rxpipe.)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the case where a large number of subscribe instances are working
+On the same configuration, there is slight probability that notifications
+may corrupt one another in the named pipe.</p>
+<p><strong>FIXME</strong> We should probably verify whether this probability is negligeable or not.</p>
+</div>
+</section>
+<section id="anti-virus-scanning">
+<h3>Anti-Virus Scanning<a class="headerlink" href="#anti-virus-scanning" title="Link to this heading"></a></h3>
+<p>Another example of easy use of a plugin is to achieve anti-virus scanning.
+Assuming that ClamAV-daemon is installed, as well as the python3-pyclamd
+package, then one can add the following to a subscriber
+configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+<span class="n">topicPrefix</span> <span class="n">v02</span><span class="o">.</span><span class="n">post</span>
+<span class="n">batch</span> <span class="mi">1</span>
+<span class="n">callback</span> <span class="n">clamav</span>
+<span class="n">subtopic</span> <span class="n">observations</span><span class="o">.</span><span class="n">swob</span><span class="o">-</span><span class="n">ml</span><span class="o">.</span><span class="c1">#</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>So that each file downloaded is AV scanned. Sample run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> $ sr3 foreground subscribe//dd_swob.conf
+
+ blacklab% sr3 foreground subscribe/dd_swob
+ 2022-03-12 18:47:18,137 [INFO] 29823 sarracenia.flow loadCallbacks plugins to load: [&#39;sarracenia.flowcb.gather.message.Message&#39;, &#39;sarracenia.flowcb.retry.Retry&#39;, &#39;sarracenia.flowcb.housekeeping.resources.Resources&#39;, &#39;sarracenia.flowcb.clamav.Clamav&#39;, &#39;sarracenia.flowcb.log.Log&#39;]
+ clam_scan on_part plugin initialized
+ 2022-03-12 18:47:22,865 [INFO] 29823 sarracenia.flowcb.log __init__ subscribe initialized with: {&#39;after_work&#39;, &#39;on_housekeeping&#39;, &#39;after_accept&#39;}
+ 2022-03-12 18:47:22,866 [INFO] 29823 sarracenia.flow run options:
+ _Config__admin=amqp://bunnymaster:Easter1@localhost/ None True True False False None None, _Config__broker=amqps://anonymous:anonymous@dd.weather.gc.ca/ None True True False False None None,
+ _Config__post_broker=None, accel_threshold=0, acceptSizeWrong=False, acceptUnmatched=False, action=&#39;foreground&#39;, attempts=3, auto_delete=False, baseDir=None, baseUrl_relPath=False, batch=100, bind=True,
+ bindings=[(&#39;xpublic&#39;, [&#39;v02&#39;, &#39;post&#39;], [&#39;observations.swob-ml.#&#39;])], bufsize=1048576, bytes_per_second=None, bytes_ps=0, cfg_run_dir=&#39;/home/peter/.cache/sr3/subscribe/dd_swob&#39;, config=&#39;dd_swob&#39;,
+ configurations=[&#39;subscribe/dd_swob&#39;], currentDir=None, dangerWillRobinson=False, debug=False, declare=True, declared_exchanges=[&#39;xpublic&#39;, &#39;xcvan01&#39;],
+.
+.
+.
+ 022-03-12 18:47:22,867 [INFO] 29823 sarracenia.flow run pid: 29823 subscribe/dd_swob instance: 0
+ 2022-03-12 18:47:30,019 [INFO] 29823 sarracenia.flowcb.log after_accept accepted: (lag: 140.22 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/COGI/2022-03-12-2344-COGI-AUTO-minute-swob.xml
+.
+.
+.  # good entries...
+
+ 22-03-12 19:00:55,347 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2347-CVPX-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,353 [INFO] 30992 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.00579023 seconds, no viruses in /tmp/dd_swob/2022-03-12-2347-CVPX-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,385 [INFO] 30992 sarracenia.flowcb.log after_accept accepted: (lag: 695.46 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/COTR/2022-03-12-2348-COTR-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,571 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2348-COTR-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,596 [INFO] 30992 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.0243611 seconds, no viruses in /tmp/dd_swob/2022-03-12-2348-COTR-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,637 [INFO] 30992 sarracenia.flowcb.log after_accept accepted: (lag: 695.71 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/CWGD/2022-03-12-2348-CWGD-AUTO-minute-swob.xml
+ 2022-03-12 19:00:55,844 [INFO] 30992 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2348-CWGD-AUTO-minute-swob.xml
+
+ .
+ .
+ . # bad entries.
+
+ 2022-03-12 18:50:13,809 [INFO] 30070 sarracenia.flowcb.log after_work downloaded ok: /tmp/dd_swob/2022-03-12-2343-CWJX-AUTO-minute-swob.xml
+ 2022-03-12 18:50:13,930 [INFO] 30070 sarracenia.flowcb.log after_accept accepted: (lag: 360.72 ) https://dd4.weather.gc.ca /observations/swob-ml/20220312/CAJT/2022-03-12-2343-CAJT-AUTO-minute-swob.xml
+ 2022-03-12 18:50:14,104 [INFO] 30070 sarracenia.flowcb.clamav after_work scanning: /tmp/dd_swob/2022-03-12-2343-CAJT-AUTO-minute-swob.xml
+ 2022-03-12 18:50:14,105 [ERROR] 30070 sarracenia.flowcb.clamav avscan_hit part_clamav_scan took 0.0003829 not forwarding, virus detected in /tmp/dd_swob/2022-03-12-2343-CAJT-AUTO-minute-swob.xml
+
+ .
+ . # every heartbeat interval, a little summary:
+ .
+ 2022-03-12 19:00:55,115 [INFO] 30992 sarracenia.flowcb.clamav on_housekeeping files scanned 121, hits: 5
+</pre></div>
+</div>
+</section>
+<section id="logging-and-debugging">
+<h3>Logging and Debugging<a class="headerlink" href="#logging-and-debugging" title="Link to this heading"></a></h3>
+<p>As sr3 components usually run as a daemon (unless invoked in <em>foreground</em> mode)
+one normally examines its log file to find out how processing is going.  When only
+a single instance is running, one can view the log of the running process like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">log</span> <span class="n">subscribe</span><span class="o">/*</span><span class="n">myconfig</span><span class="o">*</span>
+</pre></div>
+</div>
+<p>FIXME: not implemented properly. normally use “foreground” command instead.</p>
+<p>Where <em>myconfig</em> is the name of the running configuration. Log files
+are placed as per the XDG Open Directory Specification. There will be a log file
+for each <em>instance</em> (download process) of an flow process running the myflow configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ow">in</span> <span class="n">linux</span><span class="p">:</span> <span class="o">~/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sarra</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">sr_subscribe_myflow_01</span><span class="o">.</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>One can override placement on linux by setting the XDG_CACHE_HOME environment variable, as
+per: <a class="reference external" href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html">XDG Open Directory Specification</a>
+Log files can be very large for high volume configurations, so the logging is very configurable.</p>
+<p>To begin with, one can select the logging level throughout the entire application using
+logLevel, and logReject:</p>
+<ul>
+<li><dl class="simple">
+<dt>debug</dt><dd><p>Setting option debug is identical to use  <strong>logLevel debug</strong></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>logLevel ( default: info )</dt><dd><p>The level of logging as expressed by python’s logging. Possible values are :  critical, error, info, warning, debug.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>log_reject &lt;True|False&gt; ( default: False )</dt><dd><p>print a log message when <em>rejecting</em> notification messages (choosing not to download the corresponding files)</p>
+<p>The rejection messages also indicate the reason for the rejection.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>At the end of the day (at midnight), these logs are rotated automatically by
+the components, and the old log gets a date suffix. The directory in which
+the logs and metrics are stored can be overridden by the <strong>log</strong> option, the
+number of rotated logs to keep are set by the <strong>logRotate</strong> parameter. The
+oldest log file is deleted when the maximum number of logs and metrics has been
+reached and this continues for each rotation. An interval takes a duration of
+the interval and it may takes a time unit suffix, such as ‘d|D’ for days, ‘h|H’
+for hours, or ‘m|M’ for minutes. If no unit is provided logs will rotate at midnight.
+Here are some settings for log file management:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>log &lt;dir&gt; ( default: ~/.cache/sarra/log ) (on Linux)</dt><dd><p>The directory to store log files in.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>logMetrics ( default: True )</dt><dd><p>whether to accumulate multiple metrics files at all.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>statehost &lt;False|True&gt; ( default: False )</dt><dd><p>In large data centres, the home directory can be shared among thousands of
+nodes. Statehost adds the node name after the cache directory to make it
+unique to each node. So each node has it’s own statefiles and logs.
+example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>logRotateCount &lt;max_logs&gt; ( default: 5 , alias: lr_backupCount)</dt><dd><p>Maximum number of logs archived.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>logRotateInterval &lt;duration&gt;[&lt;time_unit&gt;] ( default: 1, alias: lr_interval)</dt><dd><p>The duration of the interval with an optional time unit (ie 5m, 2h, 3d)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>permLog ( default: 0600 )</dt><dd><p>The permission bits to set on log files.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="flowcb-log-py-debug-tuning">
+<h4>flowcb/log.py Debug Tuning<a class="headerlink" href="#flowcb-log-py-debug-tuning" title="Link to this heading"></a></h4>
+<p>In addition to application-options, there is a flowcb that is used by default for logging, which
+has additional options:</p>
+<ul class="simple">
+<li><p>logMessageDump  (default: off) boolean flag
+If set, all fields of a notification message are printed, at each event, rather than just a url/path reference.</p></li>
+<li><dl class="simple">
+<dt>logEvents ( default after_accept,after_work,on_housekeeping )</dt><dd><p>emit standard log messages at the given points in message processing.
+other values: on_start, on_stop, post, gather, … etc…</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>etc… One can also modify the provided plugins, or write new ones to completely change the logging.</p>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.log">Log module</a></p></li>
+</ul>
+</section>
+<section id="moth-debug-tuning">
+<h4>moth Debug Tuning<a class="headerlink" href="#moth-debug-tuning" title="Link to this heading"></a></h4>
+<p>Turning on logLevel to debug on the entire application often results in inordinately large log files.
+By default the Messages Organized into Topic Hierarchies (Moth) parent class for the messaging protocols,
+ignores the application-wide debug option.  To enable debugging output from these classes, there
+are additional settings.</p>
+<p>One can explicitly set the debug option specifically for the messaging protocol class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">AMQP</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+<span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">MQTT</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>will make the messaging layer very verbose.
+Sometimes during interoperability testing, one must see the raw notification messages, before decoding by moth classes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">messageDebugDump</span>
+</pre></div>
+</div>
+<p>Either or both of these options will make very large logs, and are best used judiciously.</p>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../api-documentation.html#module-sarracenia.moth">Moth API</a></p></li>
+</ul>
+</section>
+</section>
+<section id="housekeeping-metrics">
+<h3>Housekeeping Metrics<a class="headerlink" href="#housekeeping-metrics" title="Link to this heading"></a></h3>
+<p>Flow Callbacks can implement a on_housekeeping entry point.  This entry point is usually
+an opportunity for callbacks to print metrics periodically.  The builtin log and
+resource monitoring callbacks, for example, give lines in the log like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">114</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">housekeeping</span><span class="o">.</span><span class="n">resources</span> <span class="n">on_housekeeping</span> <span class="n">Current</span> <span class="n">Memory</span> <span class="n">cpu_times</span><span class="p">:</span> <span class="n">user</span><span class="o">=</span><span class="mf">1.97</span> <span class="n">system</span><span class="o">=</span><span class="mf">0.3</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">housekeeping</span><span class="o">.</span><span class="n">resources</span> <span class="n">on_housekeeping</span> <span class="n">Memory</span> <span class="n">threshold</span> <span class="nb">set</span> <span class="n">to</span><span class="p">:</span> <span class="mf">161.2</span> <span class="n">MiB</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">housekeeping</span><span class="o">.</span><span class="n">resources</span> <span class="n">on_housekeeping</span> <span class="n">Current</span> <span class="n">Memory</span> <span class="n">usage</span><span class="p">:</span> <span class="mf">53.7</span> <span class="n">MiB</span> <span class="o">/</span> <span class="mf">161.2</span> <span class="n">MiB</span> <span class="o">=</span> <span class="mf">33.33</span><span class="o">%</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">clamav</span> <span class="n">on_housekeeping</span> <span class="n">files</span> <span class="n">scanned</span> <span class="mi">121</span><span class="p">,</span> <span class="n">hits</span><span class="p">:</span> <span class="mi">0</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">housekeeping_stats</span> <span class="n">messages</span> <span class="n">received</span><span class="p">:</span> <span class="mi">242</span><span class="p">,</span> <span class="n">accepted</span><span class="p">:</span> <span class="mi">121</span><span class="p">,</span> <span class="n">rejected</span><span class="p">:</span> <span class="mi">121</span>  <span class="n">rate</span><span class="p">:</span>    <span class="mi">50</span><span class="o">%</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">housekeeping_stats</span> <span class="n">files</span> <span class="n">transferred</span><span class="p">:</span> <span class="mi">0</span> <span class="nb">bytes</span><span class="p">:</span> <span class="mi">0</span> <span class="n">Bytes</span> <span class="n">rate</span><span class="p">:</span> <span class="mi">0</span> <span class="n">Bytes</span><span class="o">/</span><span class="n">sec</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">12</span> <span class="mi">19</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">55</span><span class="p">,</span><span class="mi">115</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">30992</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flowcb</span><span class="o">.</span><span class="n">log</span> <span class="n">housekeeping_stats</span> <span class="n">lag</span><span class="p">:</span> <span class="n">average</span><span class="p">:</span> <span class="mf">778.91</span><span class="p">,</span> <span class="n">maximum</span><span class="p">:</span> <span class="mf">931.06</span>
+</pre></div>
+</div>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Reference/flowcb.html#module-sarracenia.flowcb.housekeeping">Housekeeping callbacks</a></p></li>
+</ul>
+</section>
+<section id="redundant-file-reception">
+<h3>Redundant File Reception<a class="headerlink" href="#redundant-file-reception" title="Link to this heading"></a></h3>
+<p>In environments where high reliability is required, multiple servers
+are often configured to provide services. The Sarracenia approach to
+high availability is ´Active-Active´ in that all sources are online
+and producing data in parallel. Each source publishes data,
+and consumers obtain it from the first source that makes it available,
+using checksums to determine whether the given datum has been obtained
+or not.</p>
+<p>This filtering requires implementation of a local dataless pump with
+sr_winnow. See the Administrator Guide for more information.</p>
+<p>more:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../Explanation/DuplicateSuppression.html"><span class="doc">Duplicate Suppression</span></a></p></li>
+</ul>
+</section>
+<section id="web-proxies">
+<h3>Web Proxies<a class="headerlink" href="#web-proxies" title="Link to this heading"></a></h3>
+<p>The best method of working with web proxies is to put the following
+in the default.conf:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">HTTP_PROXY</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">yourproxy</span><span class="o">.</span><span class="n">com</span>
+<span class="n">declare</span> <span class="n">env</span> <span class="n">HTTPS_PROXY</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">yourproxy</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+<p>Putting in default.conf ensures that all subscribers will use
+the proxy, not just a single configuration.</p>
+</section>
+<section id="api-level-access">
+<h3>API Level Access<a class="headerlink" href="#api-level-access" title="Link to this heading"></a></h3>
+<p>Sarracenia version 3 also offers python modules that can be called
+from existing python applications.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Tutorials/3_api_flow_demo.html">Flow API to replace CLI usage</a></p></li>
+</ul>
+<p>The flow API brings in all the option placement and parsing from
+Sarracenia, it is a pythonic way of starting up a flow from python itself.</p>
+<p>Or one may not want to use the Sarracenia configuration scheme,
+perhaps one just wants to use the message protocol support, for
+that:</p>
+<ul class="simple">
+<li><p>Subscribing using the (much less complex) Moth API (Jupyter Notebook) <a class="reference internal" href="../Tutorials/4_api_moth_sub_demo.html"><span class="doc">../Tutorials/4_api_moth_sub_demo.ipynb</span></a></p></li>
+<li><p>Posting from python code with Moth (Jupyter Notebook) <a class="reference internal" href="../Tutorials/5_api_moth_post_demo.html"><span class="doc">../Tutorials/5_api_moth_post_demo.ipynb</span></a></p></li>
+</ul>
+</section>
+<section id="more-information">
+<h3>More Information<a class="headerlink" href="#more-information" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The <a class="reference external" href="../Reference/sr3.1.html">sr3(1)</a> is the definitive source of reference
+information for configuration options. For additional information,</p></li>
+<li><p>the main web site: <a class="reference external" href="https://metpx.github.io/sarracenia">Sarracenia Documentation</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="HOWTOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="source.html" class="btn btn-neutral float-right" title="Data Sources" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

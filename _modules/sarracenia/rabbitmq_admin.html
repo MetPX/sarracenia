@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.rabbitmq_admin &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.rabbitmq_admin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.rabbitmq_admin</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   rabbitmq administration bindings, to allow sr to invoke broker management functions.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">urllib</span><span class="o">,</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="c1">#rabbitmqadmin = &#39;.&#39; + os.sep + &#39;rabbitmqadmin&#39;</span>
+<span class="n">rabbitmqadmin</span> <span class="o">=</span> <span class="s1">&#39;rabbitmqadmin&#39;</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">#logger.setLevel( logging.DEBUG )</span>
+
+<span class="c1">#===========================</span>
+<span class="c1"># rabbitmqadmin</span>
+<span class="c1">#===========================</span>
+
+
+<div class="viewcode-block" id="exec_rabbitmqadmin">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.exec_rabbitmqadmin">[docs]</a>
+<span class="k">def</span> <span class="nf">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       invoke rabbitmqadmin using a sub-process, with the given options.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">rabbitmqadmin</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39; --host </span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="o">.</span><span class="n">hostname</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1"> --user </span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="o">.</span><span class="n">username</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1"> -p </span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1"> --format raw_json &#39;</span>
+        <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;amqps&#39;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39; --ssl --port=15671 &#39;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">options</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;command = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">3</span>
+                                          <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;using subprocess.getstatusoutput&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">simulate</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dry_run: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+                <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">getstatusoutput</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cmdlin</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">cmdlst</span> <span class="o">=</span> <span class="n">cmdlin</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;using subprocess.run cmdlst=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmdlst</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">simulate</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dry_run: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cmdlin</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="n">rclass</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmdlst</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rclass</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">rclass</span><span class="o">.</span><span class="n">stdout</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bytes</span><span class="p">:</span> <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">rclass</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">output</span>
+            <span class="k">return</span> <span class="n">rclass</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">3</span>
+                                          <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;trying run command </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;trying run command </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmdlst</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="add_user">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.add_user">[docs]</a>
+<span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       add the given user with the given credentials.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">declare</span> <span class="o">=</span> <span class="s2">&quot;declare user name=&#39;</span><span class="si">%s</span><span class="s2">&#39; password=&quot;</span> <span class="o">%</span> <span class="n">user</span>
+
+    <span class="k">if</span> <span class="n">passwd</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span> <span class="n">declare</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="n">passwd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">:</span> <span class="n">declare</span> <span class="o">+=</span> <span class="s2">&quot; tags=administrator &quot;</span>
+    <span class="k">else</span><span class="p">:</span> <span class="n">declare</span> <span class="o">+=</span> <span class="s1">&#39; tags=&quot;&quot; &#39;</span>
+
+    <span class="n">dummy</span> <span class="o">=</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">declare</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span>
+
+    <span class="c1"># admin and feeder gets the same permissions</span>
+
+    <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;admin,&#39;</span><span class="p">,</span> <span class="s1">&#39;feeder&#39;</span><span class="p">,</span> <span class="s1">&#39;manager&#39;</span><span class="p">]:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="s2">&quot;configure=.*&quot;</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="s2">&quot;write=.*&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;read=.*&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;permission user </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s2"> role </span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">user</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="s1">&#39;feeder&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+        <span class="n">declare</span> <span class="o">=</span> <span class="s2">&quot;declare permission vhost=/ user=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="n">dummy</span> <span class="o">=</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">declare</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># source</span>
+
+    <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="s2">&quot;configure=^q_</span><span class="si">%s</span><span class="s2">.*|^xs_</span><span class="si">%s</span><span class="s2">.*&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="s2">&quot;write=^q_</span><span class="si">%s</span><span class="s2">.*|^xs_</span><span class="si">%s</span><span class="s2">.*&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;read=^q_</span><span class="si">%s</span><span class="s2">.*|^x[lrs]_</span><span class="si">%s</span><span class="s2">.*|^x.*public$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;permission user &#39;</span><span class="si">%s</span><span class="s2">&#39; role </span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">user</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+        <span class="n">declare</span> <span class="o">=</span> <span class="s2">&quot;declare permission vhost=/ user=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="n">dummy</span> <span class="o">=</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">declare</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># subscribe</span>
+
+    <span class="k">if</span> <span class="n">role</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;subscribe&#39;</span><span class="p">,</span> <span class="s1">&#39;subscriber&#39;</span><span class="p">]:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="s2">&quot;configure=^q_</span><span class="si">%s</span><span class="s2">.*&quot;</span> <span class="o">%</span> <span class="n">user</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="s2">&quot;write=^q_</span><span class="si">%s</span><span class="s2">.*|^xs_</span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;read=^q_</span><span class="si">%s</span><span class="s2">.*|^x[lrs]_</span><span class="si">%s</span><span class="s2">.*|^x.*public$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;permission user &#39;</span><span class="si">%s</span><span class="s2">&#39; role </span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">user</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+        <span class="n">declare</span> <span class="o">=</span> <span class="s2">&quot;declare permission vhost=/ user=</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="n">dummy</span> <span class="o">=</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">declare</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="del_user">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.del_user">[docs]</a>
+<span class="k">def</span> <span class="nf">del_user</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">simulate</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        delete user from the given broker.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;deleting user </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">user</span><span class="p">)</span>
+    <span class="n">delete</span> <span class="o">=</span> <span class="s2">&quot;delete user name=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">user</span>
+    <span class="n">dummy</span> <span class="o">=</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">delete</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_exchanges">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_exchanges">[docs]</a>
+<span class="k">def</span> <span class="nf">get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the list of existing exchanges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;geting exchanges&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;list exchanges name&quot;</span>
+    <span class="k">return</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_queues">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_queues">[docs]</a>
+<span class="k">def</span> <span class="nf">get_queues</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the list of existing queues.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;geting queues&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;list queues name messages state&quot;</span>
+    <span class="k">return</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_users">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.get_users">[docs]</a>
+<span class="k">def</span> <span class="nf">get_users</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the list of existing users.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;geting users&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;list users name&quot;</span>
+    <span class="k">return</span> <span class="n">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span></div>
+
+
+
+<span class="c1">#===========================</span>
+<span class="c1"># direct access to rabbitmq management plugin</span>
+<span class="c1"># this is what rabbitmqadmin does under the cover</span>
+<span class="c1">#===========================</span>
+
+
+<div class="viewcode-block" id="broker_get_exchanges">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.broker_get_exchanges">[docs]</a>
+<span class="k">def</span> <span class="nf">broker_get_exchanges</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">ssl_key_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ssl_cert_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the list of existing exchanges using a url query.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">http.client</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;GET&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;/api/exchanges?columns=name&quot;</span>
+
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;amqps&#39;</span><span class="p">:</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPSConnection</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="s2">&quot;15671&quot;</span><span class="p">,</span> <span class="n">ssl_key_file</span><span class="p">,</span>
+                                           <span class="n">ssl_cert_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPConnection</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="s2">&quot;15672&quot;</span><span class="p">)</span>
+
+    <span class="n">bcredentials</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span>
+        <span class="n">url</span><span class="o">.</span><span class="n">username</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">),</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">b64credentials</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">bcredentials</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Basic &quot;</span> <span class="o">+</span> <span class="n">b64credentials</span><span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not connect: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">getresponse</span><span class="p">()</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">if</span> <span class="sa">b</span><span class="s1">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">lst</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+    <span class="n">exchanges</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="n">ex</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="n">exchanges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">exchanges</span></div>
+
+
+
+<div class="viewcode-block" id="user_access">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.user_access">[docs]</a>
+<span class="k">def</span> <span class="nf">user_access</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">      Given an administrative URL, return a list of exchanges and queues the user can access.</span>
+
+<span class="sd">      lox = list of exchanges, just a list of names.</span>
+<span class="sd">      loq = array of queues, where the value of each is the number of messages ready.</span>
+
+<span class="sd">      return value:: </span>
+
+<span class="sd">         { &#39;exchanges&#39;: { &#39;configure&#39;: lox, &#39;write&#39;: lox, &#39;read&#39;: lox },</span>
+<span class="sd">           &#39;queues&#39; : { &#39;configure&#39;: loq, &#39;write&#39;: loq, &#39;read&#39;: loq },</span>
+<span class="sd">           &#39;bindings&#39; : { &lt;queue&gt; : { &#39;exchange&#39;: &lt;exchange&gt; , &#39;key&#39; : &lt;routing_key&gt; } }</span>
+<span class="sd">         }</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+    <span class="kn">import</span> <span class="nn">re</span>
+
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list permissions&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">re_cf</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;configure&#39;</span><span class="p">])</span>
+            <span class="n">re_wr</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;write&#39;</span><span class="p">])</span>
+            <span class="n">re_rd</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;read&#39;</span><span class="p">])</span>
+
+    <span class="c1">#exchanges = rabbitmq_broker_get_exchanges(url)</span>
+    <span class="n">x_cf</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x_wr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x_rd</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
+                                              <span class="s2">&quot;list exchanges name&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))):</span>
+        <span class="c1">#print( &quot;x: %s\n&quot; % x )</span>
+        <span class="k">if</span> <span class="n">re_cf</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x_cf</span> <span class="o">+=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">re_wr</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x_wr</span> <span class="o">+=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">re_rd</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">x_rd</span> <span class="o">+=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="k">continue</span>
+
+    <span class="n">q_cf</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">q_wr</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">q_rd</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">qq</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list queues&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="c1">#print( &quot;qq name=%s ready=%d\n\n&quot; % (qq[&#39;name&#39;], qq[&#39;messages_ready_ram&#39;])  )</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">qq</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">nq</span> <span class="o">=</span> <span class="n">qq</span><span class="p">[</span><span class="s1">&#39;messages_ready_ram&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">re_cf</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+            <span class="n">q_cf</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">nq</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">re_wr</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+            <span class="n">q_wr</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">nq</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">re_rd</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+            <span class="n">q_rd</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">nq</span>
+            <span class="k">continue</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">bb</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list bindings&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="c1">#print(&quot;\n binding: %s&quot; % bb )</span>
+        <span class="k">if</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;destination&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">q</span> <span class="ow">in</span> <span class="n">q_cf</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">q</span> <span class="ow">in</span> <span class="n">q_wr</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">q</span> <span class="ow">in</span> <span class="n">q_rd</span><span class="p">):</span>
+                <span class="c1">#print(&quot; exchange: %s, queue: %s, topic: %s&quot; % ( bb[&#39;source&#39;], q, bb[&#39;routing_key&#39;]  ) )</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">b</span><span class="p">:</span>
+                    <span class="n">b</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span> <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;routing_key&#39;</span><span class="p">]}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">b</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">+=</span> <span class="p">{</span>
+                        <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">bb</span><span class="p">[</span><span class="s1">&#39;routing_key&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+
+
+    <span class="k">return</span><span class="p">(</span> <span class="p">{</span> <span class="s1">&#39;exchanges&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;configure&#39;</span> <span class="p">:</span> <span class="n">x_cf</span> <span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">:</span> <span class="n">x_wr</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="n">x_rd</span> <span class="p">},</span> \
+               <span class="s1">&#39;queues&#39;</span><span class="p">:</span>   <span class="p">{</span> <span class="s1">&#39;configure&#39;</span> <span class="p">:</span> <span class="n">q_cf</span> <span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">:</span> <span class="n">q_wr</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="n">q_rd</span> <span class="p">},</span> \
+               <span class="s1">&#39;bindings&#39;</span><span class="p">:</span>  <span class="n">b</span> <span class="p">}</span> <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list queue names&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="kn">import</span> <span class="nn">json</span>
+
+    <span class="n">lex</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;list exchanges name&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;exchanges: </span><span class="si">%s</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lex</span><span class="p">)</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="s1">&#39;tsource&#39;</span>
+    <span class="n">up</span> <span class="o">=</span> <span class="n">rabbitmq_user_access</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;permissions for </span><span class="si">%s</span><span class="s2">: </span><span class="se">\n</span><span class="s2">queues: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">exchanges: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">bindings </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+          <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">up</span><span class="p">[</span><span class="s1">&#39;queues&#39;</span><span class="p">],</span> <span class="n">up</span><span class="p">[</span><span class="s1">&#39;exchanges&#39;</span><span class="p">],</span> <span class="n">up</span><span class="p">[</span><span class="s1">&#39;bindings&#39;</span><span class="p">]))</span>
+    <span class="c1">#print( &quot;\n\nbindings: %s&quot; % json.loads(exec_rabbitmqadmin(url,&quot;list bindings&quot;)[1]) )</span>
+
+
+<div class="viewcode-block" id="run_rabbitmqadmin">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.rabbitmq_admin.run_rabbitmqadmin">[docs]</a>
+<span class="k">def</span> <span class="nf">run_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      spawn a subprocess to run rabbitmqadmin with the given options.</span>
+<span class="sd">      capture result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_rabbit run_rabbitmqadmin </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">options</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">answer</span><span class="p">)</span> <span class="o">=</span> <span class="n">exec_rabbitmqadmin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">simulate</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">simulate</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">answer</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">answer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="s1">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;run_rabbitmqadmin invocation failed&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">lst</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lst</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">lst</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;sr_rabbit/run_rabbitmqadmin failed with option &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
+                     <span class="n">options</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR3 &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SR_CPUMP" href="sr3_cpump.1.html" />
+    <link rel="prev" title="Référence" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Référence</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">SR3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sr3-sarracenia-cli">sr3 Sarracenia CLI</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_cpump.1.html">Sr3_cpump C Page de Référence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr3_options.7.html">OPTIONS SR3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sr_post.7.html">format de message d´annonce sr3_post</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html">Traduction de terminologie</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Référence</a> &raquo;</li>
+      <li>SR3</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Reference/sr3.1.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr3">
+<h1>SR3<a class="headerlink" href="#sr3" title="Link to this heading"></a></h1>
+<section id="sr3-sarracenia-cli">
+<h2>sr3 Sarracenia CLI<a class="headerlink" href="#sr3-sarracenia-cli" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<p><strong>sr3</strong> <em>options</em> <em>action</em> [ <em>composant/config</em> … ]</p>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p>Sr3 est un outil pour gérer une flotte de démons, ou les résultats/sortie du programme est principalement
+dans les fichiers logs. Sr3 permet à l’utilisateur de commencer, arrêter, et se renseigner sur
+le statut d’un flux de sarracenia déjà configuré. C’est le point d’entrée principal de la ligne de commande pour
+Sarracenia 3 ( <a class="reference external" href="https://metpx.github.io/sarracenia/">https://metpx.github.io/sarracenia/</a> )</p>
+<p>Lorsque sr3 est démarré, l’intégralité des configurations sont lu et on peut faire une requête sur l’état
+de tous les flux, avec <em>sr3 status</em> par exemple. Lorsque <em>composant/config</em> est utilisé, sr3 doit
+fonctionner sur un sous-ensemble de toutes les configurations présentes.</p>
+<ul class="simple">
+<li><p>Si vous êtes déjà familier avec Sarracenia et que vous cherchez de l’information spécifique par rapport a des
+options ou des directives, il vaut mieux regarder <a class="reference external" href="sr3_options.7.html">sr3 Options (7)</a></p></li>
+<li><p>Pour commencer plus facilement, jetez un coup d’œil sur <a class="reference external" href="../How2Guides/subscriber.html">the Subscriber Guide on GitHub</a></p></li>
+<li><p>Pour un guide général de l’interface : voir le <a class="reference external" href="../Explication/CommandLineGuide.html">Command Line Guide</a></p></li>
+</ul>
+<p>La ligne de commande a trois éléments importants:
+* options
+* action
+* composant/config</p>
+<p>Un flux est un groupe de processus qui roule en utilisant un composant/config commun.</p>
+</section>
+<section id="options">
+<h3>OPTIONS<a class="headerlink" href="#options" title="Link to this heading"></a></h3>
+<p>La majorité des options son stockés dans des fichiers de configuration. Ceci est dénoté
+par <em>compsant/config</em> indiqué par le nom du fichier, mais de temps en temps, on peut utiliser la ligne
+de commande pour remplacer une valeur dans le fichier de configuration. Les options sont défini
+<a class="reference external" href="sr3_options.7.html">Sr3 Options (7)</a> Reportez-vous à cette page de manuel pour une discussion complète.
+Il y a une exception</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span> <span class="p">(</span><span class="ow">or</span> <span class="o">--</span><span class="n">help</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>L’option d’aide est seulement disponible sur la ligne de commande. Elle est utilisée pour obtenir
+une description d’une sélection d’options disponible pour remplacer les valeurs du fichier
+de configuration.</p>
+</section>
+<section id="actions">
+<h3>ACTIONS<a class="headerlink" href="#actions" title="Link to this heading"></a></h3>
+<p>Les types d’actions disponible. Une seule parmi:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>add:           copier a la liste de configurations disponible.</p></li>
+<li><p>cleanup:       supprimer les ressources des composants sur le serveur.</p></li>
+<li><p>convert:       copie et mets à jour un ou plusieurs configuration de v2 dans le répertoire sr3.</p></li>
+<li><p>declare:       crée les ressources d’un composant sur le serveur.</p></li>
+<li><p>disbale:       marquer une configuration comme non-éligible à exécuter.</p></li>
+<li><p>edit:          modifier une configuration existante.</p></li>
+<li><p>enable:        marquer une configuration comme éligible à exécuter.</p></li>
+<li><p>foreground:    rouler une seule instance avec le mode foreground avec des logs sur stderr</p></li>
+<li><p>liste:          lister toutes les configurations disponible.</p></li>
+<li><p>liste plugins:  lister tout les plugins disponible.</p></li>
+<li><p>list examples: lister tout les examples disponible.</p></li>
+<li><p>remove:        supprimer une configuration.</p></li>
+<li><p>run:           comme <em>start</em> mais on attend que les sous-processus reviennent.</p></li>
+<li><p>restart:       arrêter et ensuite commencer une configuration.</p></li>
+<li><p>sanity:        cherche des instances qui sont perdus/coincées/en panne et les redémarres.</p></li>
+<li><p>show           afficher une version interprétée d’un fichier de configuration.</p></li>
+<li><p>start:         partir l’execution d’une ensemble de configurations</p></li>
+<li><p>status:        vérifier si une configuration est en train de rouler.</p></li>
+<li><p>stop:          arrêter une configuration en cours d’exécution.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="composants">
+<h3>COMPOSANTS<a class="headerlink" href="#composants" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="../Explication/Concepts.html#the-flow-algorithm">The Flow Algorithme</a> est ce qui est exécuté
+par tout les processus de sr3. Le comportement de l’algorithme du flux est adaptable aves les options,
+dont certaines contrôlent des modules optionnels (flowcallbacks). Chaque composant possède de
+différents ensembles de paramètres d’options par défaut pour couvrir un cas d’utilisation courant.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#cpump">cpump</a> - copier un message d’annonce d’une pompe a une deuxième pompe (une implémentation C d’un shovel.)</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#flow">flow</a> - flux générique, pas de valeurs par défaut, bonne base pour convenir à la construction personnalisée les flux</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#poll">poll</a> - poller une page web non-sarracenia ou des fichiers sur un serveur pour créer des messages d’annonce pour un traitement.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#post-or-watch">post|sr3_post|sr_cpost|watch</a> - créer es messages d’annonce pour les fichiers qui doivent être traités.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#sarra">sarra</a> - télécharger un fichier d’un serveur distant vers un serveur local et les republier pour les autres.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#sender">sender</a> - envoyer des fichiers d’un serveur local à un serveur distant.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#shovel">shovel</a> - copier seulement des messages d’annonce et non des fichiers.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#watch">watch</a> - crée un message d’annonce pour chaque nouveau fichier qui arrive dans un répertoire.</p></li>
+<li><p><a class="reference external" href="../Explication/CommandLineGuide.html#winnow">winnow</a> - copier des messages d’annonce et supprime les doublons.</p></li>
+</ul>
+</section>
+<section id="configurations">
+<h3>CONFIGURATIONS<a class="headerlink" href="#configurations" title="Link to this heading"></a></h3>
+<p>Quand une paire de <em>composant/configuration</em> et spécifiée sur la ligne de commande,
+la configuration se fait construire a partir de:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>default.conf</p></li>
+<li><p>admin.conf</p></li>
+<li><p>&lt;component&gt;.conf (subscribe.conf, audit.conf, etc…)</p></li>
+<li><p>&lt;component&gt;/&lt;config&gt;.conf</p></li>
+</ol>
+</div></blockquote>
+<p>Les paramètres d’un fichier .conf sont lu après le fichier default.conf,
+et les valeurs initiales choisi par défaut peuvent éventuellement être replacer.
+Les options spécifiées sur la ligne de commande remplacent les options spécifiées dans le
+fichier de configuration.</p>
+<p>Les fichiers de configurations peuvent être gérer en utilisant les actions <em>add</em>, <em>remove</em>,
+<em>list</em>, <em>edit</em>, <em>disable</em>, et <em>enable</em>. Il est également possible de faire
+les mêmes activités manuellement en manipulant les fichiers dans le répertoire des paramètres.
+Les fichiers de configuration pour une configuration de sr3 appelé <em>myflow</em>
+se trouverait ici:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>linux: ~/.config/sarra/subscribe/myflow.conf (selon: <a class="reference external" href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.rst">XDG Open Directory Specication</a> )</p></li>
+<li><p>Windows: %AppDir%/science.gc.ca/sarra/myflow.conf , ca pourrait être:
+C:UserspeterAppDataLocalscience.gc.casarramyflow.conf</p></li>
+<li><p>MAC: FIXME.</p></li>
+</ul>
+</div></blockquote>
+<p>A la base, le répertoires <em>~/.config/sarra/default.conf</em> contient des paramètres
+qui sont lus par défaut pour tout composant au démarrage. Dans le même répertoire,
+<em>~/.config/sarra/credentials.conf</em>, il y a les identifiants (mots de passe) qui doivent
+être utilisé par sarracenia ( <a class="reference internal" href="sr3_credentials.7.html"><span class="doc">CREDENTIALS</span></a> pour plus de détails ).</p>
+<p>Il est également possible de définir la valeur de la variable XDG_CONFIG_HOME pour remplacer
+le répertoire de base, ou sinon un fichier de configuration peut être placé dans n’importe quel
+répertoire est peut être invoqué en utilisant le chemin du fichier au complet.
+Quand un composant est invoqué, le fichier fourni est interprété en tant que chemin de fichier
+(il est assumé que l’extension .conf est employé.) Si le chemin du fichier est introuvable,
+le composant va regarder dans le répertoire de configuration du composant
+( <strong>repertoire_config</strong> / <strong>composant</strong> ) pour un fichier .conf correspondant.</p>
+<p>Si il est toujours introuvable, il le recherchera dans le répertoire de configuration du site
+(linux : /usr/share/default/sarra/<strong>composant</strong>).</p>
+<p>Finalement, si l’utilisateur a défini l’option <strong>remote_config</strong> a True et si il y a des
+sites Web configurés où les configurations peuvent être trouvées (option <strong>remote_config_url</strong>),
+le programme essaiera de télécharger le fichier à partir de chaque site jusqu’à ce qu’il en trouve un.</p>
+<p>En cas de succès, le fichier est téléchargé sur <strong>repertoire_config/Téléchargements</strong> et interprété
+par le programme à partir de là.  Il existe un processus similaire pour tous les <em>plugins</em> qui peuvent
+être interprétés et exécutés dans les composants de sarracenia.  Les composants vont d’abord
+regarder dans le répertoire <em>plugins</em> dans l’arborescence de configuration des utilisateurs, puis dans le site,
+ensuite dans le paquet sarracenia lui-même, et enfin il regardera à distance.</p>
+<section id="configurations-a-distance">
+<h4>Configurations a Distance<a class="headerlink" href="#configurations-a-distance" title="Link to this heading"></a></h4>
+<p>Il est possible de spécifier des URI en tant que fichiers de configuration, plutôt que des fichiers locaux. Exemple:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>–config http://dd.weather.gc.ca/alerts/doc/cap.conf</strong></p></li>
+</ul>
+</div></blockquote>
+<p>Au démarrage, sr3 vérifie si le fichier local cap.conf existe dans le
+répertoire de configuration local.  Si c’est le cas, le fichier sera lu pour trouver
+une ligne comme celle-ci :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>–remote_config_url http://dd.weather.gc.ca/alerts/doc/cap.conf</strong></p></li>
+</ul>
+</div></blockquote>
+<p>Dans ce cas, il vérifiera l’URL distant et comparera le temps de modification
+du fichier distant par rapport au fichier local. Si le fichier distant n’est pas plus récent ou ne peut pas
+être atteint, le composant continuera avec le fichier local.</p>
+<p>Si le fichier distant est plus récent ou s’il n’y a pas de fichier local, le fichier distant sera téléchargé,
+et la ligne remote_config_url sera rajouté, de sorte qu’elle continuera
+de se mettre à jour automatiquement à l’avenir.</p>
+</section>
+<section id="logs">
+<h4>Logs<a class="headerlink" href="#logs" title="Link to this heading"></a></h4>
+<p>Pour les fichiers de logs, il faut regarder dans ~/.cache/sr3/logs (pour linux. Cela va varier sur d’autres
+plateformes.) Pour les trouver sur n’importe quel plateforme:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">sr3</span> <span class="nb">list</span>
+<span class="n">User</span> <span class="n">Configurations</span><span class="p">:</span> <span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">config</span><span class="o">/</span><span class="n">sr3</span> <span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">conf</span>                       <span class="n">credentials</span><span class="o">.</span><span class="n">conf</span>                 <span class="n">default</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">logs</span> <span class="n">are</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">peter</span><span class="o">/.</span><span class="n">cache</span><span class="o">/</span><span class="n">sr3</span><span class="o">/</span><span class="n">log</span>
+</pre></div>
+</div>
+<p>La dernière ligne indique le répertoire.</p>
+</section>
+</section>
+<section id="exemples">
+<h3>EXEMPLES<a class="headerlink" href="#exemples" title="Link to this heading"></a></h3>
+<p>Voici un exemple complet de fichier de configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span>
+
+<span class="n">subtopic</span> <span class="n">model_gem_global</span><span class="mf">.25</span><span class="n">km</span><span class="o">.</span><span class="n">grib2</span><span class="o">.</span><span class="c1">#</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>Ce fichier se connectera au broker dd.weather.gc.ca en tant qu’anonyme avec mot de passe
+anonyme (par défaut) pour obtenir des annonces à propos des fichiers dans le répertoire
+<a class="reference external" href="http://dd.weather.gc.ca/model_gem_global/25km/grib2">http://dd.weather.gc.ca/model_gem_global/25km/grib2</a>.
+Tous les fichiers qui arrivent dans ce répertoire ou en dessous seront téléchargés
+dans le répertoire courant (ou simplement imprimé en sortie standard si l’option -n
+a été spécifié.)</p>
+<p>Divers exemples de fichiers de configuration sont disponibles ici :</p>
+<blockquote>
+<div><p><a class="reference external" href="https://github.com/MetPX/sarracenia/tree/main/sarra/examples">https://github.com/MetPX/sarracenia/tree/main/sarra/examples</a></p>
+</div></blockquote>
+</section>
+<section id="voir-aussi">
+<h3>VOIR AUSSI<a class="headerlink" href="#voir-aussi" title="Link to this heading"></a></h3>
+<p><strong>Commande de l’utilisateur:</strong></p>
+<p><a class="reference external" href="sr3_post.1.html">sr3_post(1)</a> - poste des annoncements de fichiers (implémentation en Python.)</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - poste des annoncements de fichiers (implémentation en C.)</p>
+<p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - copie les messages d’annonce ( implémentation en C du composant shovel. )</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr3_credentials.7.html">sr3_credentials(7)</a> - Convertir les lignes du fichier log au format .save pour le rechargement/le renvoi.</p>
+<p><a class="reference external" href="sr3_options.7.html">sr3_options(7)</a> -  Convertir les lignes du fichier log au format .save pour le rechargement/le renvoi.</p>
+<p><a class="reference external" href="sr3_post.7.html">sr3_post(7)</a> - Format des messages d’annonce.</p>
+<p><strong>Page d’acceuil:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia : une boîte à outils de gestion du partage de données pub/sub en temps réel</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Référence" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sr3_cpump.1.html" class="btn btn-neutral float-right" title="SR_CPUMP" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

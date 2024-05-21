@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delivery Completion (inflight) &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Glossary" href="Glossary.html" />
+    <link rel="prev" title="Duplicate Suppression" href="DuplicateSuppression.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Delivery Completion (inflight)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#inflight-table">Inflight Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#frequent-configuration-errors">Frequent Configuration Errors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Delivery Completion (inflight)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/FileCompletion.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="delivery-completion-inflight">
+<h1>Delivery Completion (inflight)<a class="headerlink" href="#delivery-completion-inflight" title="Link to this heading"></a></h1>
+<p>Failing to properly set file completion protocols is a common source of intermittent and
+difficult-to-diagnose file transfer issues. For reliable file transfers, it is
+critical that both the sender and receiver agree on how to represent a file that isn’t complete.
+The <em>inflight</em> option (meaning a file is <em>in flight</em> between the sender and the receiver) supports
+many protocols appropriate for different situations:</p>
+<section id="inflight-table">
+<h2>Inflight Table<a class="headerlink" href="#inflight-table" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="3"><p>Delivery Completion Protocols (in Order of Preference)</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Application</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>NONE</p></td>
+<td><p>File sent with right name.
+Send <a class="reference external" href="sr3_post.7.rst">sr3_post(7)</a>
+by AMQP after file is complete.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>fewer round trips (no renames)</p></li>
+<li><p>least overhead / highest speed</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>Sending to Sarracenia, and
+post only when file is complete</p>
+<dl class="simple">
+<dt>(Best when available)</dt><dd><ul class="simple">
+<li><p>Default on sr_sarra.</p></li>
+<li><p>Default on sr_subscribe and sender
+when post_broker is set.</p></li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>.tmp
+(Suffix)</p></td>
+<td><p>Files transferred with a <em>.tmp</em> suffix.
+When complete, renamed without suffix.
+Actual suffix is settable.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>requires extra round trips for
+rename (a little slower)</p></li>
+</ul>
+</div></blockquote>
+</td>
+<td><p>sending to most other systems
+(.tmp support built-in)
+Use to send to Sundew</p>
+<dl class="simple">
+<dt>(usually a good choice)</dt><dd><ul class="simple">
+<li><p>default when no post broker set</p></li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p>tmp/
+(subdir)
+/dir</p></td>
+<td><p>Files transferred to a subdir or dir
+When complete, renamed to parent dir.
+Actual subdir is settable.</p>
+<p>same performance as Suffix method.</p>
+</td>
+<td><p>sending to some other systems</p></td>
+</tr>
+<tr class="row-even"><td><p>.
+(Prefix)</p></td>
+<td><p>Use Linux convention to <em>hide</em> files.
+Prefix names with ‘.’
+that need that. (compatibility)
+same performance as Suffix method.</p></td>
+<td><p>Sending to systems that
+do not support suffix.</p></td>
+</tr>
+<tr class="row-odd"><td><p>number
+(mtime)</p>
+<p>fileAgeMin</p>
+</td>
+<td><p>Minimum age (modification time)
+of the file before it is considered
+complete.</p>
+<p>Adds delay in every transfer.
+Vulnerable to network failures.
+Vulnerable to clock skew.</p>
+</td>
+<td><p>Last choice
+guaranteed delay added</p>
+<p>Receiving from uncooperative
+sources.</p>
+<p>(ok choice with PDS)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>By default ( when no <em>inflight</em> option is given ), if the post_broker is set, then a value of NONE
+is used because it is assumed that it is delivering to another broker. If no post_broker
+is set, the value of ‘.tmp’ is assumed as the best option.</p>
+<p>NOTES:</p>
+<blockquote>
+<div><p>On versions of sr_sender prior to 2.18, the default was NONE, but was documented as ‘.tmp’
+To ensure compatibility with later versions, it is likely better to explicitly write
+the <em>inflight</em> setting.  The numeric variant is the same as setting <em>fileAgeMin</em></p>
+<p><em>inflight</em> was renamed from the old <em>lock</em> option in January 2017. For compatibility with
+older versions, can use <em>lock</em>, but name is deprecated.</p>
+<p>The old <em>PDS</em> software (which predates MetPX Sundew) only supports FTP. The completion protocol
+used by <em>PDS</em> was to send the file with permission 000 initially, and then chmod it to a
+readable file. This cannot be implemented with SFTP protocol, and is not supported at all
+by Sarracenia.</p>
+</div></blockquote>
+</section>
+<section id="frequent-configuration-errors">
+<h2>Frequent Configuration Errors<a class="headerlink" href="#frequent-configuration-errors" title="Link to this heading"></a></h2>
+<p><strong>Setting NONE when sending to Sundew.</strong></p>
+<blockquote>
+<div><p>The proper setting here is ‘.tmp’.  Without it, almost all files will get through correctly,
+but incomplete files will occasionally picked up by Sundew.</p>
+</div></blockquote>
+<p><strong>Using mtime method to receive from Sundew or Sarracenia:</strong></p>
+<blockquote>
+<div><p>Using mtime is last resort. This approach injects delay and should only be used when one
+has no influence to have the other end of the transfer use a better method.</p>
+<p>mtime is vulnerable to systems whose clocks differ (causing incomplete files to be picked up.)</p>
+<p>mtime is vulnerable to slow transfers, where incomplete files can be picked up because of a
+networking issue interrupting or delaying transfers.</p>
+<p>Sources may not to include mtime data in their posts ( <em>timeCopy</em> option on post.)</p>
+</div></blockquote>
+<p><strong>Setting NONE when delivering to non-Sarracenia destination.</strong></p>
+<blockquote>
+<div><p>NONE is to be used when there is some other means to figure out if a file is delivered.
+For example, when sending to another pump, the sender will post the notification message to
+the destination after the file is complete, so there is no danger of it being
+picked up early.</p>
+<p>When used inappropriately, there will occasionally be incomplete files delivered.</p>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DuplicateSuppression.html" class="btn btn-neutral float-left" title="Duplicate Suppression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Glossary.html" class="btn btn-neutral float-right" title="Glossary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

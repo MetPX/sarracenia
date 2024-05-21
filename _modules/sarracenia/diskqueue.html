@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.diskqueue &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+          <li><a href="../sarracenia.html">sarracenia</a> &raquo;</li>
+      <li>sarracenia.diskqueue</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.diskqueue</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, Environment Canada, 2008-2015</span>
+<span class="c1">#</span>
+<span class="c1"># more info: https://github.com/MetPX/sarracenia</span>
+<span class="c1">#</span>
+<span class="c1"># Code originally contributed by:</span>
+<span class="c1">#  Michel Grenier - Shared Services Canada</span>
+<span class="c1">#  first shot     : Wed Jan 10 16:06:16 UTC 2018</span>
+<span class="c1">#  re-factored beyond recognition by PSilva 2021. Don&#39;t blame Michel</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">_codecs</span> <span class="kn">import</span> <span class="n">decode</span><span class="p">,</span> <span class="n">encode</span>
+
+<span class="kn">import</span> <span class="nn">jsonpickle</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">sarracenia</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># class sarra/retry</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DiskQueue">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue">[docs]</a>
+<span class="k">class</span> <span class="nc">DiskQueue</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process Persistent Queue...</span>
+
+<span class="sd">    Persist messages to a file so that processing can be attempted again later.</span>
+<span class="sd">    For safety reasons, want to be writing to a file ASAP.</span>
+<span class="sd">    For performance reasons, all those writes need to be Appends.</span>
+
+<span class="sd">    so continuous, but append-only io... with an occasional housekeeping cycle.</span>
+<span class="sd">    to resolve them</span>
+<span class="sd">   </span>
+<span class="sd">    not clear if we need multi-task safety... just one task writes to each queue.</span>
+
+<span class="sd">    retry_ttl how long </span>
+
+<span class="sd">    self.retry_cache </span>
+
+<span class="sd">    * a dictionary indexed by some sort of key to prevent duplicate messages being stored in it.</span>
+
+<span class="sd">    retry_path = ~/.cache/sr3/&lt;component&gt;/&lt;config&gt;/diskqueue_&lt;name&gt;</span>
+
+<span class="sd">    with various suffixes:</span>
+
+<span class="sd">    .new -- messages added to the retry list are appended to this file.</span>
+<span class="sd">            </span>
+<span class="sd">    whenever a message is added to the retry_cache, it is appended to a </span>
+<span class="sd">    cumulative list of entries to add to the retry list.  </span>
+
+<span class="sd">    every housekeeping interval, the two files are consolidated.</span>
+
+<span class="sd">    note that the *ack_id* of messages retreived from the retry list, is </span>
+<span class="sd">    removed. Files must be acked around the time they are placed on the </span>
+<span class="sd">    retry_list, as reception from the source should have already been acknowledged.</span>
+
+<span class="sd">    FIXME:  would be fun to look at performance of this thing and compare it to</span>
+<span class="sd">        python persistent queue.  the differences:</span>
+
+<span class="sd">        This class does no locking (presumed single threading.) </span>
+<span class="sd">        could add locks... and they would be coarser grained than stuff in persistentqueue</span>
+<span class="sd">        this should be faster than persistent queue, but who knows what magic they did.</span>
+<span class="sd">        This class doesn&#39;t implement in-memory queue... it is entirely on disk...</span>
+<span class="sd">        saves memory, optimal for large queues.  </span>
+<span class="sd">        probably good, since retries should be slow...</span>
+
+<span class="sd">        not sure what will run better.</span>
+<span class="sd">   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DiskQueue.__init__">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> __init__&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;retry_ttl&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_ttl</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1">#logging.basicConfig(format=self.o.logFormat,</span>
+        <span class="c1">#                    level=getattr(logging, self.o.logLevel.upper()))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;name=</span><span class="si">%s</span><span class="s1"> logLevel=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logLevel</span><span class="p">))</span>
+
+        <span class="c1"># initialize all retry path if retry_path is provided</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pid_filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;diskqueue_&#39;</span> <span class="o">+</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span>
+
+        <span class="c1"># retry messages</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># newer retries</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span> <span class="o">+</span> <span class="s1">&#39;.new&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># working file at housekeeping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span> <span class="o">+</span> <span class="s1">&#39;.hk&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># initialize ages and message counts</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">retry_age</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_msgs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">):</span>
+            <span class="n">new_age</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">retry_age</span> <span class="o">&gt;</span> <span class="n">new_age</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_msgs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="DiskQueue.put">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.put">[docs]</a>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          add messages to the end of the queue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">message_list</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG add to new file </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">),</span> <span class="n">message</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgToJSON</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.cleanup">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.cleanup">[docs]</a>
+    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          remove statefiles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.close">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.close">[docs]</a>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           clean shutdown.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_fp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue._count_msgs">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue._count_msgs">[docs]</a>
+    <span class="k">def</span> <span class="nf">_count_msgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of messages (lines) in the queue file. This should be used only when opening an existing</span>
+<span class="sd">        file, because :func:`~sarracenia.diskqueue.DiskQueue.get` does not remove messages from the file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_path (str): path to the file to be counted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: count of messages in file, -1 if the file could not be read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;{&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">count</span> <span class="o">+=</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">count</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.__len__">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.__len__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of messages in the DiskQueue.</span>
+
+<span class="sd">        Number of messages in the DiskQueue does not necessarily equal the number of messages available to ``get``.</span>
+<span class="sd">        Messages in the .new file are counted, but can&#39;t be retrieved until</span>
+<span class="sd">        :func:`~sarracenia.diskqueue.DiskQueue.on_housekeeping` has been run.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: number of messages in the DiskQueue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span></div>
+
+
+    <span class="k">def</span> <span class="nf">msgFromJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;corrupted line in retry file: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Error information: &quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">msgToJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+<div class="viewcode-block" id="DiskQueue.get">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maximum_messages_to_get</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           qty number of messages to retrieve from the queue.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ml</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="n">maximum_messages_to_get</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+
+            <span class="c1"># FIXME MG as discussed with Peter</span>
+            <span class="c1"># no housekeeping in get ...</span>
+            <span class="c1"># if no message (and new or state file there)</span>
+            <span class="c1"># we wait for housekeeping to present retry messages</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="c1">#logger.debug(&quot;MG DEBUG retry get return None&quot;)</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expired</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+                <span class="c1">#logger.error(&quot;MG invalid %s&quot; % message)</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="s1">&#39;ack_id&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;ack_id&#39;</span><span class="p">]</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;ack_id&#39;</span><span class="p">)</span>
+
+            <span class="n">ml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">-=</span> <span class="n">count</span>
+
+        <span class="k">return</span> <span class="n">ml</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.in_cache">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.in_cache">[docs]</a>
+    <span class="k">def</span> <span class="nf">in_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          return whether the entry is message is in the cache or not.</span>
+<span class="sd">          side effect: adds it.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">urlstr</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;noDupe&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;noDupe&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;pubTime&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">sumstr</span> <span class="o">=</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;no key found for message, cannot add&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">cache_key</span> <span class="o">=</span> <span class="n">urlstr</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">sumstr</span>
+
+        <span class="k">if</span> <span class="s1">&#39;parts&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="n">cache_key</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;parts&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">cache_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_cache</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.is_expired">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.is_expired">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">          return is the given message expired ?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># no expiry</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_ttl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_ttl</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># compute message age</span>
+        <span class="n">msg_time</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
+        <span class="n">msg_age</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="n">msg_time</span>
+
+        <span class="c1"># expired ?</span>
+        <span class="k">return</span> <span class="n">msg_age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retry_ttl</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.needs_requeuing">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.needs_requeuing">[docs]</a>
+    <span class="k">def</span> <span class="nf">needs_requeuing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           return </span>
+<span class="sd">           * True if message is not expired, and not already in queue. </span>
+<span class="sd">           * False otherwise.   </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_cache</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;discarding duplicate message (in </span><span class="si">%s</span><span class="s2"> cache) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># log is info... it is good to log a retry message that expires</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_expired</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;discarding expired message in (</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.msg_get_from_file">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.msg_get_from_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">msg_get_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            read a message from the state file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span> <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG </span><span class="si">%s</span><span class="s2"> open read&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+        <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msgFromJSON</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="c1"># a corrupted line : go to the next</span>
+        <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fp</span><span class="p">,</span> <span class="n">msg</span></div>
+
+
+<div class="viewcode-block" id="DiskQueue.on_housekeeping">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.diskqueue.DiskQueue.on_housekeeping">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_housekeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">           read rest of queue_file (from current point of unretried ones.)</span>
+<span class="sd">                 - check if message is duplicate or expired.</span>
+<span class="sd">                 - write to .hk</span>
+
+<span class="sd">           read .new file, </span>
+<span class="sd">                 - check if message is duplicate or expired.</span>
+<span class="sd">                 - writing to .hk (housekeeping)</span>
+
+<span class="sd">           remove .new</span>
+<span class="sd">           rename housekeeping to queue for next period.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> on_housekeeping&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># finish retry before reshuffling all retries entries</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;have not finished retry list. Resuming retries with </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># put this in try/except in case ctrl-c breaks something</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">fp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_fp</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;has queue </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">))</span>
+
+            <span class="c1"># remaining of retry to housekeeping</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">fp</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span> <span class="k">break</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_requeuing</span><span class="p">(</span><span class="n">message</span><span class="p">):</span> <span class="k">continue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgToJSON</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+                <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">N</span>
+
+            <span class="n">fp</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># append new to housekeeping.</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">fp</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_get_from_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span> <span class="k">break</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;DEBUG message </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">message</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_requeuing</span><span class="p">(</span><span class="n">message</span><span class="p">):</span> <span class="k">continue</span>
+
+                <span class="c1">#logger.debug(&quot;MG DEBUG flush retry to state %s&quot; % message)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msgToJSON</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+                <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;retrieved </span><span class="si">%d</span><span class="s2"> from the </span><span class="si">%d</span><span class="s2"> retry&quot;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">Err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;something went wrong&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># no more retry</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count</span> <span class="o">=</span> <span class="n">N</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> No retry in list&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># housekeeping file becomes new retry</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> Number of messages in retry list </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_file</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something went wrong with rename&quot;</span><span class="p">)</span>
+
+        <span class="c1"># cleanup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_count_new</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_path</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">elapse</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">nowflt</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;on_housekeeping elapse </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">elapse</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

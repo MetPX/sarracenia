@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.accept.tolocalfile &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.accept.tolocalfile</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.accept.tolocalfile</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Plugin tolocalfile.py:</span>
+<span class="sd">    This is a helper script to work with converters (filters) and senders.</span>
+
+<span class="sd">    What a data pump advertises, it will usually use Web URL, but if one is</span>
+<span class="sd">    on a server where the files are available, it is more efficient to access</span>
+<span class="sd">    them as local files, and so this plugin turn the message&#39;s notice Web URL</span>
+<span class="sd">    into a File URL (file:/d1/d2/.../fn)</span>
+
+<span class="sd">Normal Usage:</span>
+<span class="sd">    A Web URL in an amqp message is hold in the following values:</span>
+<span class="sd">    message[&#39;baseUrl&#39;] (ex.: http://localhost)  and</span>
+<span class="sd">    message[&#39;relPath&#39;] (ex.: /&lt;data&gt;/&lt;src&gt;/d3/.../fn)</span>
+
+<span class="sd">    We will save these values before their modification :</span>
+<span class="sd">    message[&#39;saved_baseUrl&#39;] = message[&#39;baseUrl&#39;]</span>
+<span class="sd">    message[&#39;saved_relPath&#39;] = message[&#39;relPath&#39;]</span>
+
+<span class="sd">    We will then turn them into an absolute File Url: (Note if a baseDir was set it prefix the relPath)</span>
+<span class="sd">    message[&#39;baseUrl&#39;] = &#39;file:&#39;</span>
+<span class="sd">    message[&#39;relPath&#39;] = [baseDir] + message[&#39;relPath&#39;]</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    baseDir /var/www/html</span>
+
+<span class="sd">    message pubtime=20171003131233.494 baseUrl=http://localhost relPath=/20171003/CMOE/productx.gif</span>
+
+<span class="sd">    flowcb sarracenia.flowcb.accept.tolocalfile.ToLocalFile</span>
+
+<span class="sd">    will receive this::</span>
+<span class="sd">    * message[&#39;baseUrl&#39;]  is  &#39;http://localhost&#39;</span>
+<span class="sd">    * message[&#39;relPath&#39;]  is  &#39;/20171003/CMOE/GIF/productx.gif&#39;</span>
+
+<span class="sd">    * will copy/save these values</span>
+<span class="sd">    * message[&#39;saved_baseUrl&#39;] = message[&#39;baseUrl&#39;]</span>
+<span class="sd">    * message[&#39;saved_relPath&#39;] = message[&#39;relPath&#39;]</span>
+
+<span class="sd">    * turn the original values into a File URL</span>
+<span class="sd">    * message[&#39;baseUrl&#39;] = &#39;file:&#39;</span>
+<span class="sd">    * if parent[&#39;baseDir&#39;] :</span>
+<span class="sd">      *  message[&#39;relPath&#39;] = parent[&#39;baseDir&#39;] + &#39;/&#39; + message[&#39;relPath&#39;]</span>
+<span class="sd">      *  message[&#39;relPath&#39;] = message[&#39;relPath&#39;].replace(&#39;//&#39;,&#39;/&#39;)</span>
+
+
+<span class="sd">    A sequence of after_accept plugins can perform various changes to the messages and/or</span>
+<span class="sd">    to the product...  so here lets pretend we have an after_accept plugin that converts</span>
+<span class="sd">    gif to png  and prepares the proper message for it</span>
+
+<span class="sd">    flowcb sarracenia.flowcb.accept.giftopng.GifToPng</span>
+<span class="sd">    After the tolocalfile this script could perform something like::</span>
+
+<span class="sd">        # build the absolute path of the png product</span>
+<span class="sd">        new_path = message[&#39;relPath&#39;].replace(&#39;GIF&#39;,&#39;PNG&#39;)</span>
+<span class="sd">        new_path[-4:] = &#39;.png&#39;</span>
+
+<span class="sd">        # proceed to the conversion gif2png</span>
+<span class="sd">        ok = self.gif2png(gifpath=message.relPath,pngpath=new_path)</span>
+
+<span class="sd">    change the message to announce the new png product::</span>
+<span class="sd">    </span>
+<span class="sd">        if ok :</span>
+<span class="sd">            message[&#39;baseUrl&#39;] = message[&#39;saved_baseUrl&#39;]</span>
+<span class="sd">        message[&#39;relPath&#39;] = new_path</span>
+<span class="sd">        if self.o.baseDir :</span>
+<span class="sd">            message[&#39;relPath&#39;] = new_path.replace(self.o.baseDir,&#39;&#39;,1)</span>
+<span class="sd">        else :</span>
+<span class="sd">            logger.error(...</span>
+<span class="sd">        # we are ok... proceed with this png file</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    flowcb sarracenia.flowcb.accept.tolocalfile.ToLocalFile</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;__name__&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ToLocalFile">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.accept.tolocalfile.ToLocalFile">[docs]</a>
+<span class="k">class</span> <span class="nc">ToLocalFile</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<div class="viewcode-block" id="ToLocalFile.__init__">
+<a class="viewcode-back" href="../../../../Reference/flowcb.html#sarracenia.flowcb.accept.tolocalfile.ToLocalFile.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
+        <span class="n">new_incoming</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;file:&#39;</span><span class="p">:</span>
+                <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;saved_baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;saved_relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+            <span class="n">message</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;file:&#39;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span><span class="p">):</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">baseDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;//&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">new_incoming</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span> <span class="o">=</span> <span class="n">new_incoming</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

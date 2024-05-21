@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sarracenia.flowcb.poll &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../sarracenia.html">sarracenia</a> &raquo;</li>
+          <li><a href="../flowcb.html">sarracenia.flowcb</a> &raquo;</li>
+      <li>sarracenia.flowcb.poll</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sarracenia.flowcb.poll</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># This file is part of sarracenia.</span>
+<span class="c1"># The sarracenia suite is Free and is proudly provided by the Government of Canada</span>
+<span class="c1"># Copyright (C) Her Majesty The Queen in Right of Canada, 2008-2022</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia.moth</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">html.parser</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">paramiko</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia</span>
+<span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
+
+<span class="k">if</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;ftppoll&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+    <span class="kn">import</span> <span class="nn">dateparser</span>
+    <span class="kn">import</span> <span class="nn">pytz</span>
+
+<span class="kn">import</span> <span class="nn">sarracenia.config</span>
+<span class="kn">from</span> <span class="nn">sarracenia.flowcb</span> <span class="kn">import</span> <span class="n">FlowCB</span>
+<span class="kn">import</span> <span class="nn">sarracenia.transfer</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">file_size_fix</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+
+        <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;bB&#39;</span><span class="p">:</span> <span class="n">str_value</span> <span class="o">=</span> <span class="n">str_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;kK&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">=</span> <span class="mi">1024</span>
+        <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;mM&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;gG&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="k">elif</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s1">&#39;tT&#39;</span><span class="p">:</span> <span class="n">factor</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="k">if</span> <span class="n">str_value</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span> <span class="n">str_value</span> <span class="o">=</span> <span class="n">str_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">fsize</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">str_value</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+        <span class="n">isize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fsize</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;bad size </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">str_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">isize</span>
+
+
+<span class="n">file_type_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;l&#39;</span><span class="p">:</span> <span class="mo">0o120000</span><span class="p">,</span>  <span class="c1"># symbolic link</span>
+    <span class="s1">&#39;s&#39;</span><span class="p">:</span> <span class="mo">0o140000</span><span class="p">,</span>  <span class="c1"># socket file</span>
+    <span class="s1">&#39;-&#39;</span><span class="p">:</span> <span class="mo">0o100000</span><span class="p">,</span>  <span class="c1"># regular file</span>
+    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mo">0o060000</span><span class="p">,</span>  <span class="c1"># block device</span>
+    <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mo">0o040000</span><span class="p">,</span>  <span class="c1"># directory</span>
+    <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mo">0o020000</span><span class="p">,</span>  <span class="c1"># character device</span>
+    <span class="s1">&#39;p&#39;</span><span class="p">:</span> <span class="mo">0o010000</span>  <span class="c1"># fifo (named pipe)</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">modstr2num</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">):</span> <span class="n">mode</span> <span class="o">+=</span> <span class="mi">4</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span> <span class="n">mode</span> <span class="o">+=</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;x&#39;</span><span class="p">):</span> <span class="n">mode</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">mode</span>
+
+
+<span class="k">def</span> <span class="nf">filemode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modstr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">mode</span> <span class="o">+=</span> <span class="n">file_type_dict</span><span class="p">[</span><span class="n">modstr</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">mode</span> <span class="o">+=</span> <span class="n">modstr2num</span><span class="p">(</span><span class="n">modstr</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+    <span class="n">mode</span> <span class="o">+=</span> <span class="n">modstr2num</span><span class="p">(</span><span class="n">modstr</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span>
+    <span class="n">mode</span> <span class="o">+=</span> <span class="n">modstr2num</span><span class="p">(</span><span class="n">modstr</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">mode</span>
+
+
+<span class="k">def</span> <span class="nf">fileid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">id</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="Poll">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll">[docs]</a>
+<span class="k">class</span> <span class="nc">Poll</span><span class="p">(</span><span class="n">FlowCB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      The Poll flow callback class implements the main logic for polling remote resources.</span>
+<span class="sd">      the *poll* routine returns a list of messages for new files to be filtered. </span>
+
+<span class="sd">      when instantiated with options, the options honoured include:</span>
+
+<span class="sd">      * pollUrl - the URL of the server to be polled.</span>
+
+<span class="sd">      * post_baseURL - parameter for messages to be returned. Also used to look</span>
+<span class="sd">        up credentials to help subscribers with retrieval.</span>
+
+<span class="sd">      * masks - These are the directories at the pollUrl to poll.</span>
+<span class="sd">        derived from the accept/reject clauses, but filtering should happen later.</span>
+<span class="sd">        entire directories are listed at this point.</span>
+
+<span class="sd">      * timezone - interpret listings from an FTP server as being in the given timezone </span>
+<span class="sd">        (as per `pytz &lt;pypi.org/project/pytz&gt;`_</span>
+
+<span class="sd">      * chmod - used to identify the minimum permissions to accept for a file to</span>
+<span class="sd">        be included in a polling result.</span>
+
+<span class="sd">      * identity_method - parameter for how to build identity checksum for messages.</span>
+<span class="sd">        as these are usually remote files, the default is typically &quot;cod&quot; (calculate on download)</span>
+
+<span class="sd">      * rename - parameter used to to put in messages built to specify the rename field contents.</span>
+
+<span class="sd">      * options are passed to sarracenia.Transfer classes for their use as well.</span>
+
+<span class="sd">      Poll uses sarracenia.transfer (ftp, sftp, https, etc... )classes to </span>
+<span class="sd">      requests lists of files using those protocols using built-in logic.  </span>
+
+<span class="sd">      Internally, Poll normalizes the listings received by placing them into paramiko.SFTPAttributes</span>
+<span class="sd">      metadata records (similar to stat records) and builds a Sarracenia.Message from them.</span>
+<span class="sd">      The *poll* routine does one pass of this, returning a list of Sarracenia.Messages.</span>
+
+<span class="sd">      To customize: </span>
+
+<span class="sd">      * one can add new sarracenia.transfer protocols, each implementing the *ls* entry point</span>
+<span class="sd">        to be compatible with this polling routine, ideally the entry point would return a</span>
+<span class="sd">        list of paramiko.SFTPAttributes for each file in a directory listing.</span>
+<span class="sd">        This can be used to implement polling of structured remote resources such as S3 or webdav.</span>
+
+<span class="sd">      * one can deal with different formats of HTTP pages by overriding the handle_data entry point,</span>
+<span class="sd">        as done in `nasa_mls_nrt.py &lt;nasa_mls_nrt.py&gt;`_ plugin </span>
+
+<span class="sd">      * for traditional file servers, the listing format should be decypherable with the built-in processing.</span>
+
+<span class="sd">      * sftp file servers provide paramiko.SFTPAttributes naturally which are timezone agnostic.</span>
+
+<span class="sd">      * for some FTP servers, one may need to specify the *timezone* option to override the UTC default.</span>
+
+<span class="sd">      * If there are problems with date or line formats, one can sub-class poll, and override only the on_line</span>
+<span class="sd">        routine to deal with that.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;table&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tabular_format</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;tr&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_column</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;td&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_column</span> <span class="o">+=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">c</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">attr</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;href&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Poll.handle_data">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.handle_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           routine called from html.parser to deal with a single line.</span>
+<span class="sd">           if the line is about a file, then create a new entry for it</span>
+<span class="sd">           with a metadata available from SFTPAttributes.</span>
+
+<span class="sd">           example lines:</span>
+
+<span class="sd">              from hpfx.collab.science.gc.ca:</span>
+<span class="sd">                  20230113T00Z_MSC_REPS_HGT_ISBL-0850_RLatLon0.09x0.09_PT000H.grib2   2023-01-13 03:49  5.2M</span>
+<span class="sd">              from https://data.cosmic.ucar.edu/suominet/nrt/ncConus/y2023/</span>
+<span class="sd">                  CsuPWVh_2023.011.22.00.0060_nc                     11-Jan-2023 23:58     47K</span>
+
+<span class="sd">           this can be overridden by subclassing to deal with new web sites.</span>
+
+<span class="sd">           Other web servers put their file indices in a tabular format,  where there is a number</span>
+<span class="sd">           of cells per row:</span>
+<span class="sd">           &lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td href=filename&gt;filename&lt;/td&gt;&lt;td&gt;yyyy-mm-dd hh:mm&lt;/td&gt;&lt;td&gt;size&lt;/td&gt;</span>
+<span class="sd">           This handle_data supports both formats... </span>
+<span class="sd">           the tabular format is provided by a vanilla apache2 on a debian derived system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;handling_data </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2"> column=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_column</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabular_format</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_column</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="o">=</span><span class="n">data</span>
+                <span class="k">return</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_column</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">return</span> 
+            <span class="n">sdate</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">==</span> <span class="n">data</span><span class="p">:</span> <span class="k">return</span>
+
+            <span class="n">words</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">return</span>
+
+            <span class="n">sdate</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">words</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+ 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sdate</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+
+        <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span>  <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%b-%Y %H:%M&#39;</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span> <span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot; try parsing +</span><span class="si">{</span><span class="n">sdate</span><span class="si">}</span><span class="s2">+ using </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">sdate</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">Ex</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">t</span><span class="p">:</span>
+            <span class="n">mydate</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%b </span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="c1"># size is rounded, need a way to be more precise.</span>
+        <span class="c1">#entry.st_size = file_size_fix(words[-1])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="mo">0o755</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IFDIR</span> <span class="o">|</span> <span class="mo">0o755</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">myfname</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Poll.on_html_page">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.on_html_page">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_html_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           called once per directory or page of HTML, invokes html.parser, returns</span>
+<span class="sd">           a dictionary of file entries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myfname</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabular_format</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_column</span><span class="o">=</span><span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span></div>
+
+
+    <span class="k">def</span> <span class="nf">on_html_parser_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># HTML Parsing stuff.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">HTMLParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_starttag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_starttag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">handle_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      HTML Parsing begine</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Poll.__init__">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span><span class="n">class_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="n">class_logger</span><span class="p">)</span>
+
+        <span class="c1"># check pollUrl</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ok</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;pollUrl option incorrect or missing</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;file:&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="o">=</span> <span class="s1">&#39;file:&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">password</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">Transfer</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;unsupported polling protocol&quot;</span><span class="p">)</span>
+
+        <span class="c1"># rebuild mask as pulls instructions</span>
+        <span class="c1"># pulls[directory] = [mask1,mask2...]</span>
+
+        <span class="c1">#self.pulls = {}</span>
+        <span class="c1">#for mask in self.o.masks:</span>
+        <span class="c1">#    pattern, maskDir, maskFileOption, mask_regexp, accepting, mirror, strip, pstrip, flatten = mask</span>
+        <span class="c1">#    logger.debug(mask)</span>
+        <span class="c1">#    if not maskDir in self.pulls:</span>
+        <span class="c1">#        self.pulls[maskDir] = []</span>
+        <span class="c1">#    self.pulls[maskDir].append(mask)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_html_parser_init</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">metricsReset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;transferRxBytes&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">metricsReport</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
+
+    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;sr_poll/cd: could not cd to directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">filedate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;ftppoll&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
+           <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;need dateparser library to deal with polling of ftp servers, no date parsed&#39;</span><span class="p">)</span>
+           <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">line_split</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">file_date</span> <span class="o">=</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">current_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">pytz</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+        <span class="c1"># case 1: the date contains &#39;-&#39; implies the date is in 1 string not 3 seperate ones, and H:M is also provided</span>
+        <span class="k">if</span> <span class="s2">&quot;-&quot;</span> <span class="ow">in</span> <span class="n">file_date</span><span class="p">:</span> <span class="n">file_date</span> <span class="o">=</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+        <span class="n">standard_date_format</span> <span class="o">=</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
+            <span class="n">file_date</span><span class="p">,</span>
+            <span class="n">settings</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;RELATIVE_BASE&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">current_date</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="s1">&#39;TIMEZONE&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>  <span class="c1">#turn this into an option - should be EST for mtl</span>
+                <span class="s1">&#39;TO_TIMEZONE&#39;</span><span class="p">:</span> <span class="s1">&#39;UTC&#39;</span>
+            <span class="p">})</span>
+        <span class="k">if</span> <span class="n">standard_date_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># case 2: the year was not given, it is defaulted to 1900. Must find which year (this one or last one).</span>
+            <span class="k">if</span> <span class="n">standard_date_format</span><span class="o">.</span><span class="n">month</span> <span class="o">-</span> <span class="n">current_date</span><span class="o">.</span><span class="n">month</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="n">standard_date_format</span> <span class="o">=</span> <span class="n">standard_date_format</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="n">year</span><span class="o">=</span><span class="p">(</span><span class="n">current_date</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(</span><span class="n">standard_date_format</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">timestamp</span>
+
+<div class="viewcode-block" id="Poll.on_line">
+<a class="viewcode-back" href="../../../Reference/flowcb.html#sarracenia.flowcb.poll.Poll.on_line">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           default line processing, converts a file listing into an SFTPAttributes.</span>
+<span class="sd">           does nothing if input is already an SFTPAttributes item, returning it unchanged.</span>
+<span class="sd">           verifies that file is accessible (based on self.o.permDefault pattern to establish minimum permissions.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">is</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">:</span>
+            <span class="n">sftp_obj</span> <span class="o">=</span> <span class="n">line</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
+            <span class="c1"># assume windows...</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">sftp_obj</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+            <span class="n">ldate</span> <span class="o">=</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]),</span> <span class="n">settings</span><span class="o">=</span><span class="p">{</span> <span class="s1">&#39;TIMEZONE&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span> <span class="s1">&#39;TO_TIMEZONE&#39;</span><span class="p">:</span><span class="s1">&#39;UTC&#39;</span> <span class="p">}</span> <span class="p">)</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="n">ldate</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="n">file_size_fix</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="mo">0o644</span> <span class="c1"># just make it work... no permission info provided.</span>
+            <span class="c1">#logger.info( f&quot;windows line parsing result: {sftp_obj}&quot;)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">sftp_obj</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">=</span> <span class="n">filemode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_uid</span> <span class="o">=</span> <span class="n">fileid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_gid</span> <span class="o">=</span> <span class="n">fileid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">file_size_fix</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># normal linux/unix ftp server case.</span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="n">file_size_fix</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filedate</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># university of wisconsin (some special file system? has third ownship field before size) </span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="n">file_size_fix</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">9</span><span class="p">:]</span>
+                <span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filedate</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+            <span class="n">sftp_obj</span><span class="o">.</span><span class="n">longname</span> <span class="o">=</span> <span class="n">sftp_obj</span><span class="o">.</span><span class="n">filename</span>
+
+
+        <span class="c1"># assert at this point we have an sftp_obj...</span>
+        <span class="c1"># filter out files we don&#39;t have the necessary permissions for.</span>
+        <span class="k">if</span> <span class="s1">&#39;sftp_obj&#39;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span> <span class="ow">and</span> <span class="p">((</span><span class="n">sftp_obj</span><span class="o">.</span><span class="n">st_mode</span>
+                                        <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDefault</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDefault</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sftp_obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="nf">lsdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">ls</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ls</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bytes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;transferRxBytes&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ls</span><span class="p">)</span>
+                <span class="n">ls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_html_page</span><span class="p">(</span><span class="n">ls</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+
+            <span class="n">new_ls</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">new_dir</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># del ls[&#39;&#39;]  # For some reason with FTP the first line of the ls causes an index out of bounds error becuase it contains only &quot;total ...&quot; in line_mode.py</span>
+
+            <span class="c1"># apply selection on the list</span>
+
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;line to parse: </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+                <span class="n">matched</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">ls</span><span class="p">[</span><span class="n">f</span><span class="p">]</span>
+
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">line</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                    <span class="n">new_dir</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_ls</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
+
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">new_ls</span><span class="p">,</span> <span class="n">new_dir</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;dest.lsdir: Could not ls directory&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Exception details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">poll_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdir</span><span class="p">):</span>
+
+        <span class="c1">#logger.debug(&quot;poll_directory %s %s&quot; % (pdir))</span>
+        <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># cd to that directory</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot; cd </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pdir</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">pdir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span> <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># ls that directory</span>
+
+        <span class="n">ok</span><span class="p">,</span> <span class="n">file_dict</span><span class="p">,</span> <span class="n">dir_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsdir</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span> <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">filelst</span> <span class="o">=</span> <span class="n">file_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">desclst</span> <span class="o">=</span> <span class="n">file_dict</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;poll_directory: new files found </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">filelst</span><span class="p">))</span>
+
+        <span class="c1"># post poll list</span>
+
+        <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_list_post</span><span class="p">(</span><span class="n">pdir</span><span class="p">,</span> <span class="n">dir_dict</span><span class="p">,</span> <span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_list_post</span><span class="p">(</span><span class="n">pdir</span><span class="p">,</span> <span class="n">desclst</span><span class="p">,</span> <span class="n">filelst</span><span class="p">))</span>
+
+        <span class="c1"># poll in children directory</span>
+
+        <span class="n">sdir</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dir_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sdir</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;.&#39;</span> <span class="ow">or</span> <span class="n">d</span> <span class="o">==</span> <span class="s1">&#39;..&#39;</span><span class="p">:</span> <span class="k">continue</span>
+
+            <span class="c1">#d_lspath = lspath + &#39;_&#39; + d</span>
+            <span class="n">d_pdir</span> <span class="o">=</span> <span class="n">pdir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">d</span>
+
+            <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_directory</span><span class="p">(</span><span class="n">d_pdir</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">msgs</span>
+
+    <span class="k">def</span> <span class="nf">poll_file_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">):</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">destDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">remote_file</span>
+
+        <span class="c1"># posting a localfile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">post_baseUrl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;file:&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">lstat</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">lstat</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="n">ok</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">follow_symlinks</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span> 
+                            <span class="n">ok</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="p">}</span> 
+                            <span class="k">if</span> <span class="s1">&#39;Identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                                 <span class="k">del</span> <span class="n">ok</span><span class="p">[</span><span class="s1">&#39;Identity&#39;</span><span class="p">]</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;cannot read link </span><span class="si">%s</span><span class="s2"> message dropped&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                            <span class="n">ok</span><span class="o">=</span><span class="kc">None</span>
+                <span class="k">return</span> <span class="n">ok</span>
+
+        <span class="n">post_relPath</span> <span class="o">=</span> <span class="n">destDir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">remote_file</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;desc: type: </span><span class="si">%s</span><span class="s1">, value: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">desc</span><span class="p">),</span> <span class="n">desc</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPAttributes</span><span class="p">()</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="n">file_size_fix</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+            <span class="c1"># actionally only need to convert normalized time to number here...</span>
+            <span class="c1"># just being lazy...</span>
+            <span class="n">lstime</span> <span class="o">=</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="n">lstime</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">st_atime</span> <span class="o">=</span> <span class="n">lstime</span>
+
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">st</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">post_relPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;directory&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span> <span class="p">}</span>
+             
+        <span class="k">elif</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISLNK</span><span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;link&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">follow_symlinks</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span> 
+                    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="p">}</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;cannot read link </span><span class="si">%s</span><span class="s2"> message dropped&quot;</span> <span class="o">%</span> <span class="n">post_relPath</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s1">&#39;create&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span> <span class="ow">and</span> <span class="s1">&#39;modify&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">identity_method</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="p">):</span>
+            <span class="n">m</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">identity_method</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">v</span><span class="p">}</span>
+
+        <span class="c1"># If there is a file operation, and it isn&#39;t a rename, then some fields are irrelevant/wrong.</span>
+        <span class="k">if</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">poll_list_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">desclst</span><span class="p">,</span> <span class="n">filelst</span><span class="p">):</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">remote_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">filelst</span><span class="p">):</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">desclst</span><span class="p">[</span><span class="n">remote_file</span><span class="p">]</span>
+ 
+            <span class="n">new_msgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_file_post</span><span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">destDir</span><span class="p">,</span> <span class="n">remote_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_msgs</span><span class="p">:</span>
+                <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_msgs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">msgs</span>
+
+    <span class="c1"># =============</span>
+    <span class="c1"># for all directories, get urls to post</span>
+    <span class="c1"># if True is returned it means : no sleep, retry on return</span>
+    <span class="c1"># False means, go to sleep and retry after sleep seconds</span>
+    <span class="c1"># =============</span>
+
+    <span class="k">def</span> <span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+
+        <span class="n">msgs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># connection did not work</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;sr_poll/post_new_url: unable to connect to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">pollUrl</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">nap</span><span class="o">=</span><span class="mi">15</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Sleeping </span><span class="si">{nap}</span><span class="s2"> secs and retry&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">nap</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">destDir</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+
+            <span class="n">currentDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">variableExpansion</span><span class="p">(</span><span class="n">destDir</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">currentDir</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span> <span class="n">currentDir</span> <span class="o">=</span> <span class="n">destDir</span>
+            <span class="n">msgs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_directory</span><span class="p">(</span><span class="n">currentDir</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;poll_directory returned: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">msgs</span><span class="p">))</span>
+
+        <span class="c1"># close connection</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">msgs</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

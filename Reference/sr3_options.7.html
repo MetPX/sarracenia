@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SR3 OPTIONS &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SR3 CREDENTIALS" href="sr3_credentials.7.html" />
+    <link rel="prev" title="Reference" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SR3 OPTIONS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sr3-configuration-file-format">SR3 Configuration File Format</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variables">Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#option-types">OPTION TYPES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#options">OPTIONS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sr3_credentials.7.html">SR3 CREDENTIALS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sr3.1.html">SR3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sr3_post.1.html">sr3_post CLI poster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sr3_cpump.1.html">Sr3_cpump C Manual Page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sr_post.7.html">Posting Message Format Man page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flowcb.html">FlowCallback Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code.html">Code Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Reference</a> &raquo;</li>
+      <li>SR3 OPTIONS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Reference/sr3_options.7.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="sr3-options">
+<h1>SR3 OPTIONS<a class="headerlink" href="#sr3-options" title="Link to this heading"></a></h1>
+<section id="sr3-configuration-file-format">
+<h2>SR3 Configuration File Format<a class="headerlink" href="#sr3-configuration-file-format" title="Link to this heading"></a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">manual section<span class="colon">:</span></dt>
+<dd class="field-odd"><p>7</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+<dt class="field-odd">Version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UNKNOWN</p>
+</dd>
+<dt class="field-even">Manual group<span class="colon">:</span></dt>
+<dd class="field-even"><p>MetPX-Sarracenia</p>
+</dd>
+</dl>
+<section id="synopsis">
+<h3>SYNOPSIS<a class="headerlink" href="#synopsis" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>name value
+name value for use
+name value_${substitution}
+.
+.
+.
+</pre></div>
+</div>
+</section>
+<section id="description">
+<h3>DESCRIPTION<a class="headerlink" href="#description" title="Link to this heading"></a></h3>
+<p>Options are placed in configuration files, one per line, in the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">option</span> <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debug</span> <span class="n">true</span>
+<span class="n">debug</span>
+</pre></div>
+</div>
+<p>sets the <em>debug</em> option to enable more verbose logging. If no value is specified,
+the value true is implicit, so the above are equivalent. A second example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">broker</span> <span class="n">amqps</span><span class="p">:</span><span class="o">//</span><span class="n">anonymous</span><span class="nd">@dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span>
+</pre></div>
+</div>
+<p>In the above example, <em>broker</em> is the option keyword, and the rest of the line is the
+value assigned to the setting. Configuration files are a sequence of settings, one per line.
+Note:</p>
+<ul class="simple">
+<li><p>the files are read from top to bottom, most importantly for <em>directory</em>, <em>strip</em>, <em>mirror</em>,
+and <em>flatten</em> options apply to <em>accept</em> clauses that occur after them in the file.</p></li>
+<li><p>The forward slash (/) as the path separator in Sarracenia configuration files on all
+operating systems. Use of the backslash character as a path separator (as used in the
+cmd shell on Windows) may not work properly. When files are read on Windows, the path
+separator is immediately converted to the forward slash, so all pattern matching,
+in accept, reject, strip etc… directives should use forward slashes when a path
+separator is needed.</p></li>
+<li><p><strong>#</strong> is the prefix for lines of non-functional descriptions of configurations, or comments.
+Same as shell and/or python scripts.</p></li>
+<li><p><strong>All options are case sensitive.</strong>  <strong>Debug</strong> is not the same as <strong>debug</strong> nor <strong>DEBUG</strong>.
+Those are three different options (two of which do not exist and will have no effect,
+but will generate an ´unknown option’ warning).</p></li>
+</ul>
+<p>The file has an inherent order, in that it is read from top to bottom, so options
+set on one line often affect later lines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mirror</span> <span class="n">off</span>
+<span class="n">directory</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">just_flat_files_here_please</span>
+<span class="n">accept</span> <span class="o">.*</span><span class="n">flatones</span><span class="o">.*</span>
+
+<span class="n">mirror</span> <span class="n">on</span>
+<span class="n">directory</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">fully_mirrored</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>In the above snippet the <em>mirror</em> setting is off, then the directoy value is set,
+so files whose name includes <em>flatones</em> will all be place in the <em>/data/just_flat_files_here_please</em>
+directory. For files which don’t have that name, they will not be picked up
+by the first accept, and so the mirror on, and the new directory setting will tak over,
+and those other files will land in /data/fully_mirrored. A second example:</p>
+<p>sequence #1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>sequence #2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span>
+<span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>FIXME: does this match only files ending in ‘gif’ or should we add a $ to it?
+will it match something like .gif2 ? is there an assumed .* at the end?</p>
+</div>
+<p>In sequence #1, all files ending in ‘gif’ are rejected. In sequence #2, the
+accept .* (which accepts everything) is encountered before the reject statement,
+so the reject has no effect. Some options have global scope, rather than being
+interpreted in order. For thoses cases, the last declaration overrides the
+ones higher in the file..</p>
+</section>
+<section id="variables">
+<h3>Variables<a class="headerlink" href="#variables" title="Link to this heading"></a></h3>
+<p>One can include substitutions in option values. They are represented by ${name}.
+The name can be an ordinary environment variable, or a chosen from a number of
+built-in ones. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>varTimeOffset -5m
+directory /mylocaldirectory/${%Y%m%d}/mydailies
+accept    .*observations.*
+
+rename hoho.${%o-1h%Y%m%d_%H%M%S.%f}.csv
+</pre></div>
+</div>
+<p>In the last example above, the <em>varTimeOffset</em> will modify the evaluation of YYYYMMDD to be 5m in the past.
+In the rename option, the time to be substituted is one hour in the past.
+One can also specify variable substitutions to be performed on arguments to the directory
+option, with the use of <em>${..}</em> notation:</p>
+<ul class="simple">
+<li><p>%…     - a <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.date.strftime">datetime.strftime()</a></p>
+<ul>
+<li><p>compatible date/time formatting string augmented by an offset duration suffix (o- for in the past, o+ for in the future)</p></li>
+<li><p>example (complex date):  ${%Y/%m/%d_%Hh%M:%S.%f} –&gt; 2022/12/04_17h36:34.014412</p></li>
+<li><p>example (add offset):  ${%o-1h%Y/%m/%d_%Hh%M:%S.%f} –&gt; 2022/12/04_16h36:34.014412</p></li>
+</ul>
+</li>
+<li><p>time offset begin a strtime pattern with %o for an offset +-1(s/m/h/d/w) units.</p></li>
+<li><p>SOURCE   - the amqp user that injected data (taken from the notification message.)</p></li>
+<li><p>BD       - the base directory</p></li>
+<li><p>BUP      - the path component of the baseUrl (or: baseUrlPath)</p></li>
+<li><p>BUPL     - the last element of the baseUrl path. (or: baseUrlPathLast)</p></li>
+<li><p>PBD      - the post base dir</p></li>
+<li><p><em>var</em>    - any environment variable.</p></li>
+<li><p>BROKER_USER - the user name for authenticating to the broker (e.g. anonymous)</p></li>
+<li><p>POST_BROKER_USER - the user name for authenticating to the post_broker (e.g. anonymous)</p></li>
+<li><p>PROGRAM     - the name of the component (subscribe, shovel, etc…)</p></li>
+<li><p>CONFIG      - the name of the configuration file being run.</p></li>
+<li><p>HOSTNAME    - the hostname running the client.</p></li>
+<li><p>RANDID      - a random id that will be consistent within a single invocation.</p></li>
+</ul>
+<p>The %Y%m%d and %h time stamps refer to the time at which the data is processed by
+the component, it is not decoded or derived from the content of the files delivered.
+All date/times in Sarracenia are in UTC. use the varTimeOffset setting to adjust
+from the current time.</p>
+<p>Refer to <em>sourceFromExchange</em> for a common example of usage. Note that any sarracenia
+built-in value takes precedence over a variable of the same name in the environment.
+Note that flatten settings can be changed between directory options.</p>
+<p>Note:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>the ${% date substitutions are present, the interpretation of % patterns in filenames
+by strftime, may mean it is necessary to escape precent characters them via doubling: %%
+</pre></div>
+</div>
+<section id="sundew-compatible-substituions">
+<h4>Sundew Compatible Substituions<a class="headerlink" href="#sundew-compatible-substituions" title="Link to this heading"></a></h4>
+<p>In <a class="reference external" href="../Explanation/Glossary.html#sundew">MetPX Sundew</a>, there is a much more strict
+file naming standard, specialised for use with World Meteorological
+Organization (WMO) data. Note that the file naming convention predates, and
+bears no relation to the WMO file naming convention currently approved, but is strictly an internal
+format. The files are separated into six fields by colon characters. The first field, DESTFN,
+gives the WMO (386 style) Abbreviated Header Line (AHL) with underscores replacing blanks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TTAAii</span> <span class="n">CCCC</span> <span class="n">YYGGGg</span> <span class="n">BBB</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>(see WMO manuals for details) followed by numbers to render the product unique (as in practice,
+though not in theory, there are a large number of products which have the same identifiers).
+The meanings of the fifth field is a priority, and the last field is a date/time stamp.
+The other fields vary in meaning depending on context. A sample file name:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SACN43_CWAO_012000_AAA_41613</span><span class="p">:</span><span class="n">ncp1</span><span class="p">:</span><span class="n">CWAO</span><span class="p">:</span><span class="n">SA</span><span class="p">:</span><span class="mf">3.</span><span class="n">A</span><span class="o">.</span><span class="n">I</span><span class="o">.</span><span class="n">E</span><span class="p">:</span><span class="mi">3</span><span class="p">:</span><span class="mi">20050201200339</span>
+</pre></div>
+</div>
+<p>If a file is sent to sarracenia and it is named according to the Sundew conventions, then the
+following substitution fields are available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>${T1}    replace by bulletin&#39;s T1
+${T2}    replace by bulletin&#39;s T2
+${A1}    replace by bulletin&#39;s A1
+${A2}    replace by bulletin&#39;s A2
+${ii}    replace by bulletin&#39;s ii
+${CCCC}  replace by bulletin&#39;s CCCC
+${YY}    replace by bulletin&#39;s YY   (obs. day)
+${GG}    replace by bulletin&#39;s GG   (obs. hour)
+${Gg}    replace by bulletin&#39;s Gg   (obs. minute)
+${BBB}   replace by bulletin&#39;s bbb
+${RYYYY} replace by reception year
+${RMM}   replace by reception month
+${RDD}   replace by reception day
+${RHH}   replace by reception hour
+${RMN}   replace by reception minutes
+${RSS}   replace by reception second
+YYYYMMDD - the current daily timestamp. (v2 compat, prefer strftime %Y%m%d )
+HH       - the current hourly timestamp. (v2 compat, prefer strftime %h )
+JJJ      - the current hourly timestamp. (v2 compat, prefer strftime %j )
+</pre></div>
+</div>
+<p>The ‘R’ fields come from the sixth field, and the others come from the first one.
+When data is injected into sarracenia from Sundew, the <em>sundew_extension</em> notification message header
+will provide the source for these substitions even if the fields have been removed
+from the delivered file names.</p>
+<p>Note:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">version</span> <span class="mi">2</span> <span class="n">compatible</span> <span class="n">date</span> <span class="n">strings</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">YYYYMMDD</span><span class="p">)</span> <span class="n">originate</span> <span class="k">with</span> <span class="n">obsolete</span>
+<span class="n">WMO</span> <span class="n">practices</span><span class="p">,</span> <span class="ow">and</span> <span class="n">support</span> <span class="n">will</span> <span class="n">be</span> <span class="n">removed</span> <span class="n">at</span> <span class="n">a</span> <span class="n">future</span> <span class="n">date</span><span class="o">.</span> <span class="n">Please</span> <span class="n">use</span> <span class="n">strftime</span>
+<span class="n">style</span> <span class="n">patterns</span> <span class="ow">in</span> <span class="n">new</span> <span class="n">configurations</span><span class="o">.</span>
+</pre></div>
+</div>
+<section id="sr-dev-appname">
+<h5>SR_DEV_APPNAME<a class="headerlink" href="#sr-dev-appname" title="Link to this heading"></a></h5>
+<p>The SR_DEV_APPNAME environment variable can be set so that the application configuration and state directories
+are created under a different name. This is used in development to be able to have many configurations
+active at once. It enables more testing than always working with the developer´s <em>real</em> configuration.</p>
+<p>Example:  export SR_DEV_APPNAME=sr-hoho… when you start up a component on a linux system, it will
+look in ~/.config/sr-hoho/ for configuration files, and write state files in the ~/.cache/sr-hoho
+directory.</p>
+</section>
+</section>
+</section>
+<section id="option-types">
+<h3>OPTION TYPES<a class="headerlink" href="#option-types" title="Link to this heading"></a></h3>
+<p>sr3 options come in several types:</p>
+<dl class="simple">
+<dt>count, size</dt><dd><p>integer count type.  same as size described below.</p>
+</dd>
+<dt>duration</dt><dd><p>a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
+modified by a unit suffix ( m-minute, h-hour, w-week )</p>
+</dd>
+<dt>flag</dt><dd><p>an option that has only True or False values (aka: a boolean value)</p>
+</dd>
+<dt>float</dt><dd><p>a floating point number.</p>
+</dd>
+<dt>list</dt><dd><p>a list of string values, each succeeding occurrence catenates to the total.
+all v2 plugin options are declared of type list.</p>
+</dd>
+<dt>set</dt><dd><p>a set of string values, each succeeding occurrence is unioned to the total.</p>
+</dd>
+<dt>size</dt><dd><p>integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+alone base 10: 1k=1000, with a ‘b’ suffix, base 2: 1kb=1024</p>
+</dd>
+<dt>str</dt><dd><p>a string value</p>
+</dd>
+</dl>
+</section>
+<section id="options">
+<h3>OPTIONS<a class="headerlink" href="#options" title="Link to this heading"></a></h3>
+<p>The actual options are listed below. Note that they are case sensitive, and
+only a subset are available on the command line. Those that are available
+on the command line have the same effect as when specified in configuration
+files.</p>
+<p>The options available in configuration files:</p>
+<section id="accelthreshold-size-default-0-disabled">
+<h4>accelThreshold &lt;size&gt; default: 0 (disabled.)<a class="headerlink" href="#accelthreshold-size-default-0-disabled" title="Link to this heading"></a></h4>
+<p>The accelThreshold indicates the minimum size of file being transferred for
+which a binary downloader will be launched.</p>
+</section>
+<section id="accelxxxcommand">
+<h4>accelXxxCommand<a class="headerlink" href="#accelxxxcommand" title="Link to this heading"></a></h4>
+<p>Can specify alternate binaries for downloaders to tune for specific cases.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Option</p></td>
+<td><p>Defaul value</p></td>
+</tr>
+<tr class="row-even"><td><p>accelWgetCommand</p></td>
+<td><p>/usr/bin/wget %s -O %d</p></td>
+</tr>
+<tr class="row-odd"><td><p>accelScpCommand</p></td>
+<td><p>/usr/bin/scp %s %d</p></td>
+</tr>
+<tr class="row-even"><td><p>accelCpCommand</p></td>
+<td><p>/usr/bin/cp  %s %d</p></td>
+</tr>
+<tr class="row-odd"><td><p>accelFtpgetCommand</p></td>
+<td><p>/usr/bin/ncftpget %s %d</p></td>
+</tr>
+<tr class="row-even"><td><p>accelFtpputCommand</p></td>
+<td><p>/usr/bin/ncftpput %s %d</p></td>
+</tr>
+</tbody>
+</table>
+<p>use the %s to stand-in for the name of the source file, and %d for the
+file being written.  An example setting to override with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accelCpCommand</span> <span class="n">dd</span> <span class="k">if</span><span class="o">=%</span><span class="n">s</span> <span class="n">of</span><span class="o">=%</span><span class="n">d</span> <span class="n">bs</span><span class="o">=</span><span class="mi">4096</span><span class="n">k</span>
+</pre></div>
+</div>
+</section>
+<section id="accept-reject-and-acceptunmatched">
+<h4>accept, reject and acceptUnmatched<a class="headerlink" href="#accept-reject-and-acceptunmatched" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>accept     &lt;regexp pattern&gt; (optional) [&lt;keywords&gt;]</strong></p></li>
+<li><p><strong>reject     &lt;regexp pattern&gt; (optional)</strong></p></li>
+<li><p><strong>acceptUnmatched   &lt;boolean&gt; (default: True)</strong></p></li>
+</ul>
+<p>The  <strong>accept</strong>  and  <strong>reject</strong>  options process regular expressions (regexp).
+The regexp is applied to the the notification message’s URL for a match.</p>
+<p>If the notification message’s URL of a file matches a <strong>reject</strong>  pattern, the notification message
+is acknowledged as consumed to the broker and skipped.</p>
+<p>One that matches an <strong>accept</strong> pattern is processed by the component.</p>
+<p>In many configurations, <strong>accept</strong> and <strong>reject</strong> options are mixed
+with the <strong>directory</strong> option.  They then relate accepted notification messages
+to the <strong>directory</strong> value they are specified under.</p>
+<p>After all <strong>accept</strong> / <strong>reject</strong>  options are processed, normally
+the notification message is accepted for further processing. To override that
+default, set <strong>acceptUnmatched</strong> to False. The <strong>accept/reject</strong>
+settings are interpreted in order. Each option is processed orderly
+from top to bottom. For example:</p>
+<p>sequence #1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+<span class="n">accept</span> <span class="o">.*</span>
+</pre></div>
+</div>
+<p>sequence #2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accept</span> <span class="o">.*</span>
+<span class="n">reject</span> <span class="o">.*</span>\<span class="o">.</span><span class="n">gif</span>
+</pre></div>
+</div>
+<p>In sequence #1, all files ending in ‘gif’ are rejected.  In sequence #2, the accept .* (which
+accepts everything) is encountered before the reject statement, so the reject has no effect.</p>
+<p>It is best practice to use server side filtering to reduce the number of notification messages sent
+to the component to a small superset of what is relevant, and perform only a fine-tuning with the
+client side mechanisms, saving bandwidth and processing for all. More details on how
+to apply the directives follow:</p>
+<p>The  <strong>accept</strong>  and  <strong>reject</strong>  options use regular expressions (regexp) to match URL.
+These options are processed sequentially.
+The URL of a file that matches a  <strong>reject</strong>  pattern is not published.
+Files matching an  <strong>accept</strong>  pattern are published.
+Again a <em>rename</em>  can be added to the <em>accept</em> option… matching products
+for that <em>accept</em> option would get renamed as described… unless the <em>accept</em> matches
+one file, the <em>rename</em> option should describe a directory into which the files
+will be placed (prepending instead of replacing the file name).</p>
+<p>The <strong>permDefault</strong> option allows users to specify a linux-style numeric octal
+permission mask:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">permDefault</span> <span class="mi">040</span>
+</pre></div>
+</div>
+<p>means that a file will not be posted unless the group has read permission
+(on an ls output that looks like: —r—–, like a chmod 040 &lt;file&gt; command).
+The <strong>permDefault</strong> options specifies a mask, that is the permissions must be
+at least what is specified.</p>
+<p>The <strong>regexp pattern</strong> can be used to set directory parts if part of the notification message is put
+to parenthesis. <strong>sender</strong> can use these parts to build the directory name. The
+rst enclosed parenthesis strings will replace keyword <strong>${0}</strong> in the directory name…
+the second <strong>${1}</strong> etc.</p>
+<p>Example of use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>filename NONE
+
+directory /this/first/target/directory
+
+accept .*file.*type1.*
+
+directory /this/target/directory
+
+accept .*file.*type2.*
+
+accept .*file.*type3.*  DESTFN=file_of_type3
+
+directory /this/${0}/pattern/${1}/directory
+
+accept .*(2016....).*(RAW.*GRIB).*
+</pre></div>
+</div>
+<p>A selected notification message by the first accept would be delivered unchanged to the first directory.</p>
+<p>A selected notification message by the second accept would be delivered unchanged to the second directory.</p>
+<p>A selected notification message by the third accept would be renamed “file_of_type3” in the second directory.</p>
+<p>A selected notification message by the forth accept would be delivered unchanged to a directory.</p>
+<p>It’s named  <em>/this/20160123/pattern/RAW_MERGER_GRIB/directory</em> if the notification message would have a notice like:</p>
+<p><strong>20150813161959.854 http://this.pump.com/ relative/path/to/20160123_product_RAW_MERGER_GRIB_from_CMC</strong></p>
+</section>
+<section id="acceptsizewrong-boolean-default-false">
+<h4>acceptSizeWrong: &lt;boolean&gt; (default: False)<a class="headerlink" href="#acceptsizewrong-boolean-default-false" title="Link to this heading"></a></h4>
+<p>When a file is downloaded and its size does not match the one advertised, it is
+normally rejected, as a failure. This option accepts the file even with the wrong
+size. helpful when file is changing frequently, and there is some queueing, so
+the file is changed by the time it is retrieved.</p>
+</section>
+<section id="attempts-count-default-3">
+<h4>attempts &lt;count&gt; (default: 3)<a class="headerlink" href="#attempts-count-default-3" title="Link to this heading"></a></h4>
+<p>The <strong>attempts</strong> option indicates how many times to
+attempt downloading the data before giving up.  The default of 3 should be appropriate
+in most cases.  When the <strong>retry</strong> option is false, the file is then dropped immediately.</p>
+<p>When The <strong>retry</strong> option is set (default), a failure to download after prescribed number
+of <strong>attempts</strong> (or send, in a sender) will cause the notification message to be added to a queue file
+for later retry.  When there are no notification messages ready to consume from the AMQP queue,
+the retry queue will be queried.</p>
+</section>
+<section id="basedir-path-default">
+<h4>baseDir &lt;path&gt; (default: /)<a class="headerlink" href="#basedir-path-default" title="Link to this heading"></a></h4>
+<p><strong>baseDir</strong> supplies the directory path that, when combined with the relative
+one in the selected notification gives the absolute path of the file to be sent.
+The default is None which means that the path in the notification is the absolute one.</p>
+<p>Sometimes senders subscribe to local xpublic, which are http url’s, but sender
+needs a localfile, so the local path is built by concatenating:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">baseDir</span> <span class="o">+</span> <span class="n">relative</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">baseUrl</span> <span class="o">+</span> <span class="n">relPath</span>
+</pre></div>
+</div>
+<p>When used for reception, it specifies the root of the tree that upstream files are assumed
+to be from, to be replaced on download by either post_baseDir or the <em>directory</em> setting
+in effect.</p>
+</section>
+<section id="baseurl-relpath-flag-default-off">
+<h4>baseUrl_relPath &lt;flag&gt; (default: off)<a class="headerlink" href="#baseurl-relpath-flag-default-off" title="Link to this heading"></a></h4>
+<p>Normally, the relative path (baseUrl_relPath is False, appended to the base directory) for
+files which are downloaded will be set according to the relPath header included
+in the notification message. If <em>baseUrl_relPath</em> is set, however, the notification message’s relPath will
+be prepended with the sub-directories from the notification message’s baseUrl field.</p>
+</section>
+<section id="batch-count-default-100">
+<h4>batch &lt;count&gt; (default: 100)<a class="headerlink" href="#batch-count-default-100" title="Link to this heading"></a></h4>
+<p>The <strong>batch</strong> option is used to indicate how many files should be transferred
+over a connection, before it is torn down, and re-established.  On very low
+volume transfers, where timeouts can occur between transfers, this should be
+lowered to 1.  For most usual situations the default is fine. For higher volume
+cases, one could raise it to reduce transfer overhead. It is only used for file
+transfer protocols, not HTTP ones at the moment.</p>
+</section>
+<section id="blocksize-size-default-0-auto">
+<h4>blocksize &lt;size&gt; default: 0 (auto)<a class="headerlink" href="#blocksize-size-default-0-auto" title="Link to this heading"></a></h4>
+<p>NOTE: <strong>EXPERIMENTAL</strong> sr3, expected to return in future version**
+This <strong>blocksize</strong> option controls the partitioning strategy used to post files.
+The value should be one of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="o">-</span> <span class="n">autocompute</span> <span class="n">an</span> <span class="n">appropriate</span> <span class="n">partitioning</span> <span class="n">strategy</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span>
+<span class="mi">1</span> <span class="o">-</span> <span class="n">always</span> <span class="n">send</span> <span class="n">entire</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">single</span> <span class="n">part</span><span class="o">.</span>
+<span class="o">&lt;</span><span class="n">blocksize</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">used</span> <span class="n">a</span> <span class="n">fixed</span> <span class="n">partition</span> <span class="n">size</span> <span class="p">(</span><span class="n">example</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1</span><span class="n">M</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Files can be announced as multiple parts.  Each part has a separate checksum.
+The parts and their checksums are stored in the cache. Partitions can traverse
+the network separately, and in parallel.  When files change, transfers are
+optimized by only sending parts which have changed.</p>
+<p>The <em>outlet</em> option allows the final output to be other than a post.
+See <a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> for details.</p>
+</section>
+<section id="broker">
+<h4>broker<a class="headerlink" href="#broker" title="Link to this heading"></a></h4>
+<p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;password&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
+<p>A URI is used to configure a connection to a notification message pump, either
+an MQTT or an AMQP broker. Some Sarracenia components set a reasonable default for
+that option.  provide the normal user,host,port of connections. In most configuration files,
+the password is missing. The password is normally only included in the
+<a class="reference external" href="sr3_credentials.7.html">credentials.conf</a> file.</p>
+<p>Sarracenia work has not used vhosts, so <strong>vhost</strong> should almost always be <strong>/</strong>.</p>
+<p>for more info on the AMQP URI format: ( <a class="reference external" href="https://www.rabbitmq.com/uri-spec.html">https://www.rabbitmq.com/uri-spec.html</a> )</p>
+<p>either in the default.conf or each specific configuration file.
+The broker option tell each component which broker to contact.</p>
+<p><strong>broker [amqp|mqtt]{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong></p>
+<dl class="simple">
+<dt>::</dt><dd><p>(default: None and it is mandatory to set it )</p>
+</dd>
+</dl>
+<p>Once connected to an AMQP broker, the user needs to bind a queue
+to exchanges and topics to determine the notification messages of interest.</p>
+</section>
+<section id="bufsize-size-default-1mb">
+<h4>bufsize &lt;size&gt; (default: 1MB)<a class="headerlink" href="#bufsize-size-default-1mb" title="Link to this heading"></a></h4>
+<p>Files will be copied in <em>bufsize</em>-byte blocks. for use by transfer protocols.</p>
+</section>
+<section id="byteratemax-size-default-0">
+<h4>byteRateMax &lt;size&gt; (default: 0)<a class="headerlink" href="#byteratemax-size-default-0" title="Link to this heading"></a></h4>
+<p><strong>byteRateMax</strong> is greater than 0, the process attempts to respect this delivery
+speed in kilobytes per second… ftp,ftps,or sftp)</p>
+<p><strong>FIXME</strong>: byteRateMax… only implemented by sender? or subscriber as well, data only, or notification messages also?</p>
+</section>
+<section id="callback-classspec">
+<h4>callback &lt;classSpec&gt;<a class="headerlink" href="#callback-classspec" title="Link to this heading"></a></h4>
+<p><strong>callback</strong> appends a flowcallback class to the list of those to be called during processing.</p>
+<p>Most customizable processing or “plugin” logic, is implemented using the flow callback class.
+At different points in notification message processing, flow callback classes define
+entry_points that match that point in processing. for for every such point in the processing,
+there is a list of flow callback routines to call.</p>
+<p><a class="reference external" href="flowcb.html">FlowCallback Reference</a></p>
+<p>the <em>classSpec</em> is similar to an <em>import</em> statement from python. It uses the python search
+path, and also includes ~/.config/sr3/plugins.  There is some shorthand to make usage
+shorter for common cases.  for example:</p>
+<blockquote>
+<div><p>callback log</p>
+</div></blockquote>
+<p>Sarracenia will first attempt, to prepend <em>log</em> with <em>sarracenia.flowcb.log</em> and then
+instantiate the callback instance as an item of class sarracenia.flowcb.Log.  If it does not
+find such a class, then it will attempt to find a class name <em>log</em>, and instantiate an
+object <em>log.Log.</em></p>
+<p>More detail here <a class="reference external" href="flowcb.html#sarracenia.flowcb.load_library">FlowCallback load_library</a></p>
+</section>
+<section id="callback-prepend-classspec">
+<h4>callback_prepend &lt;classSpec&gt;<a class="headerlink" href="#callback-prepend-classspec" title="Link to this heading"></a></h4>
+<p>identical to callback, but meant to specify functions to be executed early, that is prepended
+to the list of plugins to run.</p>
+</section>
+<section id="dangerwillrobinson-default-omitted">
+<h4>dangerWillRobinson (default: omitted)<a class="headerlink" href="#dangerwillrobinson-default-omitted" title="Link to this heading"></a></h4>
+<p>This option is only recognized as a command line option. It is specified when an operation is expected
+to have irreversibly destructive or perhaps unexpected effects. for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>will stop running components, but not those that are being run in the foreground. Stopping those
+may be surprising to the analysts that will be looking at them, so that is not done by default:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">dangerWillRobinson</span> <span class="n">stop</span>
+</pre></div>
+</div>
+<p>stops stops all components, including the foreground ones. Another example would be the <em>cleanup</em>
+action. This option deletes queues and exchanges related to a configuration, which can be
+destructive to flows. By default, cleanup only operates on a single configuration at a time.
+One can specify this option to wreak greater havoc.</p>
+</section>
+<section id="declare">
+<h4>declare<a class="headerlink" href="#declare" title="Link to this heading"></a></h4>
+<dl>
+<dt>env NAME=Value</dt><dd><p>One can also reference environment variables in configuration files,
+using the <em>${ENV}</em> syntax.  If Sarracenia routines needs to make use
+of an environment variable, then they can be set in configuration files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">declare</span> <span class="n">env</span> <span class="n">HTTP_PROXY</span><span class="o">=</span><span class="n">localhost</span>
+</pre></div>
+</div>
+</dd>
+<dt>exchange exchange_name</dt><dd><p>using the admin url, declare the exchange with <em>exchange_name</em></p>
+</dd>
+<dt>subscriber</dt><dd><p>A subscriber is user that can only subscribe to data and return report notification messages. Subscribers are
+not permitted to inject data.  Each subscriber has an xs_&lt;user&gt; named exchange on the pump,
+where if a user is named <em>Acme</em>, the corresponding exchange will be <em>xs_Acme</em>.  This exchange
+is where an subscribe process will send its report notification messages.</p>
+<p>By convention/default, the <em>anonymous</em> user is created on all pumps to permit subscription without
+a specific account.</p>
+</dd>
+<dt>source</dt><dd><p>A user permitted to subscribe or originate data.  A source does not necessarily represent
+one person or type of data, but rather an organization responsible for the data produced.
+So if an organization gathers and makes available ten kinds of data with a single contact
+email or phone number for questions about the data and its availability, then all of
+those collection activities might use a single ‘source’ account.</p>
+<p>Each source gets a xs_&lt;user&gt; exchange for injection of data notification messages, and, similar to a subscriber
+to send report notification messages about processing and receipt of data. Source may also have an xl_&lt;user&gt;
+exchange where, as per report routing configurations, report notification messages of consumers will be sent.</p>
+</dd>
+<dt>feeder</dt><dd><p>A user permitted to write to any exchange. Sort of an administrative flow user, meant to pump
+notification messages when no ordinary source or subscriber is appropriate to do so.  Is to be used in
+preference to administrator accounts to run flows.</p>
+</dd>
+</dl>
+<p>User credentials are placed in the <a class="reference external" href="sr3_credentials.7.html">credentials.conf</a>
+file, and <em>sr3 --users declare</em> will update
+the broker to accept what is specified in that file, as long as the admin password is
+already correct.</p>
+<ul class="simple">
+<li><p>By default, all users are declared. However, flows can be specified on the command line to constrain
+the declared users to only those in the given flow. For example:</p>
+<ul>
+<li><p><em>sr3 --users declare</em> will declare all users</p></li>
+<li><p><em>sr3 --users declare subscribe/dd_amis</em> will only declare users specified in <em>subscribe/dd_amis</em></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="debug">
+<h4>debug<a class="headerlink" href="#debug" title="Link to this heading"></a></h4>
+<p>Setting option debug is identical to use  <strong>logLevel debug</strong></p>
+</section>
+<section id="delete-boolean-default-off">
+<h4>delete &lt;boolean&gt; (default: off)<a class="headerlink" href="#delete-boolean-default-off" title="Link to this heading"></a></h4>
+<p>When the <strong>delete</strong> option is set, after a download has completed successfully, the subscriber
+will delete the file at the upstream source.  Default is false.</p>
+</section>
+<section id="discard-boolean-default-off">
+<h4>discard &lt;boolean&gt; (default: off)<a class="headerlink" href="#discard-boolean-default-off" title="Link to this heading"></a></h4>
+<p>The  <strong>discard</strong>  option,if set to true, deletes the file once downloaded. This option can be
+useful when debugging or testing a configuration.</p>
+</section>
+<section id="directory-path-default">
+<h4>directory &lt;path&gt; (default: .)<a class="headerlink" href="#directory-path-default" title="Link to this heading"></a></h4>
+<p>The <em>directory</em> option defines where to put the files on your server.
+Combined with  <strong>accept</strong> / <strong>reject</strong>  options, the user can select the
+files of interest and their directories of residence (see the  <strong>mirror</strong>
+option for more directory settings).</p>
+<p>The  <strong>accept</strong>  and  <strong>reject</strong>  options use regular expressions (regexp) to match URL.
+These options are processed sequentially.
+The URL of a file that matches a  <strong>reject</strong>  pattern is never downloaded.
+One that matches an  <strong>accept</strong>  pattern is downloaded into the directory
+declared by the closest  <strong>directory</strong>  option above the matching  <strong>accept</strong> option.
+<strong>acceptUnmatched</strong> is used to decide what to do when no reject or accept clauses matched.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ex</span><span class="o">.</span>   <span class="n">directory</span> <span class="o">/</span><span class="n">mylocaldirectory</span><span class="o">/</span><span class="n">myradars</span>
+      <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+
+      <span class="n">directory</span> <span class="o">/</span><span class="n">mylocaldirectory</span><span class="o">/</span><span class="n">mygribs</span>
+      <span class="n">reject</span>    <span class="o">.*</span><span class="n">Reg</span><span class="o">.*</span>
+      <span class="n">accept</span>    <span class="o">.*</span><span class="n">GRIB</span><span class="o">.*</span>
+</pre></div>
+</div>
+</section>
+<section id="destfn-script-script-default-none">
+<h4>destfn_script &lt;script&gt; (default:None)<a class="headerlink" href="#destfn-script-script-default-none" title="Link to this heading"></a></h4>
+<p>This Sundew compatibility option defines a script to be run when everything is ready
+for the delivery of the product.  The script receives the sender class
+instance.  The script takes the parent as an argument, and for example, any
+modification to  <strong>parent.msg.new_file</strong>  will change the name of the file written locally.</p>
+</section>
+<section id="download-flag-default-true">
+<h4>download &lt;flag&gt; (default: True)<a class="headerlink" href="#download-flag-default-true" title="Link to this heading"></a></h4>
+<p>used to disable downloading in subscribe and/or sarra component.
+set False by default in shovel or winnow components.</p>
+</section>
+<section id="dry-run-flag-default-false">
+<h4>dry_run &lt;flag&gt; (default: False)<a class="headerlink" href="#dry-run-flag-default-false" title="Link to this heading"></a></h4>
+<p>Run in simulation mode with respect to file transfers. Still connects to a broker and downloads and processes
+messages, but transfers are disabled, for use when testing a sender, or a downloader, say to run in parallel
+with an existing one, and compare the logs to see if the sender is configured to send the same files as
+the old one (implemented with some other system.)</p>
+</section>
+<section id="durable-flag-default-true">
+<h4>durable &lt;flag&gt; (default: True)<a class="headerlink" href="#durable-flag-default-true" title="Link to this heading"></a></h4>
+<p>The AMQP <strong>durable</strong> option, on queue declarations. If set to True,
+the broker will preserve the queue across broker reboots.
+The queue will be written to and recovered from disk if the broker is restarted.</p>
+<p>Note: only <em>persistent</em> messages will remain in a durable queue after a broker restart.
+Persistent messages can be published by enabling the <strong>persistent</strong> option (it is enabled by default).</p>
+</section>
+<section id="fileevents-event-event">
+<h4>fileEvents &lt;event,event,…&gt;<a class="headerlink" href="#fileevents-event-event" title="Link to this heading"></a></h4>
+<p>A comma separated list of file event types to monitor.
+Available file events:  create, delete, link, modify, mkdir, rmdir
+to only add events to the current list start the event list with a plus sign (+).
+To remove them, prefix with a minus sign (-).</p>
+<p>The <em>create</em>, <em>modify</em>, and <em>delete</em> events reflect what is expected: a file being created, modified, or deleted.
+If <em>link</em> is set, symbolic links will be posted as links so that consumers can choose
+how to process them. If it is not set, then no symbolic link events will ever be posted.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>move or rename events result in a special double post pattern, with one post as the old name
+and a field <em>newname</em> set, and a second post with the new name, and a field <em>oldname</em> set.
+This allows subscribers to perform an actual rename, and avoid triggering a download when possible.</p>
+<p>FIXME: rename algorithm improved in v3 to avoid use of double post… just</p>
+</div>
+</section>
+<section id="exchange-name-default-xpublic-and-exchangesuffix">
+<h4>exchange &lt;name&gt; (default: xpublic) and exchangeSuffix<a class="headerlink" href="#exchange-name-default-xpublic-and-exchangesuffix" title="Link to this heading"></a></h4>
+<p>The convention on data pumps is to use the <em>xpublic</em> exchange. Users can establish
+private data flow for their own processing. Users can declare their own exchanges
+that always begin with <em>xs_&lt;username&gt;</em>, so to save having to specify that each
+time, one can just set <em>exchangeSuffix kk</em> which will result in the exchange
+being set to <em>xs_&lt;username&gt;_kk</em> (overriding the <em>xpublic</em> default).
+These settings must appear in the configuration file before the corresponding
+<em>topicPrefix</em> and <em>subtopic</em> settings.</p>
+</section>
+<section id="exchangedeclare-flag">
+<h4>exchangeDeclare &lt;flag&gt;<a class="headerlink" href="#exchangedeclare-flag" title="Link to this heading"></a></h4>
+<p>On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate. If the exchange already exists, this flag can be set to False,
+so no attempt to exchange the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their exchanges.</p>
+</section>
+<section id="expire-duration-default-5m-five-minutes-recommend-overriding">
+<h4>expire &lt;duration&gt; (default: 5m  == five minutes. RECOMMEND OVERRIDING)<a class="headerlink" href="#expire-duration-default-5m-five-minutes-recommend-overriding" title="Link to this heading"></a></h4>
+<p>The  <strong>expire</strong>  option is expressed as a duration… it sets how long should live
+a queue without connections.</p>
+<p>A raw integer is expressed in seconds, if the suffix m,h,d,w
+are used, then the interval is in minutes, hours, days, or weeks. After the queue expires,
+the contents are dropped, and so gaps in the download data flow can arise.  A value of
+1d (day) or 1w (week) can be appropriate to avoid data loss. It depends on how long
+the subscriber is expected to shutdown, and not suffer data loss.</p>
+<p>if no units are given, then a decimal number of seconds can be provided, such as
+to indicate 0.02 to specify a duration of 20 milliseconds.</p>
+<p>The <strong>expire</strong> setting must be overridden for operational use.
+The default is set low because it defines how long resources on the broker will be assigned,
+and in early use (when default was 1 week) brokers would often get overloaded with very
+long queues for left-over experiments.</p>
+</section>
+<section id="filename-keyword-default-none">
+<h4>filename &lt;keyword&gt; (default:None)<a class="headerlink" href="#filename-keyword-default-none" title="Link to this heading"></a></h4>
+<p>From <strong>metpx-sundew</strong>, the support of this option give all sorts of possibilities
+for setting the remote filename. Some <strong>keywords</strong> are based on the fact that
+<strong>metpx-sundew</strong> filenames are five (to six) fields strings separated by for colons.</p>
+<p>The default value on Sundew is NONESENDER, but in the interest of discouraging use
+of colon separation in files, the default in Sarracenia is WHATFN</p>
+<p>The possible keywords are :</p>
+<dl class="simple">
+<dt><strong>None</strong></dt><dd><ul class="simple">
+<li><p>the filename is not modified at all. (different from NONE!)
+turn off any Sundew compatibility filename processing.</p></li>
+</ul>
+</dd>
+<dt><strong>WHATFN</strong></dt><dd><ul class="simple">
+<li><p>the first part of the Sundew filename (string before first :)</p></li>
+</ul>
+</dd>
+<dt><strong>HEADFN</strong></dt><dd><ul class="simple">
+<li><p>HEADER part of the sundew filename</p></li>
+</ul>
+</dd>
+<dt><strong>SENDER</strong></dt><dd><ul class="simple">
+<li><p>the Sundew filename may end with a string SENDER=&lt;string&gt; in this case the &lt;string&gt; will be the remote filename</p></li>
+</ul>
+</dd>
+<dt><strong>NONE</strong></dt><dd><ul class="simple">
+<li><p>deliver with the complete Sundew filename (without :SENDER=…)</p></li>
+</ul>
+</dd>
+<dt><strong>NONESENDER</strong></dt><dd><ul class="simple">
+<li><p>deliver with the complete Sundew filename (with :SENDER=…)</p></li>
+</ul>
+</dd>
+<dt><strong>TIME</strong></dt><dd><ul class="simple">
+<li><p>time stamp appended to filename. Example of use: WHATFN:TIME</p></li>
+</ul>
+</dd>
+<dt><strong>DESTFN=str</strong></dt><dd><ul class="simple">
+<li><p>direct filename declaration str</p></li>
+</ul>
+</dd>
+<dt><strong>SATNET=1,2,3,A</strong></dt><dd><ul class="simple">
+<li><p>cmc internal satnet application parameters</p></li>
+</ul>
+</dd>
+<dt><strong>DESTFNSCRIPT=script.py</strong></dt><dd><ul class="simple">
+<li><p>invoke a script (same as destfn_script) to generate the name of the file to write</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="flatten-string-default">
+<h4>flatten &lt;string&gt; (default: ‘/’)<a class="headerlink" href="#flatten-string-default" title="Link to this heading"></a></h4>
+<p>The  <strong>flatten</strong>  option is use to set a separator character. The default value ( ‘/’ )
+nullifies the effect of this option.  This character replaces the ‘/’ in the url
+directory and create a “flatten” filename from its dd.weather.gc.ca path.
+For example retrieving the following url, with options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">model_gem_global</span><span class="o">/</span><span class="mi">25</span><span class="n">km</span><span class="o">/</span><span class="n">grib2</span><span class="o">/</span><span class="n">lat_lon</span><span class="o">/</span><span class="mi">12</span><span class="o">/</span><span class="mi">015</span><span class="o">/</span><span class="n">CMC_glb_TMP_TGL_2_latlon</span><span class="mf">.24</span><span class="n">x</span><span class="mf">.24_2013121612</span><span class="n">_P015</span><span class="o">.</span><span class="n">grib2</span>
+
+  <span class="n">flatten</span>   <span class="o">-</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">mylocaldirectory</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">model_gem_global</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>would result in the creation of the filepath:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">mylocaldirectory</span><span class="o">/</span><span class="n">model_gem_global</span><span class="o">-</span><span class="mi">25</span><span class="n">km</span><span class="o">-</span><span class="n">grib2</span><span class="o">-</span><span class="n">lat_lon</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">015</span><span class="o">-</span><span class="n">CMC_glb_TMP_TGL_2_latlon</span><span class="mf">.24</span><span class="n">x</span><span class="mf">.24_2013121612</span><span class="n">_P015</span><span class="o">.</span><span class="n">grib2</span>
+</pre></div>
+</div>
+</section>
+<section id="flowmain-default-none">
+<h4>flowMain (default: None)<a class="headerlink" href="#flowmain-default-none" title="Link to this heading"></a></h4>
+<p>By default, a flow will run the sarracenia.flow.Flow class, which implements the Flow algorithm generically.
+The generic version does no data transfer, only creating and manipulating messages. That is appropriate for
+shovel, winnow, post &amp; watch components, but components that transfer or transform data need
+to define additional behaviour by sub-classing Flow. Examples: sarracenia.flow.sender, sarracenia.flow.poll, sarracenia.flow.subscribe.</p>
+<p>The <strong>flowMain</strong> option allows a flow configuration to run a subclass of flow, instead of the default parent
+class.  Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flowMain</span> <span class="n">subscribe</span>
+</pre></div>
+</div>
+<p>In a generic flow configuration file will configure the flow to act as a subscriber component.
+One can create custom components by subclassing Flow and using the <strong>flowMain</strong> directive to have
+it invoked.</p>
+</section>
+<section id="follow-symlinks-flag">
+<h4>follow_symlinks &lt;flag&gt;<a class="headerlink" href="#follow-symlinks-flag" title="Link to this heading"></a></h4>
+<p>The <em>follow_symlinks</em> option causes symbolic links to be traversed.  If <em>follow_symlinks</em> is set
+and the destination of a symbolic link is a file, then that destination file should be posted as well as the link.
+If the destination of the symbolic link is a directory, then the directory should be added to those being
+monitored by watch.   If <em>follow_symlinks</em> is false, then no action related to the destination of the symbolic
+link is taken.</p>
+</section>
+<section id="force-polling-flag-default-false">
+<h4>force_polling &lt;flag&gt; (default: False)<a class="headerlink" href="#force-polling-flag-default-false" title="Link to this heading"></a></h4>
+<p>By default, watch selects an (OS dependent) optimal method to watch a
+directory.</p>
+<p>For large trees, the optimal method can be manyfold (10x or even
+100x) faster to recognize when a file has been modified. In some cases,
+however, platform optimal methods do not work (such as with some network
+shares, or distributed file systems), so one must use a slower but more
+reliable and portable polling method.  The <em>force_polling</em> keyword causes
+watch to select the polling method in spite of the availability of a
+normally better one.</p>
+<p>For a detailed discussion, see: <a class="reference external" href="../Explanation/DetectFileReady.html">Detecting File Changes</a></p>
+<p>NOTE:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">When</span> <span class="n">directories</span> <span class="n">are</span> <span class="n">consumed</span> <span class="n">by</span> <span class="n">processes</span> <span class="n">using</span> <span class="n">the</span> <span class="n">subscriber</span> <span class="o">*</span><span class="n">delete</span><span class="o">*</span> <span class="n">option</span><span class="p">,</span> <span class="n">they</span> <span class="n">stay</span> <span class="n">empty</span><span class="p">,</span> <span class="ow">and</span>
+<span class="n">every</span> <span class="n">file</span> <span class="n">should</span> <span class="n">be</span> <span class="n">reported</span> <span class="n">on</span> <span class="n">every</span> <span class="k">pass</span><span class="o">.</span>  <span class="n">When</span> <span class="n">subscribers</span> <span class="n">do</span> <span class="ow">not</span> <span class="n">use</span> <span class="o">*</span><span class="n">delete</span><span class="o">*</span><span class="p">,</span> <span class="n">watch</span> <span class="n">needs</span> <span class="n">to</span>
+<span class="n">know</span> <span class="n">which</span> <span class="n">files</span> <span class="n">are</span> <span class="n">new</span><span class="o">.</span>  <span class="n">It</span> <span class="n">does</span> <span class="n">so</span> <span class="n">by</span> <span class="n">noting</span> <span class="n">the</span> <span class="n">time</span> <span class="n">of</span> <span class="n">the</span> <span class="n">beginning</span> <span class="n">of</span> <span class="n">the</span> <span class="n">last</span> <span class="n">polling</span> <span class="k">pass</span><span class="o">.</span>
+<span class="n">File</span> <span class="n">are</span> <span class="n">posted</span> <span class="k">if</span> <span class="n">their</span> <span class="n">modification</span> <span class="n">time</span> <span class="ow">is</span> <span class="n">newer</span> <span class="n">than</span> <span class="n">that</span><span class="o">.</span>  <span class="n">This</span> <span class="n">will</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">many</span> <span class="n">multiple</span> <span class="n">notification</span> <span class="n">messages</span>
+<span class="n">by</span> <span class="n">watch</span><span class="p">,</span> <span class="n">which</span> <span class="n">can</span> <span class="n">be</span> <span class="n">minimized</span> <span class="k">with</span> <span class="n">the</span> <span class="n">use</span> <span class="n">of</span> <span class="n">cache</span><span class="o">.</span>   <span class="n">One</span> <span class="n">could</span> <span class="n">even</span> <span class="n">depend</span> <span class="n">on</span> <span class="n">the</span> <span class="n">cache</span>
+<span class="n">entirely</span> <span class="ow">and</span> <span class="n">turn</span> <span class="n">on</span> <span class="n">the</span> <span class="o">*</span><span class="n">delete</span><span class="o">*</span> <span class="n">option</span><span class="p">,</span> <span class="n">which</span> <span class="n">will</span> <span class="n">have</span> <span class="n">watch</span> <span class="n">attempt</span> <span class="n">to</span> <span class="n">post</span> <span class="n">the</span> <span class="n">entire</span> <span class="n">tree</span>
+<span class="n">every</span> <span class="n">time</span> <span class="p">(</span><span class="n">ignoring</span> <span class="n">mtime</span><span class="p">)</span><span class="o">.</span>
+
+<span class="o">**</span><span class="n">KNOWN</span> <span class="n">LIMITATION</span><span class="o">**</span><span class="p">:</span> <span class="n">When</span> <span class="o">*</span><span class="n">force_polling</span><span class="o">*</span> <span class="ow">is</span> <span class="nb">set</span><span class="p">,</span> <span class="n">the</span> <span class="o">*</span><span class="n">sleep</span><span class="o">*</span> <span class="n">setting</span> <span class="n">should</span> <span class="n">be</span>
+<span class="n">at</span> <span class="n">least</span> <span class="mi">5</span> <span class="n">seconds</span><span class="o">.</span> <span class="n">It</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">currently</span> <span class="n">clear</span> <span class="n">why</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="header-name-value">
+<h4>header &lt;name&gt;=&lt;value&gt;<a class="headerlink" href="#header-name-value" title="Link to this heading"></a></h4>
+<p>Add a &lt;name&gt; header with the given value to a notification message. Used to pass strings as metadata in the
+notification messages to improve decision making for consumers.  Should be used sparingly. There are limits
+on how many headers can be used, and minimizing the size of messages has important performance
+impacts.</p>
+</section>
+<section id="housekeeping-interval-default-300-seconds">
+<h4>housekeeping &lt;interval&gt; (default: 300 seconds)<a class="headerlink" href="#housekeeping-interval-default-300-seconds" title="Link to this heading"></a></h4>
+<p>The <strong>housekeeping</strong> option sets how often to execute periodic processing as determined by
+the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.</p>
+</section>
+<section id="include-config">
+<h4>include config<a class="headerlink" href="#include-config" title="Link to this heading"></a></h4>
+<p>include another configuration within this configuration.</p>
+</section>
+<section id="inflight-string-default-tmp-or-none-if-post-broker-set">
+<h4>inflight &lt;string&gt; (default: .tmp or NONE if post_broker set)<a class="headerlink" href="#inflight-string-default-tmp-or-none-if-post-broker-set" title="Link to this heading"></a></h4>
+<p>The  <strong>inflight</strong>  option sets how to ignore files when they are being transferred
+or (in mid-flight betweeen two systems). Incorrect setting of this option causes
+unreliable transfers, and care must be taken.  See <a class="reference external" href="../Explanation/FileCompletion.html">Delivery Completion</a>
+for more details.</p>
+<p>The value can be a file name suffix, which is appended to create a temporary name during
+the transfer.  If <strong>inflight</strong>  is set to <strong>.</strong>, then it is a prefix, to conform with
+the standard for “hidden” files on unix/linux.
+If <strong>inflight</strong>  ends in / (example: <em>tmp/</em> ), then it is a prefix, and specifies a
+sub-directory of the destination into which the file should be written while in flight.</p>
+<p>Whether a prefix or suffix is specified, when the transfer is
+complete, the file is renamed to its permanent name to allow further processing.</p>
+<p>When detecting a file with sr3_post, sr3_cpost, or watch, or poll, the  <strong>inflight</strong> option
+can also be specified as a time interval, for example, 10 for 10 seconds.
+When set to a time interval, file posting process ensures that it waits until
+the file has not been modified in that interval. So a file will
+not be processed until it has stayed the same for at least 10 seconds.
+This is the same as setting the <strong>fileAgeMin</strong> setting.</p>
+<p>Lastly, <strong>inflight</strong> can be set to <em>NONE</em>, which case the file is written directly
+with the final name, where the recipient will wait to receive a post notifying it
+of the file’s arrival.  This is the fastest, lowest overhead option when it is available.
+It is also the default when a <em>post_broker</em> is given, indicating that some
+other process is to be notified after delivery.</p>
+<p>NOTE:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">When</span> <span class="n">writing</span> <span class="n">a</span> <span class="n">file</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">see</span> <span class="n">the</span> <span class="n">error</span> <span class="n">message</span><span class="p">::</span>
+
+    <span class="n">inflight</span> <span class="n">setting</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="ow">not</span> <span class="k">for</span> <span class="n">downloads</span>
+
+<span class="n">It</span> <span class="ow">is</span> <span class="n">because</span> <span class="n">the</span> <span class="n">time</span> <span class="n">interval</span> <span class="n">setting</span> <span class="ow">is</span> <span class="n">only</span> <span class="k">for</span> <span class="n">reading</span> <span class="n">files</span><span class="o">.</span> <span class="n">The</span> <span class="n">writer</span>
+<span class="n">cannot</span> <span class="n">control</span> <span class="n">how</span> <span class="n">long</span> <span class="n">a</span> <span class="n">subsequent</span> <span class="n">reader</span> <span class="n">will</span> <span class="n">wait</span> <span class="n">to</span> <span class="n">look</span> <span class="n">at</span> <span class="n">a</span> <span class="n">file</span> <span class="n">being</span>
+<span class="n">downloaded</span><span class="p">,</span> <span class="n">so</span> <span class="n">specifying</span> <span class="n">a</span> <span class="n">minimum</span> <span class="n">modification</span> <span class="n">time</span> <span class="ow">is</span> <span class="n">inappropriate</span><span class="o">.</span>
+<span class="ow">in</span> <span class="n">looking</span> <span class="n">at</span> <span class="n">local</span> <span class="n">files</span> <span class="n">before</span> <span class="n">generating</span> <span class="n">a</span> <span class="n">post</span><span class="p">,</span> <span class="n">it</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">used</span> <span class="k">as</span> <span class="n">say</span><span class="p">,</span> <span class="n">a</span> <span class="n">means</span>
+<span class="n">of</span> <span class="n">delaying</span> <span class="n">sending</span> <span class="n">files</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="inline-flag-default-false">
+<h4>inline &lt;flag&gt; (default: False)<a class="headerlink" href="#inline-flag-default-false" title="Link to this heading"></a></h4>
+<p>When posting messages, The <strong>inline</strong> option is used to have the file content
+included in the post. This can be efficient when sending small files over high
+latency links, a number of round trips can be saved by avoiding the retrieval
+of the data using the URL.  One should only inline relatively small files,
+so when <strong>inline</strong> is active, only files smaller than <strong>inlineByteMax</strong> bytes
+(default: 1024) will actually have their content included in the post messages.
+If <strong>inlineOnly</strong> is set, and a file is larger than inlineByteMax, the file
+will not be posted.</p>
+</section>
+<section id="inlinebytemax-size">
+<h4>inlineByteMax &lt;size&gt;<a class="headerlink" href="#inlinebytemax-size" title="Link to this heading"></a></h4>
+<p>The maximum size of messages to inline.</p>
+<p>when inlining file content, what sort of encoding should be done? Three choices:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>text: the file content is assumed to be utf-8 text and encoded as such.</p></li>
+<li><p>binary: the file content is unconditionally converted to base64 binary encoding.</p></li>
+<li><p>guess: try making text, if that fails fall back to binary.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="inlineonly">
+<h4>inlineOnly<a class="headerlink" href="#inlineonly" title="Link to this heading"></a></h4>
+<p>discard messages if the data is not inline.</p>
+</section>
+<section id="inplace-flag-default-on">
+<h4>inplace &lt;flag&gt; (default: On)<a class="headerlink" href="#inplace-flag-default-on" title="Link to this heading"></a></h4>
+<p>Large files may be sent as a series of parts, rather than all at once.
+When downloading, if <strong>inplace</strong> is true, these parts will be appended to the file
+in an orderly fashion. Each part, after it is inserted in the file, is announced to subscribers.
+This can be set to false for some deployments of sarracenia where one pump will
+only ever see a few parts, and not the entirety, of multi-part files.</p>
+<p>The <strong>inplace</strong> option defaults to True.
+Depending of <strong>inplace</strong> and if the message was a part, the path can
+change again (adding a part suffix if necessary).</p>
+</section>
+<section id="instances">
+<h4>Instances<a class="headerlink" href="#instances" title="Link to this heading"></a></h4>
+<p>Sometimes one instance of a component and configuration is not enough to process &amp; send all available notifications.</p>
+<p><strong>instances      &lt;integer&gt;     (default:1)</strong></p>
+<p>The instance option allows launching several instances of a component and configuration.
+When running sender for example, a number of runtime files are created.
+In the ~/.cache/sarra/sender/configName directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>A .sender_configname.state         is created, containing the number instances.
+A .sender_configname_$instance.pid is created, containing the PID  of $instance process.
+</pre></div>
+</div>
+<p>In directory ~/.cache/sarra/log:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>A .sender_configname_$instance.log  is created as a log of $instance process.
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While the brokers keep the queues available for some time, queues take resources on
+brokers, and are cleaned up from time to time. A queue which is not accessed
+and has too many (implementation defined) files queued will be destroyed.
+Processes which die should be restarted within a reasonable period of time to avoid
+loss of notifications. A queue which is not accessed for a long (implementation dependent)
+period will be destroyed.</p>
+</div>
+</section>
+<section id="identity-string">
+<h4>identity &lt;string&gt;<a class="headerlink" href="#identity-string" title="Link to this heading"></a></h4>
+<p>All file notification messages include a checksum.  It is placed in the amqp message header will have as an
+entry <em>sum</em> with default value ‘d,md5_checksum_on_data’.
+The <em>sum</em> option tell the program how to calculate the checksum.
+In v3, they are called Identity methods:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cod</span><span class="p">,</span><span class="n">x</span>      <span class="o">-</span> <span class="n">Calculate</span> <span class="n">On</span> <span class="n">Download</span> <span class="n">applying</span> <span class="n">x</span>
+<span class="n">sha512</span>     <span class="o">-</span> <span class="n">do</span> <span class="n">SHA512</span> <span class="n">on</span> <span class="n">file</span> <span class="n">content</span>  <span class="p">(</span><span class="n">default</span><span class="p">)</span>
+<span class="n">md5</span>        <span class="o">-</span> <span class="n">do</span> <span class="n">md5sum</span> <span class="n">on</span> <span class="n">file</span> <span class="n">content</span>
+<span class="n">md5name</span>    <span class="o">-</span> <span class="n">do</span> <span class="n">md5sum</span> <span class="n">checksum</span> <span class="n">on</span> <span class="n">filename</span>
+<span class="n">random</span>     <span class="o">-</span> <span class="n">invent</span> <span class="n">a</span> <span class="n">random</span> <span class="n">value</span> <span class="k">for</span> <span class="n">each</span> <span class="n">post</span><span class="o">.</span>
+<span class="n">arbitrary</span>  <span class="o">-</span> <span class="n">apply</span> <span class="n">the</span> <span class="n">literal</span> <span class="n">fixed</span> <span class="n">value</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>v2 options are a comma separated string.  Valid checksum flags are :</p>
+<ul class="simple">
+<li><p>0 : no checksum… value in post is a random integer (only for testing/debugging.)</p></li>
+<li><p>d : do md5sum on file content</p></li>
+<li><p>n : do md5sum checksum on filename</p></li>
+<li><p>p : do SHA512 checksum on filename and partstr <a class="footnote-reference brackets" href="#id3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
+<li><p>s : do SHA512 on file content (default)</p></li>
+<li><p>z,a : calculate checksum value using algorithm a and assign after download.</p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>only implemented in C. ( see <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/117">https://github.com/MetPX/sarracenia/issues/117</a> )</p>
+</aside>
+</aside>
+</section>
+<section id="logevents-default-after-accept-after-work-on-housekeeping">
+<h4>logEvents ( default: after_accept,after_work,on_housekeeping )<a class="headerlink" href="#logevents-default-after-accept-after-work-on-housekeeping" title="Link to this heading"></a></h4>
+<p>The set of points during notification message processing to emit standard log messages.
+other values: on_start, on_stop, post, gather, … etc… It is comma separated, and
+if the list starts with a plus sign (+) then the selected events are appended to current value.
+A minus signe (-) can be used to remove events from the set.</p>
+</section>
+<section id="loglevel-default-info">
+<h4>logLevel ( default: info )<a class="headerlink" href="#loglevel-default-info" title="Link to this heading"></a></h4>
+<p>The level of logging as expressed by python’s logging. Possible values are :  critical, error, info, warning, debug.</p>
+</section>
+<section id="logmetrics-default-false">
+<h4>logMetrics ( default: False )<a class="headerlink" href="#logmetrics-default-false" title="Link to this heading"></a></h4>
+<p>Write metrics to a daily metrics file for statistics gathering. can be used to generate statistics.
+File is in the same directory as the logs, and has a date suffix.</p>
+</section>
+<section id="logreject-default-false">
+<h4>logReject ( default: False )<a class="headerlink" href="#logreject-default-false" title="Link to this heading"></a></h4>
+<p>Normally, messages rejection is done silently. When logReject is True, a log message will be generated for
+each message rejected, and indicating the basis for the rejection.</p>
+</section>
+<section id="logstdout-default-false">
+<h4>logStdout ( default: False )<a class="headerlink" href="#logstdout-default-false" title="Link to this heading"></a></h4>
+<p>The <em>logStdout</em> disables log management. Best used on the command line, as there is
+some risk of creating stub files before the configurations are completely parsed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sr3</span> <span class="o">--</span><span class="n">logStdout</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>All launched processes inherit their file descriptors from the parent. so all output is like an interactive session.</p>
+<p>This is in contrast to the normal case, where each instance takes care of its logs, rotating and purging periodically.
+In some cases, one wants to have other software take care of logs, such as in docker, where it is preferable for all
+logging to be to standard output.</p>
+<p>It has not been measured, but there is a reasonable likelihood that use of <em>logStdout</em> with large configurations (dozens
+of configured instances/processes) will cause either corruption of logs, or limit the speed of execution of all processes
+writing to stdout.</p>
+</section>
+<section id="logrotatecount-max-logs-default-5">
+<h4>logRotateCount &lt;max_logs&gt; ( default: 5 )<a class="headerlink" href="#logrotatecount-max-logs-default-5" title="Link to this heading"></a></h4>
+<p>Maximum number of logs (both messages and metrics) archived.</p>
+</section>
+<section id="logrotateinterval-interval-time-unit-default-1d">
+<h4>logRotateInterval &lt;interval&gt;[&lt;time_unit&gt;] ( default: 1d )<a class="headerlink" href="#logrotateinterval-interval-time-unit-default-1d" title="Link to this heading"></a></h4>
+<p>The duration of the interval with an optional time unit (ie 5m, 2h, 3d) for rotation of logs and metrics.</p>
+</section>
+<section id="messagecountmax-count-default-0">
+<h4>messageCountMax &lt;count&gt; (default: 0)<a class="headerlink" href="#messagecountmax-count-default-0" title="Link to this heading"></a></h4>
+<p>If <strong>messageCountMax</strong> is greater than zero, the flow will exit after processing the given
+number of messages.  This is normally used only for debugging.</p>
+</section>
+<section id="messageratemax-float-default-0">
+<h4>messageRateMax &lt;float&gt; (default: 0)<a class="headerlink" href="#messageratemax-float-default-0" title="Link to this heading"></a></h4>
+<p>if <strong>messageRateMax</strong> is greater than zero, the flow attempts to respect this delivery
+speed in terms of messages per second. Note that the throttle is on messages obtained or generated
+per second, prior to accept/reject filtering. the flow will sleep to limit the processing rate.</p>
+</section>
+<section id="messageratemin-float-default-0">
+<h4>messageRateMin &lt;float&gt; (default: 0)<a class="headerlink" href="#messageratemin-float-default-0" title="Link to this heading"></a></h4>
+<p>if <strong>messageRateMin</strong> is greater than zero, and the flow detected is lower than this rate,
+a warning message will be produced:</p>
+</section>
+<section id="message-ttl-duration-default-none">
+<h4>message_ttl &lt;duration&gt;  (default: None)<a class="headerlink" href="#message-ttl-duration-default-none" title="Link to this heading"></a></h4>
+<p>The  <strong>message_ttl</strong>  option set the time a message can live in the queue.
+Past that time, the message is taken out of the queue by the broker.</p>
+</section>
+<section id="mirror-flag-default-off">
+<h4>mirror &lt;flag&gt; (default: off)<a class="headerlink" href="#mirror-flag-default-off" title="Link to this heading"></a></h4>
+<p>The  <strong>mirror</strong>  option can be used to mirror the dd.weather.gc.ca tree of the files.
+If set to  <strong>True</strong>  the directory given by the  <strong>directory</strong>  option
+will be the basename of a tree. Accepted files under that directory will be
+placed under the subdirectory tree leaf where it resides under dd.weather.gc.ca.
+For example retrieving the following url, with options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">radar</span><span class="o">/</span><span class="n">PRECIP</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">WGJ</span><span class="o">/</span><span class="mi">201312141900</span><span class="n">_WGJ_PRECIP_SNOW</span><span class="o">.</span><span class="n">gif</span>
+
+  <span class="n">mirror</span>    <span class="kc">True</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">mylocaldirectory</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>would result in the creation of the directories and the file
+/mylocaldirectory/radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+mirror settings can be changed between directory options.</p>
+</section>
+<section id="no-count">
+<h4>no &lt;count&gt;<a class="headerlink" href="#no-count" title="Link to this heading"></a></h4>
+<p>(normally not used by humans)</p>
+<p>Present on instances started by the sr3 management interface.
+The no option is only used on the command line, and not intended for users.
+It is an option for use by sr3 when spawning instances to inform each process
+which instance it is. e.g instance 3 will be spawned with –no 3</p>
+</section>
+<section id="nodupe-basis-data-name-path-default-path">
+<h4>nodupe_basis &lt;data|name|path&gt; (default: path)<a class="headerlink" href="#nodupe-basis-data-name-path-default-path" title="Link to this heading"></a></h4>
+<p>A keyword option to identify which files are compared for
+duplicate suppression purposes. Normally, the duplicate suppression uses the entire path
+to identify files which have not changed. This allows for files with identical
+content to be posted in different directories and not be suppressed. In some
+cases, suppression of identical files should be done regardless of where in
+the tree the file resides.  Set ‘name’ for files of identical name, but in
+different directories to be considered duplicates. Set to ‘data’ for any file,
+regardless of name, to be considered a duplicate if the checksum matches.</p>
+<p>This is implemented as an alias for:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.name</p>
+</div></blockquote>
+<p>or:</p>
+<blockquote>
+<div><p>callback_prepend nodupe.data</p>
+</div></blockquote>
+<p>More information: <a class="reference external" href="../Explanation/DuplicateSuppression.html">Duplicate Suppresion</a></p>
+</section>
+<section id="fileagemax">
+<h4>fileAgeMax<a class="headerlink" href="#fileagemax" title="Link to this heading"></a></h4>
+<p>If files are older than this setting (default: 7h in poll, 0 in other components),
+then ignore them, they are too old to post. 0 deactivates the setting.</p>
+<dl class="simple">
+<dt>In a Poll:</dt><dd><ul class="simple">
+<li><p>default is 7 hours. should be less than nodupe_ttl to prevent re-ingest of duplicate data.
+(full discussion here: <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/904">https://github.com/MetPX/sarracenia/issues/904</a> )</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="fileagemin">
+<h4>fileAgeMin<a class="headerlink" href="#fileagemin" title="Link to this heading"></a></h4>
+<p>If files are newer than this setting (default: 0), then ignore them, they are too
+new to post. 0 deactivates the setting.</p>
+</section>
+<section id="nodupe-ttl-off-on-999-smhdw">
+<h4>nodupe_ttl &lt;off|on|999[smhdw]&gt;<a class="headerlink" href="#nodupe-ttl-off-on-999-smhdw" title="Link to this heading"></a></h4>
+<p>When <strong>nodupe_ttl</strong> (also <strong>suppress_duplicates*, and **cache</strong> ) is set to a non-zero time
+interval, each new message is compared against ones received within that interval, to see if
+it is a duplicate. Duplicates are not processed further. What is a duplicate? A file with
+the same name (including parts header) and checksum. Every <em>hearbeat</em> interval, a cleanup
+process looks for files in the cache that have not been referenced in <strong>cache</strong> seconds,
+and deletes them, in order to keep the cache size limited. Different settings are
+appropriate for different use cases.</p>
+<p>A raw integer interval is in seconds, if the suffix m,h,d, or w are used, then the interval
+is in minutes, hours, days, or weeks. After the interval expires the contents are
+dropped, so duplicates separated by a large enough interval will get through.
+A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without specifying
+a time will result in 300 seconds (or 5 minutes) being the expiry interval.</p>
+<p>Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
+re-ingesting files that have aged out of the duplicate suppression cache.</p>
+<p><strong>Use of the cache is incompatible with the default *parts 0* strategy</strong>, one must specify an
+alternate strategy.  One must use either a fixed blocksize, or always never partition files.
+One must avoid the dynamic algorithm that will change the partition size used as a file grows.</p>
+<p><strong>Note that the duplicate suppresion store is local to each instance</strong>. When N
+instances share a queue, the first time a posting is received, it could be
+picked by one instance, and if a duplicate one is received it would likely
+be picked up by another instance. <strong>For effective duplicate suppression with instances</strong>,
+one must <strong>deploy two layers of subscribers</strong>. Use
+a <strong>first layer of subscribers (shovels)</strong> with duplicate suppression turned
+off and output with <em>post_exchangeSplit</em>, which route notification messages by checksum to
+a <strong>second layer of subscibers (winnow) whose duplicate suppression caches are active.</strong></p>
+</section>
+<section id="outlet-post-json-url-default-post">
+<h4>outlet post|json|url (default: post)<a class="headerlink" href="#outlet-post-json-url-default-post" title="Link to this heading"></a></h4>
+<p>The <strong>outlet</strong> option is used to allow writing of notification messages to file instead of
+posting to a broker. The valid argument values are:</p>
+<p><strong>post:</strong></p>
+<blockquote>
+<div><p>post messages to an post_exchange</p>
+<p><strong>post_broker amqp{s}://&lt;user&gt;:&lt;pw&gt;&#64;&lt;brokerhost&gt;[:port]/&lt;vhost&gt;</strong>
+<strong>post_exchange     &lt;name&gt;         (MANDATORY)</strong>
+<strong>post_topicPrefix &lt;string&gt;       (default: “v03”)</strong>
+<strong>on_post           &lt;script&gt;       (default: None)</strong></p>
+<p>The <strong>post_broker</strong> defaults to the input broker if not provided.
+Just set it to another broker if you want to send the notifications
+elsewhere.</p>
+<p>The <strong>post_exchange</strong> must be set by the user. This is the exchange under
+which the notifications will be posted.</p>
+</div></blockquote>
+<p><strong>json:</strong></p>
+<blockquote>
+<div><p>write each message (json/v03 encoded) to standard output.</p>
+</div></blockquote>
+<p><strong>url:</strong></p>
+<blockquote>
+<div><p>just output the retrieval URL to standard output.</p>
+</div></blockquote>
+<p>FIXME: The <strong>outlet</strong> option came from the C implementation ( <em>sr3_cpump</em>  ) and it has not
+been used much in the python implementation.</p>
+</section>
+<section id="overwrite-flag-default-off">
+<h4>overwrite &lt;flag&gt; (default: off)<a class="headerlink" href="#overwrite-flag-default-off" title="Link to this heading"></a></h4>
+<p>The  <strong>overwrite</strong>  option,if set to false, avoid unnecessary downloads under these conditions :</p>
+<p>1- the file to be downloaded is already on the user’s file system at the right place and</p>
+<p>2- the checksum of the amqp message matched the one of the file.</p>
+<p>The default is False.</p>
+</section>
+<section id="path-path">
+<h4>path &lt;path&gt;<a class="headerlink" href="#path-path" title="Link to this heading"></a></h4>
+<p><strong>post</strong> evaluates the filesystem path from the <strong>path</strong> option
+and possibly the <strong>post_baseDir</strong> if the option is used.</p>
+<p>If a path defines a file then this file is watched.</p>
+<p>If a path defines a directory then all files in that directory are watched…</p>
+<p>This is also used to say which directories to look at for a poll</p>
+<p>If this path defines a directory, all files in that directory are
+watched and should <strong>watch</strong> find one (or more) directory(ies), it
+watches it(them) recursively until all the tree is scanned.</p>
+<p>The AMQP notification messages are made of the tree fields, the notification message time,
+the <strong>url</strong> option value and the resolved paths to which were withdrawn
+the <em>post_baseDir</em> present and needed.</p>
+</section>
+<section id="permdefault-permdirdefault-permlog-permcopy">
+<h4>permDefault, permDirDefault, permLog, permCopy<a class="headerlink" href="#permdefault-permdirdefault-permlog-permcopy" title="Link to this heading"></a></h4>
+<p>Permission bits on the destination files written are controlled by the <em>permCopy</em> directives.
+<em>permCopy</em> will apply the mode permissions posted by the source of the file.
+If no source mode is available, the <em>permDefault</em> will be applied to files, and the
+<em>permLog</em> will be applied to directories. If no default is specified,
+then the operating system  defaults (on linux, controlled by umask settings)
+will determine file permissions. (Note that the <em>chmod</em> option is interpreted as a synonym
+for <em>permDefault</em>, and <em>chmod_dir</em> is a synonym for <em>permDirDefault</em>).</p>
+<p>When set in a posting component, permCopy has the effect of including or excluding
+the <em>mode</em> header from the messages.</p>
+<p>when set in a polling component, permDefault has the of setting minimum permissions for
+a file to be accepted.
+(on an ls output that looks like: —r—–, like a chmod 040 &lt;file&gt; command).
+The <strong>permDefault</strong> options specifies a mask, that is the permissions must be
+at least what is specified.</p>
+</section>
+<section id="persistent-flag-default-true">
+<h4>persistent &lt;flag&gt; (default: True)<a class="headerlink" href="#persistent-flag-default-true" title="Link to this heading"></a></h4>
+<p>The <strong>persistent</strong> option sets the <em>delivery_mode</em> for an AMQP message. When True,
+persistent messages will be published (<code class="docutils literal notranslate"><span class="pre">delivery_mode=2</span></code>), when False, transient
+(non-durable, <code class="docutils literal notranslate"><span class="pre">delivery_mode=1</span></code>) messages will be published.</p>
+<p>Persistent messages are written to disk by the broker, and will survive a broker restart.
+Any transient messages in a queue will be lost when a broker is restarted. Note: persistent
+messages will only survive a broker restart <em>when they reside in a durable queue</em>. Non-durable
+queues, including all messages inside them, will be lost when a broker is restarted.</p>
+</section>
+<section id="pollurl-url">
+<h4>pollUrl &lt;url&gt;<a class="headerlink" href="#pollurl-url" title="Link to this heading"></a></h4>
+<p>Specification of a remote server resources to query with a poll
+See the <a class="reference external" href="../Explanation/CommandlineGuide.html#POLLING">POLLING</a>
+in the Command Line Guide.</p>
+</section>
+<section id="post-basedir-path">
+<h4>post_baseDir &lt;path&gt;<a class="headerlink" href="#post-basedir-path" title="Link to this heading"></a></h4>
+<p>The <em>post_baseDir</em> option supplies the directory path that, when combined (or found)
+in the given <em>path</em>, gives the local absolute path to the data file to be posted.
+The <em>post_baseDir</em> part of the path will be removed from the posted notification message.
+For sftp urls it can be appropriate to specify a path relative to a user account.
+Example of that usage would be: –post_baseDir ~user –url sftp:user&#64;host
+For file: url’s, baseDir is usually not appropriate. To post an absolute path,
+omit the –post_baseDir setting, and just specify the complete path as an argument.</p>
+</section>
+<section id="post-baseurl-url">
+<h4>post_baseUrl &lt;url&gt;<a class="headerlink" href="#post-baseurl-url" title="Link to this heading"></a></h4>
+<p>The <strong>post_baseUrl</strong> option sets how to get the file… it defines the protocol,
+host, port, and optionally, the user. It is best practice to not include
+passwords in urls.</p>
+</section>
+<section id="post-broker-url">
+<h4>post_broker &lt;url&gt;<a class="headerlink" href="#post-broker-url" title="Link to this heading"></a></h4>
+<p>the broker url to post messages to see <a class="reference external" href="#broker">broker</a> for details</p>
+</section>
+<section id="post-exchange-name-default-xpublic">
+<h4>post_exchange &lt;name&gt; (default: xpublic)<a class="headerlink" href="#post-exchange-name-default-xpublic" title="Link to this heading"></a></h4>
+<p>The <strong>post_exchange</strong> option set under which exchange the new notification
+will be posted. when publishing to a pump as an administrator, a common
+choice for post_exchange is ‘xpublic’.</p>
+<p>When publishing a product, a user can trigger a script, using
+flow callback entry_points such as <strong>after_accept</strong>, and <strong>after_work</strong>
+to modify messages generated about files prior to posting.</p>
+</section>
+<section id="post-exchangesplit-count-default-0">
+<h4>post_exchangeSplit &lt;count&gt; (default: 0)<a class="headerlink" href="#post-exchangesplit-count-default-0" title="Link to this heading"></a></h4>
+<p>The <strong>post_exchangeSplit</strong> option appends a two digit suffix resulting from
+hashing the last character of the checksum to the post_exchange name,
+in order to divide the output amongst a number of exchanges.  This is currently used
+in high traffic pumps to allow multiple instances of winnow, which cannot be
+instanced in the normal way.  Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_exchangeSplit</span> <span class="mi">5</span>
+<span class="n">post_exchange</span> <span class="n">xwinnow</span>
+</pre></div>
+</div>
+<p>will result in posting messages to five exchanges named: xwinnow00, xwinnow01,
+xwinnow02, xwinnow03 and xwinnow04, where each exchange will receive only one fifth
+of the total flow.</p>
+</section>
+<section id="post-format-name-default-v03">
+<h4>post_format &lt;name&gt; (default: v03)<a class="headerlink" href="#post-format-name-default-v03" title="Link to this heading"></a></h4>
+<p>Sets the message format for posted messages. the currently included values are:</p>
+<ul class="simple">
+<li><p>v02 … used by all existing data pumps for most cases.</p></li>
+<li><p>v03 … default in sr3 JSON format easier to work with.</p></li>
+<li><p>wis … a experimental geoJSON format in flux for the World Meteorological Organization</p></li>
+</ul>
+<p>When provided, this value overrides whatever can be deduced from the post_topicPrefix.</p>
+</section>
+<section id="post-on-start">
+<h4>post_on_start<a class="headerlink" href="#post-on-start" title="Link to this heading"></a></h4>
+<p>When starting watch, one can either have the program post all the files in the directories watched
+or not. (not implemented in sr3_cpost)</p>
+</section>
+<section id="post-topic-string">
+<h4>post_topic &lt;string&gt;<a class="headerlink" href="#post-topic-string" title="Link to this heading"></a></h4>
+<p>Explicitly set a posting topic string, overriding the usual
+group of settings. For sarracenia data pumps, this should never be needed,
+as the use of post_exchange, post_topicPrefix, and relpath normally builds the right
+value for topics for both posting and binding.</p>
+</section>
+<section id="post-topicprefix-default-topicprefix">
+<h4>post_topicPrefix (default: topicPrefix)<a class="headerlink" href="#post-topicprefix-default-topicprefix" title="Link to this heading"></a></h4>
+<p>Prepended to the sub-topic to form a complete topic hierarchy.
+This option applies to publishing.  Denotes the version of messages published
+in the sub-topics. (v03 refers to <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>) defaults to whatever
+was received.</p>
+</section>
+<section id="prefetch-n-default-1">
+<h4>prefetch &lt;N&gt; (default: 1)<a class="headerlink" href="#prefetch-n-default-1" title="Link to this heading"></a></h4>
+<p>The <strong>prefetch</strong> option sets the number of messages to fetch at one time.
+When multiple instances are running and prefetch is 4, each instance will obtain up to four
+messages at a time.  To minimize the number of messages lost if an instance dies and have
+optimal load sharing, the prefetch should be set as low as possible.  However, over long
+haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
+of 10 or more may be needed.</p>
+</section>
+<section id="queuename-queue-queue-name-qn">
+<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>queueName &lt;name&gt;</p></li>
+</ul>
+<p>By default, components create a queue name that should be unique. The
+default queue_name components create follows the following convention:</p>
+<blockquote>
+<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;random&gt;.&lt;random&gt;</strong></p>
+</div></blockquote>
+<p>Where:</p>
+<ul class="simple">
+<li><p><em>brokerUser</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
+<li><p><em>programName</em> is the component using the queue (e.g. <em>subscribe</em> ),</p></li>
+<li><p><em>configName</em> is the configuration file used to tune component behaviour.</p></li>
+<li><p><em>random</em> is just a series of characters chosen to avoid clashes from multiple
+people using the same configurations</p></li>
+</ul>
+<p>Users can override the default provided that it starts with <strong>q_&lt;brokerUser&gt;</strong>.</p>
+<p>When multiple instances are used, they will all use the same queue, for trivial
+multi-tasking. If multiple computers have a shared home file system, then the
+queue_name is written to:</p>
+<blockquote>
+<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
+</div></blockquote>
+<p>Instances started on any node with access to the same shared file will use the
+same queue. Some may want use the <em>queue_name</em> option as a more explicit method
+of sharing work across multiple nodes.</p>
+</section>
+<section id="queuebind">
+<h4>queueBind<a class="headerlink" href="#queuebind" title="Link to this heading"></a></h4>
+<p>On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.</p>
+</section>
+<section id="queuedeclare">
+<h4>queueDeclare<a class="headerlink" href="#queuedeclare" title="Link to this heading"></a></h4>
+<p>FIXME: same as above.. is this normal?</p>
+<p>On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.</p>
+</section>
+<section id="randomize-flag">
+<h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
+<p>Active if <em>-r|–randomize</em> appears in the command line… or <em>randomize</em> is set
+to True in the configuration file used. If there are several notification messages because the
+file is posted by block (the <em>blocksize</em> option was set), the block notification messages
+are randomized meaning that they will not be posted</p>
+</section>
+<section id="realpathadjust-count-experimental-default-0">
+<h4>realpathAdjust &lt;count&gt; (Experimental) (default: 0)<a class="headerlink" href="#realpathadjust-count-experimental-default-0" title="Link to this heading"></a></h4>
+<p>The realpathAdjust option adjusts how much paths are resolved with the C standard realpath
+library routine. The count indicates how many path elements should be ignored, counting
+from the beginning of the path with positive numbers, or the end with negative ones.
+An adjustment of zero means to apply realpath to the entire path.</p>
+<p>Implemented in C, but not python currently.</p>
+</section>
+<section id="realpathfilter-flag-experimental">
+<h4>realpathFilter &lt;flag&gt; (Experimental)<a class="headerlink" href="#realpathfilter-flag-experimental" title="Link to this heading"></a></h4>
+<p>the realpathFilter option resolves paths using the C standard realpath library routine,
+but only for the purpose of applying accept reject filters. This is used only during
+posting.</p>
+<p>This option is being used to study some use cases, and may disappear in future.</p>
+<p>Implemented in C, but not python currently.</p>
+</section>
+<section id="realpathpost-flag-experimental">
+<h4>realpathPost &lt;flag&gt; (Experimental)<a class="headerlink" href="#realpathpost-flag-experimental" title="Link to this heading"></a></h4>
+<p>The realpathPost option resolves paths given to their canonical ones, eliminating
+any indirection via symlinks. The behaviour improves the ability of watch to
+monitor trees, but the trees may have completely different paths than the arguments
+given. This option also enforces traversing of symbolic links.</p>
+<p>This option is being used to investigate some use cases, and may disappear in future.</p>
+</section>
+<section id="sendto-url">
+<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
+<p>Specification of a remote resource to deliver to in a sender.</p>
+</section>
+<section id="rename-path">
+<h4>rename &lt;path&gt;<a class="headerlink" href="#rename-path" title="Link to this heading"></a></h4>
+<p>With the <em>rename</em> option, the user can suggest a destination path for its files. If the given
+path ends with ‘/’ it suggests a directory path… If it doesn’t, the option specifies a file renaming.
+Often used with variable substitutions, to provide dynamic, patterned names.</p>
+</section>
+<section id="report-and-report-exchange">
+<h4>report and report_exchange<a class="headerlink" href="#report-and-report-exchange" title="Link to this heading"></a></h4>
+<p>NOTE: <strong>NOT IMPLEMENTEDin sr3, expected to return in future version</strong>
+For each download, by default, an amqp report message is sent back to the broker.
+This is done with option :</p>
+<ul class="simple">
+<li><p><strong>report &lt;flag&gt;  (default: True)</strong></p></li>
+<li><p><strong>report_exchange &lt;report_exchangename&gt; (default: xreport|xs_*username* )</strong></p></li>
+</ul>
+<p>When a report is generated, it is sent to the configured <em>report_exchange</em>. Administrative
+components post directly to <em>xreport</em>, whereas user components post to their own
+exchanges (xs_*username*). The report daemons then copy the messages to <em>xreport</em> after validation.</p>
+<p>These reports are used for delivery tuning and for data sources to generate statistical information.
+Set this option to <strong>False</strong>, to prevent generation of reports.</p>
+</section>
+<section id="reset-flag-default-false">
+<h4>reset &lt;flag&gt; (default: False)<a class="headerlink" href="#reset-flag-default-false" title="Link to this heading"></a></h4>
+<p>When <strong>reset</strong> is set, and a component is (re)started, its queue is
+deleted (if it already exists) and recreated according to the component’s
+queue options.  This is when a broker option is modified, as the broker will
+refuse access to a queue declared with options that differ from what was
+set at creation.  It can also be used to discard a queue quickly when a receiver
+has been shut down for a long period. If duplicate suppression is active, then
+the reception cache is also discarded.</p>
+<p>The AMQP protocol defines other queue options which are not exposed
+via sarracenia, because sarracenia itself picks appropriate values.</p>
+</section>
+<section id="retryemptybeforeexit-boolean-default-false">
+<h4>retryEmptyBeforeExit: &lt;boolean&gt; (default: False)<a class="headerlink" href="#retryemptybeforeexit-boolean-default-false" title="Link to this heading"></a></h4>
+<p>Used for sr_insects flow tests. Prevents Sarracenia from exiting while there are messages remaining in the retry queue(s). By default, a post will cleanly exit once it has created and attempted to publish messages for all files in the specified directory. If any messages are not successfully published, they will be saved to disk to retry later. If a post is only run once, as in the flow tests, these messages will never be retried unless retryEmptyBeforeExit is set to True.</p>
+</section>
+<section id="retry-refilter-boolean-default-false">
+<h4>retry_refilter &lt;boolean&gt; (default: False)<a class="headerlink" href="#retry-refilter-boolean-default-false" title="Link to this heading"></a></h4>
+<p>The <strong>retry_refilter</strong> option alters how messages are reloaded when they are retrieved from
+a retry queue. The default way (value: False) is to repeat the transfer using exactly
+the same message as before. If <strong>retry_refilter</strong> is set (value: True) then all the
+message’s calculated fields will be discarded, and the processing re-started from the gather
+phase (accept/reject processing will be repeated, destinations re-calculated.)</p>
+<p>The normal retry behaviour is use when the remote has had a failure, and need to
+re-send later, while the retry_refilter option is used when recovering from configuration
+file errors, and some messages had incorrect selection or destination criteria.</p>
+</section>
+<section id="retry-ttl-duration-default-same-as-expire">
+<h4>retry_ttl &lt;duration&gt; (default: same as expire)<a class="headerlink" href="#retry-ttl-duration-default-same-as-expire" title="Link to this heading"></a></h4>
+<p>The <strong>retry_ttl</strong> (retry time to live) option indicates how long to keep trying to send
+a file before it is aged out of a the queue.  Default is two days.  If a file has not
+been transferred after two days of attempts, it is discarded.</p>
+</section>
+<section id="sanity-log-dead-interval-default-1-5-housekeeping">
+<h4>sanity_log_dead &lt;interval&gt; (default: 1.5*housekeeping)<a class="headerlink" href="#sanity-log-dead-interval-default-1-5-housekeeping" title="Link to this heading"></a></h4>
+<p>The <strong>sanity_log_dead</strong> option sets how long to consider too long before restarting
+a component.</p>
+</section>
+<section id="scheduled-interval-scheduled-hour-scheduled-minute">
+<h4>scheduled_interval,scheduled_hour,scheduled_minute<a class="headerlink" href="#scheduled-interval-scheduled-hour-scheduled-minute" title="Link to this heading"></a></h4>
+<p>When working with scheduled flows, such as polls, one can configure a duration
+(no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a
+given activity:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_interval</span> <span class="mi">30</span>
+</pre></div>
+</div>
+<p>run the flow or poll every 30 seconds.  If no duration is set, then the
+flowcb.scheduled.Scheduled class will look for the other two time specifiers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_hour</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">23</span>
+<span class="n">scheduled_minute</span> <span class="mi">14</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">29</span>
+</pre></div>
+</div>
+<p>which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
+after each of 4h, 5h and 23h.</p>
+</section>
+<section id="shim-defer-posting-to-exit-experimental">
+<h4>shim_defer_posting_to_exit (EXPERIMENTAL)<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>(option specific to libsrshim)
+Postpones file posting until the process exits.
+In cases where the same file is repeatedly opened and appended to, this
+setting can avoid redundant notification messages.  (default: False)</p>
+</div></blockquote>
+</section>
+<section id="shim-post-minterval-interval-experimental">
+<h4>shim_post_minterval <em>interval</em> (EXPERIMENTAL)<a class="headerlink" href="#shim-post-minterval-interval-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>(option specific to libsrshim)
+If a file is opened for writing and closed multiple times within the interval,
+it will only be posted once. When a file is written to many times, particularly
+in a shell script, it makes for many notification messages, and shell script affects performance.
+subscribers will not be able to make copies quickly enough in any event, so
+there is little benefit, in say, 100 notification messages of the same file in the same second.
+It is wise set an upper limit on the frequency of posting a given file. (default: 5s)
+Note: if a file is still open, or has been closed after its previous post, then
+during process exit processing it will be posted again, even if the interval
+is not respected, in order to provide the most accurate final post.</p>
+</div></blockquote>
+</section>
+<section id="shim-skip-parent-open-files-experimental">
+<h4>shim_skip_parent_open_files (EXPERIMENTAL)<a class="headerlink" href="#shim-skip-parent-open-files-experimental" title="Link to this heading"></a></h4>
+<blockquote>
+<div><p>(option specific to libsrshim)
+The shim_skip_ppid_open_files option means that a process checks
+whether the parent process has the same file open, and does not
+post if that is the case. (default: True)</p>
+</div></blockquote>
+</section>
+<section id="sleep-time">
+<h4>sleep &lt;time&gt;<a class="headerlink" href="#sleep-time" title="Link to this heading"></a></h4>
+<p>The time to wait between generating events. When files are written frequently, it is counter productive
+to produce a post for every change, as it can produce a continuous stream of changes where the transfers
+cannot be done quickly enough to keep up. In such circumstances, one can group all changes made to a file
+in <em>sleep</em> time, and produce a single post.</p>
+<p>When sleep is set &gt; 0 for use with a <em>poll</em> it has the effect to setting <em>scheduled_interval</em>  to that value
+for compatibility reasons.  It is better for poll to use <em>scheduled</em> settings explicitly going forward.</p>
+</section>
+<section id="statehost-false-true-default-false">
+<h4>statehost &lt;False|True&gt; ( default: False )<a class="headerlink" href="#statehost-false-true-default-false" title="Link to this heading"></a></h4>
+<p>In large data centres, the home directory can be shared among thousands of
+nodes. Statehost adds the node name after the cache directory to make it
+unique to each node. So each node has it’s own statefiles and logs.
+example, on a node named goofy,  ~/.cache/sarra/log/ becomes ~/.cache/sarra/goofy/log.</p>
+</section>
+<section id="strip-count-regexp-default-0">
+<h4>strip &lt;count|regexp&gt; (default: 0)<a class="headerlink" href="#strip-count-regexp-default-0" title="Link to this heading"></a></h4>
+<p>You can modify the relative mirrored directories with the <strong>strip</strong> option.
+If set to N  (an integer) the first ‘N’ directories from the relative path
+are removed. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">dd</span><span class="o">.</span><span class="n">weather</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">radar</span><span class="o">/</span><span class="n">PRECIP</span><span class="o">/</span><span class="n">GIF</span><span class="o">/</span><span class="n">WGJ</span><span class="o">/</span><span class="mi">201312141900</span><span class="n">_WGJ_PRECIP_SNOW</span><span class="o">.</span><span class="n">gif</span>
+
+  <span class="n">mirror</span>    <span class="kc">True</span>
+  <span class="n">strip</span>     <span class="mi">3</span>
+  <span class="n">directory</span> <span class="o">/</span><span class="n">mylocaldirectory</span>
+  <span class="n">accept</span>    <span class="o">.*</span><span class="n">RADAR</span><span class="o">.*</span>
+</pre></div>
+</div>
+<p>would result in the creation of the directories and the file
+/mylocaldirectory/WGJ/201312141900_WGJ_PRECIP_SNOW.gif
+when a regexp is provide in place of a number, it indicates a pattern to be removed
+from the relative path.  For example if:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>strip  .*?GIF/
+</pre></div>
+</div>
+<p>Will also result in the file being placed the same location.
+Note that strip settings can be changed between directory options.</p>
+<dl>
+<dt>NOTE::</dt><dd><p>with <strong>strip</strong>, use of <strong>?</strong> modifier (to prevent regular expression <em>greediness</em> ) is often helpful.
+It ensures the shortest match is used.</p>
+<p>For example, given a file name:  radar/PRECIP/GIF/WGJ/201312141900_WGJ_PRECIP_SNOW.GIF
+The expression:  .*?GIF   matches: radar/PRECIP/GIF
+whereas the expression: .*GIF matches the entire name.</p>
+</dd>
+</dl>
+</section>
+<section id="sourcefromexchange-flag-default-off">
+<h4>sourceFromExchange &lt;flag&gt; (default: off)<a class="headerlink" href="#sourcefromexchange-flag-default-off" title="Link to this heading"></a></h4>
+<p>The <strong>sourceFromExchange</strong> option is mainly for use by administrators.
+If messages received are posted directly from a source, the exchange used
+is ‘xs_&lt;brokerSourceUsername&gt;’. Such messages could be missing <em>source</em> and <em>from_cluster</em>
+headings, or a malicious user may set the values incorrectly.
+To protect against both problems, administrators should set the <strong>sourceFromExchange</strong> option.</p>
+<p>When the option is set, values in the message for the <em>source</em> and <em>from_cluster</em> headers will then be overridden:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>       <span class="o">=</span> <span class="o">&lt;</span><span class="n">brokerUser</span><span class="o">&gt;</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;from_cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster</span>
+</pre></div>
+</div>
+<p>replacing any values present in the message. This setting should always be used when ingesting data from a
+user exchange. These fields are used to return reports to the origin of injected data.
+It is commonly combined with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>*mirror true*
+*sourceFromExchange true*
+*directory ${PBD}/${YYYYMMDD}/${SOURCE}*
+</pre></div>
+</div>
+<p>To have data arrive in the standard format tree.</p>
+</section>
+<section id="sourcefrommessage-flag-default-off">
+<h4>sourceFromMessage &lt;flag&gt; (default: off)<a class="headerlink" href="#sourcefrommessage-flag-default-off" title="Link to this heading"></a></h4>
+<p>The <strong>sourceFromMessage</strong> option is mainly for use by administrators.
+Normally the <em>source</em> field from an inbound message is ignored.
+When this option is set, the field in the message is accepted and used
+for processing. (overrides <em>source</em>, and <em>sourceFromExchange</em> )</p>
+<p>It defaults to off because malicious messages can misrepresent data
+origin. To be used only with flows of responsibly curated, trustable
+message flows.</p>
+</section>
+<section id="subtopic-amqp-pattern-default">
+<h4>subtopic &lt;amqp pattern&gt; (default: #)<a class="headerlink" href="#subtopic-amqp-pattern-default" title="Link to this heading"></a></h4>
+<p>Within an exchange’s postings, the subtopic setting narrows the product selection.
+To give a correct value to the subtopic,
+one has the choice of filtering using <strong>subtopic</strong> with only AMQP’s limited wildcarding and
+length limited to 255 encoded bytes, or the more powerful regular expression
+based  <strong>accept/reject</strong>  mechanisms described below. The difference being that the
+AMQP filtering is applied by the broker itself, saving the notices from being delivered
+to the client at all. The  <strong>accept/reject</strong>  patterns apply to messages sent by the
+broker to the subscriber. In other words,  <strong>accept/reject</strong>  are client side filters,
+whereas <strong>subtopic</strong> is server side filtering.</p>
+<p>It is best practice to use server side filtering to reduce the number of notification messages sent
+to the client to a small superset of what is relevant, and perform only a fine-tuning with the
+client side mechanisms, saving bandwidth and processing for all.</p>
+<p>topicPrefix is primarily of interest during protocol version transitions,
+where one wishes to specify a non-default protocol version of messages to
+subscribe to.</p>
+<p>Usually, the user specifies one exchange, and several subtopic options.
+<strong>Subtopic</strong> is what is normally used to indicate messages of interest.
+To use the subtopic to filter the products, match the subtopic string with
+the relative path of the product.</p>
+<p>For example, consuming from DD, to give a correct value to subtopic, one can
+browse the our website  <strong>http://dd.weather.gc.ca</strong> and write down all directories
+of interest.  For each directory tree of interest, write a  <strong>subtopic</strong>
+option as follow:</p>
+<blockquote>
+<div><p><strong>subtopic  directory1.*.subdirectory3.*.subdirectory5.#</strong></p>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">where</span><span class="p">:</span>
+      <span class="o">*</span>                <span class="n">matches</span> <span class="n">a</span> <span class="n">single</span> <span class="n">directory</span> <span class="n">name</span>
+      <span class="c1">#                matches any remaining tree of directories.</span>
+</pre></div>
+</div>
+<dl>
+<dt>note:</dt><dd><p>When directories have these wild-cards, or spaces in their names, they
+will be URL-encoded ( ‘#’ becomes %23 )
+When directories have periods in their name, this will change
+the topic hierarchy.</p>
+<dl class="simple">
+<dt>FIXME:</dt><dd><p>hash marks are URL substituted, but did not see code for other values.
+Review whether asterisks in directory names in topics should be URL-encoded.
+Review whether periods in directory names in topics should be URL-encoded.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>One can use multiple bindings to multiple exchanges as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exchange</span> <span class="n">A</span>
+<span class="n">subtopic</span> <span class="n">directory1</span><span class="o">.*.</span><span class="n">directory2</span><span class="o">.</span><span class="c1">#</span>
+
+<span class="n">exchange</span> <span class="n">B</span>
+<span class="n">subtopic</span> <span class="o">*.</span><span class="n">directory4</span><span class="o">.</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>Will declare two separate bindings to two different exchanges, and two different file trees.
+While default binding is to bind to everything, some brokers might not permit
+clients to set bindings, or one might want to use existing bindings.
+One can turn off queue binding as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">subtopic</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>(False, or off will also work.)</p>
+</section>
+<section id="sundew-compat-regex-first-match-is-zero-default-off">
+<h4>sundew_compat_regex_first_match_is_zero (default: off)<a class="headerlink" href="#sundew-compat-regex-first-match-is-zero-default-off" title="Link to this heading"></a></h4>
+<p>When numbering groups in match patterns, Sundew groups start from 0.
+Python regular expressions use the zeroth group to represent the entire string, and each match
+group starts from 1. It is considered less surprising to conform to Python conventions,
+but doing so unilaterally would break compatbility.  So here is a switch to use
+when bridging between Sundew, sarra v2 and sr3.  Eventually, this should always be off.
+Examples:</p>
+<ul class="simple">
+<li><p>sundew_compat_regex_first_match_is_zero: True</p></li>
+<li><p>input url:  <a class="reference external" href="https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml">https://hpfx.collab.science.gc.ca/20231127/WXO-DD/meteocode/que/cmml/TRANSMIT.FPCN71.11.27.1000Z.xml</a></p></li>
+<li><p>accept pattern: .*/WXO-DD/meteocode/(atl|ont|pnr|pyr|que)/.*/TRANSMIT.FP([A-Z][A-Z]).*([0-2][0-9][0-6][0-9]Z).*</p></li>
+<li><p>directory setting: /tmp/meteocode/${2}/${0}/${1}</p></li>
+<li><p>resulting directory:  /tmp/meteocode/1000Z/que/CN</p></li>
+</ul>
+<p>in contrast, to get the same result:</p>
+<ul class="simple">
+<li><p>sundew_compat_regex_first_match_is_zero: False</p></li>
+<li><p>directory setting: /tmp/meteocode/${3}/${1}/${2}</p></li>
+<li><p>to get the same result.</p></li>
+</ul>
+<p>folks who research python re will normally produce the latter version first.</p>
+</section>
+<section id="timecopy-default-on">
+<h4>timeCopy (default: on)<a class="headerlink" href="#timecopy-default-on" title="Link to this heading"></a></h4>
+<p>On unix-like systems, when the <em>ls</em> commend or a file browser shows modification or
+access times, it is a display of the posix <em>st_atime</em>, and <em>st_ctime</em> elements of a
+struct struct returned by stat(2) call.  When <em>timeCopy</em> is on, headers
+reflecting these values in the messages are used to restore the access and modification
+times respectively on the subscriber system. To document delay in file reception,
+this option can be turned off, and then file times on source and destination compared.</p>
+<p>When set in a posting component, it has the effect of eliding the <em>atime</em> and <em>mtime</em>
+headers from the messages.</p>
+</section>
+<section id="topiccopy-default-off">
+<h4>topicCopy (default: off)<a class="headerlink" href="#topiccopy-default-off" title="Link to this heading"></a></h4>
+<p>Setting <em>topicCopy</em> to true tells sarracenia pass topics through unaltered.
+Sarracenia has a convention for how topics for products should be organized. There is
+a topicPrefix, followed by subtopics derived from the <em>relPath</em> field of the message.
+Some networks may choose to use different topic conventions, external to sarracenia.</p>
+</section>
+<section id="timeout-interval-default-0">
+<h4>timeout &lt;interval&gt; (default: 0)<a class="headerlink" href="#timeout-interval-default-0" title="Link to this heading"></a></h4>
+<p>The <strong>timeout</strong> option, sets the number of seconds to wait before aborting a
+connection or download transfer (applied per buffer during transfer).</p>
+</section>
+<section id="timezone-string-default-utc">
+<h4>timezone &lt;string&gt; (default: UTC)<a class="headerlink" href="#timezone-string-default-utc" title="Link to this heading"></a></h4>
+<p>Interpret listings from an FTP server as being in the given timezone as per <a class="reference external" href="pypi.org/project/pytz">pytz</a>
+Examples: Canada/Pacific, Pacific/Nauru, Canada/Eastern, Europe/Paris
+Has no effect other than in when polling an FTP server.</p>
+</section>
+<section id="tlsrigour-default-medium">
+<h4>tlsRigour (default: medium)<a class="headerlink" href="#tlsrigour-default-medium" title="Link to this heading"></a></h4>
+<p>tlsRigour can be set to: <em>lax, medium, or strict</em>, and gives a hint to the
+application of how to configure TLS connections. TLS, or Transport Level
+Security (used to be called Secure Socket Layer (SSL)) is the wrapping of
+normal TCP sockets in standard encryption. There are many aspects of TLS
+negotiations, hostname checking, Certificate checking, validation, choice of
+ciphers. What is considered secure evolves over time, so settings which, a few
+years ago, were considered secure, are currently aggressively deprecated. This
+situation naturally leads to difficulties in communication due to different
+levels of compliance with whatever is currently defined as rigourous encryption.</p>
+<p>If a site being connected to, has, for example, and expired certificate, and
+it is nevertheless necessary to use it, then set tlsRigour to <em>lax</em> and
+the connection should succeed regardless.</p>
+</section>
+<section id="topic-string">
+<h4>topic &lt;string&gt;<a class="headerlink" href="#topic-string" title="Link to this heading"></a></h4>
+<p>Explicitly set a subscribing topic string, overriding the value usually
+derived from a group of settings. For sarracenia data pumps, this should never be needed,
+as the use of <em>exchange</em>, <em>topicPrefix</em>, and <em>subtopic</em> normally builds the right
+value.</p>
+</section>
+<section id="topicprefix-default-v03">
+<h4>topicPrefix (default: v03)<a class="headerlink" href="#topicprefix-default-v03" title="Link to this heading"></a></h4>
+<p>prepended to the sub-topic to form a complete topic hierarchy.
+This option applies to subscription bindings.
+Denotes the version of messages received in the sub-topics. (v03 refers to <a class="reference external" href="sr3_post.7.html">sr3_post.7.html</a>)</p>
+</section>
+<section id="users-flag-default-false">
+<h4>users &lt;flag&gt; (default: false)<a class="headerlink" href="#users-flag-default-false" title="Link to this heading"></a></h4>
+<p>As an adjunct when the <em>declare</em> action is used, to ask sr3 to declare users
+on the broker, as well as queues and exchanges.</p>
+</section>
+<section id="v2compatrenamedoublepost-flag-default-false">
+<h4>v2compatRenameDoublePost &lt;flag&gt; ( default: false)<a class="headerlink" href="#v2compatrenamedoublepost-flag-default-false" title="Link to this heading"></a></h4>
+<p>version 3 of Sarracenia features improved logic around file renaming, using a single message per rename operation.
+Version 2 required two posts.  When posting, in a mirroring situation, for consumption by v2 clients, this flag
+should be set.</p>
+</section>
+<section id="vartimeoffset-default-0">
+<h4>varTimeOffset (default: 0)<a class="headerlink" href="#vartimeoffset-default-0" title="Link to this heading"></a></h4>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">varTimeOffset</span> <span class="o">-</span><span class="mi">7</span><span class="n">m</span>
+</pre></div>
+</div>
+<p>will cause variable substitions that involve the date/time substitutions.
+so in a pattern like ${YYYY}/${MM}/${DD} will be evaluated to be the
+date, evaluated seven minutes in the past.</p>
+</section>
+<section id="vip-active-passive-options">
+<h4>vip - ACTIVE/PASSIVE OPTIONS<a class="headerlink" href="#vip-active-passive-options" title="Link to this heading"></a></h4>
+<p>The <strong>vip</strong> option indicates that a configuration must be active on only
+a single node in a cluster at a time, a singleton. This is typically
+required for a poll component, but it can be used in senders or other
+cases.</p>
+<p><strong>subscribe</strong> can be used on a single server node, or multiple nodes
+could share responsibility. Some other, separately configured, high availability
+software presents a <strong>vip</strong> (virtual ip) on the active server. Should
+the server go down, the <strong>vip</strong> is moved on another server, and processing
+then happens using the new server that now has the vip active.
+Both servers would run an <strong>sr3 instance</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="o">**</span><span class="n">vip</span>          <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span>          <span class="p">[]</span><span class="o">**</span>
+</pre></div>
+</div>
+<p>When you run only one <strong>sr3 instance</strong> on one server, these options are not set,
+and subscribe will run in ‘standalone mode’.</p>
+<p>In the case of clustered brokers, you would set the options for the
+moving vip.</p>
+<p><strong>vip 153.14.126.3</strong></p>
+<p>When an <strong>sr3 instance</strong> does not find the vip, it sleeps for 5 seconds and retries.
+If it does, it consumes and processes a message and than rechecks for the vip.
+Multiple vips form a list, where any individual address being active is enough.</p>
+</section>
+<section id="wololo">
+<h4>wololo<a class="headerlink" href="#wololo" title="Link to this heading"></a></h4>
+<p>A command line option to overwite an existing sr3 configuration when converting
+from v2.</p>
+</section>
+</section>
+<section id="see-also">
+<h3>SEE ALSO<a class="headerlink" href="#see-also" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="sr3.1.html">sr3(1)</a> - Sarracenia main command line interface.</p>
+<p><a class="reference external" href="sr3_post.1.html">sr3_post(1)</a> - post file notification messages (python implementation.)</p>
+<p><a class="reference external" href="sr3_cpost.1.html">sr3_cpost(1)</a> - post file announcemensts (C implementation.)</p>
+<p><a class="reference external" href="sr3_cpump.1.html">sr3_cpump(1)</a> - C implementation of the shovel component. (copy messages)</p>
+<p><strong>Formats:</strong></p>
+<p><a class="reference external" href="sr_post.7.html">sr3_post(7)</a> - the format of notification messages.</p>
+<p><strong>Home Page:</strong></p>
+<p><a class="reference external" href="https://metpx.github.io/sarracenia">https://metpx.github.io/sarracenia</a> - Sarracenia: a real-time pub/sub data sharing management toolkit</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sr3_credentials.7.html" class="btn btn-neutral float-right" title="SR3 CREDENTIALS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

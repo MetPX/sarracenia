@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aperçu &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Concepts généraux de Sarracenia" href="Concepts.html" />
+    <link rel="prev" title="Explication" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Explication</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Aperçu</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apercu-detaille">Aperçu Détaillé</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#implementations">Implémentations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Concepts.html">Concepts généraux de Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GuideLigneDeCommande.html">Guide De Ligne De Commande</a></li>
+<li class="toctree-l3"><a class="reference internal" href="StrategieDetectionFichiers.html">File Detection Strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SupprimerLesDoublons.html">Suppression de Doublons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AssurerLaLivraison.html">Assurer la livraison (inflight)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ConsiderationsDeployments.html">Considérations relatives au déploiement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SarraPluginDev.html">Guide de programmation sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Glossaire.html">Glossaire</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sftps.html">Pourquoi SFTP est plus souvent choisi que FTPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Histoire/index.html">Histoire</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Contribution/index.html">Contribuer à Sarracenia</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Explication</a> &raquo;</li>
+      <li>Aperçu</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Explication/Aperçu.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="apercu">
+<h1>Aperçu<a class="headerlink" href="#apercu" title="Link to this heading"></a></h1>
+<p><strong>MetPX-Sarracenia est une boîte à outils de gestion des publications/abonnements pour la publication de données en temps réel.</strong></p>
+<p>Sarracenia ajoute une couche de protocole de mise en fil d’attente de messages d’annonce de disponibilité de fichiers
+aux serveurs de fichiers et Web pour piloter des flux de travail qui transfèrent et transforment les données en continu
+dans un contexte en temps réel et critique.</p>
+<p>L’un des principaux objectifs de la boîte à outils est de relier les processus afin qu’ils évitent d’avoir
+à interroger (interroger en continu, répertorier, puis filtrer) des serveurs ou des répertoires. Sarracenia
+peut également être utilisé pour mettre en œuvre un sondage initial en amont, qui est toujours gagnant car
+les tâches au-delà de l’identification initiale du fichier à traiter peuvent être pilotées par des notifications,
+qui sont nettement moins chers (en i/o et en traitement) que l’interrogation même des répertoires locaux.</p>
+<p>Cette couche de gestion fournit des méthodes simples pour obtenir le parallélisme dans les transferts de fichiers,
+la robustesse face aux défaillances, l’équilibrage de charge entre les étapes d’un flux de travail, et
+prend en charge de nombreux modes de défaillance, de sorte que les développeurs d’applications n’ont pas besoin de le faire.
+Des centaines de ces flux peuvent être composés ensemble en grandes pompes de données et
+exploité à l’aide de méthodes courantes familières aux administrateurs système Linux.</p>
+<p>Vidéo de conception de 2015: <a class="reference external" href="https://www.youtube.com/watch?v=G47DRwzwckk">Sarracenia in 10 Minutes Video</a></p>
+<section id="apercu-detaille">
+<h2>Aperçu Détaillé<a class="headerlink" href="#apercu-detaille" title="Link to this heading"></a></h2>
+<p><strong>MetPX-Sarracenia</strong> est un fichier de configuration et un service piloté par ligne de commande pour
+télécharger les fichiers au fur et à mesure qu’ils sont mis à disposition. On peut s’abonner à un
+serveur Web Sarracenia activé (appelé pompe de données) et sélectionner les données à diffuser à partir de celui-ci,
+en utilisant Linux, Mac ou Windows. Plus que cela:</p>
+<ul>
+<li><p>Cela évite aux gens d’avoir à interroger le serveur Web pour savoir si leurs données sont
+là (peut être 100x moins de travail pour le client et le serveur).</p></li>
+<li><p>c’est plus facile de télécharger en utilisant true pub / sub. Il reçoit des notifications
+exactement quand le fichier est prêt.</p></li>
+<li><p>C’est naturellement parallèle: quand un processus ne suffit pas, il suffit d’en ajouter d’autres. Ils
+partagera les mêmes sélections de manière transparente.</p></li>
+<li><p>On peut enchaîner plusieurs pompes de données ensemble, afin que les gens puissent maintenir des
+arborescences copiées indépendantes en temps réel pour la redondance des services et également pour le réseau pour des
+raisons de topologie (pour desservir des réseaux privés, par exemple).</p></li>
+<li><p>Plusieurs copies signifient une disponibilité découplée. Un serveur en panne n’affecte pas
+l’ensemble du réseau d’APIS imbriquées. Les pompes de données forment des mailles, là où les données sont
+transféré afin que chacun puisse en avoir une copie s’il le souhaite. C’est un moyen très simple
+d’y parvenir.</p></li>
+<li><p>Il peut également pousser des arbres (en utilisant un expéditeur au lieu d’un abonné), ce qui est bien
+pour les transferts entre les démarcations réseau (firewall).</p></li>
+<li><p>En utilisant uniquement la configuration, les fichiers peuvent être renommés sur place et la structure
+du répertoire peut être complètement modifiée.</p></li>
+<li><p>Avec l’API de plugin, on peut transformer l’arbre ou les fichiers dans l’arbre.
+L’arbre de sortie ne peut avoir aucune ressemblance avec l’arbre d’entrée.</p></li>
+<li><p>L’API du plugin peut être utilisée pour mettre en œuvre des flux de travail efficaces pilotés par les données,
+réduire ou éliminer l’interrogation des répertoires et des tâches planifiées qui imposent des
+charges lourdes et augmentatent la latence de transfert.</p></li>
+<li><p>Les flux de travail en plusieurs étapes sont naturellement mis en œuvre en plus de
+mettre en relation les producteurs et les consommateurs. La transformation est un consommateur au sein de la
+pompe de données, tandis que les consommateurs externes accèdent aux produits finaux. Les files d’attente entre les composants
+assure la coordination de flux.</p></li>
+<li><p>Vous pouvez configurer un <em>poll</em> pour que n’importe quel site Web agisse comme une pompe de données Sarracenia.
+Ainsi, le flux peut fonctionner même sans pompe Sarracenia pour commencer.</p></li>
+<li><p>Sarracenia est robuste. Ca fonctionne 24h/24 et 7j/7 et prend des dispositions étendues pour être un
+participant civilisé dans les flux de données de mission critiques :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Lorsqu’un serveur est en panne, il utilise un backoff exponentiel pour éviter ses conséquences.</p></li>
+<li><p>Lorsqu’un transfert échoue, il est placé dans une fil d’attente de nouvelles tentatives. Les autres transferts se
+poursuivent et le transfert échoué est réessayé ultérieurement lorsque les flux en temps réel le permette.</p></li>
+<li><p>La fiabilité est réglable pour de nombreux cas d’utilisation.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Puisque Sarracenia s’occupe des pannes transitoires et des files d’attente, votre application
+ne traite que des cas normaux.</p></li>
+<li><p>Il utilise des protocoles de fil d’attente de messages (actuellement AMQP et / ou MQTT) pour envoyer des avis fichiers
+et les transferts de fichiers peuvent être effectués via SFTP, HTTP ou tout autre site Web
+service.</p></li>
+<li><p>Il ne dépend d’aucune technologie propriétaire. L’utilisation est entièrement gratuite et peut être  utilisé
+à n’importe quel fins.</p></li>
+<li><p>Un exemple de mise en œuvre suivant les  <a class="reference external" href="WMO">World Meteorological Organizations</a>
+essaye de remplacer le Système mondial de télécommunications (GTS) par des solutions modernes.</p></li>
+</ul>
+<p>À la base, Sarracenia expose une arborescence de dossiers accessibles sur le Web (WAF), en utilisant n’importe quel
+serveur HTTP standard (testé avec apache) ou serveur SFTP, avec d’autres types de serveurs possible via des modules.
+Les applications météorologiques sont en temps réel souple (anglais: soft real-time), où les données
+doivent être transmises le plus rapidement possible jusqu’au prochain saut, et les minutes, peut-être
+les secondes, comptent. Les technologies web push standard, ATOM, RSS, etc…. sont en fait des
+technologies de sondage qui, lorsqu’elles sont utilisées dans des applications à faible latence,
+consomment beaucoup de bande passante et surcharge les serveurs et réseaux inutilement.  Pour ces raisons
+précises, ces normes stipulent un intervalle minimal de sondage de cinq minutes. La messagerie AMQP
+(Advanced Message Queueing Protocol) pousse réellement les notifications et rend l’envoi en temps réel
+beaucoup plus efficace.</p>
+<a class="reference internal image-reference" href="../../_images/sr3_flow_example.svg"><img alt="../../_images/sr3_flow_example.svg" class="align-center" height="793" src="../../_images/sr3_flow_example.svg" width="1122" /></a>
+<p>Les sources de données publient leurs produits, les pompes extraient les données en utilisant HTTP ou SFTP via arborescence de dossiers (WAF), puis annoncent cette arborescence aux clients en aval.
+Lorsque les clients téléchargent des données, ils peuvent écrire un rapport au serveur. Les serveurs sont configurés pour renvoyer ces messages de rapport du
+client par l’intermédiaire de la fonction à la source. : La source peut voir le chemin au complet pris par les données pour arriver jusqu’à chaque client. Dans le
+cas des applications de commutation traditionnelles, les sources ne voient que ce qu’elles ont livré au premier maillon d’une chaîne. Au-delà de ce premier maillon,  le
+routage est opaque, et le traçage du cheminement des données nécessitent l’aide des administrateurs de chacun des systèmes. Avec la transmission de rapport de Sarracenia, le réseau de commutaiton est relativement transparent pour les sources.
+Le diagnostic est alors grandement simplifié.</p>
+<p>Pour les gros fichiers / haute performance, les fichiers sont segmentés à l’ingestion s’ils sont suffisamment gros pour que cela en vaille la peine.
+Chaque fichier peut traverser le réseau de pompage de données indépendamment, et le réassemblage du fichier initial ne se fait qu’à la fin du processus de transfert. Un fichier de taille suffisante annoncera
+la disponibilité de plusieurs segments pour le transfert, des fils multiples ou des nœuds de transfert prendront ces segments et les transféreront. Plus il y a de segments disponibles, plus le niveau de parallèlisme du transfert est élevé. Dans de nombreux cas, Sarracenia gère le parallélisme et l’utilisation du
+réseau sans intervention explicite de l’utilisateur.Les pompes de données ne doivent ni stocker ni transférer des fichiers entiers, la taille maximale de fichier qui peut voyager à travers le réseau est maximisée.</p>
+<ul class="simple">
+<li><p><strong>REMARQUE:</strong> Pour la v03, la fonctionnalité de segmentation a été supprimée temporairement. Prévu pour retour dans la version 3.1.</p></li>
+</ul>
+</section>
+<section id="implementations">
+<h2>Implémentations<a class="headerlink" href="#implementations" title="Link to this heading"></a></h2>
+<p>Une partie de Sarracénia définit un message d’annonce avec AMQP comme transport.
+Il y a des implémentations multiples qui acceptent ses messages d’annonce:</p>
+<ul class="simple">
+<li><p>Sarracenia elle-même (<a class="reference external" href="http://github.com/MetPX/sarracenia">http://github.com/MetPX/sarracenia</a>)
+une implémentation de référence complète en Python &gt;= 3.4.
+Il fonctionne sous Linux, Mac et Windows.</p></li>
+<li><p>sarrac ( <a class="reference external" href="https://github.com/MetPX/sarrac">https://github.com/MetPX/sarrac</a>) est une implémentation en
+C de l’insertion de données (post &amp; watch.) C’est Linux uniquement. Il
+y a aussi une libcshim pour pouvoir implémenter de manière transparente
+l’insertion de données avec cet outil, et libsarra permet aux programmes
+C de poster directement. Il y a aussi du code consommateur (sr_cpump,
+pour lire les files d’attente) mais pas de téléchargement jusqu’à présent.
+Ce sous-ensemble est destiné à être utilisé là où les environnements
+python3 ne sont pas pratiques (certains environnements HPC).</p></li>
+<li><p>node-sarra ( <a class="reference external" href="https://github.com/darkskyapp/node-sarra">https://github.com/darkskyapp/node-sarra</a>) Une implémentation embryonnaire pour node.js.</p></li>
+<li><p>ecpush ( <a class="reference external" href="https://github.com/TheTannerRyan/ecpush">https://github.com/TheTannerRyan/ecpush</a> ) un simple client in Go ( <a class="reference external" href="http://golang.org">http://golang.org</a> )</p></li>
+<li><p>PySarra ( <a class="reference external" href="https://github.com/JohnTheNerd/PySarra">https://github.com/JohnTheNerd/PySarra</a> ) un client archi-simple en python3.</p></li>
+<li><p>dd_subscribe ( <a class="reference external" href="https://github.com/MetPX/sarracenia">https://github.com/MetPX/sarracenia</a>) client en python2 (Le prédécesseur de Sarracénia.) Toujours compatible.</p></li>
+</ul>
+<p>D’autres clients sont les bienvenues.</p>
+<section id="pourquoi-ne-pas-simplement-utiliser-rsync">
+<h3>Pourquoi ne pas simplement utiliser Rsync ?<a class="headerlink" href="#pourquoi-ne-pas-simplement-utiliser-rsync" title="Link to this heading"></a></h3>
+<p>Il existe un certain nombre d’outils de réplication d’arbres qui sont largement
+utilisés, pourquoi en inventer un autre ? <a class="reference external" href="https://rsync.samba.org/">RSync</a>,
+par exemple, est un outil fabuleux, et nous avons Il est fortement recommandé
+pour de nombreux cas d’utilisation. mais il y a des moments où la Sarracenia peut aller
+72 fois plus rapide que rsync : Étude de cas : <a class="reference external" href="History/HPC_Mirroring_Use_Case.html">HPC Mirroring Use Case</a></p>
+<p>Rsync et d’autres outils sont basés sur la comparaison (traitant d’une source et d’une destination
+unique) Sarracénie, bien qu´elle n’utilisent pas la multidiffusion, est orienté vers une livraison
+à plusieurs récepteurs, en particulier lorsque la source ne sait pas qui sont tous les
+récepteurs (pub/sub.) La synchronisation rsync est typiquement faite en marchant un à un.
+L’intervalle de synchronisation est intrinsèquement limité à la fréquence
+à laquelle on peut traverser (sonder?) l’arbre de fichiers (dans les grands arbres, cela peut être long).
+La Sarracenia évite les promenades dans les arbres de fichiers en demandant
+aux sources de données de signaler directement aux lecteurs par des messages, réduisant ainsi
+les frais généraux de plusieurs ordres de grandeur.`Lsyncd &lt;<a class="reference external" href="https://github.com/axkibe/lsyncd">https://github.com/axkibe/lsyncd</a>&gt;`_
+est un outil qui exploite les fonctionnalités INOTIFY de Linux. pour atteindre le même genre
+de rapidité de détection the changement, et il pourrait être plus approprié, mais il n’est
+évidemment pas portable, et reste très lente en comparaison avec les avis émis directement
+par les sources. De plus, faire faire cela par le système de fichiers est considéré comme
+lourd et moins général qu’explicite passage de messages via middleware, qui gère également
+les logs de manière simple.</p>
+<p>Un des objectifs de Sarracenia est d’être de bout en bout. Rsync est point-à-point,
+ce qui signifie qu’il ne prend pas en charge la <em>transitivité</em> des transferts
+de données entre plusieurs pompes de données qui est désiré. D’autre part, le
+premier cas d’utilisation de la Sarracenia est la distribution du nouveaux
+fichiers. Au départ, les mises à jour des dossiers n’étaient pas courantes.
+<a class="reference external" href="http://zsync.moria.org.uk">ZSync</a> est beaucoup plus proche dans l’esprit
+de ce cas d’utilisation. Sarracenia divise les fichiers en block de facon similaire,
+bien que généralement beaucoup plus grand (50M est un bon choix), que les blocs
+Zsync (typiquement 4k), plus propice à l’accélération. Utilisation d’une
+annonce par bloc de somme de contrôle permet d’accélérer les transferts plus
+facilement.</p>
+<p>L’utilisation du bus de messages AMQP permet l’utilisation de transferts de
+tiers partis, flexibles, une surveillance simple à l’échelle du système et
+l’intégration d’autres caractéristiques telles que la sécurité à l’intérieur
+du flux.</p>
+<p>Une autre considération est que Sarracenia n´implante aucun transport. Il est
+agnostique au protocole utilisé pour le transfert des données. Il peut
+annoncer des URLs de protocole arbitraire, et on peut rajouter des plugins
+pour fonctionner avec des nouveaux protocoles, ou substituer des téléchargeurs
+accélérés pour traiter les transferts avec des protocoles déjà connus.
+Les pilotes de transfert intégrés incluent des accellerateurs binaires
+et des critères accordables pour les utiliser.</p>
+<p><strong>Caveat La segmentation des fichiers a été supprimée. FIXME</strong></p>
+</section>
+<section id="pas-de-ftp">
+<h3>Pas de FTP ?<a class="headerlink" href="#pas-de-ftp" title="Link to this heading"></a></h3>
+<p>Les protocoles de transport entièrement pris en charge par Sarracenia sont
+http(s) et SFTP (SSH File Transfer Protocol).  Dans de nombreux cas, lorsque
+des données publiques sont échangées, <a class="reference external" href="https://tools.ietf.org/html/rfc959">FTP</a>
+est une lingua franca qui est utilisée. L’avantage principal étant la simplicité relative,
+l’accès aux programmes, ce qui est très simple avec Sarracenia.
+De nos jours, avec l’augmentation des préoccupations en matière de sécurité, et
+l´arrivée d´instructions de cryptage danse les processeurs centrales
+et les noyaux multiples quelque on a, en quelque sort,  une surabondance de processeurs,
+et il n’est plus très logique de ne pas crypter le trafic. De plus, pour
+Sarracenia utilise des plages d’octets, qui sont les suivantes
+fournis par les serveurs SFTP et HTTP, mais pas FTP. Nous ne pouvons donc pas
+soutenir le fichier partitionnement sur FTP. Ainsi, bien que le FTP fonctionne
+en quelque sorte, ce n’est pas maintenant, ni ne le fera jamais.
+être, pleinement soutenu.</p>
+</section>
+<section id="references-et-liens">
+<h3>Références et liens<a class="headerlink" href="#references-et-liens" title="Link to this heading"></a></h3>
+<p>D’autres logiciels, quelque peu similaires, aucun endossement ou jugement ne devrait être tiré de ces liens :</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://www.unidata.ucar.edu/software/ldm">Local Data Manager</a> LDM comprend un réseau,</dt><dd><p>et il souhaite fondamentalement échanger avec d’autres systèmes LDM.  Ce paquet était
+instructif, au début des années 2000, il y a eu un effort appelé NLDM qui mettait la
+messagerie météorologique en couches sur un protocole TCP/IP standard.  Cet effort est mort, cependant,
+mais l’inspiration de garder le domaine (météo) séparé de la couche de transport (TCP/IP)
+était une motivation importante pour MetPX.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://www.dwd.de/AFD">Automatic File Distributor</a> - du service météorologique allemand.</dt><dd><p>Achemine les fichiers à l’aide du protocole de transport choisi par l’utilisateur.  Philosophiquement proche de MetPX Sundew.</p>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference external" href="https://www.corobor.com">Corobor</a> - commutateur WMO commercial</p></li>
+<li><p><a class="reference external" href="https://www.netsys.co.za">Netsys</a> -commutateur WMO commercial</p></li>
+<li><p><a class="reference external" href="https://www.iblsoft.com">IBLSoft</a> -commutateur WMO commercial</p></li>
+<li><p>Variété de moteurs de transferts: Standard Networks Move IT DMZ, Softlink B-HUB &amp; FEST,
+Globalscape EFT Server, Axway XFB, Primeur Spazio, Tumbleweed Secure File Transfer, Messageway.</p></li>
+<li><p><a class="reference external" href="https://www.websocket.org/quantum.rst">Quantum</a> à propos des sockets web HTML5. Une bonne discussion
+des raisons pour lesquelles le push web traditionnel est horrible, montrant comment les sockets web
+peuvent aider. AMQP est une solution de socket pure qui a les mêmes avantages que les
+webockets pour l’efficacité. Note : la compagnie derrière KAAZING a écrit la pièce… pas désintéressé.</p></li>
+<li><p><a class="reference external" href="https://rsync.samba.org/">Rsync</a>  moteur de transfert.</p></li>
+<li><p><a class="reference external" href="https://github.com/axkibe/lsyncd">Lsyncd</a>   moteur de transfert.</p></li>
+<li><p><a class="reference external" href="https://zsync.moria.org.uk">ZSync</a> ( optimised rsync over HTTP. ) moteur de transfer.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Explication" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Concepts.html" class="btn btn-neutral float-right" title="Concepts généraux de Sarracenia" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

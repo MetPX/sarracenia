@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glossary &mdash; Sarracenia UNKNOWN documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script src="../_static/documentation_options.js?v=dfb9cee5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="History" href="History/index.html" />
+    <link rel="prev" title="Delivery Completion (inflight)" href="FileCompletion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                UNKNOWN
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Explanation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Concepts.html">General Sarracenia Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CommandLineGuide.html">Command Line Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SarraPluginDev.html">Sarracenia Programming Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DeploymentConsiderations.html">Deployment Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DetectFileReady.html">File Detection Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DuplicateSuppression.html">Duplicate Suppression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileCompletion.html">Delivery Completion (inflight)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Glossary</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#amqp">AMQP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#back-pressure">Back Pressure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataless-pumps">Dataless Pumps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataless-transfers">Dataless Transfers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#latency">Latency</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt">MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#network-maps">Network Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#post-notice-notification-advertisement-announcement">Post, Notice, Notification, Advertisement, Announcement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pump">Pump</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pumping-network">Pumping Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#report-messages">Report messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#source">Source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subscribers">Subscribers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sundew">Sundew</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#wmo">WMO</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="History/index.html">History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sftps.html">Why SFTP is More Often Chosen than FTPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sundew_Migration/index.html">Sundew Migration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fr/index.html">En français</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Explanation</a> &raquo;</li>
+      <li>Glossary</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Explanation/Glossary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="glossary">
+<h1>Glossary<a class="headerlink" href="#glossary" title="Link to this heading"></a></h1>
+<p>Sarracenia documentation uses a number of words in a particular way.
+This glossary should make it easier to understand the rest of the documentation.</p>
+<section id="amqp">
+<h2>AMQP<a class="headerlink" href="#amqp" title="Link to this heading"></a></h2>
+<p>AMQP is the Advanced Message Queuing Protocol, which emerged from the financial trading industry and has gradually
+matured. Implementations first appeared in 2007, and there are now several open source ones. AMQP implementations
+are not JMS plumbing. JMS standardizes the API programmers use, but not the on-the-wire protocol. So
+typically, one cannot exchange notification messages between people using different JMS providers. AMQP standardizes
+for interoperability, and functions effectively as an interoperability shim for JMS, without being
+limited to Java. AMQP is language neutral, and notification message neutral. There are many deployments using
+Python, C++, and Ruby. One could adapt WMO-GTS protocols very easily to function over AMQP. JMS
+providers are very Java oriented.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.amqp.org">www.amqp.org</a> - Defining AMQP.</p></li>
+<li><p><a class="reference external" href="http://www.openamq.org">www.openamq.org</a> - Original GPL implementation from JPMorganChase</p></li>
+<li><p><a class="reference external" href="http://www.rabbitmq.com">www.rabbitmq.com</a> - Another free implementation. The one we use and are happy with.</p></li>
+<li><p><a class="reference external" href="http://cwiki.apache.org/qpid">Apache Qpid</a> - Yet another free implementation.</p></li>
+<li><p><a class="reference external" href="http://activemq.apache.org/">Apache ActiveMQ</a> - This is really a JMS provider with a bridge for AMQP. They prefer their own openwire protocol.</p></li>
+</ul>
+<p>Sarracenia relies heavily on the use of brokers and topic based exchanges, which were prominent in AMQP standards efforts prior
+to version 1.0, at which point they were removed. It is hoped that these concepts will be re-introduced at some point. Until
+that time, the application will rely on pre-1.0 standard message brokers, such as rabbitmq.</p>
+</section>
+<section id="back-pressure">
+<h2>Back Pressure<a class="headerlink" href="#back-pressure" title="Link to this heading"></a></h2>
+<p>When a data pumping node is experiencing high latency, it is best not bring in more data
+at high rate and worsen the overload. Instead, one should refrain from accepting messages
+from the node so that upstream ones maintain queues, and other, less busy nodes can take
+more of the load. Having slow processing affect the ingest of new messages is an example
+of applying back pressure to a transfer stream.</p>
+<p>Example of no back-pressure: paho-python-mqtt v3 library currently has acknowledgements
+built-in to the library, so acknowledgement occur without user control, and there is
+no maximum number of messages that can be in the library, before the application sees
+them. If the application stops, all those messages, as yet unseen by the application,
+are lost. In MQTT v5, there is a receiveMaximum setting which at least limits the number
+of messages the library will queue up for the application, but ideally, the python
+library would get application controlled acknowledgements, as the java library already has.</p>
+</section>
+<section id="dataless-pumps">
+<h2>Dataless Pumps<a class="headerlink" href="#dataless-pumps" title="Link to this heading"></a></h2>
+<p>There are some pumps that have no transport engine, they just mediate
+transfers for other servers, by making notification messages available to clients and
+servers in their network area.</p>
+</section>
+<section id="dataless-transfers">
+<h2>Dataless Transfers<a class="headerlink" href="#dataless-transfers" title="Link to this heading"></a></h2>
+<p>Sometimes transfers through pumps are done without using local space on the pump.</p>
+</section>
+<section id="latency">
+<h2>Latency<a class="headerlink" href="#latency" title="Link to this heading"></a></h2>
+<p>Time from the insertion of data into a network (the time the notification message about a file is first published)
+to the time it is made available on an end point.  We want to minimize latency in transfers,
+and high latency can indicate configuration or capacity issues.</p>
+</section>
+<section id="mqtt">
+<h2>MQTT<a class="headerlink" href="#mqtt" title="Link to this heading"></a></h2>
+<p>The Message Queue Telemetry Transport (MQTT) version 5 is a second Message Queueing protocol with all the features
+necessary to support sarracenia’s data exchange patterns.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mqtt.org">mqtt.org</a></p></li>
+<li><p><a class="reference external" href="https://mosquitto.org">mosquitto.org</a></p></li>
+<li><p><a class="reference external" href="emqx.io">EMQX.io</a></p></li>
+</ul>
+</section>
+<section id="network-maps">
+<h2>Network Maps<a class="headerlink" href="#network-maps" title="Link to this heading"></a></h2>
+<p>Each pump should provide a network map to advise users of the known destination
+that they should advertise to send to. <em>FIXME</em> undefined so far.</p>
+</section>
+<section id="post-notice-notification-advertisement-announcement">
+<h2>Post, Notice, Notification, Advertisement, Announcement<a class="headerlink" href="#post-notice-notification-advertisement-announcement" title="Link to this heading"></a></h2>
+<p>These are AMQP messages build by sr3_post, sr3 poll, or sr3 watch to let users
+know that a particular file is ready. The format of these AMQP messages is
+described by the <a class="reference external" href="../Reference/sr_post.7.html">sr_post(7)</a> manual page. All of these
+words are used interchangeably. Advertisements at each step preserve the
+original source of the posting, so that report messages can be routed back
+to the source.</p>
+</section>
+<section id="pump">
+<h2>Pump<a class="headerlink" href="#pump" title="Link to this heading"></a></h2>
+<p>A pump is a host running Sarracenia, either a rabbitmq AMQP server or an MQTTT
+one such as mosquitto. The notification message queueing middleware is called a <em>broker.</em>
+The pump has administrative users and manage the MQP broker
+as a dedicated resource. Some sort of transport engine, like an apache
+server, or an openssh server, is used to support file transfers. SFTP, and
+HTTP/HTTPS are the protocols which are fully supported by sarracenia. Pumps
+copy files from somewhere, and write them locally. They then re-advertise the
+local copy to its neighbouring pumps, and end user subscribers, they can
+obtain the data from this pump.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For end users, a pump and a broker is the same thing for all practical
+purposes. When pump administrators configure multi-host clusters, however, a
+broker might be running on two hosts, and the same broker could be used by
+many transport engines. The entire cluster would be considered a pump. So the
+two words are not always the same.</p>
+</div>
+</section>
+<section id="pumping-network">
+<h2>Pumping Network<a class="headerlink" href="#pumping-network" title="Link to this heading"></a></h2>
+<p>A number of interconnects servers running the sarracenia stack. Each stack
+determines how it routes items to the next hop, so the entire size or extent
+of the network may not be known to those who put data into it.</p>
+</section>
+<section id="report-messages">
+<h2>Report messages<a class="headerlink" href="#report-messages" title="Link to this heading"></a></h2>
+<p>These are AMQP messages (in <a class="reference external" href="../Reference/sr_post.7.html">sr_post(7)</a> format, with _report_
+field included) built by consumers of messages, to indicate what a given pump
+or subscriber decided to do with a message. They conceptually flow in the
+opposite direction of notifications in a network, to get back to the source.
+in materials from the original 2015 design phase, reports were called <em>log messages</em>.
+This was changed to reduce confusing them with data in application log files.</p>
+</section>
+<section id="source">
+<h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
+<p>Someone who wants to ship data to someone else. They do that by advertising a
+trees of files that are copied from the starting point to one or more pumps
+in the network. The notification message sources produced tell others exactly where
+and how to download the files, and Sources have to say where they want the
+data to go to.</p>
+<p>Sources use the <a class="reference external" href="../Reference/sr3.1.html#post">post</a>,
+<a class="reference external" href="../Reference/sr3.1.html#watch">sr_watch.1</a>, and
+<a class="reference external" href="../Reference/sr3.1.html#poll">sr_poll(1)</a> components to create
+their notification messages.</p>
+</section>
+<section id="subscribers">
+<h2>Subscribers<a class="headerlink" href="#subscribers" title="Link to this heading"></a></h2>
+<p>are those who examine notification messages about files that are available, and
+download the files they are interested in.</p>
+<p>Subscribers use <a class="reference external" href="../Reference/sr3.1.html#subscribe">subscribe(1)</a></p>
+</section>
+<section id="sundew">
+<h2>Sundew<a class="headerlink" href="#sundew" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://github.com/MetPX/Sundew">MetPX Sundew</a> is the ancestor of Sarracenia.
+It is a pure TCP/IP WMO 386 oriented data pump. The configuration files look similar,
+but the routing algorithms and concepts are quite different. MetPX is a push-only
+file distribution method, that implemented WMO 386 sockets, AM Sockets, and
+other obsolete technologies. It does not do pub/sub.
+<a class="reference external" href="History/Evolution.html">More History</a></p>
+</section>
+<section id="wmo">
+<h2>WMO<a class="headerlink" href="#wmo" title="Link to this heading"></a></h2>
+<p>The World Meteorological Organization, is a part of the United Nations that has the weather and environmental
+monitoring, prediction, and alerting services of each country as members. For many decades, there has
+been a real-time exchange of weather data between countries, often even in times of war.  The standards
+that cover these exchanges are:</p>
+<ul class="simple">
+<li><p>Manual on the Global Telecommunications´ System: WMO Manual 386. The standard reference for this
+domain. (a likely stale copy is  <a class="reference external" href="WMO-386.pdf">WMO 386</a>.) Try <a class="reference external" href="https://www.wmo.int">https://www.wmo.int</a> for the latest version.</p></li>
+</ul>
+<p>Usually these links are referred to collectively as <em>the GTS</em>.  The standards are very old, and a modernization
+process has been ongoing for the last decade or two. Some current work on replacing the GTS is here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/wmo-im/GTStoWIS2">WMO Task Team on message queueing protocols</a></p></li>
+</ul>
+<p>The discussions around this topic are important drivers for Sarracenia.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="FileCompletion.html" class="btn btn-neutral float-left" title="Delivery Completion (inflight)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="History/index.html" class="btn btn-neutral float-right" title="History" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
