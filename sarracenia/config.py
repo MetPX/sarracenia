@@ -122,7 +122,8 @@ default_options = {
     'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
-    'varTimeOffset': 0
+    'varTimeOffset': 0,
+    'wololo': False
 }
 
 count_options = [
@@ -138,8 +139,9 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
-    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
+    'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 
+    'statehost', 'users', 'v2compatRenameDoublePost', 'wololo'
                 ]
 
 float_options = [ ]
@@ -2461,6 +2463,10 @@ class Config:
                             action='store_true',
                             default=self.debug,
                             help='print debugging output (very verbose)')
+        parser.add_argument('--wololo',
+                            action='store_true',
+                            default=self.wololo,
+                            help='force overwrite of converted configs')
         parser.add_argument('--dry_run', '--simulate', '--simulation', 
                             action='store_true',
                             default=self.dry_run,
