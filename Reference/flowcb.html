@@ -1,13 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FlowCallback Reference &mdash; Sarracenia 3.00.54rc1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
   
+    <link rel="shortcut icon" href="../_static/sarra_horror_culture_favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../_static/documentation_options.js?v=99fb584f"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -25,14 +33,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> Sarracenia
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Sarracenia
+              <img src="../_static/sarra_horror_culture_w200.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
                 3.00.54rc1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -248,10 +261,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.poll.noaa_hydrometric.Noaa_hydrometric"><code class="docutils literal notranslate"><span class="pre">Noaa_hydrometric</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.poll.usgs">sarracenia.flowcb.poll.usgs</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.poll.usgs.Usgs"><code class="docutils literal notranslate"><span class="pre">Usgs</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#sarracenia-flowcb-poll-usgs">sarracenia.flowcb.poll.usgs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.post">sarracenia.flowcb.post</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.send.email">sarracenia.flowcb.send.email</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.send.email.Email"><code class="docutils literal notranslate"><span class="pre">Email</span></code></a></li>
@@ -300,9 +310,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="index.html">Reference</a> &raquo;</li>
-      <li>FlowCallback Reference</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Reference</a></li>
+      <li class="breadcrumb-item active">FlowCallback Reference</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/Reference/flowcb.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -312,31 +322,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="flowcallback-reference">
+  <section id="flowcallback-reference">
 <span id="flowcb-reference"></span><h1><a class="toc-backref" href="#id1" role="doc-backlink">FlowCallback Reference</a><a class="headerlink" href="#flowcallback-reference" title="Link to this heading"></a></h1>
 <p>Documentation of the Flow callback plugins included
 with sr3.</p>
@@ -398,7 +384,7 @@ with sr3.</p>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.poll.nasa_mls_nrt" id="id52">sarracenia.flowcb.poll.nasa_mls_nrt</a></p></li>
 <li><p><a class="reference internal" href="#sarracenia-flowcb-poll-nexrad" id="id53">sarracenia.flowcb.poll.nexrad</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.poll.noaa_hydrometric" id="id54">sarracenia.flowcb.poll.noaa_hydrometric</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.poll.usgs" id="id55">sarracenia.flowcb.poll.usgs</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-flowcb-poll-usgs" id="id55">sarracenia.flowcb.poll.usgs</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.post" id="id56">sarracenia.flowcb.post</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.send.email" id="id57">sarracenia.flowcb.send.email</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.post.message" id="id58">sarracenia.flowcb.post.message</a></p></li>
@@ -2203,54 +2189,8 @@ so that normalk downloader works, so only the poll one needed.</p>
 </dd></dl>
 
 </section>
-<section id="module-sarracenia.flowcb.poll.usgs">
-<span id="sarracenia-flowcb-poll-usgs"></span><h2><a class="toc-backref" href="#id55" role="doc-backlink">sarracenia.flowcb.poll.usgs</a><a class="headerlink" href="#module-sarracenia.flowcb.poll.usgs" title="Link to this heading"></a></h2>
-<p>Posts updated files of USGS hydrometric data. Station site IDs provided
-in the poll_usgs_stn_file. Compatible with Python 3.5+.</p>
-<dl>
-<dt>Status: UNTESTED… don’t have a working basis (even on v2) to compare against.</dt><dd><p>was updated for v3. but don’t have credentials to confirm it now works.</p>
-</dd>
-<dt>usage:</dt><dd><p>in an sr3 poll configuration file:
-pollUrl <a class="reference external" href="http://waterservices.usgs.gov/nwis/iv/?format=waterml,2">http://waterservices.usgs.gov/nwis/iv/?format=waterml,2</a>.0&amp;indent=on&amp;site={0:}&amp;period=PT3H&amp;parameterCd=00060,00065,00011</p>
-<p>batch [station_chunk]
-poll_usgs_station  station-declaration
-callback gather/usgs</p>
-<p>If multiple usgs stations need to be fetched in one call, station_chunk should specify how big the station
-blocks should be. If not set it’ll individually download station data.
-If poll_usgs_stn_file isn’t set, it’ll default to pulling the siteIDs from:
-<a class="reference external" href="https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx">https://water.usgs.gov/osw/hcdn-2009/HCDN-2009_Station_Info.xlsx</a>
-directory. each station declaration is in the following format:
-SourceID | SiteID | SiteCode | SiteName | CountryID | StateID | UTCOffset
-Each station on its own line.</p>
-<p>to reformat into a parseable configuration option, declare poll_usgs_station as a list option,
-so each line looks like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">poll_usgs_station</span> <span class="mi">7</span><span class="o">|</span><span class="mi">70026</span><span class="o">|</span><span class="mi">9014087</span><span class="o">|</span><span class="n">Dry</span> <span class="n">Dock</span><span class="p">,</span> <span class="n">MI</span><span class="o">|</span><span class="n">US</span><span class="o">|</span><span class="n">MI</span><span class="o">|-</span><span class="mf">5.0</span>
-</pre></div>
-</div>
-<p>then this file can be an <em>include</em> directive, and include supports both local and remote url’s
-so the db can be admined in some other http accessible git repository.</p>
-<p>More info on the http rest parameters at: <a class="reference external" href="https://waterservices.usgs.gov/rest/IV-Service.html">https://waterservices.usgs.gov/rest/IV-Service.html</a>
-For writing fault-resistant code that polls from usgs: <a class="reference external" href="https://waterservices.usgs.gov/docs/portable_code.html">https://waterservices.usgs.gov/docs/portable_code.html</a>
-Sign up for updates involving if/how the format changes: <a class="reference external" href="http://waterdata.usgs.gov/nwis/subscribe?form=email">http://waterdata.usgs.gov/nwis/subscribe?form=email</a>
-Parameter codes to tailor the data you want:
-<a class="reference external" href="https://help.waterdata.usgs.gov/code/parameter_cd_query">https://help.waterdata.usgs.gov/code/parameter_cd_query</a>?fmt=rdb&amp;inline=true&amp;group_cd=%
-Currently the parametercd is set to:
-00060   Physical        Discharge, cubic feet per second
-00065   Physical        Gage height, feet
-00011   Physical        Temperature, water, degrees Fahrenheit</p>
-</dd>
-</dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="sarracenia.flowcb.poll.usgs.Usgs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.poll.usgs.</span></span><span class="sig-name descname"><span class="pre">Usgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/poll/usgs.html#Usgs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.poll.usgs.Usgs" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#sarracenia.flowcb.FlowCB" title="sarracenia.flowcb.FlowCB"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlowCB</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.flowcb.poll.usgs.Usgs.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/poll/usgs.html#Usgs.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.poll.usgs.Usgs.__init__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="sarracenia-flowcb-poll-usgs">
+<h2><a class="toc-backref" href="#id55" role="doc-backlink">sarracenia.flowcb.poll.usgs</a><a class="headerlink" href="#sarracenia-flowcb-poll-usgs" title="Link to this heading"></a></h2>
 </section>
 <section id="module-sarracenia.flowcb.post">
 <span id="sarracenia-flowcb-post"></span><h2><a class="toc-backref" href="#id56" role="doc-backlink">sarracenia.flowcb.post</a><a class="headerlink" href="#module-sarracenia.flowcb.post" title="Link to this heading"></a></h2>

@@ -1,13 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Étude de cas : Mise en miroir HPC &mdash; Sarracenia 3.00.54rc1 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
   
+    <link rel="shortcut icon" href="../../../_static/sarra_horror_culture_favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../../_static/documentation_options.js?v=99fb584f"></script>
         <script src="../../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -25,14 +33,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> Sarracenia
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Sarracenia
+              <img src="../../../_static/sarra_horror_culture_w200.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
                 3.00.54rc1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -93,11 +106,11 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">S´abonner et répliquer</a> &raquo;</li>
-          <li><a href="../index.html">Explication</a> &raquo;</li>
-          <li><a href="index.html">Histoire</a> &raquo;</li>
-      <li>Étude de cas : Mise en miroir HPC</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">S´abonner et répliquer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Explication</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Histoire</a></li>
+      <li class="breadcrumb-item active">Étude de cas : Mise en miroir HPC</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/fr/Explication/Histoire/HPC_mirroring_cas_dutilisation.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -107,31 +120,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="etude-de-cas-mise-en-miroir-hpc">
+  <section id="etude-de-cas-mise-en-miroir-hpc">
 <h1>Étude de cas : Mise en miroir HPC<a class="headerlink" href="#etude-de-cas-mise-en-miroir-hpc" title="Link to this heading"></a></h1>
 <section id="mise-en-miroir-continue-de-27-millions-darborescence-de-fichiers-tres-rapidement">
 <h2>Mise en miroir continue de 27 millions d’arborescence de fichiers très rapidement<a class="headerlink" href="#mise-en-miroir-continue-de-27-millions-darborescence-de-fichiers-tres-rapidement" title="Link to this heading"></a></h2>
@@ -182,8 +171,7 @@ maintiennent l’horaire.</p>
 </section>
 <section id="presentation-de-la-solution-hpcr">
 <h3>Présentation de la solution HPCR<a class="headerlink" href="#presentation-de-la-solution-hpcr" title="Link to this heading"></a></h3>
-<a class="reference internal image-reference" href="../../../_images/HPC-XC_High_Availability.png"><img alt="../../../_images/HPC-XC_High_Availability.png" src="../../../_images/HPC-XC_High_Availability.png" style="width: 1078.44px; height: 846.7800000000001px;" />
-</a>
+<a class="reference internal image-reference" href="../../../_images/HPC-XC_High_Availability.png"><img alt="../../../_images/HPC-XC_High_Availability.png" src="../../../_images/HPC-XC_High_Availability.png" style="width: 1078.44px; height: 846.7800000000001px;" /></a>
 <p>Dans le diagramme ci-dessus, si les opérations se trouvent dans le hall de données 1 (à gauche du centre)
 et qu’elles échouent, l’objectif est de reprendre les opérations rapidement à partir du Data Hall 2
 (à droite). Pour que cela soit réaliste, les données de production doivent être disponibles
