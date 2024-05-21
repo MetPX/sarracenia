@@ -544,10 +544,14 @@ La deuxième rangée donne des détails sur les en têtes de chacune des catégo
 Les configurations sont répertoriées sur la gauche. Pour chaque configuration, l’état.
 sera :
 
-* stopped:  aucun processus n’est en cours d’exécution.
-* running:  tout les processus sont en cours d’exécution.
-* partial:  certains processus sont en cours d’exécution.
-* disabled: configuré pour ne pas s’exécuter.
++* hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
++* idle : tous les processus en cours d'exécution, mais pas de transfert rien depuis trop longtemps (idleThreshold.)
++* lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( lagThreshold )
++* part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
++* reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (rejectThreshold )
++* run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
++* slow : transfert de moins que le minimum d'octets/seconde ( slowThreshold )
++* stop : aucun processus n'est en cours d'exécution.
 
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
 Par exemple, 3/3 signifie 3 processus ou instances sont trouvés à partir des 3 attendus.
