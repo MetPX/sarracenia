@@ -594,8 +594,15 @@ feeder
   préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
 Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
-et *sr3 --users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
+et *sr3 \-\-users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
 mot de passe de l'administrateur est déjà correct.
+
+- Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur 
+  la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,
+
+  - *sr3 \-\-users declare* déclarera tous les utilisateurs
+  - *sr3 \-\-users declare subscribe/dd_amis* ne déclarera que les utilisateurs spécifiés dans *subscribe/dd_amis*
+
 
 debug
 -----

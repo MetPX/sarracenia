@@ -136,12 +136,18 @@ Appeler la fonction correspondante pour chacune des configurations::
 
 
 Déclare les files d’attente et les échanges liés à chaque configuration.
-On peut également l’appeler avec --users, afin qu’il déclare les utilisateurs ainsi que les échanges et les files d’attente::
+On peut également l’appeler avec *\-\-users*, afin qu’il déclare les utilisateurs ainsi que les échanges et les files d’attente::
 
   $ sr3 --users declare
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
     ...
 
+La fourniture d'un ou de plusieurs flux ne déclarera que les utilisateurs spécifiés dans le(s) flux::
+
+  $ sr3 --users declare subscribe/dd_amis
+    ...
+    declare: 2024-05-17 20:02:18,548 434920 [INFO] sarracenia.rabbitmq_admin add_user permission user 'tfeed@localhost' role feeder  configure=.* write=.* read=.* 
+    ...
 
 dump
 ~~~~

@@ -2372,7 +2372,7 @@ class Config:
     def parse_args(self, isPost=False):
         """
         user information:
-           accept a configguration, apply argParse library to augment the given configuration
+           accept a configuration, apply argParse library to augment the given configuration
            with command line settings.
 
            the post component has a different calling convention than others, so use that flag
