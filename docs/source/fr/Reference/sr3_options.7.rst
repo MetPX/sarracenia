@@ -1922,6 +1922,12 @@ Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veill
 Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
 lorsque plus qu'un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.
 
+wololo
+------
+
+Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.
+
 SEE ALSO
 ========
 

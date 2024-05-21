@@ -39,6 +39,12 @@ Installation Instructions
 git
 ---
 
+3.0.54
+------
+
+*CHANGE*: *sr3 sanity* only restarts missing instances, not stopped ones.
+this is considered more in accordance with analyst expectations (POLA)
+
 3.0.53
 ------
 

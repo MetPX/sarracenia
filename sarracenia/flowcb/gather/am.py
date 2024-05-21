@@ -391,7 +391,7 @@ class Am(FlowCB):
             reconstruct = 1
 
         # Check if the header is okay before proceeding to correcting rest of bulletin.
-        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0]) 
+        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0], charset) 
         if verified_header != lines[0]:
             lines[0] = verified_header
             reconstruct = 1

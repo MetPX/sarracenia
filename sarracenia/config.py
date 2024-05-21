@@ -122,7 +122,8 @@ default_options = {
     'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
-    'varTimeOffset': 0
+    'varTimeOffset': 0,
+    'wololo': False
 }
 
 count_options = [
@@ -138,8 +139,9 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
-    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
+    'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 
+    'statehost', 'users', 'v2compatRenameDoublePost', 'wololo'
                 ]
 
 float_options = [ ]
@@ -238,7 +240,15 @@ convert_to_v3 = {
     'on_part': { 'manual_conversion_required' : [ 'continue' ] },
     'on_line': { 'manual_conversion_required' : [ 'continue' ] },
     'on_message': {
+    	'msg_by_source': ['continue'],
+    	'msg_by_user': ['continue'],
+        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
+    	'msg_download': ['continue'],
+    	'msg_dump': ['continue'],
+        'msg_log': ['logEvents', '+after_accept'],
         'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
+        'msg_rawlog': ['logEvents', '+after_accept'],
+    	'msg_total': ['continue'],
         'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
         'msg_skip_old': [ 'callback', 'accept.skipold.SkipOld'],
         'msg_test_retry': [ 'callback', 'accept.testretry.TestRetry'],
@@ -258,36 +268,28 @@ convert_to_v3 = {
         'msg_rename4jicc': [ 'flow_callback', 'accept.rename4jicc.Rename4Jicc'],
         'msg_delay': [ 'callback', 'accept.messagedelay.MessageDelay'],
         'msg_download_baseurl': [ 'callback', 'accept.downloadbaseurl.DownloadBaseUrl'],
-	'msg_from_cluster': ['continue'],
-	'msg_stdfiles': ['continue'],
-	'msg_fdelay': ['callback', 'filter.fdelay'],
-	'msg_stopper': ['continue'],
-	'msg_overwrite_sum': ['continue'],
-	'msg_gts2wistopic': ['continue'],
-	'msg_download': ['continue'],
-	'msg_by_source': ['continue'],
-	'msg_by_user': ['continue'],
-	'msg_dump': ['continue'],
-	'msg_total': ['continue'],
-    'on_report': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_stop': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_start': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_watch': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_post': {
-        'post_log': ['logEvents', '+after_work']
+	    'msg_from_cluster': ['continue'],
+    	'msg_stdfiles': ['continue'],
+    	'msg_fdelay': ['callback', 'filter.fdelay'],
+    	'msg_stopper': ['continue'],
+    	'msg_overwrite_sum': ['continue'],
+    	'msg_gts2wistopic': ['continue'],
     },
-    'parts' : [ 'continue' ],
-	'post_total': ['continue'],
+    'on_report': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_stop':   { 'manual_conversion_required' : [ 'continue' ] },
+    'on_start':  { 'manual_conversion_required' : [ 'continue' ] },
+    'on_watch':  { 'manual_conversion_required' : [ 'continue' ] },
+    'on_post': {
+        'post_log': ['logEvents', '+after_work'],
+	    'post_total': ['continue'],
         'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
-        'msg_log': ['logEvents', '+after_accept'],
-        'msg_rawlog': ['logEvents', '+after_accept'],
         'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
         'post_long_flow': [ 'callback', 'accept.longflow.LongFLow'],
         'post_override': [ 'callback', 'accept.postoverride.PostOverride'],
-	'post_rate_limit': ['continue'],
+	    'post_rate_limit': ['continue'],
         'to': ['continue']
     },
+    'parts' : [ 'continue' ],
     'poll_without_vip': [ 'manual_conversion_required' ], 
     'pump' : [ 'continue' ],
     'pump_flag' : [ 'continue' ],
@@ -616,7 +618,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'watch', 'winnow'
     ]
 
@@ -2461,6 +2463,10 @@ class Config:
                             action='store_true',
                             default=self.debug,
                             help='print debugging output (very verbose)')
+        parser.add_argument('--wololo',
+                            action='store_true',
+                            default=self.wololo,
+                            help='force overwrite of converted configs')
         parser.add_argument('--dry_run', '--simulate', '--simulation', 
                             action='store_true',
                             default=self.dry_run,

@@ -9,6 +9,7 @@ Contributing
    AMQPprimer
    Development
    Documentation
+   Release
    man_page_template.rst
    mqtt_issues
    v03

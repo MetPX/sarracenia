@@ -61,7 +61,7 @@ Les types d'actions disponible. Une seule parmi:
 
  - add:           copier a la liste de configurations disponible.
  - cleanup:       supprimer les ressources des composants sur le serveur.
- - convert:       copie et mets à jour une configuration de v2 dans le répertoire sr3.
+ - convert:       copie et mets à jour un ou plusieurs configuration de v2 dans le répertoire sr3.
  - declare:       crée les ressources d'un composant sur le serveur.
  - disbale:       marquer une configuration comme non-éligible à exécuter.
  - edit:          modifier une configuration existante.
