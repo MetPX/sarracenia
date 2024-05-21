@@ -1,14 +1,7 @@
-import pytest, jsonpickle
-import os
+import pytest
+from tests.conftest import *
 
-#useful for debugging tests
-import pprint
-def pretty(*things, **named_things):
-    for t in things:
-        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
-        print(str(k) + ":")
-        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
+import jsonpickle, os
 
 from sarracenia.diskqueue import DiskQueue
 from sarracenia import Message as SR3Message

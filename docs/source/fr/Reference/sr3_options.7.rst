@@ -226,7 +226,7 @@ TYPES D'OPTIONS
 Les options de sr3 ont plusieurs types :
 
 count
-    type de nombre entier.
+    type de nombre entier. Même format que *size* détaillé plus bas.
 
 duration
     un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
@@ -246,7 +246,8 @@ set
     un assortissement de chaîne de caractères, chaque occurrence successive s'unionise au total.
 
 size
-    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 2).
+    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 10).
+    si on rajoute ´b' ... c´est base 2 :   1k=1000, 1kb=1024
 
 str
     une chaîne de caractères.
@@ -1921,6 +1922,12 @@ vip qui change.
 Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
 Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
 lorsque plus qu'un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.
+
+wololo
+------
+
+Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.
 
 SEE ALSO
 ========

@@ -1,4 +1,5 @@
 import pytest
+from tests.conftest import *
 #from unittest.mock import Mock
 
 import logging
@@ -6,11 +7,6 @@ import logging
 import sarracenia
 import sarracenia.config
 import sarracenia.transfer
-
-#useful for debugging tests
-import pprint
-pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
-
 
 logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
