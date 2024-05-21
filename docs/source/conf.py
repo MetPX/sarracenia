@@ -80,8 +80,8 @@ html_theme = 'sphinx_rtd_theme'
 
 html_js_files = ['https://code.jquery.com/jquery-3.6.0.min.js']
 
-html_logo = 'static/sarra_horror_culture_w200.png'
+html_logo = '_static/sarra_horror_culture_w200.png'
 
-html_favicon = 'static/sarra_horror_culture_favicon.png'
+html_favicon = '_static/sarra_horror_culture_favicon.png'
 
 html_theme_options = { 'sidebar_span': 6 }
