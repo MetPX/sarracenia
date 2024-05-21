@@ -595,8 +595,15 @@ feeder
   préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
 Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
-et *sr3 --users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
+et *sr3 \-\-users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
 mot de passe de l'administrateur est déjà correct.
+
+- Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur 
+  la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,
+
+  - *sr3 \-\-users declare* déclarera tous les utilisateurs
+  - *sr3 \-\-users declare subscribe/dd_amis* ne déclarera que les utilisateurs spécifiés dans *subscribe/dd_amis*
+
 
 debug
 -----
@@ -1915,6 +1922,12 @@ vip qui change.
 Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
 Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
 lorsque plus qu'un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.
+
+wololo
+------
+
+Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.
 
 SEE ALSO
 ========

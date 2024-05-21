@@ -576,7 +576,7 @@ declare
 -------
 
 env NAME=Value
-  On can also reference environment variables in configuration files,
+  One can also reference environment variables in configuration files,
   using the *${ENV}* syntax.  If Sarracenia routines needs to make use
   of an environment variable, then they can be set in configuration files::
 
@@ -611,9 +611,16 @@ feeder
   preference to administrator accounts to run flows.
 
 User credentials are placed in the `credentials.conf <sr3_credentials.7.html>`_ 
-file, and *sr3 --users declare* will update
+file, and *sr3 \-\-users declare* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
+
+- By default, all users are declared. However, flows can be specified on the command line to constrain
+  the declared users to only those in the given flow. For example:
+
+  - *sr3 \-\-users declare* will declare all users
+  - *sr3 \-\-users declare subscribe/dd_amis* will only declare users specified in *subscribe/dd_amis*
+
 
 debug
 -----
@@ -1955,6 +1962,14 @@ moving vip.
 When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
 Multiple vips form a list, where any individual address being active is enough.
+
+wololo 
+------
+
+A command line option to overwite an existing sr3 configuration when converting
+from v2.
+
+
 
 SEE ALSO
 ========

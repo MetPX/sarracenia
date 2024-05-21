@@ -95,9 +95,11 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
         # to check again on the next run. If it is expired, we should get a brand new token.
         today = datetime.datetime.utcnow().strftime("%m/%d/%Y")
         if self._token_expires and today == self._token_expires:
-            logger.info("the token ending with ...{self._token[-5:]} expires today ({self._token_expires})")
+            logger.info(f"the token ending with ...{self._token[-5:]} expires today ({self._token_expires})")
             self._token = None
             self._token_expires = None
+        else:
+            logger.debug(f"token is not expired. today = {today}, token expires on {self._token_expires}")
 
         # Get a token from the NASA API, if there isn't one already
         if not self._token:
@@ -111,7 +113,7 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
         try: 
             token_already_in_creds = (ok and details.bearer_token == self._token)
             if token_already_in_creds:
-                logger.debug(f"Token for {url} already in credentials database")
+                logger.debug(f"Token ...{self._token[-5:]} for {url} already in credentials database")
         except:
             token_already_in_creds = False
 
@@ -141,9 +143,9 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
             # logger.debug(f"Here's the response: {resp_j}")
 
             self._token = resp_j['access_token']
-            self._token_expiry = resp_j['expiration_date']
+            self._token_expires = resp_j['expiration_date']
             logger.info(f"Successfully created new token! " + 
-                        f"Token ends with ...{self._token[-5:]} and expires on {self._token_expiry}")
+                        f"Token ends with ...{self._token[-5:]} and expires on {self._token_expires}")
             return True
             
         except Exception as e:
@@ -186,9 +188,9 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
 
             if len(resp_j) >= 1: 
                 self._token = resp_j[0]['access_token']
-                self._token_expiry = resp_j[0]['expiration_date']
+                self._token_expires = resp_j[0]['expiration_date']
                 logger.info(f"There is/are {len(resp_j)} token(s) in {username}'s Earthdata account. " + 
-                            f"Using the token that ends with ...{self._token[-5:]} and expires on {self._token_expiry}")
+                            f"Using the token that ends with ...{self._token[-5:]} and expires on {self._token_expires}")
                 return True
             # Valid response, but no tokens in the account. Need to create one.
             else:
