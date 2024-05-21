@@ -78,6 +78,8 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_js_files = ['https://code.jquery.com/jquery-3.6.0.min.js']
+
 html_logo = '_static/sarra_horror_culture.jpg'
 
 html_theme_options = { 'sidebar_span': 6 }
