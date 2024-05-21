@@ -2019,7 +2019,8 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
-            self._clean_missing_proc_state()
+            if not self.options.dry_run:
+                self._clean_missing_proc_state()
             self._read_states()
             self._resolve()
             filtered_missing = []
