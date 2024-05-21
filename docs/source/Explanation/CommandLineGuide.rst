@@ -70,7 +70,7 @@ the broker, or manage the configurations.
  - remove:        remove a configuration.
  - disable:       mark a configuration as ineligible to run. 
  - enable:        mark a configuration as eligible to run.
- - convert:       converts a v2 config to a v3 config.
+ - convert:       converts v2 configs to a v3 config.
 
 
 For example:  *sr3 foreground subscribe/dd* runs the subscribe component with
@@ -103,7 +103,7 @@ started or restarted by the **start**,
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
 
-The **convert** action is used to translate a configuration file written with Sarracenia version 2
+The **convert** action is used to translate configuration files written with Sarracenia version 2
 options into Sarracenia version 3 options. The v2 configuration file must be placed in the
 *~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
 the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
@@ -135,12 +135,19 @@ Call the corresponding function for each configuration::
     2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
 Declares the queues and exchanges related to each configuration.
-One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+One can also invoke it with *\-\-users*, so that it will declare users as well as exchanges and queues::
 
   $ sr3 --users declare
+    ...
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
     ...
 
+Providing a flow/flows will declare only the users that are specified in the flow(s)::
+
+  $ sr3 --users declare subscribe/dd_amis
+    ...
+    declare: 2024-05-17 20:02:18,548 434920 [INFO] sarracenia.rabbitmq_admin add_user permission user 'tfeed@localhost' role feeder  configure=.* write=.* read=.* 
+    ...
 
 dump
 ~~~~
@@ -395,6 +402,11 @@ Converting a config: both formats are accepted, as well as include files::
 
   $ sr3 convert shovel/no_trouble_f00.inc
     2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
+
+To overwrite an existing sr3 configuration use the *--wololo* option.
+When overwriting multiple sr3 configurations, one must also use *--dangerWillRobinson=n* in the 
+normal way... where *n* is the number of configurations to convert.
+
 
 start
 ~~~~~

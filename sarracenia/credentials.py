@@ -176,11 +176,14 @@ class CredentialDB:
         """
 
         # need to create url object
+        key=urlstr
         if details == None:
             details = Credential()
             details.url = urllib.parse.urlparse(urlstr)
+            if hasattr(details.url,'password'):
+                key = key.replace( f":{details.url.password}", "" )
 
-        self.credentials[urlstr] = details
+        self.credentials[key] = details
 
     def get(self, urlstr):
         """Retrieve a Credential from the DB by urlstr. If the Credential is valid, but not already cached, it will be
@@ -220,7 +223,6 @@ class CredentialDB:
                 return False, self.credentials[urlstr]
 
         # resolved from defined credentials
-
         ok, details = self._resolve(urlstr, url)
         if ok: return True, details
 

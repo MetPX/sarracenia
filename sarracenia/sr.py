@@ -1145,7 +1145,8 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
-
+    
+        self.all_configs = candidates
         logger.debug( f"candidates: {candidates}" )
         new_patterns=[]
         for p in patterns:
@@ -1415,8 +1416,34 @@ class sr_GlobalState:
                     f.write('')
 
     def declare(self):
+        '''
+        creates users, exchanges, and queues in that order - each one is needed to create
+        the subsequent one
 
-        if self.users:
+        '''
+
+        filtered_users = []
+
+        if len(self.filtered_configurations) < len(self.all_configs):
+
+            for config in self.filtered_configurations:
+
+                (c, cfg) = config.split(os.sep)
+
+                if not 'options' in self.configs[c][cfg]:
+                    continue
+
+                o = self.configs[c][cfg]['options']
+
+                if hasattr(o, "broker") and o.broker:
+                    filtered_users.append(f"{o.broker.url.username}@{o.broker.url.hostname}")
+                if hasattr(o, "post_broker") and o.post_broker:
+                    filtered_users.append(f"{o.post_broker.url.username}@{o.post_broker.url.hostname}")
+                if hasattr(o, "report_broker") and o.report_broker:
+                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        # add users (?)
+        if self.users: # check if users exist in the configuration (?)
             for h in self.brokers:
                 if self.please_stop:
                     break
@@ -1443,6 +1470,13 @@ class sr_GlobalState:
                                 #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
                                 #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username],
                                 #     u_url.netloc, u_url.hostname ))
+                                
+                                user = f"{u_url.username}@{h}"
+
+                                if filtered_users and user not in filtered_users:
+                                    logger.debug(f"not adding {user}")
+                                    continue
+
                                 sarracenia.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
@@ -1450,7 +1484,7 @@ class sr_GlobalState:
 
         # declare admin exchanges.
         if hasattr(self,'default_cfg') and self.default_cfg.admin:
-            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            logger.info( f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
                     {
@@ -1461,7 +1495,7 @@ class sr_GlobalState:
                     })
                 xdc.putSetup()
                 xdc.close()
-               
+                
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
@@ -2059,7 +2093,7 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            if self.configs[c][cfg]['status'] in ['missing']:
+            if self.configs[c][cfg]['status'] in ['missing', 'partial']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -2081,7 +2115,8 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
-            self._clean_missing_proc_state()
+            if not self.options.dry_run:
+                self._clean_missing_proc_state()
             self._read_states()
             self._resolve()
             filtered_missing = []
@@ -2582,7 +2617,26 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
     def convert(self):
-        cfg = self.v2_config[0]
+
+        print( f"v2_config: {self.v2_config}")
+        if len(self.v2_config) == 0:
+            print("need to specify what to convert from v2")
+            return
+
+        conversion_targets = self.v2_config
+        if self.options.wololo and len(conversion_targets) > 1:
+            if len(conversion_targets) != self.options.dangerWillRobinson :
+                print( f" will not overwrite multiple configurations unless really sure" )
+                print( f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
+                return
+
+        for c in conversion_targets:
+            self.convert1(c)
+
+    def convert1(self,cfg):
+        """
+          converts one config.
+        """
         component = cfg.split('/')[0]
         base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
         base_v3 = self.user_config_dir + os.sep
@@ -2605,8 +2659,10 @@ class sr_GlobalState:
         if not os.path.isdir(base_v3 + component):
             os.makedirs(base_v3 + component)
 
-        if os.path.exists(v3_config_path):
-            logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
+        if self.options.wololo:
+            logger.warning("Wololo!" )
+        elif os.path.exists(v3_config_path): 
+            logger.error( f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
             return
 
         synonyms = sarracenia.config.Config.synonyms
@@ -2724,7 +2780,7 @@ class sr_GlobalState:
                 elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
-        logging.info( f'wrote conversion from v2 {cfg} to sr3' )
+        logger.info( f'wrote conversion from v2 {cfg} to sr3' )
 
 
     def overview(self):
