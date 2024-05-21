@@ -4,11 +4,11 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MetPX-Sarracenia Developer’s Guide &mdash; Sarracenia 3.00.53rc2 documentation</title>
+  <title>MetPX-Sarracenia Developer’s Guide &mdash; Sarracenia 3.00.54rc1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   
-        <script src="../_static/documentation_options.js?v=d2516663"></script>
+        <script src="../_static/documentation_options.js?v=99fb584f"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -28,7 +28,7 @@
             <a href="../index.html" class="icon icon-home"> Sarracenia
           </a>
               <div class="version">
-                3.00.53rc2
+                3.00.54rc1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -87,18 +87,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#commits-to-the-development-branch">Commits to the Development Branch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#key-branches">Key Branches</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#repositories">Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#building-a-release">Building a Release</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#versioning-scheme">Versioning Scheme</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#set-the-version">Set the Version</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#release-versions-and-quality-assurance">Release Versions and Quality Assurance</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#releasing">Releasing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pypi">PyPi</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#launchpad">Launchpad</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#github">github</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#development-environment">Development Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repositories">Repositories</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#local-python">Local Python</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#windows">Windows</a></li>
 </ul>
@@ -111,6 +100,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="Documentation.html">Documentation Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Release.html">Releasing MetPX-Sarracenia</a></li>
 <li class="toctree-l2"><a class="reference internal" href="man_page_template.html">SR3_TITLE</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mqtt_issues.html">MQTT Implementation Notes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="v03.html">Version 3 Refactor</a></li>
@@ -179,7 +169,7 @@
 <h1>MetPX-Sarracenia Developer’s Guide<a class="headerlink" href="#metpx-sarracenia-developer-s-guide" title="Link to this heading"></a></h1>
 <dl class="field-list simple">
 <dt class="field-odd">version<span class="colon">:</span></dt>
-<dd class="field-odd"><p>3.00.53rc2</p>
+<dd class="field-odd"><p>3.00.54rc1</p>
 </dd>
 <dt class="field-even">date<span class="colon">:</span></dt>
 <dd class="field-even"><p>May 21, 2024</p>
@@ -1384,425 +1374,6 @@ from <em>v2_stable</em> branch.  After testing in systems subscribed to pre-rele
 merge from v2_dev branch into v2_stable one, and manually trigger a build.</p></li>
 </ul>
 <p>for more discussion see <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">Which Version is stable</a></p>
-</section>
-<section id="building-a-release">
-<h2>Building a Release<a class="headerlink" href="#building-a-release" title="Link to this heading"></a></h2>
-<p>MetPX-Sarracenia is distributed in a few different ways, and each has it’s own build process.
-Packaged releases are always preferable to one off builds, because they are reproducible.</p>
-<p>When development requires testing across a wide range of servers, it is preferred to make
-an alpha release, rather than installing one off packages.  So the preferred mechanisms is
-to build the ubuntu and pip packages at least, and install on the test machines using
-the relevant public repositories.</p>
-<p>To publish a release one needs to:</p>
-<ul class="simple">
-<li><p>Set the version.</p></li>
-<li><p>upload the release to pypi.org so that installation with pip succeeds.</p></li>
-<li><p>upload the release to launchpad.net, so that the installation of debian packages
-using the repository succeeds.</p></li>
-<li><p>upload the release notes and binaries to github.com.</p></li>
-<li><p>increment the version for future commits to v2_dev or development.</p></li>
-</ul>
-<section id="versioning-scheme">
-<h3>Versioning Scheme<a class="headerlink" href="#versioning-scheme" title="Link to this heading"></a></h3>
-<p>Each release will be versioned as <code class="docutils literal notranslate"><span class="pre">&lt;protocol</span> <span class="pre">version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
-<p>Where:</p>
-<ul class="simple">
-<li><p><strong>protocol version</strong> is the message version. In Sarra notification messages, they are all prefixed with v02 (at the moment).</p></li>
-<li><p><strong>YY</strong> is the last two digits of the year of the initial release in the series.</p></li>
-<li><p><strong>MM</strong> is a TWO digit month number i.e. for April: 04.</p></li>
-<li><p><strong>segment</strong> is what would be used within a series.
-from pep0440:
-X.YaN   # Alpha release
-X.YbN   # Beta release
-X.YrcN  # Release Candidate
-X.Y     # Final release
-X.ypostN #ack! patched release.</p></li>
-</ul>
-<p>Currently, 3.00 is still stabilizing, so the year/month convention is not being applied.
-Releases are currently  3.00.iircj
-where:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>ii – incremental number of pre-releases of 3.00</p></li>
-<li><p>j – beta increment.</p></li>
-</ul>
-</div></blockquote>
-<p>At some point 3.00 will be complete &amp; solid enough that the we will
-resume the year/month convention, hopefully 3.22.</p>
-<p>Releases are classified as follows:</p>
-<dl class="simple">
-<dt>Alpha</dt><dd><p>Snapshot releases taken directly from development, with no other qualitative guarantees.
-No guarantee of functionality, some components may be partially implemented, some
-breakage may occur.
-No bug-fixes, issues addressed by subsequent version.
-Often used for early end-to-end testing (rather than installing custom from tree on
-each test machine.)</p>
-</dd>
-<dt>Beta</dt><dd><p>Feature Complete for a given release.  Components in their final form for this release.
-Documentation exists in at least one language.
-All previously known release block bugs addressed.
-No bug-fixes, issues addressed by subsequent version.</p>
-</dd>
-<dt>RC - Release Candidate.</dt><dd><p>Implies it has gone through beta to identify and address major issues.
-Translated documentation available.
-No bug-fixes, issues addressed by subsequent version.</p>
-</dd>
-</dl>
-<p>Final versions have no suffix and are considered stable and supported.
-Stable should receive bug-fixes if necessary from time to time.
-One can build python wheels, or debian packages for local testing purposes
-during development.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you change default settings for exchanges / queues  as
-part of a new version, keep in mind that all components have to use
-the same settings or the bind will fail, and they will not be able
-to connect.  If a new version declares different queue or exchange
-settings, then the simplest means of upgrading (preserving data) is to
-drain the queues prior to upgrading, for example by
-setting, the access to the resource will not be granted by the server.
-(??? perhaps there is a way to get access to a resource as is… no declare)
-(??? should be investigated)</p>
-<p>Changing the default requires the removal and recreation of the resource.
-This has a major impact on processes…</p>
-</div>
-<p>Example:</p>
-<p>The first alpha release in January 2016 would be versioned as <code class="docutils literal notranslate"><span class="pre">metpx-sarracenia-2.16.01a01</span></code></p>
-</section>
-<section id="set-the-version">
-<h3>Set the Version<a class="headerlink" href="#set-the-version" title="Link to this heading"></a></h3>
-<p>This is done to <em>start</em> development on a version. It should be done on development
-after every release.</p>
-<ul class="simple">
-<li><p>git checkout development</p></li>
-<li><p>Edit <code class="docutils literal notranslate"><span class="pre">sarracenia/_version.py</span></code> manually and set the version number.</p></li>
-<li><p>Edit CHANGES.rst to add a section for the version.</p></li>
-<li><p>run dch to start the changelog for the current version.
-* change <em>unstable</em> to <em>UNRELEASED</em> (maybe done automatically by dch.)</p></li>
-<li><p>git commit -a</p></li>
-<li><p>git push</p></li>
-</ul>
-<p>If development continues and the time passes without the release occurring, then
-the version needs to be set to again (or overwritten).  For example, a development
-cycle begins in August, the version in stable will be 3.19.08b1… but if development
-continues into September, one should use this procedure the change the version to 3.19.09b1.</p>
-<p>note on Debian terminology:</p>
-<ul class="simple">
-<li><p>unstable … new software brought into the OS stablization tree.</p></li>
-<li><p>testing … software considered stable enough to be included in the next “stable” release.</p></li>
-<li><p>stable … part of a stable Debian release: frozen software that will not be patched except
-for security issues.</p></li>
-</ul>
-<p>for Metpx-Sr3, we have not yet approached the longevity of versions implied by Debian <em>stable</em>.
-The labels don’t refer to how stable the software itself is, merely to how often the software
-changes (increments versions.)  More info: <a class="reference external" href="https://en.wikipedia.org/wiki/Debian_version_history">Debian Version History</a>
-so when performing releases, the changelog is changed from UNRELEASED to unstable, and
-back to UNRELEASED when working between releases, as per Debian custom.</p>
-</section>
-<section id="release-versions-and-quality-assurance">
-<h3>Release Versions and Quality Assurance<a class="headerlink" href="#release-versions-and-quality-assurance" title="Link to this heading"></a></h3>
-<p>The Quality Assurance process, or QA occurs mainly on the development branch.
-prior to accepting a release, and barring known exceptions,</p>
-<ul>
-<li><p>QA tests automatically keyed to pushes to the development branch should all pass.
-(All related github actions.)
-tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow are included in “flow.yml”</p></li>
-<li><p>build an ubuntu 18.04 vm and run the flow tests there to ensure that it works.
-(installation method: cloning from development on github.)
-tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow</p></li>
-<li><p>build a redhat 8 vm and run the flow test there to ensure that it works.
-(installation method: cloning from development on github.)
-tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow</p></li>
-<li><p>After that, a pre-release version is prepared. It should have an rcX suffix
-publish to: <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release</a>
-publish to: pypi.org   (rcX suffix is detected as a pre-release.)
-publish to: github.com (tag as pre-release.)</p>
-<p>the pre-release repository.</p>
-<ul class="simple">
-<li><p>pre-release version is installed on development server.
-(from launchpad repo.)</p></li>
-<li><p>pre-release version is installed on some staging workloads.
-i(from launchpad repo.)</p></li>
-<li><p>if the pre-release version runs all configured flows without incidents for a week.</p></li>
-</ul>
-</li>
-<li><p>Then a stable version is declared, pushed to the stable repository:</p>
-<ul class="simple">
-<li><p>ensure there is no rcX suffix on the version.</p></li>
-<li><p>publish to:  <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx</a></p></li>
-<li><p>publish to: pypi.org   (remove rcX suffix so it is considered latest.)</p></li>
-<li><p>publish to: github.com (tag as latest .)</p></li>
-</ul>
-</li>
-</ul>
-<p>the mechanics of preparing each release are documented in the following section.</p>
-<p>For extensive discussion see:  <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">https://github.com/MetPX/sarracenia/issues/139</a></p>
-</section>
-<section id="releasing">
-<h3>Releasing<a class="headerlink" href="#releasing" title="Link to this heading"></a></h3>
-<p>Prior to releasing, ensure that all QA tests in the section above are passed.
-When development for a version is complete. The following should occur:</p>
-<p>A tag should be created to identify the end of the cycle:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">development</span>
-<span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">sarra</span><span class="o">-</span><span class="n">v3</span><span class="mf">.16.01</span><span class="n">a01</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;release 3.16.01a01&quot;</span>
-<span class="n">git</span> <span class="n">push</span>
-<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">sarra</span><span class="o">-</span><span class="n">v3</span><span class="mf">.16.01</span><span class="n">a01</span>
-</pre></div>
-</div>
-<p>Once the tag is in the development branch, promote it to stable:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">stable</span>
-<span class="n">git</span> <span class="n">merge</span> <span class="n">development</span>
-<span class="n">git</span> <span class="n">push</span>
-</pre></div>
-</div>
-<p>Once stable is updated on github, the docker images will be automatically upgraded, but
-we then need to update the various distribution methods: <a class="reference internal" href="#pypi">PyPI</a>, and <a class="reference internal" href="#launchpad">Launchpad</a></p>
-<p>Once package generation is complete, one should <a class="reference internal" href="#set-the-version">Set the Version</a>
-in development to the next logical increment to ensure no further development
-occurs that is identified as the released version.</p>
-</section>
-<section id="pypi">
-<h3>PyPi<a class="headerlink" href="#pypi" title="Link to this heading"></a></h3>
-<p>Pypi does not distinguish between older and newer python releases. There is only one package
-version for all supported versions. When uploading from a new OS, the versions in use on the
-OS are inferred to be the minimum, and so installation on older operating systems may be blocked
-by generated dependencies on overly modern versions.</p>
-<p>So when uploading to pypi, always do so from the oldest operating system where it needs to work.
-upward compatibility is more likely than downward.</p>
-<p>Pypi Credentials go in ~/.pypirc.  Sample Content:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pypi</span><span class="p">]</span>
-<span class="n">username</span><span class="p">:</span> <span class="n">SupercomputingGCCA</span>
-<span class="n">password</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">get</span> <span class="n">this</span> <span class="kn">from</span> <span class="nn">someone</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<p>Assuming pypi upload credentials are in place, uploading a new release used to be a one liner:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_wheel</span> <span class="n">upload</span>
-</pre></div>
-</div>
-<p>on older systems, or on (python &gt;= 3.7) newer ones:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">isolation</span>
-<span class="n">twine</span> <span class="n">upload</span> <span class="n">dist</span><span class="o">/</span><span class="n">metpx_sarracenia</span><span class="o">-</span><span class="mf">2.22.6</span><span class="o">-</span><span class="n">py3</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span> <span class="n">dist</span><span class="o">/</span><span class="n">metpx_sarracenia</span><span class="o">-</span><span class="mf">2.22.6</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
-</pre></div>
-</div>
-<p>Should always include source (the .tar.gz file)
-Note that the CHANGES.rst file is in restructured text and is parsed by pypi.python.org
-on upload.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>When uploading pre-release packages (alpha,beta, or RC) PYpi does not serve those to users by default.
-For seamless upgrade, early testers need to do supply the <code class="docutils literal notranslate"><span class="pre">--pre</span></code> switch to pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">pre</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sarracenia</span>
-</pre></div>
-</div>
-<p>On occasion you may wish to install a specific version:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sarracenia</span><span class="o">==</span><span class="mf">2.16.03</span><span class="n">a9</span>
-</pre></div>
-</div>
-<p>command line use of setup.py is deprecated.  Replaced by build and twine.</p>
-</div>
-</section>
-<section id="launchpad">
-<h3>Launchpad<a class="headerlink" href="#launchpad" title="Link to this heading"></a></h3>
-<p>Canonical, the company behind Ubuntu, provides Launchpad as a means of enabling third parties to build
-packages for their operating system releases.  It turns out that the newer OS versions have dependencies
-that are not available on the old ones. So the development branch is configured to build on newer
-releases, but an a separate branch must be created when creating releases for ubuntu bionic (18.04) and focal (20.04)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">stable</span>
-<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">D</span> <span class="n">stable_focal_bionic</span>
-<span class="n">git</span> <span class="n">branch</span> <span class="n">stable_focal_bionic</span>
-<span class="n">git</span> <span class="n">checkout</span> <span class="n">stable_focal_bionic</span>
-<span class="n">vi</span> <span class="n">debian</span><span class="o">/</span><span class="n">control</span>
-<span class="c1"># remove pybuild-plugin-pyproject from the &quot;Build-Depends&quot;</span>
-<span class="n">git</span> <span class="n">rm</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
-<span class="c1"># remove the new-style installer to force use of setup.py</span>
-<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;adjust for older os&quot;</span>
-</pre></div>
-</div>
-<p>There might be a “–force” required at some point. Perhaps something along the lines of:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">stable_focal_bionic</span> <span class="o">--</span><span class="n">force</span>
-</pre></div>
-</div>
-<p>Then proceed with Launchpad instructions.</p>
-<section id="automated-build">
-<h4>Automated Build<a class="headerlink" href="#automated-build" title="Link to this heading"></a></h4>
-<ul class="simple">
-<li><p>Ensure the code mirror is updated by checking the <strong>Import details</strong> by checking <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk">this page for sarracenia</a></p></li>
-<li><p>if the code is out of date, do <strong>Import Now</strong> , and wait a few minutes while it is updated.</p></li>
-<li><p>once the repository is upto date, proceed with the build request.</p></li>
-<li><p>Go to the <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release">sarracenia release</a> recipe</p></li>
-<li><p>Go to the <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-release">sr3 release</a> recipe</p></li>
-<li><p>Click on the <strong>Request build(s)</strong> button to create a new release</p></li>
-<li><p>for Sarrac, follow the procedure <a class="reference external" href="https://github.com/MetPX/sarrac#release-process">here</a></p></li>
-<li><p>The built packages will be available in the <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">metpx ppa</a></p></li>
-</ul>
-</section>
-<section id="building-a-windows-installer">
-<h4>Building a Windows Installer<a class="headerlink" href="#building-a-windows-installer" title="Link to this heading"></a></h4>
-<p>One can also build a Windows installer with that
-<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/stable/generate-win-installer.sh">script</a>.
-It needs to be run from a Linux OS (preferably Ubuntu 18) in the root directory of Sarracenia’s git.
-find the python version in use:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">python</span> <span class="o">-</span><span class="n">V</span>
-<span class="n">Python</span> <span class="mf">3.10.12</span>
-<span class="n">fractal</span><span class="o">%</span>
-</pre></div>
-</div>
-<p>So this is python 3.10.  Only a single minor version will have the embedded package needed
-by pynsist to build the executable, so look at:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">downloads</span><span class="o">/</span><span class="n">windows</span><span class="o">/</span>
-</pre></div>
-</div>
-<p>Then go look on python.org, for the “right” version (for 3.10, it is 3.10.11 )
-Then, from the shell, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">nsis</span>
-<span class="n">pip3</span> <span class="n">install</span> <span class="n">pynsist</span> <span class="n">wheel</span>
-<span class="o">./</span><span class="n">generate</span><span class="o">-</span><span class="n">win</span><span class="o">-</span><span class="n">installer</span><span class="o">.</span><span class="n">sh</span> <span class="mf">3.10.11</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="n">log</span><span class="o">.</span><span class="n">txt</span>
-</pre></div>
-</div>
-<p>The final package will be generated into build/nsis directory.</p>
-</section>
-<section id="daily-builds">
-<h4>Daily Builds<a class="headerlink" href="#daily-builds" title="Link to this heading"></a></h4>
-<p>Daily builds are configured
-using <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily">this recipe for python</a>
-and <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac-daily">this recipe for C</a> and
-are run once per day when changes to the repository occur. These packages are stored in the <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">metpx-daily ppa</a>.
-One can also <strong>Request build(s)</strong> on demand if desired.</p>
-</section>
-<section id="manual-process">
-<h4>Manual Process<a class="headerlink" href="#manual-process" title="Link to this heading"></a></h4>
-<p>The process for manually publishing packages to Launchpad ( <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc">https://launchpad.net/~ssc-hpc-chp-spc</a> )
-involves a more complex set of steps, and so the convenient script <code class="docutils literal notranslate"><span class="pre">publish-to-launchpad.sh</span></code> will
-be the easiest way to do that. Currently the only supported releases are <strong>trusty</strong> and <strong>xenial</strong>.
-So the command used is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">publish</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">launchpad</span><span class="o">.</span><span class="n">sh</span> <span class="n">sarra</span><span class="o">-</span><span class="n">v2</span><span class="mf">.15.12</span><span class="n">a1</span> <span class="n">trusty</span> <span class="n">xenial</span>
-</pre></div>
-</div>
-<p>However, the steps below are a summary of what the script does:</p>
-<ul>
-<li><p>for each distribution (precise, trusty, etc) update <code class="docutils literal notranslate"><span class="pre">debian/changelog</span></code> to reflect the distribution</p></li>
-<li><p>build the source package using:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debuild</span> <span class="o">-</span><span class="n">S</span> <span class="o">-</span><span class="n">uc</span> <span class="o">-</span><span class="n">us</span>
-</pre></div>
-</div>
-</li>
-<li><p>sign the <code class="docutils literal notranslate"><span class="pre">.changes</span></code> and <code class="docutils literal notranslate"><span class="pre">.dsc</span></code> files:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debsign</span> <span class="o">-</span><span class="n">k</span><span class="o">&lt;</span><span class="n">key</span> <span class="nb">id</span><span class="o">&gt;</span> <span class="o">&lt;.</span><span class="n">changes</span> <span class="n">file</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</li>
-<li><p>upload to launchpad:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dput</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ssc</span><span class="o">-</span><span class="n">hpc</span><span class="o">-</span><span class="n">chp</span><span class="o">-</span><span class="n">spc</span><span class="o">/</span><span class="n">metpx</span><span class="o">-&lt;</span><span class="n">dist</span><span class="o">&gt;</span> <span class="o">&lt;.</span><span class="n">changes</span> <span class="n">file</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</li>
-</ul>
-<p><strong>Note:</strong> The GPG keys associated with the launchpad account must be configured
-in order to do the last two steps.</p>
-</section>
-<section id="backporting-a-dependency">
-<h4>Backporting a Dependency<a class="headerlink" href="#backporting-a-dependency" title="Link to this heading"></a></h4>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">backportpackage</span> <span class="o">-</span><span class="n">k</span><span class="o">&lt;</span><span class="n">key</span> <span class="nb">id</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">s</span> <span class="n">bionic</span> <span class="o">-</span><span class="n">d</span> <span class="n">xenial</span> <span class="o">-</span><span class="n">u</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ssc</span><span class="o">-</span><span class="n">hpc</span><span class="o">-</span><span class="n">chp</span><span class="o">-</span><span class="n">spc</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">daily</span> <span class="n">librabbitmq</span>
-</pre></div>
-</div>
-</section>
-<section id="building-an-rpm">
-<h4>Building an RPM<a class="headerlink" href="#building-an-rpm" title="Link to this heading"></a></h4>
-<p>This process is currently a bit clumsy, but it can provide usable RPM packages.
-Example of creating a multipass image for fedora to build with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">multipass</span> <span class="n">launch</span> <span class="o">-</span><span class="n">m</span> <span class="mi">8</span><span class="n">g</span> <span class="o">--</span><span class="n">name</span> <span class="n">fed34</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">mirror</span><span class="o">.</span><span class="n">csclub</span><span class="o">.</span><span class="n">uwaterloo</span><span class="o">.</span><span class="n">ca</span><span class="o">/</span><span class="n">fedora</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">releases</span><span class="o">/</span><span class="mi">34</span><span class="o">/</span><span class="n">Cloud</span><span class="o">/</span><span class="n">x86_64</span><span class="o">/</span><span class="n">images</span><span class="o">/</span><span class="n">Fedora</span><span class="o">-</span><span class="n">Cloud</span><span class="o">-</span><span class="n">Base</span><span class="o">-</span><span class="mi">34</span><span class="o">-</span><span class="mf">1.2</span><span class="o">.</span><span class="n">x86_64</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">xz</span>
-<span class="n">Launched</span><span class="p">:</span> <span class="n">fed34</span>
-<span class="n">fractal</span><span class="o">%</span>
-</pre></div>
-</div>
-<p>Based on <a class="reference external" href="https://www.redhat.com/sysadmin/create-rpm-package">https://www.redhat.com/sysadmin/create-rpm-package</a> …  install build-dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">rpmdevtools</span> <span class="n">rpmlint</span> <span class="n">git</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="o">-</span><span class="n">b</span> <span class="n">development</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">MetPX</span><span class="o">/</span><span class="n">sarracenia</span> <span class="n">sr3</span>
-<span class="n">cd</span> <span class="n">sr3</span>
-</pre></div>
-</div>
-<p>One can build a very limited sort of rpm package on an rpm based distro by
-The names of the package for file magic data (to determin file types) has different names on
-ubuntu vs. redhat.  The last three lines of <strong>dependencies</strong> in pyproject.toml are about
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-“python-magic”, but on redhat/fedora &gt;= 9, it needs to be “file-magic” instead:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># remove last three lines of dependencies in setup.py</span>
-
-<span class="o">*</span> <span class="n">on</span> <span class="n">redhat</span> <span class="o">&lt;=</span><span class="mi">8</span><span class="p">:</span> <span class="n">vi</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="p">;</span>  <span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_rpm</span>
-
-<span class="c1"># might work, but might need some removals also.</span>
-<span class="o">*</span> <span class="n">on</span> <span class="n">redhat</span> <span class="o">&gt;=</span><span class="mi">9</span><span class="p">:</span> <span class="n">vi</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span><span class="p">;</span>  <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span>
-</pre></div>
-</div>
-<p>“python-magic”, but on redhat, it needs to be “file-magic” instead:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vi</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
-</pre></div>
-</div>
-<p>using the normal (for Redhat) rpmbuild tool:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rpmbuild</span> <span class="o">--</span><span class="n">build</span><span class="o">-</span><span class="ow">in</span><span class="o">-</span><span class="n">place</span> <span class="o">-</span><span class="n">bb</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sr3</span><span class="o">.</span><span class="n">spec</span>
-</pre></div>
-</div>
-<p>When doing this on the redhat 8, edit the metpx-sr3.spec and potentially pyproject.toml
-to remove the other dependencies because there are no OS packages for: paramiko,
-watchdog, xattr, &amp; magic. Eventually, one will have removed enough that the rpm file
-will be built.</p>
-<p>One can check if the dependencies are there like so:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[ubuntu@fed39 sr3]$ rpm -qR /home/ubuntu/rpmbuild/RPMS/noarch/metpx-sr3-3.00.47-0.fc39.noarch.rpm
-
-/usr/bin/python3
-python(abi) = 3.12
-python3-appdirs
-python3-humanfriendly
-python3-humanize
-python3-jsonpickle
-python3-paramiko
-python3-psutil
-python3-xattr
-python3.12dist(appdirs)
-python3.12dist(humanfriendly)
-python3.12dist(humanize)
-python3.12dist(jsonpickle)
-python3.12dist(paramiko)
-python3.12dist(psutil) &gt;= 5.3
-python3.12dist(watchdog)
-python3.12dist(xattr)
-rpmlib(CompressedFileNames) &lt;= 3.0.4-1
-rpmlib(FileDigests) &lt;= 4.6.0-1
-rpmlib(PartialHardlinkSets) &lt;= 4.0.4-1
-rpmlib(PayloadFilesHavePrefix) &lt;= 4.0-1
-rpmlib(PayloadIsZstd) &lt;= 5.4.18-1
-
-[ubuntu@fed39 sr3]$
-</pre></div>
-</div>
-<p>You can see all of the prefixed python3 dependencies required, as well as the recommended binary accellerator packages
-are listed. Then if you install with dnf install, it will pull them all in.  Unfortunately, this method does not allow
-the specification of version of the python dependencies which are stripped out. on Fedora 34, this is not a problem,
-as all versions are new enough.  Such a package should install well.</p>
-<p>After installation, one can supplement, installing missing dependencies using pip (or pip3.)
-Can check how much sr3 is working using <em>sr3 features</em> and use pip to add more features
-after the RPM is installed.</p>
-<p>Certainly a bit clumsy, and not sure if it will work with older versions:
-<a class="reference external" href="https://github.com/MetPX/sarracenia/issues57">Help Wanted</a></p>
-</section>
-</section>
-</section>
-<section id="github">
-<h2>github<a class="headerlink" href="#github" title="Link to this heading"></a></h2>
-<p>Click on Releases, Edit the release:</p>
-<ul class="simple">
-<li><p>should we have release names?</p></li>
-<li><p>copy/paste of changes from CHANGES.rst</p></li>
-<li><p>copy/paste of Installation bit at the end from a previous release.</p></li>
-<li><p>build packages locally or download from other sources.
-drag and drop into the release.</p></li>
-</ul>
-<p>This will give us the ability to have old versions available.
-launchpad.net doesn’t seem to keep old versions around.</p>
-</section>
-<section id="development-environment">
-<h2>Development Environment<a class="headerlink" href="#development-environment" title="Link to this heading"></a></h2>
 <section id="local-python">
 <h3>Local Python<a class="headerlink" href="#local-python" title="Link to this heading"></a></h3>
 <p>Working with a non-packaged version:</p>

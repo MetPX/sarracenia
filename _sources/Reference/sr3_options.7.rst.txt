@@ -227,8 +227,8 @@ OPTION TYPES
 
 sr3 options come in several types:
 
-count      
-    integer count type. 
+count, size 
+    integer count type.  same as size described below.
 
 duration   
     a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
@@ -249,9 +249,10 @@ set
 
 size
     integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+    alone base 10: 1k=1000, with a 'b' suffix, base 2: 1kb=1024
 
 str
-    an string value
+    a string value
    
 
 OPTIONS
@@ -1961,6 +1962,14 @@ moving vip.
 When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
 Multiple vips form a list, where any individual address being active is enough.
+
+wololo 
+------
+
+A command line option to overwite an existing sr3 configuration when converting
+from v2.
+
+
 
 SEE ALSO
 ========

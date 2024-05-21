@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publier une Version de MetPX-Sarracenia &mdash; Sarracenia 3.00.54rc1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+        <script src="../../_static/documentation_options.js?v=99fb584f"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SR3_TITRE" href="mod%C3%A8le_de_page_man.html" />
+    <link rel="prev" title="Normes de documentation" href="Documentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Sarracenia
+          </a>
+              <div class="version">
+                3.00.54rc1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../How2Guides/index.html">HOWTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Explanation/index.html">Explanation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Reference/index.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Contribution/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api-documentation.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">En français</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../Reference/index.html">Référence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Explication/index.html">Explication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Tutoriel/index.html">Tutoriel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CommentFaire/index.html">Comment Faire</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Contribuer à Sarracenia</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="D%C3%A9veloppement.html">Guide du développeur MetPX-Sarracenia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Documentation.html">Normes de documentation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Publier une Version de MetPX-Sarracenia</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#processus-de-pre-publication">Processus de Pre-Publication</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#processus-de-publication-de-version-stable">Processus de Publication de Version Stable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#detailles">Detailles</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#launchpad-net">Launchpad.net</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#github">github</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ubuntu-18">ubuntu 18</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mod%C3%A8le_de_page_man.html">SR3_TITRE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="v03.html">Refactorisation de la version 3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Id%C3%A9eDeBase.html">Original (2015) Idée de base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Design.html">Design original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="%C3%89volution.html">Changements de conception depuis l’original (2015)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AMQPprimer.html">AMQP - Introduction à sarracénia</a></li>
+<li class="toctree-l3"><a class="reference internal" href="probl%C3%A8mes_mqtt.html">Notes de mise en œuvre MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deltas.html">Discussion sur la propagation de la modification de fichiers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="assemblage_on_part.html">Réassemblage de fichiers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sarracenia</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">S´abonner et répliquer</a> &raquo;</li>
+          <li><a href="index.html">Contribuer à Sarracenia</a> &raquo;</li>
+      <li>Publier une Version de MetPX-Sarracenia</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/fr/Contribution/Publication.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="publier-une-version-de-metpx-sarracenia">
+<h1>Publier une Version de MetPX-Sarracenia<a class="headerlink" href="#publier-une-version-de-metpx-sarracenia" title="Link to this heading"></a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">version<span class="colon">:</span></dt>
+<dd class="field-odd"><p>3.00.54rc1</p>
+</dd>
+<dt class="field-even">date<span class="colon">:</span></dt>
+<dd class="field-even"><p>May 21, 2024</p>
+</dd>
+</dl>
+<section id="processus-de-pre-publication">
+<h2>Processus de Pre-Publication<a class="headerlink" href="#processus-de-pre-publication" title="Link to this heading"></a></h2>
+<p>Pour publier une nouvelle version, on commence avec une <em>pre-release</em>, et, après une période
+de vérification, la publication d´une version stable. MetPX-Sarracenia est distribué de
+différentes manières, et chacune a son propre processus de construction.  Les versions
+packagées sont toujours préférables aux versions uniques, car elles sont reproductibles.</p>
+<p>Pour publier une pré-version, il faut :</p>
+<ul>
+<li><p>en commençant par la branche développement (pour sr3) ou v2_dev (pour v2.)</p></li>
+<li><p>exécuter le processus d’assurance qualité sur tous les systèmes d’exploitation à la recherche de régressions sur les anciens systèmes basés sur 3.6.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>github exécute des tests de flux pour Ubuntu 20.04 et 22.04, examinez ces résultats.</p></li>
+<li><p>github exécute des tests unitaires (ne fonctionne que sur les versions les plus récentes de Python.), examinez ces résultats.</p></li>
+<li><p>trouver le serveur Ubuntu 18.04. créez un package local, exécutez des tests de flux.</p></li>
+<li><p>trouver le serveur Redhat 8. package de construction : <em>python3 setup.py bdist_rpm</em>, exécutez des tests de flux</p></li>
+<li><p>recherchez le serveur Redhat 9, construisez le package : <em>python3 -m build –no-isolation</em>. exécuter des tests de flux</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>examinez Debian/changelog et mettez-le à jour en fonction de toutes les fusions (merge) vers la branche depuis la version précédente.</p></li>
+<li><p>Définissez la balise (tag) de pré-version.</p></li>
+<li><p>commettre ce qui précède.</p></li>
+<li><p>pypi.org</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>pour assurer la compatibilité avec python3.6, mettre à jour une branche python3.6 (pour redhat 8 et/ou ubuntu 18.)</p></li>
+<li><p>utilisez la branche python3.6 pour publier sur pypi (car la compatibilité ascendante fonctionne, mais pas vers le bas.)</p></li>
+<li><p>téléchargez la pré-version pour que l’installation avec pip réussisse.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>launchpad.org :</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>assurez-vous que les deux branches sont prêtes sur github.</dt><dd><ul>
+<li><p>Branche préliminaire prête.</p></li>
+<li><p>Branche pre-release_py36 prête.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>mettre à jour le référentiel git (importer maintenant) : <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk">https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk</a></dt><dd><ul>
+<li><p>faire : <strong>Import Now</strong></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>exécutez la recette pour l’ancien système d’exploitation (18.04, 20.04) <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release-old">https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release-old</a></dt><dd><ul>
+<li><p>faire : <strong>Request Build</strong> (sur Focal et Bionic)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>exécutez la recette pour le nouveau système d’exploitation (22.04, 24.04) <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release">https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release</a></dt><dd><ul>
+<li><p>faire : <strong>Request Build</strong> (au moins sur Jammy and Noble)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>créer des packages RedHat.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>trouver le serveur Redhat 8. package de construction : python3 setup.py bdist_rpm</p></li>
+<li><p>trouver le serveur Redhat 9, package de construction : python3 -m build –no-isolation</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>sur github : rédiger une version.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>créez des notes de version lorsque vous y êtes invité.</p></li>
+<li><p>copiez les instructions d’installation d’une version précédente (principalement pour Ubuntu.)</p></li>
+<li><p>attacher:
+- roue construite sur python3.6 sur Ubuntu 18 (téléchargée sur pypi.org)
+- Windows binaire.
+- des redhat 8 et 9 tours étiquetés comme tels.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>encourager les tests de pré-version, attendre un certain temps pour les bloqueurs, le cas échéant.</p></li>
+</ul>
+</section>
+<section id="processus-de-publication-de-version-stable">
+<h2>Processus de Publication de Version Stable<a class="headerlink" href="#processus-de-publication-de-version-stable" title="Link to this heading"></a></h2>
+<p>Une version stable est simplement une version préliminaire qui a été
+re-étiqueté comme stable après une certaine période d’attente pour les problèmes
+se lever. Puisque tous les tests ont été effectués pour la pré-version,
+la version stable ne nécessite aucun test explicite.</p>
+<ul>
+<li><p>fusionner de la pre-release à la version stable : :</p>
+<p>git checkout stable
+git merge pre-release
+# il y aura des conlits à résoudre pour les fichier: debian/changelog and sarracenia/_version.py
+# Pour le changelog:
+#   - joindre les changements pour tous les rcX dans une seule block pour la version stable.
+#   - assurer que la version en haut du block est juste et étiqueté: <em>unstable</em>
+#   - editer la signature pour avoir le bon responsable et date pour le relache.
+# pour sarracenia/_version.py
+#   - ajuster pour qu´il contienne la bonne version.
+git tag -a v3.xx.yy -m “v3.xx.yy”
+git push origin v3.xx.yy</p>
+</li>
+<li><p>fusionner de la pre-release_py36 à stable_36:</p>
+<p>git checkout stable_py36
+git merge pre-release_py36
+# les mêmes ajustements que pour la version stable.
+git tag -a o3.xx.yy -m “o3.xx.yy”
+git push origin v3.xx.yy</p>
+</li>
+<li><p>sur Launchpad.net</p>
+<ul class="simple">
+<li><p>Branche stable prête.</p></li>
+<li><p>Branche stable_py36 prête.</p></li>
+<li><p><a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk">https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk</a></p></li>
+<li><p>faire : <strong>Import Now</strong></p></li>
+<li><p><a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-old">https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-old</a></p></li>
+<li><p>faire : <strong>Request Build</strong> (sur Focal et Bionic)</p></li>
+<li><p><a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3">https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3</a></p></li>
+<li><p>faire : <strong>Request Build</strong> (au moins sur Jammy and Noble)</p></li>
+</ul>
+</li>
+<li><p>sur re
+* go on redhat 8, build rpm:</p>
+<p>git checkout stable_py36
+python3 setup.py bdist_rpm</p>
+</li>
+<li><p>go on redhat 9, build rpm:</p>
+<p>git checkout stable_py36
+rpmbuild –build-in-place -bb metpx-sr3.spec</p>
+</li>
+<li><p>Sur github.com, <em>Create a Release from a tag</em></p>
+<ul class="simple">
+<li><p>copie/coller procédure d´installation d´un vieux relâche.</p></li>
+<li><p>télécharger en pièce-jointe: un .whl</p></li>
+<li><p>télécharger en pièce-jointe:  redhat 8 rpm</p></li>
+<li><p>télécharger en pièce-jointe:  redhat 9 rpm</p></li>
+<li><p>télécharger en pièce-jointe:  windows.exe</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="detailles">
+<h2>Detailles<a class="headerlink" href="#detailles" title="Link to this heading"></a></h2>
+<section id="assurance-de-qualite">
+<h3>Assurance de Qualité<a class="headerlink" href="#assurance-de-qualite" title="Link to this heading"></a></h3>
+<p>Le processus d’assurance qualité (AQ) se déroule principalement dans la branche développement.
+avant d’accepter une contribution, et sauf exceptions connues,</p>
+<ul>
+<li><p>Les tests d’assurance qualité déclenchés automatiquement par les demandes de pull vers
+la branche de développement devraient tous réussir.</p>
+<blockquote>
+<div><p>(Toutes les actions github associées.)
+tests : static, no_mirror, flakey_broker, restart_server,dynamic_flow sont inclus dans “flow.yml”</p>
+</div></blockquote>
+</li>
+<li><dl class="simple">
+<dt>Créez une machine virtuelle Ubuntu 18.04 et exécutez les tests de flux pour vous assurer qu’elle fonctionne.</dt><dd><p>(méthode d’installation : clonage depuis le développement sur github.)
+tests : statique, no_mirror, flakey_broker, restart_server, Dynamic_flow</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Créez une machine virtuelle Redhat 8 et exécutez le test de flux pour vous assurer qu’il fonctionne.</dt><dd><p>(méthode d’installation : clonage depuis le développement sur github.)
+tests : statique, no_mirror, flakey_broker, restart_server, Dynamic_flow</p>
+</dd>
+</dl>
+</li>
+<li><p>Créez une machine virtuelle Redhat 9 et exécutez le test de flux pour vous assurer qu’il fonctionne.</p></li>
+<li><p>construire un exécutable Windows… tester ?</p></li>
+</ul>
+<p>Pour une discussion approfondie, voir : <a class="reference external" href="https://github.com/MetPX/sarracenia/issues/139">https://github.com/MetPX/sarracenia/issues/139</a></p>
+<p>Une fois les étapes ci-dessus terminées, le processus de pré-version peut continuer.</p>
+</section>
+<section id="schema-de-controle-de-version">
+<h3>Schéma de contrôle de version<a class="headerlink" href="#schema-de-controle-de-version" title="Link to this heading"></a></h3>
+<p>Chaque version sera versionnée en tant que <code class="docutils literal notranslate"><span class="pre">&lt;protocol</span> <span class="pre">version&gt;.&lt;YY&gt;.&lt;MM&gt;</span> <span class="pre">&lt;segment&gt;</span></code></p>
+<p>Où:</p>
+<ul class="simple">
+<li><p><strong>version du protocole</strong> est la version du message. Dans les messages de notification Sarra,
+ils sont tous préfixés par v02 (pour le moment).</p></li>
+<li><p><strong>YY</strong> est les deux derniers chiffres de l’année de la sortie initiale de la série.</p></li>
+<li><p><strong>MM</strong> est un numéro de mois à DEUX chiffres, c’est-à-dire pour avril: 04.</p></li>
+<li><p><strong>segment</strong> est ce qui serait utilisé dans une série.
+De pep0440:
+X.YaN   # Version Alpha
+X.YbN   # Version Beta
+X.YrcN  # Version Candidate
+X.Y     # Version Final
+X.ypN   #ack! Version corrigé.</p></li>
+</ul>
+<p>Actuellement, 3.00 est toujours stabilisé, de sorte que la convention année/mois n’est pas appliquée.
+Les versions sont actuellement 3.00.iibj où:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>ii – nombre incrémentiel de versions préliminaires de 3.00</p></li>
+<li><p>j – incrément bêta.</p></li>
+</ul>
+</div></blockquote>
+<p>À un moment donné, 3.00 sera complet et suffisamment solide pour que nous
+reprenions la convention année/mois, espérons-le 3.24.</p>
+<p>Les versions finales n’ont pas de suffixe et sont considérées comme stables.
+Stable devrait recevoir des corrections de bugs si nécessaire de temps en temps.</p>
+</section>
+<section id="definir-la-version">
+<h3>Définir la version<a class="headerlink" href="#definir-la-version" title="Link to this heading"></a></h3>
+<p>Ceci est fait pour <em>démarrer</em> le développement d’une version. D´habitude, on fais cela immédiatement
+après que la version précedente a été relachée.</p>
+<ul class="simple">
+<li><p>git checkout development</p></li>
+<li><p>Modifier <code class="docutils literal notranslate"><span class="pre">sarracenia/_version.py</span></code> manuellement et définissez le numéro de version.</p></li>
+<li><p>Modifier CHANGES.rst pour ajouter une section pour la version.</p></li>
+<li><p>Exécuter dch pour démarrer le journal des modifications de la version actuelle.</p>
+<ul>
+<li><p>assurer que UNRELEASED soit l’étiquette de status au lieu de <em>unstable</em> (peut-être automatiquement faite par dch)</p></li>
+</ul>
+</li>
+<li><p>git commit -a</p></li>
+<li><p>git push</p></li>
+</ul>
+</section>
+<section id="branches-git-pour-la-pre-publication">
+<h3>Branches Git pour la pré-publication<a class="headerlink" href="#branches-git-pour-la-pre-publication" title="Link to this heading"></a></h3>
+<p>Avant la publication, assurez-vous que tous les tests d’assurance qualité de la section ci-dessus ont été réussis.
+Lorsque le développement d’une version est terminé. Les événements suivants devraient se produire :</p>
+<p>Un tag doit être créé pour identifier la fin du cycle :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">development</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">v3</span><span class="mf">.16.01</span><span class="n">rc1</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;release 3.16.01rc1&quot;</span>
+<span class="n">git</span> <span class="n">push</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v3</span><span class="mf">.16.01</span><span class="n">rc1</span>
+</pre></div>
+</div>
+<p>Une fois la balise (tag) dans la branche de développement, promouvez-la en stable :</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">pre</span><span class="o">-</span><span class="n">release</span>
+<span class="n">git</span> <span class="n">merge</span> <span class="n">development</span>
+<span class="n">git</span> <span class="n">push</span>
+</pre></div>
+</div>
+<p>Une fois <em>stable</em> est mis à jour sur github, les images du docker seront automatiquement mises à jour, mais
+il faut ensuite mettre à jour les différentes méthodes de distribution : <a class="reference internal" href="#pypi">PyPI</a>, et <a class="reference internal" href="#launchpad">Launchpad</a></p>
+<p>Une fois la génération du package terminée, il faut « Définir la version »_
+en développement jusqu’au prochain incrément logique pour garantir qu’il n’y ait aucun développement ultérieur
+se produit et est identifié comme la version publiée.</p>
+</section>
+<section id="configurer-une-branche-compatible-python3-6">
+<h3>Configurer une branche compatible Python3.6<a class="headerlink" href="#configurer-une-branche-compatible-python3-6" title="Link to this heading"></a></h3>
+<p>Canonical, la société derrière Ubuntu, fournit Launchpad pour permettre à des tiers de créer des applications.
+packages pour leurs versions de système d’exploitation. Il s’avère que les versions les plus récentes du système d’exploitation ont des dépendances
+qui ne sont pas disponibles sur les anciens. La branche de développement est donc configurée pour s’appuyer sur des versions plus récentes.
+versions, mais une branche distincte doit être créée lors de la création de versions pour Ubuntu Bionic (18.04) et
+focal (20.04.) La même branche peut être utilisée pour construire sur Redhat 8 (une autre distribution qui utilise Python 3.6)</p>
+<p>Après Python 3.7.?, la méthode d’installation passe du setup.py obsolète à l’utilisation de pyproject.toml,
+et les outils python <em>hatch</em>. Avant cette version, Hatchling n’est pas pris en charge, donc setup.py doit être utilisé.
+Cependant, la présence de pyproject.toml trompe setup.py en lui faisant croire qu’il peut l’installer. À
+pour obtenir une installation correcte il faut :</p>
+<ul class="simple">
+<li><p>supprimez pyproject.toml (car setup.py est confus.)</p></li>
+<li><p>supprimer le dépôt “pybuild-plugin-prproject” de debuan</p></li>
+</ul>
+<p>en détail:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># on ubuntu 18.04 or redhat 8 (or some other release with python 3.6 )</span>
+
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">pre</span><span class="o">-</span><span class="n">release</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">D</span> <span class="n">pre</span><span class="o">-</span><span class="n">release_py36</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="n">stable_py36</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">stable_py36</span>
+<span class="n">vi</span> <span class="n">debian</span><span class="o">/</span><span class="n">control</span>
+<span class="c1"># remove pybuild-plugin-pyproject from the &quot;Build-Depends&quot;</span>
+<span class="n">git</span> <span class="n">rm</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
+<span class="c1"># remove the new-style installer to force use of setup.py</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;adjust for older os&quot;</span>
+</pre></div>
+</div>
+<p>Ca se peut qu´une <em>–force</em> soit requis à un moment donné. e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">stable_py36</span> <span class="o">--</span><span class="n">force</span>
+</pre></div>
+</div>
+<p>Une fois la branche mise à jour, procedez aux instructions de Launchpad.</p>
+</section>
+<section id="pypi">
+<h3>PyPi<a class="headerlink" href="#pypi" title="Link to this heading"></a></h3>
+<p>Parce ce que les pacquets Python sont compatibles vers le haut, mais pas vers le bas, il faut
+les créer sur Ubuntu 18.04 (la plus ancienne version de Python et du système d’exploitation
+en utilisation.) afin que les installations pip fonctionnent sur la plus grande varieté
+de systèmes.</p>
+<p>En supposant que les informations d’identification de téléchargement pypi sont en place, le téléchargement
+d’une nouvelle version était auparavant une ligne unique:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">bdist_wheel</span> <span class="n">upload</span>
+</pre></div>
+</div>
+<p>sur des systèmes plus anciens ou plus récents:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">build</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">isolation</span>
+<span class="n">twine</span> <span class="n">upload</span> <span class="n">dist</span><span class="o">/</span><span class="n">metpx_sarracenia</span><span class="o">-</span><span class="mf">2.22.6</span><span class="o">-</span><span class="n">py3</span><span class="o">-</span><span class="n">none</span><span class="o">-</span><span class="nb">any</span><span class="o">.</span><span class="n">whl</span>
+</pre></div>
+</div>
+<p>Notez que le fichier CHANGES.rst est en texte restructuré et est analysé par pypi.python.org lors du téléchargement.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lors du téléchargement de packages en version préliminaire (alpha, bêta ou RC), PYpi ne les sert pas aux utilisateurs par défaut.
+Pour une mise à niveau transparente, les premiers testeurs doivent fournir le <code class="docutils literal notranslate"><span class="pre">--pre</span></code> switch à pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">pre</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sarracenia</span>
+</pre></div>
+</div>
+<p>À l’occasion, vous souhaiterez peut-être installer une version spécifique:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">metpx</span><span class="o">-</span><span class="n">sarracenia</span><span class="o">==</span><span class="mf">2.16.03</span><span class="n">a9</span>
+</pre></div>
+</div>
+<p>L’utilisation de setup.py par ligne de commande est déconseillée.  Remplacé par build and twine.</p>
+</div>
+</section>
+</section>
+<section id="launchpad-net">
+<h2>Launchpad.net<a class="headerlink" href="#launchpad-net" title="Link to this heading"></a></h2>
+<p>Généralités sur l’utilisation de Launchpad.net (site pour génerer les paquets pour Ubuntu)  pour MetPX-Sarracenia.</p>
+<section id="depots-et-recettes">
+<h3>Dépôts et recettes<a class="headerlink" href="#depots-et-recettes" title="Link to this heading"></a></h3>
+<p>Pour les systèmes d’exploitation Ubuntu, le site launchpad.net est le meilleur moyen de fournir
+des pacquets entièrement intégrés (construit avec les niveaux de correctifs actuels de toutes
+les dépendances (composants logiciels sur lesquels Sarracenia s’appuie) pour fournir toutes les
+fonctionnalités.)) Idéalement, lors de utilisation d’un serveur, celui-ci devrait utiliser
+l’un des Dépôts, et installer les correctifs automatisés pour les mettre à niveau si nécessaire.</p>
+<p>Avant chaque build d’un package, il est important de mettre à jour le miroir du dépôt git sur le tableau de bord.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk">https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk</a></p></li>
+<li><p>do: <strong>Import Now</strong></p></li>
+</ul>
+<p>Attendez que ca soit fini (quelques minutes.)</p>
+<p>Dépôts :</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Quotidien <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily</a> (vivant sur dev… )</dt><dd><p>devrait, en principe, toujours être correct, mais des régressions se produisent et tous les
+tests ne sont pas effectués avant chaque contribution dans les branches de développement.
+Recettes:</p>
+<ul>
+<li><p>metpx-sr3-daily – la construction quotidienne automatisée des packages sr3 s’effectue à partir de la branche <em>development</em>.</p></li>
+<li><p>sarracenia-daily – la construction quotidienne automatisée des packages v2 s’effectue à partir de la branche <em>v2_dev</em></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Pré-Release <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release</a> (pour les fonctionnalités les plus récentes.)</dt><dd><p>de la branche <em>développement</em>. Les développeurs déclenchent manuellement les builds ici lorsque cela semble approprié (tests
+code prêt à être publié.)</p>
+<ul>
+<li><p>metpx-sr3-pre-release – créez à la demande des packages sr3 à partir de la branche de <em>pre_release</em>.</p></li>
+<li><p>metpx-sr3-pre-release-old – build à la demande des packages sr3 à partir de la branche <em>pre-release_py36</em>.</p></li>
+<li><p>metpx-sarracenia-pre-release – build à la demande des packages sr3 à partir de la branche <em>v2_dev</em>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Release <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx</a> (pour une stabilité maximale)</dt><dd><p>de la branche <em>v2_stable</em>. Après avoir testé sur des systèmes abonnés aux pré-versions, les développeurs
+fusionner de la branche v2_dev dans celle de v2_stable et déclencher manuellement une construction.</p>
+<ul>
+<li><p>metpx-sr3 – à la demande, créez des packages sr3 à partir de la branche <em>stable</em>.</p></li>
+<li><p>metpx-sr3-old – créez à la demande des packages sr3 à partir de la branche <em>stable_py36</em>.</p></li>
+<li><p>sarracenia-release – sur deman, construisez les packages v2 à partir de la branche <em>v2_stable</em>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="launchpad">
+<h3>Launchpad<a class="headerlink" href="#launchpad" title="Link to this heading"></a></h3>
+<section id="build-automatisee">
+<h4>Build Automatisée<a class="headerlink" href="#build-automatisee" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Assurez-vous que le miroir de code est mis à jour en vérifiant les <strong>Détails de l’importation</strong> en vérifiant
+<a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk">Cette page pour Sarracenia</a></p></li>
+<li><p>Si le code n’est pas à jour, faites <strong>Import Now</strong> , et attendez quelques minutes pendant qu’il est mis à jour.</p></li>
+<li><p>Une fois le référentiel à jour, procédez à la demande de build.</p></li>
+<li><p>Accédez à la recette <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-release">sarracenia release</a></p></li>
+<li><p>Accédez à la recette <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-release">sr3 release</a></p></li>
+<li><p>Cliquez sur le bouton <strong>Request Build(s)</strong> pour créer une nouvelle version.</p></li>
+<li><p>pour Sarrac, suivez la procédure <a class="reference external" href="https://github.com/MetPX/sarrac#release-process">here</a></p></li>
+<li><p>Les packages construits seront disponibles dans le
+<a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx">metpx ppa</a></p></li>
+</ul>
+</section>
+<section id="builds-quotidiennes">
+<h4>Builds quotidiennes<a class="headerlink" href="#builds-quotidiennes" title="Link to this heading"></a></h4>
+<p>Les builds quotidiennes sont configurées à l’aide de
+<a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/sarracenia-daily">cette recette Python</a>
+et <a class="reference external" href="https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sarrac-daily">cette recette pour C</a> et
+sont exécutés une fois par jour lorsque des modifications sont apportées au référentiel.These packages are stored in the
+Ces packages sont stockés dans le <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-daily">metpx-daily ppa</a>.
+On peut également <strong>Request Build(s)</strong> à la demande si vous le souhaitez.</p>
+</section>
+<section id="processus-manuel">
+<h4>Processus manuel<a class="headerlink" href="#processus-manuel" title="Link to this heading"></a></h4>
+<p>Le processus de publication manuelle des packages sur Launchpad ( <a class="reference external" href="https://launchpad.net/~ssc-hpc-chp-spc">https://launchpad.net/~ssc-hpc-chp-spc</a> )
+implique un ensemble d’étapes plus complexes, et donc le script pratique <code class="docutils literal notranslate"><span class="pre">publish-to-launchpad.sh</span></code> sera
+le moyen le plus simple de le faire. Actuellement, les seules versions prises en charge sont <strong>trusty</strong> et <strong>xenial</strong>.
+La commande utilisée est donc la suivante</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">publish</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">launchpad</span><span class="o">.</span><span class="n">sh</span> <span class="n">sarra</span><span class="o">-</span><span class="n">v2</span><span class="mf">.15.12</span><span class="n">a1</span> <span class="n">trusty</span> <span class="n">xenial</span>
+</pre></div>
+</div>
+<p>Toutefois, les étapes ci-dessous sont un résumé de ce que fait le script :</p>
+<ul>
+<li><p>pour chaque distribution (precise, trusty, etc) mettez à jour <code class="docutils literal notranslate"><span class="pre">debian/changelog</span></code> pour refléter la distribution</p></li>
+<li><p>Générez le package source en utilisant</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debuild</span> <span class="o">-</span><span class="n">S</span> <span class="o">-</span><span class="n">uc</span> <span class="o">-</span><span class="n">us</span>
+</pre></div>
+</div>
+</li>
+<li><p>signez les fichiers <code class="docutils literal notranslate"><span class="pre">.changes</span></code> et <code class="docutils literal notranslate"><span class="pre">.dsc</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">debsign</span> <span class="o">-</span><span class="n">k</span><span class="o">&lt;</span><span class="n">key</span> <span class="nb">id</span><span class="o">&gt;</span> <span class="o">&lt;.</span><span class="n">changes</span> <span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Télécharger vers Launchpad:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dput</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ssc</span><span class="o">-</span><span class="n">hpc</span><span class="o">-</span><span class="n">chp</span><span class="o">-</span><span class="n">spc</span><span class="o">/</span><span class="n">metpx</span><span class="o">-&lt;</span><span class="n">dist</span><span class="o">&gt;</span> <span class="o">&lt;.</span><span class="n">changes</span> <span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>Remarque :</strong> Les clés GPG associées au compte du tableau de bord doivent être configurées
+afin de faire les deux dernières étapes.</p>
+</section>
+<section id="retroportage-dune-dependance">
+<h4>Rétroportage d’une dépendance<a class="headerlink" href="#retroportage-dune-dependance" title="Link to this heading"></a></h4>
+<p>Exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">backportpackage</span> <span class="o">-</span><span class="n">k</span><span class="o">&lt;</span><span class="n">key</span> <span class="nb">id</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">s</span> <span class="n">bionic</span> <span class="o">-</span><span class="n">d</span> <span class="n">xenial</span> <span class="o">-</span><span class="n">u</span> <span class="n">ppa</span><span class="p">:</span><span class="n">ssc</span><span class="o">-</span><span class="n">hpc</span><span class="o">-</span><span class="n">chp</span><span class="o">-</span><span class="n">spc</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">metpx</span><span class="o">-</span><span class="n">daily</span> <span class="n">librabbitmq</span>
+</pre></div>
+</div>
+</section>
+<section id="ubuntu-18-04">
+<h4>Ubuntu 18.04<a class="headerlink" href="#ubuntu-18-04" title="Link to this heading"></a></h4>
+<p>Pour ubuntu 18.04 (bionique), il y a quelques problèmes. La recette s’appelle: metpx-sr3-daily-bionic, et il
+prend la source à partir d’une branche différente : <em>v03_launchpad</em>. Pour chaque version, cette branche
+doit être rebasée à partir de <em>development</em></p>
+<ul class="simple">
+<li><p>git checkout v03_launchpad</p></li>
+<li><p>git rebase -i development</p></li>
+<li><p>git push</p></li>
+<li><p>import source</p></li>
+<li><p>Request build from <em>metpx-sr3-daily-bionic</em> Recipe.</p></li>
+</ul>
+<p>En quoi cette branche <em>v03_launchpad</em> est-elle différente ? Elle:</p>
+<ul>
+<li><p>Supprime la dépendance sur python3-paho-mqtt car la version dans le <em>repository</em> d´ubuntu est trop ancienne.</p></li>
+<li><p>Suppression de la dépendance sur python3-dateparser, car ce paquet n’est pas disponible dans le <em>repository</em> d´ubuntu.</p></li>
+<li><p>remplacer la cible de test dans debian/rules, parce que tester sans les dépendances échoue</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">override_dh_auto_test</span><span class="p">:</span>
+   <span class="n">echo</span> <span class="s2">&quot;disable on 18.04... some deps must come from pip&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>The missing dependencies should be installed with pip3.</p>
+</section>
+<section id="creation-dun-programme-dinstallation-windows">
+<h4>Création d’un programme d’installation Windows<a class="headerlink" href="#creation-dun-programme-dinstallation-windows" title="Link to this heading"></a></h4>
+<p>On peut également construire un programme d’installation Windows avec cela
+<a class="reference external" href="https://github.com/MetPX/sarracenia/blob/stable/generate-win-installer.sh">script</a>.
+Il doit être exécuté à partir d’un système d’exploitation Linux (de préférence Ubuntu 18)
+dans le répertoire racine de git de Sarracenia.</p>
+<p>déterminer la version de python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fractal</span><span class="o">%</span> <span class="n">python</span> <span class="o">-</span><span class="n">V</span>
+<span class="n">Python</span> <span class="mf">3.10.12</span>
+<span class="n">fractal</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>C’est donc python 3.10. Une seule version mineure aura le package intégré nécessaire
+par pynsist pour construire l’exécutable. On valide chez:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">downloads</span><span class="o">/</span><span class="n">windows</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>afin to confirmer que la version avec un binaire <em>embedded</em> pour 3.10 et le 3.10.11
+Ensuite, à partir du shell, exécutez</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">nsis</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="n">pynsist</span> <span class="n">wheel</span>
+<span class="o">./</span><span class="n">generate</span><span class="o">-</span><span class="n">win</span><span class="o">-</span><span class="n">installer</span><span class="o">.</span><span class="n">sh</span> <span class="mf">3.10.11</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="n">log</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Le paquet final doit être placé dans le répertoire build/nsis.</p>
+</section>
+</section>
+</section>
+<section id="github">
+<h2>github<a class="headerlink" href="#github" title="Link to this heading"></a></h2>
+<p>Cliquez sur Releases, modifiez la release :</p>
+<ul class="simple">
+<li><p>Devrions-nous avoir des noms de sortie?</p></li>
+<li><p>copier/coller des modifications de CHANGES.rst</p></li>
+<li><p>copier/coller le bit d’installation à la fin d’une version précédente.</p></li>
+<li><p>Construire des paquets localement ou télécharger à partir d’autres sources.
+Glissez-déposez dans la version.</p></li>
+</ul>
+<p>Cela nous donnera la possibilité d’avoir d’anciennes versions disponibles.
+launchpad.net ne semble pas garder les anciennes versions.</p>
+</section>
+<section id="ubuntu-18">
+<h2>ubuntu 18<a class="headerlink" href="#ubuntu-18" title="Link to this heading"></a></h2>
+<p>Problème rencontre lors de géneration de pacque pour pypi.org sur ubuntu 18:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>buntu@canny-tick:~/sr3$ twine upload dist/metpx_sr3-3.0.53rc2-py3-none-any.whl
+/usr/lib/python3/dist-packages/requests/__init__.py:80: RequestsDependencyWarning: urllib3 (1.26.18) or chardet (3.0.4) doesn&#39;t match a supported version!
+  RequestsDependencyWarning)
+Uploading distributions to https://upload.pypi.org/legacy/
+Uploading metpx_sr3-3.0.53rc2-py3-none-any.whl
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 408k/408k [00:00&lt;00:00, 120kB/s]
+HTTPError: 400 Client Error: &#39;2.0&#39; is not a valid metadata version. See https://packaging.python.org/specifications/core-metadata for more information. for url: https://upload.pypi.org/legacy/
+ubuntu@canny-tick:~/sr3$
+</pre></div>
+</div>
+<p>On a générer via redhat8 à la place.  Il semble que la version de twine de ubuntu 18 ne soit plus
+en mésure de communiquer avec pypi.org. installation avec pip3 aura peut-être aussi regler le bobo.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Documentation.html" class="btn btn-neutral float-left" title="Normes de documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mod%C3%A8le_de_page_man.html" class="btn btn-neutral float-right" title="SR3_TITRE" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Shared Services Canada, Government of Canada, GPLv2.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

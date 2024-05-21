@@ -4,11 +4,11 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPTIONS SR3 &mdash; Sarracenia 3.00.53rc2 documentation</title>
+  <title>OPTIONS SR3 &mdash; Sarracenia 3.00.54rc1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   
-        <script src="../../_static/documentation_options.js?v=d2516663"></script>
+        <script src="../../_static/documentation_options.js?v=99fb584f"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -28,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> Sarracenia
           </a>
               <div class="version">
-                3.00.53rc2
+                3.00.54rc1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -131,7 +131,7 @@
 <dd class="field-even"><p>May 21, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
-<dd class="field-odd"><p>3.00.53rc2</p>
+<dd class="field-odd"><p>3.00.54rc1</p>
 </dd>
 <dt class="field-even">group de Manuel<span class="colon">:</span></dt>
 <dd class="field-even"><p>MetPX-Sarracenia</p>
@@ -334,7 +334,7 @@ répertoire ~/.cache/sr-hoho.</p>
 <h3>TYPES D’OPTIONS<a class="headerlink" href="#types-d-options" title="Link to this heading"></a></h3>
 <p>Les options de sr3 ont plusieurs types :</p>
 <dl class="simple">
-<dt>count</dt><dd><p>type de nombre entier.</p>
+<dt>count</dt><dd><p>type de nombre entier. Même format que <em>size</em> détaillé plus bas.</p>
 </dd>
 <dt>duration</dt><dd><p>un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
 modifié par un suffixe unitaire ( m-minute, h-heure, w-semaine ).</p>
@@ -348,7 +348,8 @@ Tous les options plugins de v2 sont déclarée du type list.</p>
 </dd>
 <dt>set</dt><dd><p>un assortissement de chaîne de caractères, chaque occurrence successive s’unionise au total.</p>
 </dd>
-<dt>size</dt><dd><p>taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 2).</p>
+<dt>size</dt><dd><p>taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 10).
+si on rajoute ´b’ … c´est base 2 :   1k=1000, 1kb=1024</p>
 </dd>
 <dt>str</dt><dd><p>une chaîne de caractères.</p>
 </dd>
@@ -1807,6 +1808,11 @@ vip qui change.</p>
 <p>Lorsqu’une <strong>instance sr3</strong> ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
 Si c’est le cas, elle consomme et traite un message d’annonce et revérifie pour le vip.
 lorsque plus qu’un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.</p>
+</section>
+<section id="wololo">
+<h4>wololo<a class="headerlink" href="#wololo" title="Link to this heading"></a></h4>
+<p>Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.</p>
 </section>
 </section>
 <section id="see-also">
