@@ -277,9 +277,8 @@ convert_to_v3 = {
     'on_stop':   { 'manual_conversion_required' : [ 'continue' ] },
     'on_start':  { 'manual_conversion_required' : [ 'continue' ] },
     'on_watch':  { 'manual_conversion_required' : [ 'continue' ] },
-
     'on_post': {
-        'post_log': ['logEvents', '+after_work']
+        'post_log': ['logEvents', '+after_work'],
 	    'post_total': ['continue'],
         'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
         'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
@@ -617,7 +616,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'watch', 'winnow'
     ]
 
