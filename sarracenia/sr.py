@@ -62,7 +62,7 @@ empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "messagesQ
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 'transferLast': 0,
         'connectPercent': 0, 'byteConnectPercent': 0
         }
 
@@ -986,7 +986,7 @@ class sr_GlobalState:
                             self.cumulative_stats['rxMessageQueued'] += m['messagesQueued']
     
                         m['latestTransfer'] = "n/a"
-                        if "transferLast" in m:
+                        if "transferLast" in m and m['transferLast'] > 0:
                             m['latestTransfer'] = f"{now - m['transferLast']:4.1f}s"
                         elif "messageLast" in m:
                             m['latestTransfer'] = f"{now - m['messageLast']:4.1f}s"
@@ -1097,6 +1097,16 @@ class sr_GlobalState:
                         flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
+                    elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].slowThreshold:
+                        flow_status = 'slow'
+                    elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].retryThreshold:
+                        flow_status = 'retry'
+                    elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].lagThreshold:
+                        flow_status = 'lag'
+                    elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].rejectThreshold:
+                        flow_status = 'reject'
+                    elif (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                        flow_status = 'idle'
                     else:
                         flow_status = 'running'
 
@@ -1268,7 +1278,7 @@ class sr_GlobalState:
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
-        self.status_active =  ['hung', 'running', 'partial', 'waitVip' ]
+        self.status_active =  ['hung', 'idle', 'lagging', 'retry', 'running', 'partial', 'slow', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -2290,7 +2300,7 @@ class sr_GlobalState:
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in [ 'hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))

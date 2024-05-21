@@ -92,12 +92,14 @@ default_options = {
     'dry_run': False,
     'filename': None,
     'flowMain': None,
+    'idleThreshold': 900,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
     'identity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
+    'lagThreshold': 30,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -111,10 +113,13 @@ default_options = {
     'post_format': 'v03',
     'realpathPost': False,
     'recursive' : True,
+    'rejectThreshold': 80,
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
+    'retryThreshold': 1000,
     'sanity_log_dead': 9999,
+    'slowThreshold': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
@@ -128,7 +133,7 @@ default_options = {
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
     'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin'
+    'messageRateMin', 'rejectThreshold', 'retryThreshold', 'slowThreshold'
 ]
 
 
@@ -146,7 +151,7 @@ float_options = [ ]
 
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
-    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'idleThreshold', 'lagThreshold', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
