@@ -621,6 +621,9 @@ class sr_GlobalState:
         """ remove state pid files for process which are not running
         """
 
+        if not self.options.dry_run:
+            return
+
         if not os.path.isdir(dir):
             return
         os.chdir(dir)
@@ -1119,6 +1122,11 @@ class sr_GlobalState:
             self.cumulative_stats['lagMean'] = self.cumulative_stats['rxLagTime'] / self.cumulative_stats['rxLagCount'] 
         else:
             self.cumulative_stats['lagMean'] = 0
+
+        self.strays = {}
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                self.strays[pid] = ' '.join(self.procs[pid]['cmdline'])
 
     def _match_patterns(self, patterns=None):
         """
@@ -2115,8 +2123,7 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
-            if not self.options.dry_run:
-                self._clean_missing_proc_state()
+            self._clean_missing_proc_state()
             self._read_states()
             self._resolve()
             filtered_missing = []
@@ -2128,17 +2135,18 @@ class sr_GlobalState:
             print('starting them up...')
             if not self.options.dry_run:
                 self._start_missing()
-
-            print('killing strays...')
-            for pid in self.procs:
-                if not self.procs[pid]['claimed']:
-                    print(
-                        "pid: %s-%s does not match any configured instance, sending it TERM"
-                        % (pid, self.procs[pid]['cmdline'][0:5]))
-                    if not self.options.dry_run:
-                        signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
+
+        if len(self.strays) > 0:
+            print('killing strays...')
+            for pid in self.strays:
+                print( f"pid: {pid} \"{self.strays[pid]}\"  does not match any configured instance, sending it TERM" )
+                if not self.options.dry_run:
+                    signal_pid(pid, signal.SIGTERM)
+        else:
+            print('no stray processes found')
+
         for l in sarracenia.features.keys():
             if not sarracenia.features[l]['present']:
                 print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
@@ -2221,10 +2229,16 @@ class sr_GlobalState:
             print('no procs running...already stopped')
             return
 
+
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
         fg_instances = set()
         pids_signalled=set([])
+
+        for pid in self.strays:
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            signal_pid(pid, signal.SIGTERM)
+            pids_signalled |= set([pid])
 
         for f in self.filtered_configurations:
             (c, cfg) = f.split(os.sep)
@@ -2266,6 +2280,7 @@ class sr_GlobalState:
                         % (pid, self.procs[pid]['cmdline'][0:5]))
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
+
             ttw = 1 << attempts
             print(
                 'Waiting %d sec. to check if %d processes stopped (try: %d)' %
@@ -2287,7 +2302,7 @@ class sr_GlobalState:
                     continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
-            if running_pids == 0:
+            if (running_pids == 0) and len(self.strays)==0:
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2312,13 +2327,10 @@ class sr_GlobalState:
                         pids_signalled |= set([p])
                         print('.', end='')
 
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                print(
-                    "pid: %s-%s does not match any configured instance, killing"
-                    % (pid, self.procs[pid]['cmdline']))
-                signal_pid(pid, signal.SIGKILL)
-                pids_signalled |= set([pid])
+        for pid in self.strays:
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            signal_pid(pid, signal.SIGKILL)
+            pids_signalled |= set([pid])
 
         print('Done')
         print('Waiting again...')
@@ -2580,12 +2592,10 @@ class sr_GlobalState:
 
                 print(line)
         stray = 0
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                stray += 1
-                bad = 1
-                print("pid: %s-%s is not a configured instance" %
-                      (pid, self.procs[pid]['cmdline']))
+        for pid in self.strays:
+            stray += 1
+            bad = 1
+            print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
         print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
             (configs_running, len(self.procs), len(self.missing), stray ) )
