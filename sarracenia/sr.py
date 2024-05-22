@@ -1770,6 +1770,10 @@ class sr_GlobalState:
                 break
             (c, cfg) = f.split(os.sep)
 
+            if self.configs[c][cfg]['status'] in self.status_active:
+                logger.warning( f"Flows must be stopped. cannot cleanup {self.configs[c][cfg]['status']} configuration, skipping {c}/{cfg}")
+                continue
+
             o = self.configs[c][cfg]['options']
 
             if hasattr(o, 'resolved_qname'):
@@ -1828,6 +1832,10 @@ class sr_GlobalState:
 
             (c, cfg) = f.split(os.sep)
 
+            if self.configs[c][cfg]['status'] in self.status_active:
+                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                continue
+
             if not 'options' in self.configs[c][cfg]:
                 continue
 
@@ -1845,6 +1853,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
+
+            if self.configs[c][cfg]['status'] in self.status_active:
+                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                continue
 
             if self.configs[c][cfg]['options'].statehost:
                 cache_dir = self.user_cache_dir + os.sep + self.hostname + os.sep + f.replace('/', os.sep)
