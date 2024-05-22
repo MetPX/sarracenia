@@ -443,6 +443,8 @@ class Am(FlowCB):
                     ##                                       Random Integer
 
                     binary = 0
+                    isProblem = False
+
                     missing_ahl = self.o.MissingAMHeaders
 
                     # Fill in temporary filename for the timebeing
@@ -458,7 +460,7 @@ class Am(FlowCB):
                     
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
-                        station = lines[1].split()[0].decode(charset)
+                        station = self.bulletinHandler.getStation(bulletin.decode(charset))
                         new_bulletin, isProblem = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
