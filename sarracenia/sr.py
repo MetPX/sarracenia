@@ -2290,7 +2290,7 @@ class sr_GlobalState:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
                     (now - self.procs[pid]['create_time']) > 50):
-                    print( f"pid: {pid} \{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
+                    print( f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
@@ -2375,11 +2375,11 @@ class sr_GlobalState:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
                 if p in pids_signalled:
                     if not self._pid_running_foreground(p): 
-                         print( f"\t{p}: \"{self.procs[p]['cmdline']}\"" )
+                         print( f"\t{p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                     elif self.options.dangerWillRobinson: 
-                         print( f"\tforeground {p}: \"{self.procs[p]['cmdline']}\"" )
+                         print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
                 else:
-                    print( f"\tdid not even try to kill: {p}: \"{self.procs[p]['cmdline']}\"" )
+                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
             return 1
 
     def dump(self): 
@@ -2885,8 +2885,7 @@ class sr_GlobalState:
             if not self.procs[pid]['claimed']:
                 stray += 1
                 bad = 1
-                print("pid: %s-%s is not a configured instance" %
-                      (pid, self.procs[pid]['cmdline']))
+                print( f"pid: {pid}-\"{' '.join(self.procs[pid]['cmdline'])}\" is not a configured instance" )
 
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing), stray))
