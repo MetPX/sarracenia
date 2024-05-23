@@ -548,6 +548,7 @@ will be:
 * lag:   all processes running, but messages being processed are too old ( lagThreshold )
 * part:  some processes are running, others are missing.
 * reje:  all processes running, but too high percent of messages being rejected (rejectThreshold )
+* rtry:  all processes running, but too large number of transfers failed and retrying (retryThreshold )
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
 * slow:  transfering less than minimum bytes/second ( slowThreshold )
 * stop:  no processes are running. 
