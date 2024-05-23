@@ -3050,6 +3050,7 @@ def main():
         gs.convert()
 
     if action == 'remove':
+        gs.cleanup()
         gs.remove()
 
     elif action == 'restart':
