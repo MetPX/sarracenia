@@ -621,7 +621,7 @@ class sr_GlobalState:
         """ remove state pid files for process which are not running
         """
 
-        if not self.options.dry_run:
+        if self.options.dry_run:
             return
 
         if not os.path.isdir(dir):
