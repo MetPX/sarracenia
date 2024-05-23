@@ -826,6 +826,7 @@ class sr_GlobalState:
                             self.brokers[host]['exchanges'][x].append(
                                 'declared')
 
+        # find exchanges and queues
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -1105,7 +1106,7 @@ class sr_GlobalState:
                     elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].retryThreshold:
                         flow_status = 'retry'
                     elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].lagThreshold:
-                        flow_status = 'lag'
+                        flow_status = 'lagging'
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].rejectThreshold:
                         flow_status = 'reject'
                     elif (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].idleThreshold:
@@ -1287,7 +1288,8 @@ class sr_GlobalState:
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
-        self.status_active =  ['hung', 'idle', 'lagging', 'retry', 'running', 'partial', 'slow', 'waitVip' ]
+        # active means >= 1 process exists on the node.
+        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'retry', 'running', 'slow', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -2258,11 +2260,12 @@ class sr_GlobalState:
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
+                logger.warning( f"skipping foreground flow: {c}/{cfg}")
                 continue
 
             if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
-                    # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
+                    #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     p=self.states[c][cfg]['instance_pids'][i]
                     if p in self.procs:
@@ -2287,16 +2290,12 @@ class sr_GlobalState:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
                     (now - self.procs[pid]['create_time']) > 50):
-                    print(
-                        "pid: %s-%s does not match any configured instance, sending it TERM"
-                        % (pid, self.procs[pid]['cmdline'][0:5]))
+                    print( f"pid: {pid} \{self.procs[pid]['cmdline']}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
             ttw = 1 << attempts
-            print(
-                'Waiting %d sec. to check if %d processes stopped (try: %d)' %
-                (ttw, len(pids_signalled), attempts))
+            print( f"Waiting {ttw} sec. to check if {len(pids_signalled)} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2374,8 +2373,13 @@ class sr_GlobalState:
             print('not responding to SIGKILL:')
             for p in self.procs:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
-                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)) and p in pids_signalled: 
-                    print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
+                if p in pids_signalled:
+                    if not self._pid_running_foreground(p): 
+                         print( f"\t{p}: \"{self.procs[p]['cmdline']}\"" )
+                    elif self.options.dangerWillRobinson: 
+                         print( f"\tforeground {p}: \"{self.procs[p]['cmdline']}\"" )
+                else:
+                    print( f"\tdid not even try to kill: {p}: \"{self.procs[p]['cmdline']}\"" )
             return 1
 
     def dump(self): 
