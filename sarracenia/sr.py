@@ -1289,7 +1289,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
