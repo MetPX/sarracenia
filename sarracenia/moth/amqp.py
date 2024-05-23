@@ -224,7 +224,6 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
-
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
@@ -690,9 +689,12 @@ class AMQP(Moth):
                     if ( 'exchangeSplit' in self.o) and self.o['exchangeSplit'] > 1:
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                         #        if that isn't true... then there is something wrong... should we check ?
-                        idx = sum(
-                            bytearray(body['identity']['value'],
+                        if 'exchangeSplitOverride' in message:
+                            idx = int(message['exchangeSplitOverride'])%len(self.o['exchange'])
+                        else:
+                            idx = sum( bytearray(body['identity']['value'],
                                       'ascii')) % len(self.o['exchange'])
+                        
                         exchange = self.o['exchange'][idx]
                     else:
                         logger.error(

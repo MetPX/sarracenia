@@ -31,14 +31,14 @@ Configurable Options:
 How to set up your download config:
 --------------------------------
  
-    Add ``callback accept.auth_NASA_Earthdata``, in your subscribe, sarra or other download config.  
+    Add ``callback authenticate.nasa_earthdata``, in your subscribe, sarra or other download config.  
 
     Add ``https://username:password@urs.earthdata.nasa.gov/`` to your ``credentials.conf`` file.  
     
     Optional: set ``acceptSizeWrong True`` in the sarra/subscribe config to suppress the WARNING message
      about a file being downloaded with no length given.
 
-    For examples, see https://github.com/MetPX/sarracenia/tree/main/sarracenia/examples/subscribe files
+    For examples, see https://github.com/MetPX/sarracenia/tree/stable/sarracenia/examples/subscribe files
     named ``*nasa_earthdata*.conf``. 
 
 Change log:
@@ -46,6 +46,7 @@ Change log:
 
     - 2023-10-10: first attempt at this plugin. The old v2 code re-implemented downloading, using a session with
       stored cookies. This should be better, because it uses the native sr3 download code.
+    - 2024-05-09: refactoring, to be able to be easily called from poll plugins, and elsewhere.
 """
 
 import sarracenia
@@ -55,16 +56,16 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
+class Nasa_earthdata(sarracenia.flowcb.FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
         
         # Allow setting a logLevel *only* for this plugin in the config file:
-        # set accept.auth_NASA_Earthdata.logLevel debug
+        # set authenticate.nasa_earthdata.logLevel debug
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
 
-        logger.debug("plugin: Download_NASA_Earthdata __init__")
+        logger.debug("plugin: NASA_Earthdata __init__")
 
         self.o.add_option('earthdataUrl', kind='str', default_value='https://urs.earthdata.nasa.gov')
 
@@ -82,43 +83,47 @@ class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
             Then adds the bearer token to Sarracenia's credentials DB for the message's baseUrl. This will allow
             the file to be downloaded from msg['baseUrl']+msg['relPath'] using the bearer token.
         """
+        for msg in worklist.incoming:
+            self.add_token_for_url(msg['baseUrl'])
+
+    def add_token_for_url(self, url):
+        """ For the given URL, add the token to the in memory credentials database.
+        """
 
         # It's not clear what time the token expires on the expiry date. If today = expiry date, then try to get a
         # token every time this runs. If it's not expired yet, we'll get the same token from the API and can try 
         # to check again on the next run. If it is expired, we should get a brand new token.
         today = datetime.datetime.utcnow().strftime("%m/%d/%Y")
         if self._token_expires and today == self._token_expires:
-            logger.info("the token ending with ...{self._token[-5:]} expires today ({self._token_expires})")
+            logger.info(f"the token ending with ...{self._token[-5:]} expires today ({self._token_expires})")
             self._token = None
             self._token_expires = None
+        else:
+            logger.debug(f"token is not expired. today = {today}, token expires on {self._token_expires}")
 
         # Get a token from the NASA API, if there isn't one already
         if not self._token:
             # Try to get a new token
-            if not self.get_earthdata_token():
-                logger.error(f"Failed to retrieve Bearer token from {self.o.earthdataUrl}. " + 
-                             f"Can't download {msg['baseUrl']}{msg['relPath']}")
-
-        for msg in worklist.incoming:
-            
-            # If the credential already exists and the bearer_token matches, don't need to do anything
-            ok, details = self.o.credentials.get(msg['baseUrl'])
+            if not self.get_bearer_token():
+                logger.error(f"Failed to retrieve bearer token from {self.o.earthdataUrl}")
+        
+        # If the credential already exists and the bearer_token matches, don't need to do anything
+        ok, details = self.o.credentials.get(url)
+        token_already_in_creds = False
+        try: 
+            token_already_in_creds = (ok and details.bearer_token == self._token)
+            if token_already_in_creds:
+                logger.debug(f"Token ...{self._token[-5:]} for {url} already in credentials database")
+        except:
             token_already_in_creds = False
-            try: 
-                token_already_in_creds = (ok and details.bearer_token == self._token)
-                if token_already_in_creds:
-                    logger.debug(f"Token for {msg['baseUrl']} already in credentials database")
-            except:
-                token_already_in_creds = False
 
-            if not token_already_in_creds:
-                logger.info(f"Token for {msg['baseUrl']} not in credentials database. Adding it!")
-                # Add the new bearer token to the internal credentials db. If the credential is already in the db, it will
-                # be replaced which is desirable.
-                cred = sarracenia.credentials.Credential(urlstr=msg['baseUrl'])
-                cred.bearer_token = self._token
-                self.o.credentials.add(msg['baseUrl'], details=cred)
-
+        if not token_already_in_creds:
+            logger.info(f"Token for {url} not in credentials database. Adding it!")
+            # Add the new bearer token to the internal credentials db. If the credential is already in the db, it will
+            # be replaced which is desirable.
+            cred = sarracenia.credentials.Credential(urlstr=url)
+            cred.bearer_token = self._token
+            self.o.credentials.add(url, details=cred)
 
     def create_earthdata_token(self, auth: requests.auth.HTTPBasicAuth) -> bool:
         """ Create a new Earthdata token.
@@ -138,9 +143,9 @@ class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
             # logger.debug(f"Here's the response: {resp_j}")
 
             self._token = resp_j['access_token']
-            self._token_expiry = resp_j['expiration_date']
+            self._token_expires = resp_j['expiration_date']
             logger.info(f"Successfully created new token! " + 
-                        f"Token ends with ...{self._token[-5:]} and expires on {self._token_expiry}")
+                        f"Token ends with ...{self._token[-5:]} and expires on {self._token_expires}")
             return True
             
         except Exception as e:
@@ -148,7 +153,7 @@ class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
             logger.debug("details:", exc_info=True)
             return False
 
-    def get_earthdata_token(self) -> bool:
+    def get_bearer_token(self) -> bool:
         """ Try to retrieve a token from the Earthdata account. If there is no token, it will create a new one.
         https://urs.earthdata.nasa.gov/documentation/for_users/user_token
         """
@@ -173,8 +178,9 @@ class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
             # Try to get an existing token
             resp = requests.get(self.o.earthdataUrl + "/api/users/tokens", auth=auth)
             if resp.status_code != 200:
-                logger.error(f"Failed to login to NASA Earthdata. Code: {resp.status_code} Info: {resp.text}")
-                return False
+                logger.error(f"Failed to login to NASA Earthdata ({self.o.earthdataUrl})." + 
+                             f" Code: {resp.status_code} Info: {resp.text} Username: {username}")
+                return False 
             
             # If we got 200, we either have an empty response (user has 0 tokens), or we have a token
             resp_j = resp.json()
@@ -182,9 +188,9 @@ class Auth_nasa_earthdata(sarracenia.flowcb.FlowCB):
 
             if len(resp_j) >= 1: 
                 self._token = resp_j[0]['access_token']
-                self._token_expiry = resp_j[0]['expiration_date']
+                self._token_expires = resp_j[0]['expiration_date']
                 logger.info(f"There is/are {len(resp_j)} token(s) in {username}'s Earthdata account. " + 
-                            f"Using the token that ends with ...{self._token[-5:]} and expires on {self._token_expiry}")
+                            f"Using the token that ends with ...{self._token[-5:]} and expires on {self._token_expires}")
                 return True
             # Valid response, but no tokens in the account. Need to create one.
             else:

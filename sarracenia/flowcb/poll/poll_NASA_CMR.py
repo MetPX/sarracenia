@@ -350,8 +350,12 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                 if data_url:
                     # The message is created using the post_baseUrl and relative path
                     url = urlparse(data_url)
-                    self.o.post_baseUrl = url.scheme + "://" + url.netloc + "/"
+                    baseUrl = url.scheme + "://" + url.netloc + "/"
+                    self.o.post_baseUrl = baseUrl
                     m = sarracenia.Message.fromFileInfo(url.path, self.o)
+                    # When Sarracenia runs updatePaths again later, from sarracenia.Flow, self.o.post_baseUrl will be
+                    # different, so set msg['post_baseUrl'] here to override whatever setting it has at that point.
+                    m['post_baseUrl'] = baseUrl
                     if m:
                         if sumstr:
                             logger.info(f"md5sum is available for {data_url}. Changing identity from {m['identity']} to {sumstr}")

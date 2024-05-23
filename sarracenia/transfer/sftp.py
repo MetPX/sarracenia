@@ -79,9 +79,10 @@ class Sftp(Transfer):
 
     # cd
     def cd(self, path):
-        logger.debug("sr_sftp cd %s" % path)
         alarm_set(self.o.timeout)
+        logger.debug("first cd to %s" % self.originalDir)
         self.sftp.chdir(self.originalDir)
+        logger.debug("then cd to %s" % path)
         self.sftp.chdir(path)
         self.pwd = path
         alarm_cancel()

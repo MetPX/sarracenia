@@ -43,6 +43,7 @@ import sys
 import time
 import types
 import urllib
+import urllib.parse
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -316,7 +317,7 @@ def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
     """
-    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s") 
+    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
 
 def durationToSeconds(str_value, default=None) -> float:
     """
@@ -768,11 +769,23 @@ class Message(dict):
         ])
         if new_dir:
             msg['new_dir'] = new_dir
+        elif 'new_dir' in msg:
+            new_dir = msg['new_dir']
+        else:
+            new_dir = ''
 
         if new_file or new_file == '':
             msg['new_file'] = new_file
-
-        relPath = new_dir + '/' + new_file
+        elif 'new_file' in msg:
+            new_file = msg['new_file']
+        elif 'new_relPath' in msg:
+            new_file = os.path.basename(msg['rel_relPath'])
+        elif 'relPath' in msg:
+            new_file = os.path.basename(msg['relPath'])
+        else:
+            new_file = 'ErrorInSarraceniaMessageUpdatePaths.txt'
+    
+        newFullPath = new_dir + '/' + new_file
         
         # post_baseUrl option set in msg overrides other possible options
         if 'post_baseUrl' in msg:
@@ -801,23 +814,23 @@ class Message(dict):
             pbd_str = options.variableExpansion(options.post_baseDir, msg)
             parsed_baseUrl = sarracenia.baseUrlParse(baseUrl_str)
 
-            if relPath.startswith(pbd_str):
-                relPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
+            if newFullPath.startswith(pbd_str):
+                newFullPath = new_dir.replace(pbd_str, '', 1) + '/' + new_file
 
-            if (len(parsed_baseUrl.path) > 1) and relPath.startswith(
+            if (len(parsed_baseUrl.path) > 1) and newFullPath.startswith(
                     parsed_baseUrl.path):
-                relPath = relPath.replace(parsed_baseUrl.path, '', 1)
+                newFullPath = newFullPath.replace(parsed_baseUrl.path, '', 1)
 
         if ('new_dir' not in msg) and options.post_baseDir:
             msg['new_dir'] = options.post_baseDir
             
         msg['new_baseUrl'] = baseUrl_str
 
-        if len(relPath) > 0 and relPath[0] == '/':
-            relPath = relPath[1:]
+        if len(newFullPath) > 0 and newFullPath[0] == '/':
+            newFullPath = newFullPath[1:]
 
-        msg['new_relPath'] = relPath
-        msg['new_subtopic'] = relPath.split('/')[0:-1]
+        msg['new_relPath'] = newFullPath
+        msg['new_subtopic'] = newFullPath.split('/')[0:-1]
 
         for i in ['relPath', 'subtopic', 'baseUrl']:
             if not i in msg:
@@ -853,7 +866,7 @@ class Message(dict):
 
         return res
 
-    def getContent(msg):
+    def getContent(msg,options=None):
         """
            Retrieve the data referred to by a message.  The data may be embedded
            in the messate, or this routine may resolve a link to an external server 
@@ -864,6 +877,10 @@ class Message(dict):
            large files may be very inefficient. Untested in that use-case.
 
            Return value is the data.
+
+           often on server where one is publishing data, the file is available as
+           a local file, and one can avoid the network usage by using a options.baseDir setting.
+           this behaviour can be disabled by not providing the options or not setting baseDir.
         """
 
         # inlined/embedded case.
@@ -872,12 +889,28 @@ class Message(dict):
                 return b64decode(msg['content']['value'])
             else:
                 return msg['content']['value'].encode('utf-8')
+
+        path=''
+        if msg['baseUrl'].startswith('file:'):
+            pu = urllib.parse.urlparse(msg['baseUrl'])
+            path=pu.path + msg['relPath']
+            logger.info( f"path: {path}")
+        elif options and hasattr(options,'baseDir') and options.baseDir:
+            # local file shortcut
+            path=options.baseDir + os.sep + msg['relPath']
+        
+        if os.path.exists(path):
+            logger.info( f"reading local file path: {path} exists?: {os.path.exists(path)}" )
+            with open(path,'rb') as f:
+                return f.read()
+
         # case requiring resolution.
         if 'retrievePath' in msg:
             retUrl = msg['baseUrl'] + '/' + msg['retrievePath']
         else:
             retUrl = msg['baseUrl'] + '/' + msg['relPath']
 
+        logger.info( f"retrieving from: {retUrl}" )
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 

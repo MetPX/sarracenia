@@ -252,11 +252,7 @@ class sr_GlobalState:
             del p['memory_full_info'] 
             del p['cpu_times']
             self.procs[p['pid']] = p
-            if p['name'][3:8] == 'audit':
-                self.procs[p['pid']]['claimed'] = True
-                self.auditors += 1
-            else:
-                self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
+            self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
                     any( item in [ 'declare', 'edit', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
 
     def read_proc_file(self, File="procs.json"):
@@ -264,7 +260,6 @@ class sr_GlobalState:
            read process table from a save file, for reproducible testing.
         """
         self.procs = {}
-        self.auditors = 0
         print('getting procs from %s: ' % File, end='', flush=True)
         pcount = 0
         with open(File, 'r') as f:
@@ -282,7 +277,6 @@ class sr_GlobalState:
         self.me = getpass.getuser()
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\' + self.me
-        self.auditors = 0
         if not features['process']['present']:
             return
         for proc in psutil.process_iter():
@@ -654,6 +648,7 @@ class sr_GlobalState:
                 os.chdir('..')
 
     def _clean_missing_proc_state(self):
+
         self._clean_missing_proc_state_dir(self.user_cache_dir)
         self._clean_missing_proc_state_dir(self.user_cache_dir + os.sep +
                                            self.hostdir)
@@ -1046,14 +1041,15 @@ class sr_GlobalState:
             self.v2_config = patterns
             return
 
-        candidates = ['audit']
+        candidates=[]
         for c in self.components:
             if (c not in self.configs):
                 continue
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
-
+    
+        self.all_configs = candidates
         logger.debug( f"candidates: {candidates}" )
         new_patterns=[]
         for p in patterns:
@@ -1106,7 +1102,6 @@ class sr_GlobalState:
                     patterns = patterns[1:]
                 if self.leftovers[0] == 'examples':
                     for c in self.components:
-                        if c == 'audit': continue
                         d = self.package_lib_dir + os.sep + 'examples' + os.sep + c
                         if not os.path.exists(d): continue
                         l = os.listdir(d)
@@ -1325,8 +1320,34 @@ class sr_GlobalState:
                     f.write('')
 
     def declare(self):
+        '''
+        creates users, exchanges, and queues in that order - each one is needed to create
+        the subsequent one
 
-        if self.users:
+        '''
+
+        filtered_users = []
+
+        if len(self.filtered_configurations) < len(self.all_configs):
+
+            for config in self.filtered_configurations:
+
+                (c, cfg) = config.split(os.sep)
+
+                if not 'options' in self.configs[c][cfg]:
+                    continue
+
+                o = self.configs[c][cfg]['options']
+
+                if hasattr(o, "broker") and o.broker:
+                    filtered_users.append(f"{o.broker.url.username}@{o.broker.url.hostname}")
+                if hasattr(o, "post_broker") and o.post_broker:
+                    filtered_users.append(f"{o.post_broker.url.username}@{o.post_broker.url.hostname}")
+                if hasattr(o, "report_broker") and o.report_broker:
+                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        # add users (?)
+        if self.users: # check if users exist in the configuration (?)
             for h in self.brokers:
                 if self.please_stop:
                     break
@@ -1353,6 +1374,13 @@ class sr_GlobalState:
                                 #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
                                 #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username],
                                 #     u_url.netloc, u_url.hostname ))
+                                
+                                user = f"{u_url.username}@{h}"
+
+                                if filtered_users and user not in filtered_users:
+                                    logger.debug(f"not adding {user}")
+                                    continue
+
                                 sarracenia.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
@@ -1360,7 +1388,7 @@ class sr_GlobalState:
 
         # declare admin exchanges.
         if hasattr(self,'default_cfg') and self.default_cfg.admin:
-            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            logger.info( f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
                     {
@@ -1371,12 +1399,11 @@ class sr_GlobalState:
                     })
                 xdc.putSetup()
                 xdc.close()
-               
+                
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1398,7 +1425,6 @@ class sr_GlobalState:
 
         # then declare and bind queues....
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1419,7 +1445,6 @@ class sr_GlobalState:
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1446,7 +1471,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1472,7 +1496,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1514,7 +1537,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
@@ -1531,7 +1553,6 @@ class sr_GlobalState:
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1580,7 +1601,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             component_path = self._find_component_path(c)
@@ -1589,7 +1609,7 @@ class sr_GlobalState:
             if component_path == '':
                 continue
 
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['stopped','missing']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -1644,7 +1664,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             o = self.configs[c][cfg]['options']
@@ -1700,7 +1719,6 @@ class sr_GlobalState:
 
         # run on_cleanup plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1867,7 +1885,6 @@ class sr_GlobalState:
         display the resulting settings for selected configurations.
         """
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1904,7 +1921,6 @@ class sr_GlobalState:
             if self.please_stop:
                 break
 
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1981,7 +1997,7 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['missing', 'partial']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -1992,9 +2008,9 @@ class sr_GlobalState:
                     print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
                     kill_hung.append(  kill_pid )
                     pcount += 1
-
-        print('killing hung processes... (no point in SIGTERM if it is hung)')
+        
         if (len(kill_hung) > 0) and not self.options.dry_run :
+            print('killing hung processes... (no point in SIGTERM if it is hung)')
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
             time.sleep(5)
@@ -2003,7 +2019,8 @@ class sr_GlobalState:
 
         if pcount != 0:
             self._find_missing_instances()
-            self._clean_missing_proc_state()
+            if not self.options.dry_run:
+                self._clean_missing_proc_state()
             self._read_states()
             self._resolve()
             filtered_missing = []
@@ -2032,7 +2049,6 @@ class sr_GlobalState:
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -2059,12 +2075,6 @@ class sr_GlobalState:
 
         pcount = 0
         for f in self.filtered_configurations:
-
-            if f == 'audit':
-                if self.auditors == 0:
-                    component_path = self._find_component_path(f)
-                    self._launch_instance(component_path, f, None, 1)
-                    continue
 
             (c, cfg) = f.split(os.sep)
 
@@ -2108,6 +2118,7 @@ class sr_GlobalState:
            stop all of this users sr_ processes. 
            return 0 on success, non-zero on failure.
         """
+
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
@@ -2117,21 +2128,9 @@ class sr_GlobalState:
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
         fg_instances = set()
-        # kill sr_audit first, so it does not restart while others shutting down.
-        # https://github.com/MetPX/sarracenia/issues/210
         pids_signalled=set([])
 
-        if ('audit' in self.filtered_configurations) and self.auditors > 0:
-            for p in self.procs:
-                if 'audit' in self.procs[p]['name']:
-                    signal_pid(p, signal.SIGTERM)
-                    pids_signalled |= set([p])
-                    print('.', end='', flush=True)
-                    pcount += 1
-
         for f in self.filtered_configurations:
-            if f == 'audit': continue
-
             (c, cfg) = f.split(os.sep)
 
             # exclude foreground instances unless --dangerWillRobinson specified
@@ -2185,7 +2184,6 @@ class sr_GlobalState:
 
             running_pids = 0
             for f in self.filtered_configurations:
-                if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
                 # exclude foreground instances unless --dangerWillRobinson specified
                 if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
@@ -2203,14 +2201,7 @@ class sr_GlobalState:
 
         print('doing SIGKILL this time')
         
-        if ('audit' in self.filtered_configurations) and self.auditors > 0:
-            for p in self.procs:
-                if 'audit' in p['name']:
-                    signal_pid(p, signal.SIGKILL)
-                    pids_signalled |= set([p])
-
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
@@ -2243,7 +2234,6 @@ class sr_GlobalState:
         self._resolve()
 
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
@@ -2622,7 +2612,26 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
     def convert(self):
-        cfg = self.v2_config[0]
+
+        print( f"v2_config: {self.v2_config}")
+        if len(self.v2_config) == 0:
+            print("need to specify what to convert from v2")
+            return
+
+        conversion_targets = self.v2_config
+        if self.options.wololo and len(conversion_targets) > 1:
+            if len(conversion_targets) != self.options.dangerWillRobinson :
+                print( f" will not overwrite multiple configurations unless really sure" )
+                print( f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
+                return
+
+        for c in conversion_targets:
+            self.convert1(c)
+
+    def convert1(self,cfg):
+        """
+          converts one config.
+        """
         component = cfg.split('/')[0]
         base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
         base_v3 = self.user_config_dir + os.sep
@@ -2645,8 +2654,10 @@ class sr_GlobalState:
         if not os.path.isdir(base_v3 + component):
             os.makedirs(base_v3 + component)
 
-        if os.path.exists(v3_config_path):
-            logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
+        if self.options.wololo:
+            logger.warning("Wololo!" )
+        elif os.path.exists(v3_config_path): 
+            logger.error( f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
             return
 
         synonyms = sarracenia.config.Config.synonyms
@@ -2655,16 +2666,13 @@ class sr_GlobalState:
         pos_args_present=False
         with open(v3_config_path, 'w') as v3_cfg:
             v3_cfg.write( f'# created by: sr3 convert {cfg}\n')
-
-            if component in [ 'sarra', 'subscribe' ]:
-                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. This plugin helps during conversion, remove when all sr3:\n')
-                v3_cfg.write('flowcb accept.sftp_absolute\n')
-            if component in [ 'sender' ]:
-                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
-                v3_cfg.write('#flowcb accept.sftp_absolute\n')
             if component in [ 'shovel', 'winnow' ]:
                 v3_cfg.write('# topicCopy on is only there for bug-for-bug compat with v2. turn it off if you can.\n')
-                v3_cfg.write('topicCopy on\n')
+                v3_cfg.write('#topicCopy on\n')
+
+            if component in [ 'sarra', 'sender', 'subscribe' ]:
+                v3_cfg.write('#v2 sftp handling is always absolute, sr3 is relative. might need this, remove when all sr3:\n')
+                v3_cfg.write('#flowcb accept.sftp_absolute\n')
 
             with open(v2_config_path, 'r') as v2_cfg:
                 for line in v2_cfg.readlines():
@@ -2767,7 +2775,7 @@ class sr_GlobalState:
                 elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
-        logging.info( f'wrote conversion from v2 {cfg} to sr3' )
+        logger.info( f'wrote conversion from v2 {cfg} to sr3' )
 
 
     def overview(self):
@@ -2784,15 +2792,7 @@ class sr_GlobalState:
         print('%-10s %-10s %-6s %3s %s' %
               ('---------', '-----', '-----', '---',
                '------------------------------'))
-        if self.auditors == 1:
-            audst = "OK"
-        elif self.auditors > 1:
-            audst = "excess"
-        else:
-            audst = "absent"
 
-        print("%-10s %-10s %-6s %3d" %
-              ('audit', 'running', audst, self.auditors))
         configs_running = 0
         for c in self.configs:
 
