@@ -599,13 +599,6 @@ class sr_GlobalState:
                                             missing.append([c, cfg, i])
                                     else:
                                         missing.append([c, cfg, i])
-                        if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
-                            # look for instances that should be running, but no pid file exists.
-                            for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
-                                if not i in self.states[c][cfg]['instance_pids']:
-                                    if i not in self.procs:
-                                        if i != 0:
-                                            missing.append([c,cfg,i])
                     os.chdir(c_dir) # back to component dir containing configs
                 os.chdir(dir) # back to dir containing components
 
