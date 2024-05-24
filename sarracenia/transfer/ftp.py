@@ -172,6 +172,7 @@ class Ftp(Transfer):
 
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
+
         try:
             expire = -999
             if self.o.timeout: expire = self.o.timeout
@@ -204,13 +205,8 @@ class Ftp(Transfer):
                 logger.debug('Exception details: ', exc_info=True)
 
             self.pwd = self.originalDir
-
             self.connected = True
-
             self.ftp = ftp
-
-            #alarm_cancel()
-            return True
 
         except:
             logger.error("Unable to connect to %s (user:%s)" %
@@ -218,7 +214,7 @@ class Ftp(Transfer):
             logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
-        return False
+        return self.connected
 
     # credentials...
     def credentials(self):
@@ -278,11 +274,16 @@ class Ftp(Transfer):
 
         # download
         self.write_chunk_init(dst)
-        if self.binary:
-            self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
+
+        try:
+            if self.binary:
+                self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
                                 self.o.bufsize)
-        else:
-            self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
+            else:
+                self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
+        except Exception as Ex:
+            logger.error( f"failed to get {remote_file} to {local_file}: {Ex}" )
+
         rw_length = self.write_chunk_end()
 
         # close
@@ -331,8 +332,6 @@ class Ftp(Transfer):
     def line_callback(self, iline):
         #logger.debug("sr_ftp line_callback %s" % iline)
 
-        alarm_cancel()
-
         oline = iline
         oline = oline.strip('\n')
         oline = oline.strip()
@@ -361,8 +360,6 @@ class Ftp(Transfer):
 
         self.entries[fil] = line
 
-        alarm_set(self.o.timeout)
-
     # mkdir
     def mkdir(self, remote_dir):
         logger.debug("sr_ftp mkdir %s" % remote_dir)
@@ -390,11 +387,15 @@ class Ftp(Transfer):
 
         # upload
         self.write_chunk_init(None)
-        if self.binary:
-            self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
+        try:
+            if self.binary:
+                self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
                                 self.write_chunk)
-        else:
-            self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
+            else:
+                self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
+        except Exception as Ex:
+            logger.error( f"failed to put {remote_file} to {local_file}: {Ex}" )
+
         rw_length = self.write_chunk_end()
 
         # close
