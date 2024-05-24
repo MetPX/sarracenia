@@ -2154,7 +2154,7 @@ class sr_GlobalState:
         if len(self.strays) > 0:
             print('killing strays...')
             for pid in self.strays:
-                print( f"pid: {pid} \"{' '.join(self.strays[pid])}\"  does not match any configured instance, sending it TERM" )
+                print( f"pid: {pid} \"{self.strays[pid]}\"  does not match any configured instance, sending it TERM" )
                 if not self.options.dry_run:
                     signal_pid(pid, signal.SIGTERM)
         else:
@@ -2249,7 +2249,7 @@ class sr_GlobalState:
         pids_signalled=set([])
 
         for pid in self.strays:
-            print( f"pid: {pid} \"{' '.join(self.strays[pid])}\" does not match any configured instance, killing" )
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
             signal_pid(pid, signal.SIGTERM)
             pids_signalled |= set([pid])
 
@@ -2338,7 +2338,7 @@ class sr_GlobalState:
                         print('.', end='')
 
         for pid in self.strays:
-            print( f"pid: {pid} \"{' '.join(self.strays[pid])}\" does not match any configured instance, killing" )
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
             signal_pid(pid, signal.SIGKILL)
             pids_signalled |= set([pid])
 
