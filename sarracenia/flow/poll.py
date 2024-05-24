@@ -65,10 +65,6 @@ class Poll(Flow):
         if not 'scheduled' in ','.join(self.plugins['load']):
             self.plugins['load'].append('sarracenia.flowcb.scheduled.poll.Poll')
 
-        if not 'flowcb.poll.Poll' in ','.join(self.plugins['load']):
-            logger.info( f"adding poll plugin, because missing from: {self.plugins['load']}" ) 
-            self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
-
         if options.vip:
             self.plugins['load'].insert( 0, 'sarracenia.flowcb.gather.message.Message')
 
@@ -80,3 +76,14 @@ class Poll(Flow):
         if not features['ftppoll']['present']:
             if hasattr( self.o, 'pollUrl' ) and ( self.o.pollUrl.startswith('ftp') ):
                 logger.critical( f"attempting to configure an FTP poll pollUrl={self.o.pollUrl}, but missing python modules: {' '.join(features['ftppoll']['modules_needed'])}" )
+
+    def on_start(self):
+
+        if 'poll' not in self.plugins or not self.plugins['poll']:
+            logger.info( f"adding built-in poll plugin, because no other poll provided from: {self.plugins['load']}" ) 
+
+            self.plugins['load'].append('sarracenia.flowcb.poll.Poll')
+            plugin = sarracenia.flowcb.load_library("sarracenia.flowcb.poll.Poll", self.o)
+            self.plugins['poll'] = [ getattr(plugin, 'poll') ]
+        else:
+            logger.info( f"not adding built-in poll, because already present: {self.plugins['poll']} " )
