@@ -896,7 +896,7 @@ The **housekeeping** option sets how often to execute periodic processing as det
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
 hungThreshold <interval> (default: 450)
-----------------------------------------------------
+---------------------------------------
 
 The hungThreshold (formerly: **sanity_log_dead**) option sets how long to consider too long before restarting
 a component. when running *sr3 status*, the flow status will be shown as *hung*
@@ -906,7 +906,7 @@ A periodic run *sr3 sanity* (as a cron job) will restart hung jobs.
 
 
 idleThreshold <interval> (default: 900)
-----------------------------------------------------
+---------------------------------------
 
 The idleThreshold option sets how long to consider too long before declaring no transfers are occurring.
 the *sr3 status* command will show such flows as *idle*
@@ -1066,7 +1066,7 @@ v2 options are a comma separated string.  Valid checksum flags are :
 .. [#] only implemented in C. ( see https://github.com/MetPX/sarracenia/issues/117 )
 
 lagThreshold <interval> (default: 30)
-----------------------------------------------------
+-------------------------------------
 
 The lagThreshold option sets how much delay in message processing to consider normal.
 if the data AvgLag in the *sr3 status* command exceeds this, then the flow will be listed
