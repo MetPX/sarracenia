@@ -118,7 +118,7 @@ default_options = {
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
     'retryThreshold': 1000,
-    'sanity_log_dead': 9999,
+    'hungThreshold': 450,
     'slowThreshold': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
@@ -153,7 +153,7 @@ float_options = [ ]
 
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
-    'idleThreshold', 'lagThreshold', 'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'idleThreshold', 'lagThreshold', 'retry_ttl', 'hungThreshold', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
@@ -743,6 +743,7 @@ class Config:
         'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
+        'sanity_log_dead': 'hungThreshold',
         'sd' : 'nodupe_ttl',
         'sdb' : 'nodupe_basis', 
         'simulate': 'dry_run',
@@ -1879,8 +1880,6 @@ class Config:
         else:
             cfg = config
 
-        if self.sanity_log_dead == 9999 :
-            self.sanity_log_dead = 1.5*self.housekeeping
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 

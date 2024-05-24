@@ -177,7 +177,7 @@ class Transfer():
         self.byteRate = 0
         self.logMinimumInterval = 60
         #if hasattr(self.o,'sanity_log_dead'):
-        #    self.logMinimumInterval = self.o.sanity_log_dead/4
+        #    self.logMinimumInterval = self.o.hungThreshold/4
         #else:
         #    self.logMinimumInterval = 30
 

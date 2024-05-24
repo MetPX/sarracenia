@@ -1070,9 +1070,11 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
-                            # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
+                            logger.warning( f"FIXME {'logAge' in self.states[c][cfg]=}  ") 
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].sanity_log_dead ):
+                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].hungThreshold ):
+                                logger.warning( f"FIXME {c}/{cfg}-{i} {self.states[c][cfg]['logAge'][i]=} ")
+                                logger.warning( f"FIXME {self.configs[c][cfg]['options'].hungThreshold=} ")
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
