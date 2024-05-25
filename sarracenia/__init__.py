@@ -7,8 +7,6 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# __init__.py : contains version number of sarracenia
-#
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -32,6 +30,7 @@ import calendar
 import datetime
 import humanize
 import importlib.util
+import io
 import logging
 import os
 import os.path
@@ -928,6 +927,17 @@ class Message(dict):
 
            write the local file based on the given message, options and data.  
            update the message to match same (recalculating checksum.)
+
+           in future:
+           If the data field is a file, then that is taken as an open file object
+           which can be read sequentially, and the bytes write to the path indicated
+           by other message fields.
+
+           currently, if data is a buffer, then it's contents is written to the file.
+
+           if data is None, then look for the 'content' header in the message.
+           and use the data from that.
+
         """
         opath=msg['new_dir'] + os.sep + msg['new_file']
 
@@ -937,11 +947,26 @@ class Message(dict):
             else:
                 os.makedirs(msg['new_dir'], exist_ok=True)
 
+        # ide
+        #if isinstance(data, io.IOBase ):
+        #    with open(opath, 'wb') as f:
+        #        while buf = data.read(self.o.bufsize) > 0 :
+        #            sz=f.write(buf)
+
+        if 'content' in msg:
+            if data:
+                del msg['content']
+            elif msg['content']['encoding'] == 'base64':
+                data=b64decode(msg['content']['value'])
+            else:
+                data=msg['content']['value'].encode('utf-8')
+                
         try:
             with open(opath, 'wb') as f:
-               f.write(data)
+               sz=f.write(data)
             if self.o.permDefault != 0:
                 os.chmod(opath,mode=self.o.permDefault)
+            msg['size'] = sz
             msg.computeIdentity(opath,self.o,data=data)
         except Exception as ex:
             logger.error( f"problem with {opath}: {ex}" )
