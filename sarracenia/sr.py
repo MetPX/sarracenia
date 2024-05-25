@@ -1750,23 +1750,29 @@ class sr_GlobalState:
             else:
                 print('foreground: stop other instances of this process first')
 
-    def cleanup(self):
+    def cleanup(self) -> bool:
 
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
                 logging.error(
                         f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
-                return
+                return False
+
+        all_stopped=True
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+            if self.configs[c][cfg]['status'] in self.status_active:
+                logger.error( f"{c}/{cfg} is in {self.configs[c][cfg]['status']} state. Stop it first.")
+                all_stopped=False
+ 
+        if not all_stopped:
+            return False
 
         queues_to_delete = []
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
             (c, cfg) = f.split(os.sep)
-
-            if self.configs[c][cfg]['status'] in self.status_active:
-                logger.warning( f"Flows must be stopped. cannot cleanup {self.configs[c][cfg]['status']} configuration, skipping {c}/{cfg}")
-                continue
 
             o = self.configs[c][cfg]['options']
 
@@ -1874,6 +1880,8 @@ class sr_GlobalState:
                         print('removing state file: %s' % asf)
                         if os.path.exists(asf):
                             os.unlink(asf)
+
+        return True
 
     print_column = 0
 
@@ -3045,8 +3053,8 @@ def main():
         gs.convert()
 
     if action == 'remove':
-        gs.cleanup()
-        gs.remove()
+        if gs.cleanup():
+            gs.remove()
 
     elif action == 'restart':
         print('stopping: ', end='', flush=True)
