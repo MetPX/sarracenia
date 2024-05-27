@@ -44,7 +44,7 @@ class Bulletin:
 
         return True
 
-    def verifyHeader(self, header):
+    def verifyHeader(self, header, charset):
         """Derived from Sundew -> https://github.com/MetPX/Sundew/blob/main/lib/bulletin.py#L601-L671.
            Verifies the integrity of the bulletin header. Flag if there is an error in the header.
            Called by the buildHeader method.
@@ -92,13 +92,13 @@ class Bulletin:
             return header, isProblem
 
         # Verify BBB field(s) -> https://www.weather.gov/tg/headef. Remove it if it's corrupted.
-        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3][0] not in ['C','A','R','P']:
+        if not tokens[3].isalpha() or len(tokens[3]) != 3 or tokens[3].decode(charset)[0] not in ['C','A','R','P']:
             logger.info("Header normalized: fourth and later fields removed.") 
             del tokens[3:]
             rebuild = 1
 
         if len(tokens) == 5 and \
-                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4][0] not in ['C','A','R','P']):
+                (not tokens[4].isalpha() or len(tokens[4]) != 3 or tokens[4].decode(charset)[0] not in ['C','A','R','P']):
             logger.info("Header normalized: fifth and later fields removed")
             del tokens[4:]
             rebuild = 1

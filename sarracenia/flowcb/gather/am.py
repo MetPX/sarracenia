@@ -392,13 +392,13 @@ class Am(FlowCB):
 
         # Check if the header is okay before proceeding to correcting rest of bulletin.
         # We want to verify the header AFTER all the contents have been corrected
-        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0]) 
+        verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0], charset) 
         if verified_header != lines[0]:
             lines[0] = verified_header
             reconstruct = 1
 
             if reconstruct == 1:
-                new_bulletin, lines = self.reconstruct_bulletin(lines, new_bulletin)
+                new_bulletin, lines = self.reconstruct_bulletin(lines, new_bulletin=b'')
 
         return new_bulletin , isProblem
 
