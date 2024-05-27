@@ -1068,7 +1068,7 @@ class sr_GlobalState:
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].hungThreshold ):
+                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung ):
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
@@ -1097,21 +1097,21 @@ class sr_GlobalState:
                         flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
                         flow_status = 'waitVip'
-                    elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].slowThreshold:
+                    elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
                         flow_status = 'slow'
-                    elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].retryThreshold:
+                    elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].runStateThreshold_retry:
                         flow_status = 'retry'
-                    elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].lagThreshold:
+                    elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].runStateThreshold_lag:
                         flow_status = 'lagging'
-                    elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].rejectThreshold:
+                    elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
                         flow_status = 'reject'
                     elif hasattr(self.config[c][cfg]['options'],'post_broker') and self.config[c][cfg]['options'].post_broker \
-                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif  hasattr(self.config[c][cfg]['options'],'download') and self.config[c][cfg]['options'].download \
-                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     else:
                         flow_status = 'running'

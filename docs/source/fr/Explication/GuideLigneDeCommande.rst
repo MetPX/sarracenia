@@ -545,13 +545,13 @@ Les configurations sont répertoriées sur la gauche. Pour chaque configuration,
 sera :
 
 * hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
-* idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (idleThreshold.)
-* lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( lagThreshold )
+* idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)
+* lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )
 * part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
-* reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (rejectThreshold )
-* rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (retryThreshold )
+* reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )
+* rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
 * run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
-* slow : transfert de moins que le minimum d'octets/seconde ( slowThreshold )
+* slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
 * stop : aucun processus n'est en cours d'exécution.
 
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.

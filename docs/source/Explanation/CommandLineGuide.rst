@@ -545,12 +545,12 @@ will be:
 * disa:  disabled, configured not to run.
 * hung:  processes appear hung, not writing anything to logs.
 * idle:  all processes running, but no data or message transfers for too long (idlethreshold.)
-* lag:   all processes running, but messages being processed are too old ( lagThreshold )
+* lag:   all processes running, but messages being processed are too old ( runStateThreshold_lag )
 * part:  some processes are running, others are missing.
-* reje:  all processes running, but too high percent of messages being rejected (rejectThreshold )
-* rtry:  all processes running, but too large number of transfers failed and retrying (retryThreshold )
+* reje:  all processes running, but too high percent of messages being rejected (runStateThreshold_reject )
+* rtry:  all processes running, but too large number of transfers failed and retrying (runStateThreshold_retry )
 * run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
-* slow:  transfering less than minimum bytes/second ( slowThreshold )
+* slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )
 * stop:  no processes are running. 
 
 The next columns to the right give more information, detailing how many processes are Running, out of the number expected.

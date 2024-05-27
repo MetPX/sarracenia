@@ -878,32 +878,6 @@ L’option **housekeeping** définit la fréquence d’exécution du traitement 
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
 
 
-hungThreshold <intervalle> (défaut: 450s)
------------------------------------------
-
-L'option hungThreshold (anciennement : **sanity_log_dead**) définit la durée à considérer comme trop longue avant de redémarrer
-un flot. lors de l'exécution du *statut sr3*, l'état du flux sera affiché comme *hung*
-
-Cela peut indiquer un problème avec un plugin de sondage qui ne libère pas le processeur. ou alors une sorte de problème de réseau.
-Une exécution périodique *sr3 sanity* (en tant que tâche cron) redémarrera les tâches bloquées.
-
-
-idleThreshold <intervalle> (default: 900s)
-------------------------------------------
-
-L'option idleThreshold définit le lapse de temps avant de déclarer qu'aucun transfert est en cours.
-la commande *sr3 status* affichera ces flux comme *idle*
-
-Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
-Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
-Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
-message reçu.
-
-Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
-d'un certain débit est attendu, définissez le *slowThreshold* pour le flux afin que 
-les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
-
-
 
 include config
 --------------
@@ -1052,23 +1026,6 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 * z,a : calculer la valeur de la somme de contrôle en utilisant l'algorithme a et l'assigner après le téléchargement.
 
 .. [#] seulement implémenter en C. ( voir https://github.com/MetPX/sarracenia/issues/117 )
-
-lagThreshold <intervalle> (défaut: 30s)
----------------------------------------
-
-L'option lagThreshold définit le délai de traitement des messages à tolèrer normalement.
-Si les champs AvgLag dans la commande *sr3 status* dépassent cette intervalle, 
-le flux sera répertorié comme *lagging* (en retard).
-
-Lorsqu’un flux est en retard, il faut envisager de l’accélérer :
-
-* restreindre la portée de l'abonnement (*subtopic* plus restreints)
-* restreindre la portée des téléchargements (plus de *reject* dans les clauses d'acceptation/rejet)
-* augmenter les ressources de téléchargement (plus d'*instances*
-* diviser le flux en plusieurs flux indépendants.
-
-Si le décalage constaté est raisonnable à accepter pour l'application, alors
-augmenter le lagThreshold pour ce flux pourrait également être un remède raisonnable.
 
 
 
@@ -1542,19 +1499,6 @@ donné. Cette option impose également la traversée de liens symboliques.
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
 
-rejectThreshold <compte> (default: 80)
--------------------------------------
-
-L'option rejetThreshold définit le nombre de messages à rejeter, en pourcentage,
-d'un flux et considère comme normal. Si le champ data *%rej* dans la commande *sr3 status*
-dépasse cela, alors le flux sera répertorié comme *reje*.
-
-Pour y répondre, examinez le sous-thème dans la configuration et raffinez-le afin que
-moins de messages soient transférés du courtier si possible. Si cela n’est pas possible, 
-augmentez le seuil pour le flux concerné pour que *sr3 status* juge ce comportement comme normale.
-
-
-
 
 
 rename <chemin>
@@ -1627,16 +1571,90 @@ L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien d
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
-retryThreshold <compte> (default: 1000)
----------------------------------------
 
-L'option retryThreshold définit la taille d'une file d'attente de transferts et de publications à réessayer
+runStateThreshold_hung <intervalle> (défaut: 450s)
+--------------------------------------------------
+
+L'option runStateThreshold_hung (anciennement : **sanity_log_dead**) définit la durée à considérer comme trop longue avant de redémarrer
+un flot. lors de l'exécution du *statut sr3*, l'état du flux sera affiché comme *hung*
+
+Cela peut indiquer un problème avec un plugin de sondage qui ne libère pas le processeur. ou alors une sorte de problème de réseau.
+Une exécution périodique *sr3 sanity* (en tant que tâche cron) redémarrera les tâches bloquées.
+
+
+runStateThreshold_idle <intervalle> (default: 900s)
+---------------------------------------------------
+
+L'option runStateThreshold_idle définit le lapse de temps avant de déclarer qu'aucun transfert est en cours.
+la commande *sr3 status* affichera ces flux comme *idle*
+
+Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
+Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
+Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
+message reçu.
+
+Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
+d'un certain débit est attendu, définissez le *runStateThreshold_slow* pour le flux afin que 
+les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
+
+runStateThreshold_lag <intervalle> (défaut: 30s)
+------------------------------------------------
+
+L'option runStateThreshold_lag définit le délai de traitement des messages à tolèrer normalement.
+Si les champs AvgLag dans la commande *sr3 status* dépassent cette intervalle, 
+le flux sera répertorié comme *lagging* (en retard).
+
+Lorsqu’un flux est en retard, il faut envisager de l’accélérer :
+
+* restreindre la portée de l'abonnement (*subtopic* plus restreints)
+* restreindre la portée des téléchargements (plus de *reject* dans les clauses d'acceptation/rejet)
+* augmenter les ressources de téléchargement (plus d'*instances*
+* diviser le flux en plusieurs flux indépendants.
+
+Si le décalage constaté est raisonnable à accepter pour l'application, alors
+augmenter le runStateThreshold_lag pour ce flux pourrait également être un remède raisonnable.
+
+
+runStateThreshold_reject <compte> (default: 80)
+-----------------------------------------------
+
+L'option rejetThreshold définit le nombre de messages à rejeter, en pourcentage,
+d'un flux et considère comme normal. Si le champ data *%rej* dans la commande *sr3 status*
+dépasse cela, alors le flux sera répertorié comme *reje*.
+
+Pour y répondre, examinez le sous-thème dans la configuration et raffinez-le afin que
+moins de messages soient transférés du courtier si possible. Si cela n’est pas possible, 
+augmentez le seuil pour le flux concerné pour que *sr3 status* juge ce comportement comme normale.
+
+
+runStateThreshold_retry <compte> (default: 1000)
+------------------------------------------------
+
+L'option runStateThreshold_retry définit la taille d'une file d'attente de transferts et de publications à réessayer
 est considéré comme normal. Si le champ de données *Retry* dans la commande *sr3 status* dépasse cela, 
 alors le flux sera répertorié comme *retr*.
 
 Pour y remédier, examinez les journaux pour déterminer pourquoi tant de transferts échouent. Déterminer la cause.
 Si la cause ne peut pas être traitée et que cela doit être considéré comme normal, augmentez le seuil
 pour que cette configuration corresponde à cette attente.
+
+runStateThreshold_slow <taux> (default: 0o/s)
+---------------------------------------------
+
+L'option runStateThreshold_slow définit le seuil minimum d'octets de données transféré par seconde 
+pour être déclaré normale. Si le totale des champs data *RxData* et *TxData* dans la 
+commande *sr3 status* sont inférieurs à cet seuil, le flux sera répertorié comme *slow* (lent).
+
+Pour résoudre ce problème, déterminez si les modèles de téléchargement (accepter/rejeter) sont en train 
+de télécharger trop de données. Le téléchargement de données inutilisées ralentira le transfert des données 
+intéressantes.
+
+Après avoir considéré les données dans le flux, envisagez d'augmenter les instances dans la configuration
+ou répartir la charge entre plusieurs configurations, pour améliorer la parallélisation.
+Si la vitesse observée doit être considérée comme normale pour ce flux, alors définissez le seuil
+de manière appropriée.
+
+
 
 sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 -------------------------------------------------------
@@ -1709,23 +1727,6 @@ Lorsque *sleep* est donné une valeur >0 pour être utilisé avec un *poll*, cel
 définir *scheduled_interval*, pour des raisons de compatibilité. 
 Il est préférable que le sonde utilise explicitement les paramètres *scheduled_interval*,
 *scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
-
-
-slowThreshold <taux> (default: 0o/s)
-------------------------------------
-
-L'option slowThreshold définit le seuil minimum d'octets de données transféré par seconde 
-pour être déclaré normale. Si le totale des champs data *RxData* et *TxData* dans la 
-commande *sr3 status* sont inférieurs à cet seuil, le flux sera répertorié comme *slow* (lent).
-
-Pour résoudre ce problème, déterminez si les modèles de téléchargement (accepter/rejeter) sont en train 
-de télécharger trop de données. Le téléchargement de données inutilisées ralentira le transfert des données 
-intéressantes.
-
-Après avoir considéré les données dans le flux, envisagez d'augmenter les instances dans la configuration
-ou répartir la charge entre plusieurs configurations, pour améliorer la parallélisation.
-Si la vitesse observée doit être considérée comme normale pour ce flux, alors définissez le seuil
-de manière appropriée.
 
 
 statehost <booléen> ( défaut: False )
