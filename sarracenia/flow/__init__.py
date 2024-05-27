@@ -450,7 +450,6 @@ class Flow:
         logger.info(
             f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
         )
-        self.runCallbacksTime('please_stop')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
@@ -579,7 +578,7 @@ class Flow:
             total_messages += last_gather_len
 
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
-                self.please_stop()
+                self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
@@ -593,7 +592,7 @@ class Flow:
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
                     current_sleep = 60
                 else:
-                    self.please_stop()
+                    self.runCallbacksTime('please_stop')
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
