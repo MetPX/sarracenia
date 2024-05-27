@@ -1105,10 +1105,10 @@ class sr_GlobalState:
                         flow_status = 'lagging'
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
                         flow_status = 'reject'
-                    elif hasattr(self.config[c][cfg]['options'],'post_broker') and self.config[c][cfg]['options'].post_broker \
+                    elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
                             and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    elif  hasattr(self.config[c][cfg]['options'],'download') and self.config[c][cfg]['options'].download \
+                    elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
                             and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
                     elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
