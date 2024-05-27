@@ -356,3 +356,53 @@ def test_bulletin_timestamp_6chars_plus():
     # Check correcting the bulletin contents of the bulletin
     new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
     assert new_bulletin == b'SXCN35 CWVR 021100\n\nFacility:       GVRD\nData valid at:  2024/05/02 11:00Z\n\nsome other stuff\n'
+
+# Test 12: Test if BBB gets parsed properly when it's supposed to
+def test_random_bulletin_with_BBB():
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test12 = make_message()
+    message_test12['content']['encoding'] = 'iso-8859-1'
+    message_test12['content']['value'] = b'FXCN06 CYTR 230939 AAA\nREVISED SPECIAL AREA FORECAST FOR CFB VALCARTIER ISSUED BY THE JOINT\nMETEOROLOGICAL CENTRE AT 5:34 AM EDT THURSDAY 23 MAY 2024 FOR TODAY\nAND FRIDAY.\nTHE NEXT SCHEDULED FORECAST WILL BE ISSUED AT 4:00 PM TODAY.\n\nAMENDMENT: FORECAST AMENDED TO INCLUDE CB.\n\n1. AVIATION AREA FCST FOR 430 SQUADRON OPERATIONS WITHIN 25 NM RADIUS\n   OF CFB VALCARTIER.\n\n   NOTE. FCST ONLY VALID WHILE TAF IN EFFECT.\n         ALL HGTS ASL UNLESS NOTED.\n         HGTS ABV 10000 FT INDICATED BY XXX.\n         CB TCU AND ACC IMPLY SIG TURB AND ICE.\n         CB IMPLIES L LVL WS.\n\n   VALID 10-22Z\n\n   CLD AND WX... 20-30 BKN 80 P6SM. PTCHY -DZ BR CIGS 8-12 AGL TIL\n                 15Z. OCNL TCU XXX 3-P6SM -SHRA BR CIGS 10-15 AGL.\n                 OCNL CB XXX 2-5SM TSRAGR CIGS 4-9 AGL.\n      AFT 17Z... 40 FEW-SCT CU 70 P6SM.\n\n   ICE... NIL SIG ICE.\n\n   FZLVL... XXX.\n\n   TURB... PTCHY MOD MECH AFT 17Z.\n\n   OTLK VALID 22-04Z... VFR.\n\n2. HUMIDITY INFORMATION (IN PERCENT).\n\n   MNM TODAY... 50.\n\n   MAX TONIGHT... 100.\n\n   MNM FRIDAY... 45.\n\n3. LIGHT INFORMATION (LOCAL TIME).\n\n   A.  NEXT LAST LIGHT CIVIL 23/2102\n\n   B.  NEXT FIRST LIGHT CIVIL 24/0424\n\nEND/JMC\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test12)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test12['new_file'] = bulletinHeader + '__12345'
+    message_test12['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'' 
+
+    message_test12['content']['value'] = bulletin.decode('iso-8859-1')
+    message_test12 = renamer.rename(message_test12, False)
+    assert message_test12['new_file'] == 'FXCN06_CYTR_230939_AAA__00001'
+
+# Test 13: SM Bulletin with BBB - Add station mapping + SM/SI bulletin accomodities + conserve BBB header
+def test_SM_bulletin_with_BBB():
+    
+    BaseOptions = Options()
+    renamer = Raw2bulletin(BaseOptions)
+    am_instance = Am(BaseOptions)
+
+    message_test13 = make_message()
+    message_test13['content']['encoding'] = 'iso-8859-1'
+    message_test13['content']['value'] = b'SM 030000 AAA\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    bulletin, firstchars, lines, missing_ahl, station, charset = _get_bulletin_info(message_test13)
+
+    bulletinHeader = lines[0].decode('iso-8859-1').replace(' ', '_')
+    message_test13['new_file'] = bulletinHeader + '__12345'
+    message_test13['new_dir'] = BaseOptions.directory
+
+    # Check correcting the bulletin contents of the bulletin
+    am_instance.o.mapStations2AHL = ['SMCN06 CWAO COLL 71816 71818 71821 71825 71827 71828 71831 71832 71834 71841 71842 71845 71850 71854']
+    new_bulletin, isProblem = am_instance.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
+    assert new_bulletin == b'SMCN06 CWAO 030000 AAA\nAAXX 03004\n71816 11324 80313 10004 20003 30255 40318 52018 60031 77177 887//\n333 10017 20004 42001 70118 90983 93101=\n'
+
+    message_test13['content']['value'] = new_bulletin.decode('iso-8859-1')
+    message_test13 = renamer.rename(message_test13, False)
+    assert message_test13['new_file'] == 'SMCN06_CWAO_030000_AAA_71816_00001'
