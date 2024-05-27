@@ -894,6 +894,11 @@ idleThreshold <intervalle> (default: 900s)
 L'option idleThreshold définit le lapse de temps avant de déclarer qu'aucun transfert est en cours.
 la commande *sr3 status* affichera ces flux comme *idle*
 
+Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
+Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
+Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
+message reçu.
+
 Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
 d'un certain débit est attendu, définissez le *slowThreshold* pour le flux afin que 
 les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )

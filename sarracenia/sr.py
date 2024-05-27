@@ -953,6 +953,10 @@ class sr_GlobalState:
                                             metrics['transferLast'] = newval
                                     elif k in [ "rxLast", "txLast"  ]:
                                         newval = sarracenia.timestr2flt(newval)
+                                        if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
+                                            metrics['rxLast'] = newval
+                                        if k == 'txLast' and 'txLast' not in metrics or (newval > metrics['txLast']):
+                                            metrics['txLast'] = newval
                                         if 'messageLast' not in metrics or (newval > metrics['messageLast']):
                                             metrics['messageLast'] = newval
                                     else:
@@ -1101,7 +1105,13 @@ class sr_GlobalState:
                         flow_status = 'lagging'
                     elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].rejectThreshold:
                         flow_status = 'reject'
-                    elif (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                    elif hasattr(self.config[c][cfg]['options'],'post_broker') and self.config[c][cfg]['options'].post_broker \
+                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                        flow_status = 'idle'
+                    elif  hasattr(self.config[c][cfg]['options'],'download') and self.config[c][cfg]['options'].download \
+                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].idleThreshold:
+                        flow_status = 'idle'
+                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].idleThreshold:
                         flow_status = 'idle'
                     else:
                         flow_status = 'running'

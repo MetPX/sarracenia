@@ -911,6 +911,11 @@ idleThreshold <interval> (default: 900)
 The idleThreshold option sets how long to consider too long before declaring no transfers are occurring.
 the *sr3 status* command will show such flows as *idle*
 
+In a flow that posts data, the last activity will be based on when it posted last.
+In a flow that transfers data, the last activity will be based on the last data transfer.
+In a flow does neither of the above, then the last activity is based on the last message
+received.
+
 This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
 of a certain rate is expected, set the *slowThreshold* for the flow so that *sr3 status* flags
 it as a problem.
