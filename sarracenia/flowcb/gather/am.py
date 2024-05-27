@@ -360,11 +360,13 @@ class Am(FlowCB):
                 # Also we need the first characters of the bulletin to match the ones from the mapping header.
                 if bulletin_station in map_elements[2:] and bulletin_firstchars == map_elements[0][:2]:
 
+                    # Make sure the whole T1T2AiA2ii is correct when present in the bulletin
+                    if len(lines[0].split(b' ')[0]) > 2 and lines[0][:6].decode(charset) != ahl_from_station[0]:
+                        continue
+
                     # We want to append the new AHL without removing the timestamp nor the BBB.
                     bulletin_ahl = lines[0].split(b' ')
                     bulletin_ahl[0] = ahl_from_station[0] + ' ' + ahl_from_station[1]
-                    
-                    logger.debug("Adding missing headers in file contents for station mappings") 
 
                     # These bulletins should already have two elements of the header. Maybe three if the BBB is there.
                     if len(bulletin_ahl) == 2:
@@ -373,6 +375,8 @@ class Am(FlowCB):
                         lines[0] = bulletin_ahl[0].encode(charset) + b" " + bulletin_ahl[1] + b" " + bulletin_ahl[2]
                     else:
                         logger.error("Not able to add new station AHLs.")
+
+                    logger.debug("Adding missing headers in file contents for station mappings")
 
                     # We found the station. We can leave the loop now.
                     reconstruct = 1
@@ -390,20 +394,36 @@ class Am(FlowCB):
 
             reconstruct = 1
 
+        if reconstruct == 1:
+           new_bulletin, lines = self.reconstruct_bulletin(lines, new_bulletin)
+
         # Check if the header is okay before proceeding to correcting rest of bulletin.
+        # We want to verify the header AFTER all the contents have been corrected
         verified_header , isProblem = self.bulletinHandler.verifyHeader(lines[0], charset) 
         if verified_header != lines[0]:
             lines[0] = verified_header
             reconstruct = 1
 
-        if reconstruct == 1:
-            # Reconstruct the bulletin
-            for i in lines:
-                    new_bulletin += i + b'\n'
-
-            logger.debug("Missing contents added")
+            if reconstruct == 1:
+                new_bulletin, lines = self.reconstruct_bulletin(lines, new_bulletin=b'')
 
         return new_bulletin , isProblem
+
+    def reconstruct_bulletin(self, lines, new_bulletin):
+        """
+        Reconstruct the bulletin once contents have been modified
+        """
+        # Reconstruct the bulletin
+        for i in lines:
+            new_bulletin += i + b'\n'
+
+        new_lines = new_bulletin.splitlines()
+
+        logger.debug("Missing contents added")
+
+        return new_bulletin, new_lines
+
+
 
 
     def gather(self, messageCountMax):
@@ -450,6 +470,8 @@ class Am(FlowCB):
                     ##                                       Random Integer
 
                     binary = 0
+                    isProblem = False
+
                     missing_ahl = self.o.MissingAMHeaders
 
                     # Fill in temporary filename for the timebeing
@@ -465,7 +487,7 @@ class Am(FlowCB):
                     
                     # Correct the bulletin contents, the Sundew way
                     if not binary:
-                        station = lines[1].split()[0].decode(charset)
+                        station = self.bulletinHandler.getStation(bulletin.decode(charset))
                         new_bulletin, isProblem = self.correctContents(bulletin, firstchars, lines, missing_ahl, station, charset)
                         if new_bulletin != b'':
                             bulletin = new_bulletin
