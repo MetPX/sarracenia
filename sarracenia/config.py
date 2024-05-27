@@ -92,12 +92,14 @@ default_options = {
     'dry_run': False,
     'filename': None,
     'flowMain': None,
+    'runStateThreshold_idle': 900,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
     'identity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
+    'runStateThreshold_lag': 30,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -111,10 +113,13 @@ default_options = {
     'post_format': 'v03',
     'realpathPost': False,
     'recursive' : True,
+    'runStateThreshold_reject': 80,
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
-    'sanity_log_dead': 9999,
+    'runStateThreshold_retry': 1000,
+    'runStateThreshold_hung': 450,
+    'runStateThreshold_slow': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
@@ -129,7 +134,7 @@ default_options = {
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
     'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin'
+    'messageRateMin', 'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow'
 ]
 
 
@@ -148,7 +153,7 @@ float_options = [ ]
 
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
-    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
@@ -738,6 +743,7 @@ class Config:
         'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
+        'sanity_log_dead': 'runStateThreshold_hung',
         'sd' : 'nodupe_ttl',
         'sdb' : 'nodupe_basis', 
         'simulate': 'dry_run',
@@ -1874,8 +1880,6 @@ class Config:
         else:
             cfg = config
 
-        if self.sanity_log_dead == 9999 :
-            self.sanity_log_dead = 1.5*self.housekeeping
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 
@@ -2004,6 +2008,8 @@ class Config:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
 
+        if self.runStateThreshold_hung < self.housekeeping:
+            logger.warning( f"runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )

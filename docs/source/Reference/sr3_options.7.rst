@@ -895,6 +895,7 @@ housekeeping <interval> (default: 300 seconds)
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
+
 include config
 --------------
 
@@ -1483,6 +1484,7 @@ are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.
 
+
 randomize <flag>
 ----------------
 
@@ -1595,11 +1597,91 @@ The **retry_ttl** (retry time to live) option indicates how long to keep trying 
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.
 
-sanity_log_dead <interval> (default: 1.5*housekeeping)
-------------------------------------------------------
 
-The **sanity_log_dead** option sets how long to consider too long before restarting
-a component.
+runStateThreshold_hung <interval> (default: 450)
+------------------------------------------------
+
+The runStateThreshold_hung (formerly: **sanity_log_dead**) option sets how long to consider too long before restarting
+a component. when running *sr3 status*, the flow status will be shown as *hung*
+
+This may indicate a problem with a poll plugin not releasing the cpu. or so sort of network hiccup.
+A periodic run *sr3 sanity* (as a cron job) will restart hung jobs. 
+
+
+runStateThreshold_idle <interval> (default: 900)
+------------------------------------------------
+
+The runStateThreshold_idle option sets how long to consider too long before declaring no transfers are occurring.
+the *sr3 status* command will show such flows as *idle*
+
+In a flow that posts data, the last activity will be based on when it posted last.
+In a flow that transfers data, the last activity will be based on the last data transfer.
+In a flow does neither of the above, then the last activity is based on the last message
+received.
+
+This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
+of a certain rate is expected, set the *runStateThreshold_slow* for the flow so that *sr3 status* flags
+it as a problem.
+
+
+runStateThreshold_lag <interval> (default: 30)
+----------------------------------------------
+
+The runStateThreshold_lag option sets how much delay in message processing to consider normal.
+if the data AvgLag in the *sr3 status* command exceeds this, then the flow will be listed
+as *lagging*.
+
+When a flow is lagging, one should consider accellerating it:
+* narrow the scope of the subscription (narrower *subtopics*)
+* narrow the scope of the downloads (more *reject*'s in the accept/reject clauses)
+* increase the download resources (more *instances* 
+* split the flow into multiple independent flows.
+
+If the amount of lag being seen is reasonable to accept for the application, then
+raising the runStateThreshold_lag for that flow could also be a reasonable remedy.
+
+
+runStateThreshold_reject <count> (default: 80)
+----------------------------------------------
+
+The runStateThreshold_reject option sets how many messages to reject, as a percentage,
+from a flow and consider normal. If the data *%rej* field in the *sr3 status* command 
+exceeds this, then the flow will be listed as *reje*.
+
+To address, examine the subtopic in the configuration, and narrow them so that fewer messages 
+are transferred from the broker if possible. If that is not possible, then raise the threshold
+for the flow affected.
+
+
+runStateThreshold_retry <count> (default: 1000)
+-----------------------------------------------
+
+The runStateThreshold_retry option sets how big a queue of transfers and posts to retry 
+is considered normal. If the data *Retry* field in the *sr3 status* command 
+exceeds this, then the flow will be listed as *retr*.
+
+To address, examine the logs to determine why so many transfers are failing. Address the cause.
+If the cause cannot be addressed and this needs to be considered normal, then raise the threshold
+for this configuration to match this expectation.
+
+
+runStateThreshold_slow <byterate> (default: 0)
+----------------------------------------------
+
+The runStateThreshold_slow option sets how many messages bytes per second to expect this flow
+to transfer normally.
+
+if the data *RxData* and *TxData* fields combined in the *sr3 status* command is lower than this, 
+then the flow will be listed as *slow*.
+
+To address this, consider whether the download patterns (accept/reject) are downloading
+too much data. Downloading unused data will slow down transfer of data interest.
+
+After considering the data in the flow, consider increasing instances in the configuration 
+or splitting up the load among several configurations, to improve parallelization.
+If the speed observed is to be considered normal for that flow, then set the threshold
+appropriately.
+
 
 scheduled_interval,scheduled_hour,scheduled_minute
 --------------------------------------------------

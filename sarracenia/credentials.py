@@ -233,7 +233,11 @@ class CredentialDB:
         # cache it as is... we dont want to validate every time
 
         self.add(urlstr)
-        return False, self.credentials[urlstr]
+        if url and url.password:
+            k=urlstr.replace( f':{url.password}@', '@' )
+        else:
+            k=urlstr
+        return False, self.credentials[k]
 
     def has(self, urlstr):
         """Return ``True`` if the Credential matching the urlstr is already in the CredentialDB.

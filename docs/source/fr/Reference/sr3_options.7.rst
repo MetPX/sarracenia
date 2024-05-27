@@ -877,6 +877,8 @@ housekeeping <intervalle> (défaut: 300 secondes)
 L’option **housekeeping** définit la fréquence d’exécution du traitement périodique tel que déterminé par
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
 
+
+
 include config
 --------------
 
@@ -1024,6 +1026,7 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 * z,a : calculer la valeur de la somme de contrôle en utilisant l'algorithme a et l'assigner après le téléchargement.
 
 .. [#] seulement implémenter en C. ( voir https://github.com/MetPX/sarracenia/issues/117 )
+
 
 
 logEvents ( défaut: after_accept,after_work,on_housekeeping )
@@ -1292,7 +1295,7 @@ Les options **permDefault** spécifient un masque, c’est-à-dire que les autor
 au moins ce qui est spécifié.
 
 persistent <flag> (défaut: True)
-----------------------------------
+--------------------------------
 
 L'option **persistent** définit le *delivery_mode* pour un message AMQP. Lorsqu'il
 est choisi, les messages persistants seront publiés (``delivery_mode=2``). Lorsqu'ils
@@ -1495,10 +1498,7 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
-sendTo <url>
----------------
 
-Specification du serveur auquel on veut livrer des données (dans un *sender*) 
 
 
 rename <chemin>
@@ -1564,14 +1564,99 @@ panne et doit renvoyer plus tard, tandis que l'option **retry_refilter** est uti
 de la configuration
 
 
-retry_ttl <duration> (défaut: identique à expire)
--------------------------------------------------
+retry_ttl <intervalle> (défaut: identique à expire)
+---------------------------------------------------
 
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
-sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
+
+runStateThreshold_hung <intervalle> (défaut: 450s)
+--------------------------------------------------
+
+L'option runStateThreshold_hung (anciennement : **sanity_log_dead**) définit la durée à considérer comme trop longue avant de redémarrer
+un flot. lors de l'exécution du *statut sr3*, l'état du flux sera affiché comme *hung*
+
+Cela peut indiquer un problème avec un plugin de sondage qui ne libère pas le processeur. ou alors une sorte de problème de réseau.
+Une exécution périodique *sr3 sanity* (en tant que tâche cron) redémarrera les tâches bloquées.
+
+
+runStateThreshold_idle <intervalle> (default: 900s)
+---------------------------------------------------
+
+L'option runStateThreshold_idle définit le lapse de temps avant de déclarer qu'aucun transfert est en cours.
+la commande *sr3 status* affichera ces flux comme *idle*
+
+Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
+Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
+Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
+message reçu.
+
+Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
+d'un certain débit est attendu, définissez le *runStateThreshold_slow* pour le flux afin que 
+les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
+
+runStateThreshold_lag <intervalle> (défaut: 30s)
+------------------------------------------------
+
+L'option runStateThreshold_lag définit le délai de traitement des messages à tolèrer normalement.
+Si les champs AvgLag dans la commande *sr3 status* dépassent cette intervalle, 
+le flux sera répertorié comme *lagging* (en retard).
+
+Lorsqu’un flux est en retard, il faut envisager de l’accélérer :
+
+* restreindre la portée de l'abonnement (*subtopic* plus restreints)
+* restreindre la portée des téléchargements (plus de *reject* dans les clauses d'acceptation/rejet)
+* augmenter les ressources de téléchargement (plus d'*instances*
+* diviser le flux en plusieurs flux indépendants.
+
+Si le décalage constaté est raisonnable à accepter pour l'application, alors
+augmenter le runStateThreshold_lag pour ce flux pourrait également être un remède raisonnable.
+
+
+runStateThreshold_reject <compte> (default: 80)
+-----------------------------------------------
+
+L'option rejetThreshold définit le nombre de messages à rejeter, en pourcentage,
+d'un flux et considère comme normal. Si le champ data *%rej* dans la commande *sr3 status*
+dépasse cela, alors le flux sera répertorié comme *reje*.
+
+Pour y répondre, examinez le sous-thème dans la configuration et raffinez-le afin que
+moins de messages soient transférés du courtier si possible. Si cela n’est pas possible, 
+augmentez le seuil pour le flux concerné pour que *sr3 status* juge ce comportement comme normale.
+
+
+runStateThreshold_retry <compte> (default: 1000)
+------------------------------------------------
+
+L'option runStateThreshold_retry définit la taille d'une file d'attente de transferts et de publications à réessayer
+est considéré comme normal. Si le champ de données *Retry* dans la commande *sr3 status* dépasse cela, 
+alors le flux sera répertorié comme *retr*.
+
+Pour y remédier, examinez les journaux pour déterminer pourquoi tant de transferts échouent. Déterminer la cause.
+Si la cause ne peut pas être traitée et que cela doit être considéré comme normal, augmentez le seuil
+pour que cette configuration corresponde à cette attente.
+
+runStateThreshold_slow <taux> (default: 0o/s)
+---------------------------------------------
+
+L'option runStateThreshold_slow définit le seuil minimum d'octets de données transféré par seconde 
+pour être déclaré normale. Si le totale des champs data *RxData* et *TxData* dans la 
+commande *sr3 status* sont inférieurs à cet seuil, le flux sera répertorié comme *slow* (lent).
+
+Pour résoudre ce problème, déterminez si les modèles de téléchargement (accepter/rejeter) sont en train 
+de télécharger trop de données. Le téléchargement de données inutilisées ralentira le transfert des données 
+intéressantes.
+
+Après avoir considéré les données dans le flux, envisagez d'augmenter les instances dans la configuration
+ou répartir la charge entre plusieurs configurations, pour améliorer la parallélisation.
+Si la vitesse observée doit être considérée comme normale pour ce flux, alors définissez le seuil
+de manière appropriée.
+
+
+
+sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 -------------------------------------------------------
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
@@ -1594,6 +1679,12 @@ spécificateurs de temps ::
 
 afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.
+
+sendTo <url>
+------------
+
+Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
@@ -1624,8 +1715,8 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
 ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
 
-sleep <temps>
--------------
+sleep <intervalle>
+------------------
 
 Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
@@ -1634,8 +1725,9 @@ les modifications apportées à un fichier pendant le temps de *sleep*, et produ
 
 Lorsque *sleep* est donné une valeur >0 pour être utilisé avec un *poll*, cela a pour effet de 
 définir *scheduled_interval*, pour des raisons de compatibilité. 
-Il est préférable que le sondage utilise explicitement les paramètres  *scheduled_interval*,
+Il est préférable que le sonde utilise explicitement les paramètres *scheduled_interval*,
 *scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
+
 
 statehost <booléen> ( défaut: False )
 -------------------------------------

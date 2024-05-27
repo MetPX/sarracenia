@@ -24,6 +24,7 @@
 import calendar, datetime
 from hashlib import md5
 from hashlib import sha512
+import humanize
 import logging
 import os
 import random
@@ -172,7 +173,26 @@ class Transfer():
         self.fpos = 0
         self.tbytes = 0
         self.tbegin = nowflt()
+        self.lastLog = self.tbegin
         self.byteRate = 0
+        self.logMinimumInterval = 60
+        #if hasattr(self.o,'sanity_log_dead'):
+        #    self.logMinimumInterval = self.o.runStateThreshold_hung/4
+        #else:
+        #    self.logMinimumInterval = 30
+
+    def logProgress(self,sz):
+        """
+
+           if there hasn't been a log message in at least logMinumumInterval, 
+           then put out a message, so sanity does not think it is dead.
+           
+           this should print out a message once in a while for long file transfers.
+        """
+        now=nowflt()
+        if now-self.lastLog > self.logMinimumInterval:
+            logger.info( f"{humanize.naturalsize(sz,binary=True)} written so far.")
+            self.lastLog=now
 
     def local_read_close(self, src):
         #logger.debug("sr_proto local_read_close")
@@ -250,7 +270,6 @@ class Transfer():
             Checksum calculation is based on pre transformation... likely need
             a post transformation value as well.
         """
-
         return chunk
 
         #FIXME ... need to re-enable on_data plugins... not sure how they should work.
@@ -264,6 +283,7 @@ class Transfer():
         rw_length = 0
         self.tbytes = 0.0
         self.tbegin = nowflt()
+        self.lastLog = self.tbegin
 
         # length = 0, transfer entire remote file to local file
 
@@ -273,8 +293,9 @@ class Transfer():
                 chunk = src.read(self.o.bufsize)
                 if chunk:
                     new_chunk = self.on_data(chunk)
+                    rw_length += len(new_chunk)
                     dst.write(new_chunk)
-                    rw_length += len(chunk)
+                    self.logProgress(rw_length)
                 alarm_cancel()
                 if not chunk: break
                 if self.sumalgo: self.sumalgo.update(chunk)
@@ -296,6 +317,7 @@ class Transfer():
                 new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
+                self.logProgress(rw_length)
             alarm_cancel()
             if not chunk: break
             if self.sumalgo: self.sumalgo.update(chunk)
@@ -311,6 +333,7 @@ class Transfer():
                 new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
+                self.logProgress(rw_length)
             alarm_cancel()
             if self.sumalgo: self.sumalgo.update(chunk)
             self.throttle(chunk)
@@ -433,6 +456,7 @@ class Transfer():
         if self.chunk_iow: self.chunk_iow.write(chunk)
         self.rw_length += len(chunk)
         alarm_cancel()
+        self.logProgress(self.rw_length)
         if self.sumalgo: self.sumalgo.update(chunk)
         self.throttle(chunk)
         if self.o.timeout: alarm_set(self.o.timeout)
@@ -448,6 +472,7 @@ class Transfer():
         self.chunk_iow = proto
         self.tbytes = 0.0
         self.tbegin = nowflt()
+        self.lastLog = self.tbegin
         self.rw_length = 0
         if self.o.timeout: alarm_set(self.o.timeout)
 
