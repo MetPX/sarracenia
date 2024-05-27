@@ -468,9 +468,9 @@ in the file  .config/sarra/admin.conf ::
  declare subscriber anonymous
  declare source peter
 
-Now to configure the pump execute the following::
+Now to configure the pump, execute the following::
 
- *sr3 --users declare*
+ sr3 --users declare
 
 Sample run::
 
@@ -580,6 +580,12 @@ To remove users, just remove *declare source Alice* from the admin.conf file, an
 
 again. To delete users, one can use the existing rabbitmq management interfaces directly.
 The creation is automated because the read/write/configure patterns are cumbersome to do manually.
+
+- Note: By default, all users are declared. However, flows can be specified on the command line to constrain
+  the declared users to only those in the given flow. For example:
+
+  - *sr3 \-\-users declare* will declare all users
+  - *sr3 \-\-users declare subscribe/dd_amis* will only declare users specified in *subscribe/dd_amis*
 
 
 First Subscribe

@@ -147,6 +147,9 @@ class Raw2bulletin(FlowCB):
                 # with open(new_path, 'w') as f: f.write(data)
 
                 logger.error(f"New filename (for problem file): {new_file}")
+            elif stn_id == None:
+                new_file = header + "_" + BBB + "_" + '' + "_" + seq + "_PROBLEM"
+                logger.error(f"New filename (for problem file): {new_file}")
             elif ddhhmm == '':
                 new_file = header + "_" + BBB + "_" + stn_id + "_" + seq
             else:

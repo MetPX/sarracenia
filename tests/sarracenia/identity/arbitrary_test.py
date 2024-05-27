@@ -1,16 +1,12 @@
 import pytest
-import os
+from tests.conftest import *
 #from unittest.mock import Mock
 
+import os
 import logging
 
 import sarracenia
 import sarracenia.identity.arbitrary
-
-#useful for debugging tests
-import pprint
-pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
-
 
 def test___init__():
     hash = sarracenia.identity.arbitrary.Arbitrary()

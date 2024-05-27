@@ -699,8 +699,10 @@ class MQTT(Moth):
                     if 'post_exchangeSplit' in self.o:
                         # FIXME: assert ( len(self.o['exchange']) == self.o['post_exchangeSplit'] )
                         #        if that isn't true... then there is something wrong... should we check ?
-                        idx = sum(
-                            bytearray(body['identity']['value'],
+                        if 'exchangeSplitOverride' in message:
+                            idx = int(message['exchangeSplitOverride'])%len(self.o['exchange'])
+                        else:
+                            idx = sum(bytearray(body['identity']['value'],
                                       'ascii')) % len(self.o['exchange'])
                         exchange = self.o['exchange'][idx]
                     else:
@@ -738,6 +740,10 @@ class MQTT(Moth):
                     logger.info( f"UserProperty:{props.UserProperty}" )
                     
 
+            if not topic:
+                logger.error(f"message without topic will not be received - publish aborted")
+                return False
+            
             info = self.client.publish(topic=topic, payload=raw_body, qos=self.o['qos'], properties=props)
                
             if info.rc == paho.mqtt.client.MQTT_ERR_SUCCESS:

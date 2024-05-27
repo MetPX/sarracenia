@@ -526,9 +526,9 @@ dans le fichier .config/sarra/admin.conf ::
 
 Maintenant, pour configurer la pompe, exécutez ce qui suit::
 
- *sr3 --users declare*
+ sr3 --users declare
 
-resultat::
+Resultat::
 
   fractal% sr3 --users declare
   2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
@@ -637,6 +637,12 @@ du fichier admin.conf, et d'exécuter::
 
 encore. Pour supprimer des utilisateurs, on peut utiliser directement les interfaces de gestion rabbitmq existantes.
 La création est automatisée car les modèles de lecture/écriture/configuration sont lourds à faire manuellement.
+
+- Remarque: Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur 
+  la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,
+
+  - *sr3 \-\-users declare* déclarera tous les utilisateurs
+  - *sr3 \-\-users declare subscribe/dd_amis* ne déclarera que les utilisateurs spécifiés dans *subscribe/dd_amis*
 
 
 Premier abonnement

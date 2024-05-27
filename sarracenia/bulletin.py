@@ -249,7 +249,7 @@ class Bulletin:
             # Added to SR3
             # The station needs to be alphanumeric, between 3 and 5 characters. If not, don't assign a station
             if re.search('^[a-zA-Z0-9]{3,5}$', station) == None:
-                station = ''
+                station = None
 
         return station
 

@@ -63,6 +63,9 @@ class V02(PostFormat):
         msg['relPath'] = relPath
         msg['subtopic'] = relPath.split('/')
         msg['to_clusters'] = 'ALL'
+        if 'integrity' in msg:
+            msg['identity'] = msg['integrity']
+            del msg['integrity']
         msg['_deleteOnPost'] |= set(['subtopic'])
 
         for t in ['atime', 'mtime']:
