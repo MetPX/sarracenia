@@ -192,12 +192,14 @@
     <span class="s1">&#39;dry_run&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="s1">&#39;flowMain&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_idle&#39;</span><span class="p">:</span> <span class="mi">900</span><span class="p">,</span>
     <span class="s1">&#39;inflight&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="s1">&#39;inline&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;inlineOnly&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;identity_method&#39;</span><span class="p">:</span> <span class="s1">&#39;sha512&#39;</span><span class="p">,</span>
     <span class="s1">&#39;logMetrics&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;logStdout&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_lag&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
     <span class="s1">&#39;nodupe_driver&#39;</span><span class="p">:</span> <span class="s1">&#39;disk&#39;</span><span class="p">,</span>
     <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -211,10 +213,13 @@
     <span class="s1">&#39;post_format&#39;</span><span class="p">:</span> <span class="s1">&#39;v03&#39;</span><span class="p">,</span>
     <span class="s1">&#39;realpathPost&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;recursive&#39;</span> <span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_reject&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
     <span class="s1">&#39;report&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;retryEmptyBeforeExit&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;retry_refilter&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">:</span> <span class="mi">9999</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_retry&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">:</span> <span class="mi">450</span><span class="p">,</span>
+    <span class="s1">&#39;runStateThreshold_slow&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;sourceFromMessage&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="s1">&#39;sundew_compat_regex_first_match_is_zero&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
@@ -229,7 +234,7 @@
 <span class="n">count_options</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;batch&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;exchangeSplit&#39;</span><span class="p">,</span> <span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateCount&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;post_exchangeSplit&#39;</span><span class="p">,</span> <span class="s1">&#39;prefetch&#39;</span><span class="p">,</span> <span class="s1">&#39;messageCountMax&#39;</span><span class="p">,</span> <span class="s1">&#39;messageRateMax&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;messageRateMin&#39;</span>
+    <span class="s1">&#39;messageRateMin&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_reject&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_retry&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_slow&#39;</span>
 <span class="p">]</span>
 
 
@@ -248,7 +253,7 @@
 
 <span class="n">duration_options</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;message_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">,</span> \
-    <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
+    <span class="s1">&#39;runStateThreshold_idle&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_lag&#39;</span><span class="p">,</span> <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
 <span class="p">]</span>
 
 <span class="n">list_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;vip&#39;</span> <span class="p">]</span>
@@ -855,6 +860,7 @@
         <span class="s1">&#39;realpath_post&#39;</span> <span class="p">:</span> <span class="s1">&#39;realpathPost&#39;</span><span class="p">,</span>
         <span class="s1">&#39;remoteUrl&#39;</span> <span class="p">:</span> <span class="s1">&#39;sendTo&#39;</span><span class="p">,</span> 
         <span class="s1">&#39;report_back&#39;</span><span class="p">:</span> <span class="s1">&#39;report&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sanity_log_dead&#39;</span><span class="p">:</span> <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">,</span>
         <span class="s1">&#39;sd&#39;</span> <span class="p">:</span> <span class="s1">&#39;nodupe_ttl&#39;</span><span class="p">,</span>
         <span class="s1">&#39;sdb&#39;</span> <span class="p">:</span> <span class="s1">&#39;nodupe_basis&#39;</span><span class="p">,</span> 
         <span class="s1">&#39;simulate&#39;</span><span class="p">:</span> <span class="s1">&#39;dry_run&#39;</span><span class="p">,</span>
@@ -2047,8 +2053,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanity_log_dead</span> <span class="o">==</span> <span class="mi">9999</span> <span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sanity_log_dead</span> <span class="o">=</span> <span class="mf">1.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;post_topicPrefix&#39;</span><span class="p">):</span>
            <span class="bp">self</span><span class="o">.</span><span class="n">post_topicPrefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topicPrefix</span>
 
@@ -2177,6 +2181,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">scheduled_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">sleep</span><span class="o">=</span><span class="mi">1</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">runStateThreshold_hung</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">housekeeping</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;runStateThreshold_hung </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">runStateThreshold_hung</span><span class="si">}</span><span class="s2"> set lower than housekeeping </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">housekeeping</span><span class="si">}</span><span class="s2">. sr3 sanity might think this flow is hung kill it too quickly.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vip</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">features</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;vip feature requested, but missing library: </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">][</span><span class="s1">&#39;modules_needed&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>

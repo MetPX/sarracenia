@@ -1484,10 +1484,68 @@ file errors, and some messages had incorrect selection or destination criteria.<
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.</p>
 </section>
-<section id="sanity-log-dead-interval-default-1-5-housekeeping">
-<h4>sanity_log_dead &lt;interval&gt; (default: 1.5*housekeeping)<a class="headerlink" href="#sanity-log-dead-interval-default-1-5-housekeeping" title="Link to this heading"></a></h4>
-<p>The <strong>sanity_log_dead</strong> option sets how long to consider too long before restarting
-a component.</p>
+<section id="runstatethreshold-hung-interval-default-450">
+<h4>runStateThreshold_hung &lt;interval&gt; (default: 450)<a class="headerlink" href="#runstatethreshold-hung-interval-default-450" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_hung (formerly: <strong>sanity_log_dead</strong>) option sets how long to consider too long before restarting
+a component. when running <em>sr3 status</em>, the flow status will be shown as <em>hung</em></p>
+<p>This may indicate a problem with a poll plugin not releasing the cpu. or so sort of network hiccup.
+A periodic run <em>sr3 sanity</em> (as a cron job) will restart hung jobs.</p>
+</section>
+<section id="runstatethreshold-idle-interval-default-900">
+<h4>runStateThreshold_idle &lt;interval&gt; (default: 900)<a class="headerlink" href="#runstatethreshold-idle-interval-default-900" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_idle option sets how long to consider too long before declaring no transfers are occurring.
+the <em>sr3 status</em> command will show such flows as <em>idle</em></p>
+<p>In a flow that posts data, the last activity will be based on when it posted last.
+In a flow that transfers data, the last activity will be based on the last data transfer.
+In a flow does neither of the above, then the last activity is based on the last message
+received.</p>
+<p>This isn’t a problem in itself, unless one is expecting a continuous flow. If a continuous flow
+of a certain rate is expected, set the <em>runStateThreshold_slow</em> for the flow so that <em>sr3 status</em> flags
+it as a problem.</p>
+</section>
+<section id="runstatethreshold-lag-interval-default-30">
+<h4>runStateThreshold_lag &lt;interval&gt; (default: 30)<a class="headerlink" href="#runstatethreshold-lag-interval-default-30" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_lag option sets how much delay in message processing to consider normal.
+if the data AvgLag in the <em>sr3 status</em> command exceeds this, then the flow will be listed
+as <em>lagging</em>.</p>
+<p>When a flow is lagging, one should consider accellerating it:
+* narrow the scope of the subscription (narrower <em>subtopics</em>)
+* narrow the scope of the downloads (more <em>reject</em>’s in the accept/reject clauses)
+* increase the download resources (more <em>instances</em>
+* split the flow into multiple independent flows.</p>
+<p>If the amount of lag being seen is reasonable to accept for the application, then
+raising the runStateThreshold_lag for that flow could also be a reasonable remedy.</p>
+</section>
+<section id="runstatethreshold-reject-count-default-80">
+<h4>runStateThreshold_reject &lt;count&gt; (default: 80)<a class="headerlink" href="#runstatethreshold-reject-count-default-80" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_reject option sets how many messages to reject, as a percentage,
+from a flow and consider normal. If the data <em>%rej</em> field in the <em>sr3 status</em> command
+exceeds this, then the flow will be listed as <em>reje</em>.</p>
+<p>To address, examine the subtopic in the configuration, and narrow them so that fewer messages
+are transferred from the broker if possible. If that is not possible, then raise the threshold
+for the flow affected.</p>
+</section>
+<section id="runstatethreshold-retry-count-default-1000">
+<h4>runStateThreshold_retry &lt;count&gt; (default: 1000)<a class="headerlink" href="#runstatethreshold-retry-count-default-1000" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_retry option sets how big a queue of transfers and posts to retry
+is considered normal. If the data <em>Retry</em> field in the <em>sr3 status</em> command
+exceeds this, then the flow will be listed as <em>retr</em>.</p>
+<p>To address, examine the logs to determine why so many transfers are failing. Address the cause.
+If the cause cannot be addressed and this needs to be considered normal, then raise the threshold
+for this configuration to match this expectation.</p>
+</section>
+<section id="runstatethreshold-slow-byterate-default-0">
+<h4>runStateThreshold_slow &lt;byterate&gt; (default: 0)<a class="headerlink" href="#runstatethreshold-slow-byterate-default-0" title="Link to this heading"></a></h4>
+<p>The runStateThreshold_slow option sets how many messages bytes per second to expect this flow
+to transfer normally.</p>
+<p>if the data <em>RxData</em> and <em>TxData</em> fields combined in the <em>sr3 status</em> command is lower than this,
+then the flow will be listed as <em>slow</em>.</p>
+<p>To address this, consider whether the download patterns (accept/reject) are downloading
+too much data. Downloading unused data will slow down transfer of data interest.</p>
+<p>After considering the data in the flow, consider increasing instances in the configuration
+or splitting up the load among several configurations, to improve parallelization.
+If the speed observed is to be considered normal for that flow, then set the threshold
+appropriately.</p>
 </section>
 <section id="scheduled-interval-scheduled-hour-scheduled-minute">
 <h4>scheduled_interval,scheduled_hour,scheduled_minute<a class="headerlink" href="#scheduled-interval-scheduled-hour-scheduled-minute" title="Link to this heading"></a></h4>

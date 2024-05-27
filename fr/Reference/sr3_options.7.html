@@ -1424,10 +1424,6 @@ surveiller l’arborescence, mais l’arborescence peut avoir des chemins compl�
 donné. Cette option impose également la traversée de liens symboliques.</p>
 <p>Cette option est utilisée pour étudier certains cas d’utilisation et pourrait disparaître à l’avenir.</p>
 </section>
-<section id="sendto-url">
-<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
-<p>Specification du serveur auquel on veut livrer des données (dans un <em>sender</em>)</p>
-</section>
 <section id="rename-chemin">
 <h4>rename &lt;chemin&gt;<a class="headerlink" href="#rename-chemin" title="Link to this heading"></a></h4>
 <p>Avec l’option <em>renommer</em>, l’utilisateur peut suggérer un chemin de destination pour ses fichiers. Si le
@@ -1482,14 +1478,79 @@ répété, les destinations recalculées.)</p>
 panne et doit renvoyer plus tard, tandis que l’option <strong>retry_refilter</strong> est utilisée lors de la récupération
 de la configuration</p>
 </section>
-<section id="retry-ttl-duration-defaut-identique-a-expire">
-<h4>retry_ttl &lt;duration&gt; (défaut: identique à expire)<a class="headerlink" href="#retry-ttl-duration-defaut-identique-a-expire" title="Link to this heading"></a></h4>
+<section id="retry-ttl-intervalle-defaut-identique-a-expire">
+<h4>retry_ttl &lt;intervalle&gt; (défaut: identique à expire)<a class="headerlink" href="#retry-ttl-intervalle-defaut-identique-a-expire" title="Link to this heading"></a></h4>
 <p>L’option <strong>retry_ttl</strong> (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.</p>
 </section>
-<section id="sanity-log-dead-interva-le-defaut-1-5-housekeeping">
-<h4>sanity_log_dead &lt;interva;le&gt; (défaut: 1.5*housekeeping)<a class="headerlink" href="#sanity-log-dead-interva-le-defaut-1-5-housekeeping" title="Link to this heading"></a></h4>
+<section id="runstatethreshold-hung-intervalle-defaut-450s">
+<h4>runStateThreshold_hung &lt;intervalle&gt; (défaut: 450s)<a class="headerlink" href="#runstatethreshold-hung-intervalle-defaut-450s" title="Link to this heading"></a></h4>
+<p>L’option runStateThreshold_hung (anciennement : <strong>sanity_log_dead</strong>) définit la durée à considérer comme trop longue avant de redémarrer
+un flot. lors de l’exécution du <em>statut sr3</em>, l’état du flux sera affiché comme <em>hung</em></p>
+<p>Cela peut indiquer un problème avec un plugin de sondage qui ne libère pas le processeur. ou alors une sorte de problème de réseau.
+Une exécution périodique <em>sr3 sanity</em> (en tant que tâche cron) redémarrera les tâches bloquées.</p>
+</section>
+<section id="runstatethreshold-idle-intervalle-default-900s">
+<h4>runStateThreshold_idle &lt;intervalle&gt; (default: 900s)<a class="headerlink" href="#runstatethreshold-idle-intervalle-default-900s" title="Link to this heading"></a></h4>
+<p>L’option runStateThreshold_idle définit le lapse de temps avant de déclarer qu’aucun transfert est en cours.
+la commande <em>sr3 status</em> affichera ces flux comme <em>idle</em></p>
+<p>Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
+Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
+Dans un flux dont aucun des cas ci-haut s’appliquent, la dernière activité est alors basée sur le dernier
+message reçu.</p>
+<p>Ce n’est pas un problème en soi, sauf si l’on s’attend à un flux continu. Si un flux continu
+d’un certain débit est attendu, définissez le <em>runStateThreshold_slow</em> pour le flux afin que
+les indicateurs <em>sr3 status</em> que c’est un problème (en affichant <em>slow</em> )</p>
+</section>
+<section id="runstatethreshold-lag-intervalle-defaut-30s">
+<h4>runStateThreshold_lag &lt;intervalle&gt; (défaut: 30s)<a class="headerlink" href="#runstatethreshold-lag-intervalle-defaut-30s" title="Link to this heading"></a></h4>
+<p>L’option runStateThreshold_lag définit le délai de traitement des messages à tolèrer normalement.
+Si les champs AvgLag dans la commande <em>sr3 status</em> dépassent cette intervalle,
+le flux sera répertorié comme <em>lagging</em> (en retard).</p>
+<p>Lorsqu’un flux est en retard, il faut envisager de l’accélérer :</p>
+<ul class="simple">
+<li><p>restreindre la portée de l’abonnement (<em>subtopic</em> plus restreints)</p></li>
+<li><p>restreindre la portée des téléchargements (plus de <em>reject</em> dans les clauses d’acceptation/rejet)</p></li>
+<li><p>augmenter les ressources de téléchargement (plus d’<em>instances</em></p></li>
+<li><p>diviser le flux en plusieurs flux indépendants.</p></li>
+</ul>
+<p>Si le décalage constaté est raisonnable à accepter pour l’application, alors
+augmenter le runStateThreshold_lag pour ce flux pourrait également être un remède raisonnable.</p>
+</section>
+<section id="runstatethreshold-reject-compte-default-80">
+<h4>runStateThreshold_reject &lt;compte&gt; (default: 80)<a class="headerlink" href="#runstatethreshold-reject-compte-default-80" title="Link to this heading"></a></h4>
+<p>L’option rejetThreshold définit le nombre de messages à rejeter, en pourcentage,
+d’un flux et considère comme normal. Si le champ data <em>%rej</em> dans la commande <em>sr3 status</em>
+dépasse cela, alors le flux sera répertorié comme <em>reje</em>.</p>
+<p>Pour y répondre, examinez le sous-thème dans la configuration et raffinez-le afin que
+moins de messages soient transférés du courtier si possible. Si cela n’est pas possible,
+augmentez le seuil pour le flux concerné pour que <em>sr3 status</em> juge ce comportement comme normale.</p>
+</section>
+<section id="runstatethreshold-retry-compte-default-1000">
+<h4>runStateThreshold_retry &lt;compte&gt; (default: 1000)<a class="headerlink" href="#runstatethreshold-retry-compte-default-1000" title="Link to this heading"></a></h4>
+<p>L’option runStateThreshold_retry définit la taille d’une file d’attente de transferts et de publications à réessayer
+est considéré comme normal. Si le champ de données <em>Retry</em> dans la commande <em>sr3 status</em> dépasse cela,
+alors le flux sera répertorié comme <em>retr</em>.</p>
+<p>Pour y remédier, examinez les journaux pour déterminer pourquoi tant de transferts échouent. Déterminer la cause.
+Si la cause ne peut pas être traitée et que cela doit être considéré comme normal, augmentez le seuil
+pour que cette configuration corresponde à cette attente.</p>
+</section>
+<section id="runstatethreshold-slow-taux-default-0o-s">
+<h4>runStateThreshold_slow &lt;taux&gt; (default: 0o/s)<a class="headerlink" href="#runstatethreshold-slow-taux-default-0o-s" title="Link to this heading"></a></h4>
+<p>L’option runStateThreshold_slow définit le seuil minimum d’octets de données transféré par seconde
+pour être déclaré normale. Si le totale des champs data <em>RxData</em> et <em>TxData</em> dans la
+commande <em>sr3 status</em> sont inférieurs à cet seuil, le flux sera répertorié comme <em>slow</em> (lent).</p>
+<p>Pour résoudre ce problème, déterminez si les modèles de téléchargement (accepter/rejeter) sont en train
+de télécharger trop de données. Le téléchargement de données inutilisées ralentira le transfert des données
+intéressantes.</p>
+<p>Après avoir considéré les données dans le flux, envisagez d’augmenter les instances dans la configuration
+ou répartir la charge entre plusieurs configurations, pour améliorer la parallélisation.
+Si la vitesse observée doit être considérée comme normale pour ce flux, alors définissez le seuil
+de manière appropriée.</p>
+</section>
+<section id="sanity-log-dead-intervalle-defaut-1-5-housekeeping">
+<h4>sanity_log_dead &lt;intervalle&gt; (défaut: 1.5*housekeeping)<a class="headerlink" href="#sanity-log-dead-intervalle-defaut-1-5-housekeeping" title="Link to this heading"></a></h4>
 <p>L’option <strong>sanity_log_dead</strong> définit la durée à prendre en compte avant de redémarrer un composant.</p>
 </section>
 <section id="scheduled-interval-scheduled-hour-scheduled-minute">
@@ -1509,6 +1570,10 @@ spécificateurs de temps</p>
 </div>
 <p>afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.</p>
+</section>
+<section id="sendto-url">
+<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
+<p>Specification du serveur auquel on veut livrer des données (dans un <em>sender</em>)</p>
 </section>
 <section id="shim-defer-posting-to-exit-experimental">
 <h4>shim_defer_posting_to_exit (EXPERIMENTAL)<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>
@@ -1536,15 +1601,15 @@ n’est pas respecté, afin de fournir le message d’annonce final le plus pré
 L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
 ouvert et ne poste pas si c’est le cas. (défaut: Vrai)</p>
 </section>
-<section id="sleep-temps">
-<h4>sleep &lt;temps&gt;<a class="headerlink" href="#sleep-temps" title="Link to this heading"></a></h4>
+<section id="sleep-intervalle">
+<h4>sleep &lt;intervalle&gt;<a class="headerlink" href="#sleep-intervalle" title="Link to this heading"></a></h4>
 <p>Temps d’attente entre la génération d’événements. Lorsqu’on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
 ne peut pas être fait assez rapidement pour suivre le rythme.  Dans de telles circonstances, on peut regrouper toutes
 les modifications apportées à un fichier pendant le temps de <em>sleep</em>, et produire un seul poste.</p>
 <p>Lorsque <em>sleep</em> est donné une valeur &gt;0 pour être utilisé avec un <em>poll</em>, cela a pour effet de
 définir <em>scheduled_interval</em>, pour des raisons de compatibilité.
-Il est préférable que le sondage utilise explicitement les paramètres  <em>scheduled_interval</em>,
+Il est préférable que le sonde utilise explicitement les paramètres <em>scheduled_interval</em>,
 <em>scheduled_hour</em>, et/ou <em>scheduled_minute</em> plutôt que <em>sleep</em>.</p>
 </section>
 <section id="statehost-booleen-defaut-false">

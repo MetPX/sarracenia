@@ -266,6 +266,7 @@
 
         <span class="c1"># timeout alarm 100 secs to connect</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">expire</span> <span class="o">=</span> <span class="o">-</span><span class="mi">999</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">expire</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span>
@@ -298,13 +299,8 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">pwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span>
-
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
-
             <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span> <span class="o">=</span> <span class="n">ftp</span>
-
-            <span class="c1">#alarm_cancel()</span>
-            <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">except</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unable to connect to </span><span class="si">%s</span><span class="s2"> (user:</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span>
@@ -312,7 +308,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">alarm_cancel</span><span class="p">()</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span>
 
     <span class="c1"># credentials...</span>
     <span class="k">def</span> <span class="nf">credentials</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -372,11 +368,16 @@
 
         <span class="c1"># download</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk_init</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="s1">&#39;RETR &#39;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">,</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="s1">&#39;RETR &#39;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">,</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;RETR &#39;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;RETR &#39;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">Ex</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;failed to get </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">local_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">Ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+
         <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk_end</span><span class="p">()</span>
 
         <span class="c1"># close</span>
@@ -425,8 +426,6 @@
     <span class="k">def</span> <span class="nf">line_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iline</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_ftp line_callback %s&quot; % iline)</span>
 
-        <span class="n">alarm_cancel</span><span class="p">()</span>
-
         <span class="n">oline</span> <span class="o">=</span> <span class="n">iline</span>
         <span class="n">oline</span> <span class="o">=</span> <span class="n">oline</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">oline</span> <span class="o">=</span> <span class="n">oline</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -455,8 +454,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">fil</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
 
-        <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-
     <span class="c1"># mkdir</span>
     <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
@@ -484,11 +481,15 @@
 
         <span class="c1"># upload</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk_init</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">storbinary</span><span class="p">(</span><span class="s2">&quot;STOR &quot;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">,</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">storbinary</span><span class="p">(</span><span class="s2">&quot;STOR &quot;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">,</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">storlines</span><span class="p">(</span><span class="s2">&quot;STOR &quot;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">storlines</span><span class="p">(</span><span class="s2">&quot;STOR &quot;</span> <span class="o">+</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">Ex</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;failed to put </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">local_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">Ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+
         <span class="n">rw_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chunk_end</span><span class="p">()</span>
 
         <span class="c1"># close</span>

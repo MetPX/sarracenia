@@ -2489,6 +2489,14 @@ the handle_* entry points.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.transfer.Transfer.logProgress">
+<span class="sig-name descname"><span class="pre">logProgress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer.html#Transfer.logProgress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.Transfer.logProgress" title="Link to this definition"></a></dt>
+<dd><p>if there hasn’t been a log message in at least logMinumumInterval,
+then put out a message, so sanity does not think it is dead.</p>
+<p>this should print out a message once in a while for long file transfers.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.transfer.Transfer.on_data">
 <span class="sig-name descname"><span class="pre">on_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/sarracenia/transfer.html#Transfer.on_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.Transfer.on_data" title="Link to this definition"></a></dt>
 <dd><p>transform data as it is being read.

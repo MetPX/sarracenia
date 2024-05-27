@@ -112,6 +112,7 @@
 <span class="kn">import</span> <span class="nn">calendar</span><span class="o">,</span> <span class="nn">datetime</span>
 <span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">md5</span>
 <span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha512</span>
+<span class="kn">import</span> <span class="nn">humanize</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">random</span>
@@ -271,7 +272,29 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">byteRate</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logMinimumInterval</span> <span class="o">=</span> <span class="mi">60</span>
+        <span class="c1">#if hasattr(self.o,&#39;sanity_log_dead&#39;):</span>
+        <span class="c1">#    self.logMinimumInterval = self.o.runStateThreshold_hung/4</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    self.logMinimumInterval = 30</span>
+
+<div class="viewcode-block" id="Transfer.logProgress">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.transfer.Transfer.logProgress">[docs]</a>
+    <span class="k">def</span> <span class="nf">logProgress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sz</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">           if there hasn&#39;t been a log message in at least logMinumumInterval, </span>
+<span class="sd">           then put out a message, so sanity does not think it is dead.</span>
+<span class="sd">           </span>
+<span class="sd">           this should print out a message once in a while for long file transfers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">now</span><span class="o">=</span><span class="n">nowflt</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">now</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">logMinimumInterval</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">humanize</span><span class="o">.</span><span class="n">naturalsize</span><span class="p">(</span><span class="n">sz</span><span class="p">,</span><span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2"> written so far.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span><span class="o">=</span><span class="n">now</span></div>
+
 
     <span class="k">def</span> <span class="nf">local_read_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;sr_proto local_read_close&quot;)</span>
@@ -351,7 +374,6 @@
 <span class="sd">            Checksum calculation is based on pre transformation... likely need</span>
 <span class="sd">            a post transformation value as well.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">return</span> <span class="n">chunk</span></div>
 
 
@@ -366,6 +388,7 @@
         <span class="n">rw_length</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span>
 
         <span class="c1"># length = 0, transfer entire remote file to local file</span>
 
@@ -375,8 +398,9 @@
                 <span class="n">chunk</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
                     <span class="n">new_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_data</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                    <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
                     <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
-                    <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logProgress</span><span class="p">(</span><span class="n">rw_length</span><span class="p">)</span>
                 <span class="n">alarm_cancel</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span> <span class="k">break</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
@@ -398,6 +422,7 @@
                 <span class="n">new_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_data</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
                 <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
                 <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logProgress</span><span class="p">(</span><span class="n">rw_length</span><span class="p">)</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span> <span class="k">break</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
@@ -413,6 +438,7 @@
                 <span class="n">new_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_data</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
                 <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
                 <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logProgress</span><span class="p">(</span><span class="n">rw_length</span><span class="p">)</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
@@ -535,6 +561,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logProgress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
@@ -550,6 +577,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">chunk_iow</span> <span class="o">=</span> <span class="n">proto</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbytes</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span> <span class="o">=</span> <span class="n">nowflt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastLog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbegin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rw_length</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
