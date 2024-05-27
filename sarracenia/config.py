@@ -2008,6 +2008,8 @@ class Config:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
 
+        if self.hungThreshold < self.housekeeping:
+            logger.warning( f"hungTreshold {self.hungThreshold} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )

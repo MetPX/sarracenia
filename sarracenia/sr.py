@@ -2553,7 +2553,7 @@ class sr_GlobalState:
                     cfg_status = "fore"
                 if cfg_status == "lagg" :
                     cfg_status = "lag"
-                if cfg_status == "retry" :
+                if cfg_status == "retr" :
                     cfg_status = "rtry"
                 if cfg_status == "runn" :
                     cfg_status = "run"

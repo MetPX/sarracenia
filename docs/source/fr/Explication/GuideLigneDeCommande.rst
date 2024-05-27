@@ -545,7 +545,7 @@ Les configurations sont répertoriées sur la gauche. Pour chaque configuration,
 sera :
 
 * hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
-* idle : tous les processus en cours d'exécution, mais pas de transfert rien depuis trop longtemps (idleThreshold.)
+* idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (idleThreshold.)
 * lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( lagThreshold )
 * part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
 * reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (rejectThreshold )

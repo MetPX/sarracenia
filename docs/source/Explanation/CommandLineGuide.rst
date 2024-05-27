@@ -544,7 +544,7 @@ will be:
 
 * disa:  disabled, configured not to run.
 * hung:  processes appear hung, not writing anything to logs.
-* idle:  all processes running, but no transfer to too long (idlethreshold.)
+* idle:  all processes running, but no transfer for too long (idlethreshold.)
 * lag:   all processes running, but messages being processed are too old ( lagThreshold )
 * part:  some processes are running, others are missing.
 * reje:  all processes running, but too high percent of messages being rejected (rejectThreshold )
