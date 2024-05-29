@@ -1072,7 +1072,7 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    flow_status = 'unknown'
+                    flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
                     if hung_instances > 0 and (observed_instances > 0):
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
