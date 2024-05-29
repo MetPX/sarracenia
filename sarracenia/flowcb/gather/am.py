@@ -140,6 +140,12 @@ class Am(FlowCB):
                     try:
                         conn, self.remoteHost = self.s.accept()
 
+                        if self.o.AllowIPs:
+                            if self.remoteHost[0] not in self.o.AllowIPs:
+                                logger.debug(f"Connection to IP {self.remoteHost[0]} rejected. Not a part of the Accepted IPs list.")
+                                conn.close()
+                                raise TimeoutError
+
                         # Write out file descriptor of the connected socket so that the child can pick it up.
                         n = 1
                         child_inst += 1
@@ -164,12 +170,6 @@ class Am(FlowCB):
                         logger.error(f"Stopping accept. Exiting. Error message: {e}")
                         sys.exit(0)   
 
-                    if self.o.AllowIPs:
-                        if self.remoteHost[0] not in self.o.AllowIPs:
-                            logger.debug(f"Connection to IP {self.remoteHost[0]} rejected. Not a part of the Accepted IPs list.")
-                            conn.close()
-                            continue
-                    
                     # Instance forks
                     ## Instance 1 (Parent, pid=child_pid): Stays in the loop trying to accept other connections. 
                     ## Insys.argv[2] = str(child_instance)
