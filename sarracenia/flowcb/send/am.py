@@ -38,7 +38,7 @@ from sarracenia.flowcb import FlowCB
 
 logger = logging.getLogger(__name__)
 
-class AM(FlowCB):
+class Am(FlowCB):
     
     def __init__(self, options):
              
