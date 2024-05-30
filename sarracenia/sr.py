@@ -380,7 +380,7 @@ class sr_GlobalState:
         other_config_dir = sarracenia.user_config_dir(savename, self.appauthor)
 
         if not os.path.exists(other_config_dir):
-            os.mkdir(other_config_dir)
+            pathlib.Path(other_config_dir).mkdir(parents=True, exist_ok=True)
 
         for f in ['default.conf', 'admin.conf']:
             to = other_config_dir + os.sep + f
@@ -901,14 +901,15 @@ class sr_GlobalState:
                 }
         for c in self.components:
             if not os.path.exists( self.user_cache_dir + os.sep + c ):
-                os.mkdir(self.user_cache_dir + os.sep + c )
+                pathlib.Path(self.user_cache_dir + os.sep + c ).mkdir(parents=True, exist_ok=True)
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
                     print('missing state for %s/%s' % (c,cfg))
-                    os.mkdir(self.user_cache_dir + os.sep + c + os.sep + cfg)
+                    if not os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg):
+                        pathlib.Path(self.user_cache_dir + os.sep + c + os.sep + cfg).mkdir(parents=True, exist_ok=True)
                     # add config as state in .cache under right directory.
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
