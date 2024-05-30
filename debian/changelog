@@ -1,7 +1,18 @@
 metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
 
+  * merge PR #1067 (closing #824 )
+    * adds lag,rtry,slow,reje states to status display.
+    * adds checks for running process to cleanup, fail if running.
+    * adds cleanup to remove, don't remove if cleanup fails.
+    * adds progressive logs to transfers  (closing #966) 
+  * several fixes for sender crashes resulting from changes in try/except scope.
+  * add #1054 can now convert multiple configs, and overwrite (with --wololo)
+  * fixed #1064 poll crash.
   * fixed #927 sanity not restarting crashed polls.
   * bug fixes and unit tests for AM
+  * many unit tests added, improved coverage (though still poor.)
+  * many other plugin improvements.
+  * search function restored on web-site documentation.
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
 
