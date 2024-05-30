@@ -457,7 +457,6 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                     #print( f" {self.configs[c][cfg]['statehost']=} " )
                     if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-                        print('statehost')
                         state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
                     else:
                         state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
