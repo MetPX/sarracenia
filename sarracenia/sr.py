@@ -240,7 +240,7 @@ class sr_GlobalState:
             return
 
         if list(filter(p['name'].startswith, sr3_tools_entry_points)) != []:
-            #print( f"skipping sr3_tools process: {p['name']}" )
+            print( f"skipping sr3_tools process: {p['name']}" )
             return
 
         #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
@@ -250,6 +250,7 @@ class sr_GlobalState:
             return
 
         if p['name'].startswith('sr3_'):
+            #print( f"starts with sr3_ cmdline={p['cmdline']}" )
             p['memory'] = p['memory_full_info']._asdict()
             p['cpu'] = p['cpu_times']._asdict()
             del p['memory_full_info'] 
@@ -886,9 +887,6 @@ class sr_GlobalState:
         self._resolve_brokers()
         now = time.time()
 
-        if not os.path.exists( self.user_cache_dir ):
-            os.makedirs(self.user_cache_dir)
-
         # comparing states and configs to find missing instances, and correct state.
         self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
         self.cumulative_stats={ 
@@ -899,17 +897,12 @@ class sr_GlobalState:
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
         for c in self.components:
-            if not os.path.exists( self.user_cache_dir + os.sep + c ):
-                pathlib.Path(self.user_cache_dir + os.sep + c ).mkdir(parents=True, exist_ok=True)
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    print('missing state for %s/%s' % (c,cfg))
-                    if not os.path.exists(self.user_cache_dir + os.sep + c + os.sep + cfg):
-                        pathlib.Path(self.user_cache_dir + os.sep + c + os.sep + cfg).mkdir(parents=True, exist_ok=True)
-                    # add config as state in .cache under right directory.
+                    logger.debug('no existing state files for %s/%s' % (c,cfg))
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -929,7 +922,7 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            #print( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
                             continue
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
@@ -2075,7 +2068,11 @@ class sr_GlobalState:
             else:
                 logging.info('removing %s/%s' % ( c, cfg ))
                 os.unlink(cfgfile)
-                shutil.rmtree(statefile)
+                try:
+                    shutil.rmtree(statefile)
+                except Exception as ex:
+                    print( f" rmtree failed: {ex} " )
+
 
     def maint(self, action):
         """
