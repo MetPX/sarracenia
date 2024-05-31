@@ -579,8 +579,10 @@
 
         <span class="c1"># post it</span>
 
-        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;mkdir&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;mkdir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">is_directory</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="k">return</span><span class="p">(</span><span class="kc">True</span><span class="p">,[])</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span><span class="p">:</span> 
             <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post1file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">lstat</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span></div>
