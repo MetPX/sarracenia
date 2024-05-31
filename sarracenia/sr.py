@@ -1862,7 +1862,7 @@ class sr_GlobalState:
                 continue
 
             if self.configs[c][cfg]['options'].statehost:
-                cache_dir = self.user_cache_dir + os.sep + self.hostname + os.sep + f.replace('/', os.sep)
+                cache_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
             else:
                 cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
 
