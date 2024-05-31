@@ -134,7 +134,7 @@ class sr_GlobalState:
             if not self.configs[c][cfg]['options'].logStdout:
                 # FIXME: honouring statehost missing.
                 if self.configs[c][cfg]['options'].statehost:
-                    lfn = self.user_cache_dir + os.sep + self.hostname
+                    lfn = self.user_cache_dir + os.sep + self.hostdir
                 else:
                     lfn = self.user_cache_dir
 
