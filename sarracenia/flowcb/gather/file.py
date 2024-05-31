@@ -474,8 +474,10 @@ class File(FlowCB):
 
         # post it
 
-        if event == 'mkdir' and 'mkdir' in self.o.fileEvents:
-            return (True, self.post1file(src, lstat, is_directory=True))
+        if event == 'mkdir':
+            if 'mkdir' in self.o.fileEvents:
+                return (True, self.post1file(src, lstat, is_directory=True))
+            return(True,[])
         elif self.o.create_modify: 
             return (True, self.post1file(src, lstat))
         return (True, [])
