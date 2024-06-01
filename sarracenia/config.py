@@ -264,8 +264,6 @@ convert_to_v3 = {
         'msg_rename_dmf': [ 'callback', 'accept.renamedmf.RenameDMF'],
         'msg_hour_tree': [ 'callback', 'accept.hourtree.HourTree'],
         'msg_renamer': [ 'callback', 'accept.renamer.Renamer'],
-        'msg_2http': [ 'callback', 'accept.tohttp.ToHttp'],
-        'msg_2local': [ 'callback', 'accept.tolocal.ToLocal'],
         'msg_http_to_https': [ 'callback', 'accept.httptohttps.HttpToHttps'],
         'msg_speedo': [ 'callback', 'accept.speedo.Speedo'],
         'msg_WMO_type_suffix': [ 'callback', 'accept.wmotypesuffix.WmoTypeSuffix'],
