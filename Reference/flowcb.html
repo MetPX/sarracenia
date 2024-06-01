@@ -136,14 +136,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.accept.toclusters.ToClusters"><code class="docutils literal notranslate"><span class="pre">ToClusters</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.accept.tohttp">sarracenia.flowcb.accept.tohttp</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.accept.tohttp.ToHttp"><code class="docutils literal notranslate"><span class="pre">ToHttp</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.accept.tolocal">sarracenia.flowcb.accept.tolocal</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.accept.tolocal.ToLocal"><code class="docutils literal notranslate"><span class="pre">ToLocal</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#sarracenia-flowcb-accept-tohttp">sarracenia.flowcb.accept.tohttp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sarracenia-flowcb-accept-tolocal">sarracenia.flowcb.accept.tolocal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.flowcb.accept.tolocalfile">sarracenia.flowcb.accept.tolocalfile</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.flowcb.accept.tolocalfile.ToLocalFile"><code class="docutils literal notranslate"><span class="pre">ToLocalFile</span></code></a></li>
 </ul>
@@ -350,8 +344,8 @@ with sr3.</p>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.sundewpxroute" id="id18">sarracenia.flowcb.accept.sundewpxroute</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.testretry" id="id19">sarracenia.flowcb.accept.testretry</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.toclusters" id="id20">sarracenia.flowcb.accept.toclusters</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.tohttp" id="id21">sarracenia.flowcb.accept.tohttp</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.tolocal" id="id22">sarracenia.flowcb.accept.tolocal</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-flowcb-accept-tohttp" id="id21">sarracenia.flowcb.accept.tohttp</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-flowcb-accept-tolocal" id="id22">sarracenia.flowcb.accept.tolocal</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.tolocalfile" id="id23">sarracenia.flowcb.accept.tolocalfile</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.accept.wmotypesuffix" id="id24">sarracenia.flowcb.accept.wmotypesuffix</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flowcb.clamav" id="id25">sarracenia.flowcb.clamav</a></p></li>
@@ -1087,80 +1081,11 @@ msgToClusters y
 </dd></dl>
 
 </section>
-<section id="module-sarracenia.flowcb.accept.tohttp">
-<span id="sarracenia-flowcb-accept-tohttp"></span><h2><a class="toc-backref" href="#id21" role="doc-backlink">sarracenia.flowcb.accept.tohttp</a><a class="headerlink" href="#module-sarracenia.flowcb.accept.tohttp" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>Plugin tohttp.py:</dt><dd><p>ToHttp is the converse of ToFile.
-After processing on a filter, a file URL needs to be turned back into a web url.
-Uses savedUrl created by ToFile, to convert file url back to original.</p>
-</dd>
-<dt>Usage:</dt><dd><p>flowcb sarracenia.flowcb.accept.tohttp.ToHttp</p>
-</dd>
-</dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="sarracenia.flowcb.accept.tohttp.ToHttp">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.accept.tohttp.</span></span><span class="sig-name descname"><span class="pre">ToHttp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/accept/tohttp.html#ToHttp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.accept.tohttp.ToHttp" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#sarracenia.flowcb.FlowCB" title="sarracenia.flowcb.FlowCB"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlowCB</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.flowcb.accept.tohttp.ToHttp.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/accept/tohttp.html#ToHttp.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.accept.tohttp.ToHttp.__init__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="sarracenia-flowcb-accept-tohttp">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">sarracenia.flowcb.accept.tohttp</a><a class="headerlink" href="#sarracenia-flowcb-accept-tohttp" title="Link to this heading"></a></h2>
 </section>
-<section id="module-sarracenia.flowcb.accept.tolocal">
-<span id="sarracenia-flowcb-accept-tolocal"></span><h2><a class="toc-backref" href="#id22" role="doc-backlink">sarracenia.flowcb.accept.tolocal</a><a class="headerlink" href="#module-sarracenia.flowcb.accept.tolocal" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>Plugin tolocal.py:</dt><dd><p>This is a helper script to work with filters.
-What a data pump advertises, it will usually use Web URL, but if one is
-on a server where the files are available, it is more efficient to access
-them as local files, so filters operate on file urls.</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<p>baseDir /var/www/html
-url is <a class="reference external" href="http://localhost">http://localhost</a>/&lt;date&gt;/&lt;src&gt;/input/file.txt</p>
-<p>flowcb sarracenia.flowcb.accept.tolocal.ToLocal   # converts web URL to file URL</p>
-<blockquote>
-<div><p><a class="reference external" href="http://localhost/">http://localhost/</a> –&gt; <a class="reference external" href="file://var/www/html/">file://var/www/html/</a>
-url is now <a class="reference external" href="file://var/www/html">file://var/www/html</a>/&lt;date&gt;/&lt;src&gt;/input/file.txt
-m.savedurl = <a class="reference external" href="http://localhost/">http://localhost/</a></p>
-</div></blockquote>
-<p>flowcb sarracenia.flowcb.accept.&lt;some converter that works on local files.&gt;</p>
-<blockquote>
-<div><p>A new file is created in another directory.
-url is now <a class="reference external" href="file://var/www">file://var/www</a>/&lt;date&gt;/&lt;src&gt;/output/file.txt</p>
-</div></blockquote>
-<p>flowcb sarracenia.flowcb.accept.tohttp.ToHttp     # turns the file URL back into a web one.</p>
-<blockquote>
-<div><p><a class="reference external" href="file://var/www/html/">file://var/www/html/</a> –&gt; <a class="reference external" href="http:///localhost/">http:///localhost/</a>
-url is now:   <a class="reference external" href="http://localhost">http://localhost</a>/&lt;date&gt;/&lt;src&gt;/output/file.txt</p>
-</div></blockquote>
-<p>The regular expression used to find the web url matches either http or https
-and just captures upto the first ‘/’.</p>
-<p>if you need to capture a different kind of url, such as …</p>
-<p><a class="reference external" href="https://hostname/~user/">https://hostname/~user/</a> ….</p>
-<p>The easiest way is to set toLocalUrl as follows:</p>
-<p>baseDir /home/user/www
-toLocalUrl (<a class="reference external" href="https://hostname/~user/">https://hostname/~user/</a>)</p>
-<p>the parentheses around the URL set the value of to be put in m.savedurl that
-will be restored when the companion plugin msg_2http is called.</p>
-<dl class="simple">
-<dt>Usage:</dt><dd><p>flowcb sarracenia.flowcb.accept.tolocal.ToLocal</p>
-</dd>
-</dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="sarracenia.flowcb.accept.tolocal.ToLocal">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.accept.tolocal.</span></span><span class="sig-name descname"><span class="pre">ToLocal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/accept/tolocal.html#ToLocal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.accept.tolocal.ToLocal" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#sarracenia.flowcb.FlowCB" title="sarracenia.flowcb.FlowCB"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlowCB</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.flowcb.accept.tolocal.ToLocal.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/accept/tolocal.html#ToLocal.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.accept.tolocal.ToLocal.__init__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="sarracenia-flowcb-accept-tolocal">
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">sarracenia.flowcb.accept.tolocal</a><a class="headerlink" href="#sarracenia-flowcb-accept-tolocal" title="Link to this heading"></a></h2>
 </section>
 <section id="module-sarracenia.flowcb.accept.tolocalfile">
 <span id="sarracenia-flowcb-accept-tolocalfile"></span><h2><a class="toc-backref" href="#id23" role="doc-backlink">sarracenia.flowcb.accept.tolocalfile</a><a class="headerlink" href="#module-sarracenia.flowcb.accept.tolocalfile" title="Link to this heading"></a></h2>
