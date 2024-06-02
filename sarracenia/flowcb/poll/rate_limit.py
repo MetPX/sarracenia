@@ -6,7 +6,7 @@ Poll Rate Limit Plugin
 
 Limits how frequenty a poll accesses a remote server. 
 
-\*This limits the number of lsdir requests made to the server. If the poll that you want to rate limit doesn't
+\\*This limits the number of lsdir requests made to the server. If the poll that you want to rate limit doesn't
 call ``sarracenia.flowcb.poll.Poll.poll_directory``, then it won't work.
   
 Configurable Options:

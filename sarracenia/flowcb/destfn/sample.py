@@ -1,7 +1,7 @@
 """
 
   a destfn plugin script is used by senders or subscribers to do complex file naming.
-  this is an API demonstrator that prefixes the name delivered with 'renamed\_'::
+  this is an API demonstrator that prefixes the name delivered with 'renamed\\_'::
 
      filename DESTFNSCRIPT=sarracenia.flowcb.destfn.sample.Sample
 
