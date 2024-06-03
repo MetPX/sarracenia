@@ -726,7 +726,16 @@ class Flow:
                 for dfm in self.plugins['destfn']:
                     classname =  dfm.__qualname__.split('.')[0]
                     if (scriptclass == classname) or (scriptclass.capitalize() == classname): 
-                         destFileName = dfm(msg)
+                        try:
+                            destFileName = dfm(msg)
+                        except Exception as ex:
+                            logger.error( f'DESTFNSCRIPT plugin {dfm} crashed: {ex}' )
+                            logger.debug( "details:", exc_info=True )
+
+                        if destFileName == None or type(destFileName) != str:
+                             logger.error( f"DESTFNSCRIPT {dfm} return value must be the new file name as a string. This one returned {destFileName}, ignoring")
+                             destFileName=filename
+
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
                 if 'pubTime' in msg:
