@@ -327,13 +327,16 @@ and hence the need for the copyDict member.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.Message.computeIdentity">
-<span class="sig-name descname"><span class="pre">computeIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.computeIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.computeIdentity" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">computeIdentity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia.html#Message.computeIdentity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.computeIdentity" title="Link to this definition"></a></dt>
 <dd><p>check extended attributes for a cached identity sum calculation.
 if extended attributes are present, and
 * the file mtime is not too new, and
 * the cached sum us using the same method
 then use the cached value.</p>
 <p>otherwise, calculate a checksum.
+If the data is provided, use that as the file content, otherwise
+read the file form the file system.</p>
+<p>Once the checksum is determined,
 set the file’s extended attributes for the new value.
 the method of checksum calculation is from options.identity.</p>
 <p>sets the message ‘identity’ field if appropriate.</p>
@@ -396,6 +399,22 @@ large files may be very inefficient. Untested in that use-case.</p>
 <p>often on server where one is publishing data, the file is available as
 a local file, and one can avoid the network usage by using a options.baseDir setting.
 this behaviour can be disabled by not providing the options or not setting baseDir.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.Message.new_pathWrite">
+<span class="sig-name descname"><span class="pre">new_pathWrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia.html#Message.new_pathWrite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.Message.new_pathWrite" title="Link to this definition"></a></dt>
+<dd><p>expects: msg[‘new_dir’] and msg[‘new_file’] to be set.
+given the byte stream of data.</p>
+<p>write the local file based on the given message, options and data.
+update the message to match same (recalculating checksum.)</p>
+<p>in future:
+If the data field is a file, then that is taken as an open file object
+which can be read sequentially, and the bytes write to the path indicated
+by other message fields.</p>
+<p>currently, if data is a buffer, then it’s contents is written to the file.</p>
+<p>if data is None, then look for the ‘content’ header in the message.
+and use the data from that.</p>
 </dd></dl>
 
 <dl class="py method">

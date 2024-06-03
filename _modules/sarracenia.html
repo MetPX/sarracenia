@@ -94,8 +94,6 @@
 <span class="c1"># Sarracenia repository: https://github.com/MetPX/sarracenia</span>
 <span class="c1"># Documentation: https://github.com/MetPX/sarracenia</span>
 <span class="c1">#</span>
-<span class="c1"># __init__.py : contains version number of sarracenia</span>
-<span class="c1">#</span>
 <span class="c1">########################################################################</span>
 <span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
 <span class="c1">#  it under the terms of the GNU General Public License as published by</span>
@@ -119,6 +117,7 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">humanize</span>
 <span class="kn">import</span> <span class="nn">importlib.util</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
@@ -503,7 +502,7 @@
 
 <div class="viewcode-block" id="Message.computeIdentity">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.computeIdentity">[docs]</a>
-    <span class="k">def</span> <span class="nf">computeIdentity</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">computeIdentity</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           check extended attributes for a cached identity sum calculation.</span>
 <span class="sd">           if extended attributes are present, and </span>
@@ -512,6 +511,10 @@
 <span class="sd">           then use the cached value.</span>
 
 <span class="sd">           otherwise, calculate a checksum. </span>
+<span class="sd">           If the data is provided, use that as the file content, otherwise </span>
+<span class="sd">           read the file form the file system.  </span>
+
+<span class="sd">           Once the checksum is determined,</span>
 <span class="sd">           set the file&#39;s extended attributes for the new value.</span>
 <span class="sd">           the method of checksum calculation is from options.identity.</span>
 <span class="sd">           </span>
@@ -565,22 +568,24 @@
             <span class="n">sumalgo</span><span class="o">.</span><span class="n">set_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
             <span class="c1"># compute checksum</span>
-
             <span class="k">if</span> <span class="n">calc_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;md5&#39;</span><span class="p">,</span> <span class="s1">&#39;sha512&#39;</span><span class="p">]:</span>
 
-                <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
-                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
 
-                <span class="c1">#logger.info( f&quot;offset: {offset}  size: {msg[&#39;size&#39;]} max: {offset+msg[&#39;size&#39;]} &quot; )</span>
-                <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
-                    <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">offset</span> <span class="p">)</span>
+                    <span class="c1">#logger.info( f&quot;offset: {offset}  size: {msg[&#39;size&#39;]} max: {offset+msg[&#39;size&#39;]} &quot; )</span>
+                    <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
+                        <span class="n">fp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">offset</span> <span class="p">)</span>
 
-                <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">offset</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]:</span>
-                    <span class="n">buf</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">buf</span><span class="p">:</span> <span class="k">break</span>
-                    <span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
-                    <span class="n">i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
-                <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">offset</span><span class="o">+</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]:</span>
+                        <span class="n">buf</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">buf</span><span class="p">:</span> <span class="k">break</span>
+                        <span class="n">sumalgo</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                        <span class="n">i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
             <span class="c1"># setting sumstr</span>
             <span class="n">checksum</span> <span class="o">=</span> <span class="n">sumalgo</span><span class="o">.</span><span class="n">value</span>
@@ -1003,6 +1008,7 @@
         <span class="k">return</span> <span class="n">res</span></div>
 
 
+
 <div class="viewcode-block" id="Message.getContent">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.getContent">[docs]</a>
     <span class="k">def</span> <span class="nf">getContent</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1052,8 +1058,61 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;retrieving from: </span><span class="si">{</span><span class="n">retUrl</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
         <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">retUrl</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
-</div>
 
+
+<div class="viewcode-block" id="Message.new_pathWrite">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.new_pathWrite">[docs]</a>
+    <span class="k">def</span> <span class="nf">new_pathWrite</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">options</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           expects: msg[&#39;new_dir&#39;] and msg[&#39;new_file&#39;] to be set.</span>
+<span class="sd">           given the byte stream of data.</span>
+
+<span class="sd">           write the local file based on the given message, options and data.  </span>
+<span class="sd">           update the message to match same (recalculating checksum.)</span>
+
+<span class="sd">           in future:</span>
+<span class="sd">           If the data field is a file, then that is taken as an open file object</span>
+<span class="sd">           which can be read sequentially, and the bytes write to the path indicated</span>
+<span class="sd">           by other message fields.</span>
+
+<span class="sd">           currently, if data is a buffer, then it&#39;s contents is written to the file.</span>
+
+<span class="sd">           if data is None, then look for the &#39;content&#39; header in the message.</span>
+<span class="sd">           and use the data from that.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opath</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">],</span><span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_dir&#39;</span><span class="p">],</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># ide</span>
+        <span class="c1">#if isinstance(data, io.IOBase ):</span>
+        <span class="c1">#    with open(opath, &#39;wb&#39;) as f:</span>
+        <span class="c1">#        while buf = data.read(self.o.bufsize) &gt; 0 :</span>
+        <span class="c1">#            sz=f.write(buf)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;content&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;encoding&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;base64&#39;</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">b64decode</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">opath</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+               <span class="n">sz</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDefault</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">opath</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDefault</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sz</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">computeIdentity</span><span class="p">(</span><span class="n">opath</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;problem with </span><span class="si">{</span><span class="n">opath</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span></div>
+</div>
 
 </pre></div>
 
