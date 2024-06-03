@@ -99,6 +99,7 @@ default_options = {
     'identity_method': 'sha512',
     'logMetrics': False,
     'logStdout': False,
+    'metrics_writeInterval': 5,
     'runStateThreshold_lag': 30,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
@@ -152,7 +153,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
 float_options = [ ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
+    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', 'metrics_writeInterval', \
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
