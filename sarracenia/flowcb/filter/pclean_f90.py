@@ -74,7 +74,10 @@ class PClean_F90(PClean):
                             if d[0] != ' ']  # Diffs without context
                     logger.info("a: len(%s) = %d" % (f20_path, len(f20_lines)))
                     logger.info("b: len(%s) = %d" % (path, len(f_lines)))
-                    logger.info("diffs found:\n{}".format("".join(diff)))
+                    if len(f20_lines) > 10 or len(f_lines) > 10:
+                        logger.info(" long diff omitted ")
+                    else:
+                        logger.info("diffs found:\n{}".format("".join(diff)))
 
             if not result:
                 logger.info('queued for retry because propagation not done yet.')

@@ -227,20 +227,26 @@ class DiskQueue():
         """
            qty number of messages to retrieve from the queue.
 
+           no housekeeping in get ...
+           if no message (and new or state file there)
+           we wait for housekeeping to present retry messages
         """
+
+        if self.msg_count < 0:
+            return []
+        elif self.msg_count == 0:
+            try:
+                os.unlink(self.queue_file)
+                self.queue_fp.close()
+            except Exception as ex:
+                pass
+
+            self.queue_fp=None
+            self.msg_count=-1
+            return []
 
         ml = []
         count = 0
-
-        logger.info( f" msg_count={self.msg_count}, maximum_messages_to_get={maximum_messages_to_get} ")
-        if self.msg_count < 0:
-            return ml
-        elif self.msg_count == 0:
-            if self.queue_fp:
-                os.unlink(self.queue_file)
-            self.queue_fp=None
-            self.msg_count=-1
-            return ml
 
         # if the retry queue is empty, no sense looping.
         mx = self.msg_count if self.msg_count < maximum_messages_to_get else maximum_messages_to_get
@@ -249,18 +255,9 @@ class DiskQueue():
             self.queue_fp, message = self.msg_get_from_file(
                 self.queue_fp, self.queue_file)
 
-            # FIXME MG as discussed with Peter
-            # no housekeeping in get ...
-            # if no message (and new or state file there)
-            # we wait for housekeeping to present retry messages
             if not message:
-                try:
-                    os.unlink(self.queue_file)
-                except:
-                    pass
-                self.queue_fp = None
-                #logger.debug("MG DEBUG retry get return None")
-                break
+                self.msg_count=0
+                return
 
             count += 1
             if self.is_expired(message):
