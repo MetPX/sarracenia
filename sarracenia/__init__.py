@@ -784,7 +784,7 @@ class Message(dict):
         elif 'new_file' in msg:
             new_file = msg['new_file']
         elif 'new_relPath' in msg:
-            new_file = os.path.basename(msg['rel_relPath'])
+            new_file = os.path.basename(msg['new_relPath'])
         elif 'relPath' in msg:
             new_file = os.path.basename(msg['relPath'])
         else:
