@@ -1374,6 +1374,9 @@ file, because <a class="reference internal" href="#sarracenia.diskqueue.DiskQueu
 <dt class="sig sig-object py" id="sarracenia.diskqueue.DiskQueue.get">
 <span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maximum_messages_to_get</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/diskqueue.html#DiskQueue.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.diskqueue.DiskQueue.get" title="Link to this definition"></a></dt>
 <dd><p>qty number of messages to retrieve from the queue.</p>
+<p>no housekeeping in get …
+if no message (and new or state file there)
+we wait for housekeeping to present retry messages</p>
 </dd></dl>
 
 <dl class="py method">
