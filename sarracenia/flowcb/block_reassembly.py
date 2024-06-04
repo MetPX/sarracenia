@@ -36,7 +36,7 @@ class Block_reassembly(FlowCB):
      equivalent to:
         
 
-        reject .*\.flufl_lock.*
+        reject .*\\.flufl_lock.*
         reject .*§block_manifest§.*
 
         callback_prepend block_reassembly

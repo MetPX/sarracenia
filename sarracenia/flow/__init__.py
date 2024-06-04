@@ -211,6 +211,7 @@ class Flow:
         self.plugins['load'].extend(self.o.destfn_scripts)
 
         # metrics - dictionary with names of plugins as the keys
+        self.metrics_lastWrite=0
         self.metricsFlowReset()
 
         self.had_vip = not os.path.exists( self.o.novipFilename )
@@ -499,6 +500,17 @@ class Flow:
         """
 
 
+        if hasattr(self.o, 'metricsFilename' ):
+            mdir=os.path.dirname(self.o.metricsFilename)
+            if not os.path.isdir(mdir):
+                os.makedirs(mdir, self.o.permDirDefault, True)
+
+        pidfilename = sarracenia.config.get_pid_filename( self.o.hostdir, self.o.component, self.o.config, self.o.no)
+        pdir=os.path.dirname(pidfilename)
+        if not os.path.isdir(pdir):
+            os.makedirs(mdir, self.o.permDirDefault, True)
+
+
         if not self.loadCallbacks(self.plugins['load']):
            return
 
@@ -571,7 +583,7 @@ class Flow:
 
                 else: # normal processing, when you are active.
                     self.work()
-                    self.post()
+                    self.post(now)
 
             now = nowflt()
             run_time = now - start_time
@@ -1185,7 +1197,7 @@ class Flow:
 
 
 
-    def post(self) -> None:
+    def post(self,now) -> None:
 
         if len(self.plugins["post"]) > 0:
 
@@ -1207,10 +1219,16 @@ class Flow:
         self._runCallbacksWorklist('report')
         self._runCallbackMetrics()
 
-        if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
+        if hasattr(self.o, 'metricsFilename' ) \
+                and now > self.metrics_lastWrite+self.o.metrics_writeInterval:
+
+            # assume dir always exist... should check on startup, not here.
+            # if os.path.isdir(os.path.dirname(self.o.metricsFilename)):
             metrics=json.dumps(self.metrics)
             with open(self.o.metricsFilename, 'w') as mfn:
                  mfn.write(metrics+"\n")
+            self.metrics_lastWrite=now
+
             if self.o.logMetrics:
                 if self.o.logRotateInterval >= 24*60*60:
                     tslen=8
@@ -1222,12 +1240,12 @@ class Flow:
                 with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
-                # removing old metrics files
-                logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-                old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-                for o in old_metrics:
-                    logger.info( f"removing old metrics file: {o} " )
-                    os.unlink(o)
+            # removing old metrics files
+            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+            for o in old_metrics:
+                logger.info( f"removing old metrics file: {o} " )
+                os.unlink(o)
 
         self.worklist.ok = []
         self.worklist.directories_ok = []

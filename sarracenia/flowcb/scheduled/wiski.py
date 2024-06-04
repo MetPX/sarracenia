@@ -210,7 +210,7 @@ if __name__ == '__main__':
     flow.o.scheduled_interval= 5
     flow.o.pollUrl = "https://kiwis.opg.com"
     if sys.platform.startswith( "win" ):
-        flow.o.directory = "C:\\temp\wiski"
+        flow.o.directory = "C:\\temp\\wiski"
     else:
         flow.o.directory = "/tmp/wiski/${%Y%m%d}"
     logging.basicConfig(level=logging.DEBUG)

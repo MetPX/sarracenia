@@ -105,7 +105,7 @@ class Usgs(FlowCB):
                     gathered_messages.append(m)
                 elif status_code == 403:
                     logger.error(
-                        '''poll_usgs: USGS has determined your usage is excessive and \ 
+                        '''poll_usgs: USGS has determined your usage is excessive and \
 							blocked your IP. Use the contact form on their site to be \
 							unblocked.''')
                 else:
