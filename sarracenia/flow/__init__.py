@@ -505,7 +505,9 @@ class Flow:
             if not os.path.isdir(mdir):
                 os.makedirs(mdir, self.o.permDirDefault, True)
 
-        pidfilename = sarracenia.config.get_pid_filename( self.o.hostdir, self.o.component, self.o.config, self.o.no)
+        pidfilename = sarracenia.config.get_pid_filename(
+                self.o.hostdir if self.o.statehost else None,
+                self.o.component, self.o.config, self.o.no)
         pdir=os.path.dirname(pidfilename)
         if not os.path.isdir(pdir):
             os.makedirs(mdir, self.o.permDirDefault, True)
