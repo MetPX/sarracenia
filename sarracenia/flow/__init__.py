@@ -232,6 +232,13 @@ class Flow:
 
         self.metrics=self.new_metrics
 
+        # removing old metrics files
+        logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+        old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+        for o in old_metrics:
+            logger.info( f"removing old metrics file: {o} " )
+            os.unlink(o)
+
     def loadCallbacks(self, plugins_to_load=None):
 
         if not plugins_to_load:
@@ -1242,12 +1249,6 @@ class Flow:
                 with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
-            # removing old metrics files
-            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-            for o in old_metrics:
-                logger.info( f"removing old metrics file: {o} " )
-                os.unlink(o)
 
         self.worklist.ok = []
         self.worklist.directories_ok = []
