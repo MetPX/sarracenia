@@ -44,6 +44,9 @@ class Http_with_metadata(Scheduled):
         for relPath in self.o.path:
             st = FmdStat()
 
+            # Do variable expansion on the path
+            relPath = self.o.variableExpansion(relPath)
+
             if self.o.post_baseUrl[-1] == '/':
                 url = self.o.post_baseUrl + relPath
             else:
