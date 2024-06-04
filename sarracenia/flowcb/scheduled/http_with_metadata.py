@@ -15,10 +15,10 @@ class Http_with_metadata(Scheduled):
 
     """
     Same as a normal scheduled flow, except this will do an HTTP HEAD request to try to get the file size,
-    modification time, etc. and add that to the message. BUT, if the file doesn't exist at the source (404)
-    it won't post it.
-
-    If it can't get the headers, it will still post the file without the metadata.
+    modification time, etc. and add that to the message.
+     
+    Options:
+        post_whenNoMetadata (default False): when True, post URLs *without metadata* (when HEAD request returns an error) 
 
     Example config: 
     https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/flow/scheduled_aviation_wind_fax_charts.conf
@@ -27,6 +27,10 @@ class Http_with_metadata(Scheduled):
     since the last time they were posted.
 
     """
+
+    def __init__(self, options, logger=logger):
+        super().__init__(options,logger)
+        self.o.add_option('post_whenNoMetadata', 'flag', False)
 
     def gather(self,messageCountMax):
 
@@ -54,15 +58,13 @@ class Http_with_metadata(Scheduled):
             
             try:
                 resp = requests.head(url)
-                if resp.status_code == 404:
-                    logger.warning(f"Got 404 error - file at {url} does not exist, not posting!")
-                    continue
                 resp.raise_for_status()
 
                 # parse the HTTP header response into the stat object used by sr3
                 # {... 'Content-Length': '549872', ... , 'Last-Modified': 'Mon, 03 Jun 2024 15:42:02 GMT', ... }
                 # logger.debug(f"{resp} {resp.headers}")
                 if resp.status_code == 200:
+                    have_metadata = False
                     if "Last-Modified" in resp.headers:
                         # Mon, 03 Jun 2024 15:42:02 GMT
                         lm = datetime.datetime.strptime(resp.headers['Last-Modified'], '%a, %d %b %Y %H:%M:%S GMT')
@@ -70,13 +72,23 @@ class Http_with_metadata(Scheduled):
                         # logger.debug(f"parsed date: {lm}")
                         st.st_atime = lm
                         st.st_mtime = lm
+                        have_metadata = True
                     if "Content-Length" in resp.headers:
                         size = int(resp.headers['Content-Length'])
                         # logger.debug(f"file size: {size}")
                         st.st_size = size
+                        have_metadata = True
+                    if not have_metadata and not self.o.post_whenNoMetadata:
+                        logger.warning(f"HEAD request returned {resp.status_code} but metadata was " +
+                                       f"not available for {url}, not posting")
+                        continue
                     logger.debug(f"modified stat: {st} for {url}")
             except Exception as e:
-                logger.warning(f"Failed to get metadata for {url} ({e})")
+                if not self.o.post_whenNoMetadata:
+                    logger.debug(f"Failed to get metadata for {url} ({e}), not posting")
+                    continue
+                else:
+                    logger.info(f"Failed to get metadata for {url} ({e}), posting anyways")
             
             m = sarracenia.Message.fromFileInfo(relPath, self.o, st)
             gathered_messages.append(m)
