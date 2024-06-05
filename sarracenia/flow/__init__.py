@@ -50,8 +50,6 @@ default_options = {
     'fileEvents': allFileEvents,
     'housekeeping': 300,
     'logReject': False,
-    'logFormat':
-    '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
     'mirror': True,
     'permCopy': True,
