@@ -481,7 +481,9 @@ so they can be acknowledged as received. Messages can only removed after ack.</p
 </pre></div>
 </div>
 <p>def destfn(self,msg) -&gt; str:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Task</span><span class="p">:</span> <span class="n">look</span> <span class="n">at</span> <span class="n">the</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">message</span><span class="p">,</span> <span class="ow">and</span> <span class="n">perhaps</span> <span class="n">settings</span> <span class="ow">and</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Destination</span> <span class="n">File</span> <span class="n">Name</span> <span class="p">(</span><span class="n">DESTFNSCRIPT</span><span class="p">)</span>  <span class="n">routines</span><span class="o">.</span>
+
+<span class="n">Task</span><span class="p">:</span> <span class="n">look</span> <span class="n">at</span> <span class="n">the</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">message</span><span class="p">,</span> <span class="ow">and</span> <span class="n">perhaps</span> <span class="n">settings</span> <span class="ow">and</span>
       <span class="k">return</span> <span class="n">a</span> <span class="n">new</span> <span class="n">file</span> <span class="n">name</span> <span class="k">for</span> <span class="n">the</span> <span class="n">target</span> <span class="n">of</span> <span class="n">the</span> <span class="n">send</span> <span class="ow">or</span> <span class="n">download</span><span class="o">.</span>
 
 <span class="n">kind</span> <span class="n">of</span> <span class="n">a</span> <span class="n">last</span> <span class="n">resort</span> <span class="n">function</span><span class="p">,</span> <span class="n">exists</span> <span class="n">mostly</span> <span class="k">for</span> <span class="n">sundew</span> <span class="n">compatibility</span><span class="o">.</span>
