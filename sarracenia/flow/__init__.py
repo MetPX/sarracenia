@@ -1211,23 +1211,26 @@ class Flow:
 
     def post(self,now) -> None:
 
-        if len(self.plugins["post"]) > 0:
+        if hasattr(self.o,'post_broker') and self.o.post_broker:
 
-            # work-around for python3.5 not being able to copy re.match issue: 
-            # https://github.com/MetPX/sarracenia/issues/857 
-            if sys.version_info.major == 3 and sys.version_info.minor <= 6:
-                for m in self.worklist.ok:
-                    if '_matches' in m:
-                        del m['_matches']
+            if len(self.plugins["post"]) > 0:
 
-            for p in self.plugins["post"]:
-                try:
-                    p(self.worklist)
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                # work-around for python3.5 not being able to copy re.match issue: 
+                # https://github.com/MetPX/sarracenia/issues/857 
+                if sys.version_info.major == 3 and sys.version_info.minor <= 6:
+                    for m in self.worklist.ok:
+                        if '_matches' in m:
+                            del m['_matches']
 
-        self._runCallbacksWorklist('after_post')
+                for p in self.plugins["post"]:
+                    try:
+                        p(self.worklist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
+
+            self._runCallbacksWorklist('after_post')
+
         self._runCallbacksWorklist('report')
         self._runCallbackMetrics()
 
