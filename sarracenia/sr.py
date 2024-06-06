@@ -2508,26 +2508,29 @@ class sr_GlobalState:
         if self.options.displayFull:
             line += "%10s %10s " % ( " ", "CPU Time" )
 
-        print(line)
+        try:
+            print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
+            line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
+            underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
-        if self.options.displayFull:
-            line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
-                    ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
-            underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
-                    ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
+            if self.options.displayFull:
+                line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                        ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+                underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
+                        ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
 
-            line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
-            underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+                line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
+                underline += "%10s %10s %10s " % ( "---", "---", "---"  )
 
-        if self.options.displayFull:
-            line      += "%10s %10s " % ( "user", "system" )
-            underline += "%10s %10s " % ( "----", "------" )
+            if self.options.displayFull:
+                line      += "%10s %10s " % ( "user", "system" )
+                underline += "%10s %10s " % ( "----", "------" )
 
-        print(line)
-        print(underline)
+            print(line)
+            print(underline)
+        except:
+            return
 
         configs_running = 0
         now = time.time()
@@ -2616,42 +2619,47 @@ class sr_GlobalState:
                     line += " %10s %10s %10s" % ( "-", "-", "-" )
                     if self.options.displayFull:
                         line += " %10s %10s" % ( "-", "-" )
-
-                print(line)
+                try:
+                     print(line)
+                except:
+                     return
         stray = 0
-        for pid in self.strays:
-            stray += 1
-            bad = 1
-            print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
+        try:
+            for pid in self.strays:
+                stray += 1
+                bad = 1
+                print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
-        print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
-            (configs_running, len(self.procs), len(self.missing), stray ) )
-        print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
-              naturalSize( self.resources['uss'] ), \
-              naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
-              ))
-        print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
-              self.resources['user_cpu'] , self.resources['system_cpu'] \
-              ))
+            print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
+                (configs_running, len(self.procs), len(self.missing), stray ) )
+            print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
+                  naturalSize( self.resources['uss'] ), \
+                  naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
+                  ))
+            print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
+                  self.resources['user_cpu'] , self.resources['system_cpu'] \
+                  ))
 
-        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
-                naturalSize(self.cumulative_stats['rxMessageByteRate']),\
-                naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
-                naturalSize(self.cumulative_stats['txMessageByteRate']),
-                self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
-            ))
-        print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-               naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
-               naturalSize(self.cumulative_stats['rxDataRate']),
-               naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
-               naturalSize(self.cumulative_stats['txDataRate']) ) )
+            print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
+                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
+                    naturalSize(self.cumulative_stats['rxMessageByteRate']),\
+                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
+                    naturalSize(self.cumulative_stats['txMessageByteRate']),
+                    self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
+                ))
+            print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
+                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
+                   naturalSize(self.cumulative_stats['rxDataRate']),
+                   naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
+                   naturalSize(self.cumulative_stats['txDataRate']) ) )
 
-        # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
-        for h in self.brokers:
-            for x in self.exchange_summary[h]:
-                if self.exchange_summary[h][x] == 0:
-                    print("exchange with no bindings: %s-%s " % (h, x), end='')
+            # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
+            for h in self.brokers:
+                for x in self.exchange_summary[h]:
+                    if self.exchange_summary[h][x] == 0:
+                        print("exchange with no bindings: %s-%s " % (h, x), end='')
+        except:
+            pass
 
     def convert(self):
 

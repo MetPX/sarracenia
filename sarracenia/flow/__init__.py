@@ -232,6 +232,13 @@ class Flow:
 
         self.metrics=self.new_metrics
 
+        # removing old metrics files
+        logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+        old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+        for o in old_metrics:
+            logger.info( f"removing old metrics file: {o} " )
+            os.unlink(o)
+
     def loadCallbacks(self, plugins_to_load=None):
 
         if not plugins_to_load:
@@ -505,7 +512,9 @@ class Flow:
             if not os.path.isdir(mdir):
                 os.makedirs(mdir, self.o.permDirDefault, True)
 
-        pidfilename = sarracenia.config.get_pid_filename( self.o.hostdir, self.o.component, self.o.config, self.o.no)
+        pidfilename = sarracenia.config.get_pid_filename(
+                self.o.hostdir if self.o.statehost else None,
+                self.o.component, self.o.config, self.o.no)
         pdir=os.path.dirname(pidfilename)
         if not os.path.isdir(pdir):
             os.makedirs(mdir, self.o.permDirDefault, True)
@@ -1240,12 +1249,6 @@ class Flow:
                 with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
-            # removing old metrics files
-            logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-            for o in old_metrics:
-                logger.info( f"removing old metrics file: {o} " )
-                os.unlink(o)
 
         self.worklist.ok = []
         self.worklist.directories_ok = []
