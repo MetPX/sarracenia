@@ -2803,7 +2803,8 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 
-        log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        #log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        log_format = cfg_preparse.logFormat
         if logging.getLogger().hasHandlers():
             for h in logging.getLogger().handlers:
                 h.close()
