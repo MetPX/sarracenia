@@ -734,7 +734,7 @@ class Flow:
 
                         if destFileName == None or type(destFileName) != str:
                              logger.error( f"DESTFNSCRIPT {dfm} return value must be the new file name as a string. This one returned {destFileName}, ignoring")
-                             destFileName=filename
+                             return None
 
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
@@ -749,9 +749,8 @@ class Flow:
                     timeSuffix = ':' + parts[-1]
 
             else:
-                logger.error("Don't understand this DESTFN parameter: %s" %
-                             spec)
-                return filename
+                logger.error( f"invalid DESTFN parameter: {spec}" )
+                return None
         return destFileName + satnet + timeSuffix
 
 
@@ -1628,6 +1627,14 @@ class Flow:
                   revamped rename algorithm requires only 1 message, ignore newname.
                 """
                 self.worklist.ok.append(msg)
+                continue
+
+            if not 'new_dir' in msg or not msg['new_dir']:
+                self.reject(msg, 422, f"new_dir message field missing, do not know which directory to put file in. skipping." )
+                continue
+
+            if not 'new_file' in msg or not msg['new_file']:
+                self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
                 continue
 
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
@@ -2716,6 +2723,14 @@ class Flow:
             return
 
         for msg in self.worklist.incoming:
+
+            if not 'new_dir' in msg or not msg['new_dir']:
+                self.reject(msg, 422, f"new_dir message field missing, do not know which directory to put file in. skipping." )
+                continue
+
+            if not 'new_file' in msg or not msg['new_file']:
+                self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
+                continue
 
             # weed out non-file transfer operations that are configured to not be done.
             if 'fileOp' in msg:
