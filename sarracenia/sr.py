@@ -333,6 +333,7 @@ class sr_GlobalState:
                         cfgbody.parse_file(cfg,c)
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
+
                         # ensure there is a known value of instances to run.
                         if c in ['poll', 'post', 'cpost']:
                             if hasattr(cfgbody,
@@ -1856,6 +1857,8 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
+
+            (c, cfg) = f.split(os.sep)
 
             if self.configs[c][cfg]['status'] in self.status_active:
                 #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
