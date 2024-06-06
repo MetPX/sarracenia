@@ -965,11 +965,16 @@ class Flow:
                     f"message too old (high lag): {lag:g} sec. skipping: {m['new_file']}, " )
                 continue
 
-            if self.o.fileAgeMax > 0 and 'mtime' in m:
+            if 'mtime' in m:
                 age =  now-sarracenia.timestr2flt(m['mtime'])
-                if age > self.o.fileAgeMax:
+                if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
                     self.reject( m, 410, f"file too old: {age:g} sec. skipping: {m['new_file']}, ")
-                continue
+                    continue
+
+                if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
+                    logger.warning( f"file too young: queueing for retry.")
+                    self.worklist.failed.append(msg)
+                    continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
                 url = self.o.variableExpansion(m['baseUrl'],
