@@ -1686,6 +1686,31 @@ sendTo <url>
 Specification du serveur auquel on veut livrer des données (dans un *sender*) 
 
 
+set (DÉVELOPPEUR)
+---------------
+
+L'option *set* est utilisée, généralement par les développeurs, pour définir les paramètres
+pour des classes particulières dans le code source. l'utilisation la plus importante
+serait de définir le logLevel plus élevé pour une classe d’intérêt particulière.
+
+L'utilisation de cette option se fait plus facilement avec le code source à portée de main.
+un exemple::
+
+   set sarracenia.moth.amqp.AMQP.logLevel debug
+   set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+Ainsi, *sarracenia.moth.amqp.AMQP* fait référence à la classe à laquelle le paramètre
+est appliqué. Il y a une *class AMQP* dans le fichier python
+sarracenia/moth/amqp.py (par rapport à la racine de la source.)
+
+Le *logLevel* est le paramètre à appliquer mais uniquement dans
+cette classe. L'option *set* nécessite une implémentation dans le source
+code pour l’implémenter pour chaque classe. Tous les *flowcb* ont le nécessaire
+soutien. Les classes ``moth`` et transfert ont une implémentation spécifique pour le logLevel.
+
+D'autres classes peuvent être aléatoires en termes d'implémentation de la sémantique *set*.
+
+
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
 

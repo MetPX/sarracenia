@@ -557,7 +557,7 @@ class Flow:
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
-                    logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+                    logger.debug("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
 
                 if not stopping:
                     self.gather()
@@ -618,7 +618,7 @@ class Flow:
                                                 self.o.messageRateMax):
                 stime = 1 + 2 * ((current_rate - self.o.messageRateMax) /
                                  self.o.messageRateMax)
-                logger.debug(
+                logger.info(
                     "current_rate/2 (%.2f) above messageRateMax(%.2f): throttling"
                     % (current_rate, self.o.messageRateMax))
             else:

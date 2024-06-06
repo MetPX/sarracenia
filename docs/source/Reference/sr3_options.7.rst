@@ -1703,7 +1703,7 @@ Specification of a remote resource to deliver to in a sender.
 set (DEVELOPER)
 ---------------
 
-The *set* option is used, usuall by developers, to define settings 
+The *set* option is used, usually by developers, to define settings 
 for particular classes in the source code. the most prominent usage 
 would be to set the logLevel higher for a particular class of interest.
 
@@ -1720,7 +1720,7 @@ sarracenia/moth/amqp.py (relative to root of source.)
 The *logLevel* is the setting to applied but only within 
 that class. The *set* option requires an implementation in the source
 code to implement it for each class.  All *flowcb*'s have the neeeded
-support. The moth and transfer classes have a specific implementation 
+support. The ``moth`` and transfer classes have a specific implementation 
 for logLevel.
 
 Other classes may be hit or miss in terms of implementing the *set* semantic.
