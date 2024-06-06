@@ -2230,7 +2230,8 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug( f"{self.scheme}_transport sendTo: {self.o.sendTo}" )
+        sendTo=self.o.sendTo 
+        logger.debug( f"{self.scheme}_transport sendTo: {sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
@@ -2345,7 +2346,7 @@ class Flow:
                     try:
                         cwd = self.proto[self.scheme].getcwd()
                     except Exception as ex:
-                        logger.error( f"could not getcwd: {ex}" )
+                        logger.error( f"could not getcwd on {sendTo} : {ex}" )
                         return False
 
             if cwd != new_dir:
@@ -2355,7 +2356,7 @@ class Flow:
                     try:
                         self.proto[self.scheme].cd_forced(775, new_dir)
                     except Exception as ex:
-                        logger.error( f"could not chdir to {new_dir}: {ex}" )
+                        logger.error( f"could not chdir to {sendTo} {new_dir}: {ex}" )
                         return False
 
             #=================================
@@ -2371,13 +2372,13 @@ class Flow:
                                 try:
                                     self.proto[self.scheme].rmdir(new_file)
                                 except Exception as ex:
-                                    logger.error( f"could not rmdir {new_file}: {ex}" )
+                                    logger.error( f"could not rmdir {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                     return False
                             else:
                                 try:
                                     self.proto[self.scheme].delete(new_file)
                                 except Exception as ex:
-                                    logger.error( f"could not delete {new_file}: {ex}" )
+                                    logger.error( f"could not delete {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                     return False
 
                         msg.setReport(201, f'file or directory removed')
@@ -2394,7 +2395,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not rename {new_file}: {ex}" )
+                                logger.error( f"could not rename {sendTo} (in {msg['new_dir']} {msg['fileOp']['rename']} to {new_file}: {ex}" )
                                 return False
 
                         msg.setReport(201, f'file renamed')
@@ -2413,7 +2414,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].mkdir(new_file)
                             except Exception as ex:
-                                logger.error( f"could not mkdir {new_file}: {ex}" )
+                                logger.error( f"could not mkdir {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                 return False
                         msg.setReport(201, f'directory created')
                         self.metrics['flow']['transferTxFiles'] += 1
@@ -2436,7 +2437,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not link {new_file}: {ex}" )
+                                logger.error( f"could not link {sendTo} in {msg['new_dir']}{os.sep}{msg['fileOp']['hlink']} to {new_file}: {ex}" )
                                 return False
                         return True
                     logger.error("%s, hardlinks not supported" % self.scheme)
@@ -2450,7 +2451,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not symlink {new_file}: {ex}" )
+                                logger.error( f"could not symlink {sendTo} in {msg['new_dir']} {msg['fileOp']['link']} to {new_file}: {ex}" )
                                 return False
                         msg.setReport(201, f'file linked')
                         self.metrics['flow']['transferTxFiles'] += 1
@@ -2509,7 +2510,7 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put( msg, local_file, new_file)
                 except Exception as ex:
-                    logger.error( f"could not send inflight=None {new_file}: {ex}" )
+                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                     return False
                 
             elif (('blocks' in msg)
@@ -2519,7 +2520,7 @@ class Flow:
                         self.proto[self.scheme].put(msg, local_file, new_file, offset,
                                             new_offset, msg['size'])
                     except Exception as ex:
-                        logger.error( f"could not send inplace {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inplace {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
 
             elif inflight == '.':
@@ -2533,12 +2534,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
@@ -2553,12 +2554,12 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
             elif options.inflight[-1] == '/':
                 if not self.o.dry_run:
@@ -2578,12 +2579,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
@@ -2598,12 +2599,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_file)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].put(msg, local_file, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
