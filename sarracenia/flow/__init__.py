@@ -230,6 +230,13 @@ class Flow:
 
         self.metrics=self.new_metrics
 
+        # removing old metrics files
+        logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+        old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+        for o in old_metrics:
+            logger.info( f"removing old metrics file: {o} " )
+            os.unlink(o)
+
     def loadCallbacks(self, plugins_to_load=None):
 
         if not plugins_to_load:
@@ -500,7 +507,9 @@ class Flow:
             if not os.path.isdir(mdir):
                 os.makedirs(mdir, self.o.permDirDefault, True)
 
-        pidfilename = sarracenia.config.get_pid_filename( self.o.hostdir, self.o.component, self.o.config, self.o.no)
+        pidfilename = sarracenia.config.get_pid_filename(
+                self.o.hostdir if self.o.statehost else None,
+                self.o.component, self.o.config, self.o.no)
         pdir=os.path.dirname(pidfilename)
         if not os.path.isdir(pdir):
             os.makedirs(mdir, self.o.permDirDefault, True)
@@ -1928,9 +1937,12 @@ class Flow:
             msg['_deleteOnPost'] |= set(['new_inflight_path'])
 
         if 'download' in self.plugins and len(self.plugins['download']) > 0:
+            ok = False
             for plugin in self.plugins['download']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
@@ -2207,9 +2219,12 @@ class Flow:
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
         if len(self.plugins['send']) > 0:
+            ok = False
             for plugin in self.plugins['send']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
