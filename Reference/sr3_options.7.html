@@ -1175,17 +1175,15 @@ A value of 1d (day) or 1w (week) can be appropriate.  Setting the option without
 a time will result in 300 seconds (or 5 minutes) being the expiry interval.</p>
 <p>Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
 re-ingesting files that have aged out of the duplicate suppression cache.</p>
-<p><strong>Use of the cache is incompatible with the default *parts 0* strategy</strong>, one must specify an
-alternate strategy.  One must use either a fixed blocksize, or always never partition files.
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.</p>
 <p><strong>Note that the duplicate suppresion store is local to each instance</strong>. When N
 instances share a queue, the first time a posting is received, it could be
 picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. <strong>For effective duplicate suppression with instances</strong>,
 one must <strong>deploy two layers of subscribers</strong>. Use
 a <strong>first layer of subscribers (shovels)</strong> with duplicate suppression turned
-off and output with <em>post_exchangeSplit</em>, which route notification messages by checksum to
-a <strong>second layer of subscibers (winnow) whose duplicate suppression caches are active.</strong></p>
+off and output with <em>post_exchangeSplit</em>, which route notification with the same checksum to
+the same member of a <strong>second layer of subscribers (winnow) whose duplicate suppression caches
+are active.</strong></p>
 </section>
 <section id="outlet-post-json-url-default-post">
 <h4>outlet post|json|url (default: post)<a class="headerlink" href="#outlet-post-json-url-default-post" title="Link to this heading"></a></h4>
@@ -1426,10 +1424,6 @@ monitor trees, but the trees may have completely different paths than the argume
 given. This option also enforces traversing of symbolic links.</p>
 <p>This option is being used to investigate some use cases, and may disappear in future.</p>
 </section>
-<section id="sendto-url">
-<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
-<p>Specification of a remote resource to deliver to in a sender.</p>
-</section>
 <section id="rename-path">
 <h4>rename &lt;path&gt;<a class="headerlink" href="#rename-path" title="Link to this heading"></a></h4>
 <p>With the <em>rename</em> option, the user can suggest a destination path for its files. If the given
@@ -1563,6 +1557,31 @@ flowcb.scheduled.Scheduled class will look for the other two time specifiers:</p
 </div>
 <p>which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
 after each of 4h, 5h and 23h.</p>
+</section>
+<section id="sendto-url">
+<h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
+<p>Specification of a remote resource to deliver to in a sender.</p>
+</section>
+<section id="set-developer">
+<h4>set (DEVELOPER)<a class="headerlink" href="#set-developer" title="Link to this heading"></a></h4>
+<p>The <em>set</em> option is used, usually by developers, to define settings
+for particular classes in the source code. the most prominent usage
+would be to set the logLevel higher for a particular class of interest.</p>
+<p>Use of this option is more easily done with the source code handy.
+an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">AMQP</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+<span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">MQTT</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>So <em>sarracenia.moth.amqp.AMQP</em> refers to the class to which the setting
+is applied. There is a <em>class AMQP</em> in the python file
+sarracenia/moth/amqp.py (relative to root of source.)</p>
+<p>The <em>logLevel</em> is the setting to applied but only within
+that class. The <em>set</em> option requires an implementation in the source
+code to implement it for each class.  All <em>flowcb</em>’s have the neeeded
+support. The <code class="docutils literal notranslate"><span class="pre">moth</span></code> and transfer classes have a specific implementation
+for logLevel.</p>
+<p>Other classes may be hit or miss in terms of implementing the <em>set</em> semantic.</p>
 </section>
 <section id="shim-defer-posting-to-exit-experimental">
 <h4>shim_defer_posting_to_exit (EXPERIMENTAL)<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>

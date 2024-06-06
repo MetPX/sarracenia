@@ -1575,6 +1575,26 @@ après chacune des 4h, 5h et 23h.</p>
 <h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>
 <p>Specification du serveur auquel on veut livrer des données (dans un <em>sender</em>)</p>
 </section>
+<section id="set-developpeur">
+<h4>set (DÉVELOPPEUR)<a class="headerlink" href="#set-developpeur" title="Link to this heading"></a></h4>
+<p>L’option <em>set</em> est utilisée, généralement par les développeurs, pour définir les paramètres
+pour des classes particulières dans le code source. l’utilisation la plus importante
+serait de définir le logLevel plus élevé pour une classe d’intérêt particulière.</p>
+<p>L’utilisation de cette option se fait plus facilement avec le code source à portée de main.
+un exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">amqp</span><span class="o">.</span><span class="n">AMQP</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+<span class="nb">set</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">MQTT</span><span class="o">.</span><span class="n">logLevel</span> <span class="n">debug</span>
+</pre></div>
+</div>
+<p>Ainsi, <em>sarracenia.moth.amqp.AMQP</em> fait référence à la classe à laquelle le paramètre
+est appliqué. Il y a une <em>class AMQP</em> dans le fichier python
+sarracenia/moth/amqp.py (par rapport à la racine de la source.)</p>
+<p>Le <em>logLevel</em> est le paramètre à appliquer mais uniquement dans
+cette classe. L’option <em>set</em> nécessite une implémentation dans le source
+code pour l’implémenter pour chaque classe. Tous les <em>flowcb</em> ont le nécessaire
+soutien. Les classes <code class="docutils literal notranslate"><span class="pre">moth</span></code> et transfert ont une implémentation spécifique pour le logLevel.</p>
+<p>D’autres classes peuvent être aléatoires en termes d’implémentation de la sémantique <em>set</em>.</p>
+</section>
 <section id="shim-defer-posting-to-exit-experimental">
 <h4>shim_defer_posting_to_exit (EXPERIMENTAL)<a class="headerlink" href="#shim-defer-posting-to-exit-experimental" title="Link to this heading"></a></h4>
 <p>(option spécifique à libsrshim)
