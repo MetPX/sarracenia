@@ -50,8 +50,6 @@ default_options = {
     'fileEvents': allFileEvents,
     'housekeeping': 300,
     'logReject': False,
-    'logFormat':
-    '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
     'mirror': True,
     'permCopy': True,
@@ -252,7 +250,7 @@ class Flow:
                 logger.debug( "details:", exc_info=True )
                 return False
 
-        logger.info( f'flowCallback plugins to load: {plugins_to_load}' )
+        logger.debug( f'flowCallback plugins to load: {plugins_to_load}' )
         for c in plugins_to_load:
             try:
                 plugin = sarracenia.flowcb.load_library(c, self.o)
@@ -310,7 +308,6 @@ class Flow:
                 eval( f"self.{entry_point}()")
             else:
                 try:
-                    logger.info( f'normal run of self.{entry_point}' )
                     eval( f"self.{entry_point}()")
                 except Exception as ex:
                     logger.error( f'flow {entry_point} crashed: {ex}' )
@@ -455,9 +452,7 @@ class Flow:
         m.setReport(code, reason)
 
     def please_stop(self) -> None:
-        logger.info(
-            f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
-        )
+        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
@@ -539,8 +534,8 @@ class Flow:
             logger.debug("options:")
             self.o.dump()
 
-        logger.info("callbacks loaded: %s" % self.plugins['load'])
-        logger.info(
+        logger.debug("callbacks loaded: %s" % self.plugins['load'])
+        logger.debug(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
 
@@ -552,11 +547,11 @@ class Flow:
 
             if self._stop_requested:
                 if stopping:
-                    logger.info('clean stop from run loop')
+                    logger.debug('clean stop from run loop')
                     self.close()
                     break
                 else:
-                    logger.info( 'starting last pass (without gather) through loop for cleanup.')
+                    logger.debug( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
             self._run_vip_update()
@@ -571,7 +566,7 @@ class Flow:
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
-                    logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+                    logger.debug("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
 
                 if not stopping:
                     self.gather()
@@ -609,7 +604,7 @@ class Flow:
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
-                    logger.info("Not exiting because there are still messages in the post retry queue.")
+                    logger.debug("Not exiting because there are still messages in the post retry queue.")
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
                     current_sleep = 60
                 else:
@@ -1121,7 +1116,7 @@ class Flow:
             return
 
         if len(self.worklist.incoming) > 0:
-            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            logger.debug('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
             self.worklist.poll_catching_up = True
             return
         else:
@@ -1249,6 +1244,12 @@ class Flow:
                 with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
+            # removing old metrics files
+            logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
+            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+            for o in old_metrics:
+                logger.info( f"removing old metrics file: {o} " )
+                os.unlink(o)
 
         self.worklist.ok = []
         self.worklist.directories_ok = []
@@ -1497,7 +1498,7 @@ class Flow:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            logger.info("removed %s" % path)
+            logger.debug("removed %s" % path)
         except:
             logger.error("could not remove %s." % path)
             logger.debug('Exception details: ', exc_info=True)
@@ -1510,7 +1511,6 @@ class Flow:
             for messages with an rename file operation, it is to rename a file.
         """
         ok = True
-        logger.info( f" pwd is {os.getcwd()}  " )
         if not os.path.exists(old):
             logger.info(
                 "old file %s not found, if destination (%s) missing, then fall back to copy"
@@ -1647,7 +1647,7 @@ class Flow:
 
             if not os.path.isdir(msg['new_dir']):
                 try:
-                    logger.info( f"missing destination directories, makedirs: {msg['new_dir']} " )
+                    logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], 0o775, True)
                 except Exception as ex:
@@ -2033,7 +2033,7 @@ class Flow:
                     remote_offset += msg['blocks']['manifest'][blkno]['size']
 
                 block_length=msg['blocks']['manifest'][msg['blocks']['number']]['size']
-                logger.info( f"offset calculation:  start={remote_offset} count={block_length}" )
+                logger.debug( f"offset calculation:  start={remote_offset} count={block_length}" )
 
             elif 'size' in msg:
                 block_length = msg['size']
