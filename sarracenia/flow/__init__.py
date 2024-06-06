@@ -1937,9 +1937,12 @@ class Flow:
             msg['_deleteOnPost'] |= set(['new_inflight_path'])
 
         if 'download' in self.plugins and len(self.plugins['download']) > 0:
+            ok = False
             for plugin in self.plugins['download']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
@@ -2216,9 +2219,12 @@ class Flow:
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
         if len(self.plugins['send']) > 0:
+            ok = False
             for plugin in self.plugins['send']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
