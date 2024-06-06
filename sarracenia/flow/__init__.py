@@ -2474,6 +2474,8 @@ class Flow:
                     % local_file)
                 time.sleep(0.01)
                 return False
+            elif 'size' not in msg:
+                msg['size'] = os.path.getsize(local_file)
 
             offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
