@@ -1,17 +1,24 @@
 metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
 
-  * merge PR #1067 (closing #824 )
+  * messages reviewed & consolidated: #1094, #1099 (de-cluttering.)
+  * add http metadata to scheduled flows. #1084
+  * only run after_post when actually posted #1101
+  * when plugins go bad, report better, recover better: #1085, #1091, 
+  * performance improvements #1083, #1086
+  * crashes/problems with statehost #1076, #1087, #1096
+  * sr3 status flow state detail improved.
     * adds lag,rtry,slow,reje states to status display.
     * adds checks for running process to cleanup, fail if running.
     * adds cleanup to remove, don't remove if cleanup fails.
     * adds progressive logs to transfers  (closing #966) 
-  * several fixes for sender crashes resulting from changes in try/except scope.
+  * several fixes for sender crashes resulting from changes in try/except
+    scope. #1091, #1095,  
   * add #1054 can now convert multiple configs, and overwrite (with --wololo)
   * fixed #1064 poll crash.
   * fixed #927 sanity not restarting crashed polls.
-  * bug fixes and unit tests for AM
+  * bug fixes and unit tests for AM ( #1036, #1074, #1078, #1079 )
   * many unit tests added, improved coverage (though still poor.)
-  * many other plugin improvements.
+  * many other improvements and fixes in core and plugins.
   * search function restored on web-site documentation.
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
