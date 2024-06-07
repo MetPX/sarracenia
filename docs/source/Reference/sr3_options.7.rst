@@ -238,7 +238,7 @@ flag
     an option that has only True or False values (aka: a boolean value)
 
 float
-    a floating point number.
+    a floating point number (3 decimal places max, numbers > 1000 are integers)
 
 list
     a list of string values, each succeeding occurrence catenates to the total.

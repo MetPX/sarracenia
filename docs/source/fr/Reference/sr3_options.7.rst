@@ -237,6 +237,7 @@ flag
 
 float
     un nombre à virgule flottante, (séparateur de décimale étant un point.)
+    max de trois chiffres après le décimal, alors plus grand que 1000 devient des nombre entiers.
 
 list
     une liste de chaîne de caractères, chaque occurrence successive se rajoute au total.
