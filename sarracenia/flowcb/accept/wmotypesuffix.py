@@ -58,6 +58,9 @@ class WmoTypeSuffix(FlowCB):
 
             message['new_file'] = message['new_file'] + type_suffix
 
+            if 'rename' in message:
+                message['rename'] += type_suffix
+
             if 'fileOp' in message and 'rename' in message['fileOp']:
                 message['fileOp']['rename'] += type_suffix
 
