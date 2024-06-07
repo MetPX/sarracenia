@@ -341,25 +341,35 @@ def parse_count(cstr):
         offset=1
     else:
         offset=0
-    count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
-    return -count if offset else count
+    try:
+        count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
+        return -count if offset else count
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a count value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0
 
 def parse_float(cstr):
     if type(cstr) is not str:
         return cstr
 
-    fa = parse_count(cstr)
-    if abs(fa) < 1000:
-        if cstr[-1] in [ 'k', 'b', 'i' ]:
-            if cstr[-1] in [ 'b', 'i' ]:
-                fa=float(cstr[0:-2])*1024
+    try:
+        fa = parse_count(cstr)
+        if abs(fa) < 1000:
+            if cstr[-1] in [ 'k', 'b', 'i' ]:
+                if cstr[-1] in [ 'b', 'i' ]:
+                    fa=float(cstr[0:-2])*1024
+                else:
+                    if cstr[-2] != 'k':
+                        logger.error( f"malformed float: {cstr}, overriding to kilo" )
+                    fa=float(cstr[0:-1])*1000
             else:
-                if cstr[-2] != 'k':
-                    logger.error( f"malformed float: {cstr}, overriding to kilo" )
-                fa=float(cstr[0:-1])*1000
-        else:
-            fa=float(cstr)
-    return fa
+                fa=float(cstr)
+        return fa
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a float value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0.0
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
