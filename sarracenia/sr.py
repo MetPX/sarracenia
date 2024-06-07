@@ -2600,7 +2600,7 @@ class sr_GlobalState:
                             naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
                             naturalSize(m["transferTxBytes"]), \
                             naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
-                            time_base )
+                            m["time_base"] )
                 else:
                     line += " %10s %10s %9s %5s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
