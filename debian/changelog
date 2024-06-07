@@ -6,6 +6,9 @@ metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
   * when plugins go bad, report better, recover better: #1085, #1091, 
   * performance improvements #1083, #1086
   * crashes/problems with statehost #1076, #1087, #1096
+  * fix #1104 message rate per cpu second and cpuS state.
+  * fix #1097 better parsing of low fractional rates. 
+  * added logFormat option.
   * sr3 status flow state detail improved.
     * adds lag,rtry,slow,reje states to status display.
     * adds checks for running process to cleanup, fail if running.
