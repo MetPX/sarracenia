@@ -1601,6 +1601,15 @@ This test will only apply if a flow is actually transferring messages.
 The rate is only visible in *sr3 --full status* 
 
 This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:
+
+* one hundred regular expressions must be evaluated per message received. Regex's, when cumulated, can get expensive.
+
+* a complex plugin that does heavy transformations on data in route.
+
+* repeating an operation for each message, when doing it once per batch would do.
+
+
 It defaults to inactive, but may be set to identify transient issues.
 
 runStateThreshold_hung <interval> (default: 450)

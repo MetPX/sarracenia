@@ -1581,6 +1581,14 @@ Ce test ne s'appliquera que si un flux transfère réellement des messages.
 Le taux n'est visible que dans *sr3 --full status*
 
 Cela peut indiquer que l'acheminement est excessivement coûteux ou que les transferts sont excessivement lents.
+Exemples qui pourraient y contribuer :
+
+* une centaine d'expressions régulières doivent être évaluées par message reçu. les expressions régulières, une fois cumulées, peuvent coûter cher.
+
+* un plugin complexe qui effectue de lourdes transformations sur les données en cours de route.
+
+* répéter une opération pour chaque message, alors qu'il suffirait de la faire une fois par lot.
+
 Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.
 
 
