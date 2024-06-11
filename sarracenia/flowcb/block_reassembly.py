@@ -148,7 +148,7 @@ class Block_reassembly(FlowCB):
                 old_blocks = rfm.get()
 
             if old_blocks and not 'waiting' in old_blocks:
-                old_blocks['waiting'] = {}
+                old_blocks['waiting'] = m['blocks']['manifest'].copy()
 
             # calculate old file size.
             if old_blocks and 'manifest' in old_blocks:
