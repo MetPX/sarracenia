@@ -142,6 +142,15 @@ Both v2 and v3 are supported on the stable branch of sr_insects.  That branch sh
 used to support all development in both versions.... 
 
 
+Unit tests
+~~~~~~~~~~
+
+The tests/ sub-directory contains a woefully incomplete but growing set of unit tests
+using the *pytest* framework. These tests are only exercised on Ubuntu 22.04 at the moment.
+consult tests/README.md for how to run them. Unit tests passing (or a very good explanation
+of why they *temporarily* fail) should be another gate before merging to the main *development* branch.
+
+
 Local Installation
 ------------------
 
@@ -291,6 +300,14 @@ multipass launch -m 8G bionic
 '''
 
 can run developer tests as per multipass as described above.
+Need to edit:
+
+* requirements.txt (remove paramiko and watchdog)
+* setup.py (remove install_requires for paramiko and watchdog)
+
+These packages have comedically complex dependencies. Install them separately
+and they will be usable by sr3, but listing them as a requirement breaks things.
+
 
 Python Wheel
 ~~~~~~~~~~~~
