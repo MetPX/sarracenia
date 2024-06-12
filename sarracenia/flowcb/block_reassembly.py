@@ -165,7 +165,7 @@ class Block_reassembly(FlowCB):
 
             # update old_blocks to reflect receipt of this block.
             if old_blocks and 'manifest' in old_blocks:
-                logger.info( f" read {len(old_blocks['manifest'])} blocks in manifest, waiting for {len(old_blocks['waiting'])} " )
+                logger.debug( f" read {len(old_blocks['manifest'])} blocks in manifest, waiting for {len(old_blocks['waiting'])} " )
                 logger.debug( f" read old block manifest from attributes: {old_blocks['manifest']}" )
                 logger.debug( f" also show waiting: {old_blocks['waiting']}" )
                 found=False
@@ -182,7 +182,6 @@ class Block_reassembly(FlowCB):
 
             if blkno in old_blocks['waiting']:
                 del old_blocks['waiting'][blkno]
-                logger.info( f"deleted block {blkno} from waiting: {len(old_blocks['waiting'])} left. ") 
 
             # calculate where to seek to...
             offset=0
@@ -196,10 +195,10 @@ class Block_reassembly(FlowCB):
             byteCount = m['blocks']['manifest'][blkno]['size']
 
             logger.info( f" blocks: adding block {blkno} by seeking to: {offset} to write {byteCount} bytes in {root_file}" )
-            if len(old_blocks['waiting']) > 0 :
-                logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
-            else:
-                logger.info( f" we have received every block now." ) 
+            #if len(old_blocks['waiting']) > 0 :
+            #    logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            #else:
+            #    logger.info( f" we have received every block now." ) 
 
             #- {old_blocks['waiting']} " ) 
 
@@ -250,14 +249,10 @@ class Block_reassembly(FlowCB):
                 new_ok.append(m)
                 if hasattr(self.o, 'block_manifest_delete') and self.o.block_manifest_delete:
                     manifest = m['new_dir'] + os.sep + m['new_file'] + "§block_manifest§" 
-                    logger.info( f"should delete manifest: {manifest}")
                     if os.path.exists(manifest):
                         logger.info( f"deleting {manifest}")
                         os.unlink(manifest)
-                    else:
-                        logger.info( "it did not exist!" )
                 else:
-                    logger.info( f"persisting {root_file} manifest.")
                     del old_blocks['waiting']
                     with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
                         rfm.set(old_blocks)

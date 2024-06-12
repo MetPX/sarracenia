@@ -130,12 +130,9 @@ class BlockManifest:
            return
 
        if self.new_x and (self.new_x != self.x):
-           logger.info( f"overwriting" )
            self.fd.seek(0)
            self.fd.write(json.dumps(self.new_x,sort_keys=True,indent=4))
            self.fd.truncate()
-       else:
-           logger.info( f"closing unchanged" )
 
        self.fd.close()
        self.lock.unlock()
