@@ -85,7 +85,6 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
-    'block_reassemble': False,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -141,7 +140,7 @@ count_options = [
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'block_reassemble', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
@@ -1874,9 +1873,6 @@ class Config:
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
                 delattr( self, 'nodupe_basis' )
-
-        self.block_reassemble = 'block_reassembly' in self.plugins_early or \
-                 'sarracenia.flowcb.block_reassembly' in self.plugins_early
 
         if config[-5:] == '.conf':
             cfg = config[:-5]

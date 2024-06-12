@@ -208,6 +208,9 @@ class Flow:
 
         self.plugins['load'].extend(self.o.destfn_scripts)
 
+        self.block_reassembly_active = 'block_reassembly' in self.plugins['load'] or \
+                 'sarracenia.flowcb.block_reassembly' in self.plugins['load']
+
         # metrics - dictionary with names of plugins as the keys
         self.metrics_lastWrite=0
         self.metricsFlowReset()
@@ -2682,7 +2685,7 @@ class Flow:
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
         # cache it here, along with the mtime, unless block_reassembly plugin is active...
         
-        if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.o.block_reassemble:
+        if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.block_reassembly_active:
             with sarracenia.blockmanifest.BlockManifest(local_file) as y:
                 y.set( msg['blocks'] )
 
