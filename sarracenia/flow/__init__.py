@@ -1052,8 +1052,8 @@ class Flow:
                         break
 
                     self.updateFieldsAccepted(m, url, pattern, maskDir,
-                                           maskFileOption, mirror, strip,
-                                           pstrip, flatten)
+                                           maskFileOption, mirror, self.o.strip,
+                                           self.o.pstrip, flatten)
 
                     filtered_worklist.append(m)
                     break
