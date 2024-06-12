@@ -364,8 +364,8 @@ known_report_codes = {
     205:
     "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.",
     205: "Reset Content: checksum recalculated on receipt.",
-    304:
-    "Not modified (Checksum validated, unchanged, so no download resulted.)",
+    206: "Partial Content: received and inserted.",
+    304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
