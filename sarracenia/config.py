@@ -85,7 +85,7 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
-    'block_reassemble': True,
+    'block_reassemble': False,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -1874,6 +1874,8 @@ class Config:
             elif self.nodupe_basis == 'name': 
                 self.plugins_early.append( 'nodupe.name' )
                 delattr( self, 'nodupe_basis' )
+
+        self.block_reassemble = 'block_reassembly' in self.plugins_early
 
         if config[-5:] == '.conf':
             cfg = config[:-5]

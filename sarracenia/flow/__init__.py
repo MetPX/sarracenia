@@ -2680,9 +2680,9 @@ class Flow:
         logger.debug("%s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
-        # cache it here, along with the mtime.
-
-        if ('blocks' in msg) and sarracenia.features['reassembly']['present']:
+        # cache it here, along with the mtime, unless block_reassembly plugin is active...
+        
+        if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.o.block_reassemble:
             with sarracenia.blockmanifest.BlockManifest(local_file) as y:
                 y.set( msg['blocks'] )
 

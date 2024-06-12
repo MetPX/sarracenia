@@ -74,13 +74,16 @@ class BlockManifest:
 
         self.lock.lock()
 
-        self.x = None
-        self.new_x = None
+        self.x = {}
+        self.new_x = {}
 
         if os.path.exists(self.path):
             self.fd = open(self.path,"r+")
             s=self.fd.read()
-            self.x = json.loads(s)
+            try:
+                self.x = json.loads(s)
+            except Exception as ex:
+                pass
 
             for k in ['manifest', 'waiting' ]:
                 if k in self.x:
