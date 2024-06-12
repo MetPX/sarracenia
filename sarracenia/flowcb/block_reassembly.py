@@ -196,7 +196,11 @@ class Block_reassembly(FlowCB):
             byteCount = m['blocks']['manifest'][blkno]['size']
 
             logger.info( f" blocks: adding block {blkno} by seeking to: {offset} to write {byteCount} bytes in {root_file}" )
-            logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            if len(old_blocks['waiting']) > 0 :
+                logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            else:
+                logger.info( f" we have received every block now." ) 
+
             #- {old_blocks['waiting']} " ) 
 
             # FIXME: can seek ever fail? how do we check?
@@ -245,10 +249,13 @@ class Block_reassembly(FlowCB):
                 logger.info( f"completed reassembly of {m['relPath']}" )
                 new_ok.append(m)
                 if hasattr(self.o, 'block_manifest_delete') and self.o.block_manifest_delete:
-                    manifest = m['new_file'] + "§block_manifest§" 
+                    manifest = m['new_dir'] + os.sep + m['new_file'] + "§block_manifest§" 
+                    logger.info( f"should delete manifest: {manifest}")
                     if os.path.exists(manifest):
                         logger.info( f"deleting {manifest}")
                         os.unlink(manifest)
+                    else:
+                        logger.info( "it did not exist!" )
                 else:
                     logger.info( f"persisting {root_file} manifest.")
                     del old_blocks['waiting']
