@@ -885,7 +885,7 @@ class Flow:
             logger.info(f"{relPath} and {pstrip}")
             relstrip = re.sub(pstrip, '', relPath, 1)
 
-            if not filename in relstrip: relstrip = filename
+            # if not filename in relstrip: relstrip = filename
             token = relstrip.split('/')
 
             if 'fileOp' in msg:
