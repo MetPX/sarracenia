@@ -232,7 +232,7 @@ class Block_reassembly(FlowCB):
                 """
                 with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
                     rfm.set(old_blocks)
-                m.setReport( 206, f"file block subset {m['blocks']['number']} received and reassembled ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
+                m.setReport( 206, f"file block subset {m['blocks']['number']} received and written ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
                 worklist.rejected.append(m)
             else:
                 # FIXME: for inflight.  now rename the file to the real name.
@@ -245,10 +245,12 @@ class Block_reassembly(FlowCB):
                 logger.info( f"completed reassembly of {m['relPath']}" )
                 new_ok.append(m)
                 if hasattr(self.o, 'block_manifest_delete') and self.o.block_manifest_delete:
-                    manifest = msg['new_file'] + "§block_manifest§" 
+                    manifest = m['new_file'] + "§block_manifest§" 
                     if os.path.exists(manifest):
+                        logger.info( f"deleting {manifest}")
                         os.unlink(manifest)
                 else:
+                    logger.info( f"persisting {root_file} manifest.")
                     del old_blocks['waiting']
                     with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
                         rfm.set(old_blocks)
