@@ -2686,8 +2686,8 @@ class Flow:
         # cache it here, along with the mtime, unless block_reassembly plugin is active...
         
         if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.block_reassembly_active:
-            with sarracenia.blockmanifest.BlockManifest(local_file) as y:
-                y.set( msg['blocks'] )
+            with sarracenia.blockmanifest.BlockManifest(local_file) as bm:
+                bm.set( msg['blocks'] )
 
         x = sarracenia.filemetadata.FileMetadata(local_file)
         # FIXME ... what to do when checksums don't match?
