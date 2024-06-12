@@ -848,6 +848,7 @@ class Flow:
         #         or  pstrip (pattern str) strip regexp pattern from relPath
         # cannot have both (see setting of option strip in sr_config)
 
+        logger.info(f"I have not entered this routine yet for pstrip. ANL. Here is the relPath : {relPath} and here is pstrip : {pstrip}")
         if path_strip_count > 0:
 
             logger.warning( f"path_strip_count:{path_strip_count}   ")
@@ -881,7 +882,7 @@ class Flow:
 
             #MG FIXME Peter's wish to have replacement in pstrip (ex.:${SOURCE}...)
 
-            logger.critical(f"{relPath=} and {pstrip=}")
+            logger.info(f"{relPath} and {pstrip}")
             relstrip = re.sub(pstrip, '', relPath, 1)
 
             if not filename in relstrip: relstrip = filename
