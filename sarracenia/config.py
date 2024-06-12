@@ -1500,8 +1500,6 @@ class Config:
         if k == 'continue':
             return
             
-        #FIXME: note for Clea, line conversion to v3 complete here.
-
         line = list(map(lambda x: self._varsub(x), line))
 
         if len(line) == 1:

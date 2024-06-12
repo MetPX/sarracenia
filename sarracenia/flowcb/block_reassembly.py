@@ -117,7 +117,7 @@ class Block_reassembly(FlowCB):
             blksz=humanfriendly.parse_size(blk_suffix[1],binary=True)
 
             if blkno != m['blocks']['number']:
-                logger.warning(" mismatch {m['relPath']} name says {blkno} but message says {m['block']['number']}" )
+                logger.warning( f"mismatch {m['relPath']} name says {blkno} but message says {m['block']['number']}" )
                 blkno = m['blocks']['number']
 
             #determine root file name.
@@ -131,7 +131,7 @@ class Block_reassembly(FlowCB):
             flck = flufl.lock.Lock(lock_file)
 
             flck.lock()
-            logger.info( f"10 locked {flck} lock_file: {lock_file}" )
+            #logger.debug( f"10 locked {flck} lock_file: {lock_file}" )
 
             pf=open(part_file,'rb')
 
@@ -165,8 +165,9 @@ class Block_reassembly(FlowCB):
 
             # update old_blocks to reflect receipt of this block.
             if old_blocks and 'manifest' in old_blocks:
-                logger.info( f" read old block manifest from attributes: {old_blocks['manifest']}" )
-                logger.info( f" also show waiting: {old_blocks['waiting']}" )
+                logger.info( f" read {len(old_blocks['manifest'])} blocks in manifest, waiting for {len(old_blocks['waiting'])} " )
+                logger.debug( f" read old block manifest from attributes: {old_blocks['manifest']}" )
+                logger.debug( f" also show waiting: {old_blocks['waiting']}" )
                 found=False
                 sz=0
                 # add
