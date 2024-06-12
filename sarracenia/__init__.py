@@ -356,13 +356,17 @@ def durationToSeconds(str_value, default=None) -> float:
 
     return duration
 
+"""
+  report codes are cribbed from HTTP, when a new situation arises, just peruse a list,
+  and pick one that fits. Should also be easier for others to use:
 
+  https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+"""
 known_report_codes = {
     201: "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
     202: "Accepted. mkdir skipped as it already exists", 
     203: "Non-Authoritative Information: transformed during download.",
-    205:
-    "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.",
     205: "Reset Content: checksum recalculated on receipt.",
     206: "Partial Content: received and inserted.",
     304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
@@ -744,7 +748,7 @@ class Message(dict):
                 text = 'unknown disposition'
 
         if 'report' in msg:
-            logger.warning('overriding initial report: %d: %s' %
+            logger.debug('overriding initial report: %d: %s' %
                            (msg['report']['code'], msg['report']['message']))
 
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
