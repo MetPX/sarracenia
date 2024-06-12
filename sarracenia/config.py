@@ -1875,7 +1875,8 @@ class Config:
                 self.plugins_early.append( 'nodupe.name' )
                 delattr( self, 'nodupe_basis' )
 
-        self.block_reassemble = 'block_reassembly' in self.plugins_early
+        self.block_reassemble = 'block_reassembly' in self.plugins_early or \
+                 'sarracenia.flowcb.block_reassembly' in self.plugins_early
 
         if config[-5:] == '.conf':
             cfg = config[:-5]
