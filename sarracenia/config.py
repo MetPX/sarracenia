@@ -92,7 +92,6 @@ default_options = {
     'dry_run': False,
     'filename': None,
     'flowMain': None,
-    'runStateThreshold_idle': 900,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
@@ -101,7 +100,6 @@ default_options = {
     'logMetrics': False,
     'logStdout': False,
     'metrics_writeInterval': 5,
-    'runStateThreshold_lag': 30,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -119,8 +117,11 @@ default_options = {
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
-    'runStateThreshold_retry': 1000,
+    'runStateThreshold_cpuSlow': 0,
     'runStateThreshold_hung': 450,
+    'runStateThreshold_idle': 900,
+    'runStateThreshold_lag': 30,
+    'runStateThreshold_retry': 1000,
     'runStateThreshold_slow': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
@@ -136,7 +137,7 @@ default_options = {
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
     'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin', 'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow'
+    'messageRateMin', 'runStateThreshold_cpuSlow', 'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
 
