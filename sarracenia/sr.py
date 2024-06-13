@@ -2817,7 +2817,8 @@ class sr_GlobalState:
                         if 'none' in line[1].lower():
                             v=line[1]
                         else:
-                            line[1]= '+' + line[1]
+                            if line[1][0] not in ['+','-']:
+                                line[1]= '+' + line[1]
                             v=line[1]
 
                     if k == 'continue':

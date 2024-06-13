@@ -1043,11 +1043,10 @@ class Config:
             if v == 'None': 
                 sv=set([])
             else:
-                if v[0] in [ '+', '-']:
+                op='r'
+                while v[0] in [ '+', '-']:
                     op=v[0]
                     v=v[1:]
-                else:
-                    op='r'
 
                 if ',' in v: 
                     sv=set(v.split(','))
@@ -1058,6 +1057,7 @@ class Config:
                     sv= old_value | sv
                 elif op == '-' :
                     sv= old_value - sv
+
         return sv
 
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
