@@ -1591,6 +1591,27 @@ a file before it is aged out of a the queue.  Default is two days.  If a file ha
 been transferred after two days of attempts, it is discarded.
 
 
+runStateThreshold_cpuSlow <count> (default: 0)
+----------------------------------------------
+
+The *runStateThreshold_cpuSlow* setting sets the minimum rate of transfer expected for flow
+processing messages. If the messages processed per cpu second rate drops below this threshold,
+then the flow will be identified as "cpuSlow." (shown as cpuS on the *sr3 status* display.)
+This test will only apply if a flow is actually transferring messages.
+The rate is only visible in *sr3 --full status* 
+
+This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:
+
+* one hundred regular expressions must be evaluated per message received. Regex's, when cumulated, can get expensive.
+
+* a complex plugin that does heavy transformations on data in route.
+
+* repeating an operation for each message, when doing it once per batch would do.
+
+
+It defaults to inactive, but may be set to identify transient issues.
+
 runStateThreshold_hung <interval> (default: 450)
 ------------------------------------------------
 

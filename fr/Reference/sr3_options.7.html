@@ -1484,6 +1484,22 @@ de la configuration</p>
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.</p>
 </section>
+<section id="runstatethreshold-cpuslow-count-par-defaut-0">
+<h4>runStateThreshold_cpuSlow &lt;count&gt; (par défaut : 0)<a class="headerlink" href="#runstatethreshold-cpuslow-count-par-defaut-0" title="Link to this heading"></a></h4>
+<p>Le paramètre <em>runStateThreshold_cpuSlow</em> définit le taux de transfert minimum attendu pour le flux
+de messages. Si le débit des messages traités par seconde CPU tombe en dessous de ce seuil,
+alors le flux sera identifié comme « cpuSlow ». (affiché comme cpuS sur l’écran <em>sr3 status</em>.)
+Ce test ne s’appliquera que si un flux transfère réellement des messages.
+Le taux n’est visible que dans <em>sr3 –full status</em></p>
+<p>Cela peut indiquer que l’acheminement est excessivement coûteux ou que les transferts sont excessivement lents.
+Exemples qui pourraient y contribuer :</p>
+<ul class="simple">
+<li><p>une centaine d’expressions régulières doivent être évaluées par message reçu. les expressions régulières, une fois cumulées, peuvent coûter cher.</p></li>
+<li><p>un plugin complexe qui effectue de lourdes transformations sur les données en cours de route.</p></li>
+<li><p>répéter une opération pour chaque message, alors qu’il suffirait de la faire une fois par lot.</p></li>
+</ul>
+<p>Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.</p>
+</section>
 <section id="runstatethreshold-hung-intervalle-defaut-450s">
 <h4>runStateThreshold_hung &lt;intervalle&gt; (défaut: 450s)<a class="headerlink" href="#runstatethreshold-hung-intervalle-defaut-450s" title="Link to this heading"></a></h4>
 <p>L’option runStateThreshold_hung (anciennement : <strong>sanity_log_dead</strong>) définit la durée à considérer comme trop longue avant de redémarrer

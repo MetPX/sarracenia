@@ -1478,6 +1478,22 @@ file errors, and some messages had incorrect selection or destination criteria.<
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.</p>
 </section>
+<section id="runstatethreshold-cpuslow-count-default-0">
+<h4>runStateThreshold_cpuSlow &lt;count&gt; (default: 0)<a class="headerlink" href="#runstatethreshold-cpuslow-count-default-0" title="Link to this heading"></a></h4>
+<p>The <em>runStateThreshold_cpuSlow</em> setting sets the minimum rate of transfer expected for flow
+processing messages. If the messages processed per cpu second rate drops below this threshold,
+then the flow will be identified as “cpuSlow.” (shown as cpuS on the <em>sr3 status</em> display.)
+This test will only apply if a flow is actually transferring messages.
+The rate is only visible in <em>sr3 –full status</em></p>
+<p>This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:</p>
+<ul class="simple">
+<li><p>one hundred regular expressions must be evaluated per message received. Regex’s, when cumulated, can get expensive.</p></li>
+<li><p>a complex plugin that does heavy transformations on data in route.</p></li>
+<li><p>repeating an operation for each message, when doing it once per batch would do.</p></li>
+</ul>
+<p>It defaults to inactive, but may be set to identify transient issues.</p>
+</section>
 <section id="runstatethreshold-hung-interval-default-450">
 <h4>runStateThreshold_hung &lt;interval&gt; (default: 450)<a class="headerlink" href="#runstatethreshold-hung-interval-default-450" title="Link to this heading"></a></h4>
 <p>The runStateThreshold_hung (formerly: <strong>sanity_log_dead</strong>) option sets how long to consider too long before restarting
