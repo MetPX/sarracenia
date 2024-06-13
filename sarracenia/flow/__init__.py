@@ -2742,7 +2742,7 @@ class Flow:
                 except:
                     pass
 
-        if hasattr(proto, 'chmod'):
+        if hasattr(proto, 'utime'):
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 mtime = sarracenia.timestr2flt(msg['mtime'])
                 atime = mtime
