@@ -131,3 +131,10 @@ if features['filetypes']['present']:
         features['filetypes']['present'] = False
         logger.debug( f'redhat magic bindings not supported.')
 
+if features['mqtt']['present']:
+    import paho.mqtt
+    if not paho.mqtt.__version__ >= '2.1.0' :
+        features['mqtt']['present'] = False
+        logger.debug( f'paho-mqtt minimum version needed is 2.1.0')
+
+
