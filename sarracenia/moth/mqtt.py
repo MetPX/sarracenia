@@ -180,9 +180,9 @@ class MQTT(Moth):
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
-    def __sub_on_disconnect(client, userdata, rc, properties=None):
+    def __sub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
-        logger.debug(paho.mqtt.client.connack_string(rc))
+        logger.debug(reason_code)
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
             if lost > 0:
@@ -194,9 +194,9 @@ class MQTT(Moth):
 
     def __sub_on_connect(client, userdata, flags, rc, properties=None):
         logger.debug("client=%s rc=%s, flags=%s" %
-                    (client, paho.mqtt.client.connack_string(rc), flags))
+                    (client, rc, flags))
 
-        if flags['session present'] != 1:
+        if not flags.session_present:
             logger.debug(
                 'no existing session, no recovery of inflight messages from previous connection'
             )
@@ -230,24 +230,31 @@ class MQTT(Moth):
     def __sub_on_subscribe(client,
                            userdata,
                            mid,
-                           granted_qos,
+                           reason_codes,
                            properties=None):
+
+
         userdata.subscribe_mutex.acquire()
-        logger.info("client: {} subscribe completed mid={} granted_qos={}".format(
-            client._client_id, mid, list(map(lambda x: x.getName(), granted_qos))))
+        logger.info("client: {} subscribe completed mid={} reason_codes={}".format(
+            client._client_id, mid, reason_codes))
         userdata.subscribe_in_progress -= 1
         userdata.subscribe_mutex.release()
 
-    def __pub_on_disconnect(client, userdata, rc, properties=None):
+    def __pub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
-        logger.info(paho.mqtt.client.connack_string(rc))
+        logger.info(reason_code)
 
-    def __pub_on_connect(client, userdata, flags, rc, properties=None):
+    def __pub_on_connect(client, userdata, flags, reason_code, properties=None):
         userdata.connect_in_progress = False
-        userdata.metricsConnect()
-        logger.info(paho.mqtt.client.connack_string(rc))
+        logger.info(reason_code)
 
-    def __pub_on_publish(client, userdata, mid):
+        if reason_code == 0:
+            userdata.metricsConnect()
+        elif reason_code > 0: 
+            pass # error processing...
+
+
+    def __pub_on_publish(client, userdata, mid, reason_codes, properties=None):
 
         if mid in userdata.pending_publishes:
             logger.info('publish complete. mid={}'.format(mid))
@@ -299,13 +306,16 @@ class MQTT(Moth):
 
         self.connect_in_progress = True
 
-        if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-           (self.o['broker'].url.scheme[-1] == 'w' ) : 
-            client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
-                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
-        else:
-            client = paho.mqtt.client.Client( userdata=self, \
-                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        self.transport= 'websocket' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+           (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+
+        logger.info( "FIXME: {self.transport=}  ")
+        client = paho.mqtt.client.Client( \
+                    callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
+                    client_id=cid, userdata=self, protocol=paho.mqtt.client.MQTTv5, \
+                    transport = self.transport , manual_ack = self.manual_ack )
+
+        # FIXME: transport = 'websockets', 'unix' 
 
         client.connected = False
         client.on_connect = MQTT.__sub_on_connect
@@ -446,13 +456,12 @@ class MQTT(Moth):
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
 
-                if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-                   (self.o['broker'].url.scheme[-1] == 'w' ) : 
-                    self.client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
-                        protocol=self.proto_version )
-                else:
-                    self.client = paho.mqtt.client.Client( userdata=self, \
-                        protocol=self.proto_version )
+                self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+                   (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+
+                self.client = paho.mqtt.client.Client( 
+                        callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
+                        userdata=self, transport=self.transport, protocol=self.proto_version )
 
                 #self.client = paho.mqtt.client.Client(
                 #    protocol=self.proto_version, userdata=self)
