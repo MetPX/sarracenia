@@ -127,6 +127,15 @@ Le référentiel sr_insects a sa propre base de données de problèmes, et le tr
 Les versions 2 et 3 sont prises en charge sur la branche principale de sr_insects. Cette branche devrait être
 utilisé pour prendre en charge tout le développement dans les deux versions...
 
+Tests unitaires
+~~~~~~~~~~
+
+Le sous-répertoire tests/ contient un ensemble malheureusement incomplet mais croissant de tests unitaires
+qui utilisent le framework *pytest*. Ces tests requiert Ubuntu 22.04 pour le moment.
+Consultez tests/README.md pour savoir comment les exécuter. Réussite des tests unitaires (ou une très bonne explication
+pourquoi ils échouent *temporairement*) devrait être une autre porte avant de fusionner avec la branche *developpement* principale.
+
+
 Installation locale
 -------------------
 

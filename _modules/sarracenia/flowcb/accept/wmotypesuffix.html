@@ -137,6 +137,10 @@
 
     <span class="k">def</span> <span class="nf">after_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worklist</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">worklist</span><span class="o">.</span><span class="n">incoming</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">message</span> <span class="ow">and</span> <span class="s1">&#39;directory&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
+                <span class="k">continue</span>
+
             <span class="n">type_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_type</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
             <span class="c1">## FIXME confused as to how this could ever be true since find_type never returns &quot;UNKNOWN&quot;</span>
             <span class="c1">#if type_suffix == &#39;UNKNOWN&#39;:</span>
@@ -147,10 +151,17 @@
                 <span class="k">continue</span>
 
             <span class="n">message</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;new_file&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">type_suffix</span>
+
             <span class="k">if</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">type_suffix</span></div>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">type_suffix</span>
+
+            <span class="k">if</span> <span class="s1">&#39;fileOp&#39;</span> <span class="ow">in</span> <span class="n">message</span> <span class="ow">and</span> <span class="s1">&#39;rename&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">]:</span>
+                <span class="n">message</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">][</span><span class="s1">&#39;rename&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">type_suffix</span></div>
+
 
             <span class="c1"># TODO else -&gt; worklist.rejected.append(message) ?? should this be happening at any point?</span>
+
+
 </pre></div>
 
            </div>

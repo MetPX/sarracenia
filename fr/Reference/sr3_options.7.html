@@ -1039,6 +1039,14 @@ messages de journal. Autres valeurs : on_start, on_stop, post, gather, … etc�
 On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
 la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel.</p>
 </section>
+<section id="logformat-default-asctime-s-levelname-s-name-s-funcname-s-message-s">
+<h4>LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )<a class="headerlink" href="#logformat-default-asctime-s-levelname-s-name-s-funcname-s-message-s" title="Link to this heading"></a></h4>
+<p>L’option <em>LogFormat</em> est passée directement au mécanismes de contrôle des journalisation
+de python. Le format est documenté ici:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/fr/3/library/logging.html#logrecord-attributes">https://docs.python.org/fr/3/library/logging.html#logrecord-attributes</a></p></li>
+</ul>
+</section>
 <section id="loglevel-defaut-info">
 <h4>logLevel ( défaut: info )<a class="headerlink" href="#loglevel-defaut-info" title="Link to this heading"></a></h4>
 <p>Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :

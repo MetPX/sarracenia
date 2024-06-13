@@ -463,8 +463,8 @@
 
 
 <span class="n">known_report_codes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="mi">201</span><span class="p">:</span>
-    <span class="s2">&quot;Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)&quot;</span><span class="p">,</span>
+    <span class="mi">201</span><span class="p">:</span> <span class="s2">&quot;Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)&quot;</span><span class="p">,</span>
+    <span class="mi">202</span><span class="p">:</span> <span class="s2">&quot;Accepted. mkdir skipped as it already exists&quot;</span><span class="p">,</span> 
     <span class="mi">203</span><span class="p">:</span> <span class="s2">&quot;Non-Authoritative Information: transformed during download.&quot;</span><span class="p">,</span>
     <span class="mi">205</span><span class="p">:</span>
     <span class="s2">&quot;Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.&quot;</span><span class="p">,</span>
@@ -473,6 +473,7 @@
     <span class="s2">&quot;Not modified (Checksum validated, unchanged, so no download resulted.)&quot;</span><span class="p">,</span>
     <span class="mi">307</span><span class="p">:</span> <span class="s2">&quot;Insertion deferred (writing to temporary part file for the moment.)&quot;</span><span class="p">,</span>
     <span class="mi">417</span><span class="p">:</span> <span class="s2">&quot;Expectation Failed: invalid notification message (corrupt headers)&quot;</span><span class="p">,</span>
+    <span class="mi">422</span><span class="p">:</span> <span class="s2">&quot;Unprocessable Content: could not determine path to transfer to&quot;</span><span class="p">,</span>
     <span class="mi">499</span><span class="p">:</span> <span class="s2">&quot;Failure: Not Copied. SFTP/FTP/HTTP download problem&quot;</span><span class="p">,</span>
     <span class="c1">#FIXME : should  not have 503 error code 3 times in a row</span>
     <span class="c1"># 503: &quot;Service unavailable. delete (File removal not currently supported.)&quot;,</span>

@@ -1054,6 +1054,15 @@ other values: on_start, on_stop, post, gather, ... etc... It is comma separated,
 if the list starts with a plus sign (+) then the selected events are appended to current value.
 A minus signe (-) can be used to remove events from the set.
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+The *LogFormat* option is passed directly to python logging mechanisms and can be used
+to control what is written to log files.  The format is documented here:
+
+* https://docs.python.org/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( default: info )
 --------------------------
 

@@ -1038,6 +1038,14 @@ other values: on_start, on_stop, post, gather, … etc… It is comma separated,
 if the list starts with a plus sign (+) then the selected events are appended to current value.
 A minus signe (-) can be used to remove events from the set.</p>
 </section>
+<section id="logformat-default-asctime-s-levelname-s-name-s-funcname-s-message-s">
+<h4>LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )<a class="headerlink" href="#logformat-default-asctime-s-levelname-s-name-s-funcname-s-message-s" title="Link to this heading"></a></h4>
+<p>The <em>LogFormat</em> option is passed directly to python logging mechanisms and can be used
+to control what is written to log files.  The format is documented here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/logging.html#logrecord-attributes">https://docs.python.org/3/library/logging.html#logrecord-attributes</a></p></li>
+</ul>
+</section>
 <section id="loglevel-default-info">
 <h4>logLevel ( default: info )<a class="headerlink" href="#loglevel-default-info" title="Link to this heading"></a></h4>
 <p>The level of logging as expressed by python’s logging. Possible values are :  critical, error, info, warning, debug.</p>

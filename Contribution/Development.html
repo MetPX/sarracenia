@@ -70,6 +70,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#v2-workflow">v2 Workflow</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#v3-workflow">v3 Workflow</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sr-insects">sr_insects</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#unit-tests">Unit tests</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#local-installation">Local Installation</a><ul>
@@ -271,6 +272,13 @@ python 3.6 (redhat 8, ubuntu 18, ubuntu 20) or are too old to use hatchling inst
 Both v2 and v3 are supported on the stable branch of sr_insects.  That branch should be
 used to support all development in both versions….</p>
 </section>
+<section id="unit-tests">
+<h3>Unit tests<a class="headerlink" href="#unit-tests" title="Link to this heading"></a></h3>
+<p>The tests/ sub-directory contains a woefully incomplete but growing set of unit tests
+using the <em>pytest</em> framework. These tests are only exercised on Ubuntu 22.04 at the moment.
+consult tests/README.md for how to run them. Unit tests passing (or a very good explanation
+of why they <em>temporarily</em> fail) should be another gate before merging to the main <em>development</em> branch.</p>
+</section>
 </section>
 <section id="local-installation">
 <h2>Local Installation<a class="headerlink" href="#local-installation" title="Link to this heading"></a></h2>
@@ -405,7 +413,14 @@ ubuntu@flow:~/sr_insects$
 <p>‘’’</p>
 <p>multipass launch -m 8G bionic</p>
 <p>‘’’</p>
-<p>can run developer tests as per multipass as described above.</p>
+<p>can run developer tests as per multipass as described above.
+Need to edit:</p>
+<ul class="simple">
+<li><p>requirements.txt (remove paramiko and watchdog)</p></li>
+<li><p>setup.py (remove install_requires for paramiko and watchdog)</p></li>
+</ul>
+<p>These packages have comedically complex dependencies. Install them separately
+and they will be usable by sr3, but listing them as a requirement breaks things.</p>
 </section>
 <section id="python-wheel">
 <h3>Python Wheel<a class="headerlink" href="#python-wheel" title="Link to this heading"></a></h3>
