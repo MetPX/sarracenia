@@ -313,7 +313,7 @@ class MQTT(Moth):
         client = paho.mqtt.client.Client( \
                     callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
                     client_id=cid, userdata=self, protocol=paho.mqtt.client.MQTTv5, \
-                    transport = self.transport , manual_ack = self.manual_ack )
+                    transport = self.transport , manual_ack = True )
 
         # FIXME: transport = 'websockets', 'unix' 
 
@@ -346,7 +346,6 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
-        self.manual_ack = False
         while True:
 
             if self.please_stop:
@@ -372,17 +371,6 @@ class MQTT(Moth):
                 logger.info( f"is no around? {self.o['no']} " )
                 if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                     self.client = self.__clientSetup(cid)
-                    if hasattr(self, 'client') and hasattr(self.client, 'manual_ack_set'):  # FIXME breaking this...
-                        self.client.manual_ack_set(True)
-                        logger.debug(
-                            "Switching on manual_acks for higher reliability via explicit acknowledgements."
-                        )
-                        self.manual_ack = True
-                    else:
-                        logger.warning(
-                            "paho library automatically acknowledges receipt. may lose data every crash or restart."
-                        )
-    
                     self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                     self.client.enable_logger(logger)
@@ -667,7 +655,7 @@ class MQTT(Moth):
 
     def ack(self, m: sarracenia.Message ) -> None:
 
-        if self.manual_ack and ('ack_id' in m):
+        if 'ack_id' in m:
             logger.info('mid=%d' % m['ack_id'])
             self.client.ack( m['ack_id'], m['qos'] )
             del m['ack_id']
