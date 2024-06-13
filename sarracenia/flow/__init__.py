@@ -606,7 +606,8 @@ class Flow:
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
                     logger.debug("Not exiting because there are still messages in the post retry queue.")
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
-                    current_sleep = 60
+                    # how long to sleep is unclear... if there are a lot of retries, and a low batch... could take a long time.
+                    current_sleep = self.o.batch if self.o.batch < self.o.housekeeping else self.o.housekeeping // 2
                 else:
                     self.runCallbacksTime('please_stop')
 

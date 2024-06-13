@@ -773,7 +773,7 @@ class MQTT(Moth):
 
             if hasattr(self, 'pending_publishes'):
                 ebo=0.1
-                while  (len(self.pending_publishes)+len(self.unexpected_publishes)) >0:
+                while  len(self.pending_publishes) >0:
                     logger.info( f'waiting {ebo} seconds for last {len(self.pending_publishes)} messages to publish')
                     if len(self.unexpected_publishes) < 10:
                         logger.info( f'messages acknowledged before publish?: {self.unexpected_publishes}')
