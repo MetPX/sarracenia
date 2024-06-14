@@ -55,14 +55,14 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
+empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
         "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 'transferLast': 0,
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 'transferLast': 0,
         'connectPercent': 0, 'byteConnectPercent': 0
         }
 
@@ -894,7 +894,7 @@ class sr_GlobalState:
                 'rxLagTime':0, 'rxLagCount':0, 
                 'rxMessageQueued':0, 'rxMessageRetry':0, 
                 'txMessageQueued':0, 'txMessageRetry':0, 
-                'rxMessageRate':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
+                'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
         for c in self.components:
@@ -953,6 +953,8 @@ class sr_GlobalState:
                                             metrics['txLast'] = newval
                                         if 'messageLast' not in metrics or (newval > metrics['messageLast']):
                                             metrics['messageLast'] = newval
+                                    elif k in [ "cpuTime" ]:
+                                        metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
                                 #else:
@@ -999,9 +1001,14 @@ class sr_GlobalState:
             
                             m['byteRate'] = byteTotal/time_base
                             m['msgRate']  = (m["rxGoodCount"]+m["rxBadCount"])/time_base
+                            if m['cpuTime'] > 0:
+                                m['msgRateCpu'] = (m["rxGoodCount"]+m["rxBadCount"])/m['cpuTime']
+                            else:
+                                m['msgRateCpu'] = 0
 
                             self.cumulative_stats['rxMessageByteRate'] += m['byteRate']
                             self.cumulative_stats['rxMessageRate'] +=  m['msgRate']
+                            self.cumulative_stats['rxMessageRateCpu'] +=  m['msgRateCpu']
     
                             m['transferRxByteRate'] = m['transferRxBytes']/time_base
                             m['transferRxFileRate'] = m['transferRxFiles']/time_base
@@ -1109,6 +1116,10 @@ class sr_GlobalState:
                         flow_status = 'idle'
                     else:
                         flow_status = 'running'
+
+                    if self.states[c][cfg]['metrics']['msgRate'] > 0 and \
+                           self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
+                        flow_status = 'cpuSlow'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
                     self.configs[c][cfg]['status'] = flow_status
@@ -1285,7 +1296,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -2505,7 +2516,7 @@ class sr_GlobalState:
         line = "%-40s %-11s %7s %10s %19s %14s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
-            line += "%-40s %17s %33s %40s" % ("Counters (per housekeeping)", "", "Data Counters", "" )
+            line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
             line += "%s %-21s " % (" ", "Memory" ) 
 
         if self.options.displayFull:
@@ -2518,8 +2529,8 @@ class sr_GlobalState:
             underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
             if self.options.displayFull:
-                line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
-                        ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+                line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                        ( "Msg/scpu", "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
                 underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
                         ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
 
@@ -2588,7 +2599,8 @@ class sr_GlobalState:
                             )
 
                     if self.options.displayFull :
-                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                            naturalSize(m['msgRateCpu']).replace("B","m").replace("mytes","msgs"), \
                             naturalSize(m['rxByteCount']), \
                             naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
                             naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
@@ -2600,7 +2612,7 @@ class sr_GlobalState:
                             naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
                             naturalSize(m["transferTxBytes"]), \
                             naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
-                            time_base )
+                            m["time_base"] )
                 else:
                     line += " %10s %10s %9s %5s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
@@ -2805,7 +2817,8 @@ class sr_GlobalState:
                         if 'none' in line[1].lower():
                             v=line[1]
                         else:
-                            line[1]= '+' + line[1]
+                            if line[1][0] not in ['+','-']:
+                                line[1]= '+' + line[1]
                             v=line[1]
 
                     if k == 'continue':

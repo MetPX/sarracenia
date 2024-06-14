@@ -1054,6 +1054,15 @@ other values: on_start, on_stop, post, gather, ... etc... It is comma separated,
 if the list starts with a plus sign (+) then the selected events are appended to current value.
 A minus signe (-) can be used to remove events from the set.
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+The *LogFormat* option is passed directly to python logging mechanisms and can be used
+to control what is written to log files.  The format is documented here:
+
+* https://docs.python.org/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( default: info )
 --------------------------
 
@@ -1590,6 +1599,27 @@ The **retry_ttl** (retry time to live) option indicates how long to keep trying 
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.
 
+
+runStateThreshold_cpuSlow <count> (default: 0)
+----------------------------------------------
+
+The *runStateThreshold_cpuSlow* setting sets the minimum rate of transfer expected for flow
+processing messages. If the messages processed per cpu second rate drops below this threshold,
+then the flow will be identified as "cpuSlow." (shown as cpuS on the *sr3 status* display.)
+This test will only apply if a flow is actually transferring messages.
+The rate is only visible in *sr3 --full status* 
+
+This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:
+
+* one hundred regular expressions must be evaluated per message received. Regex's, when cumulated, can get expensive.
+
+* a complex plugin that does heavy transformations on data in route.
+
+* repeating an operation for each message, when doing it once per batch would do.
+
+
+It defaults to inactive, but may be set to identify transient issues.
 
 runStateThreshold_hung <interval> (default: 450)
 ------------------------------------------------

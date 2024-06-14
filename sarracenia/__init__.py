@@ -358,8 +358,8 @@ def durationToSeconds(str_value, default=None) -> float:
 
 
 known_report_codes = {
-    201:
-    "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
+    201: "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
+    202: "Accepted. mkdir skipped as it already exists", 
     203: "Non-Authoritative Information: transformed during download.",
     205:
     "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.",
@@ -368,6 +368,7 @@ known_report_codes = {
     "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
+    422: "Unprocessable Content: could not determine path to transfer to",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",

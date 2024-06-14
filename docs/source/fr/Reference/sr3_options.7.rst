@@ -1038,8 +1038,18 @@ messages de journal. Autres valeurs : on_start, on_stop, post, gather, ... etc..
 On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
 la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel. 
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+L'option *LogFormat* est passée directement au mécanismes de contrôle des journalisation
+de python. Le format est documenté ici:
+
+* https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( défaut: info )
 -------------------------
+
 Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
 critical, error, info, warning, debug.
 
@@ -1571,6 +1581,26 @@ retry_ttl <intervalle> (défaut: identique à expire)
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
+
+runStateThreshold_cpuSlow <count> (par défaut : 0)
+---------------------------------------------------
+
+Le paramètre *runStateThreshold_cpuSlow* définit le taux de transfert minimum attendu pour le flux
+de messages. Si le débit des messages traités par seconde CPU tombe en dessous de ce seuil,
+alors le flux sera identifié comme « cpuSlow ». (affiché comme cpuS sur l'écran *sr3 status*.)
+Ce test ne s'appliquera que si un flux transfère réellement des messages.
+Le taux n'est visible que dans *sr3 --full status*
+
+Cela peut indiquer que l'acheminement est excessivement coûteux ou que les transferts sont excessivement lents.
+Exemples qui pourraient y contribuer :
+
+* une centaine d'expressions régulières doivent être évaluées par message reçu. les expressions régulières, une fois cumulées, peuvent coûter cher.
+
+* un plugin complexe qui effectue de lourdes transformations sur les données en cours de route.
+
+* répéter une opération pour chaque message, alors qu'il suffirait de la faire une fois par lot.
+
+Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.
 
 
 runStateThreshold_hung <intervalle> (défaut: 450s)
