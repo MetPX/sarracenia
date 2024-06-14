@@ -136,8 +136,8 @@ default_options = {
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin', 'runStateThreshold_cpuSlow', 'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
 
@@ -338,6 +338,10 @@ def isTrue(S):
     return S.lower() in ['true', 'yes', 'on', '1']
 
 def parse_count(cstr):
+    """
+        number argument accepts k,m,g suffix with i and b to use base 2 ) and +- 
+        return value is integer.
+    """
     if cstr[0] == '-':
         offset=1
     else:
@@ -351,21 +355,36 @@ def parse_count(cstr):
         return 0
 
 def parse_float(cstr):
+    """
+        like parse_count, numeric argument accepts k,m,g suffix and +-.
+        below 1000, return a decimal number with 3 digits max.
+    """
     if type(cstr) is not str:
         return cstr
 
     try:
         fa = parse_count(cstr)
         if abs(fa) < 1000:
-            if cstr[-1] in [ 'k', 'b', 'i' ]:
-                if cstr[-1] in [ 'b', 'i' ]:
+            if cstr[-1] in [ 'b', 'i' ]:
+                if cstr[-2] in [ 'k' ]:
                     fa=float(cstr[0:-2])*1024
                 else:
-                    if cstr[-2] != 'k':
-                        logger.error( f"malformed float: {cstr}, overriding to kilo" )
+                    fa=float(cstr[0:-1])
+            elif cstr[-1] in [ 'k' ]:
                     fa=float(cstr[0:-1])*1000
             else:
                 fa=float(cstr)
+
+            # apply 3 sig figs.
+            if abs(fa) > 1000:
+                fa=int(fa)
+            elif abs(fa) > 100:
+                fa=round(fa,1)
+            elif abs(fa) > 10:
+                fa=round(fa,2)
+            else:
+                fa=round(fa,3)
+
         return fa
     except Exception as Ex:
         logger.error( f"failed to parse:  {cstr} as a float value" )
