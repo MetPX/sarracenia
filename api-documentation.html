@@ -346,6 +346,20 @@ return config instance item.</p>
 <p>appdir_stuff can be to override file locations for testing during development.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">parse_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#parse_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>number argument accepts k,m,g suffix with i and b to use base 2 ) and +-
+return value is integer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">parse_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#parse_float"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>like parse_count, numeric argument accepts k,m,g suffix and +-.
+below 1000, return a decimal number with 3 digits max.</p>
+</dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">str_options</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['action',</span> <span class="pre">'admin',</span> <span class="pre">'baseDir',</span> <span class="pre">'broker',</span> <span class="pre">'cluster',</span> <span class="pre">'directory',</span> <span class="pre">'exchange',</span> <span class="pre">'exchange_suffix',</span> <span class="pre">'feeder',</span> <span class="pre">'filename',</span> <span class="pre">'flatten',</span> <span class="pre">'flowMain',</span> <span class="pre">'header',</span> <span class="pre">'hostname',</span> <span class="pre">'identity',</span> <span class="pre">'inlineEncoding',</span> <span class="pre">'logFormat',</span> <span class="pre">'logLevel',</span> <span class="pre">'pollUrl',</span> <span class="pre">'post_baseUrl',</span> <span class="pre">'post_baseDir',</span> <span class="pre">'post_broker',</span> <span class="pre">'post_exchange',</span> <span class="pre">'post_exchangeSuffix',</span> <span class="pre">'post_format',</span> <span class="pre">'post_topic',</span> <span class="pre">'queueName',</span> <span class="pre">'sendTo',</span> <span class="pre">'rename',</span> <span class="pre">'report_exchange',</span> <span class="pre">'source',</span> <span class="pre">'strip',</span> <span class="pre">'timezone',</span> <span class="pre">'nodupe_ttl',</span> <span class="pre">'nodupe_driver',</span> <span class="pre">'nodupe_basis',</span> <span class="pre">'tlsRigour',</span> <span class="pre">'topic']</span></em></dt>

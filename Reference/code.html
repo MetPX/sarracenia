@@ -87,6 +87,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.no_file_config"><code class="docutils literal notranslate"><span class="pre">no_file_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.octal_number"><code class="docutils literal notranslate"><span class="pre">octal_number</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.one_config"><code class="docutils literal notranslate"><span class="pre">one_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.parse_count"><code class="docutils literal notranslate"><span class="pre">parse_count()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.parse_float"><code class="docutils literal notranslate"><span class="pre">parse_float()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.str_options"><code class="docutils literal notranslate"><span class="pre">str_options</span></code></a></li>
 </ul>
 </li>
@@ -943,6 +945,20 @@ read in component/config.conf
 parse arguments from command line.
 return config instance item.</p>
 <p>appdir_stuff can be to override file locations for testing during development.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sarracenia.config.parse_count">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">parse_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#parse_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.parse_count" title="Link to this definition"></a></dt>
+<dd><p>number argument accepts k,m,g suffix with i and b to use base 2 ) and +-
+return value is integer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sarracenia.config.parse_float">
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">parse_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#parse_float"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.parse_float" title="Link to this definition"></a></dt>
+<dd><p>like parse_count, numeric argument accepts k,m,g suffix and +-.
+below 1000, return a decimal number with 3 digits max.</p>
 </dd></dl>
 
 <dl class="py data">
