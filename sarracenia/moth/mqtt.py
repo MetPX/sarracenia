@@ -138,7 +138,7 @@ class MQTT(Moth):
 
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
-        logger.setLevel('WARNING')
+        #logger.setLevel('WARNING')
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
