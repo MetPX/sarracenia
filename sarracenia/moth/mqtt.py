@@ -138,7 +138,6 @@ class MQTT(Moth):
 
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
-        #logger.setLevel('WARNING')
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
@@ -186,11 +185,10 @@ class MQTT(Moth):
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
             if lost > 0:
-                logger.error(
-                    'message loss! cannot confirm %d messages were published: mids=%s'
-                    % (lost, userdata.pending_publishes))
+                logger.error( f"message loss! cannot confirm {lost}"
+                    f"messages were published: mids={userdata.pending_publishes}" )
             else:
-                logger.info('clean. no published messages lost.')
+                logger.info( f"clean. no published messages lost.")
 
     def __sub_on_connect(client, userdata, flags, reason_code, properties=None):
 
@@ -202,9 +200,9 @@ class MQTT(Moth):
 
         if not flags.session_present:
             logger.debug(
-                'no existing session, no recovery of inflight messages from previous connection'
+                f"no existing session, no recovery of inflight messages from previous connection"
             )
-        logger.info('connection succeeded')
+        logger.info( f"connection succeeded" )
 
         # else reason_code == 0 ... success.
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
@@ -216,15 +214,15 @@ class MQTT(Moth):
                 subj=userdata.o['topic']
             else:
                 exchange, prefix, subtopic = binding_tuple
-                logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
+                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                                 prefix + subtopic)
 
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( "asked to subscribe to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
-                userdata.o['qos'], paho.mqtt.client.error_string(res)) )
+            logger.info( f"asked to subscribe to: {subj}, mid={mid}"
+                    f"qos={userdata.o['qos']} result: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -284,7 +282,6 @@ class MQTT(Moth):
         """
         if self.o['broker'].url.scheme[-1] == 's':
             port = 8883
-            logger.info( f"tlsRigour: {self.o['tlsRigour']}" )
             self.o['tlsRigour'] = self.o['tlsRigour'].lower()
             if self.o['tlsRigour'] == 'lax':
                 self.tlsctx = ssl.create_default_context()
@@ -305,7 +302,7 @@ class MQTT(Moth):
                 self.tlsctx = ssl.create_default_context()
             else:
                 self.logger.warning(
-                    "option tlsRigour must be one of:  lax, normal, strict")
+                    f"option tlsRigour must be one of: lax, normal, strict")
             self.client.tls_set_context(self.tlsctx)
         else:
             port = 1883
@@ -402,7 +399,7 @@ class MQTT(Moth):
 
                     for i in range(1,session_mxi ):
                         icid = self.o['queueName'] + "_i%02d" %  i
-                        logger.info('declare session for instances %s' %icid)
+                        logger.info( f"declare session for instances {icid}" )
                         decl_client = self.__clientSetup(icid)
                         decl_client.on_connect = MQTT.__sub_on_connect
                         decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
@@ -411,12 +408,11 @@ class MQTT(Moth):
                             decl_client.loop(1)
                         decl_client.disconnect()
                         decl_client.loop_stop()
-                        logger.info('instance declaration for %s done' % icid)
+                        logger.info( f"instance declaration for {icid} done" )
                     break
                     
             except Exception as err:
-                logger.error("failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -476,7 +472,7 @@ class MQTT(Moth):
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
                                          properties=props)
-                logger.info('connecting to %s, res=%s' % (self.o['broker'].url.hostname, res))
+                logger.info( f"connecting to {self.o['broker'].url.hostname}, res={res}" )
 
                 self.client.loop_start()
 
@@ -493,8 +489,7 @@ class MQTT(Moth):
                     break
 
             except Exception as err:
-                logger.error("failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -517,8 +512,7 @@ class MQTT(Moth):
         """
 
         if userdata.o['messageDebugDump']:
-            logger.info("Message received: id:%d, topic:%s payload:%s" %
-                        (msg.mid, msg.topic, msg.payload))
+            logger.info( f"Message received: id:{msg.mid}, topic:{msg.topic} payload:{msg.payload}" )
 
         m = userdata._msgDecode(msg)
         userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
@@ -535,7 +529,7 @@ class MQTT(Moth):
             props.SessionExpiryInterval = 1
             for i in range(1,self.o['instances']+1):
                 icid= self.o['queueName'] + "_i%02d" % i
-                logger.info('cleanup session %s' % icid )
+                logger.info( f"cleanup session {icid}" )
                 myclient = self.__clientSetup( icid )
                 myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                    clean_start=False, properties=props )
@@ -544,7 +538,7 @@ class MQTT(Moth):
                     if self.please_stop:
                        break
                 myclient.disconnect()
-                logger.info('instance deletion for %02d done' % i)
+                logger.info( f"instance deletion for {i:02d} done" )
 
         if hasattr(self, 'client'):
             self.client.disconnect()
@@ -564,11 +558,11 @@ class MQTT(Moth):
                 logger.warning('message is missing content-type header')
 
             if hasattr(mqttMessage, 'payload'): 
-                logger.info('payload: type: %s (%d bytes) %s' %
-                             (type(mqttMessage.payload), len(mqttMessage.payload), mqttMessage.payload))
+                logger.info( f"payload: type: {type(mqttMessage.payload)}"
+                        f"(len: {len(mqttMessage.payload)%d} bytes) body:{mqttMessage.payload}" )
 
             if hasattr(mqttMessage.properties, 'UserProperty'): 
-                logger.info( f"User Property: {mqttMessage.properties.UserProperty} ")
+                logger.info( f"User Property: {mqttMessage.properties.UserProperty}")
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
@@ -577,8 +571,8 @@ class MQTT(Moth):
             message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
-            logger.error("ignored malformed message: %s" % mqttMessage.payload)
-            logger.error("decode error: %s" % ex)
+            logger.error( f"ignored malformed message: {mqttMessage.payload}" )
+            logger.error( f"decode error: {ex}" )
             logger.error('Exception details: ', exc_info=True)
             self.metrics['rxBadCount'] += 1
             return None
@@ -595,7 +589,7 @@ class MQTT(Moth):
         else:
            self.metrics['rxBadCount'] += 1
            self.ack(message)
-           logger.error('message acknowledged and discarded: %s' % message)
+           logger.error( f"message acknowledged and discarded: {message}" )
            return None
 
     def _rotateInputBuffers(self) -> None:
@@ -710,9 +704,7 @@ class MQTT(Moth):
                                       'ascii')) % len(self.o['exchange'])
                         exchange = self.o['exchange'][idx]
                     else:
-                        logger.error(
-                            'do not know which exchange to publish to: %s' %
-                            self.o['exchange'])
+                        logger.error( f"do not know which exchange to publish to: {self.o['exchange']}" )
                         return
                 else:
                     exchange = self.o['exchange'][0]
@@ -761,8 +753,8 @@ class MQTT(Moth):
                 self.metrics['txByteCount'] += len(raw_body)
                 self.metrics['txGoodCount'] += 1
                 self.metrics['txLast'] = sarracenia.nowstr()
-                logger.info("published mid={} ack_pending={} {} to under: {} ".format(
-                    info.mid, ack_pending, body, topic))
+                logger.info( f"published mid={info.mid} ack_pending={ack_pending} "
+                     f"{body} to under: {topic} " )
                 return True  #success...
             logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} {info}")
 
