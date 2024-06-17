@@ -461,16 +461,20 @@
     <span class="k">return</span> <span class="n">duration</span></div>
 
 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  report codes are cribbed from HTTP, when a new situation arises, just peruse a list,</span>
+<span class="sd">  and pick one that fits. Should also be easier for others to use:</span>
 
+<span class="sd">  https://en.wikipedia.org/wiki/List_of_HTTP_status_codes</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="n">known_report_codes</span> <span class="o">=</span> <span class="p">{</span>
     <span class="mi">201</span><span class="p">:</span> <span class="s2">&quot;Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)&quot;</span><span class="p">,</span>
     <span class="mi">202</span><span class="p">:</span> <span class="s2">&quot;Accepted. mkdir skipped as it already exists&quot;</span><span class="p">,</span> 
     <span class="mi">203</span><span class="p">:</span> <span class="s2">&quot;Non-Authoritative Information: transformed during download.&quot;</span><span class="p">,</span>
-    <span class="mi">205</span><span class="p">:</span>
-    <span class="s2">&quot;Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.&quot;</span><span class="p">,</span>
     <span class="mi">205</span><span class="p">:</span> <span class="s2">&quot;Reset Content: checksum recalculated on receipt.&quot;</span><span class="p">,</span>
-    <span class="mi">304</span><span class="p">:</span>
-    <span class="s2">&quot;Not modified (Checksum validated, unchanged, so no download resulted.)&quot;</span><span class="p">,</span>
+    <span class="mi">206</span><span class="p">:</span> <span class="s2">&quot;Partial Content: received and inserted.&quot;</span><span class="p">,</span>
+    <span class="mi">304</span><span class="p">:</span> <span class="s2">&quot;Not modified (Checksum validated, unchanged, so no download resulted.)&quot;</span><span class="p">,</span>
     <span class="mi">307</span><span class="p">:</span> <span class="s2">&quot;Insertion deferred (writing to temporary part file for the moment.)&quot;</span><span class="p">,</span>
     <span class="mi">417</span><span class="p">:</span> <span class="s2">&quot;Expectation Failed: invalid notification message (corrupt headers)&quot;</span><span class="p">,</span>
     <span class="mi">422</span><span class="p">:</span> <span class="s2">&quot;Unprocessable Content: could not determine path to transfer to&quot;</span><span class="p">,</span>
@@ -874,7 +878,7 @@
                 <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;unknown disposition&#39;</span>
 
         <span class="k">if</span> <span class="s1">&#39;report&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;overriding initial report: </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;overriding initial report: </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
                            <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;code&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]))</span>
 
         <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;timeCompleted&#39;</span><span class="p">:</span> <span class="n">nowstr</span><span class="p">(),</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">text</span><span class="p">}</span>

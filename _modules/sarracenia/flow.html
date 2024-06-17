@@ -300,6 +300,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">destfn_scripts</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_reassembly_active</span> <span class="o">=</span> <span class="s1">&#39;block_reassembly&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span> <span class="ow">or</span> \
+                 <span class="s1">&#39;sarracenia.flowcb.block_reassembly&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s1">&#39;load&#39;</span><span class="p">]</span>
+
         <span class="c1"># metrics - dictionary with names of plugins as the keys</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics_lastWrite</span><span class="o">=</span><span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metricsFlowReset</span><span class="p">()</span>
@@ -2829,11 +2832,11 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">local_file</span><span class="p">)</span>
 
         <span class="c1"># if the file is not partitioned, the the onfly_checksum is for the whole file.</span>
-        <span class="c1"># cache it here, along with the mtime.</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;reassembly&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]:</span>
-            <span class="k">with</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">blockmanifest</span><span class="o">.</span><span class="n">BlockManifest</span><span class="p">(</span><span class="n">local_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">y</span><span class="p">:</span>
-                <span class="n">y</span><span class="o">.</span><span class="n">set</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span> <span class="p">)</span>
+        <span class="c1"># cache it here, along with the mtime, unless block_reassembly plugin is active...</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s1">&#39;reassembly&#39;</span><span class="p">][</span><span class="s1">&#39;present&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_reassembly_active</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">blockmanifest</span><span class="o">.</span><span class="n">BlockManifest</span><span class="p">(</span><span class="n">local_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">bm</span><span class="p">:</span>
+                <span class="n">bm</span><span class="o">.</span><span class="n">set</span><span class="p">(</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">]</span> <span class="p">)</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">local_file</span><span class="p">)</span>
         <span class="c1"># FIXME ... what to do when checksums don&#39;t match?</span>
