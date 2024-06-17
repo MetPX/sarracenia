@@ -117,7 +117,7 @@ class Block_reassembly(FlowCB):
             blksz=humanfriendly.parse_size(blk_suffix[1],binary=True)
 
             if blkno != m['blocks']['number']:
-                logger.warning(" mismatch {m['relPath']} name says {blkno} but message says {m['block']['number']}" )
+                logger.warning( f"mismatch {m['relPath']} name says {blkno} but message says {m['block']['number']}" )
                 blkno = m['blocks']['number']
 
             #determine root file name.
@@ -131,7 +131,7 @@ class Block_reassembly(FlowCB):
             flck = flufl.lock.Lock(lock_file)
 
             flck.lock()
-            logger.info( f"10 locked {flck} lock_file: {lock_file}" )
+            #logger.debug( f"10 locked {flck} lock_file: {lock_file}" )
 
             pf=open(part_file,'rb')
 
@@ -148,7 +148,7 @@ class Block_reassembly(FlowCB):
                 old_blocks = rfm.get()
 
             if old_blocks and not 'waiting' in old_blocks:
-                old_blocks['waiting'] = {}
+                old_blocks['waiting'] = m['blocks']['manifest'].copy()
 
             # calculate old file size.
             if old_blocks and 'manifest' in old_blocks:
@@ -165,8 +165,9 @@ class Block_reassembly(FlowCB):
 
             # update old_blocks to reflect receipt of this block.
             if old_blocks and 'manifest' in old_blocks:
-                logger.info( f" read old block manifest from attributes: {old_blocks['manifest']}" )
-                logger.info( f" also show waiting: {old_blocks['waiting']}" )
+                logger.debug( f" read {len(old_blocks['manifest'])} blocks in manifest, waiting for {len(old_blocks['waiting'])} " )
+                logger.debug( f" read old block manifest from attributes: {old_blocks['manifest']}" )
+                logger.debug( f" also show waiting: {old_blocks['waiting']}" )
                 found=False
                 sz=0
                 # add
@@ -181,7 +182,6 @@ class Block_reassembly(FlowCB):
 
             if blkno in old_blocks['waiting']:
                 del old_blocks['waiting'][blkno]
-                logger.info( f"deleted block {blkno} from waiting: {len(old_blocks['waiting'])} left. ") 
 
             # calculate where to seek to...
             offset=0
@@ -195,7 +195,11 @@ class Block_reassembly(FlowCB):
             byteCount = m['blocks']['manifest'][blkno]['size']
 
             logger.info( f" blocks: adding block {blkno} by seeking to: {offset} to write {byteCount} bytes in {root_file}" )
-            logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            #if len(old_blocks['waiting']) > 0 :
+            #    logger.info( f" still waiting for: {len(old_blocks['waiting'])} " ) 
+            #else:
+            #    logger.info( f" we have received every block now." ) 
+
             #- {old_blocks['waiting']} " ) 
 
             # FIXME: can seek ever fail? how do we check?
@@ -231,7 +235,7 @@ class Block_reassembly(FlowCB):
                 """
                 with sarracenia.blockmanifest.BlockManifest(root_file) as rfm:
                     rfm.set(old_blocks)
-                m.setReport( 206, f"file block subset {m['blocks']['number']} received and reassembled ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
+                m.setReport( 206, f"file block subset {m['blocks']['number']} received and written ok. waiting for {(len(old_blocks['waiting']))} more blocks." )
                 worklist.rejected.append(m)
             else:
                 # FIXME: for inflight.  now rename the file to the real name.
@@ -244,8 +248,9 @@ class Block_reassembly(FlowCB):
                 logger.info( f"completed reassembly of {m['relPath']}" )
                 new_ok.append(m)
                 if hasattr(self.o, 'block_manifest_delete') and self.o.block_manifest_delete:
-                    manifest = msg['new_file'] + "§block_manifest§" 
+                    manifest = m['new_dir'] + os.sep + m['new_file'] + "§block_manifest§" 
                     if os.path.exists(manifest):
+                        logger.info( f"deleting {manifest}")
                         os.unlink(manifest)
                 else:
                     del old_blocks['waiting']

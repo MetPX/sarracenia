@@ -85,7 +85,6 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
-    'block_reassemble': True,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -142,7 +141,7 @@ count_options = [
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'block_reassemble', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
@@ -1502,8 +1501,6 @@ class Config:
         if k == 'continue':
             return
             
-        #FIXME: note for Clea, line conversion to v3 complete here.
-
         line = list(map(lambda x: self._varsub(x), line))
 
         if len(line) == 1:

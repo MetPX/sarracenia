@@ -260,8 +260,8 @@ class File(FlowCB):
         
         if features['reassembly']['present'] and \
            (not hasattr(self.o, 'block_manifest_delete') or not self.o.block_manifest_delete):
-            with sarracenia.blockmanifest.BlockManifest( path ) as x:
-                x.set(msg['blocks'])
+            with sarracenia.blockmanifest.BlockManifest( path ) as bm:
+                bm.set(msg['blocks'])
 
         messages = []
         for current_block in blocks:
