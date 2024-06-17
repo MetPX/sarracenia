@@ -192,21 +192,23 @@ class MQTT(Moth):
             else:
                 logger.info('clean. no published messages lost.')
 
-    def __sub_on_connect(client, userdata, flags, rc, properties=None):
-        logger.debug("client=%s rc=%s, flags=%s" %
-                    (client, rc, flags))
+    def __sub_on_connect(client, userdata, flags, reason_code, properties=None):
+
+        userdata.connect_in_progress = False
+
+        if reason_code != 0 :
+            logger.error( f"failed to establish connection: {reason_code}")
+            return
 
         if not flags.session_present:
             logger.debug(
                 'no existing session, no recovery of inflight messages from previous connection'
             )
+        logger.info('connection succeeded')
 
-        userdata.connect_in_progress = False
-        if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
-            logger.error("failed to establish connection")
-            return
-
+        # else reason_code == 0 ... success.
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
+        userdata.connected=True
         userdata.subscribe_mutex.acquire()
         for binding_tuple in userdata.o['bindings']:
 
@@ -246,23 +248,24 @@ class MQTT(Moth):
 
     def __pub_on_connect(client, userdata, flags, reason_code, properties=None):
         userdata.connect_in_progress = False
-        logger.info(reason_code)
 
         if reason_code == 0:
+            logger.info(reason_code)
             userdata.metricsConnect()
-        elif reason_code > 0: 
-            pass # error processing...
+            userdata.connected=True
+        else:
+            logger.error( f"connect failed: {reason_code}" )
 
 
     def __pub_on_publish(client, userdata, mid, reason_codes, properties=None):
 
         if mid in userdata.pending_publishes:
-            logger.info('publish complete. mid={}'.format(mid))
+            logger.info( f"publish complete. mid={mid}" )
             # FIXME: worried... not clear if dequeue remove is thread safe.
             userdata.pending_publishes.remove(mid)
         else:
             userdata.unexpected_publishes.append(mid)
-            logger.info( 'BUG: ack for message we do not know we published. mid={}'.  format(mid))
+            logger.info( f"BUG: ack for message we do not know we published. mid={mid}" )
 
     def __sslClientSetup(self) -> int:
         """
@@ -272,7 +275,7 @@ class MQTT(Moth):
         """
         if self.o['broker'].url.scheme[-1] == 's':
             port = 8883
-            logger.info('tlsRigour: %s' % self.o['tlsRigour'])
+            logger.info( f"tlsRigour: {self.o['tlsRigour']}" )
             self.o['tlsRigour'] = self.o['tlsRigour'].lower()
             if self.o['tlsRigour'] == 'lax':
                 self.tlsctx = ssl.create_default_context()
@@ -352,7 +355,6 @@ class MQTT(Moth):
                 break
 
             try:
-
                 cs = self.o['clean_session']
                 if ('queueName' in self.o) and ('no' in self.o):
                     cid = self.o['queueName'] + "_i%02d" % self.o['no']
@@ -383,7 +385,6 @@ class MQTT(Moth):
                               break
                          if ebo < 512 :
                             ebo *= 2
-                    self.connected=True
                     break
                 else: # either 'declare' or 'foreground'
                     if 'instances' in self.o:    
@@ -480,9 +481,7 @@ class MQTT(Moth):
                      if ebo < 512:
                           ebo *= 2
                     
-
                 if not self.connect_in_progress:
-                    self.connected=True
                     break
 
             except Exception as err:
