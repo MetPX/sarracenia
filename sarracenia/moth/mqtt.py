@@ -235,12 +235,21 @@ class MQTT(Moth):
                            reason_codes,
                            properties=None):
 
+ 
 
-        userdata.subscribe_mutex.acquire()
-        logger.info("client: {} subscribe completed mid={} reason_codes={}".format(
-            client._client_id, mid, reason_codes))
-        userdata.subscribe_in_progress -= 1
-        userdata.subscribe_mutex.release()
+        for sub_result in reason_codes:
+            if sub_result == 1:
+                userdata.subscribe_mutex.acquire()
+                logger.info( f"client: {client._client_id} subscribe "
+                      f"completed mid={mid} reason_codes={reason_codes}" )
+                userdata.subscribe_in_progress -= 1
+                userdata.subscribe_mutex.release()
+            elif sub_result >= 128:
+                logger.error(  f"client: {client._client_id} subscribe "
+                         f"failed mid={mid} reason_codes={reason_codes}" )
+            else:
+                logger.warning(  f"client: {client._client_id} subscribe "
+                         f"unsure mid={mid} reason_codes={reason_codes}" )
 
     def __pub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
@@ -312,7 +321,6 @@ class MQTT(Moth):
         self.transport= 'websocket' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
            (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
 
-        logger.info( "FIXME: {self.transport=}  ")
         client = paho.mqtt.client.Client( \
                     callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
                     client_id=cid, userdata=self, protocol=paho.mqtt.client.MQTTv5, \
@@ -756,7 +764,7 @@ class MQTT(Moth):
                 logger.info("published mid={} ack_pending={} {} to under: {} ".format(
                     info.mid, ack_pending, body, topic))
                 return True  #success...
-            logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} ")
+            logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} {info}")
 
         except Exception as ex:
             logger.error('Exception details: ', exc_info=True)
