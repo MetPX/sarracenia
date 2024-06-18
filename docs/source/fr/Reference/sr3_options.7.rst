@@ -237,6 +237,7 @@ flag
 
 float
     un nombre à virgule flottante, (séparateur de décimale étant un point.)
+    max de trois chiffres après le décimal, alors plus grand que 1000 devient des nombre entiers.
 
 list
     une liste de chaîne de caractères, chaque occurrence successive se rajoute au total.
@@ -1037,8 +1038,18 @@ messages de journal. Autres valeurs : on_start, on_stop, post, gather, ... etc..
 On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
 la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel. 
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+L'option *LogFormat* est passée directement au mécanismes de contrôle des journalisation
+de python. Le format est documenté ici:
+
+* https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( défaut: info )
 -------------------------
+
 Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
 critical, error, info, warning, debug.
 
@@ -1571,6 +1582,26 @@ L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien d
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
+runStateThreshold_cpuSlow <count> (par défaut : 0)
+---------------------------------------------------
+
+Le paramètre *runStateThreshold_cpuSlow* définit le taux de transfert minimum attendu pour le flux
+de messages. Si le débit des messages traités par seconde CPU tombe en dessous de ce seuil,
+alors le flux sera identifié comme « cpuSlow ». (affiché comme cpuS sur l'écran *sr3 status*.)
+Ce test ne s'appliquera que si un flux transfère réellement des messages.
+Le taux n'est visible que dans *sr3 --full status*
+
+Cela peut indiquer que l'acheminement est excessivement coûteux ou que les transferts sont excessivement lents.
+Exemples qui pourraient y contribuer :
+
+* une centaine d'expressions régulières doivent être évaluées par message reçu. les expressions régulières, une fois cumulées, peuvent coûter cher.
+
+* un plugin complexe qui effectue de lourdes transformations sur les données en cours de route.
+
+* répéter une opération pour chaque message, alors qu'il suffirait de la faire une fois par lot.
+
+Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.
+
 
 runStateThreshold_hung <intervalle> (défaut: 450s)
 --------------------------------------------------
@@ -1684,6 +1715,31 @@ sendTo <url>
 ------------
 
 Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
+
+set (DÉVELOPPEUR)
+---------------
+
+L'option *set* est utilisée, généralement par les développeurs, pour définir les paramètres
+pour des classes particulières dans le code source. l'utilisation la plus importante
+serait de définir le logLevel plus élevé pour une classe d’intérêt particulière.
+
+L'utilisation de cette option se fait plus facilement avec le code source à portée de main.
+un exemple::
+
+   set sarracenia.moth.amqp.AMQP.logLevel debug
+   set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+Ainsi, *sarracenia.moth.amqp.AMQP* fait référence à la classe à laquelle le paramètre
+est appliqué. Il y a une *class AMQP* dans le fichier python
+sarracenia/moth/amqp.py (par rapport à la racine de la source.)
+
+Le *logLevel* est le paramètre à appliquer mais uniquement dans
+cette classe. L'option *set* nécessite une implémentation dans le source
+code pour l’implémenter pour chaque classe. Tous les *flowcb* ont le nécessaire
+soutien. Les classes ``moth`` et transfert ont une implémentation spécifique pour le logLevel.
+
+D'autres classes peuvent être aléatoires en termes d'implémentation de la sémantique *set*.
 
 
 shim_defer_posting_to_exit (EXPERIMENTAL)

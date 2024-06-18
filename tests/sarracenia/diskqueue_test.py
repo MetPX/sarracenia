@@ -209,6 +209,7 @@ def test_get__Single(tmp_path):
     fp.write(line)
     fp.flush()
     fp.close()
+    download_retry.msg_count = 1
 
     gotten = download_retry.get()
 
@@ -227,6 +228,7 @@ def test_get__Multi(tmp_path):
     fp.write(line + line)
     fp.flush()
     fp.close()
+    download_retry.msg_count = 2
 
     gotten = download_retry.get(2)
 

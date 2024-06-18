@@ -374,7 +374,7 @@ Repositories:
   Recipes:
 
   * metpx-sr3-daily -- automated daily build of sr3 packages happens from *development* branch.
-  * sarracenia-daily -- automated daily build of v2 packages happens from *v2_dev* branch
+  * metpx-sarracenia-daily -- automated daily build of v2 packages happens from *v2_dev* branch
 
 * Pre-Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx-pre-release (for newest features.)
   from *development* branch. Developers manually trigger builds here when it seems appropriate (testing out
@@ -390,7 +390,7 @@ Repositories:
 
   * metpx-sr3 -- on demand build sr3 packages from *stable* branch.
   * metpx-sr3-old -- on demand build sr3 packages from *stable_py36* branch.
-  * sarracenia-release -- on deman build v2 packages from *v2_stable* branch.
+  * metpx-sarracenia-release -- on deman build v2 packages from *v2_stable* branch.
 
 for more discussion see `Which Version is stable <https://github.com/MetPX/sarracenia/issues/139>`_
 

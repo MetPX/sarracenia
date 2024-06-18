@@ -154,6 +154,22 @@ def test_read_line_counts():
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "batch 1.9" )
      assert( options.batch == 1 )
 
+def test_read_line_floats():
+
+     options = sarracenia.config.default_config()
+
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "messageRateMax 1.5mb" )
+     assert( options.messageRateMax == 1572864 )
+
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "messageRateMax 0.5k" )
+     assert( options.messageRateMax == 500 )
+
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "messageRateMax 0.5kb" )
+     assert( options.messageRateMax == 512 )
+
+     options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "messageRateMax 0.5b" )
+     assert( options.messageRateMax == 0.5 )
+
 
 def test_read_line_sets():
 

@@ -238,7 +238,7 @@ flag
     an option that has only True or False values (aka: a boolean value)
 
 float
-    a floating point number.
+    a floating point number (3 decimal places max, numbers > 1000 are integers)
 
 list
     a list of string values, each succeeding occurrence catenates to the total.
@@ -1054,6 +1054,15 @@ other values: on_start, on_stop, post, gather, ... etc... It is comma separated,
 if the list starts with a plus sign (+) then the selected events are appended to current value.
 A minus signe (-) can be used to remove events from the set.
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+The *LogFormat* option is passed directly to python logging mechanisms and can be used
+to control what is written to log files.  The format is documented here:
+
+* https://docs.python.org/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( default: info )
 --------------------------
 
@@ -1218,18 +1227,15 @@ a time will result in 300 seconds (or 5 minutes) being the expiry interval.
 Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
 re-ingesting files that have aged out of the duplicate suppression cache.
 
-**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
-alternate strategy.  One must use either a fixed blocksize, or always never partition files.
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.
-
 **Note that the duplicate suppresion store is local to each instance**. When N
 instances share a queue, the first time a posting is received, it could be
 picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
 a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route notification messages by checksum to
-a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
+off and output with *post_exchangeSplit*, which route notification with the same checksum to
+the same member of a **second layer of subscribers (winnow) whose duplicate suppression caches 
+are active.**
 
 
 outlet post|json|url (default: post)
@@ -1525,10 +1531,6 @@ given. This option also enforces traversing of symbolic links.
 
 This option is being used to investigate some use cases, and may disappear in future.
 
-sendTo <url>
----------------
-
-Specification of a remote resource to deliver to in a sender.
 
 rename <path>
 -------------
@@ -1597,6 +1599,27 @@ The **retry_ttl** (retry time to live) option indicates how long to keep trying 
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.
 
+
+runStateThreshold_cpuSlow <count> (default: 0)
+----------------------------------------------
+
+The *runStateThreshold_cpuSlow* setting sets the minimum rate of transfer expected for flow
+processing messages. If the messages processed per cpu second rate drops below this threshold,
+then the flow will be identified as "cpuSlow." (shown as cpuS on the *sr3 status* display.)
+This test will only apply if a flow is actually transferring messages.
+The rate is only visible in *sr3 --full status* 
+
+This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:
+
+* one hundred regular expressions must be evaluated per message received. Regex's, when cumulated, can get expensive.
+
+* a complex plugin that does heavy transformations on data in route.
+
+* repeating an operation for each message, when doing it once per batch would do.
+
+
+It defaults to inactive, but may be set to identify transient issues.
 
 runStateThreshold_hung <interval> (default: 450)
 ------------------------------------------------
@@ -1702,6 +1725,35 @@ flowcb.scheduled.Scheduled class will look for the other two time specifiers::
 which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
 after each of 4h, 5h and 23h.
 
+sendTo <url>
+---------------
+
+Specification of a remote resource to deliver to in a sender.
+
+set (DEVELOPER)
+---------------
+
+The *set* option is used, usually by developers, to define settings 
+for particular classes in the source code. the most prominent usage 
+would be to set the logLevel higher for a particular class of interest.
+
+Use of this option is more easily done with the source code handy.
+an example::
+
+   set sarracenia.moth.amqp.AMQP.logLevel debug
+   set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+So *sarracenia.moth.amqp.AMQP* refers to the class to which the setting
+is applied. There is a *class AMQP* in the python file 
+sarracenia/moth/amqp.py (relative to root of source.)
+
+The *logLevel* is the setting to applied but only within 
+that class. The *set* option requires an implementation in the source
+code to implement it for each class.  All *flowcb*'s have the neeeded
+support. The ``moth`` and transfer classes have a specific implementation 
+for logLevel.
+
+Other classes may be hit or miss in terms of implementing the *set* semantic.
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------

@@ -109,7 +109,11 @@ class DiskQueue():
 
         # initialize ages and message counts
 
+        # msg_count is the number of messages available for retry in this interval
         self.msg_count = 0
+
+        # msg_count_new is the number of messages added for retry in this interval
+        #   ... new messages will only be available in the next interval.
         self.msg_count_new = 0
 
         if not os.path.isfile(self.queue_file):
@@ -204,7 +208,7 @@ class DiskQueue():
         Returns:
             int: number of messages in the DiskQueue.
         """
-        return self.msg_count + self.msg_count_new
+        return max(0,self.msg_count) + self.msg_count_new
 
     def msgFromJSON(self, line):
         try:
@@ -223,27 +227,39 @@ class DiskQueue():
         """
            qty number of messages to retrieve from the queue.
 
+           no housekeeping in get ...
+           if no message (and new or state file there)
+           we wait for housekeeping to present retry messages
         """
+
+        if self.msg_count < 0:
+            return []
+        elif self.msg_count == 0:
+            try:
+                os.unlink(self.queue_file)
+                self.queue_fp.close()
+            except Exception as ex:
+                pass
+
+            self.queue_fp=None
+            self.msg_count=-1
+            return []
 
         ml = []
         count = 0
-        while count < maximum_messages_to_get:
+
+        # if the retry queue is empty, no sense looping.
+        mx = self.msg_count if self.msg_count < maximum_messages_to_get else maximum_messages_to_get
+
+        while count < mx:
             self.queue_fp, message = self.msg_get_from_file(
                 self.queue_fp, self.queue_file)
 
-            # FIXME MG as discussed with Peter
-            # no housekeeping in get ...
-            # if no message (and new or state file there)
-            # we wait for housekeeping to present retry messages
             if not message:
-                try:
-                    os.unlink(self.queue_file)
-                except:
-                    pass
-                self.queue_fp = None
-                #logger.debug("MG DEBUG retry get return None")
-                break
+                self.msg_count=0
+                return
 
+            count += 1
             if self.is_expired(message):
                 #logger.error("MG invalid %s" % message)
                 continue
@@ -253,7 +269,6 @@ class DiskQueue():
                 message['_deleteOnPost'].remove('ack_id')
 
             ml.append(message)
-            count += 1
 
         self.msg_count -= count
 

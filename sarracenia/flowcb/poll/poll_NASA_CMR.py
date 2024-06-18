@@ -331,20 +331,21 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                             data_url = url['URL']
                 
                 # Now that above loop is done, should have a data URL and maybe an md5_url
-                sumstr = None
+                new_identity = None
                 if md5_url and self.o.dataSource == "podaac":
                     try:
                         md5_resp = requests.get(md5_url)
                         md5 = md5_resp.text.split(" ")[0]
                         logger.debug(f"MD5 Checksum: {md5}")
-                        sumstr = {"method":"md5", "value":md5}
-                    except:
-                        logger.warning(f"Could not get MD5 Checksum for {data_url}, posting without it.")
-                        sumstr = {"method":"cod", "value":"md5"}
+                        new_identity = {"method":"md5", "value":md5}
+                    except Exception as e:
+                        logger.debug("Exception details:", exc_info=True)
+                        logger.warning(f"Could not get MD5 Checksum for {data_url}, posting without it. {e}")
+                        new_identity = {"method":"cod", "value":"md5"}
                 # source is podaac but md5_url isn't available
                 elif self.o.dataSource == "podaac":
                     # tell downloads to use md5
-                    sumstr = {"method":"cod", "value":"md5"}
+                    new_identity = {"method":"cod", "value":"md5"}
 
                 # finally create the message!
                 if data_url:
@@ -356,12 +357,12 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                     # When Sarracenia runs updatePaths again later, from sarracenia.Flow, self.o.post_baseUrl will be
                     # different, so set msg['post_baseUrl'] here to override whatever setting it has at that point.
                     m['post_baseUrl'] = baseUrl
+                    m['_deleteOnPost'] |= {'post_baseUrl'}
                     if m:
-                        if sumstr:
-                            logger.info(f"md5sum is available for {data_url}. Changing identity from {m['identity']} to {sumstr}")
-                            m['identity'] = sumstr
-                        logger.info(f"new message created for {data_url}")
-                        logger.debug(f"new message for {data_url} is\t{m}")
+                        if new_identity:
+                            logger.debug(f"Changing identity from {m['identity']} to {new_identity} for {data_url}")
+                            m['identity'] = new_identity
+                        logger.debug(f"message for {data_url} is\t{m}")
                         gathered_messages.append(m)
                     else:
                         logger.error(f"failed to create message for {data_url}")

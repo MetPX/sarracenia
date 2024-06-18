@@ -9,6 +9,7 @@ Setting up an environment for testing is quite simple.
 
 From a clean Linux image you run the following commands, and you'll be all set.
 
+0. install docker (perhaps other packages?)
 1. Download the Sarracenia source  
   `git clone https://github.com/MetPX/sarracenia`
 2. Checkout the branch you're working on (optional)  

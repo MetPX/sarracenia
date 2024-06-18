@@ -56,8 +56,6 @@ class Disk(NoDupe):
 
         self.o.add_option( 'nodupe_ttl', 'duration', 0 ) 
 
-        logger.info('time_to_live=%d, ' % (self.o.nodupe_ttl))
-
         self.cache_dict = {}
         self.cache_file = None
         self.cache_hit = None
@@ -71,7 +69,7 @@ class Disk(NoDupe):
 
     def on_housekeeping(self):
 
-        logger.info("start (%d)" % len(self.cache_dict))
+        logger.debug("start with %d entries)" % len(self.cache_dict))
 
         count = self.count
         self.save()
@@ -79,9 +77,9 @@ class Disk(NoDupe):
         self.now = nowflt()
         new_count = self.count
 
-        logger.info(
-            "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
-            % (self.last_count, self.now - self.last_time, count, new_count))
+        if new_count > 0:
+            logger.info( "was %d, but since %5.2f sec, increased up to %d, now saved %d entries"
+                 % (self.last_count, self.now - self.last_time, count, new_count))
 
         self.last_time = self.now
         self.last_count = new_count

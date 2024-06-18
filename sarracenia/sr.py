@@ -55,14 +55,14 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
+empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
         "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
         "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
         "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 'transferLast': 0,
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 'transferLast': 0,
         'connectPercent': 0, 'byteConnectPercent': 0
         }
 
@@ -134,7 +134,7 @@ class sr_GlobalState:
             if not self.configs[c][cfg]['options'].logStdout:
                 # FIXME: honouring statehost missing.
                 if self.configs[c][cfg]['options'].statehost:
-                    lfn = self.user_cache_dir + os.sep + self.hostname
+                    lfn = self.user_cache_dir + os.sep + self.hostdir
                 else:
                     lfn = self.user_cache_dir
 
@@ -240,7 +240,7 @@ class sr_GlobalState:
             return
 
         if list(filter(p['name'].startswith, sr3_tools_entry_points)) != []:
-            #print( f"skipping sr3_tools process: {p['name']}" )
+            print( f"skipping sr3_tools process: {p['name']}" )
             return
 
         #print( 'sr? name=%s, pid=%s, cmdline=%s' % ( p['name'], p['pid'], p['cmdline'] ) )
@@ -250,6 +250,7 @@ class sr_GlobalState:
             return
 
         if p['name'].startswith('sr3_'):
+            #print( f"starts with sr3_ cmdline={p['cmdline']}" )
             p['memory'] = p['memory_full_info']._asdict()
             p['cpu'] = p['cpu_times']._asdict()
             del p['memory_full_info'] 
@@ -332,6 +333,7 @@ class sr_GlobalState:
                         cfgbody.parse_file(cfg,c)
                         cfgbody.finalize(c, cfg)
                         self.configs[c][cbase]['options'] = cfgbody
+
                         # ensure there is a known value of instances to run.
                         if c in ['poll', 'post', 'cpost']:
                             if hasattr(cfgbody,
@@ -380,7 +382,7 @@ class sr_GlobalState:
         other_config_dir = sarracenia.user_config_dir(savename, self.appauthor)
 
         if not os.path.exists(other_config_dir):
-            os.mkdir(other_config_dir)
+            pathlib.Path(other_config_dir).mkdir(parents=True, exist_ok=True)
 
         for f in ['default.conf', 'admin.conf']:
             to = other_config_dir + os.sep + f
@@ -457,7 +459,6 @@ class sr_GlobalState:
             for cfg in self.configs[c]:
                     #print( f" {self.configs[c][cfg]['statehost']=} " )
                     if 'options' in self.configs[c][cfg] and self.configs[c][cfg]['options'].statehost:
-                        print('statehost')
                         state_dir=self.user_cache_dir + os.sep + self.hostdir + os.sep + c + os.sep + cfg
                     else:
                         state_dir=self.user_cache_dir + os.sep + c + os.sep + cfg
@@ -887,29 +888,22 @@ class sr_GlobalState:
         self._resolve_brokers()
         now = time.time()
 
-        if not os.path.exists( self.user_cache_dir ):
-            os.makedirs(self.user_cache_dir)
-
         # comparing states and configs to find missing instances, and correct state.
         self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
         self.cumulative_stats={ 
                 'rxLagTime':0, 'rxLagCount':0, 
                 'rxMessageQueued':0, 'rxMessageRetry':0, 
                 'txMessageQueued':0, 'txMessageRetry':0, 
-                'rxMessageRate':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
+                'rxMessageRate':0, 'rxMessageRateCpu':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
                 'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
                 }
         for c in self.components:
-            if not os.path.exists( self.user_cache_dir + os.sep + c ):
-                os.mkdir(self.user_cache_dir + os.sep + c )
             if (c not in self.states) or (c not in self.configs):
                 continue
 
             for cfg in self.configs[c]:
                 if cfg not in self.states[c]:
-                    print('missing state for %s/%s' % (c,cfg))
-                    os.mkdir(self.user_cache_dir + os.sep + c + os.sep + cfg)
-                    # add config as state in .cache under right directory.
+                    logger.debug('no existing state files for %s/%s' % (c,cfg))
                     self.states[c][cfg] = {}
                     self.states[c][cfg]['instance_pids'] = {}
                     self.states[c][cfg]['queueName'] = None
@@ -929,7 +923,7 @@ class sr_GlobalState:
                     metrics=copy.deepcopy(empty_metrics)
                     for i in self.states[c][cfg]['instance_metrics']:
                         if self.states[c][cfg]['instance_metrics'][i]['status']['mtime'] < expiry:
-                            #print( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
+                            logger.debug( f"metrics for {c}/{cfg}/ instance {i} too old ignoring." )
                             continue
 
                         #print( f"states of {c}/{cfg}: {self.states[c][cfg]} " )
@@ -959,6 +953,8 @@ class sr_GlobalState:
                                             metrics['txLast'] = newval
                                         if 'messageLast' not in metrics or (newval > metrics['messageLast']):
                                             metrics['messageLast'] = newval
+                                    elif k in [ "cpuTime" ]:
+                                        metrics['cpuTime'] += newval
                                     else:
                                         metrics[k] += newval
                                 #else:
@@ -1005,9 +1001,14 @@ class sr_GlobalState:
             
                             m['byteRate'] = byteTotal/time_base
                             m['msgRate']  = (m["rxGoodCount"]+m["rxBadCount"])/time_base
+                            if m['cpuTime'] > 0:
+                                m['msgRateCpu'] = (m["rxGoodCount"]+m["rxBadCount"])/m['cpuTime']
+                            else:
+                                m['msgRateCpu'] = 0
 
                             self.cumulative_stats['rxMessageByteRate'] += m['byteRate']
                             self.cumulative_stats['rxMessageRate'] +=  m['msgRate']
+                            self.cumulative_stats['rxMessageRateCpu'] +=  m['msgRateCpu']
     
                             m['transferRxByteRate'] = m['transferRxBytes']/time_base
                             m['transferRxFileRate'] = m['transferRxFiles']/time_base
@@ -1072,7 +1073,7 @@ class sr_GlobalState:
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
-                    flow_status = 'unknown'
+                    flow_status = 'unknown' if self.configs[c][cfg]['status'] != 'disabled' else 'disabled'
                     if hung_instances > 0 and (observed_instances > 0):
                          flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
@@ -1115,6 +1116,10 @@ class sr_GlobalState:
                         flow_status = 'idle'
                     else:
                         flow_status = 'running'
+
+                    if self.states[c][cfg]['metrics']['msgRate'] > 0 and \
+                           self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
+                        flow_status = 'cpuSlow'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
                     self.configs[c][cfg]['status'] = flow_status
@@ -1291,7 +1296,7 @@ class sr_GlobalState:
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
         # active means >= 1 process exists on the node.
-        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_active =  ['cpuSlow', 'hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
         self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1864,12 +1869,14 @@ class sr_GlobalState:
             if self.please_stop:
                 break
 
+            (c, cfg) = f.split(os.sep)
+
             if self.configs[c][cfg]['status'] in self.status_active:
                 #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
                 continue
 
             if self.configs[c][cfg]['options'].statehost:
-                cache_dir = self.user_cache_dir + os.sep + self.hostname + os.sep + f.replace('/', os.sep)
+                cache_dir = self.user_cache_dir + os.sep + self.hostdir + os.sep + f.replace('/', os.sep)
             else:
                 cache_dir = self.user_cache_dir + os.sep + f.replace('/', os.sep)
 
@@ -2075,7 +2082,11 @@ class sr_GlobalState:
             else:
                 logging.info('removing %s/%s' % ( c, cfg ))
                 os.unlink(cfgfile)
-                shutil.rmtree(statefile)
+                try:
+                    shutil.rmtree(statefile)
+                except Exception as ex:
+                    print( f" rmtree failed: {ex} " )
+
 
     def maint(self, action):
         """
@@ -2505,32 +2516,35 @@ class sr_GlobalState:
         line = "%-40s %-11s %7s %10s %19s %14s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
-            line += "%-40s %17s %33s %40s" % ("Counters (per housekeeping)", "", "Data Counters", "" )
+            line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
             line += "%s %-21s " % (" ", "Memory" ) 
 
         if self.options.displayFull:
             line += "%10s %10s " % ( " ", "CPU Time" )
 
-        print(line)
+        try:
+            print(line)
 
-        line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-        underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
+            line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
+            underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
-        if self.options.displayFull:
-            line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
-                    ( "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
-            underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
-                    ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
+            if self.options.displayFull:
+                line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
+                        ( "Msg/scpu", "subBytes", "Accepted", "Rejected", "Malformed", "pubBytes", "pubMsgs", "pubMal", "rxData", "rxFiles", "txData", "txFiles", "Since" )
+                underline += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s %10s " % \
+                        ( "-------", "--------", "--------", "---------", "-------", "------", "-----", "-----", "-------", "------", "-------", "-----" )
 
-            line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
-            underline += "%10s %10s %10s " % ( "---", "---", "---"  )
+                line      += "%10s %10s %10s " % ( "uss", "rss", "vms"  )
+                underline += "%10s %10s %10s " % ( "---", "---", "---"  )
 
-        if self.options.displayFull:
-            line      += "%10s %10s " % ( "user", "system" )
-            underline += "%10s %10s " % ( "----", "------" )
+            if self.options.displayFull:
+                line      += "%10s %10s " % ( "user", "system" )
+                underline += "%10s %10s " % ( "----", "------" )
 
-        print(line)
-        print(underline)
+            print(line)
+            print(underline)
+        except:
+            return
 
         configs_running = 0
         now = time.time()
@@ -2585,7 +2599,8 @@ class sr_GlobalState:
                             )
 
                     if self.options.displayFull :
-                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                        line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
+                            naturalSize(m['msgRateCpu']).replace("B","m").replace("mytes","msgs"), \
                             naturalSize(m['rxByteCount']), \
                             naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
                             naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
@@ -2597,7 +2612,7 @@ class sr_GlobalState:
                             naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
                             naturalSize(m["transferTxBytes"]), \
                             naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
-                            time_base )
+                            m["time_base"] )
                 else:
                     line += " %10s %10s %9s %5s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-", "-" )
                     if self.options.displayFull:
@@ -2619,42 +2634,47 @@ class sr_GlobalState:
                     line += " %10s %10s %10s" % ( "-", "-", "-" )
                     if self.options.displayFull:
                         line += " %10s %10s" % ( "-", "-" )
-
-                print(line)
+                try:
+                     print(line)
+                except:
+                     return
         stray = 0
-        for pid in self.strays:
-            stray += 1
-            bad = 1
-            print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
+        try:
+            for pid in self.strays:
+                stray += 1
+                bad = 1
+                print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
-        print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
-            (configs_running, len(self.procs), len(self.missing), stray ) )
-        print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
-              naturalSize( self.resources['uss'] ), \
-              naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
-              ))
-        print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
-              self.resources['user_cpu'] , self.resources['system_cpu'] \
-              ))
+            print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
+                (configs_running, len(self.procs), len(self.missing), stray ) )
+            print('                     Memory: uss:%s rss:%s vms:%s ' % ( \
+                  naturalSize( self.resources['uss'] ), \
+                  naturalSize( self.resources['rss'] ), naturalSize( self.resources['vms'] )\
+                  ))
+            print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
+                  self.resources['user_cpu'] , self.resources['system_cpu'] \
+                  ))
 
-        print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
-                naturalSize(self.cumulative_stats['rxMessageByteRate']),\
-                naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
-                naturalSize(self.cumulative_stats['txMessageByteRate']),
-                self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
-            ))
-        print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-               naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
-               naturalSize(self.cumulative_stats['rxDataRate']),
-               naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
-               naturalSize(self.cumulative_stats['txDataRate']) ) )
+            print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
+                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
+                    naturalSize(self.cumulative_stats['rxMessageByteRate']),\
+                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
+                    naturalSize(self.cumulative_stats['txMessageByteRate']),
+                    self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
+                ))
+            print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
+                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
+                   naturalSize(self.cumulative_stats['rxDataRate']),
+                   naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
+                   naturalSize(self.cumulative_stats['txDataRate']) ) )
 
-        # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
-        for h in self.brokers:
-            for x in self.exchange_summary[h]:
-                if self.exchange_summary[h][x] == 0:
-                    print("exchange with no bindings: %s-%s " % (h, x), end='')
+            # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
+            for h in self.brokers:
+                for x in self.exchange_summary[h]:
+                    if self.exchange_summary[h][x] == 0:
+                        print("exchange with no bindings: %s-%s " % (h, x), end='')
+        except:
+            pass
 
     def convert(self):
 
@@ -2797,7 +2817,8 @@ class sr_GlobalState:
                         if 'none' in line[1].lower():
                             v=line[1]
                         else:
-                            line[1]= '+' + line[1]
+                            if line[1][0] not in ['+','-']:
+                                line[1]= '+' + line[1]
                             v=line[1]
 
                     if k == 'continue':
