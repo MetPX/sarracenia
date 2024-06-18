@@ -224,6 +224,7 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
+
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
@@ -271,19 +272,12 @@ class AMQP(Moth):
         logger.info("ok, asked to stop")
         self.please_stop=True
 
-    def metricsReport(self):
+    def metricsReset(self):
 
-        if 'no' in self.o and self.o['no'] < 2 and self.is_subscriber and self.connection and self.connection.connected:
-            # control frequency of checks for queue size. hardcoded for now.
-            next_time = self.last_qDeclare + 30
-            now=time.time()
-            if next_time <= now:
-                #self._queueDeclare(passive=True)
-                self.last_qDeclare=now
-
-        super().metricsReport()
-
-        return self.metrics
+        super().metricsReset()
+        
+        if not hasattr(self,'o') or ( 'no' in self.o and self.o['no'] < 2 ) and self.is_subscriber :
+            self.close() # forces a re-declare at next gather or post. which allows the queue numbers to update.
 
     def _queueDeclare(self,passive=False) ->  int:
 
