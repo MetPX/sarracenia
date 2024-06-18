@@ -55,12 +55,15 @@ import urllib.parse
 
 logger = logging.getLogger(__name__)
 
-empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, \
-        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, \
-        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, \
-        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, \
-        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, \
-        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, \
+empty_metrics={ "byteRate":0, "rejectCount":0, "last_housekeeping":0, "messagesQueued": 0, 
+        "lagMean": 0, "latestTransfer": 0, "rejectPercent":0, "transferRxByteRate":0, "transferTxByteRate": 0,
+        "rxByteCount":0, "rxGoodCount":0, "rxBadCount":0, "txByteCount":0, "txGoodCount":0, "txBadCount":0, 
+        "lagMax":0, "lagTotal":0, "lagMessageCount":0, "disconnectTime":0, "transferConnectTime":0, 
+        "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
+        "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
+        "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'retry': 0, 'transferLast': 0,
+        'connectPercent': 0, 'byteConnectPercent': 0
         }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
@@ -252,11 +255,7 @@ class sr_GlobalState:
             del p['memory_full_info'] 
             del p['cpu_times']
             self.procs[p['pid']] = p
-            if p['name'][3:8] == 'audit':
-                self.procs[p['pid']]['claimed'] = True
-                self.auditors += 1
-            else:
-                self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
+            self.procs[p['pid']]['claimed'] =   (p['name'][-4:] == 'post') or \
                     any( item in [ 'declare', 'edit', 'foreground', 'sanity', 'setup', 'status' ] for item in  p['cmdline'] )
 
     def read_proc_file(self, File="procs.json"):
@@ -264,7 +263,6 @@ class sr_GlobalState:
            read process table from a save file, for reproducible testing.
         """
         self.procs = {}
-        self.auditors = 0
         print('getting procs from %s: ' % File, end='', flush=True)
         pcount = 0
         with open(File, 'r') as f:
@@ -282,7 +280,6 @@ class sr_GlobalState:
         self.me = getpass.getuser()
         if sys.platform == 'win32':
             self.me = os.environ['userdomain'] + '\\' + self.me
-        self.auditors = 0
         if not features['process']['present']:
             return
         for proc in psutil.process_iter():
@@ -602,13 +599,6 @@ class sr_GlobalState:
                                             missing.append([c, cfg, i])
                                     else:
                                         missing.append([c, cfg, i])
-                        if ( len(self.states[c][cfg]['instance_pids']) > 0 ) or ( len(missing) > 0 ) :
-                            # look for instances that should be running, but no pid file exists.
-                            for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
-                                if not i in self.states[c][cfg]['instance_pids']:
-                                    if i not in self.procs:
-                                        if i != 0:
-                                            missing.append([c,cfg,i])
                     os.chdir(c_dir) # back to component dir containing configs
                 os.chdir(dir) # back to dir containing components
 
@@ -623,6 +613,9 @@ class sr_GlobalState:
     def _clean_missing_proc_state_dir(self, dir):
         """ remove state pid files for process which are not running
         """
+
+        if self.options.dry_run:
+            return
 
         if not os.path.isdir(dir):
             return
@@ -654,6 +647,7 @@ class sr_GlobalState:
                 os.chdir('..')
 
     def _clean_missing_proc_state(self):
+
         self._clean_missing_proc_state_dir(self.user_cache_dir)
         self._clean_missing_proc_state_dir(self.user_cache_dir + os.sep +
                                            self.hostdir)
@@ -825,6 +819,7 @@ class sr_GlobalState:
                             self.brokers[host]['exchanges'][x].append(
                                 'declared')
 
+        # find exchanges and queues
         for c in self.components:
             if (c not in self.states) or (c not in self.configs):
                 continue
@@ -897,6 +892,13 @@ class sr_GlobalState:
 
         # comparing states and configs to find missing instances, and correct state.
         self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
+        self.cumulative_stats={ 
+                'rxLagTime':0, 'rxLagCount':0, 
+                'rxMessageQueued':0, 'rxMessageRetry':0, 
+                'txMessageQueued':0, 'txMessageRetry':0, 
+                'rxMessageRate':0, 'rxDataRate':0, 'rxFileRate':0, 'rxMessageByteRate':0, 
+                'txMessageRate':0, 'txDataRate':0, 'txFileRate':0, 'txMessageByteRate':0
+                }
         for c in self.components:
             if not os.path.exists( self.user_cache_dir + os.sep + c ):
                 os.mkdir(self.user_cache_dir + os.sep + c )
@@ -951,6 +953,10 @@ class sr_GlobalState:
                                             metrics['transferLast'] = newval
                                     elif k in [ "rxLast", "txLast"  ]:
                                         newval = sarracenia.timestr2flt(newval)
+                                        if k == 'rxLast' and 'rxLast' not in metrics or (newval > metrics['rxLast']):
+                                            metrics['rxLast'] = newval
+                                        if k == 'txLast' and 'txLast' not in metrics or (newval > metrics['txLast']):
+                                            metrics['txLast'] = newval
                                         if 'messageLast' not in metrics or (newval > metrics['messageLast']):
                                             metrics['messageLast'] = newval
                                     else:
@@ -964,7 +970,76 @@ class sr_GlobalState:
                         if 'disconnectTime' in metrics:
                             metrics['disconnectTime'] = metrics['disconnectTime'] / len(self.states[c][cfg]['instance_metrics']) 
 
+                        m = metrics
+                        m['messagesQueued'] = -1
+                        if m[ "lagMessageCount" ] > 0:
+                            m['lagMean'] = m[ "lagTotal" ] / m[ "lagMessageCount" ]
+                            self.cumulative_stats['rxLagTime'] += m[ "lagTotal" ]
+                            self.cumulative_stats['rxLagCount'] +=  m[ "lagMessageCount" ]
+                        else:
+                            m['lagMean'] = 0
+                    
+                        m['retry'] = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
+                        self.cumulative_stats['rxMessageRetry'] += m['retry']
+    
+                        if 'brokerQueuedMessageCount' in m:
+                            m['messagesQueued'] = m['brokerQueuedMessageCount']
+                            self.cumulative_stats['rxMessageQueued'] += m['messagesQueued']
+    
+                        m['latestTransfer'] = "n/a"
+                        if "transferLast" in m and m['transferLast'] > 0:
+                            m['latestTransfer'] = f"{now - m['transferLast']:4.1f}s"
+                        elif "messageLast" in m:
+                            m['latestTransfer'] = f"{now - m['messageLast']:4.1f}s"
+    
+                        if "last_housekeeping" in m and m["last_housekeeping"] > 0:
+                            m['time_base'] = now - m[ "last_housekeeping" ] 
+                            time_base = m['time_base']
+                            byteTotal = 0
+                            if 'rxByteCount' in m:
+                                byteTotal += m["rxByteCount"]
+            
+                            if 'txByteCount' in m:
+                                byteTotal += m["txByteCount"]
+                                self.cumulative_stats['txMessageByteRate'] +=  m["txByteCount"]/time_base
+            
+                            m['byteRate'] = byteTotal/time_base
+                            m['msgRate']  = (m["rxGoodCount"]+m["rxBadCount"])/time_base
+
+                            self.cumulative_stats['rxMessageByteRate'] += m['byteRate']
+                            self.cumulative_stats['rxMessageRate'] +=  m['msgRate']
+    
+                            m['transferRxByteRate'] = m['transferRxBytes']/time_base
+                            m['transferRxFileRate'] = m['transferRxFiles']/time_base
+                            m['transferTxByteRate'] = m['transferTxBytes']/time_base
+                            m['transferTxFileRate'] = m['transferTxFiles']/time_base
+    
+                            self.cumulative_stats['rxFileRate'] += m['transferRxFileRate']
+                            self.cumulative_stats['rxDataRate'] += m['transferRxByteRate']
+                            self.cumulative_stats['txFileRate'] += m['transferTxFileRate']
+                            self.cumulative_stats['txDataRate'] += m['transferTxByteRate']
+                            
+    
+    
+                            if 'transferConnectTime' in m:
+                                m['byteConnectPercent'] = int(100*(m['transferConnectTime'])/time_base)
+                            else:
+                                m['byteConnectPercent'] = 0
+    
+                            if 'disconnectTime' in m:
+                                m['connectPercent'] = int(100*(time_base-m['disconnectTime'])/time_base)
+                            else:
+                                m['connectPercent']= 0
+    
+                            self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
+                        if m["rxGoodCount"] > 0:
+                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                        else:
+                            m['rejectPercent'] = 0
+
                     self.states[c][cfg]['metrics'] = metrics
+                else:
+                    self.states[c][cfg]['metrics'] = empty_metrics
                     
                 if ('instance_pids' in self.states[c][cfg]) and (len(self.states[c][cfg]['instance_pids']) >= 0):
                     self.states[c][cfg]['missing_instances'] = []
@@ -992,41 +1067,69 @@ class sr_GlobalState:
                             resource_usage[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
                             self.resources[ 'system_cpu' ] += self.procs[pid]['cpu']['system'] 
 
-                            # FIXME: should log hung threshold be a setting? just fixed to 5 minutes here.
                             if ('logAge' in self.states[c][cfg]) and (i in self.states[c][cfg]['logAge'] ) and \
-                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].sanity_log_dead ):
+                                    ( self.states[c][cfg]['logAge'][i] > self.configs[c][cfg]['options'].runStateThreshold_hung ):
                                 hung_instances += 1
                                 self.states[c][cfg]['hung_instances'].append(i)
 
+                    flow_status = 'unknown'
                     if hung_instances > 0 and (observed_instances > 0):
-                         self.configs[c][cfg]['status'] = 'hung'
+                         flow_status = 'hung'
                     elif observed_instances < int(self.configs[c][cfg]['instances']):
                         if (c == 'post') and (('sleep' not in self.states[c][cfg]) or self.states[c][cfg]['sleep'] <= 0):
                             if self.configs[c][cfg]['status'] != 'disabled':
-                                self.configs[c][cfg]['status'] = 'stopped'
+                                flow_status = 'stopped'
                         else:
                             if observed_instances > 0:
-                                self.configs[c][cfg]['status'] = 'partial'
+                                flow_status = 'partial'
                                 for i in range(1, int(self.configs[c][cfg]['instances'])+1 ):
                                     if not i in self.states[c][cfg]['instance_pids']:
                                          self.states[c][cfg]['missing_instances'].append(i)
                             else:
                                 if self.configs[c][cfg]['status'] != 'disabled':
                                     if len(self.states[c][cfg]['instance_pids']) == 0 :
-                                        self.configs[c][cfg]['status'] = 'stopped' 
+                                        flow_status = 'stopped' 
                                     else:
-                                        self.configs[c][cfg]['status'] = 'missing' 
+                                        flow_status = 'missing' 
                                         if not i in self.states[c][cfg]['instance_pids']:
                                              self.states[c][cfg]['missing_instances'].append(i)
                     elif observed_instances == 0:
-                        self.configs[c][cfg]['status'] = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
+                        flow_status = "stopped" if len(self.states[c][cfg]['instance_pids']) == 0 else "missing"
                     elif self.states[c][cfg]['noVip']:
-                        self.configs[c][cfg]['status'] = 'waitVip'
+                        flow_status = 'waitVip'
+                    elif self.states[c][cfg]['metrics']['byteRate'] < self.configs[c][cfg]['options'].runStateThreshold_slow:
+                        flow_status = 'slow'
+                    elif self.states[c][cfg]['metrics']['retry'] > self.configs[c][cfg]['options'].runStateThreshold_retry:
+                        flow_status = 'retry'
+                    elif self.states[c][cfg]['metrics']['lagMean'] > self.configs[c][cfg]['options'].runStateThreshold_lag:
+                        flow_status = 'lagging'
+                    elif self.states[c][cfg]['metrics']['rejectPercent'] > self.configs[c][cfg]['options'].runStateThreshold_reject:
+                        flow_status = 'reject'
+                    elif hasattr(self.configs[c][cfg]['options'],'post_broker') and self.configs[c][cfg]['options'].post_broker \
+                            and (now-self.states[c][cfg]['metrics']['txLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                        flow_status = 'idle'
+                    elif  hasattr(self.configs[c][cfg]['options'],'download') and self.configs[c][cfg]['options'].download \
+                            and (now-self.states[c][cfg]['metrics']['transferLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                        flow_status = 'idle'
+                    elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
+                        flow_status = 'idle'
                     else:
-                        self.configs[c][cfg]['status'] = 'running'
+                        flow_status = 'running'
+
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
+                    self.configs[c][cfg]['status'] = flow_status
+
 
         # FIXME: missing check for too many instances.
+        if self.cumulative_stats['rxLagCount']  > 0:
+            self.cumulative_stats['lagMean'] = self.cumulative_stats['rxLagTime'] / self.cumulative_stats['rxLagCount'] 
+        else:
+            self.cumulative_stats['lagMean'] = 0
+
+        self.strays = {}
+        for pid in self.procs:
+            if not self.procs[pid]['claimed']:
+                self.strays[pid] = ' '.join(self.procs[pid]['cmdline'])
 
     def _match_patterns(self, patterns=None):
         """
@@ -1046,14 +1149,15 @@ class sr_GlobalState:
             self.v2_config = patterns
             return
 
-        candidates = ['audit']
+        candidates=[]
         for c in self.components:
             if (c not in self.configs):
                 continue
             for cfg in self.configs[c]:
                 fcc = c + os.sep + cfg
                 candidates.append(fcc)
-
+    
+        self.all_configs = candidates
         logger.debug( f"candidates: {candidates}" )
         new_patterns=[]
         for p in patterns:
@@ -1106,7 +1210,6 @@ class sr_GlobalState:
                     patterns = patterns[1:]
                 if self.leftovers[0] == 'examples':
                     for c in self.components:
-                        if c == 'audit': continue
                         d = self.package_lib_dir + os.sep + 'examples' + os.sep + c
                         if not os.path.exists(d): continue
                         l = os.listdir(d)
@@ -1187,9 +1290,9 @@ class sr_GlobalState:
             'cpost', 'cpump', 'flow', 'poll', 'post', 'report', 'sarra',
             'sender', 'shovel', 'subscribe', 'watch', 'winnow'
         ]
-        self.status_values = [
-            'disabled', 'hung', 'include', 'missing', 'stopped', 'partial', 'running', 'waitVip', 'unknown'
-        ]
+        # active means >= 1 process exists on the node.
+        self.status_active =  ['hung', 'idle', 'lagging', 'partial', 'reject', 'retry', 'running', 'slow', 'waitVip' ]
+        self.status_values = self.status_active + [ 'disabled', 'include', 'missing', 'stopped', 'unknown' ]
 
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1325,8 +1428,34 @@ class sr_GlobalState:
                     f.write('')
 
     def declare(self):
+        '''
+        creates users, exchanges, and queues in that order - each one is needed to create
+        the subsequent one
 
-        if self.users:
+        '''
+
+        filtered_users = []
+
+        if len(self.filtered_configurations) < len(self.all_configs):
+
+            for config in self.filtered_configurations:
+
+                (c, cfg) = config.split(os.sep)
+
+                if not 'options' in self.configs[c][cfg]:
+                    continue
+
+                o = self.configs[c][cfg]['options']
+
+                if hasattr(o, "broker") and o.broker:
+                    filtered_users.append(f"{o.broker.url.username}@{o.broker.url.hostname}")
+                if hasattr(o, "post_broker") and o.post_broker:
+                    filtered_users.append(f"{o.post_broker.url.username}@{o.post_broker.url.hostname}")
+                if hasattr(o, "report_broker") and o.report_broker:
+                    filtered_users.append(f"{o.report_broker.url.username}@{o.report_broker.url.hostname}")
+
+        # add users (?)
+        if self.users: # check if users exist in the configuration (?)
             for h in self.brokers:
                 if self.please_stop:
                     break
@@ -1353,6 +1482,13 @@ class sr_GlobalState:
                                 #print( 'u_url : user:%s, pw:%s, role: %s netloc: %s, host:%s' % \
                                 #    (u_url.username, u_url.password, self.default_cfg.declared_users[u_url.username],
                                 #     u_url.netloc, u_url.hostname ))
+                                
+                                user = f"{u_url.username}@{h}"
+
+                                if filtered_users and user not in filtered_users:
+                                    logger.debug(f"not adding {user}")
+                                    continue
+
                                 sarracenia.rabbitmq_admin.add_user( \
                                     self.brokers[h]['admin'].url, \
                                     self.default_cfg.declared_users[u_url.username],
@@ -1360,7 +1496,7 @@ class sr_GlobalState:
 
         # declare admin exchanges.
         if hasattr(self,'default_cfg') and self.default_cfg.admin:
-            logger.info( f"Declaring exchnges for admin.conf using {self.default_cfg.admin} ")
+            logger.info( f"Declaring exchanges for admin.conf using {self.default_cfg.admin} ")
             if hasattr(self.default_cfg, 'declared_exchanges'):
                 xdc = sarracenia.moth.Moth.pubFactory(
                     {
@@ -1371,12 +1507,11 @@ class sr_GlobalState:
                     })
                 xdc.putSetup()
                 xdc.close()
-               
+                
         # declare exchanges first.
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1398,7 +1533,6 @@ class sr_GlobalState:
 
         # then declare and bind queues....
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1419,7 +1553,6 @@ class sr_GlobalState:
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1446,7 +1579,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1472,7 +1604,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1514,7 +1645,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             state_file_cfg = self.user_cache_dir + os.sep + c + os.sep + cfg
@@ -1531,7 +1661,6 @@ class sr_GlobalState:
 
         # run on_declare plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -1580,7 +1709,6 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             component_path = self._find_component_path(c)
@@ -1632,19 +1760,28 @@ class sr_GlobalState:
             else:
                 print('foreground: stop other instances of this process first')
 
-    def cleanup(self):
+    def cleanup(self) -> bool:
 
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
                 logging.error(
                         f"specify --dangerWillRobinson=<number> of configs to cleanup (actual: {len(self.filtered_configurations)}, given: {self.options.dangerWillRobinson} ) when cleaning more than one")
-                return
+                return False
+
+        all_stopped=True
+        for f in self.filtered_configurations:
+            (c, cfg) = f.split(os.sep)
+            if self.configs[c][cfg]['status'] in self.status_active:
+                logger.error( f"{c}/{cfg} is in {self.configs[c][cfg]['status']} state. Stop it first.")
+                all_stopped=False
+ 
+        if not all_stopped:
+            return False
 
         queues_to_delete = []
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             o = self.configs[c][cfg]['options']
@@ -1700,11 +1837,14 @@ class sr_GlobalState:
 
         # run on_cleanup plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
             (c, cfg) = f.split(os.sep)
+
+            if self.configs[c][cfg]['status'] in self.status_active:
+                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                continue
 
             if not 'options' in self.configs[c][cfg]:
                 continue
@@ -1723,6 +1863,10 @@ class sr_GlobalState:
         for f in self.filtered_configurations:
             if self.please_stop:
                 break
+
+            if self.configs[c][cfg]['status'] in self.status_active:
+                #logger.warning( f"cannot clean running configuration, skipping {c}/{cfg}")
+                continue
 
             if self.configs[c][cfg]['options'].statehost:
                 cache_dir = self.user_cache_dir + os.sep + self.hostname + os.sep + f.replace('/', os.sep)
@@ -1746,6 +1890,8 @@ class sr_GlobalState:
                         print('removing state file: %s' % asf)
                         if os.path.exists(asf):
                             os.unlink(asf)
+
+        return True
 
     print_column = 0
 
@@ -1867,7 +2013,6 @@ class sr_GlobalState:
         display the resulting settings for selected configurations.
         """
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1904,7 +2049,6 @@ class sr_GlobalState:
             if self.please_stop:
                 break
 
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
 
             if not 'options' in self.configs[c][cfg]:
@@ -1981,7 +2125,7 @@ class sr_GlobalState:
             component_path = self._find_component_path(c)
             if component_path == '':
                 continue
-            if self.configs[c][cfg]['status'] in ['stopped']:
+            if self.configs[c][cfg]['status'] in ['missing', 'partial']:
                 numi = self.configs[c][cfg]['instances']
                 for i in range(1, numi + 1):
                     if pcount % 10 == 0: print('.', end='', flush=True)
@@ -1992,9 +2136,9 @@ class sr_GlobalState:
                     print( f'\nfound hung {c}/{cfg}/{i} pid: {kill_pid}' )
                     kill_hung.append(  kill_pid )
                     pcount += 1
-
-        print('killing hung processes... (no point in SIGTERM if it is hung)')
+        
         if (len(kill_hung) > 0) and not self.options.dry_run :
+            print('killing hung processes... (no point in SIGTERM if it is hung)')
             for pid in kill_hung:
                 signal_pid(pid, signal.SIGKILL)
             time.sleep(5)
@@ -2015,24 +2159,24 @@ class sr_GlobalState:
             print('starting them up...')
             if not self.options.dry_run:
                 self._start_missing()
-
-            print('killing strays...')
-            for pid in self.procs:
-                if not self.procs[pid]['claimed']:
-                    print(
-                        "pid: %s-%s does not match any configured instance, sending it TERM"
-                        % (pid, self.procs[pid]['cmdline'][0:5]))
-                    if not self.options.dry_run:
-                        signal_pid(pid, signal.SIGTERM)
         else:
             print('no missing processes found')
+
+        if len(self.strays) > 0:
+            print('killing strays...')
+            for pid in self.strays:
+                print( f"pid: {pid} \"{self.strays[pid]}\"  does not match any configured instance, sending it TERM" )
+                if not self.options.dry_run:
+                    signal_pid(pid, signal.SIGTERM)
+        else:
+            print('no stray processes found')
+
         for l in sarracenia.features.keys():
             if not sarracenia.features[l]['present']:
                 print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             if self.please_stop:
                 break
 
@@ -2059,12 +2203,6 @@ class sr_GlobalState:
 
         pcount = 0
         for f in self.filtered_configurations:
-
-            if f == 'audit':
-                if self.auditors == 0:
-                    component_path = self._find_component_path(f)
-                    self._launch_instance(component_path, f, None, 1)
-                    continue
 
             (c, cfg) = f.split(os.sep)
 
@@ -2108,40 +2246,36 @@ class sr_GlobalState:
            stop all of this users sr_ processes. 
            return 0 on success, non-zero on failure.
         """
+
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
             print('no procs running...already stopped')
             return
 
+
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
         fg_instances = set()
-        # kill sr_audit first, so it does not restart while others shutting down.
-        # https://github.com/MetPX/sarracenia/issues/210
         pids_signalled=set([])
 
-        if ('audit' in self.filtered_configurations) and self.auditors > 0:
-            for p in self.procs:
-                if 'audit' in self.procs[p]['name']:
-                    signal_pid(p, signal.SIGTERM)
-                    pids_signalled |= set([p])
-                    print('.', end='', flush=True)
-                    pcount += 1
+        for pid in self.strays:
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            signal_pid(pid, signal.SIGTERM)
+            pids_signalled |= set([pid])
 
         for f in self.filtered_configurations:
-            if f == 'audit': continue
-
             (c, cfg) = f.split(os.sep)
 
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
+                logger.warning( f"skipping foreground flow: {c}/{cfg}")
                 continue
 
-            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
-                    # print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
+                    #print( "for %s/%s - %s signal_pid( %s, SIGTERM )" % \
                     #    ( c, cfg, i, self.states[c][cfg]['instance_pids'][i] ) )
                     p=self.states[c][cfg]['instance_pids'][i]
                     if p in self.procs:
@@ -2166,15 +2300,12 @@ class sr_GlobalState:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
                     (now - self.procs[pid]['create_time']) > 50):
-                    print(
-                        "pid: %s-%s does not match any configured instance, sending it TERM"
-                        % (pid, self.procs[pid]['cmdline'][0:5]))
+                    print( f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
+
             ttw = 1 << attempts
-            print(
-                'Waiting %d sec. to check if %d processes stopped (try: %d)' %
-                (ttw, len(pids_signalled), attempts))
+            print( f"Waiting {ttw} sec. to check if {len(pids_signalled)} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2185,7 +2316,6 @@ class sr_GlobalState:
 
             running_pids = 0
             for f in self.filtered_configurations:
-                if f == 'audit': continue
                 (c, cfg) = f.split(os.sep)
                 # exclude foreground instances unless --dangerWillRobinson specified
                 if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
@@ -2193,7 +2323,7 @@ class sr_GlobalState:
                     continue
                 running_pids += len(self.states[c][cfg]['instance_pids'])
 
-            if running_pids == 0:
+            if (running_pids == 0) and len(self.strays)==0:
                 print('All stopped after try %d' % attempts)
                 if len(fg_instances) > 0:
                     print(f"Foreground instances {fg_instances} are running and were not stopped.")
@@ -2203,20 +2333,13 @@ class sr_GlobalState:
 
         print('doing SIGKILL this time')
         
-        if ('audit' in self.filtered_configurations) and self.auditors > 0:
-            for p in self.procs:
-                if 'audit' in p['name']:
-                    signal_pid(p, signal.SIGKILL)
-                    pids_signalled |= set([p])
-
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in ['hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         p=self.states[c][cfg]['instance_pids'][i]
@@ -2225,13 +2348,10 @@ class sr_GlobalState:
                         pids_signalled |= set([p])
                         print('.', end='')
 
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                print(
-                    "pid: %s-%s does not match any configured instance, killing"
-                    % (pid, self.procs[pid]['cmdline']))
-                signal_pid(pid, signal.SIGKILL)
-                pids_signalled |= set([pid])
+        for pid in self.strays:
+            print( f"pid: {pid} \"{self.strays[pid]}\" does not match any configured instance, killing" )
+            signal_pid(pid, signal.SIGKILL)
+            pids_signalled |= set([pid])
 
         print('Done')
         print('Waiting again...')
@@ -2243,13 +2363,12 @@ class sr_GlobalState:
         self._resolve()
 
         for f in self.filtered_configurations:
-            if f == 'audit': continue
             (c, cfg) = f.split(os.sep)
             # exclude foreground instances unless --dangerWillRobinson specified
             if (not self.options.dangerWillRobinson) and self._cfg_running_foreground(c, cfg):
                 fg_instances.add(f"{c}/{cfg}")
                 continue
-            if self.configs[c][cfg]['status'] in [ 'hung', 'running', 'partial', 'waitVip' ]:
+            if self.configs[c][cfg]['status'] in self.status_active:
                 for i in self.states[c][cfg]['instance_pids']:
                     print("failed to kill: %s/%s instance: %s, pid: %s )" %
                           (c, cfg, i, self.states[c][cfg]['instance_pids'][i]))
@@ -2264,8 +2383,13 @@ class sr_GlobalState:
             print('not responding to SIGKILL:')
             for p in self.procs:
                 # exclude foreground instances from printing unless --dangerWillRobinson specified
-                if not ((not self.options.dangerWillRobinson) and self._pid_running_foreground(p)) and p in pids_signalled: 
-                    print('\t%s: %s' % (p, self.procs[p]['cmdline'][0:5]))
+                if p in pids_signalled:
+                    if not self._pid_running_foreground(p): 
+                         print( f"\t{p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                    elif self.options.dangerWillRobinson: 
+                         print( f"\tforeground {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
+                else:
+                    logger.debug( f"\tdid not even try to kill: {p}: \"{' '.join(self.procs[p]['cmdline'])}\"" )
             return 1
 
     def dump(self): 
@@ -2409,20 +2533,6 @@ class sr_GlobalState:
         print(underline)
 
         configs_running = 0
-        rxCumulativeLagTime=0
-        rxCumulativeLagCount=0
-        rxCumulativeMessagesQueued=0
-        rxCumulativeMessagesRetry=0
-        rxCumulativeMessageByteRate=0
-        rxCumulativeMessageRate=0
-        txCumulativeMessageRate=0
-        txCumulativeMessageByteRate=0
-        rxCumulativeFileRate=0
-        rxCumulativeDataRate=0
-        txCumulativeFileRate=0
-        txCumulativeDataRate=0
-        transferRxByteRate= 0
-        transferTxByteRate= 0
         now = time.time()
 
         for c in sorted(self.configs):
@@ -2437,20 +2547,24 @@ class sr_GlobalState:
                     continue
 
                 #find missing instances for this config.
-                m = sum(map(lambda x: c in x and cfg in x, self.missing))
+                missing_instances = sum(map(lambda x: c in x and cfg in x, self.missing))
                 if self.configs[c][cfg]['status'] != 'stopped':
                     expected = self.configs[c][cfg]['instances']
-                    running = expected - m
+                    running = expected - missing_instances
                     if running > 0:
                         configs_running += 1
                 else:
                     running = 0
                     expected = 0
-                    m = 0
+                    missing_instances = 0
 
                 cfg_status = self.configs[c][cfg]['status'][0:4]
                 if cfg_status == "runn" and self._cfg_running_foreground(c, cfg):
                     cfg_status = "fore"
+                if cfg_status == "lagg" :
+                    cfg_status = "lag"
+                if cfg_status == "retr" :
+                    cfg_status = "rtry"
                 if cfg_status == "runn" :
                     cfg_status = "run"
                 elif cfg_status == 'wait':
@@ -2460,87 +2574,14 @@ class sr_GlobalState:
                 line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
-                    brokerQdmCount = -1
-                    m = self.states[c][cfg]['metrics']
-                    if m[ "lagMessageCount" ] > 0:
-                        lagMean = m[ "lagTotal" ] / m[ "lagMessageCount" ]
-                        rxCumulativeLagTime += m[ "lagTotal" ]
-                        rxCumulativeLagCount +=  m[ "lagMessageCount" ]
-                    else:
-                        lagMean = 0
-                    
-                    retry = m[ "msgs_in_download_retry" ] + m["msgs_in_post_retry" ]
-                    rxCumulativeMessagesRetry += retry
-
-                    if 'brokerQueuedMessageCount' in m:
-                        brokerQdmCount = m['brokerQueuedMessageCount']
-                        rxCumulativeMessagesQueued += brokerQdmCount
-
-                    latestTransfer = "n/a"
-                    if "transferLast" in m:
-                        latestTransfer = f"{now - m['transferLast']:4.1f}s"
-                    elif "messageLast" in m:
-                        latestTransfer = f"{now - m['messageLast']:4.1f}s"
-
-                    if "last_housekeeping" in m and m["last_housekeeping"] > 0:
-                        time_base = now - m[ "last_housekeeping" ] 
-                        byteTotal = 0
-                        if 'rxByteCount' in m:
-                            byteTotal += m["rxByteCount"]
-        
-                        if 'txByteCount' in m:
-                            byteTotal += m["txByteCount"]
-                            txCumulativeMessageByteRate +=  m["txByteCount"]/time_base
-        
-                        byteRate= byteTotal/time_base
-                        msgRate= (m["rxGoodCount"]+m["rxBadCount"])/time_base
-
-                        transferRxByteRate = m['transferRxBytes']/time_base
-                        transferRxFileRate = m['transferRxFiles']/time_base
-                        transferTxByteRate = m['transferTxBytes']/time_base
-                        transferTxFileRate = m['transferTxFiles']/time_base
-
-                        rxCumulativeFileRate += transferRxFileRate
-                        rxCumulativeDataRate += transferRxByteRate
-                        txCumulativeFileRate += transferTxFileRate
-                        txCumulativeDataRate += transferTxByteRate
-                        
-                        rxCumulativeMessageByteRate += byteRate 
-                        rxCumulativeMessageRate +=  msgRate
-                        
-
-
-                        if 'transferConnectTime' in m:
-                            byteConnectPercent= int(100*(m['transferConnectTime'])/time_base)
-                        else:
-                            byteConnectPercent= 0
-
-                        if 'disconnectTime' in m:
-                            connectPercent= int(100*(time_base-m['disconnectTime'])/time_base)
-                        else:
-                            connectPercent= 0
-
-                        txCumulativeMessageRate +=  (m["txGoodCount"]+m["txBadCount"])/time_base
-                    else:
-                        time_base = 0
-                        byteTotal=0
-                        byteRate=0
-                        msgRate=0
-                        connectPercent=0
-                        byteConnectPercent= 0
-
-                    if m["rxGoodCount"] > 0:
-                        rejectPercent = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
-                    else:
-                        rejectPercent = 0
-
+                    m=self.states[c][cfg]['metrics']
                     line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %-5s %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
-                            retry, connectPercent, byteConnectPercent, brokerQdmCount, m['lagMax'], lagMean, \
-                            latestTransfer, rejectPercent,\
-                            naturalSize(byteRate), \
-                            naturalSize(msgRate).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(transferRxByteRate), \
-                            naturalSize(transferTxByteRate) 
+                            m['retry'], m['connectPercent'], m['byteConnectPercent'], m['messagesQueued'], m['lagMax'], m['lagMean'], \
+                            m['latestTransfer'], m['rejectPercent'],\
+                            naturalSize(m['byteRate']), \
+                            naturalSize(m['msgRate']).replace("B","m").replace("mytes","msgs"), \
+                            naturalSize(m['transferRxByteRate']), \
+                            naturalSize(m['transferTxByteRate']) 
                             )
 
                     if self.options.displayFull :
@@ -2581,12 +2622,10 @@ class sr_GlobalState:
 
                 print(line)
         stray = 0
-        for pid in self.procs:
-            if not self.procs[pid]['claimed']:
-                stray += 1
-                bad = 1
-                print("pid: %s-%s is not a configured instance" %
-                      (pid, self.procs[pid]['cmdline']))
+        for pid in self.strays:
+            stray += 1
+            bad = 1
+            print( f"pid:{pid} \"{self.strays[pid]}\" is not a configured instance" )
 
         print('      Total Running Configs: %3d ( Processes: %d missing: %d stray: %d )' %
             (configs_running, len(self.procs), len(self.missing), stray ) )
@@ -2597,23 +2636,19 @@ class sr_GlobalState:
         print('                   CPU Time: User:%.2fs System:%.2fs ' % ( \
               self.resources['user_cpu'] , self.resources['system_cpu'] \
               ))
-        if rxCumulativeLagCount  > 0:
-            CumulativeMeanLag = rxCumulativeLagTime / rxCumulativeLagCount 
-        else:
-            CumulativeMeanLag = 0
 
         print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                naturalSize(rxCumulativeMessageRate).replace("B","m").replace("myte","msg"), \
-                naturalSize(rxCumulativeMessageByteRate),\
-                naturalSize(txCumulativeMessageRate).replace("B","m").replace("myte","msg"),\
-                naturalSize(txCumulativeMessageByteRate),
-                rxCumulativeMessagesQueued, rxCumulativeMessagesRetry, CumulativeMeanLag
+                naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
+                naturalSize(self.cumulative_stats['rxMessageByteRate']),\
+                naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
+                naturalSize(self.cumulative_stats['txMessageByteRate']),
+                self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
             ))
         print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-               naturalSize(rxCumulativeFileRate).replace("B","F").replace("Fyte","File") ,
-               naturalSize(rxCumulativeDataRate),
-               naturalSize( txCumulativeFileRate).replace("B","F").replace("Fyte","File"),
-               naturalSize(txCumulativeDataRate) ) )
+               naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
+               naturalSize(self.cumulative_stats['rxDataRate']),
+               naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
+               naturalSize(self.cumulative_stats['txDataRate']) ) )
 
         # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
         for h in self.brokers:
@@ -2622,7 +2657,26 @@ class sr_GlobalState:
                     print("exchange with no bindings: %s-%s " % (h, x), end='')
 
     def convert(self):
-        cfg = self.v2_config[0]
+
+        print( f"v2_config: {self.v2_config}")
+        if len(self.v2_config) == 0:
+            print("need to specify what to convert from v2")
+            return
+
+        conversion_targets = self.v2_config
+        if self.options.wololo and len(conversion_targets) > 1:
+            if len(conversion_targets) != self.options.dangerWillRobinson :
+                print( f" will not overwrite multiple configurations unless really sure" )
+                print( f" If you are really sure, use --dangerWillRobinson={len(conversion_targets)}" )
+                return
+
+        for c in conversion_targets:
+            self.convert1(c)
+
+    def convert1(self,cfg):
+        """
+          converts one config.
+        """
         component = cfg.split('/')[0]
         base_v2 = self.user_config_dir.replace('sr3', 'sarra') + os.sep
         base_v3 = self.user_config_dir + os.sep
@@ -2645,8 +2699,10 @@ class sr_GlobalState:
         if not os.path.isdir(base_v3 + component):
             os.makedirs(base_v3 + component)
 
-        if os.path.exists(v3_config_path):
-            logger.error( f"{component}/{cfg} already exists in v3, remove {v3_config_path} to convert again")
+        if self.options.wololo:
+            logger.warning("Wololo!" )
+        elif os.path.exists(v3_config_path): 
+            logger.error( f"{component}/{cfg} already exists in v3. To overwrite, use --wololo" )
             return
 
         synonyms = sarracenia.config.Config.synonyms
@@ -2764,7 +2820,7 @@ class sr_GlobalState:
                 elif component in [ 'subscribe', 'poll', 'sender' ]: # accomodate change of default from v2 to sr3
                     v3_cfg.write( f"acceptUnmatched False")
 
-        logging.info( f'wrote conversion from v2 {cfg} to sr3' )
+        logger.info( f'wrote conversion from v2 {cfg} to sr3' )
 
 
     def overview(self):
@@ -2781,15 +2837,7 @@ class sr_GlobalState:
         print('%-10s %-10s %-6s %3s %s' %
               ('---------', '-----', '-----', '---',
                '------------------------------'))
-        if self.auditors == 1:
-            audst = "OK"
-        elif self.auditors > 1:
-            audst = "excess"
-        else:
-            audst = "absent"
 
-        print("%-10s %-10s %-6s %3d" %
-              ('audit', 'running', audst, self.auditors))
         configs_running = 0
         for c in self.configs:
 
@@ -2847,8 +2895,7 @@ class sr_GlobalState:
             if not self.procs[pid]['claimed']:
                 stray += 1
                 bad = 1
-                print("pid: %s-%s is not a configured instance" %
-                      (pid, self.procs[pid]['cmdline']))
+                print( f"pid: {pid}-\"{' '.join(self.procs[pid]['cmdline'])}\" is not a configured instance" )
 
         print('      total running configs: %3d ( processes: %d missing: %d stray: %d )' % \
             (configs_running, len(self.procs), len(self.missing), stray))
@@ -3016,7 +3063,8 @@ def main():
         gs.convert()
 
     if action == 'remove':
-        gs.remove()
+        if gs.cleanup():
+            gs.remove()
 
     elif action == 'restart':
         print('stopping: ', end='', flush=True)

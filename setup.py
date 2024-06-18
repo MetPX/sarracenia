@@ -105,7 +105,7 @@ setup(
     ],
     install_requires=[
         "appdirs", "humanfriendly", "humanize", "jsonpickle", "psutil>=5.3.0", 
-        "paramiko", "watchdog",
+        "watchdog",
     ],
     # when building on HPC redhat, python OS packages don't exist. 
     # remove the last three lines of install_requires above, aka: 

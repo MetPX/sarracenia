@@ -274,6 +274,16 @@ class Flow:
 
     def _runCallbacksWorklist(self, entry_point):
 
+        if hasattr(self, entry_point):
+            if self.o.logLevel.lower() == 'debug' :
+                eval( f"self.{entry_point}(self.worklist)")
+            else:
+                try:
+                    eval( f"self.{entry_point}(self.worklist)")
+                except Exception as ex:
+                    logger.error( f'flow {entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
                 if self.o.logLevel.lower() == 'debug' :
@@ -286,6 +296,18 @@ class Flow:
                         logger.debug( "details:", exc_info=True )
 
     def runCallbacksTime(self, entry_point):
+
+        if hasattr(self, entry_point):
+            if self.o.logLevel.lower() == 'debug' :
+                eval( f"self.{entry_point}()")
+            else:
+                try:
+                    logger.info( f'normal run of self.{entry_point}' )
+                    eval( f"self.{entry_point}()")
+                except Exception as ex:
+                    logger.error( f'flow {entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         for p in self.plugins[entry_point]:
             if self.o.logLevel.lower() == 'debug' :
                 p()
@@ -302,6 +324,16 @@ class Flow:
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
         
+        if hasattr(self, "metricsReport"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.metricsReport()
+            else:
+                try:
+                    self.metricsReport()
+                except Exception as ex:
+                    logger.error( f'flow metricsReport() crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         if 'transferConnected' in self.metrics['flow'] and self.metrics['flow']['transferConnected']: 
             now=nowflt()
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
@@ -328,11 +360,50 @@ class Flow:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
+    def _runCallbackPoll(self):
+        if hasattr(self, "Poll"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.Poll()
+            else:
+                try:
+                    self.Poll()
+                except Exception as ex:
+                    logger.error( f'flow Poll crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
+        for plugin in self.plugins['poll']:
+            if self.o.logLevel.lower() == 'debug' :
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+            else:
+                try:
+                    new_incoming = plugin()
+                    if len(new_incoming) > 0:
+                        self.worklist.incoming.extend(new_incoming)
+                except Exception as ex:
+                    try:
+                        logger.error(f'flowCallback plugin {plugin.__module__}.{plugin.__qualname__} crashed: {ex}' )
+                    except:
+                        # just in case
+                        logger.error(f'flowCallback plugin {plugin} crashed: {ex}' )
+                    logger.debug("details:", exc_info=True )
+
     def _runHousekeeping(self, now) -> float:
         """ Run housekeeping callbacks
             Return the time when housekeeping should be run next
         """
         logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
+        if hasattr(self, "on_housekeeping"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.on_housekeeping()
+            else:
+                try:
+                    self.on_housekeeping()
+                except Exception as ex:
+                    logger.error( f'flow on_housekeeping crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
@@ -379,7 +450,6 @@ class Flow:
         logger.info(
             f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
         )
-        self.runCallbacksTime('please_stop')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
@@ -508,7 +578,7 @@ class Flow:
             total_messages += last_gather_len
 
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
-                self.please_stop()
+                self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
@@ -522,7 +592,7 @@ class Flow:
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
                     current_sleep = 60
                 else:
-                    self.please_stop()
+                    self.runCallbacksTime('please_stop')
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
@@ -1037,12 +1107,7 @@ class Flow:
             self.worklist.poll_catching_up = False
 
         if self.have_vip:
-            for plugin in self.plugins['poll']:
-                new_incoming = plugin()
-                if len(new_incoming) > 0:
-                    self.worklist.incoming.extend(new_incoming)
-
-
+            self._runCallbackPoll()
 
     def do(self) -> None:
 

@@ -317,7 +317,7 @@ def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
     """
-    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s") 
+    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
 
 def durationToSeconds(str_value, default=None) -> float:
     """

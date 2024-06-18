@@ -70,7 +70,7 @@ the broker, or manage the configurations.
  - remove:        remove a configuration.
  - disable:       mark a configuration as ineligible to run. 
  - enable:        mark a configuration as eligible to run.
- - convert:       converts a v2 config to a v3 config.
+ - convert:       converts v2 configs to a v3 config.
 
 
 For example:  *sr3 foreground subscribe/dd* runs the subscribe component with
@@ -103,7 +103,7 @@ started or restarted by the **start**,
 **foreground**, or **restart** actions. It can be used to set aside a configuration
 temporarily. 
 
-The **convert** action is used to translate a configuration file written with Sarracenia version 2
+The **convert** action is used to translate configuration files written with Sarracenia version 2
 options into Sarracenia version 3 options. The v2 configuration file must be placed in the
 *~/.config/sarra/component/v2_config.conf* directory and the translated version will be placed in
 the *~/.config/sr3/component/v3_config.conf* directory. For example, one would invoke this action
@@ -135,12 +135,19 @@ Call the corresponding function for each configuration::
     2020-09-06 23:22:18,115 [INFO] sarra.moth.amqp __getSetup queue declared q_tfeed.sr_cpump.xvan_f15.50074940.98161482 (as: amqp://tfeed@localhost/) 
 
 Declares the queues and exchanges related to each configuration.
-One can also invoke it with --users, so that it will declare users as well as exchanges and queues::
+One can also invoke it with *\-\-users*, so that it will declare users as well as exchanges and queues::
 
   $ sr3 --users declare
+    ...
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
     ...
 
+Providing a flow/flows will declare only the users that are specified in the flow(s)::
+
+  $ sr3 --users declare subscribe/dd_amis
+    ...
+    declare: 2024-05-17 20:02:18,548 434920 [INFO] sarracenia.rabbitmq_admin add_user permission user 'tfeed@localhost' role feeder  configure=.* write=.* read=.* 
+    ...
 
 dump
 ~~~~
@@ -396,6 +403,11 @@ Converting a config: both formats are accepted, as well as include files::
   $ sr3 convert shovel/no_trouble_f00.inc
     2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
 
+To overwrite an existing sr3 configuration use the *--wololo* option.
+When overwriting multiple sr3 configurations, one must also use *--dangerWillRobinson=n* in the 
+normal way... where *n* is the number of configurations to convert.
+
+
 start
 ~~~~~
 
@@ -424,45 +436,45 @@ status
 
 Sample OK status (sr is running)::
 
-    fractal% sr3 status
+    SSC-5CD2310S60% sr3 status
+
     status:
     Component/Config                         Processes   Connection        Lag                              Rates
                                              State   Run Retry  msg data   Queued  LagMax LagAvg  Last  %rej     pubsub messages   RxData     TxData
                                              -----   --- -----  --- ----   ------  ------ ------  ----  ----     ------ --------   ------     ------
-    cpost/veille_f34                         run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/pelle_dd1_f04                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   31.3%  0 Bytes/s   4 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/pelle_dd2_f05                      run     1/1     0 100%   0%      0    0.00s    0.00s n/a   31.3%  0 Bytes/s   4 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/xvan_f14                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    cpump/xvan_f15                           run     1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    poll/f62                                 run     1/1     0 100%   0%      0    0.08s    0.04s  1.4s  0.0%  2.0 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    post/shim_f63                            stop    0/0          -          -         -     -     -          -        -
-    post/test2_f61                           stop    0/0     0 100%   0%      0    0.02s    0.01s  0.4s  0.0%  8.1 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    sarra/download_f20                       run     3/3     0 100%  10%      0   13.17s    5.63s  1.8s  0.0%  5.4 KiB/s   4 msgs/s  1.7 KiB/s  0 Bytes/s
-    sender/tsource2send_f50                  run   10/10     0 100%   9%      0    1.37s    1.08s  1.9s  0.0%  8.1 KiB/s   5 msgs/s  0 Bytes/s  1.7 KiB/s
-    shovel/pclean_f90                        run     3/3   136 100%   0%      0    0.00s    0.00s  0.6s  0.0%  4.0 KiB/s   5 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/pclean_f92                        run     3/3     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/rabbitmqtt_f22                    run     3/3     0 100%   0%      0    0.89s    0.67s  1.5s  0.0%  8.1 KiB/s   5 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/t_dd1_f00                         run     3/3     0 100%   0%    124   23.15s    4.50s  0.1s 55.0%  3.9 KiB/s   9 msgs/s  0 Bytes/s  0 Bytes/s
-    shovel/t_dd2_f00                         run     3/3     0 100%   0%     83   11.82s    3.50s  0.1s 49.2%  3.6 KiB/s   8 msgs/s  0 Bytes/s  0 Bytes/s
-    subscribe/amqp_f30                       run     3/3     0 100%  12%      0   18.79s    9.22s  0.1s  0.0%  3.3 KiB/s   4 msgs/s  1.9 KiB/s  0 Bytes/s
-    subscribe/cclean_f91                     run     3/3   145 100%   0%      1    0.00s    0.00s  0.4s  0.0%  2.3 KiB/s   6 msgs/s  0 Bytes/s  0 Bytes/s
-    subscribe/cdnld_f21                      run     3/3     0 100%  17%     12    7.20s    2.81s  0.7s  0.0%  2.3 KiB/s   3 msgs/s  1.7 KiB/s  0 Bytes/s
-    subscribe/cfile_f44                      run     3/3     0 100%   6%      1    3.32s    0.32s  0.4s  0.0%  2.3 KiB/s   6 msgs/s  1.7 KiB/s  0 Bytes/s
-    subscribe/cp_f61                         run     3/3     0 100%   3%      0    6.42s    3.49s  1.6s  0.0%  4.2 KiB/s   6 msgs/s 635 Bytes/s  0 Bytes/s
-    subscribe/ftp_f70                        run     3/3     0 100%   8%      0    1.18s    0.83s  0.2s  0.0%  1.8 KiB/s   3 msgs/s  1.8 KiB/s  0 Bytes/s
-    subscribe/q_f71                          run     3/3     0 100%   0%      0    1.62s    0.57s  0.0s  0.0%  1.2 KiB/s   3 msgs/s  1.2 KiB/s  0 Bytes/s
-    subscribe/rabbitmqtt_f31                 run     3/3     0 100%  11%      0    4.27s    1.95s  1.2s  0.0%  4.2 KiB/s   6 msgs/s 637 Bytes/s  0 Bytes/s
-    subscribe/u_sftp_f60                     run     3/3     0 100%   1%      0    2.69s    2.23s  1.3s  0.7%  4.2 KiB/s   6 msgs/s 644 Bytes/s  0 Bytes/s
-    watch/f40                                run     1/1     0 100%   0%      0    0.10s    0.05s  1.9s  0.0%  4.2 KiB/s   0 msgs/s  0 Bytes/s  0 Bytes/s
-    winnow/t00_f10                           run     1/1     0 100%   0%      0   12.31s    4.33s  3.5s 50.0%  3.2 KiB/s   3 msgs/s  0 Bytes/s  0 Bytes/s
-    winnow/t01_f10                           run     1/1     0 100%   0%      0   11.59s    3.76s  0.1s 50.5%  4.2 KiB/s   4 msgs/s  0 Bytes/s  0 Bytes/s
-          Total Running Configs:  25 ( Processes: 64 missing: 0 stray: 0 )
-                         Memory: uss:2.4 GiB rss:3.3 GiB vms:6.2 GiB
-                       CPU Time: User:39.62s System:4.42s
-    	   Pub/Sub Received: 103 msgs/s (80.6 KiB/s), Sent:  63 msgs/s (32.8 KiB/s) Queued: 221 Retry: 281, Mean lag: 2.32s
-    	      Data Received: 32 Files/s (11.9 KiB/s), Sent: 5 Files/s (1.7 KiB/s)
+    cpost/veille_f34                         idle    1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd1_f04                      stop    0/0     0   0%   0%      0    0.00s    0.00s 0      0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/pelle_dd2_f05                      stop    0/0     0   0%   0%      0    0.00s    0.00s 0      0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f14                           hung    1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    cpump/xvan_f15                           hung    1/1     0 100%   0%      0    0.00s    0.00s n/a    0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    poll/f62                                 idle    1/1     0 100%   0%      0    0.00s    0.00s 221.3s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    post/shim_f63                            stop    0/0     0   0%   0%      0    0.00s    0.00s 0      0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    post/test2_f61                           stop    0/0     0 100%   0%      0    0.00s    0.00s 224.6s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    sarra/download_f20                       idle    3/3     0 100%   0%      0    0.00s    0.00s 324.0s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    sender/tsource2send_f50                  idle  10/10     0 100%   0%      0    0.00s    0.00s 140.9s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/pclean_f90                        idle    3/3   231 100%   0%      0    0.00s    0.00s 140.8s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/pclean_f92                        idle    3/3     0 100%   0%      0    0.00s    0.00s 142.1s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/rabbitmqtt_f22                    hung    3/3     0 100%   0%      0    0.00s    0.00s 139.9s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd1_f00                         stop    0/0     0   0%   0%      0    0.00s    0.00s 0      0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    shovel/t_dd2_f00                         stop    0/0     0   0%   0%      0    0.00s    0.00s 0      0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/amqp_f30                       idle    3/3     0 100%   0%      0    0.00s    0.00s 323.9s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cclean_f91                     idle    3/3   247 100%   0%      1    0.00s    0.00s 217.1s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cdnld_f21                      idle    3/3     0 100%   0%     17    0.00s    0.00s 313.2s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cfile_f44                      idle    3/3     0 100%   0%      1    0.00s    0.00s 217.1s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/cp_f61                         idle    3/3     0 100%   0%      0    0.00s    0.00s 139.0s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/ftp_f70                        part    1/3     8 100%   3%      0  586.95s  438.50s 224.4s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/q_f71                          lag     3/3    15 100%  39%      0  573.83s  457.23s 221.0s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/rabbitmqtt_f31                 idle    3/3     0 100%   0%      0    0.00s    0.00s 138.1s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    subscribe/u_sftp_f60                     idle    3/3     0 100%   0%      0    0.00s    0.00s 140.8s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    watch/f40                                idle    1/1     0 100%   0%      0    0.00s    0.00s 141.3s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t00_f10                           idle    1/1     0 100%   0%     42    0.00s    0.00s 324.3s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+    winnow/t01_f10                           idle    1/1     0 100%   0%      0    0.00s    0.00s 325.4s  0.0%  0 Bytes/s   0 msgs/s  0 Bytes/s  0 Bytes/s
+          Total Running Configs:  21 ( Processes: 54 missing: 2 stray: 0 )
+                         Memory: uss:2.2 GiB rss:3.0 GiB vms:6.6 GiB
+                       CPU Time: User:562.61s System:47.39s
+               Pub/Sub Received: 0 msgs/s (0 Bytes/s), Sent:  0 msgs/s (0 Bytes/s) Queued: 97 Retry: 1019, Mean lag: 445.07s
+                  Data Received: 0 Files/s (0 Bytes/s), Sent: 0 Files/s (0 Bytes/s)
     
-
 Full sample::
 
     
@@ -530,10 +542,16 @@ The second row of output gives detailed headings within each category:
 The configurations are listed on the left. For each configuraion, the state
 will be:
 
-* stop:  no processes are running.
-* run:  all processes are running. 
-* part:  some processes are running.
 * disa:  disabled, configured not to run.
+* hung:  processes appear hung, not writing anything to logs.
+* idle:  all processes running, but no data or message transfers for too long (idlethreshold.)
+* lag:   all processes running, but messages being processed are too old ( runStateThreshold_lag )
+* part:  some processes are running, others are missing.
+* reje:  all processes running, but too high percent of messages being rejected (runStateThreshold_reject )
+* rtry:  all processes running, but too large number of transfers failed and retrying (runStateThreshold_retry )
+* run:   all processes are running (and transferring, and not behind, and not slow... normal state.)
+* slow:  transfering less than minimum bytes/second ( runStateThreshold_slow )
+* stop:  no processes are running. 
 
 The next columns to the right give more information, detailing how many processes are Running, out of the number expected.
 For example, 3/3 means 3 processes or instances found of the 3 expected to be found.

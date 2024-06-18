@@ -1,3 +1,10 @@
+metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
+
+  * fixed #927 sanity not restarting crashed polls.
+  * bug fixes and unit tests for AM
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
+
 metpx-sr3 (3.00.53) unstable; urgency=medium
 
   * NEW! merge PR #1019 Azure Transfer protocol driver (experimental)
@@ -39,10 +46,10 @@ metpx-sr3 (3.00.53) unstable; urgency=medium
   * fix #973 AM ... add missing tokIsYear better AM message filtering.
   * fix #971 Add missing to list of possible process status
   * docs: Add topicPrefix for #961
-  * docs: some revisions for clarity/syntax. 
+  * docs: some revisions for clarity/syntax.
   * some fixes for misnaming of some (rare) files received by gather/am
 
- -- peter <peter@bsqt.homeip.net>  Wed, 17 May 2024 09:35:12 -0400
+ -- Peter Silva <peter@bsqt.homeip.net>  Thu, 17 May 2024 09:31:04 -0400
 
 metpx-sr3 (3.00.52) unstable; urgency=medium
 

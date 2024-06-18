@@ -176,11 +176,14 @@ class CredentialDB:
         """
 
         # need to create url object
+        key=urlstr
         if details == None:
             details = Credential()
             details.url = urllib.parse.urlparse(urlstr)
+            if hasattr(details.url,'password'):
+                key = key.replace( f":{details.url.password}", "" )
 
-        self.credentials[urlstr] = details
+        self.credentials[key] = details
 
     def get(self, urlstr):
         """Retrieve a Credential from the DB by urlstr. If the Credential is valid, but not already cached, it will be
@@ -217,10 +220,9 @@ class CredentialDB:
             url = urllib.parse.urlparse(urlstr)
             if self.isValid(url):
                 self.add(urlstr)
-                return False, self.credentials[urlstr]
+                return False, self.credentials[urlstr.replace(':anonymous@','@')]
 
         # resolved from defined credentials
-
         ok, details = self._resolve(urlstr, url)
         if ok: return True, details
 
@@ -231,7 +233,11 @@ class CredentialDB:
         # cache it as is... we dont want to validate every time
 
         self.add(urlstr)
-        return False, self.credentials[urlstr]
+        if url and url.password:
+            k=urlstr.replace( f':{url.password}@', '@' )
+        else:
+            k=urlstr
+        return False, self.credentials[k]
 
     def has(self, urlstr):
         """Return ``True`` if the Credential matching the urlstr is already in the CredentialDB.
