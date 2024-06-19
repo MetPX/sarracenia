@@ -492,7 +492,7 @@ class sr_GlobalState:
                                 if pathname[-4:] == '.pid':
                                     i = int(pathname[-6:-4])
                                     if t.isdigit():
-                                        #print( "%s/%s instance: %s, pid: %s" % ( c, cfg, i, t ) )
+                                        #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
                                 elif pathname[-6:] == '.qname':
                                     self.states[c][cfg]['queueName'] = t
@@ -1050,8 +1050,7 @@ class sr_GlobalState:
                     resource_usage={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0.0, 'system_cpu':0.0 }
                     nvip=False
                     for i in self.states[c][cfg]['instance_pids']:
-                        if self.states[c][cfg]['instance_pids'][
-                                i] not in self.procs:
+                        if self.states[c][cfg]['instance_pids'][i] not in self.procs:
                             self.states[c][cfg]['missing_instances'].append(i)
                         else:
                             observed_instances += 1
@@ -1114,12 +1113,11 @@ class sr_GlobalState:
                         flow_status = 'idle'
                     elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    else:
-                        flow_status = 'running'
-
-                    if self.states[c][cfg]['metrics']['msgRate'] > 0 and \
+                    elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
                         flow_status = 'cpuSlow'
+                    else:
+                        flow_status = 'running'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
                     self.configs[c][cfg]['status'] = flow_status
