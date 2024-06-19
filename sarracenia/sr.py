@@ -2512,8 +2512,22 @@ class sr_GlobalState:
         """ v3 Printing prettier statuses for each component/configs found
         """
 
+        flowNameWidth=0
+        for c in sorted(self.configs):
+            for cfg in sorted(self.configs[c]):
+                f = c + os.sep + cfg
+                if f not in self.filtered_configurations:
+                    continue
+                if self.configs[c][cfg]['status'] == 'include':
+                    continue
 
-        line = "%-40s %-11s %7s %10s %19s %14s %38s " % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
+                if not (c in self.states and cfg in self.states[c]):
+                    continue
+                if len(f) > flowNameWidth:
+                    flowNameWidth = len(f)
+
+        lfmt = f"%-{flowNameWidth}s %-11s %7s %10s %19s %14s %38s "
+        line = lfmt % ("Component/Config", "Processes", "Connection", "Lag", "", "Rates", "" )
 
         if self.options.displayFull:
             line += "%10s %-40s %17s %33s %40s" % ("", "Counters (per housekeeping)", "", "Data Counters", "" )
@@ -2525,8 +2539,9 @@ class sr_GlobalState:
         try:
             print(line)
 
-            line      = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
-            underline = "%-40s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %4s %8s %7s %5s %5s %5s %10s %-10s %-10s %-10s " 
+            line      =  lfmt % ("", "State", "Run", "Retry", "msg", "data", "Queued", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
+            underline =  lfmt % ("", "-----", "---", "-----", "---", "----", "------", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
             if self.options.displayFull:
                 line      += "%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %8s" % \
@@ -2549,6 +2564,7 @@ class sr_GlobalState:
         configs_running = 0
         now = time.time()
 
+                
         for c in sorted(self.configs):
             for cfg in sorted(self.configs[c]):
                 f = c + os.sep + cfg
@@ -2585,7 +2601,8 @@ class sr_GlobalState:
                     cfg_status = 'wVip'
 
                 process_status = "%d/%d" % ( running, expected ) 
-                line= "%-40s %-5s %5s" % (f, cfg_status, process_status ) 
+                lfmt      = f"%-{flowNameWidth}s %-5s %5s "
+                line= lfmt % (f, cfg_status, process_status ) 
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
