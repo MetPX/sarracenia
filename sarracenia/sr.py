@@ -1113,12 +1113,11 @@ class sr_GlobalState:
                         flow_status = 'idle'
                     elif (now-self.states[c][cfg]['metrics']['rxLast']) > self.configs[c][cfg]['options'].runStateThreshold_idle:
                         flow_status = 'idle'
-                    else:
-                        flow_status = 'running'
-
-                    if (len(self.states[c][cfg]['instance_pids']) > 0) and self.states[c][cfg]['metrics']['msgRate'] > 0 and \
+                    elif self.states[c][cfg]['metrics']['msgRate'] > 0 and \
                            self.states[c][cfg]['metrics']['msgRateCpu'] < self.configs[c][cfg]['options'].runStateThreshold_cpuSlow:
                         flow_status = 'cpuSlow'
+                    else:
+                        flow_status = 'running'
 
                     self.states[c][cfg]['resource_usage'] = copy.deepcopy(resource_usage)
                     self.configs[c][cfg]['status'] = flow_status
