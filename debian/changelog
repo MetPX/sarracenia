@@ -1,18 +1,32 @@
-metpx-sr3 (3.00.54) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.54rc1) UNRELEASED; urgency=medium
 
-  * merge PR #1067 (closing #824 )
+  * NEW #1084 add metadata fetch to scheduled http. 
+  * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
+  * fix #1104 add message per cpu second and cpuS state.
+  * only run after_post when actually posted #1101
+  * fix #1097 message rates < 1 were parsed as zero, now work correctly.
+  * messages reviewed & consolidated: #1094, #1099 (log de-cluttering.)
+  * fix crashes/problems with statehost #1076, #1087, #1096
+  * when plugins go bad, report better, recover better: #1085, #1091, 
+  * performance improvements #1083, #1086
+  * fix #1079 watch posting events it should not.
+  * fix #1076 bogus messages and mkdir crash on HPC ( #1087 )
+  * merge PR #1067 (closing #824 ) sr3 status flow state detail improved.
     * adds lag,rtry,slow,reje states to status display.
     * adds checks for running process to cleanup, fail if running.
     * adds cleanup to remove, don't remove if cleanup fails.
     * adds progressive logs to transfers  (closing #966) 
-  * several fixes for sender crashes resulting from changes in try/except scope.
+  * several fixes for sender crashes ( #1091, #1095, #1099 )
   * add #1054 can now convert multiple configs, and overwrite (with --wololo)
   * fixed #1064 poll crash.
   * fixed #927 sanity not restarting crashed polls.
-  * bug fixes and unit tests for AM
+  * reduced processing overhead ( #1086 )
+  * misc bug fixes ( #1070, #1092, #1103, #1108, #1109 ) 
+  * NEW added logFormat option.
+  * bug fixes and unit tests for AM ( #1036, $1068, #1074, #1075, #1078, #1079 )
   * many unit tests added, improved coverage (though still poor.)
-  * many other plugin improvements.
-  * search function restored on web-site documentation.
+  * many other plugin improvements. (#1085, #1082, #1091 )
+  * search function restored on web-site documentation. ( #1062, #1072)
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
 

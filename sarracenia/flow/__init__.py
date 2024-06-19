@@ -208,6 +208,9 @@ class Flow:
 
         self.plugins['load'].extend(self.o.destfn_scripts)
 
+        self.block_reassembly_active = 'block_reassembly' in self.plugins['load'] or \
+                 'sarracenia.flowcb.block_reassembly' in self.plugins['load']
+
         # metrics - dictionary with names of plugins as the keys
         self.metrics_lastWrite=0
         self.metricsFlowReset()
@@ -218,7 +221,8 @@ class Flow:
 
         self.new_metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
               'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
-              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
+              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0,
+              'last_housekeeping_cpuTime': 0, 'cpuTime' : 0, } }
 
         # carry over some metrics... that don't reset.
         if hasattr(self,'metrics'):
@@ -364,6 +368,8 @@ class Flow:
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+        ost = os.times()
+        self.metrics['flow']['cpuTime'] = ost.user+ost.system-self.metrics['flow']['last_housekeeping_cpuTime']
 
     def _runCallbackPoll(self):
         if hasattr(self, "Poll"):
@@ -412,6 +418,9 @@ class Flow:
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
+        ost = os.times()
+        self.metrics['flow']['last_housekeeping_cpuTime'] = ost.user+ost.system
+        self.metrics['flow']['cpuTime'] = ost.user+ost.system
 
         next_housekeeping = now + self.o.housekeeping
         self.metrics['flow']['next_housekeeping'] = next_housekeeping
@@ -529,6 +538,8 @@ class Flow:
         current_sleep = self.o.sleep
         last_time = start_time
         self.metrics['flow']['last_housekeeping'] = start_time
+        ost=os.times()
+        self.metrics['flow']['last_housekeeping_cpuTime'] =  ost.user+ost.system
 
         if self.o.logLevel == 'debug':
             logger.debug("options:")
@@ -600,6 +611,7 @@ class Flow:
             elapsed = now - last_time
 
             self.metrics['flow']['msgRate'] = current_rate
+            self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
@@ -2682,11 +2694,11 @@ class Flow:
         logger.debug("%s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
-        # cache it here, along with the mtime.
-
-        if ('blocks' in msg) and sarracenia.features['reassembly']['present']:
-            with sarracenia.blockmanifest.BlockManifest(local_file) as y:
-                y.set( msg['blocks'] )
+        # cache it here, along with the mtime, unless block_reassembly plugin is active...
+        
+        if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.block_reassembly_active:
+            with sarracenia.blockmanifest.BlockManifest(local_file) as bm:
+                bm.set( msg['blocks'] )
 
         x = sarracenia.filemetadata.FileMetadata(local_file)
         # FIXME ... what to do when checksums don't match?
@@ -2744,7 +2756,7 @@ class Flow:
                 except:
                     pass
 
-        if hasattr(proto, 'chmod'):
+        if hasattr(proto, 'utime'):
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 mtime = sarracenia.timestr2flt(msg['mtime'])
                 atime = mtime

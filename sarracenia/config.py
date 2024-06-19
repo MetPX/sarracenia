@@ -85,14 +85,12 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
-    'block_reassemble': True,
     'delete': False,
     'documentRoot': None,
     'download': False,
     'dry_run': False,
     'filename': None,
     'flowMain': None,
-    'runStateThreshold_idle': 900,
     'inflight': None,
     'inline': False,
     'inlineOnly': False,
@@ -101,7 +99,6 @@ default_options = {
     'logMetrics': False,
     'logStdout': False,
     'metrics_writeInterval': 5,
-    'runStateThreshold_lag': 30,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -119,8 +116,11 @@ default_options = {
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
-    'runStateThreshold_retry': 1000,
+    'runStateThreshold_cpuSlow': 0,
     'runStateThreshold_hung': 450,
+    'runStateThreshold_idle': 900,
+    'runStateThreshold_lag': 30,
+    'runStateThreshold_retry': 1000,
     'runStateThreshold_slow': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
@@ -135,13 +135,13 @@ default_options = {
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin', 'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow'
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'block_reassemble', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
@@ -151,7 +151,7 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
     'statehost', 'users', 'v2compatRenameDoublePost', 'wololo'
                 ]
 
-float_options = [ ]
+float_options = [ 'messageRateMax', 'messageRateMin' ]
 
 duration_options = [
     'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', 'metrics_writeInterval', \
@@ -337,12 +337,58 @@ def isTrue(S):
     return S.lower() in ['true', 'yes', 'on', '1']
 
 def parse_count(cstr):
+    """
+        number argument accepts k,m,g suffix with i and b to use base 2 ) and +- 
+        return value is integer.
+    """
     if cstr[0] == '-':
         offset=1
     else:
         offset=0
-    count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
-    return -count if offset else count
+    try:
+        count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
+        return -count if offset else count
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a count value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0
+
+def parse_float(cstr):
+    """
+        like parse_count, numeric argument accepts k,m,g suffix and +-.
+        below 1000, return a decimal number with 3 digits max.
+    """
+    if type(cstr) is not str:
+        return cstr
+
+    try:
+        fa = parse_count(cstr)
+        if abs(fa) < 1000:
+            if cstr[-1] in [ 'b', 'i' ]:
+                if cstr[-2] in [ 'k' ]:
+                    fa=float(cstr[0:-2])*1024
+                else:
+                    fa=float(cstr[0:-1])
+            elif cstr[-1] in [ 'k' ]:
+                    fa=float(cstr[0:-1])*1000
+            else:
+                fa=float(cstr)
+
+            # apply 3 sig figs.
+            if abs(fa) > 1000:
+                fa=int(fa)
+            elif abs(fa) > 100:
+                fa=round(fa,1)
+            elif abs(fa) > 10:
+                fa=round(fa,2)
+            else:
+                fa=round(fa,3)
+
+        return fa
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a float value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0.0
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
@@ -1042,11 +1088,10 @@ class Config:
             if v == 'None': 
                 sv=set([])
             else:
-                if v[0] in [ '+', '-']:
+                op='r'
+                while v[0] in [ '+', '-']:
                     op=v[0]
                     v=v[1:]
-                else:
-                    op='r'
 
                 if ',' in v: 
                     sv=set(v.split(','))
@@ -1057,6 +1102,7 @@ class Config:
                     sv= old_value | sv
                 elif op == '-' :
                     sv= old_value - sv
+
         return sv
 
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
@@ -1113,7 +1159,7 @@ class Config:
         elif kind == 'float' or kind == float :
             float_options.append(option)
             if type(v) is not float:
-                setattr(self, option, float(v))
+                setattr(self, option, parse_float(v))
         elif kind == 'list' or kind == list:  
             list_options.append( option )
             if type(v) is not list:
@@ -1501,8 +1547,6 @@ class Config:
         if k == 'continue':
             return
             
-        #FIXME: note for Clea, line conversion to v3 complete here.
-
         line = list(map(lambda x: self._varsub(x), line))
 
         if len(line) == 1:
@@ -1622,7 +1666,7 @@ class Config:
             setattr(self, k, durationToSeconds(v))
         elif k in float_options:
             try:
-                setattr(self, k, float(v))
+                setattr(self, k, parse_float(v))
             except (ValueError, TypeError) as e:
                 logger.error(f"{','.join(self.files)}:{self.lineno} Ignored '{i}': {e}")
         elif k in perm_options:
@@ -1672,7 +1716,7 @@ class Config:
             v = ' '.join(line[1:])
             if hasattr(self, k):
                 if type(getattr(self, k)) is float:
-                    setattr(self, k, float(v))
+                    setattr(self, k, parse_float(v))
                 elif type(getattr(self, k)) is int:
                     # the only integers that have units are durations.
                     # integers without units will come out unchanged.
@@ -1854,7 +1898,7 @@ class Config:
 
         for f in float_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
-                setattr(self, f, float(getattr(self, f)))
+                setattr(self, f, parse_float(getattr(self, f)))
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
             if ('sarracenia.flowcb.log.Log' not in self.plugins_late) and \
@@ -2027,7 +2071,7 @@ class Config:
                     setattr(self,u,isTrue(getattr(self,u)))
             elif u in float_options:
                 if type( getattr(self,u) ) is not float:
-                    setattr(self,u,float(getattr(self,u)))
+                    setattr(self,u,parse_float(getattr(self,u)))
             elif u in set_options:
                 if type( getattr(self,u) ) is not set:
                     setattr(self,u,self._parse_set_string(getattr(self,u),set()))
