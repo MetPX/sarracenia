@@ -2609,26 +2609,26 @@ class sr_GlobalState:
                     line += " %5d %3d%% %3d%% %6d %7.2fs %7.2fs %-5s %4.1f%% %8s/s %8s/s %8s/s %8s/s" % ( \
                             m['retry'], m['connectPercent'], m['byteConnectPercent'], m['messagesQueued'], m['lagMax'], m['lagMean'], \
                             m['latestTransfer'], m['rejectPercent'],\
-                            naturalSize(m['byteRate']), \
-                            naturalSize(m['msgRate']).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(m['transferRxByteRate']), \
-                            naturalSize(m['transferTxByteRate']) 
+                            naturalSize(m['byteRate']).replace("Bytes","B"), \
+                            naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
+                            naturalSize(m['transferTxByteRate']).replace("Bytes","B") 
                             )
 
                     if self.options.displayFull :
                         line += " %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %7.2fs" % ( \
                             naturalSize(m['msgRateCpu']).replace("B","m").replace("mytes","msgs"), \
-                            naturalSize(m['rxByteCount']), \
-                            naturalSize(m['rxGoodCount']).replace("B","m").replace("myte","msg"), \
-                            naturalSize(m["rejectCount"]).replace("B","m").replace("myte","msg"), \
-                            naturalSize(m["rxBadCount"]).replace("B","m").replace("myte","msg"), \
-                            naturalSize(m['txByteCount']), 
-                            naturalSize(m['txGoodCount']).replace("B","m").replace("myte","msg"), \
-                            naturalSize(m["txBadCount"]).replace("B","m").replace("myte","msg"), \
-                            naturalSize(m["transferRxBytes"]), \
-                            naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fyte","File"), \
-                            naturalSize(m["transferTxBytes"]), \
-                            naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fyte","File"), \
+                            naturalSize(m['rxByteCount']).replace("Bytes","B"), \
+                            naturalSize(m['rxGoodCount']).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m["rejectCount"]).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m["rxBadCount"]).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m['txByteCount']).replace("Bytes","B"), 
+                            naturalSize(m['txGoodCount']).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m["txBadCount"]).replace("B","m").replace("mytes","m"), \
+                            naturalSize(m["transferRxBytes"]).replace("Bytes","B"), \
+                            naturalSize(m["transferRxFiles"]).replace("B","F").replace("Fytes","F"), \
+                            naturalSize(m["transferTxBytes"]).replace("Bytes","B"), \
+                            naturalSize(m["transferTxFiles"]).replace("B","F").replace("Fytes","F"), \
                             m["time_base"] )
                 else:
                     line += " %10s %10s %9s %5s %5s %10s %8s" % ( "-", "-", "-", "-", "-", "-", "-" )
@@ -2673,17 +2673,17 @@ class sr_GlobalState:
                   ))
 
             print( '\t   Pub/Sub Received: %s/s (%s/s), Sent:  %s/s (%s/s) Queued: %d Retry: %d, Mean lag: %02.2fs' % ( 
-                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("myte","msg"), \
-                    naturalSize(self.cumulative_stats['rxMessageByteRate']),\
-                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("myte","msg"),\
-                    naturalSize(self.cumulative_stats['txMessageByteRate']),
+                    naturalSize(self.cumulative_stats['rxMessageRate']).replace("B","m").replace("mytes","m"), \
+                    naturalSize(self.cumulative_stats['rxMessageByteRate']).replace("Bytes","B"),\
+                    naturalSize(self.cumulative_stats['txMessageRate']).replace("B","m").replace("mytes","m"),\
+                    naturalSize(self.cumulative_stats['txMessageByteRate']).replace("Bytes","B"),
                     self.cumulative_stats['rxMessageQueued'], self.cumulative_stats['rxMessageRetry'], self.cumulative_stats['lagMean']
                 ))
             print( '\t      Data Received: %s/s (%s/s), Sent: %s/s (%s/s) ' % (
-                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fyte","File") ,
-                   naturalSize(self.cumulative_stats['rxDataRate']),
-                   naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fyte","File"),
-                   naturalSize(self.cumulative_stats['txDataRate']) ) )
+                   naturalSize(self.cumulative_stats['rxFileRate']).replace("B","F").replace("Fytes","F") ,
+                   naturalSize(self.cumulative_stats['rxDataRate']).replace("Bytes","B"),
+                   naturalSize( self.cumulative_stats['txFileRate']).replace("B","F").replace("Fytes","F"),
+                   naturalSize(self.cumulative_stats['txDataRate']).replace("Bytes","B") ) )
 
             # FIXME: does not seem to find any stray exchange (with no bindings...) hmm...
             for h in self.brokers:
