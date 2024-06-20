@@ -2543,10 +2543,10 @@ class sr_GlobalState:
         if self.options.displayFull:
             line += "%10s %10s " % ( " ", "CPU Time" )
 
-        if True: #try:
+        try:
             print(line)
 
-            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %4s %5s %8s %8s %{latestTransferWidth}s %5s %10s %-10s %-10s %-10s " 
+            lfmt      = f"%-{flowNameWidth}s %-5s %5s %5s %4s %4s %5s %8s %8s %{latestTransferWidth}s %5s %10s %10s %10s %10s " 
             line      =  lfmt % ("", "State", "Run", "Retry", "msg", "data", "Que", "LagMax", "LagAvg", "Last", "%rej", "pubsub", "messages", "RxData", "TxData" )
             underline =  lfmt % ("", "-----", "---", "-----", "---", "----", "---", "------", "------", "----", "----", "------", "--------", "------", "------" )
 
@@ -2565,7 +2565,7 @@ class sr_GlobalState:
 
             print(line)
             print(underline)
-        else: #except:
+        except:
             return
 
         configs_running = 0
