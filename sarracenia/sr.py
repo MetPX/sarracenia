@@ -891,7 +891,7 @@ class sr_GlobalState:
         # comparing states and configs to find missing instances, and correct state.
         self.resources={ 'uss': 0, 'rss': 0, 'vms':0, 'user_cpu': 0, 'system_cpu':0 }
         self.cumulative_stats={ 
-                'flowNameWidth': 0, 'latestTransferWidth': 0, 
+                'flowNameWidth': 20, 'latestTransferWidth': 4, 
                 'rxLagTime':0, 'rxLagCount':0, 
                 'rxMessageQueued':0, 'rxMessageRetry':0, 
                 'txMessageQueued':0, 'txMessageRetry':0, 
