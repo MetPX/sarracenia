@@ -125,8 +125,6 @@ default_options = {
     'sourceFromExchange': False,
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
-    'sourceFromExchange': False,
-    'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0,
@@ -1982,7 +1980,7 @@ class Config:
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
-            logger.error( f"invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
+            logger.error( f"{component}/{config} invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
 
         if hasattr(self, 'no'):
             if self.statehost:
@@ -2004,7 +2002,7 @@ class Config:
                 path = os.path.realpath(path)
 
             if sys.platform == 'win32' and words0.find('\\'):
-                logger.warning("%s %s" % (words0, words1))
+                logger.warning("{component}/{config} %s %s" % (words0, words1))
                 logger.warning(
                     "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )."
                 )
@@ -2017,7 +2015,7 @@ class Config:
 
         if hasattr(self, 'pollUrl'):
             if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
-                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                logger.debug( f"{component}/{config} defaulting post_baseUrl to match pollURl, since it isn't specified." )
                 self.post_baseUrl = self.pollUrl
             
         # verify post_baseDir
@@ -2036,13 +2034,13 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("defaulting post_baseDir to same as baseDir")
+                logger.debug("{component}/{config} defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'{component}/{config} overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
@@ -2053,10 +2051,10 @@ class Config:
                     self.sleep=1
 
         if self.runStateThreshold_hung < self.housekeeping:
-            logger.warning( f"runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
+            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
-            logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
+            logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
 
     def check_undeclared_options(self):
@@ -2065,7 +2063,7 @@ class Config:
         # FIXME: confused about this...  commenting out for now...
         for f,l,u in self.undeclared:
             if u not in alloptions:
-                logger.error( f"{f}:{l} undeclared option: {u}")
+                logger.error( f"{component}/{config} {f}:{l} undeclared option: {u}")
             elif u in flag_options:
                 if type( getattr(self,u) ) is not bool:
                     setattr(self,u,isTrue(getattr(self,u)))
@@ -2094,7 +2092,7 @@ class Config:
              if not hasattr(self,u):
                 no_defaults.add( u )
 
-        logger.debug("missing defaults: %s" % no_defaults)
+        logger.debug("{component}/{config} missing defaults: %s" % no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.
