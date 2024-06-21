@@ -559,7 +559,7 @@ class MQTT(Moth):
 
             if hasattr(mqttMessage, 'payload'): 
                 logger.info( f"payload: type: {type(mqttMessage.payload)}"
-                        f"(len: {len(mqttMessage.payload)%d} bytes) body:{mqttMessage.payload}" )
+                        f"(len: {len(mqttMessage.payload):d} bytes) body:{mqttMessage.payload}" )
 
             if hasattr(mqttMessage.properties, 'UserProperty'): 
                 logger.info( f"User Property: {mqttMessage.properties.UserProperty}")
