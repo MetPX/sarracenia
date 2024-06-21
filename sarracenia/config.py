@@ -2063,7 +2063,7 @@ class Config:
         # FIXME: confused about this...  commenting out for now...
         for f,l,u in self.undeclared:
             if u not in alloptions:
-                logger.error( f"{component}/{config} {f}:{l} undeclared option: {u}")
+                logger.error( f"{f}:{l} undeclared option: {u}")
             elif u in flag_options:
                 if type( getattr(self,u) ) is not bool:
                     setattr(self,u,isTrue(getattr(self,u)))
@@ -2092,7 +2092,7 @@ class Config:
              if not hasattr(self,u):
                 no_defaults.add( u )
 
-        logger.debug("{component}/{config} missing defaults: %s" % no_defaults)
+        logger.debug("missing defaults: %s" % no_defaults)
 
     """
       2020/05/26 FIXME here begins sheer terror.
