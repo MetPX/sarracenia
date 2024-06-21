@@ -221,7 +221,7 @@ class MQTT(Moth):
 
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"asked to subscribe to: {subj}, mid={mid}"
+            logger.info( f"asked to subscribe to: {subj}, mid={mid} "
                     f"qos={userdata.o['qos']} result: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
