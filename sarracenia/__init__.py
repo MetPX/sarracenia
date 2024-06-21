@@ -497,6 +497,54 @@ class Message(dict):
         for h in d:
             msg[h] = d[h]
 
+    def deriveSource(msg,o):
+        """
+           set msg['source'] field as appropriate for given message and options (o)
+        """
+        source=None
+        if 'source' in o:
+            source = o['source']
+        elif 'sourceFromExchange' in o and o['sourceFromExchange'] and 'exchange' in msg:
+            itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
+            if itisthere:
+                source = itisthere[1]
+            else:
+                itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
+                if itisthere:
+                    source = itisthere[1]
+        if 'source' in msg and 'sourceFromMessage' in o and o['sourceFromMessage']:
+            pass
+        elif source:
+            msg['source'] = source
+            msg['_deleteOnPost'] |= set(['source'])
+
+    def deriveTopics(msg,o,topic,separator='.'):
+        """
+            derive subtopic, topicPrefix, and topic fields based on message and options.
+        """
+        msg_topic = topic.split(separator)
+        # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
+        if 'topicCopy' in o and o['topicCopy']:
+            topicOverride=True
+        else:
+            topicOverride=False
+            if 'relPath' in msg:
+                path_topic = o['topicPrefix'] + os.path.dirname(msg['relPath']).split('/')
+
+                if msg_topic != path_topic:
+                    topicOverride=True
+
+            # set subtopic if possible.
+            if msg_topic[0:len(o['topicPrefix'])] == o['topicPrefix']:
+                msg['subtopic'] = msg_topic[len(o['topicPrefix']):]
+            else:
+                topicOverride=True
+
+        if topicOverride:
+            msg['topic'] = topic
+            msg['_deleteOnPost'] |= set( ['topic'] )
+
+
     def dumps(msg) -> str:
         """
            FIXME: used to be msg_dumps.

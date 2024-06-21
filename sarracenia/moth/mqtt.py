@@ -577,6 +577,10 @@ class MQTT(Moth):
             self.metrics['rxBadCount'] += 1
             return None
 
+        message['exchange'] = mqttMessage.topic.split('/')[0]
+        message.deriveSource( self.o )
+        message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
+
         message['ack_id'] = mqttMessage.mid
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
