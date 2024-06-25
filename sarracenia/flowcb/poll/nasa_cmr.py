@@ -18,7 +18,7 @@ What is CMR?
 .. IMPORTANT::
     Most URLs posted by this plugin will require an Earthdata account to download the data.
     https://urs.earthdata.nasa.gov/  The corresponding download configuration (e.g. a sarra or
-    subscribe config) will need to use the ``auth_NASA_Earthdata`` after_accept plugin.
+    subscribe config) will need to use the ``authenticate.nasa_earthdata`` plugin.
 
 This code is based on https://github.com/podaac/tutorials/blob/master/notebooks/opendap/MUR-OPeNDAP.ipynb
 
@@ -128,9 +128,9 @@ Configurable data source:
 How to set up your poll config:
 --------------------------------
  
-    Use ``callback poll.poll_NASA_CMR``, and read about the config options above.
+    Use ``callback poll.nasa_cmr``, and read about the config options above.
     
-    For examples, see https://github.com/MetPX/sarracenia/tree/main/sarracenia/examples/poll files named ``*nasa_cmr*.conf``. 
+    For examples, see https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/poll files named ``*nasa_cmr*.conf``. 
 
 Change log:
 -----------
@@ -138,6 +138,7 @@ Change log:
     - 2023-10-10: finished porting poll code, now the poll is in a working state.
     - 2023-06-29: ported to sr3, split into poll_NASA_CMR (incomplete) and download plugin.
     - 2023-06-14: added ``other`` dataSource. Renamed to nasa_cmr from nasa_opendap.
+    - 2024-06-25: bug fixes, renamed from Poll_NASA_CMR to nasa_cmr.
 """
 
 import sarracenia
