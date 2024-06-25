@@ -322,11 +322,12 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                         logger.debug(f"Other ({self.o.relatedUrl_type}) URL {url['URL']}")
                         # Skip this URL when other options are defined and don't match
                         logger.debug(f"remove {self.o.relatedUrl_descriptionContains}")
-                        if ( (self.o.relatedUrl_descriptionContains is not None and 
+                        if ( (self.o.relatedUrl_descriptionContains is not None and 'Description' in url and
                                 all(desc not in url['Description'] for desc in self.o.relatedUrl_descriptionContains))
                               or (self.o.relatedUrl_urlContains is not None and
                                 all(url_c not in url['URL'] for url_c in self.o.relatedUrl_urlContains)) ):
-                            logger.debug(f"Skipping {url['URL']} with Description {url['Description']}..." + 
+                            description = url['Description'] if 'Description' in url else "(Not Available)"
+                            logger.debug(f"Skipping {url['URL']} with Description {description}..." + 
                                 " doesn't match relatedUrl_descriptionContains relatedUrl_urlContains options")
                         else:
                             data_url = url['URL']
