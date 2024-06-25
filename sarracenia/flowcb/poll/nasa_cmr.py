@@ -20,6 +20,8 @@ What is CMR?
     https://urs.earthdata.nasa.gov/  The corresponding download configuration (e.g. a sarra or
     subscribe config) will need to use the ``authenticate.nasa_earthdata`` plugin.
 
+    See here: https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/authenticate/nasa_earthdata.py
+
 This code is based on https://github.com/podaac/tutorials/blob/master/notebooks/opendap/MUR-OPeNDAP.ipynb
 
 
@@ -282,6 +284,9 @@ class Nasa_cmr(sarracenia.flowcb.FlowCB):
                 # and metadata (e.g. md5 check sums)
                 data_url = None
                 md5_url = None
+                if 'RelatedUrls' not in itm['umm']:
+                    logger.debug(f"No RelatedUrls in {itm['umm']}")
+                    continue
                 for url in itm['umm']['RelatedUrls']:
                     if self.stop_requested:
                         logger.info("Received a request to stop. Aborting poll and returning an empty list.")
