@@ -47,6 +47,7 @@ passwords and settings needed by components.  The format is one entry per line. 
 
 - **ftps://user7:De%3Aize@host  passive,binary,tls**
 - **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
+- **ftp://user8:%2fdot8@host:990  implicit_ftps**
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
 
@@ -71,6 +72,7 @@ Supported details:
 - ``prot_p`` - (FTPS) Use a secure data connection for TLS connections (otherwise, clear text is used)
 - ``bearer_token=<token>`` (or ``bt=<token>``) - (HTTP) Bearer token for authentication
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) By default, the login method will be automatically determined. This can be overriden by explicity specifying a login method, which may be required if a broker supports multiple methods and an incorrect one is automatically selected.
+- ``implicit_ftps`` - (FTPS) Use implicit FTPS (otherwise, explicit FTPS is used). Setting this will also set ``tls`` to True.
 
 Note::
  SFTP credentials are optional, in that sarracenia will look in the .ssh directory
