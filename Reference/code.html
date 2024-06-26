@@ -216,6 +216,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.transfer.ftp">sarracenia.transfer.ftp</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.transfer.ftp.Ftp"><code class="docutils literal notranslate"><span class="pre">Ftp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS"><code class="docutils literal notranslate"><span class="pre">IMPLICIT_FTP_TLS</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.transfer.sftp">sarracenia.transfer.sftp</a><ul>
@@ -1075,6 +1076,17 @@ AMQPLAIN, EXTERNAL or GSSAPI)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sarracenia.credentials.Credential.implicit_ftps">
+<span class="sig-name descname"><span class="pre">implicit_ftps</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.implicit_ftps" title="Link to this definition"></a></dt>
+<dd><p>use implicit FTPS, defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code> (i.e. explicit FTPS)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2615,6 +2627,29 @@ sarracenia transfer protocol subclass supports/uses additional custom options:</
 <dt class="sig sig-object py" id="sarracenia.transfer.ftp.Ftp.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/ftp.html#Ftp.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.ftp.Ftp.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sarracenia.transfer.ftp.IMPLICIT_FTP_TLS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.transfer.ftp.</span></span><span class="sig-name descname"><span class="pre">IMPLICIT_FTP_TLS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/ftp.html#IMPLICIT_FTP_TLS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FTP_TLS</span></code></p>
+<p>FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS.
+Copied from <a class="reference external" href="https://stackoverflow.com/questions/12164470/python-ftp-implicit-tls-connection-issue">https://stackoverflow.com/questions/12164470/python-ftp-implicit-tls-connection-issue</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.transfer.ftp.IMPLICIT_FTP_TLS.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/ftp.html#IMPLICIT_FTP_TLS.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialization method (called by class instantiation).
+Initialize host to localhost, port to standard ftp port.
+Optional arguments are host (for connect()),
+and user, passwd, acct (for login()).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sarracenia.transfer.ftp.IMPLICIT_FTP_TLS.sock">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sock</span></span><a class="headerlink" href="#sarracenia.transfer.ftp.IMPLICIT_FTP_TLS.sock" title="Link to this definition"></a></dt>
+<dd><p>Return the socket.</p>
+</dd></dl>
 
 </dd></dl>
 

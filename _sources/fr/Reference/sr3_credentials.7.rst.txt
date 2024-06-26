@@ -46,6 +46,7 @@ ainsi que les paramètres nécessaires aux composants.  Le format est d'une entr
 
 - **ftps://user7:De%3Aize@host  passive,binary,tls**
 - **ftps://user8:%2fdot8@host:2121  active,ascii,tls,prot_p**
+- **ftp://user8:%2fdot8@host:990  implicit_ftps**
 - **https://ladsweb.modaps.eosdis.nasa.gov/ bearer_token=89APCBF0-FEBE-11EA-A705-B0QR41911BF4**
 
 Dans d’autres fichiers de configuration ou sur la ligne de commande, l’url n’a tout simplement pas le
@@ -71,6 +72,7 @@ Détails pris en charge :
 - ``prot_p`` - (FTPS) Utiliser une connexion de données sécurisée pour les connexions TLS (sinon, du texte clair est utilisé)
 - ``bearer_token=<token>`` (ou ``bt=<token>``) - (HTTP) Jeton Bearer pour l’authentification
 - ``login_method=<PLAIN|AMQPLAIN|EXTERNAL|GSSAPI>`` - (AMQP) Par défaut, la méthode de connexion sera automatiquement
+- ``implicit_ftps`` - (FTPS) Utilisez FTPS implicite (sinon, FTPS explicite est utilisé). Définir ceci définira également ``tls`` sur True.
 
 déterminée. Cela peut être remplacé en spécifiant une méthode Particulière de connexion, ce qui peut être
 nécessaire si un broker prend en charge plusieurs méthodes et qu’une méthode incorrecte est automatiquement
