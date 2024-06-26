@@ -66,6 +66,7 @@ class Credential:
         bearer_token (str): bearer token for HTTP authentication
         login_method (str): force a specific login method for AMQP (PLAIN,
             AMQPLAIN, EXTERNAL or GSSAPI)
+        implicit_ftps (bool): use implicit FTPS, defaults to ``False`` (i.e. explicit FTPS)
 
     Usage:
 
@@ -101,6 +102,7 @@ class Credential:
         self.s3_endpoint = None
         self.s3_session_token = None
         self.azure_credentials = None
+        self.implicit_ftps = False
 
     def __str__(self):
         """Returns attributes of the Credential object as a readable string.
@@ -133,6 +135,7 @@ class Credential:
         #want to show they provided a session token, but not leak it (like passwords above)
         s += " %s" % 'Yes' if self.s3_session_token != None else 'No'
         s += " %s" % 'Yes' if self.azure_credentials != None else 'No'
+        s += " %s" % self.implicit_ftps
 
         return s
 
@@ -383,6 +386,9 @@ class CredentialDB:
                     details.s3_endpoint = parts[1].strip()
                 elif keyword == 'azure_storage_credentials':
                     details.azure_credentials = urllib.parse.unquote(parts[1].strip())
+                elif keyword == 'implicit_ftps':
+                    details.implicit_ftps = True
+                    details.tls = True
                 else:
                     logger.warning("bad credential option (%s)" % keyword)
 
