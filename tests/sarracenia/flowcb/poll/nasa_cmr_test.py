@@ -3,4 +3,4 @@ from tests.conftest import *
 #from unittest.mock import Mock
 
 import sarracenia.config
-import sarracenia.flowcb.poll.poll_NASA_CMR
+import sarracenia.flowcb.poll.nasa_cmr
