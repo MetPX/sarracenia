@@ -254,7 +254,7 @@ class Poll(FlowCB):
 
     """
 
-    def __init__(self, options,class_logger=None):
+    def __init__(self, options,class_logger=logger):
 
         super().__init__(options,class_logger)
 
