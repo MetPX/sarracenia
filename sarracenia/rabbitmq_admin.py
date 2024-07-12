@@ -106,24 +106,22 @@ def add_user(url, role, user, passwd, simulate):
     # source
 
     if role in ['source']:
-        c = "configure=^q_%s.*|^xs_%s.*" % (user, user)
-        w = "write=^q_%s.*|^xs_%s.*" % (user, user)
-        r = "read=^q_%s.*|^x[lrs]_%s.*|^x.*public$" % (user, user)
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        c = f"configure=^q_{user}.*|^x[rs]_{user}.*"
+        w = f"write=^q_{user}.*|^x[rs]_{user}.*"
+        r = f"read=^q_{user}.*|^x[rs]_{user}.*|^x.*public$"
+        logger.info(f"permission user '{user}@{url.hostname}' role source  {c} {w} {r} ")
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
 
     # subscribe
 
     if role in ['subscribe', 'subscriber']:
-        c = "configure=^q_%s.*" % user
-        w = "write=^q_%s.*|^xs_%s$" % (user, user)
-        r = "read=^q_%s.*|^x[lrs]_%s.*|^x.*public$" % (user, user)
-        logger.info("permission user '%s' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'source', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        c = f"configure=^q_{user}.*|^x[r]_{user}$"
+        w = f"write=^q_{user}.*|^x[r]_{user}$"
+        r = f"read=^q_{user}.*|^x[rs]_{user}.*|^x.*public$"
+        logger.info(f"permission user '{user}@{url.hostname}' role source  {c} {w} {r} ")
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
 
 
