@@ -39,13 +39,13 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             command += ' --ssl --port=15671 '
         command += ' ' + options
 
-        logger.debug("command = %s" % command)
+        logger.debug(f"command = {command}")
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
             if logger: logger.debug("using subprocess.getstatusoutput")
 
             if simulate:
-                print("dry_run: %s" % ' '.join(command))
+                print(f"dry_run: {' '.join(command)}")
                 return 0, None
 
             return subprocess.getstatusoutput(command)
@@ -53,11 +53,10 @@ def exec_rabbitmqadmin(url, options, simulate=False):
             cmdlin = command.replace("'", '')
             cmdlst = cmdlin.split()
             if logger:
-                logger.debug("using subprocess.run cmdlst=%s" %
-                             ' '.join(cmdlst))
+                logger.debug(f"using subprocess.run cmdlst={' '.join(cmdlst)}")
 
             if simulate:
-                print("dry_run: %s" % cmdlin)
+                print(f"dry_run: {cmdlin}")
                 return 0, None
 
             rclass = subprocess.run(cmdlst, stdout=subprocess.PIPE)
@@ -69,10 +68,10 @@ def exec_rabbitmqadmin(url, options, simulate=False):
     except:
         if sys.version_info.major < 3 or (sys.version_info.major == 3
                                           and sys.version_info.minor < 5):
-            if logger: logger.error("trying run command %s %s" % command)
+            if logger: logger.error(f"trying run command {command[0]} {command[1]}")
         else:
             if logger:
-                logger.error("trying run command %s %s" % ' '.join(cmdlst))
+                logger.error(f"trying run command {' '.join(cmdlst)}")
         if logger: logger.debug('Exception details:', exc_info=True)
 
     return 0, None
@@ -83,9 +82,9 @@ def add_user(url, role, user, passwd, simulate):
        add the given user with the given credentials.
     """
 
-    declare = "declare user name='%s' password=" % user
+    declare = f"declare user name='{user}' password="
 
-    if passwd != None: declare += "\'%s\'" % urllib.parse.unquote(passwd)
+    if passwd != None: declare += f"\'{urllib.parse.unquote(passwd)}\'"
     if role == 'admin': declare += " tags=administrator "
     else: declare += ' tags="" '
 
@@ -97,9 +96,8 @@ def add_user(url, role, user, passwd, simulate):
         c = "configure=.*"
         w = "write=.*"
         r = "read=.*"
-        logger.info("permission user \'%s\' role %s  %s %s %s " %
-                    (user + '@' + url.hostname, 'feeder', c, w, r))
-        declare = "declare permission vhost=/ user=%s %s %s %s" % (user, c, w, r)
+        logger.info(f"permission user \'{user + '@' + url.hostname}\' role feeder  {c} {w} {r} ")
+        declare = f"declare permission vhost=/ user={user} {c} {w} {r}"
         dummy = run_rabbitmqadmin(url, declare, simulate)
         return
 
@@ -129,8 +127,8 @@ def del_user(url, user, simulate):
     """
         delete user from the given broker.
     """
-    logger.info("deleting user %s" % user)
-    delete = "delete user name='%s'" % user
+    logger.info(f"deleting user {user}")
+    delete = f"delete user name='{user}'"
     dummy = run_rabbitmqadmin(url, delete, simulate)
 
 
@@ -301,12 +299,11 @@ if __name__ == "__main__":
     lex = list(
         map(lambda x: x['name'],
             json.loads(exec_rabbitmqadmin(url, "list exchanges name")[1])))
-    print("exchanges: %s\n\n" % lex)
+    print(f"exchanges: {lex}\n\n")
 
     u = 'tsource'
     up = rabbitmq_user_access(url, u)
-    print("permissions for %s: \nqueues: %s\nexchanges: %s\nbindings %s" %
-          (u, up['queues'], up['exchanges'], up['bindings']))
+    print(f"permissions for {u}: \nqueues: {up['queues']}\nexchanges: {up['exchanges']}\nbindings {up['bindings']}")
     #print( "\n\nbindings: %s" % json.loads(exec_rabbitmqadmin(url,"list bindings")[1]) )
 
 
@@ -316,7 +313,7 @@ def run_rabbitmqadmin(url, options, simulate=False):
       capture result.
     """
 
-    logger.debug("sr_rabbit run_rabbitmqadmin %s" % options)
+    logger.debug(f"sr_rabbit run_rabbitmqadmin {options}")
     try:
         (status, answer) = exec_rabbitmqadmin(url, options, simulate)
 
@@ -338,7 +335,6 @@ def run_rabbitmqadmin(url, options, simulate=False):
         return lst
 
     except:
-        logger.error("sr_rabbit/run_rabbitmqadmin failed with option '%s'" %
-                     options)
+        logger.error(f"sr_rabbit/run_rabbitmqadmin failed with option '{options}'")
         logger.debug('Exception details: ', exc_info=True)
     return []
