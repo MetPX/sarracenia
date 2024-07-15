@@ -417,6 +417,18 @@ the method of checksum calculation is from options.identity.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">deriveSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia.html#Message.deriveSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>set msg[‘source’] field as appropriate for given message and options (o)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">deriveTopics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia.html#Message.deriveTopics"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>derive subtopic, topicPrefix, and topic fields based on message and options.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">dumps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/sarracenia.html#Message.dumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>FIXME: used to be msg_dumps.
 print a message in a compact but relatively compact way.

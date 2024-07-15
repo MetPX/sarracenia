@@ -334,7 +334,7 @@ code use flow subclasses. Those cases are configured using the flowMain option.<
 <section id="mapping-amqp-concepts-to-sarracenia">
 <h2>Mapping AMQP Concepts to Sarracenia<a class="headerlink" href="#mapping-amqp-concepts-to-sarracenia" title="Link to this heading"></a></h2>
 <p>It is helpful to understand a bit about AMQP to work with Sarracenia. AMQP is a vast and interesting topic in its own right. No attempt is made to explain the entirety of it here. This section intends to provide a little context and introduce background concepts needed to understand and/or use Sarracenia. For more information on AMQP itself, a set of links is maintained at the <a class="reference external" href="sarra.rst#amqp">Metpx web site</a></p>
-<a class="reference internal image-reference" href="../_images/amqp_flow_concept.svg"><img alt="../_images/amqp_flow_concept.svg" class="align-center" height="302" src="../_images/amqp_flow_concept.svg" width="434" /></a>
+<a class="reference internal image-reference" href="../_images/amqp_flow_concept.svg"><img alt="../_images/amqp_flow_concept.svg" class="align-center" src="../_images/amqp_flow_concept.svg" style="width: 434.5px; height: 302.0px;" /></a>
 <p>An AMQP Server is called a broker. A <em>broker</em> is sometimes used to refer to the software, other times server running the broker software (same confusion as <em>web server</em>.) In the above diagram, AMQP vocabulary is in Orange, and Sarracenia terms are in blue. There are many different broker software implementations. In our implementations we use rabbitmq. We are not trying to be rabbitmq specific, but it is to be noted that management functions differ between implementations.</p>
 <dl class="simple">
 <dt><em>Queues</em> are usually taken care of transparently, but it is important to know that:</dt><dd><ul class="simple">
@@ -433,7 +433,7 @@ of ensuring only once.</p></li>
 </section>
 <section id="flow-through-pumps">
 <h2>Flow Through Pumps<a class="headerlink" href="#flow-through-pumps" title="Link to this heading"></a></h2>
-<a class="reference internal image-reference" href="../_images/sr3_flow_example.svg"><img alt="../_images/sr3_flow_example.svg" class="align-center" height="793" src="../_images/sr3_flow_example.svg" width="1122" /></a>
+<a class="reference internal image-reference" href="../_images/sr3_flow_example.svg"><img alt="../_images/sr3_flow_example.svg" class="align-center" src="../_images/sr3_flow_example.svg" style="width: 1122.0px; height: 793.0px;" /></a>
 <p>A description of the conventional flow of notification messages through exchanges on a pump:</p>
 <ul class="simple">
 <li><p>subscribers usually bind to the xpublic exchange to get the main data feed. This is the default in a subscribe component.</p></li>

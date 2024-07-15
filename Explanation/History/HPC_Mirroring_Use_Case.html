@@ -283,13 +283,15 @@ libraries or the kernel, there is a search process (resolved at application
 load time) that finds the first entry in the path that has the proper signature.
 For example, in issuing a file close(2) call, the operating system will arrange
 for the correct routine in the correct library to be called.</p>
-<img alt="../../_images/shim_explanation_normal_close.svg" src="../../_images/shim_explanation_normal_close.svg" /><p>A call to the close routine, indicates that a program has finished writing the
+<img alt="../../_images/shim_explanation_normal_close.svg" src="../../_images/shim_explanation_normal_close.svg" />
+<p>A call to the close routine, indicates that a program has finished writing the
 file in question, and so usually indicates the earliest time it is useful to
 advertise a file for transfer. We created a shim library, which has entry
 points that impersonate the ones being called by the application, in order
 to have file availability notifications posted by the application itself,
 without any application modification.</p>
-<img alt="../../_images/shim_explanation_shim_close.svg" src="../../_images/shim_explanation_shim_close.svg" /><p>Usage of the shim library is detailed in <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(1)</a></p>
+<img alt="../../_images/shim_explanation_shim_close.svg" src="../../_images/shim_explanation_shim_close.svg" />
+<p>Usage of the shim library is detailed in <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(1)</a></p>
 </section>
 </section>
 <section id="copying-files">

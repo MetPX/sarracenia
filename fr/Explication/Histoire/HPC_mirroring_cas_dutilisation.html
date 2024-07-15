@@ -308,12 +308,14 @@ moment du chargement de l’application) qui trouve la première entrée dans le
 qui a la signature appropriée. Par exemple, lors de l’émission d’un appel de fermeture de
 fichier(2), le système d’exploitation organisera l’appel de la routine correcte dans la
 bibliothèque appropriée.</p>
-<img alt="../../../_images/shim_explanation_normal_close.svg" src="../../../_images/shim_explanation_normal_close.svg" /><p>Un appel à la routine de fermeture indique qu’un programme a fini d’écrire le fichier en question,
+<img alt="../../../_images/shim_explanation_normal_close.svg" src="../../../_images/shim_explanation_normal_close.svg" />
+<p>Un appel à la routine de fermeture indique qu’un programme a fini d’écrire le fichier en question,
 et indique donc généralement la première fois qu’il est utile d’annoncer un fichier pour le transfert.
 Nous avons créé une bibliothèque Shim, qui a des points d’entrée qui usurpent l’identité de ceux
 appelés par l’application, afin que les notifications de disponibilité des fichiers soient publiées
 par l’application elle-même, sans aucune modification de l’application.</p>
-<img alt="../../../_images/shim_explanation_shim_close.svg" src="../../../_images/shim_explanation_shim_close.svg" /><p>L’utilisation de la bibliothèque de Shim est détaillée dans <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(1)</a></p>
+<img alt="../../../_images/shim_explanation_shim_close.svg" src="../../../_images/shim_explanation_shim_close.svg" />
+<p>L’utilisation de la bibliothèque de Shim est détaillée dans <a class="reference external" href="../Reference/sr3.1.html#post">sr_post(1)</a></p>
 </section>
 </section>
 <section id="copie-de-fichiers">

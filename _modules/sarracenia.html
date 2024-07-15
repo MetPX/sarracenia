@@ -613,6 +613,60 @@
             <span class="n">msg</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">h</span><span class="p">]</span></div>
 
 
+<div class="viewcode-block" id="Message.deriveSource">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.deriveSource">[docs]</a>
+    <span class="k">def</span> <span class="nf">deriveSource</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           set msg[&#39;source&#39;] field as appropriate for given message and options (o)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">source</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s1">&#39;sourceFromExchange&#39;</span> <span class="ow">in</span> <span class="n">o</span> <span class="ow">and</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;sourceFromExchange&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="s1">&#39;exchange&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">itisthere</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="s2">&quot;xs_([^_]+)_.*&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="n">itisthere</span><span class="p">:</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="n">itisthere</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">itisthere</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="s2">&quot;xs_([^_]+)&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span> <span class="p">)</span>
+                <span class="k">if</span> <span class="n">itisthere</span><span class="p">:</span>
+                    <span class="n">source</span> <span class="o">=</span> <span class="n">itisthere</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="s1">&#39;sourceFromMessage&#39;</span> <span class="ow">in</span> <span class="n">o</span> <span class="ow">and</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;sourceFromMessage&#39;</span><span class="p">]:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">source</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Message.deriveTopics">
+<a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.deriveTopics">[docs]</a>
+    <span class="k">def</span> <span class="nf">deriveTopics</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">o</span><span class="p">,</span><span class="n">topic</span><span class="p">,</span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            derive subtopic, topicPrefix, and topic fields based on message and options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg_topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+        <span class="c1"># topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017</span>
+        <span class="k">if</span> <span class="s1">&#39;topicCopy&#39;</span> <span class="ow">in</span> <span class="n">o</span> <span class="ow">and</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicCopy&#39;</span><span class="p">]:</span>
+            <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">topicOverride</span><span class="o">=</span><span class="kc">False</span>
+            <span class="k">if</span> <span class="s1">&#39;relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">path_topic</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">msg_topic</span> <span class="o">!=</span> <span class="n">path_topic</span><span class="p">:</span>
+                    <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+
+            <span class="c1"># set subtopic if possible.</span>
+            <span class="k">if</span> <span class="n">msg_topic</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">])]</span> <span class="o">==</span> <span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]:</span>
+                <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;subtopic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg_topic</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;topicPrefix&#39;</span><span class="p">]):]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">topicOverride</span><span class="o">=</span><span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">topicOverride</span><span class="p">:</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;_deleteOnPost&#39;</span><span class="p">]</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span> <span class="p">[</span><span class="s1">&#39;topic&#39;</span><span class="p">]</span> <span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="Message.dumps">
 <a class="viewcode-back" href="../api-documentation.html#sarracenia.Message.dumps">[docs]</a>
     <span class="k">def</span> <span class="nf">dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
