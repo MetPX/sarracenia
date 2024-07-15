@@ -122,17 +122,25 @@ class Retry(FlowCB):
             return
 
         if len(worklist.failed) != 0:
-            #logger.debug("putting %d messages into %s" % (len(worklist.failed),self.download_retry_name) )
+            logger.debug( f"putting {len(worklist.failed)} messages into {self.download_retry_name}"  )
             self.download_retry.put(worklist.failed)
             worklist.failed = []
 
         # retry posting...
-        qty = (self.o.batch / 2) - len(worklist.ok)
-        if qty <= 0: return
+        if (self.o.batch > 2):
+           qty = self.o.batch // 2 - len(worklist.ok)
+        elif len(worklist.ok) < self.o.batch :
+           qty=self.o.batch - len(worklist.ok)
+        else:
+           qty=0
+
+        if qty <= 0: 
+            logger.info( f"{len(worklist.ok)} messages to process, too busy to retry" )
+            return
 
         mlist = self.post_retry.get(qty)
 
-        #logger.debug("loading from %s: qty=%d ... got: %d " % (self.post_retry_name, qty, len(mlist)))
+        logger.debug( f"loading from {self.post_retry_name}: qty={qty} ... got: {len(mlist)}" )
         if len(mlist) > 0:
             worklist.ok.extend(mlist)
 

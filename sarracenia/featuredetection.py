@@ -70,7 +70,7 @@ features = {
            'lament': 'humans will have to read larger, uglier numbers',
            'rejoice': 'humans numbers that are easier to read.' },
    'mqtt' : { 'modules_needed': ['paho.mqtt.client'], 'present': False, 
-           'lament': 'cannot connect to mqtt brokers' ,
+           'lament': 'cannot connect to mqtt brokers (need >= 2.1.0)' ,
            'rejoice': 'can connect to mqtt brokers' },
    'process' : { 'modules_needed': ['psutil'], 'present': False,
         'lament': 'cannot monitor running processes, sr3 CLI basically does not work.',
@@ -130,4 +130,11 @@ if features['filetypes']['present']:
     if not hasattr(magic,'from_file'):
         features['filetypes']['present'] = False
         logger.debug( f'redhat magic bindings not supported.')
+
+if features['mqtt']['present']:
+    import paho.mqtt
+    if not paho.mqtt.__version__ >= '2.1.0' :
+        features['mqtt']['present'] = False
+        logger.debug( f'paho-mqtt minimum version needed is 2.1.0')
+
 

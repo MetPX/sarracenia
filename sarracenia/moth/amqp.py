@@ -138,45 +138,9 @@ class AMQP(Moth):
             topic = raw_msg.delivery_info['routing_key'].replace(
                 '%23', '#').replace('%22', '*')
             msg['exchange'] = raw_msg.delivery_info['exchange']
-            source=None
-            if 'source' in self.o:
-                source = self.o['source']
-            elif 'sourceFromExchange' in self.o and self.o['sourceFromExchange']:
-                itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
-                if itisthere:
-                    source = itisthere[1]
-                else:
-                    itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
-                    if itisthere:
-                        source = itisthere[1]
-            if 'source' in msg and 'sourceFromMessage' in self.o and self.o['sourceFromMessage']:
-                pass
-            elif source:
-                msg['source'] = source
-                msg['_deleteOnPost'] |= set(['source'])
 
-            msg_topic = topic.split('.')
-
-            # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
-            if 'topicCopy' in self.o and self.o['topicCopy']:
-                topicOverride=True
-            else:
-                topicOverride=False
-                if 'relPath' in msg:
-                    path_topic = self.o['topicPrefix'] + os.path.dirname(msg['relPath']).split('/')
-
-                    if msg_topic != path_topic:
-                        topicOverride=True
-                
-                # set subtopic if possible.
-                if msg_topic[0:len(self.o['topicPrefix'])] == self.o['topicPrefix']:
-                    msg['subtopic'] = msg_topic[len(self.o['topicPrefix']):]
-                else:
-                    topicOverride=True
-
-            if topicOverride:
-                msg['topic'] = topic
-                msg['_deleteOnPost'] |= set( ['topic'] )
+            msg.deriveSource( self.o )
+            msg.deriveTopics( self.o, topic )
 
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0

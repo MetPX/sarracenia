@@ -271,6 +271,5 @@ def load_library(factory_path, options):
                 setattr(opt, s, options.settings[factory_path][s])
     else:
         opt = options
-
     plugin = class_(opt)
     return plugin
