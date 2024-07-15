@@ -182,7 +182,9 @@ class Retry(FlowCB):
         if self.o.retry_driver == 'redis':
             from sarracenia.redisqueue import RedisQueue
             self.download_retry = RedisQueue(self.o, 'work_retry')
+            self.download_retry_name = self.download_retry.getName()
             self.post_retry = RedisQueue(self.o, 'post_retry')
+            self.post_retry_name = self.post_retry.getName()
         else:
             from sarracenia.diskqueue import DiskQueue
             self.download_retry_name = 'work_retry_%02d' % self.o.no
