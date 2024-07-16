@@ -23,6 +23,7 @@ def make_message():
     m = SR3Message()
     m['new_file'] = '/foo/bar/NewFile.txt'
     m['new_dir'] = '/foo/bar'
+    #m['geometry'] = 
 
     return m
 
@@ -33,6 +34,7 @@ def test___init__():
     # Basic, happy path, without configured geometry
     geojson = sarracenia.flowcb.filter.geojson.GeoJSON(options)
     assert geojson.geometry_geojson == None
+    assert geojson.o.geometry_maxDistance == -1
 
 
     # happy path with configured geometry
@@ -48,8 +50,10 @@ def test___init__():
         ' ]',
         '}'
         ]
+    options.geometry_maxDistance = 1.5
     geojson = sarracenia.flowcb.filter.geojson.GeoJSON(options)
     assert geojson.geometry_geojson['type'] == "Polygon"
+    assert geojson.o.geometry_maxDistance == 1.5
 
     #unhappy path, with garbage geometry
     options.geometry = ['lkjasdf']
