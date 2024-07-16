@@ -140,7 +140,8 @@ option, with the use of *${..}* notation:
 * PROGRAM     - the name of the component (subscribe, shovel, etc...)
 * CONFIG      - the name of the configuration file being run.
 * HOSTNAME    - the hostname running the client.
-* RANDID      - a random id that will be consistent within a single invocation.
+* RANDID      - a random id (0-64Ki) that will be consistent within a single instance.
+* RAND8       - a random 8 digit wide number that is generated whenever it is evaluated in a string.
 
 The %Y%m%d and %h time stamps refer to the time at which the data is processed by
 the component, it is not decoded or derived from the content of the files delivered.
@@ -1439,15 +1440,33 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
 
+queueBind
+---------
+
+When this flag is set, bindings (in AMQP) are requested after a queue is declared.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
+
+queueDeclare
+------------
+
+When this flag is set, queues are declared by sr3.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
+
 queueName|queue|queue_name|qn 
 -----------------------------
 
 * queueName <name>
 
 By default, components create a queue name that should be unique. The
-default queue_name components create follows the following convention:
+default queueName components create follows the following convention:
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>**
+   **q_<brokerUser>.<programName>.<configName>.<queueShare>**
 
 Where:
 
@@ -1457,38 +1476,36 @@ Where:
 
 * *configName* is the configuration file used to tune component behaviour.
 
-* *random* is just a series of characters chosen to avoid clashes from multiple
-  people using the same configurations
+* *queueShare* defaults to ${USER}_${HOSTNAME} but should be overridden with the 
+  *queueShare* configuration option.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
 When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to:
+queueName is written to:
 
  ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
 Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the *queue_name* option as a more explicit method
+same queue. Some may want use the *queueName* option as a more explicit method
 of sharing work across multiple nodes.
 
-queueBind
----------
 
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
+queueShare <str> (default: ${USER}_${HOSTNAME} )
+------------------------------------------------
 
+A suffix included to queue names to allow defining the sharing scope of a queue.
+When multiple hosts are participating in the same queue, use this setting 
+to have instances pick the same queue.
 
-queueDeclare
-------------
-FIXME: same as above.. is this normal?
+to get a private queue, for example, one could specify:: 
 
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
+    queueShare ${RAND8}
+
+will result in a random 8 digit number being appended to the queue name.
+All the instances within the configuration with access to the same state directory
+will use the queue name thus defined.
 
 
 randomize <flag>
