@@ -221,8 +221,8 @@ class MQTT(Moth):
 
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"asked to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} result: {paho.mqtt.client.error_string(res)}" )
+            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -409,6 +409,10 @@ class MQTT(Moth):
                         decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
                            clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
+                            logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
+                            logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
+                            if self.please_stop:
+                                break
                             decl_client.loop(1)
                         decl_client.disconnect()
                         decl_client.loop_stop()
