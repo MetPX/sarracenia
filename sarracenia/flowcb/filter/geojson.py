@@ -1,16 +1,20 @@
 """
-  This plugin delays processing of messages by *message_delay* seconds
+    This plugin filters messages based on geo-location.
+    Specifically, by comparing configured GeoJSON objects, with those found in messages
 
-  sarracenia.flowcb.msg.fdelay 30
-  import sarracenia.flowcb.filter.fdelay.Fdelay
+    geometry {"type": "Polygon",
+    geometry  "coordinates": [
+    geometry     [
+    geometry        [-10.0, -10.0],
+    geometry        [10.0, -10.0],
+    geometry        [10.0, 10.0],
+    geometry        [-10.0, -10.0]
+    geometry    ]
+    geometry  ]
+    geometry }
 
-  or more simply:
-
-  fdelay 30
-  callback filter.fdelay
-
-  every message will be at least 30 seconds old before it is forwarded by this plugin.
-  in the meantime, the message is placed on the retry queue by marking it as failed.
+    # geometry_maxDistance is in Kilometers
+    geometry_maxDistance 1.5
 
 """
 import logging
@@ -18,6 +22,9 @@ import logging
 from sarracenia.flowcb import FlowCB
 
 import json
+from turfpy.measurement import distance, boolean_point_in_polygon
+from turfpy.transformation import intersect
+from geojson import Point, Feature, Polygon, FeatureCollection
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +38,7 @@ class GeoJSON(FlowCB):
                             level=getattr(logging, self.o.logLevel.upper()))
 
         self.o.add_option('geometry', 'list', [])
+        self.o.add_option('geometry_maxDistance', 'float', -1)
 
         self.geometry_geojson = None
         if hasattr(self.o, 'geometry') and self.o.geometry != []:
@@ -41,7 +49,7 @@ class GeoJSON(FlowCB):
                 raise
 
     def after_accept(self, worklist):
-        outgoing = []
+        accepted = []
 
         for m in worklist.incoming:
             
@@ -60,10 +68,35 @@ class GeoJSON(FlowCB):
             except json.decoder.JSONDecodeError as err:
                 logger.error(f"error parsing message geometry: {err}")
             
-            geomotries_overlap = False
+
+            accept_message = False
             try:
-                # do the comparison, and figure out if the configured geometry contains the message's
-                pass
+                if message_geometry['type'] == "Point" and self.geometry_geojson['type'] == "Point":
+                    #calculate distance between points, and check if it's less <= maxDistance
+                    if self.o.geometry_maxDistance <= 0:
+                        logger.warning(f"maxDistance is negative, so we can't compare distances")
+                        worklist.failed.append(m)
+                        continue
+                    
+                    #check if the distance between points is less than or equal to 'self.o.geometry_maxDistance'
+                    start = Feature(geometry=Point(message_geometry['coordinates']))
+                    end = Feature(geometry=Point(self.geometry_geojson['coordinates']))
+                    
+                    accept_message = (distance(start, end) <= self.o.geometry_maxDistance)
+                    
+                elif message_geometry['type'] == "Polygon" and self.geometry_geojson['type'] == "Point":  
+                    #Check if configured point is inside the message polygon
+                    accept_message = True
+                    pass
+
+                elif message_geometry['type'] == "Point" and self.geometry_geojson['type'] == "Polygon": 
+                    #Check if configured plygon contains the message point
+                    pass
+
+                elif message_geometry['type'] == "Polygon" and self.geometry_geojson['type'] == "Polygon": 
+                    #Check if configured plygon intersects message polygon
+                    pass
+                
 
             except err:
                 # catch comparison errors, and add to "failed", logging a message
@@ -72,12 +105,14 @@ class GeoJSON(FlowCB):
                 continue
             
 
-            if geomotries_overlap:
+            if accept_message:
             # If the message's GeoJSON point is in/intersects with the configured GeoJSON
                 #add the message to outgoing
-                outgoing.append(m)
+                accepted.append(m)
+                logger.debug("Geometries overlap, or points are closer than maxDistance; accepting")
             else:
                 #add to rejected?
                 worklist.rejected.append(m)
+                logger.debug("Geometries ldon't overlap, or points are farther than maxDistance; rejecting")
 
-        worklist.incoming = outgoing
+        worklist.incoming = accepted
