@@ -658,7 +658,7 @@ Creating the Queue
 Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :
 
-- **queue         <name>         (default: q_<brokerUser>.<programName>.<configName>)**
+- **queueShare <strin>         (default: ${USER}_${HOSTNAME}_${RAND8})**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message_ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
@@ -669,36 +669,23 @@ and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
-[ queue|queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, components create a queue name that should be unique. The 
-default queue_name components create follows the following convention: 
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+A suffix included to queue names to allow defining the sharing scope of a queue.
+When multiple hosts are participating in the same queue, use this setting
+to have instances pick the same queue::
 
-Where:
+    queueShare my_share_group
 
-* *brokerUser* is the username used to connect to the broker (often: *anonymous* )
+to get a private queue, for example, one could specify::
 
-* *programName* is the component using the queue (e.g. *sr_subscribe* ),
+    queueShare ${RAND8}
 
-* *configName* is the configuration file used to tune component behaviour.
-
-* *random* is just a series of characters chosen to avoid clashes from multiple
-  people using the same configurations
-
-Users can override the default provided that it starts with **q_<brokerUser>**.
-
-When multiple instances are used, they will all use the same queue, for trivial
-multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to: 
-
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
-
-Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the *queue_name* option as a more explicit method
-of sharing work across multiple nodes.
+will result in a random 8 digit number being appended to the queue name.
+All the instances within the configuration with access to the same state directory
+will use the queue name thus defined.
 
 
 AMQP QUEUE BINDINGS

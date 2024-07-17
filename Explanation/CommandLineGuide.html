@@ -67,6 +67,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#message-gathering">Message Gathering</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#setting-the-broker">Setting the Broker</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#creating-the-queue">Creating the Queue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#queueshare-str-default-user-hostname-rand8">queueShare &lt;str&gt; (default: ${USER}_${HOSTNAME}_${RAND8} )</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#amqp-queue-bindings">AMQP QUEUE BINDINGS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#client-side-filtering">Client-side Filtering</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#naming-queues">NAMING QUEUES</a></li>
@@ -836,7 +837,7 @@ to exchanges and topics to determine the notification messages of interest.</p>
 <p>Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :</p>
 <ul class="simple">
-<li><p><strong>queue         &lt;name&gt;         (default: q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;)</strong></p></li>
+<li><p><strong>queueShare &lt;strin&gt;         (default: ${USER}_${HOSTNAME}_${RAND8})</strong></p></li>
 <li><p><strong>expire        &lt;duration&gt;      (default: 5m  == five minutes. RECOMMEND OVERRIDING)</strong></p></li>
 <li><p><strong>message_ttl   &lt;duration&gt;      (default: None)</strong></p></li>
 <li><p><strong>prefetch      &lt;N&gt;            (default: 1)</strong></p></li>
@@ -845,32 +846,22 @@ Common settings for the queue on broker :</p>
 and users do not need to set them.  For less usual cases, the user
 may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.</p>
-<section id="queue-queue-name-qn-name">
-<h4>[ queue|queue_name|qn &lt;name&gt;]<a class="headerlink" href="#queue-queue-name-qn-name" title="Link to this heading"></a></h4>
-<p>By default, components create a queue name that should be unique. The
-default queue_name components create follows the following convention:</p>
-<blockquote>
-<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;random&gt;.&lt;random&gt;</strong></p>
-</div></blockquote>
-<p>Where:</p>
-<ul class="simple">
-<li><p><em>brokerUser</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
-<li><p><em>programName</em> is the component using the queue (e.g. <em>sr_subscribe</em> ),</p></li>
-<li><p><em>configName</em> is the configuration file used to tune component behaviour.</p></li>
-<li><p><em>random</em> is just a series of characters chosen to avoid clashes from multiple
-people using the same configurations</p></li>
-</ul>
-<p>Users can override the default provided that it starts with <strong>q_&lt;brokerUser&gt;</strong>.</p>
-<p>When multiple instances are used, they will all use the same queue, for trivial
-multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to:</p>
-<blockquote>
-<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
-</div></blockquote>
-<p>Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the <em>queue_name</em> option as a more explicit method
-of sharing work across multiple nodes.</p>
 </section>
+<section id="queueshare-str-default-user-hostname-rand8">
+<h3>queueShare &lt;str&gt; (default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h3>
+<p>A suffix included to queue names to allow defining the sharing scope of a queue.
+When multiple hosts are participating in the same queue, use this setting
+to have instances pick the same queue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">queueShare</span> <span class="n">my_share_group</span>
+</pre></div>
+</div>
+<p>to get a private queue, for example, one could specify:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>queueShare ${RAND8}
+</pre></div>
+</div>
+<p>will result in a random 8 digit number being appended to the queue name.
+All the instances within the configuration with access to the same state directory
+will use the queue name thus defined.</p>
 </section>
 <section id="amqp-queue-bindings">
 <h3>AMQP QUEUE BINDINGS<a class="headerlink" href="#amqp-queue-bindings" title="Link to this heading"></a></h3>

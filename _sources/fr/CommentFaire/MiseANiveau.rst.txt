@@ -44,6 +44,26 @@ git
 *CHANGEMENT* : *sr3 sanity* redémarre uniquement les instances manquantes, pas celles arrêtées.
 cela est considéré comme plus conforme aux attentes des analystes. 
 
+*CHANGEMENT* : le nouveau paramètre *queueShare* peut être utilisé partout où, dans les versions précédentes,
+ *queueName* a servi. Cela devrait entraîner moins de paramètres de configuration
+ et les valeurs paramètres *queueShare* utilisés seront également plus courts que ceux de *queueName*.
+
+*CHANGEMENT* : les noms de files d'attente par défaut sont passés d'une valeur aléatoire à une valeur basée
+sur le nom d'utilisateur et le nom d'hôte.
+
+Les configurations existantes sans paramètres de queueName explicites continueront
+d'utiliser les anciennes files d'attente si elles sont déjà utilisées. Quand les commandes *cleanup*
+seront exécutés, ou dans des configurations nouvellement déployées, la nouvelle dénomination prendra effet
+progressivement. Le nouveau paramètre *queueShare* peut être utilisé pour personnaliser cela.
+
+Veuillez examiner toutes les configurations qui:
+
+* n'ont pas de paramètres de queueName explicites
+* sont exécutés sur plusieurs hôtes 
+
+pour comprendre s'ils ont besoin de queueShare pour
+pour conserver le même partage que précédemment obtenu par défaut.
+
 3.0.53
 ------
 

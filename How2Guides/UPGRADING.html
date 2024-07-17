@@ -157,6 +157,23 @@ may generate notification messages.</p>
 <h2>3.0.54<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <p><em>CHANGE</em>: <em>sr3 sanity</em> only restarts missing instances, not stopped ones.
 this is considered more in accordance with analyst expectations (POLA)</p>
+<dl class="simple">
+<dt><em>CHANGE</em>: new <em>queueShare</em> setting should be used wherever, in prior versions</dt><dd><p><em>queueName</em> was used. Should result in fewer configuration settings
+and the queueShare settings used should also be shorter than former queueName
+ones.</p>
+</dd>
+</dl>
+<p><em>CHANGE</em>: default queue names changed from randomized value to one based
+on user name and host name.</p>
+<p>Existing configurations without explicit queueName settings will continue
+to use old queues if they are already in use. as <em>cleanup</em> commands are
+executed, or in newly deployed configurations, the new naming will gradually
+take effect.  The new <em>queueShare</em> setting can be used to customize that.</p>
+<p>Please review all configurations that:
+* do not have explicit queueName settings AND
+* run on multiple hosts</p>
+<p>To understand whether they need queueShare in order
+to keep the same sharing as previously obtained by default.</p>
 </section>
 <section id="id2">
 <h2>3.0.53<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>

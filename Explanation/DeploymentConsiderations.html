@@ -223,11 +223,14 @@ itself on a single server. The <em>ddi</em> systems are generally configured thi
 single broker for a pool of transfer engines. So each transfer engine’s view of
 the file space is local, but the queues are global to the pump.</p>
 <p>Note: On such clusters, all nodes that run a component with the
-same config file created by default have an identical <strong>queue_name</strong>. Targetting the
-same broker, it forces the queue to be shared. If it should be avoided,
-the user can just overwrite the default <strong>queue_name</strong> inserting <strong>${HOSTNAME}</strong>.
-Each node will have its own queue, only shared by the node instances.
-ex.: queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )</p>
+same config file created by default have an different <strong>queueName</strong>,
+based on the <strong>queueShare</strong> setting including <strong>${HOSTNAME}</strong>.
+Each node will have its own queue, only shared by the node instances.</p>
+<p>To get a shared queue, the user must set <strong>queueShare</strong> to the same
+value on all participating nodes. e.g.:</p>
+<blockquote>
+<div><p>queueShare cluster_name</p>
+</div></blockquote>
 <p>Often there is internal traffic of data acquired before it is finally published.
 As a means of scaling, often transfer engines will also have brokers to handle
 local traffic, and only publish final products to the main broker.  This is how

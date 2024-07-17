@@ -163,6 +163,24 @@ qui peut générer des messages.</p>
 <h2>3.0.54<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em> : <em>sr3 sanity</em> redémarre uniquement les instances manquantes, pas celles arrêtées.
 cela est considéré comme plus conforme aux attentes des analystes.</p>
+<dl>
+<dt><em>CHANGEMENT</em><span class="classifier">le nouveau paramètre <em>queueShare</em> peut être utilisé partout où, dans les versions précédentes,</span></dt><dd><p><em>queueName</em> a servi. Cela devrait entraîner moins de paramètres de configuration
+et les valeurs paramètres <em>queueShare</em> utilisés seront également plus courts que ceux de <em>queueName</em>.</p>
+</dd>
+</dl>
+<p><em>CHANGEMENT</em> : les noms de files d’attente par défaut sont passés d’une valeur aléatoire à une valeur basée
+sur le nom d’utilisateur et le nom d’hôte.</p>
+<p>Les configurations existantes sans paramètres de queueName explicites continueront
+d’utiliser les anciennes files d’attente si elles sont déjà utilisées. Quand les commandes <em>cleanup</em>
+seront exécutés, ou dans des configurations nouvellement déployées, la nouvelle dénomination prendra effet
+progressivement. Le nouveau paramètre <em>queueShare</em> peut être utilisé pour personnaliser cela.</p>
+<p>Veuillez examiner toutes les configurations qui:</p>
+<ul class="simple">
+<li><p>n’ont pas de paramètres de queueName explicites</p></li>
+<li><p>sont exécutés sur plusieurs hôtes</p></li>
+</ul>
+<p>pour comprendre s’ils ont besoin de queueShare pour
+pour conserver le même partage que précédemment obtenu par défaut.</p>
 </section>
 <section id="id2">
 <h2>3.0.53<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>

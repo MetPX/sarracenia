@@ -117,7 +117,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jul 15, 2024</p>
+<dd class="field-even"><p>Jul 17, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.54rc2</p>
@@ -245,6 +245,7 @@ en utilisant la notation <a href="#id1"><span class="problematic" id="id2">*</sp
 <li><p>CONFIG      - le nom du fichier de configuration en cours d’exécution.</p></li>
 <li><p>HOSTNAME    - le hostname qui exécute le client.</p></li>
 <li><p>RANDID      - Un ID aléatoire qui va être consistant pendant la duration d’une seule invocation.</p></li>
+<li><p>RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu’il est évalué dans une chaîne de caractères.</p></li>
 </ul>
 <p>Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
 le composant, ceci n’est pas décodé ou dérivé du contenu des fichiers livrés.
@@ -1361,38 +1362,10 @@ messages d’annonce à la fois.  Pour réduire le nombre de messages d’annonc
 partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
 il faut augmenter ce nombre pour masquer la latence d’aller-retour, donc un réglage de 10 ou plus est nécessaire.</p>
 </section>
-<section id="queuename-queue-queue-name-qn">
-<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
-<ul class="simple">
-<li><p>queueName &lt;nom&gt;</p></li>
-</ul>
-<p>Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
-queue_name crée par les composants suit la convention suivante :</p>
-<blockquote>
-<div><p><strong>q_&lt;utilisateurDeCourtier&gt;.&lt;nomDuProgramme&gt;.&lt;nomDeConfig&gt;.&lt;aléatoire&gt;.&lt;aléatoire&gt;</strong></p>
-</div></blockquote>
-<p>Ou:</p>
-<ul class="simple">
-<li><p><em>utilisateurDeCourtier</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
-<li><p><em>nomDuProgramme</em> est le composant qui utilise la fil d’attente (par exemple <em>subscribe</em> ),</p></li>
-<li><p><em>nomDeConfig</em> est le fichier de configuration utilisé pour régler le comportement des composants.</p></li>
-<li><p><em>aléatoire</em> n’est qu’une série de caractères choisis pour éviter les affrontements quand plusieurs
-personnes utilisent les mêmes configurations</p></li>
-</ul>
-<p>Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par <strong>q_&lt;utilisateurDeCourtier&gt;</strong>.</p>
-<p>Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
-taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :</p>
-<blockquote>
-<div><p>~/.cache/sarra/&lt;nomDuProgramme&gt;/&lt;nomDeConfig&gt;/&lt;nomDuProgramme&gt;_&lt;nomDeConfig&gt;_&lt;utilisateurDeCourtier&gt;.qname</p>
-</div></blockquote>
-<p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option <em>queue_name</em> comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.</p>
-</section>
 <section id="queuebind">
 <h4>queueBind<a class="headerlink" href="#queuebind" title="Link to this heading"></a></h4>
-<p>Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
+<p>Avec l´option queueBind à <em>True</em>, les liaisons (dans AMQP) sont demandées après la déclaration d’une file d’attente.
+Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
 Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
 permettent pas aux utilisateurs de déclarer leurs files d’attente.</p>
@@ -1402,6 +1375,53 @@ permettent pas aux utilisateurs de déclarer leurs files d’attente.</p>
 <p>Avec l´option queueDeclare à <em>True</em>, un composant déclare un fil d´attente pour accumuler des messages d’annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.</p>
+</section>
+<section id="queuename-queue-queue-name-qn">
+<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>queueName &lt;nom&gt;</p></li>
+</ul>
+<p>Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
+queueName crée par les composants suit la convention suivante :</p>
+<blockquote>
+<div><p><strong>q_&lt;utilisateurDeCourtier&gt;.&lt;nomDuProgramme&gt;.&lt;nomDeConfig&gt;.&lt;queueShare&gt;</strong></p>
+</div></blockquote>
+<p>Ou:</p>
+<ul class="simple">
+<li><p><em>utilisateurDeCourtier</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
+<li><p><em>nomDuProgramme</em> est le composant qui utilise la fil d’attente (par exemple <em>subscribe</em> ),</p></li>
+<li><p><em>nomDeConfig</em> est le fichier de configuration utilisé pour régler le comportement des composants.</p></li>
+<li><p><em>queueShare</em> est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le</p></li>
+</ul>
+<blockquote>
+<div><p>Option de configuration <em>queueShare</em>.</p>
+</div></blockquote>
+<p>Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par <strong>q_&lt;utilisateurDeCourtier&gt;</strong>.</p>
+<p>Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
+taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queueName est écrit à :</p>
+<blockquote>
+<div><p>~/.cache/sarra/&lt;nomDuProgramme&gt;/&lt;nomDeConfig&gt;/&lt;nomDuProgramme&gt;_&lt;nomDeConfig&gt;_&lt;utilisateurDeCourtier&gt;.qname</p>
+</div></blockquote>
+<p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même fil d’attente. Certains voudront peut-être utiliser l’option <em>queueName</em> comme méthode plus explicite
+de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.</p>
+</section>
+<section id="queueshare-str-default-user-hostname-rand8">
+<h4>queueShare &lt;str&gt; (default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h4>
+<p>Un suffixe inclus dans les noms de files d’attente pour permettre de définir la portée de partage d’une file d’attente.
+Lorsque plusieurs hôtes participent à la même file d’attente, utilisez ce paramètre
+pour que les instances choisissent la même file d’attente:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">queueShare</span> <span class="n">my_share_group</span>
+</pre></div>
+</div>
+<p>Par contre, pour obtenir une file d’attente privée, on pourrait spécifier</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>queueShare ${RAND8}
+</pre></div>
+</div>
+<p>Ce entraînera l’ajout d’un nombre aléatoire à 8 chiffres au nom de la file d’attente.
+Toutes les instances de la configuration ayant accès au même répertoire d’état
+utilisera le nom de file d’attente ainsi défini.</p>
 </section>
 <section id="randomize-flag">
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>

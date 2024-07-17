@@ -230,23 +230,23 @@ façon.</p>
 </section>
 <section id="commutateurs-routage">
 <h3>Commutateurs/Routage<a class="headerlink" href="#commutateurs-routage" title="Link to this heading"></a></h3>
-<p>Dans la configuration de commutation/routage, il y a une paire de machines
-qui font tourner un seul courtier pour un pool de moteurs de transfert. Ainsi,
-chaque transfert engine´s vue de l’espace fichier est local, mais les files
-d’attente sont les suivantes globale à la pompe.</p>
-<p>Note : Sur de tels clusters, tous les nœuds qui exécutent un composant avec
-l’option le même fichier de configuration crée par défaut un <strong>*queue</strong>
-identique. Cibler les même courtier, il force la fil d’attente à être
-partagée. S’il faut l’éviter, l’utilisateur peut écraser la valeur par
-défaut <strong>queue_name</strong> en y rajoutant <strong>${HOSTNAME}</strong>.  Chaque nœud aura
-sa propre fil d’attente, qui ne sera partagée que par les instances du nœud.
-ex : nom_de_files d’attente q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME}. )</p>
-<p>Souvent, il y a un trafic interne de données acquises avant qu’elles ne
-soient finalement publiées.  En tant que moyen de mise à l’échelle, souvent
-les moteurs de transfert auront également des courtiers pour gérer le
-trafic local, et ne publient les produits finaux qu´au coutier princiapal.
-C’est ainsi que les systèmes <em>ddsr</em> sont généralement
-configurés.</p>
+<p>Dans une configuration de commutation/routage, plusieurs noeuds utilisent un
+courtier principal pour implanter une grappe (où pompe) de moteurs de transfert. Ainsi, la vue
+de chaque moteur de transfert sur l’espace fichier est local, mais les files
+d’attente sont globales pour la pompe.</p>
+<p>Remarque : Sur de tels clusters, tous les nœuds qui exécutent un composant avec le
+le même fichier de configuration créé par défaut a un <strong>queueName</strong> différent,
+basé sur le paramètre <strong>queueShare</strong> incluant <strong>${HOSTNAME}</strong>.
+Chaque nœud aura sa propre file d’attente, partagée uniquement par les instances de nœud.</p>
+<p>Pour obtenir une file d’attente partagée, l’utilisateur doit définir <strong>queueShare</strong> sur la même
+valeur sur tous les nœuds participants. par exemple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">queueShare</span>  <span class="n">cluster_name</span>
+</pre></div>
+</div>
+<p>Il existe souvent un trafic interne de données acquises avant leur publication définitive.
+Comme moyen d’évolutivité, les moteurs de transfert auront souvent également des courtiers à gérer
+trafic local et publiez uniquement les produits finaux au courtier principal. C’est ainsi
+Les systèmes <em>ddsr</em> sont généralement configurés.</p>
 </section>
 </section>
 <section id="considerations-de-securite">

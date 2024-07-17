@@ -118,7 +118,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Jul 15, 2024</p>
+<dd class="field-even"><p>Jul 17, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.54rc2</p>
@@ -245,7 +245,8 @@ option, with the use of <em>${..}</em> notation:</p>
 <li><p>PROGRAM     - the name of the component (subscribe, shovel, etc…)</p></li>
 <li><p>CONFIG      - the name of the configuration file being run.</p></li>
 <li><p>HOSTNAME    - the hostname running the client.</p></li>
-<li><p>RANDID      - a random id that will be consistent within a single invocation.</p></li>
+<li><p>RANDID      - a random id (0-64Ki) that will be consistent within a single instance.</p></li>
+<li><p>RAND8       - a random 8 digit wide number that is generated whenever it is evaluated in a string.</p></li>
 </ul>
 <p>The %Y%m%d and %h time stamps refer to the time at which the data is processed by
 the component, it is not decoded or derived from the content of the files delivered.
@@ -1357,49 +1358,66 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.</p>
 </section>
-<section id="queuename-queue-queue-name-qn">
-<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
-<ul class="simple">
-<li><p>queueName &lt;name&gt;</p></li>
-</ul>
-<p>By default, components create a queue name that should be unique. The
-default queue_name components create follows the following convention:</p>
-<blockquote>
-<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;random&gt;.&lt;random&gt;</strong></p>
-</div></blockquote>
-<p>Where:</p>
-<ul class="simple">
-<li><p><em>brokerUser</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
-<li><p><em>programName</em> is the component using the queue (e.g. <em>subscribe</em> ),</p></li>
-<li><p><em>configName</em> is the configuration file used to tune component behaviour.</p></li>
-<li><p><em>random</em> is just a series of characters chosen to avoid clashes from multiple
-people using the same configurations</p></li>
-</ul>
-<p>Users can override the default provided that it starts with <strong>q_&lt;brokerUser&gt;</strong>.</p>
-<p>When multiple instances are used, they will all use the same queue, for trivial
-multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to:</p>
-<blockquote>
-<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
-</div></blockquote>
-<p>Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the <em>queue_name</em> option as a more explicit method
-of sharing work across multiple nodes.</p>
-</section>
 <section id="queuebind">
 <h4>queueBind<a class="headerlink" href="#queuebind" title="Link to this heading"></a></h4>
-<p>On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+<p>When this flag is set, bindings (in AMQP) are requested after a queue is declared.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
 are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.</p>
 </section>
 <section id="queuedeclare">
 <h4>queueDeclare<a class="headerlink" href="#queuedeclare" title="Link to this heading"></a></h4>
-<p>FIXME: same as above.. is this normal?</p>
-<p>On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+<p>When this flag is set, queues are declared by sr3.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
 are uptodate.  If the queue already exists, These flags can be
 set to False, so no attempt to declare the queue is made, or it´s bindings.
 These options are useful on brokers that do not permit users to declare their queues.</p>
+</section>
+<section id="queuename-queue-queue-name-qn">
+<h4>queueName|queue|queue_name|qn<a class="headerlink" href="#queuename-queue-queue-name-qn" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>queueName &lt;name&gt;</p></li>
+</ul>
+<p>By default, components create a queue name that should be unique. The
+default queueName components create follows the following convention:</p>
+<blockquote>
+<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;queueShare&gt;</strong></p>
+</div></blockquote>
+<p>Where:</p>
+<ul class="simple">
+<li><p><em>brokerUser</em> is the username used to connect to the broker (often: <em>anonymous</em> )</p></li>
+<li><p><em>programName</em> is the component using the queue (e.g. <em>subscribe</em> ),</p></li>
+<li><p><em>configName</em> is the configuration file used to tune component behaviour.</p></li>
+<li><p><em>queueShare</em> defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the
+<em>queueShare</em> configuration option.</p></li>
+</ul>
+<p>Users can override the default provided that it starts with <strong>q_&lt;brokerUser&gt;</strong>.</p>
+<p>When multiple instances are used, they will all use the same queue, for trivial
+multi-tasking. If multiple computers have a shared home file system, then the
+queueName is written to:</p>
+<blockquote>
+<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
+</div></blockquote>
+<p>Instances started on any node with access to the same shared file will use the
+same queue. Some may want use the <em>queueName</em> option as a more explicit method
+of sharing work across multiple nodes.</p>
+</section>
+<section id="queueshare-str-default-user-hostname-rand8">
+<h4>queueShare &lt;str&gt; ( default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h4>
+<p>A suffix included to queue names to allow defining the sharing scope of a queue.
+When multiple hosts are participating in the same queue, use this setting
+to have instances pick the same queue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">queueShare</span> <span class="n">my_share_group</span>
+</pre></div>
+</div>
+<p>to get a private queue, for example, one could specify:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>queueShare ${RAND8}
+</pre></div>
+</div>
+<p>will result in a random 8 digit number being appended to the queue name.
+All the instances within the configuration with access to the same state directory
+will use the queue name thus defined.</p>
 </section>
 <section id="randomize-flag">
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>

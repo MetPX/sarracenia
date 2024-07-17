@@ -794,7 +794,7 @@ L’option courtier indique à chaque composante quel courtier contacter.</p>
 <p>Une fois connecté à un courtier AMQP, l’utilisateur doit créer une fil d’attente.</p>
 <p>Mise en fil d’attente sur broker :</p>
 <ul class="simple">
-<li><p><strong>queue &lt;nom&gt; (par défaut : q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;configName&gt;)</strong></p></li>
+<li><p><strong>queueShare &lt;chaine&gt; (par défaut : ${USER}_${HOSTNAME}_${RAND8})</strong></p></li>
 <li><p><strong>expire &lt;durée&gt; (par défaut : 5m == cinq minutes. À OUTREPASSER)</strong></p></li>
 <li><p><strong>message_ttl &lt;durée&gt; (par défaut : Aucun)</strong></p></li>
 <li><p><strong>prefetch &lt;N&gt; (par défaut : 1)</strong></p></li>
@@ -804,32 +804,23 @@ toutes ces valeurs et les utilisateurs n’ont pas besoin de les définir.  Pour
 les cas moins habituels, l’utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La fil d’attente est l’endroit où les avis sont conservés
 sur le serveur pour chaque abonné.</p>
-<section id="queue-queue-name-qn-name">
-<h4>[ queue|queue_name|qn &lt;name&gt;]<a class="headerlink" href="#queue-queue-name-qn-name" title="Link to this heading"></a></h4>
-<p>Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Le
-queue_name par défaut créé par les composants et suit la convention suivante :</p>
-<blockquote>
-<div><p><strong>q_&lt;brokerUser&gt;.&lt;programName&gt;.&lt;configName&gt;.&lt;random&gt;.&lt;random&gt;</strong></p>
-</div></blockquote>
-<p>Ou:</p>
-<ul class="simple">
-<li><p><em>brokerUser</em> est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: <em>anonymous</em> )</p></li>
-<li><p><em>programName</em> est le composant qui utilise la fil d’attente (par exemple <em>sr_subscribe</em> )</p></li>
-<li><p><em>configName</em> est le fichier de configuration utilisé pour régler le comportement des composants</p></li>
-<li><p><em>random</em> n’est qu’une série de caractères choisis pour éviter les affrontements de plusieurs
-personnes qui utilisent les mêmes configurations</p></li>
-</ul>
-<p>Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par <strong>q_&lt;brokerUser&gt;</strong>.</p>
-<p>Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour du multi-tasking simple.
-Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :</p>
-<blockquote>
-<div><p>~/.cache/sarra/&lt;programName&gt;/&lt;configName&gt;/&lt;programName&gt;_&lt;configName&gt;_&lt;brokerUser&gt;.qname</p>
-</div></blockquote>
-<p>Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option <em>queue_name</em> comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.</p>
 </section>
+<section id="queueshare-str-default-user-hostname-rand8">
+<h3>queueShare &lt;str&gt; (default: ${USER}_${HOSTNAME}_${RAND8} )<a class="headerlink" href="#queueshare-str-default-user-hostname-rand8" title="Link to this heading"></a></h3>
+<p>Un suffixe inclus dans les noms de files d’attente (queueName) pour permettre de spécifier
+la portée de partage d’une file d’attente.
+Lorsque plusieurs hôtes participent à la même file d’attente, utilisez ce paramètre
+pour que les instances choisissent la même file d’attente:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">queueShare</span> <span class="n">my_share_group</span>
+</pre></div>
+</div>
+<p>Par contre, pour obtenir une file d’attente privée, on pourrait spécifier</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>queueShare ${RAND8}
+</pre></div>
+</div>
+<p>Ce entraînera l’ajout d’un nombre aléatoire à 8 chiffres au nom de la file d’attente.
+Toutes les instances de la configuration ayant accès au même répertoire d’état
+utilisera le nom de file d’attente ainsi défini.</p>
 </section>
 <section id="amqp-queue-bindings">
 <h3>AMQP QUEUE BINDINGS<a class="headerlink" href="#amqp-queue-bindings" title="Link to this heading"></a></h3>

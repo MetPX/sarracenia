@@ -125,11 +125,15 @@ single broker for a pool of transfer engines. So each transfer engine's view of
 the file space is local, but the queues are global to the pump.  
 
 Note: On such clusters, all nodes that run a component with the
-same config file created by default have an identical **queue_name**. Targetting the
-same broker, it forces the queue to be shared. If it should be avoided,
-the user can just overwrite the default **queue_name** inserting **${HOSTNAME}**.
+same config file created by default have an different **queueName**, 
+based on the **queueShare** setting including **${HOSTNAME}**. 
 Each node will have its own queue, only shared by the node instances.
-ex.: queue_name q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME} )
+
+To get a shared queue, the user must set **queueShare** to the same
+value on all participating nodes. e.g.:
+
+   queueShare cluster_name
+
 
 Often there is internal traffic of data acquired before it is finally published.
 As a means of scaling, often transfer engines will also have brokers to handle

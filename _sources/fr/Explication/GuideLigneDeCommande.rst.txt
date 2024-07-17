@@ -662,7 +662,7 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une fil d'atte
 
 Mise en fil d'attente sur broker :
 
-- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **queueShare <chaine> (par défaut : ${USER}_${HOSTNAME}_${RAND8})**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message_ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)**
@@ -674,36 +674,25 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La fil d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-[ queue|queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
-Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Le
-queue_name par défaut créé par les composants et suit la convention suivante :
+Un suffixe inclus dans les noms de files d'attente (queueName) pour permettre de spécifier 
+la portée de partage d'une file d'attente.
+Lorsque plusieurs hôtes participent à la même file d'attente, utilisez ce paramètre
+pour que les instances choisissent la même file d'attente::
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+ queueShare my_share_group
 
-Ou:
+Par contre, pour obtenir une file d'attente privée, on pourrait spécifier ::
 
-* *brokerUser* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+ queueShare ${RAND8}
 
-* *programName* est le composant qui utilise la fil d’attente (par exemple *sr_subscribe* )
+Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'attente.
+Toutes les instances de la configuration ayant accès au même répertoire d'état
+utilisera le nom de file d'attente ainsi défini.
 
-* *configName* est le fichier de configuration utilisé pour régler le comportement des composants
 
-* *random* n’est qu’une série de caractères choisis pour éviter les affrontements de plusieurs
-  personnes qui utilisent les mêmes configurations
-
-Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par **q_<brokerUser>**.
-
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour du multi-tasking simple.
-Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :
-
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
-
-Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.
 
 AMQP QUEUE BINDINGS
 -------------------
