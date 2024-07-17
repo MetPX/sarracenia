@@ -47,6 +47,7 @@ class GeoJSON(FlowCB):
             except json.decoder.JSONDecodeError as err:
                 logger.error(f"error parsing geometry from configuration file: {err}")
                 raise
+                
 
     def after_accept(self, worklist):
         accepted = []
@@ -66,7 +67,8 @@ class GeoJSON(FlowCB):
                 # Ultimately, if it's not, some of the logic in following sections will fail, and we'll have to catch those errors then
                 message_geometry = json.loads(m['geometry'])
             except json.decoder.JSONDecodeError as err:
-                logger.error(f"error parsing message geometry: {err}")
+                logger.error(f"error parsing message geometry: {err}; {m}")
+                raise
             
 
             accept_message = False
@@ -78,7 +80,6 @@ class GeoJSON(FlowCB):
                         worklist.failed.append(m)
                         continue
                     
-
                     #check if the distance between points is less than or equal to 'self.o.geometry_maxDistance'
                     start = Feature(geometry=Point(message_geometry['coordinates']))
                     end = Feature(geometry=Point(self.geometry_geojson['coordinates']))
@@ -94,8 +95,8 @@ class GeoJSON(FlowCB):
 
                 elif message_geometry['type'] == "Point" and self.geometry_geojson['type'] == "Polygon": 
                     #Check if configured plygon contains the message point
-                    poly = Feature(geometry=Point(message_geometry['coordinates']))
-                    point = Feature(geometry=Polygon(self.geometry_geojson['coordinates']))
+                    point = Feature(geometry=Point(message_geometry['coordinates']))
+                    poly = Feature(geometry=Polygon(self.geometry_geojson['coordinates']))
                     
                     accept_message = boolean_point_in_polygon(point, poly)
 
@@ -105,12 +106,17 @@ class GeoJSON(FlowCB):
                     poly2 = Feature(geometry=Polygon(message_geometry['coordinates']))
 
                     accept_message = bool(intersect(FeatureCollection([poly1, poly2])))
+                # catch cases for when neither the config or the message have points or poylgons (multipoint, line, etc..)
+                else:
+                    logger.debug(f"Message or config aren't a Point or Polygon, failing; message={m}")
+                    worklist.failed.append(m)
+                    continue
                 
 
-            except err:
+            except Exception as err:
                 # catch comparison errors, and add to "failed", logging a message
                 worklist.failed.append(m)
-                logger.error(f"error comparing: {err}")
+                logger.error(f"error comparing: {err}; message={m}")
                 continue
             
 
@@ -122,6 +128,6 @@ class GeoJSON(FlowCB):
             else:
                 #add to rejected?
                 worklist.rejected.append(m)
-                logger.debug("Geometries ldon't overlap, or points are farther than maxDistance; rejecting")
+                logger.debug("Geometries don't overlap, or points are farther than maxDistance; rejecting")
 
         worklist.incoming = accepted
