@@ -177,7 +177,7 @@ str_options = [
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -856,6 +856,10 @@ class Config:
         self.fixed_headers = {}
         self.flatten = '/'
         self.hostname = socket.getfqdn()
+
+        # oddness where final period is included in hostname...seems wrong. happens on windows a lot.
+        if self.hostname[-1] == '.':
+            self.hostname = self.hostname[0:-1]
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
@@ -875,6 +879,7 @@ class Config:
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
+        self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -1003,6 +1008,9 @@ class Config:
         if (('${POST_BROKER_USER}' in word) and hasattr(self, 'post_broker') and self.post_broker is not None and
                 self.post_broker.url is not None and hasattr(self.post_broker.url, 'username')):
             result = result.replace('${POST_BROKER_USER}', self.post_broker.url.username)
+
+        if ( '${RAND8}' in word ):
+            result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
 
         if not '$' in result:
             return result
@@ -1804,12 +1812,9 @@ class Config:
             
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
-                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
-                if hasattr(self, 'queue_suffix'):
-                    queueName += '.' + self.queue_suffix
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                self.queueName = queueName
+                queueShare = self._varsub(self.queueShare)
+                logger.info( f"varsubbed {queueShare=} {self.hostname=}" )
+                self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
     
             if self.action not in [ 'start', 'foreground', 'declare' ]:

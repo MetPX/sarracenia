@@ -111,6 +111,8 @@ class RedisQueue():
 
         # initialize ages and message counts
 
+    def getName(self) -> str:
+        return self.key_name
 
     def __len__(self) -> int:
         """Returns the total number of messages in the RedisQueue.
