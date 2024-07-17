@@ -1806,12 +1806,8 @@ class Config:
             
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
-                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
-                if hasattr(self, 'queue_suffix'):
-                    queueName += '.' + self.queue_suffix
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                self.queueName = queueName
+                queueShare = self._varsub(self.queueShare)
+                self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
     
             if self.action not in [ 'start', 'foreground', 'declare' ]:
