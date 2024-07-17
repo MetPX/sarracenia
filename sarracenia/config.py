@@ -125,8 +125,6 @@ default_options = {
     'sourceFromExchange': False,
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
-    'sourceFromExchange': False,
-    'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
     'varTimeOffset': 0,
@@ -179,7 +177,7 @@ str_options = [
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -858,6 +856,10 @@ class Config:
         self.fixed_headers = {}
         self.flatten = '/'
         self.hostname = socket.getfqdn()
+
+        # oddness where final period is included in hostname...seems wrong. happens on windows a lot.
+        if self.hostname[-1] == '.':
+            self.hostname = self.hostname[0:-1]
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
@@ -877,6 +879,7 @@ class Config:
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
+        self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -1005,6 +1008,9 @@ class Config:
         if (('${POST_BROKER_USER}' in word) and hasattr(self, 'post_broker') and self.post_broker is not None and
                 self.post_broker.url is not None and hasattr(self.post_broker.url, 'username')):
             result = result.replace('${POST_BROKER_USER}', self.post_broker.url.username)
+
+        if ( '${RAND8}' in word ):
+            result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
 
         if not '$' in result:
             return result
@@ -1978,7 +1984,7 @@ class Config:
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
-            logger.error( f"invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
+            logger.error( f"{component}/{config} invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
 
         if hasattr(self, 'no'):
             if self.statehost:
@@ -2000,7 +2006,7 @@ class Config:
                 path = os.path.realpath(path)
 
             if sys.platform == 'win32' and words0.find('\\'):
-                logger.warning("%s %s" % (words0, words1))
+                logger.warning("{component}/{config} %s %s" % (words0, words1))
                 logger.warning(
                     "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )."
                 )
@@ -2013,7 +2019,7 @@ class Config:
 
         if hasattr(self, 'pollUrl'):
             if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
-                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                logger.debug( f"{component}/{config} defaulting post_baseUrl to match pollURl, since it isn't specified." )
                 self.post_baseUrl = self.pollUrl
             
         # verify post_baseDir
@@ -2032,13 +2038,13 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("defaulting post_baseDir to same as baseDir")
+                logger.debug("{component}/{config} defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'{component}/{config} overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
@@ -2049,10 +2055,10 @@ class Config:
                     self.sleep=1
 
         if self.runStateThreshold_hung < self.housekeeping:
-            logger.warning( f"runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
+            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
-            logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
+            logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
 
     def check_undeclared_options(self):

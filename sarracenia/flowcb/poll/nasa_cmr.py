@@ -18,7 +18,9 @@ What is CMR?
 .. IMPORTANT::
     Most URLs posted by this plugin will require an Earthdata account to download the data.
     https://urs.earthdata.nasa.gov/  The corresponding download configuration (e.g. a sarra or
-    subscribe config) will need to use the ``auth_NASA_Earthdata`` after_accept plugin.
+    subscribe config) will need to use the ``authenticate.nasa_earthdata`` plugin.
+
+    See here: https://github.com/MetPX/sarracenia/blob/development/sarracenia/flowcb/authenticate/nasa_earthdata.py
 
 This code is based on https://github.com/podaac/tutorials/blob/master/notebooks/opendap/MUR-OPeNDAP.ipynb
 
@@ -128,9 +130,9 @@ Configurable data source:
 How to set up your poll config:
 --------------------------------
  
-    Use ``callback poll.poll_NASA_CMR``, and read about the config options above.
+    Use ``callback poll.nasa_cmr``, and read about the config options above.
     
-    For examples, see https://github.com/MetPX/sarracenia/tree/main/sarracenia/examples/poll files named ``*nasa_cmr*.conf``. 
+    For examples, see https://github.com/MetPX/sarracenia/tree/development/sarracenia/examples/poll files named ``*nasa_cmr*.conf``. 
 
 Change log:
 -----------
@@ -138,6 +140,7 @@ Change log:
     - 2023-10-10: finished porting poll code, now the poll is in a working state.
     - 2023-06-29: ported to sr3, split into poll_NASA_CMR (incomplete) and download plugin.
     - 2023-06-14: added ``other`` dataSource. Renamed to nasa_cmr from nasa_opendap.
+    - 2024-06-25: bug fixes, renamed from Poll_NASA_CMR to nasa_cmr.
 """
 
 import sarracenia
@@ -148,16 +151,16 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
-class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
+class Nasa_cmr(sarracenia.flowcb.FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
         
         # Allow setting a logLevel *only* for this plugin in the config file:
-        # set poll.poll_NASA_CMR.logLevel debug
+        # set poll.NASA_CMR.logLevel debug
         if hasattr(self.o, 'logLevel'):
             logger.setLevel(self.o.logLevel.upper())
 
-        logger.debug("plugin: Poll_NASA_CMR __init__")
+        logger.debug("plugin: NASA_CMR __init__")
 
         self.o.add_option('collectionConceptId', kind='list') # required
         self.o.add_option('dataSource',          kind='str')  # required
@@ -212,7 +215,7 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
         """Poll NASA_CMR
         polling doesn't require authentication, only downloading does
         """
-        logger.info("plugin: Poll_NASA_CMR starting poll")
+        logger.info("plugin: NASA_CMR starting poll")
 
         gathered_messages = []
 
@@ -281,6 +284,9 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                 # and metadata (e.g. md5 check sums)
                 data_url = None
                 md5_url = None
+                if 'RelatedUrls' not in itm['umm']:
+                    logger.debug(f"No RelatedUrls in {itm['umm']}")
+                    continue
                 for url in itm['umm']['RelatedUrls']:
                     if self.stop_requested:
                         logger.info("Received a request to stop. Aborting poll and returning an empty list.")
@@ -321,11 +327,13 @@ class Poll_nasa_cmr(sarracenia.flowcb.FlowCB):
                             self.o.relatedUrl_type == url['Type'] ):
                         logger.debug(f"Other ({self.o.relatedUrl_type}) URL {url['URL']}")
                         # Skip this URL when other options are defined and don't match
-                        if ( (hasattr(self.o, "relatedUrl_descriptionContains") and 
+                        logger.debug(f"remove {self.o.relatedUrl_descriptionContains}")
+                        if ( (self.o.relatedUrl_descriptionContains is not None and 'Description' in url and
                                 all(desc not in url['Description'] for desc in self.o.relatedUrl_descriptionContains))
-                              or (hasattr(self.o, "relatedUrl_urlContains") and
+                              or (self.o.relatedUrl_urlContains is not None and
                                 all(url_c not in url['URL'] for url_c in self.o.relatedUrl_urlContains)) ):
-                            logger.debug(f"Skipping {url['URL']} with Description {url['Description']}..." + 
+                            description = url['Description'] if 'Description' in url else "(Not Available)"
+                            logger.debug(f"Skipping {url['URL']} with Description {description}..." + 
                                 " doesn't match relatedUrl_descriptionContains relatedUrl_urlContains options")
                         else:
                             data_url = url['URL']

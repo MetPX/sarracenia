@@ -139,6 +139,7 @@ en utilisant la notation *${..} * :
 * CONFIG      - le nom du fichier de configuration en cours d'exécution.
 * HOSTNAME    - le hostname qui exécute le client.
 * RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
+* RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu'il est évalué dans une chaîne de caractères.
 
 
 Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
@@ -1422,42 +1423,10 @@ messages d'annonce à la fois.  Pour réduire le nombre de messages d'annonce pe
 partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
 il faut augmenter ce nombre pour masquer la latence d'aller-retour, donc un réglage de 10 ou plus est nécessaire.
 
-queueName|queue|queue_name|qn
------------------------------
-
-* queueName <nom>
-
-Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
-queue_name crée par les composants suit la convention suivante :
-
-   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<aléatoire>.<aléatoire>**
-
-Ou:
-
-* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
-
-* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
-
-* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
-
-* *aléatoire* n’est qu’une série de caractères choisis pour éviter les affrontements quand plusieurs
-  personnes utilisent les mêmes configurations
-
-Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
-
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
-taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :
-
- ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
-
-Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.
-
 queueBind
 ---------
 
+Avec l´option queueBind à *True*, les liaisons (dans AMQP) sont demandées après la déclaration d'une file d'attente.
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
 Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
@@ -1469,6 +1438,59 @@ queueDeclare <flag> (défaut: True)
 Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages d'annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
+
+queueName|queue|queue_name|qn
+-----------------------------
+
+* queueName <nom>
+
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
+queueName crée par les composants suit la convention suivante :
+
+   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<queueShare>**
+
+Ou:
+
+* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+
+* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
+
+* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
+
+*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
+ Option de configuration *queueShare*.
+
+Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
+
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
+taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queueName est écrit à :
+
+ ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
+
+Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
+de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
+
+
+
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
+
+Un suffixe inclus dans les noms de files d'attente pour permettre de définir la portée de partage d'une file d'attente.
+Lorsque plusieurs hôtes participent à la même file d'attente, utilisez ce paramètre
+pour que les instances choisissent la même file d'attente::
+
+ queueShare my_share_group
+
+Par contre, pour obtenir une file d'attente privée, on pourrait spécifier ::
+
+ queueShare ${RAND8}
+
+Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'attente.
+Toutes les instances de la configuration ayant accès au même répertoire d'état
+utilisera le nom de file d'attente ainsi défini.
+
 
 randomize <flag>
 ----------------

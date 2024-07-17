@@ -1,5 +1,21 @@
-metpx-sr3 (3.00.54rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.54rc2) unstable; urgency=medium
 
+  * CHANGE #33 default queue name generated now includes ${USER}_${HOSTNAME}
+  * for #33, use of *queueName* deprecated in favour of *queueShare*
+  * NEW/fix #1122 support for implicit FTPS on post 990.
+  * #1119 paho-mqtt v2 library support (explicit acknowledgement control!)
+  * fix #1124, #1125 nasa_cmr poll fixes.
+  * fix for #1002, #1003: get/putAccellerated filenames containing colons fails.
+  * enable tests of block transfers #1112
+  * fix for #1115: stop won't start, or foreground won't
+  * fix redis unit tests broken by inclusion of _name var.
+
+
+ -- peter <peter@bsqt.homeip.net>  Fri, 21 Jun 2024 17:46:14 -0400
+
+metpx-sr3 (3.00.54rc1) unstable; urgency=medium
+
+  [ SSC-5CD2310S60 ]
   * NEW #1084 add metadata fetch to scheduled http. 
   * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
   * fix #1104 add message per cpu second and cpuS state.

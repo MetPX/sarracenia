@@ -354,7 +354,7 @@ def test_broker_finalize():
      assert( hasattr( options, 'queue_filename' )  )
      assert( hasattr( options, 'queueName' )  )
      assert( type(options.queueName) == str )
-     assert( options.queueName.startswith('q_bunnypeer_subscribe.ex1')  )
+     assert( options.queueName.startswith('q_bunnypeer.subscribe.ex1')  )
      assert( options.directory == os.path.expanduser( '~/ex1' ) )
      assert( len(options.bindings) == 1 )
      assert( options.exchange == 'xs_bunnypeer' )
