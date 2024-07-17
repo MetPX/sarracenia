@@ -1457,7 +1457,7 @@ Ou:
 
 * *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
 
-*  *queueShare* est par défaut ${USER}_${HOSTNAME} mais doit être remplacé par le
+*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
  Option de configuration *queueShare*.
 
 Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
@@ -1474,8 +1474,8 @@ de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´util
 
 
 
-queueShare <str> (default: ${USER}_${HOSTNAME} )
-------------------------------------------------
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
 Un suffixe inclus dans les noms de files d'attente pour permettre de définir la portée de partage d'une file d'attente.
 Lorsque plusieurs hôtes participent à la même file d'attente, utilisez ce paramètre

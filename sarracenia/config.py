@@ -879,7 +879,7 @@ class Config:
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
-        self.queueShare = "${USER}_${HOSTNAME}"
+        self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)

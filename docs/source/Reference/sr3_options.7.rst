@@ -1476,7 +1476,7 @@ Where:
 
 * *configName* is the configuration file used to tune component behaviour.
 
-* *queueShare* defaults to ${USER}_${HOSTNAME} but should be overridden with the 
+* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
   *queueShare* configuration option.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
@@ -1492,8 +1492,8 @@ same queue. Some may want use the *queueName* option as a more explicit method
 of sharing work across multiple nodes.
 
 
-queueShare <str> (default: ${USER}_${HOSTNAME} )
-------------------------------------------------
+queueShare <str> ( default: ${USER}_${HOSTNAME}_${RAND8} )
+----------------------------------------------------------
 
 A suffix included to queue names to allow defining the sharing scope of a queue.
 When multiple hosts are participating in the same queue, use this setting 

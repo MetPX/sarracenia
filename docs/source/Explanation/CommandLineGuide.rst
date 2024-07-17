@@ -658,7 +658,7 @@ Creating the Queue
 Once connected to an AMQP broker, the user needs to create a queue.
 Common settings for the queue on broker :
 
-- **queueShare <strin>         (default: ${USER}_${HOSTNAM})**
+- **queueShare <strin>         (default: ${USER}_${HOSTNAME}_${RAND8})**
 - **expire        <duration>      (default: 5m  == five minutes. RECOMMEND OVERRIDING)**
 - **message_ttl   <duration>      (default: None)**
 - **prefetch      <N>            (default: 1)**
@@ -670,8 +670,8 @@ may need to override the defaults.  The queue is where the notifications
 are held on the server for each subscriber.
 
 
-queueShare <str> (default: ${USER}_${HOSTNAME} )
-------------------------------------------------
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
 A suffix included to queue names to allow defining the sharing scope of a queue.
 When multiple hosts are participating in the same queue, use this setting

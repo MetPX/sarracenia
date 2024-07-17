@@ -662,7 +662,7 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une fil d'atte
 
 Mise en fil d'attente sur broker :
 
-- **queueShare <chaine> (par défaut : ${USER}_${HOSTNAME})**
+- **queueShare <chaine> (par défaut : ${USER}_${HOSTNAME}_${RAND8})**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message_ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)**
@@ -674,8 +674,8 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La fil d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-queueShare <str> (default: ${USER}_${HOSTNAME} )
-------------------------------------------------
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
 Un suffixe inclus dans les noms de files d'attente (queueName) pour permettre de spécifier 
 la portée de partage d'une file d'attente.
