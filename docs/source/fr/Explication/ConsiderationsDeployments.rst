@@ -138,26 +138,27 @@ façon.
 Commutateurs/Routage
 ~~~~~~~~~~~~~~~~~~~~
 
-Dans la configuration de commutation/routage, il y a une paire de machines
-qui font tourner un seul courtier pour un pool de moteurs de transfert. Ainsi,
-chaque transfert engine´s vue de l'espace fichier est local, mais les files
-d'attente sont les suivantes globale à la pompe.
+Dans une configuration de commutation/routage, plusieurs noeuds utilisent un
+courtier principal pour implanter une grappe (où pompe) de moteurs de transfert. Ainsi, la vue 
+de chaque moteur de transfert sur l'espace fichier est local, mais les files 
+d'attente sont globales pour la pompe.
 
-Note : Sur de tels clusters, tous les nœuds qui exécutent un composant avec
-l'option le même fichier de configuration crée par défaut un ***queue**
-identique. Cibler les même courtier, il force la fil d'attente à être
-partagée. S'il faut l'éviter, l'utilisateur peut écraser la valeur par
-défaut **queue_name** en y rajoutant **${HOSTNAME}**.  Chaque nœud aura
-sa propre fil d'attente, qui ne sera partagée que par les instances du nœud.
-ex : nom_de_files d'attente q_${BROKER_USER}.${PROGRAM}.${CONFIG}.${HOSTNAME}. )
+Remarque : Sur de tels clusters, tous les nœuds qui exécutent un composant avec le
+le même fichier de configuration créé par défaut a un **queueName** différent,
+basé sur le paramètre **queueShare** incluant **${HOSTNAME}**.
+Chaque nœud aura sa propre file d'attente, partagée uniquement par les instances de nœud.
 
-Souvent, il y a un trafic interne de données acquises avant qu'elles ne
-soient finalement publiées.  En tant que moyen de mise à l'échelle, souvent
-les moteurs de transfert auront également des courtiers pour gérer le
-trafic local, et ne publient les produits finaux qu´au coutier princiapal.
-C'est ainsi que les systèmes *ddsr* sont généralement
-configurés.
+Pour obtenir une file d'attente partagée, l'utilisateur doit définir **queueShare** sur la même
+valeur sur tous les nœuds participants. par exemple::
 
+
+    queueShare  cluster_name
+
+
+Il existe souvent un trafic interne de données acquises avant leur publication définitive.
+Comme moyen d'évolutivité, les moteurs de transfert auront souvent également des courtiers à gérer
+trafic local et publiez uniquement les produits finaux au courtier principal. C'est ainsi
+Les systèmes *ddsr* sont généralement configurés.
 
 
 Considérations de sécurité

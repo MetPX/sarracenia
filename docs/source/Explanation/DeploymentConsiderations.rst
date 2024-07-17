@@ -130,7 +130,9 @@ based on the **queueShare** setting including **${HOSTNAME}**.
 Each node will have its own queue, only shared by the node instances.
 
 To get a shared queue, the user must set **queueShare** to the same
-value on all participating nodes.
+value on all participating nodes. e.g.:
+
+   queueShare cluster_name
 
 
 Often there is internal traffic of data acquired before it is finally published.

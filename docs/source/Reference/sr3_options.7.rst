@@ -1497,7 +1497,9 @@ queueShare <str> (default: ${USER}_${HOSTNAME} )
 
 A suffix included to queue names to allow defining the sharing scope of a queue.
 When multiple hosts are participating in the same queue, use this setting 
-to have instances pick the same queue.
+to have instances pick the same queue::
+
+    queueShare my_share_group
 
 to get a private queue, for example, one could specify:: 
 
