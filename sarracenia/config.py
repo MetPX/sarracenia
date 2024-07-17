@@ -1813,7 +1813,6 @@ class Config:
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
                 queueShare = self._varsub(self.queueShare)
-                logger.info( f"varsubbed {queueShare=} {self.hostname=}" )
                 self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
     
