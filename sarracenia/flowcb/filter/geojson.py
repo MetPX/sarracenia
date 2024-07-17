@@ -78,6 +78,7 @@ class GeoJSON(FlowCB):
                         worklist.failed.append(m)
                         continue
                     
+
                     #check if the distance between points is less than or equal to 'self.o.geometry_maxDistance'
                     start = Feature(geometry=Point(message_geometry['coordinates']))
                     end = Feature(geometry=Point(self.geometry_geojson['coordinates']))
@@ -86,16 +87,24 @@ class GeoJSON(FlowCB):
                     
                 elif message_geometry['type'] == "Polygon" and self.geometry_geojson['type'] == "Point":  
                     #Check if configured point is inside the message polygon
-                    accept_message = True
-                    pass
+                    poly = Feature(geometry=Polygon(message_geometry['coordinates']))
+                    point = Feature(geometry=Point(self.geometry_geojson['coordinates']))
+                    
+                    accept_message = boolean_point_in_polygon(point, poly)
 
                 elif message_geometry['type'] == "Point" and self.geometry_geojson['type'] == "Polygon": 
                     #Check if configured plygon contains the message point
-                    pass
+                    poly = Feature(geometry=Point(message_geometry['coordinates']))
+                    point = Feature(geometry=Polygon(self.geometry_geojson['coordinates']))
+                    
+                    accept_message = boolean_point_in_polygon(point, poly)
 
                 elif message_geometry['type'] == "Polygon" and self.geometry_geojson['type'] == "Polygon": 
                     #Check if configured plygon intersects message polygon
-                    pass
+                    poly1 = Feature(geometry=Polygon(self.geometry_geojson['coordinates']))
+                    poly2 = Feature(geometry=Polygon(message_geometry['coordinates']))
+
+                    accept_message = bool(intersect(FeatureCollection([poly1, poly2])))
                 
 
             except err:
