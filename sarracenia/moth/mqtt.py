@@ -409,11 +409,12 @@ class MQTT(Moth):
                         decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
                            clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                            logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
+                            logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
                             logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
                             if self.please_stop:
                                 break
-                            decl_client.loop(1)
+                            if ebo < 60: ebo *= 2
+                            decl_client.loop(ebo)
                         decl_client.disconnect()
                         decl_client.loop_stop()
                         logger.info( f"instance declaration for {icid} done" )
