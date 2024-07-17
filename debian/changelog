@@ -1,7 +1,14 @@
-metpx-sr3 (3.00.54rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.54rc2) unstable; urgency=medium
 
-  * fix for #1003: putAccellerated filenames containing colons fails.
+  * CHANGE #33 default queue name generated now includes ${USER}_${HOSTNAME}
+  * for #33, use of *queueName* deprecated in favour of *queueShare*
+  * NEW/fix #1122 support for implicit FTPS on post 990.
+  * #1119 paho-mqtt v2 library support (explicit acknowledgement control!)
+  * fix #1124, #1125 nasa_cmr poll fixes.
+  * fix for #1002, #1003: get/putAccellerated filenames containing colons fails.
+  * enable tests of block transfers #1112
   * fix for #1115: stop won't start, or foreground won't
+  * fix redis unit tests broken by inclusion of _name var.
 
 
  -- peter <peter@bsqt.homeip.net>  Fri, 21 Jun 2024 17:46:14 -0400

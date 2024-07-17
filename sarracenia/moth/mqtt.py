@@ -221,8 +221,8 @@ class MQTT(Moth):
 
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( f"asked to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} result: {paho.mqtt.client.error_string(res)}" )
+            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -274,12 +274,15 @@ class MQTT(Moth):
             userdata.unexpected_publishes.append(mid)
             logger.info( f"BUG: ack for message we do not know we published. mid={mid}" )
 
-    def __sslClientSetup(self) -> int:
+    def __sslClientSetup(self,client=None) -> int:
         """
-          Initializse self.client SSL context, must be called after self.client is instantiated.
+          Initializse client SSL context, must be called after self.client is instantiated.
           return port number for connection.
       
         """
+        if not client and hasattr(self,'client'):
+            client=self.client
+
         if self.o['broker'].url.scheme[-1] == 's':
             port = 8883
             self.o['tlsRigour'] = self.o['tlsRigour'].lower()
@@ -303,7 +306,8 @@ class MQTT(Moth):
             else:
                 self.logger.warning(
                     f"option tlsRigour must be one of: lax, normal, strict")
-            self.client.tls_set_context(self.tlsctx)
+
+            client.tls_set_context(self.tlsctx)
         else:
             port = 1883
 
@@ -402,10 +406,15 @@ class MQTT(Moth):
                         logger.info( f"declare session for instances {icid}" )
                         decl_client = self.__clientSetup(icid)
                         decl_client.on_connect = MQTT.__sub_on_connect
-                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
                            clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                            decl_client.loop(1)
+                            logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
+                            logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
+                            if self.please_stop:
+                                break
+                            if ebo < 60: ebo *= 2
+                            decl_client.loop(ebo)
                         decl_client.disconnect()
                         decl_client.loop_stop()
                         logger.info( f"instance declaration for {icid} done" )
@@ -531,7 +540,7 @@ class MQTT(Moth):
                 icid= self.o['queueName'] + "_i%02d" % i
                 logger.info( f"cleanup session {icid}" )
                 myclient = self.__clientSetup( icid )
-                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(myclient), \
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
