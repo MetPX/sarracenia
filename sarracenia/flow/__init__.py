@@ -1038,9 +1038,17 @@ class Flow:
 
         if self.have_vip:
             for plugin in self.plugins['poll']:
-                new_incoming = plugin()
-                if len(new_incoming) > 0:
-                    self.worklist.incoming.extend(new_incoming)
+                try:
+                    new_incoming = plugin()
+                    if len(new_incoming) > 0:
+                        self.worklist.incoming.extend(new_incoming)
+                except Exception as ex:
+                    try:
+                        logger.error(f'flowCallback plugin {plugin.__module__}.{plugin.__qualname__} crashed: {ex}' )
+                    except:
+                        # just in case
+                        logger.error(f'flowCallback plugin {plugin} crashed: {ex}' )
+                    logger.debug("details:", exc_info=True )
 
 
 
