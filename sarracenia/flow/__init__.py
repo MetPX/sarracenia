@@ -328,6 +328,25 @@ class Flow:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
+    def _runCallbackPoll(self):
+        for plugin in self.plugins['poll']:
+            if self.o.logLevel.lower() == 'debug' :
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+            else:
+                try:
+                    new_incoming = plugin()
+                    if len(new_incoming) > 0:
+                        self.worklist.incoming.extend(new_incoming)
+                except Exception as ex:
+                    try:
+                        logger.error(f'flowCallback plugin {plugin.__module__}.{plugin.__qualname__} crashed: {ex}' )
+                    except:
+                        # just in case
+                        logger.error(f'flowCallback plugin {plugin} crashed: {ex}' )
+                    logger.debug("details:", exc_info=True )
+
     def _runHousekeeping(self, now) -> float:
         """ Run housekeeping callbacks
             Return the time when housekeeping should be run next
@@ -1037,20 +1056,7 @@ class Flow:
             self.worklist.poll_catching_up = False
 
         if self.have_vip:
-            for plugin in self.plugins['poll']:
-                try:
-                    new_incoming = plugin()
-                    if len(new_incoming) > 0:
-                        self.worklist.incoming.extend(new_incoming)
-                except Exception as ex:
-                    try:
-                        logger.error(f'flowCallback plugin {plugin.__module__}.{plugin.__qualname__} crashed: {ex}' )
-                    except:
-                        # just in case
-                        logger.error(f'flowCallback plugin {plugin} crashed: {ex}' )
-                    logger.debug("details:", exc_info=True )
-
-
+            self._runCallbackPoll()
 
     def do(self) -> None:
 
