@@ -21,15 +21,26 @@ import logging
 
 from sarracenia.flowcb import FlowCB
 
-import json
-from turfpy.measurement import distance, boolean_point_in_polygon
-from turfpy.transformation import intersect
-from geojson import Point, Feature, Polygon, FeatureCollection
+from sarracenia.featuredetection import features
+
+features['geometry'] = { 'modules_needed': ['geojson', 'turfpy'], 'present': False, 
+        'lament': 'cannot filter messages based on geojson coordinates' ,
+        'rejoice': 'able to filter messages based on geojson coordinates' }
+
+try:
+    import json
+    from turfpy.measurement import distance, boolean_point_in_polygon
+    from turfpy.transformation import intersect
+    from geojson import Point, Feature, Polygon, FeatureCollection
+    features['geometry']['present'] = True
+except:
+    features['geometry']['present'] = False
+
 
 logger = logging.getLogger(__name__)
 
 
-class GeoJSON(FlowCB):
+class Geometry(FlowCB):
     def __init__(self, options):
 
         super().__init__(options,logger)
