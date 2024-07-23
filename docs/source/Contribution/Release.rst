@@ -21,6 +21,13 @@ To publish a pre-release one needs to:
   * git pull
   * git merge development
 
+- validate that the correct version of C stack will be running when running flow tests.
+  on each server::
+
+      * sr3_cpost -h | head -3
+
+  Is that the version wanted?
+
 - run QA process on all operating systems looking for regressions on older 3.6-based ones.
 
   - github runs flow tests for ubuntu 20.04 and 22.04, review those results.
@@ -31,10 +38,10 @@ To publish a pre-release one needs to:
          * run flow tests:
 
            * cd ~/sr_insects;
-           * for t in static_flow flakey_broker restart_server dyncamic_flow; do
+           * for flow_test in static_flow flakey_broker restart_server dyncamic_flow; do
 
-             - cd $t
-             - ./flow_setup.sh; ./flow_limit.sh; ./flow_check.sh
+             - cd $flow_test
+             - ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
              - # study results.
              - ./flow_cleanup.sh
              - cd ..
@@ -191,13 +198,13 @@ ubuntu 18 is not compatible with the current pypi.org.
 
 * go on redhat 8, build rpm::
 
-  git checkout stable_py36
-  python3 setup.py bdist_rpm 
+      git checkout stable_py36
+      python3 setup.py bdist_rpm 
 
 * go on redhat 9, build rpm::
 
-  git checkout stable_py36
-  rpmbuild --build-in-place -bb metpx-sr3.spec
+      git checkout stable_py36
+      rpmbuild --build-in-place -bb metpx-sr3.spec
 
 
 * On github.com, create release.
