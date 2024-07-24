@@ -27,6 +27,12 @@ To publish a pre-release one needs to:
       * sr3_cpost -h | head -3
 
   Is that the version wanted?
+  Consult C installation/release info to make sure you have the version you want
+  for the flow tests that follow.
+
+  * https://github.com/MetPX/sarrac/tree/_branch_/Build.rst
+
+  * https://github.com/MetPX/sarrac/tree/_branch_/Release.rst
 
 - run QA process on all operating systems looking for regressions on older 3.6-based ones.
 
