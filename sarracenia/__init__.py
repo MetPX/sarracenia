@@ -774,6 +774,27 @@ class Message(dict):
 
         return sarracenia.Message.fromFileData(path, o, stat(path))
 
+    def getIDStr(msg) -> str:
+        """
+           return some descriptive tag string to identify the message being processed.
+
+        """
+        s=""
+        if 'baseURl' in msg:
+            s+=msg['baseUrl']+' '
+        if 'relPath' in msg:
+            if s and s[-1] != '/':
+                s+='/'
+            s+=msg['relPath']
+        elif 'retrievePath' in msg:
+            if s and s[-1] != '/':
+                s+='/'
+            s+= msg['retrievePath']
+        else:
+            s+='badMessage'
+        return s
+
+
     def setReport(msg, code, text=None):
         """
           FIXME: used to be msg_set_report
