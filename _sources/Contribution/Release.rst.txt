@@ -15,40 +15,131 @@ Packaged releases are always preferable to one off builds, because they are repr
 To publish a pre-release one needs to:
 
 - starting with the development branch (for sr3) or v2_dev (for v2.)
+  * git checkout development 
+  * git pull
+  * git checkout development_py36
+  * git pull
+  * git merge development
+
+- validate that the correct version of C stack will be running when running flow tests.
+  on each server::
+
+      * sr3_cpost -h | head -3
+
+  Is that the version wanted?
+  Consult C installation/release info to make sure you have the version you want
+  for the flow tests that follow.
+
+  * https://github.com/MetPX/sarrac/tree/_branch_/Build.rst
+
+  * https://github.com/MetPX/sarrac/tree/_branch_/Release.rst
+
 - run QA process on all operating systems looking for regressions on older 3.6-based ones.
 
   - github runs flow tests for ubuntu 20.04 and 22.04, review those results.
   - github runs unit tests (only work on newer python versions.), review those results.
   - find ubuntu 18.04 server. build local package, run flow tests.
-  - find redhat 8 server.  build package: *python3 setup.py bdist_rpm*, run flow tests
-  - find redhat 9 server,  build package: *python3 -m build --no-isolation*. run flow tests
+         * git checkout development_py36
+         * python3 setup.py bdist_rpm*
+         * run flow tests:
+
+           * cd ~/sr_insects;
+           * for flow_test in static_flow flakey_broker restart_server dyncamic_flow; do
+
+             - cd $flow_test
+             - ./flow_setup.sh && ./flow_limit.sh && ./flow_check.sh
+             - # study results.
+             - ./flow_cleanup.sh
+             - cd ..
+
+  - find redhat 8 server.  build package::
+   
+         * git checkout development_py36
+         * python3 setup.py bdist_rpm*
+         * run flow tests
+
+  - find redhat 9 server,  build package:: 
+
+         * git checkout development_py36
+         * python3 setup.py bdist_rpm*
+         * run flow tests
+
 
 - review debian/changelog and update it based on all merges to the branch since previous release.
-- Set the pre-release tag.
-- commit the above.  
+
+     * git checkout development
+     * git log | less
+     * vi debian/changelog
+     * git commit -a -m "last changes for release"
+     * git push
+
+- Set the pre-release tags.
+
+     * git pull
+     * git checkout development_py36
+     * git tag -a o3.xx.yyrcz -m "pre-release o3.xx.yy.rcz"
+     * git pull 
+     * git checkout pre_release_py36
+     * git pull
+     * git merge development_py36
+     * git push
+
+     * git checkout development
+     * git tag -a v3.xx.yy.rcZ -m "pre-release v3.xx.yy.rcz"
+     * git checkout pre_release
+     * git pull
+     * git merge development
+     * git push
+
+- push the above.  
+
+     * git push origin o3.xx.yyrcz
+     * git push origin v3.xx.yyrcz
 
 - pypi.org
 
   - to ensure compatiblity with python3.6, update a python3.6 branch (for redhat 8 and/or ubuntu 18.)
   - use the python3.6 branch to release to pypi (because upward compatibility works, but not downward.)
+
+    * git checkout pre_release_py36
+    * python3 setup.py bdist_wheel
+
   - upload the pre-release so that installation with pip succeeds.
+
+    * twine upload dist/the_wheel_produced_above.whl 
+
 
 - launchpad.org:  
 
   * ensure the two branches are ready on github.
+
       * pre-release branch ready.
       * pre-release_py36 branch ready.
   * update git repository (Import now): https://code.launchpad.net/~ssc-hpc-chp-spc/metpx-sarracenia/+git/trunk
+
       * do: **Import Now**
+
   * run the recipe for old OS (18.04, 20.04) https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release-old
+
       * do: **Request Build** (on Focal and Bionic )
+
   * run the recipe for new OS (22.04, 24.04) https://code.launchpad.net/~ssc-hpc-chp-spc/+recipe/metpx-sr3-pre-release 
+
       * do: **Request Build** (on Jammy and Noble at least)
 
 - build redhat packages.
 
-  - find redhat 8 server.  build package: python3 setup.py bdist_rpm
-  - find redhat 9 server,  build package: python3 -m build --no-isolation
+  - find redhat 8 server. build package:: 
+
+        git checkout stable_py36
+        python3 setup.py bdist_rpm 
+
+    
+  - find redhat 9 server, build package::
+
+        git checkout stable_py36
+        python3 setup.py bdist_rpm 
+
 
 - on github: Draft a release.
 
@@ -72,25 +163,25 @@ the stable release does not require any explicit testing.
 
 * merge from pre-release to stable::
 
-  git checkout stable
-  git merge pre-release
-  # there will be conflicts here for debian/changelog and sarracenia/_version.py
-  # for changelog:
-  #   - merge all the rcX changelogs into a single stable one.
-  #   - ensure the version at the top is correct and tagged 'unstable'
-  #   - edit the signature at the bottom for reflect who you are, and current date.
-  # for sarracenia/_version.py
-  #   - fix it so it shows the correct stable version.
-  git tag -a v3.xx.yy -m "v3.xx.yy"
-  git push origin v3.xx.yy
+     git checkout stable
+     git merge pre-release
+     # there will be conflicts here for debian/changelog and sarracenia/_version.py
+     # for changelog:
+     #   - merge all the rcX changelogs into a single stable one.
+     #   - ensure the version at the top is correct and tagged 'unstable'
+     #   - edit the signature at the bottom for reflect who you are, and current date.
+     # for sarracenia/_version.py
+     #   - fix it so it shows the correct stable version.
+     git tag -a v3.xx.yy -m "v3.xx.yy"
+     git push origin v3.xx.yy
 
 * merge from pre-release_py36 to stable_py36::
 
-  git checkout stable_py36
-  git merge pre-release_py36
-  # same editing required as above.
-  git tag -a o3.xx.yy -m "o3.xx.yy"
-  git push origin v3.xx.yy
+     git checkout stable_py36
+     git merge pre_release_py36
+     # same editing required as above.
+     git tag -a o3.xx.yy -m "o3.xx.yy"
+     git push origin o3.xx.yy
 
 * go on Launchpad, 
 
@@ -113,13 +204,13 @@ ubuntu 18 is not compatible with the current pypi.org.
 
 * go on redhat 8, build rpm::
 
-  git checkout stable_py36
-  python3 setup.py bdist_rpm 
+      git checkout stable_py36
+      python3 setup.py bdist_rpm 
 
 * go on redhat 9, build rpm::
 
-  git checkout stable_py36
-  rpmbuild --build-in-place -bb metpx-sr3.spec
+      git checkout stable_py36
+      rpmbuild --build-in-place -bb metpx-sr3.spec
 
 
 * On github.com, create release.
@@ -145,15 +236,23 @@ prior to accepting a release, and barring known exceptions,
   (All related github actions.)
   tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow are included in "flow.yml"
 
+      
 * build an ubuntu 18.04 vm and run the flow tests there to ensure that it works.
   (installation method: cloning from development on github.)
   tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow
 
 * build a redhat 8 vm and run the flow test there to ensure that it works.
   (installation method: cloning from development on github.)
-  tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow
+  tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow::
+
+       git checkout pre_release_py36
+       python3 setup.py bdist_rpm
  
-* build a redhat 9 vm and run the flow test there to ensure that it works.
+* Redhat 9 rpms currently do not work... vm and run the flow test there to ensure that it works::
+
+       git checkout pre_release_py36
+       python3 setup.py bdist_rpm
+         
 
 * build a windows executable... test?
 
@@ -275,7 +374,7 @@ in detail::
   # on ubuntu 18.04 or redhat 8 (or some other release with python 3.6 )
 
   git checkout pre-release
-  git branch -D pre-release_py36
+  git branch -D pre_release_py36
   git branch stable_py36
   git checkout stable_py36
   vi debian/control
@@ -381,7 +480,7 @@ Repositories:
   code that is ready for release.)
 
   * metpx-sr3-pre-release -- on demand build sr3 packages from pre-release branch.
-  * metpx-sr3-pre-release-old -- on demand build sr3 packages from *pre-release_py36* branch.
+  * metpx-sr3-pre-release-old -- on demand build sr3 packages from *pre_release_py36* branch.
   * metpx-sarracenia-pre-release -- on demand build sr3 packages from *v2_dev* branch.
 
 * Release https://launchpad.net/~ssc-hpc-chp-spc/+archive/ubuntu/metpx (for maximum stability)
