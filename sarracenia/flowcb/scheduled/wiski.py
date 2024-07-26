@@ -135,7 +135,8 @@ class Wiski(Scheduled):
         
         messages=[]
 
-        self.wait_until_next()
+        can_continue = self.wait_until_next()
+        if not can_continue: return (False, [])
 
         while (1):
             if self.stop_requested or self.housekeeping_needed:

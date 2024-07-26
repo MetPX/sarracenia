@@ -97,7 +97,8 @@ class Scheduled(FlowCB):
     def gather(self,messageCountMax):
 
         # for next expected post
-        self.wait_until_next()
+        can_continue = self.wait_until_next()
+        if not can_continue: return (False, [])
 
         if self.stop_requested or self.housekeeping_needed:
             return (False, [])
@@ -175,10 +176,11 @@ class Scheduled(FlowCB):
         if self.o.scheduled_interval > 0:
             if self.first_interval:
                 self.first_interval=False
-                return
+                return False
 
             self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
-            return
+            if self.housekeeping_needed : return False
+            return True
 
         if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
@@ -210,13 +212,14 @@ class Scheduled(FlowCB):
             else:
                 self.appointments.remove(next_appointment)
                 logger.info( f"ok {len(self.appointments)} appointments left today" )
-            return
+            if self.housekeeping_needed : return False
+            return True
 
         # default wait...
 
         if self.first_interval:
             self.first_interval=False
-            return
+            return False
 
         self.wait_seconds(self.default_wait)
 

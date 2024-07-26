@@ -35,10 +35,8 @@ class Http_with_metadata(Scheduled):
     def gather(self,messageCountMax):
 
         # for next expected post
-        self.wait_until_next()
-
-        if self.stop_requested or self.housekeeping_needed:
-            return (False, [])
+        can_continue = self.wait_until_next()
+        if not can_continue: return (False, [])
 
         logger.info('time to run')
 
