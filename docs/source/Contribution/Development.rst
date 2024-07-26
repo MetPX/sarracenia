@@ -1372,6 +1372,13 @@ If the dependency is added in a plugin, then there is also a method for that des
 Copyright
 ---------
 
+This text is written by IT people, not lawyers. We approached people working with 
+intellectual property for the department of the Environment at the time (2007) and
+through them, proper legal resources were consulted. What is written here distills 
+our best lay understanding, but should not constitute legal advice of any kind.  
+All relevant staff have since (in 2011) been transferred to Shared Services Canada (aka SSC, 
+a different federal government department.) Future licensing discussions should be with SSC.
+
 The copyright regime for this project is modelled on that used for the Linux Kernel. Kernel
 contributions are made using the GPLv2, and contributors retain ownership of their contributions.
 
@@ -1385,13 +1392,21 @@ Rationale:
 
 * GPLv2 is well-known, and likely to be understood by people that need to. Reduces legal analysis required prior to making a contribution.
 
-* Use of GPLv2 license was approved for this project by someone duly delegated for licensing out intellectual property, within the part of the Federal Government that was responsible for the contributions.
+* No Contributor License Agreement (CLA.) CLA's require contributors to understand a lot and employees in large organizations will typically not be able to legally sign such agreements. Such agreements are seen as hindering contributions.
+
+* Use of GPLv2 license was approved for this project by someone duly delegated for licensing out intellectual property, within the part of the Federal Government (Environment Canada) that was responsible for the entire code at the time.
 
 * Reciprocity: A good license is one where all organizations/contributors use the same licensing. 
 
-  * The federal government, by convention, does not delegate anyone to transfer copyright ownership to any third party. Delegation for work by federal employees is limited to how to license the work. The default arrangement does not permit copyright assignment. So most federal employees aren't able to sign contributor licenses.
+  * The federal government, by convention, does not delegate anyone to transfer copyright ownership to any third party. Delegation for work by federal employees is limited to how to license the work. The default arrangement does not permit copyright assignment. So most federal employees are not able to sign contributor licenses.
+  * when working internationally, this sort of distributed ownership allows employees of other governments to contribute without putting those other nations at any disadvantage with respect to the resultant product.
   * other regimes (of copyright ownership transfer) set up an organization with more control over the project, which increases the percieved risk for all other parties.
+  * It lowers risk by increasing barriers to relicensing. All contributors know that, 
+    should they wish to change the license, they either need to:
+
+     * use a license that is compatible with GPLv2 (making the change moot for most purposes) or,
+     * convince all other contributors to do agree to change the license of their contributions, or 
+     * remove and replace all contributions from parties not agreeing to the change.
 
 * Distributed copyright ownership minimizes the risk of a contributor changing the licensing, maximizing the likelihood that contributions, and the project as a whole, remain free for use by all.
-
 
