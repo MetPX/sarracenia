@@ -38,6 +38,8 @@ How to set up your download config:
     Optional: set ``acceptSizeWrong True`` in the sarra/subscribe config to suppress the WARNING message
      about a file being downloaded with no length given.
 
+    Enable debug logging for this plugin only: ``set authenticate.nasa_earthdata.logLevel debug``
+
     For examples, see https://github.com/MetPX/sarracenia/tree/stable/sarracenia/examples/subscribe files
     named ``*nasa_earthdata*.conf``. 
 
@@ -47,25 +49,20 @@ Change log:
     - 2023-10-10: first attempt at this plugin. The old v2 code re-implemented downloading, using a session with
       stored cookies. This should be better, because it uses the native sr3 download code.
     - 2024-05-09: refactoring, to be able to be easily called from poll plugins, and elsewhere.
-    - 2024-07-24: Fix bug, bearer token not auto-updating on day of expiry
+    - 2024-07-23: fix renewal bug. Refactor to use get_token and BearerToken parent class.
+                  Need to check if today >= expiry date, not just ==. Use datetime class for comparisons.
 """
 
-import sarracenia
+from sarracenia.flowcb.authenticate import BearerToken
 import datetime
 import logging
 import requests
 
 logger = logging.getLogger(__name__)
 
-class Nasa_earthdata(sarracenia.flowcb.FlowCB):
+class Nasa_earthdata(BearerToken):
     def __init__(self, options):
         super().__init__(options, logger)
-        
-        # Allow setting a logLevel *only* for this plugin in the config file:
-        # set authenticate.nasa_earthdata.logLevel debug
-        if hasattr(self.o, 'logLevel'):
-            logger.setLevel(self.o.logLevel.upper())
-
         logger.debug("plugin: NASA_Earthdata __init__")
 
         self.o.add_option('earthdataUrl', kind='str', default_value='https://urs.earthdata.nasa.gov')
@@ -74,58 +71,67 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
             self.o.earthdataUrl = self.o.earthdataUrl.strip('/')
 
         self._token = None
-        self._token_expires = None # format MM/DD/YYYY, e.g. 12/25/2023
+        # self._token_expires = None 
+        self.__token_expires = None # stored as a datetime object 
 
         # end __init__
-
-    def after_accept(self, worklist):
-        """ Doesn't actually do any downloading. First, get or create a bearer token from
-            https://urs.earthdata.nasa.gov by logging in with the username and password from credentials.conf.
-            Then adds the bearer token to Sarracenia's credentials DB for the message's baseUrl. This will allow
-            the file to be downloaded from msg['baseUrl']+msg['relPath'] using the bearer token.
+    
+    @property
+    def _token_expires(self):
+        return self.__token_expires
+    
+    @_token_expires.setter
+    def _token_expires(self, new_value):
+        """ date string format from NASA is MM/DD/YYYY :-(
         """
-        for msg in worklist.incoming:
-            self.add_token_for_url(msg['baseUrl'])
+        if type(new_value) == str:
+            self.__token_expires = datetime.datetime.strptime(new_value, "%m/%d/%Y")
+        else:
+            self.__token_expires = new_value
+    
+    def _token_expiry_str(self):
+        if type(self._token_expires) == datetime.datetime:
+            return self._token_expires.strftime("%Y-%m-%d")
+        else:
+            return None
 
-    def add_token_for_url(self, url):
-        """ For the given URL, add the token to the in memory credentials database.
+    def get_token(self):
+        """ Return the bearer token, or None in case of an error.
+
+            This plugin stores the bearer token internally in self._token. If set and not expired, this will
+            return the value from self._token. Otherwise, we request a token from NASA's API. The API will either
+            return an existing token if the account has one, or will create a new token if it doesn't. 
         """
-
-        # It's not clear what time the token expires on the expiry date. If today = expiry date, then try to get a
-        # token every time this runs. If it's not expired yet, we'll get the same token from the API and can try 
-        # to check again on the next run. If it is expired, we should get a brand new token.
-        # UPDATE : The token looks to expire at the EOD of the expiry day.
-        today = datetime.datetime.utcnow().strftime("%m/%d/%Y")
-        if self._token_expires and today >= self._token_expires:
-            logger.info(f"the token ending with ...{self._token[-5:]} is expired. Expiry date: ({self._token_expires})")
+        # NASA doesn't specify what time the token expires on the expiry date. It seems to expire at 23:59:59 on the
+        # expiry date or 00:00:00 the next day. If today >= expiry date, then try to get a new token every time this
+        # runs. If it's not expired yet, we'll get the same token from the API and can try to check again on the next
+        # run. If it is expired, we should get a brand new token.
+        today = datetime.datetime.utcnow()
+        try:
+            if self._token_expires and today >= self._token_expires:
+                logger.info(f"the token ending with ...{self._token[-5:]} " + 
+                            f"is expired or expires today (expiry date: {self._token_expiry_str()})")
+                self._token = None
+                self._token_expires = None
+            elif self._token_expires:
+                logger.debug(f"token is not expired. today = {today.strftime('%Y-%m-%d')}, " + 
+                            f"token expires on {self._token_expiry_str()}")
+            else:
+                logger.debug("no token yet")
+        except Exception as e:
+            logger.error(f"token expiry check failed {e}")
+            logger.debug("exception details", exc_info=True)
             self._token = None
             self._token_expires = None
-        else:
-            logger.debug(f"token is not expired. today = {today}, token expires on {self._token_expires}")
 
         # Get a token from the NASA API, if there isn't one already
         if not self._token:
             # Try to get a new token
-            if not self.get_bearer_token():
+            if not self.get_earthdata_token():
                 logger.error(f"Failed to retrieve bearer token from {self.o.earthdataUrl}")
         
-        # If the credential already exists and the bearer_token matches, don't need to do anything
-        ok, details = self.o.credentials.get(url)
-        token_already_in_creds = False
-        try: 
-            token_already_in_creds = (ok and details.bearer_token == self._token)
-            if token_already_in_creds:
-                logger.debug(f"Token ...{self._token[-5:]} for {url} already in credentials database")
-        except:
-            token_already_in_creds = False
+        return self._token
 
-        if not token_already_in_creds:
-            logger.info(f"Token for {url} not in credentials database. Adding it!")
-            # Add the new bearer token to the internal credentials db. If the credential is already in the db, it will
-            # be replaced which is desirable.
-            cred = sarracenia.credentials.Credential(urlstr=url)
-            cred.bearer_token = self._token
-            self.o.credentials.add(url, details=cred)
 
     def create_earthdata_token(self, auth: requests.auth.HTTPBasicAuth) -> bool:
         """ Create a new Earthdata token.
@@ -146,8 +152,8 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
 
             self._token = resp_j['access_token']
             self._token_expires = resp_j['expiration_date']
-            logger.info(f"Successfully created new token! " + 
-                        f"Token ends with ...{self._token[-5:]} and expires on {self._token_expires}")
+            logger.info(f"Successfully created new token! Token ends with ..." + 
+                        f"{self._token[-5:]} and expires on {self._token_expiry_str()}")
             return True
             
         except Exception as e:
@@ -155,7 +161,7 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
             logger.debug("details:", exc_info=True)
             return False
 
-    def get_bearer_token(self) -> bool:
+    def get_earthdata_token(self) -> bool:
         """ Try to retrieve a token from the Earthdata account. If there is no token, it will create a new one.
         https://urs.earthdata.nasa.gov/documentation/for_users/user_token
         """
@@ -191,8 +197,8 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
             if len(resp_j) >= 1: 
                 self._token = resp_j[0]['access_token']
                 self._token_expires = resp_j[0]['expiration_date']
-                logger.info(f"There is/are {len(resp_j)} token(s) in {username}'s Earthdata account. " + 
-                            f"Using the token that ends with ...{self._token[-5:]} and expires on {self._token_expires}")
+                logger.info(f"There is/are {len(resp_j)} token(s) in {username}'s Earthdata account. Using the " +
+                            f"token that ends with ...{self._token[-5:]} and expires on {self._token_expiry_str()}")
                 return True
             # Valid response, but no tokens in the account. Need to create one.
             else:

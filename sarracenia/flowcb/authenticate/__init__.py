@@ -2,8 +2,11 @@
 sarracenia.flowcb.authenticate plugins deal with implementing custom authentication
 for various data sources.
 
-This currently supports various ways of dynamically generating and using 
-bearer tokens, for authenticating with HTTP(S) sources.
+This module currently provides a class to deal with bearer token authentication
+for HTTP(S) data sources.
+
+More classes could be added later, if we find other common authentication methods
+that we need to implement.
 
 Work in progress. See https://github.com/MetPX/sarracenia/issues/565
 """
@@ -22,11 +25,10 @@ class BearerToken(sarracenia.flowcb.FlowCB):
 
     The get_token() method should return the bearer token as a string,
     or None in case it failed to get a token.
-
     """
 
-    def __init__(self, options):
-        super().__init__(options, logger)
+    def __init__(self, options, class_logger=logger):
+        super().__init__(options, class_logger)
 
     def after_accept(self, worklist):
         """ Adds a bearer token to Sarracenia's in memory credentials DB for the message's baseUrl. This will allow

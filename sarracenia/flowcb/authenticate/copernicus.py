@@ -61,7 +61,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-class Auth_copernicus(BearerToken):
+class Copernicus(BearerToken):
     def __init__(self, options):
         super().__init__(options, logger)
         
