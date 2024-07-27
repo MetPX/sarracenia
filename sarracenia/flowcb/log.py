@@ -70,16 +70,7 @@ class Log(FlowCB):
         if self.o.logMessageDump:
             return msg.dumps()
         else:
-            s = ''
-            if 'baseUrl' in msg:
-                s+= msg['baseUrl'] + ' '
-            if 'relPath' in msg:
-                s+= msg['relPath']
-            elif 'retrievePath' in msg:
-                s+= msg['retrievePath']
-            else:
-                s+= 'badMessage'
-            return s
+            return msg.getIDStr()
 
     def _messageAcceptStr(self,msg):
         if self.o.logMessageDump:
