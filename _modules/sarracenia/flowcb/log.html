@@ -164,16 +164,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logMessageDump</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">msg</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-            <span class="k">if</span> <span class="s1">&#39;baseUrl&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">+=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
-            <span class="k">if</span> <span class="s1">&#39;relPath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">+=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;relPath&#39;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="s1">&#39;retrievePath&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">+=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;retrievePath&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">+=</span> <span class="s1">&#39;badMessage&#39;</span>
-            <span class="k">return</span> <span class="n">s</span>
+            <span class="k">return</span> <span class="n">msg</span><span class="o">.</span><span class="n">getIDStr</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_messageAcceptStr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logMessageDump</span><span class="p">:</span>
