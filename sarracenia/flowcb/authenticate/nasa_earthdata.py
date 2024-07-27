@@ -47,6 +47,7 @@ Change log:
     - 2023-10-10: first attempt at this plugin. The old v2 code re-implemented downloading, using a session with
       stored cookies. This should be better, because it uses the native sr3 download code.
     - 2024-05-09: refactoring, to be able to be easily called from poll plugins, and elsewhere.
+    - 2024-07-24: Fix bug, bearer token not auto-updating on day of expiry
 """
 
 import sarracenia
@@ -93,9 +94,10 @@ class Nasa_earthdata(sarracenia.flowcb.FlowCB):
         # It's not clear what time the token expires on the expiry date. If today = expiry date, then try to get a
         # token every time this runs. If it's not expired yet, we'll get the same token from the API and can try 
         # to check again on the next run. If it is expired, we should get a brand new token.
+        # UPDATE : The token looks to expire at the EOD of the expiry day.
         today = datetime.datetime.utcnow().strftime("%m/%d/%Y")
-        if self._token_expires and today == self._token_expires:
-            logger.info(f"the token ending with ...{self._token[-5:]} expires today ({self._token_expires})")
+        if self._token_expires and today >= self._token_expires:
+            logger.info(f"the token ending with ...{self._token[-5:]} is expired. Expiry date: ({self._token_expires})")
             self._token = None
             self._token_expires = None
         else:
