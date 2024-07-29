@@ -780,7 +780,7 @@ class Message(dict):
 
         """
         s=""
-        if 'baseURl' in msg:
+        if 'baseUrl' in msg:
             s+=msg['baseUrl']+' '
         if 'relPath' in msg:
             if s and s[-1] != '/':
