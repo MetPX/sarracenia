@@ -455,8 +455,8 @@ class MQTT(Moth):
                 self.unexpected_publishes = collections.deque()
 
                 props = Properties(PacketTypes.CONNECT)
-                if self.o['message_ttl'] > 0:
-                    props.MessageExpiryInterval = int(self.o['message_ttl'])
+                if self.o['messageAgeMax'] > 0:
+                    props.MessageExpiryInterval = int(self.o['messageAgeMax'])
 
                 self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
                    (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
