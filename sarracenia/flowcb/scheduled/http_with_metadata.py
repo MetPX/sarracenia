@@ -58,7 +58,7 @@ class Http_with_metadata(Scheduled):
 
                 # parse the HTTP header response into the stat object used by sr3
                 # {... 'Content-Length': '549872', ... , 'Last-Modified': 'Mon, 03 Jun 2024 15:42:02 GMT', ... }
-                logger.debug(f"{resp} {resp.headers}")
+                # logger.debug(f"{resp} {resp.headers}")
                 if resp.status_code == 200:
                     if "Last-Modified" in resp.headers:
                         # Mon, 03 Jun 2024 15:42:02 GMT
