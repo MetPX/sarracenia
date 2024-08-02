@@ -17,3 +17,7 @@ class Random(Identity):
     @staticmethod
     def registered_as():
         return '0'
+
+    def update(self, chunk):
+        pass
+
