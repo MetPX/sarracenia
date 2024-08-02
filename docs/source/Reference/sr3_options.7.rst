@@ -1139,7 +1139,7 @@ messageAgeMax <duration>  (default: 0)
 
 The messageAgeMax option sets the maximum age of a message to not 
 be rejected when consuming. Messages older than Max value are discarded
-by the subscriber. (0 means no maximum age)
+by the subscriber. (0 means no maximum age) 
 
 
 mirror <flag> (default: off)
@@ -1413,6 +1413,8 @@ post_messageAgeMax <duration>  (default: 0)
 The post_messageAgeMax (aka **message_ttl**) option is used when publishing a message,
 as advice to the broker. Brokers discard messages which have exceeded their intended lifespan
 without delivering them. (0 means no maximum lifespan is given.)
+When posting to AMQP, this option sets the *x-message-ttl* property (but the latter is in milliseconds.)
+When posting to MQTT, this option sets the *MessageExpiryInterval* property. 
 
 
 post_on_start

@@ -1397,6 +1397,8 @@ post_messageAgeMax <duration> (défaut: 0)
 L'option post_messageAgeMax (alias **message_ttl**) est utilisée lors de la publication d'un message,
 comme conseil au courtier. ttl est un abbréviation de *time to live* (*durée de vie maximale*) Les courtiers 
 rejettent les messages qui ont dépassé leur durée de vie prévue sans les livrer. (0 signifie qu'aucune durée de vie maximale n'est donnée.)
+Lors de la publication avec AMQP, cette option définit la propriété *x-message-ttl* (mais cette dernière est en millisecondes).
+Lors de la publication avec MQTT, cette option définit la propriété *MessageExpiryInterval*.
 
 
 post_on_start
