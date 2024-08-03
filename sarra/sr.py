@@ -87,7 +87,7 @@ class sr_GlobalState:
         """
         if cfg is None:
             lfn = self.user_cache_dir + os.sep + 'log' + os.sep + 'sr_' + c + "_%02d" % i + '.log'
-        else:
+        elif cfg in self.configs[c]:
             s = self.configs[c][cfg]['options'].statehost.lower()
             if (s == 'true') or (s == 'yes') or (s == 'on') or (s == '1'): 
                 lfn = self.user_cache_dir + os.sep + self.hostname
@@ -95,6 +95,9 @@ class sr_GlobalState:
                 lfn = self.user_cache_dir
 
             lfn += os.sep + 'log' + os.sep + 'sr_' + c + '_' + cfg + "_%02d" % i + '.log'
+        else:
+            print(f"{c} {cfg} is not a known config, cannot start it. Maybe the config file is missing?")
+            return
 
         dir_not_there = not os.path.exists( os.path.dirname(lfn) )
 
