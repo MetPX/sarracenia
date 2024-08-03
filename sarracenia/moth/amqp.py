@@ -359,7 +359,7 @@ class AMQP(Moth):
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
-                        exchange, prefix, subtopic = tup
+                        broker, exchange, prefix, subtopic = tup
                         topic = '.'.join(prefix + subtopic)
                         if self.o['dry_run']:
                             logger.info('binding (dry run) %s with %s to %s (as: %s)' % \

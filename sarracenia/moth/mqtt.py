@@ -213,8 +213,8 @@ class MQTT(Moth):
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                exchange, prefix, subtopic = binding_tuple
-                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
+                broker, exchange, prefix, subtopic = binding_tuple
+                logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                                 prefix + subtopic)

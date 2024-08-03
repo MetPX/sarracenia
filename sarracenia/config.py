@@ -1360,7 +1360,7 @@ class Config:
                 subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.bindings.append((self.exchange, self.topicPrefix, subtopic))
+            self.bindings.append((self.broker, self.exchange, self.topicPrefix, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1998,7 +1998,7 @@ class Config:
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+            self.bindings = [(self.broker, self.exchange, self.topicPrefix, [ '#' ])]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2433,7 +2433,7 @@ class Config:
                    topicPrefix = namespace.topicPrefix.split('/')
 
             namespace.bindings.append(
-                (namespace.exchange, topicPrefix, values))
+                (namespace.broker, namespace.exchange, topicPrefix, values))
 
     def parse_args(self, isPost=False):
         """
