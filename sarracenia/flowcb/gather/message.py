@@ -63,7 +63,7 @@ class Message(FlowCB):
 
     def ack(self, mlist) -> None:
 
-        if not hasattr(self,'consumer'):
+        if not hasattr(self,'consumers'):
             return
 
         for m in mlist:
@@ -72,24 +72,24 @@ class Message(FlowCB):
 
     def metricsReport(self) -> dict:
 
-        if not hasattr(self,'consumer'):
+        if not hasattr(self,'consumers'):
            return {}
 
         metrics={}
         for broker in self.brokers:
            if hasattr(self.consumers[broker],'metricsReport'):
-               metrics[broker] = self.consumers[broker].metricsReport()
+               metrics[broker.geturl()] = self.consumers[broker].metricsReport()
         return metrics 
 
     def on_housekeeping(self) -> None:
 
-        if not hasattr(self,'consumer'):
+        if not hasattr(self,'consumers'):
             return
 
         m = self.metricsReport()
         for broker in self.brokers:
-            average = (m[broker]['rxByteCount'] /
-                   m[broker]['rxGoodCount'] if m[broker]['rxGoodCount'] != 0 else 0)
+            average = (m[broker.geturl()]['rxByteCount'] /
+                   m[broker.geturl()]['rxGoodCount'] if m[broker.geturl()]['rxGoodCount'] != 0 else 0)
             logger.info( f"{broker.url} messages: good: {m[broker]['rxGoodCount']} bad: {m[broker]['rxBadCount']} " +\
                f"bytes: {naturalSize(m[broker]['rxByteCount'])} " +\
                f"average: {naturalSize(average)}" )

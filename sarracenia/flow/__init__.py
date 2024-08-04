@@ -983,7 +983,6 @@ class Flow:
 
         now = nowflt()
         for m in self.worklist.incoming:
-            logger.critical( f"{type(m)} {m=}" )
             then = sarracenia.timestr2flt(m['pubTime'])
             lag = now - then
             if self.o.messageAgeMax != 0 and lag > self.o.messageAgeMax:
@@ -1264,6 +1263,7 @@ class Flow:
 
             # assume dir always exist... should check on startup, not here.
             # if os.path.isdir(os.path.dirname(self.o.metricsFilename)):
+            logger.critical( f"{self.metrics}" )
             metrics=json.dumps(self.metrics)
             with open(self.o.metricsFilename, 'w') as mfn:
                  mfn.write(metrics+"\n")
