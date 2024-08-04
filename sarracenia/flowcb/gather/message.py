@@ -23,10 +23,23 @@ class Message(FlowCB):
         self.od = sarracenia.moth.default_options
         self.od.update(self.o.dictify())
 
-        if hasattr(self.o, 'broker') and self.o.broker:
-            self.consumer = sarracenia.moth.Moth.subFactory(self.od)
-        else:
+        if not hasattr(self.o, 'broker') or not self.o.broker:
             logger.critical('missing required broker specification')
+            return
+
+        if not hasattr(self.o, 'bindings') or not self.o.bindings:
+            logger.critical('missing required bindings (exchange,subtopic) for broker')
+            return
+
+        self.brokers=[]
+        for binding in self.o.bindings:
+            if binding[0] not in self.brokers:
+               self.brokers.append(binding[0])
+
+        self.consumers={}
+        for broker in self.brokers:
+            self.od['broker']=broker
+            self.consumers[broker] = sarracenia.moth.Moth.subFactory(self.od)
 
     def gather(self, messageCountMax) -> list:
         """
@@ -34,12 +47,19 @@ class Message(FlowCB):
               True ... you can gather from other sources. and:
               a list of messages obtained from this source.
         """
-        if hasattr(self,'consumer') and hasattr(self.consumer,'newMessages'):
-            return (True, self.consumer.newMessages())
-        else:
-            logger.warning( f'not connected. Trying to connect to {self.o.broker}')
-            self.consumer = sarracenia.moth.Moth.subFactory(self.od)
+        new_messages=[]
+        if not hasattr(self,'consumers'):
             return (True, [])
+
+        for broker in self.brokers:
+            if broker in self.consumers and hasattr(self.consumers[broker],'newMessages'):
+                new_messages.extend(self.consumers[broker].newMessages())
+            else:
+                logger.warning( f'not connected. Trying to connect to {broker}')
+                self.od['broker']=broker
+                self.consumers[broker] = sarracenia.moth.Moth.subFactory(self.od)
+
+        return (True, new_messages)
 
     def ack(self, mlist) -> None:
 
@@ -48,29 +68,36 @@ class Message(FlowCB):
 
         for m in mlist:
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
-            self.consumer.ack(m)
+            self.consumers[m['broker']].ack(m)
 
     def metricsReport(self) -> dict:
-        if hasattr(self,'consumer') and hasattr(self.consumer,'metricsReport'):
-           return self.consumer.metricsReport()
-        else:
+
+        if not hasattr(self,'consumer'):
            return {}
+
+        metrics={}
+        for broker in self.brokers:
+           if hasattr(self.consumers[broker],'metricsReport'):
+               metrics[broker] = self.consumers[broker].metricsReport()
+        return metrics 
 
     def on_housekeeping(self) -> None:
 
         if not hasattr(self,'consumer'):
             return
 
-        if hasattr(self.consumer, 'metricsReport'):
-            m = self.consumer.metricsReport()
-            average = (m['rxByteCount'] /
-                   m['rxGoodCount'] if m['rxGoodCount'] != 0 else 0)
-            logger.info( f"messages: good: {m['rxGoodCount']} bad: {m['rxBadCount']} " +\
-               f"bytes: {naturalSize(m['rxByteCount'])} " +\
+        m = self.metricsReport()
+        for broker in self.brokers:
+            average = (m[broker]['rxByteCount'] /
+                   m[broker]['rxGoodCount'] if m[broker]['rxGoodCount'] != 0 else 0)
+            logger.info( f"{broker.url} messages: good: {m[broker]['rxGoodCount']} bad: {m[broker]['rxBadCount']} " +\
+               f"bytes: {naturalSize(m[broker]['rxByteCount'])} " +\
                f"average: {naturalSize(average)}" )
-            self.consumer.metricsReset()
+            self.consumers[broker].metricsReset()
 
     def on_stop(self) -> None:
-        if hasattr(self,'consumer') and hasattr(self.consumer, 'close'):
-            self.consumer.close()
+        if hasattr(self,'consumers'): 
+            for broker in self.brokers:
+                 if hasattr(self.consumers[broker], 'close'):
+                     self.consumers[broker].close()
         logger.info('closing')

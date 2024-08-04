@@ -112,8 +112,6 @@ class AMQP(Moth):
                     logger.info('had no delivery info')
                 logger.info('raw message end')
 
-
-
             if type(body) is bytes:
                 try:
                     body = raw_msg.body.decode("utf8")
@@ -142,9 +140,10 @@ class AMQP(Moth):
             msg.deriveSource( self.o )
             msg.deriveTopics( self.o, topic )
 
+            msg['broker'] = self.o['broker']
             msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
             msg['local_offset'] = 0
-            msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
+            msg['_deleteOnPost'] |= set( ['ack_id', 'broker', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
                 if hasattr(self,'channel'):
                     self.channel.basic_ack(msg['ack_id'])
@@ -360,6 +359,9 @@ class AMQP(Moth):
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
                         broker, exchange, prefix, subtopic = tup
+                        logger.critical( f"{broker=} {self.o['broker']=} ")
+                        if broker != self.o['broker']:
+                            continue
                         topic = '.'.join(prefix + subtopic)
                         if self.o['dry_run']:
                             logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
