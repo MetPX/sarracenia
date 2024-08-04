@@ -68,7 +68,10 @@ class Message(FlowCB):
 
         for m in mlist:
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
-            self.consumers[m['broker']].ack(m)
+            if 'broker' in m:
+                 self.consumers[m['broker']].ack(m)
+            else:
+                logger.error( f"cannot ack, missing broker in {m}" )
 
     def metricsReport(self) -> dict:
 
@@ -88,10 +91,11 @@ class Message(FlowCB):
 
         m = self.metricsReport()
         for broker in self.brokers:
-            average = (m[broker.geturl()]['rxByteCount'] /
-                   m[broker.geturl()]['rxGoodCount'] if m[broker.geturl()]['rxGoodCount'] != 0 else 0)
-            logger.info( f"{broker.url} messages: good: {m[broker]['rxGoodCount']} bad: {m[broker]['rxBadCount']} " +\
-               f"bytes: {naturalSize(m[broker]['rxByteCount'])} " +\
+            burl=broker.geturl()
+            average = (m[burl]['rxByteCount'] /
+                   m[burl]['rxGoodCount'] if m[burl]['rxGoodCount'] != 0 else 0)
+            logger.info( f"{burl} messages: good: {m[burl]['rxGoodCount']} bad: {m[burl]['rxBadCount']} " +\
+               f"bytes: {naturalSize(m[burl]['rxByteCount'])} " +\
                f"average: {naturalSize(average)}" )
             self.consumers[broker].metricsReset()
 

@@ -1263,7 +1263,6 @@ class Flow:
 
             # assume dir always exist... should check on startup, not here.
             # if os.path.isdir(os.path.dirname(self.o.metricsFilename)):
-            logger.critical( f"{self.metrics}" )
             metrics=json.dumps(self.metrics)
             with open(self.o.metricsFilename, 'w') as mfn:
                  mfn.write(metrics+"\n")
