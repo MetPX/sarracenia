@@ -113,6 +113,15 @@ class Retry(FlowCB):
         if len(mlist) > 0:
             worklist.incoming.extend(mlist)
 
+    def clean_messages(self,worklist):
+        for m in worklist.failed:
+            # json cannot serialize Credential... so just remove it prior to storing it.
+            if 'broker' in m:
+                del m['broker']
+            if 'ack_id' in m:
+                logger.error( f"putting unacked message {m.getIDStr()} in retry, will never be acked." )
+                del m['ack_id']
+
     def after_work(self, worklist) -> None:
         """
         Messages in `worklist.failed` should be put in the download retry queue. If there are only a few new
@@ -123,6 +132,7 @@ class Retry(FlowCB):
 
         if len(worklist.failed) != 0:
             logger.debug( f"putting {len(worklist.failed)} messages into {self.download_retry_name}"  )
+            self.clean_messages(worklist)
             self.download_retry.put(worklist.failed)
             worklist.failed = []
 
@@ -151,6 +161,7 @@ class Retry(FlowCB):
         if not features['retry']['present'] :
             return
 
+        self.clean_messages(worklist)
         self.post_retry.put(worklist.failed)
         worklist.failed=[]
 

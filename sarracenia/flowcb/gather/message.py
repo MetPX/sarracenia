@@ -67,11 +67,19 @@ class Message(FlowCB):
             return
 
         for m in mlist:
+            if not 'broker' in m:
+                logger.error( f"cannot ack, missing broker in {m}" )
+                continue
+
+            if not m['broker'] in self.consumers:
+                logger.error( f"cannot ack, no consumer for {m['broker'].geturl()}" )
+                continue
+
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
-            if 'broker' in m:
+            if hasattr(self.consumers[m['broker']],'ack'):
                  self.consumers[m['broker']].ack(m)
             else:
-                logger.error( f"cannot ack, missing broker in {m}" )
+                logger.error( f"cannot ack" )
 
     def metricsReport(self) -> dict:
 
