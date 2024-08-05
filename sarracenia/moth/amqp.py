@@ -320,81 +320,71 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
         signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
 
-        while True:
+        if 'bindings' not in self.o or self.o['bindings'] is []:
+            logger.critical( f"no bindings given" )
+            return
+
+        for binding in self.o['bindings']:
             
             if self.please_stop:
                 break
 
-            if 'broker' not in self.o or self.o['broker'] is None:
-                logger.critical( f"no broker given" )
-                break
-
-            # It does not really matter how it fails, the recovery approach is always the same:
-            # tear the whole thing down, and start over.
             try:
+                if type(binding) is dict:
+                    pass
+                elif type(binding) is tuple and len(binding) == 3:
+                    binding = { 'broker': self.o['broker'], 'exchange': binding[0], 'topicPrefix': binding[1], 'subtopic': binding[2] }
+                else:
+                    logger.critical( f"binding \"{binding}\" should be a list of dictionaries ( broker, exchange, topicPrefix, subtopic )" )
+                    continue
+
+                if binding['broker'] != self.o['broker']:
+                    continue
+
                 # from sr_consumer.build_connection...
-                if not self.__connect(self.o['broker']):
+                if not self.__connect(binding['broker']):
                     logger.critical('could not connect')
-                    break
+                    continue
 
                 # only first/lead instance needs to declare a queue and bindings.
                 if 'no' in self.o and self.o['no'] >= 2:
                     self.metricsConnect()
-                    return
-
-                #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
+                    continue
 
                 if self.o['prefetch'] != 0:
                     self.channel.basic_qos(0, self.o['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
-                broker_str = self.o['broker'].url.geturl().replace(
-                    ':' + self.o['broker'].url.password + '@', '@')
+                broker_str = binding['broker'].geturl()
 
                 # from Queue declare
                 msg_count = self._queueDeclare()
                 
-                if msg_count == -2: break
+                if msg_count == -2: continue
 
                 if self.o['queueBind'] and self.o['queueName']:
-                    for binding in self.o['bindings']:
-                        if type(tup) is dict:
-                            broker = binding['broker']
-                            exchange = binding['exchange']
-                            prefix = binding['topicPrefix']
-                            subtopic = binding['subtopic']
-                        elif type(binding) is tuple and len(binding) == 3:
-                            exchange, prefix, subtopic = binding
-                            broker = self.o['broker']
-                        else:
-                            logger.critical( f"binding \"{tup}\" should be a list of dictionaries ( broker, exchange, prefix, subtopic )" )
-                            continue
-                        #logger.critical( f"{broker=} {self.o['broker']=} ")
-                        if broker != self.o['broker']:
-                            continue
-
-                        topic = '.'.join(prefix + subtopic)
-                        if self.o['dry_run']:
-                            logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                                ( self.o['queueName'], topic, exchange, broker_str ) )
-                        else:
-                            logger.info('binding %s with %s to %s (as: %s)' % \
-                                ( self.o['queueName'], topic, exchange, broker_str ) )
-                            if exchange:
-                                self.management_channel.queue_bind(self.o['queueName'], exchange,
-                                                topic)
+                    topic = '.'.join(binding['topicPrefix'] + binding['subtopic'])
+                    if self.o['dry_run']:
+                        logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
+                            ( self.o['queueName'], topic, binding['exchange'], broker_str ) )
+                    else:
+                        logger.info('binding %s with %s to %s (as: %s)' % \
+                            ( self.o['queueName'], topic, binding['exchange'], broker_str ) )
+                        if binding['exchange']:
+                            self.management_channel.queue_bind(self.o['queueName'], 
+                               binding['exchange'], topic)
 
                 # Setup Successfully Complete!
                 self.metricsConnect()
                 logger.debug('getSetup ... Done!')
-                break
+                continue
 
             except Exception as err:
                 logger.error(
                     f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
                 )
                 logger.error("AMQP getSetup failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                    binding['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
