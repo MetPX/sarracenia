@@ -358,7 +358,14 @@ class AMQP(Moth):
 
                 if self.o['queueBind'] and self.o['queueName']:
                     for tup in self.o['bindings']:
-                        broker, exchange, prefix, subtopic = tup
+                        if len(tup) == 4:
+                            broker, exchange, prefix, subtopic = tup
+                        elif len(tup) == 3:
+                            exchange, prefix, subtopic = tup
+                            broker = self.o['broker']
+                        else:
+                            logger.critical( f"binding \"{tup}\" should be a list of tuples ( broker, exchange, prefix, subtopic )" )
+                            continue
                         logger.critical( f"{broker=} {self.o['broker']=} ")
                         if broker != self.o['broker']:
                             continue

@@ -213,7 +213,15 @@ class MQTT(Moth):
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                broker, exchange, prefix, subtopic = binding_tuple
+                if len(binding_tuple) == 4:
+                    broker, exchange, prefix, subtopic = binding_tuple
+                elif len(binding_tuple) == 3:
+                    exchange, prefix, subtopic = binding_tuple
+                    broker = userdata.o['broker']
+                else:
+                    logger.critical( f"invalid binding: \"{binding_tuple}\" should be a tuple containing ( broker, exchange, topicPrefix, subtopic )" )
+                    continue
+ 
                 logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
