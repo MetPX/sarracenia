@@ -33,8 +33,8 @@ class Message(FlowCB):
 
         self.brokers=[]
         for binding in self.o.bindings:
-            if len(binding) >= 4 and binding[0] not in self.brokers:
-               self.brokers.append(binding[0])
+            if type(binding) is dict:
+               self.brokers.append(binding['broker'])
 
         if len(self.brokers) == 0:
             self.brokers=[ self.o.broker ]

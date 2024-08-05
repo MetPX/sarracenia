@@ -357,18 +357,22 @@ class AMQP(Moth):
                 if msg_count == -2: break
 
                 if self.o['queueBind'] and self.o['queueName']:
-                    for tup in self.o['bindings']:
-                        if len(tup) == 4:
-                            broker, exchange, prefix, subtopic = tup
-                        elif len(tup) == 3:
-                            exchange, prefix, subtopic = tup
+                    for binding in self.o['bindings']:
+                        if type(tup) is dict:
+                            broker = binding['broker']
+                            exchange = binding['exchange']
+                            prefix = binding['topicPrefix']
+                            subtopic = binding['subtopic']
+                        elif type(binding) is tuple and len(binding) == 3:
+                            exchange, prefix, subtopic = binding
                             broker = self.o['broker']
                         else:
-                            logger.critical( f"binding \"{tup}\" should be a list of tuples ( broker, exchange, prefix, subtopic )" )
+                            logger.critical( f"binding \"{tup}\" should be a list of dictionaries ( broker, exchange, prefix, subtopic )" )
                             continue
-                        logger.critical( f"{broker=} {self.o['broker']=} ")
+                        #logger.critical( f"{broker=} {self.o['broker']=} ")
                         if broker != self.o['broker']:
                             continue
+
                         topic = '.'.join(prefix + subtopic)
                         if self.o['dry_run']:
                             logger.info('binding (dry run) %s with %s to %s (as: %s)' % \

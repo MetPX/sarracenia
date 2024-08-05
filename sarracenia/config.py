@@ -650,7 +650,7 @@ class Config:
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
          cfg.action = 'start'
-         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
+         cfg.bindings = [ {'exchange':'xpublic', 'topicPrefix':['v02', 'post'], 'subtopic': ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] } ]
          cfg.queueName='q_anonymous.subscriber_test2'
          cfg.download=True
          cfg.batch=1
@@ -1354,13 +1354,19 @@ class Config:
                 logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
                 return
 
-            if self.broker.url.scheme == 'amq' :
-                subtopic = subtopic_string.split('.')
-            else:
-                subtopic = subtopic_string.split('/')
+        if self.broker.url.scheme == 'amq' :
+            subtopic = subtopic_string.split('.')
+        else:
+            subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.bindings.append((self.broker, self.exchange, self.topicPrefix, subtopic))
+            new_binding={}
+            for i in [ 'broker', 'exchange', 'topicPrefix' ]:
+                new_binding[i] = getattr(self,i)
+
+            new_binding['subtopic'] = subtopic
+
+            self.bindings.append(new_binding)
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1998,7 +2004,7 @@ class Config:
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.broker, self.exchange, self.topicPrefix, [ '#' ])]
+            self.bindings = [{'broker':self.broker, 'exchange':self.exchange, 'topicPrefix':self.topicPrefix, 'subtopic':[ '#' ]}]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2433,7 +2439,7 @@ class Config:
                    topicPrefix = namespace.topicPrefix.split('/')
 
             namespace.bindings.append(
-                (namespace.broker, namespace.exchange, topicPrefix, values))
+                    {'broker':namespace.broker, 'exchange':namespace.exchange, 'topicPrefix':topicPrefix, 'subtopic':values})
 
     def parse_args(self, isPost=False):
         """

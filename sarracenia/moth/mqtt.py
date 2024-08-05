@@ -208,20 +208,26 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.connected=True
         userdata.subscribe_mutex.acquire()
-        for binding_tuple in userdata.o['bindings']:
+        for binding in userdata.o['bindings']:
 
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                if len(binding_tuple) == 4:
-                    broker, exchange, prefix, subtopic = binding_tuple
-                elif len(binding_tuple) == 3:
-                    exchange, prefix, subtopic = binding_tuple
+                if type(binding) is dict:
+                    broker=binding['broker']
+                    exchange = binding['exchange']
+                    prefix = binding['topicPrefix']
+                    subtopic = binding['subtopic']
+                elif type(binding) is tuple and len(binding) == 3: # old API.
+                    exchange, prefix, subtopic = binding
                     broker = userdata.o['broker']
                 else:
-                    logger.critical( f"invalid binding: \"{binding_tuple}\" should be a tuple containing ( broker, exchange, topicPrefix, subtopic )" )
+                    logger.critical( f"invalid binding: \"{binding}\" should be a dictionary containing ( broker, exchange, topicPrefix, subtopic )" )
                     continue
  
+                if broker != userdata.o['broker']:
+                    continue
+
                 logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
