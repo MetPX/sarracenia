@@ -333,7 +333,10 @@ class AMQP(Moth):
                 if type(binding) is dict:
                     pass
                 elif type(binding) is tuple and len(binding) == 3:
-                    binding = { 'broker': self.o['broker'], 'exchange': binding[0], 'topicPrefix': binding[1], 'subtopic': binding[2] }
+                    new_binding = { 'exchange': binding[0], 'topicPrefix': binding[1], 'subtopic': binding[2] }
+                    for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+                        new_binding[i] = self.o[i]
+                    binding=new_binding
                 else:
                     logger.critical( f"binding \"{binding}\" should be a list of dictionaries ( broker, exchange, topicPrefix, subtopic )" )
                     continue
@@ -351,8 +354,8 @@ class AMQP(Moth):
                     self.metricsConnect()
                     continue
 
-                if self.o['prefetch'] != 0:
-                    self.channel.basic_qos(0, self.o['prefetch'], True)
+                if binding['prefetch'] != 0:
+                    self.channel.basic_qos(0, binding['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
                 broker_str = binding['broker'].geturl()
@@ -362,7 +365,7 @@ class AMQP(Moth):
                 
                 if msg_count == -2: continue
 
-                if self.o['queueBind'] and self.o['queueName']:
+                if binding['queueBind'] and self.o['queueName']:
                     topic = '.'.join(binding['topicPrefix'] + binding['subtopic'])
                     if self.o['dry_run']:
                         logger.info('binding (dry run) %s with %s to %s (as: %s)' % \

@@ -214,29 +214,29 @@ class MQTT(Moth):
                 subj=userdata.o['topic']
             else:
                 if type(binding) is dict:
-                    broker=binding['broker']
-                    exchange = binding['exchange']
-                    prefix = binding['topicPrefix']
-                    subtopic = binding['subtopic']
+                    pass
                 elif type(binding) is tuple and len(binding) == 3: # old API.
-                    exchange, prefix, subtopic = binding
-                    broker = userdata.o['broker']
+
+                    new_binding = { prefix:binding[0], 'subtopic':binding[2] }
+                    for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+                         new_binding[i] = userdata.o[i]
+                    binding = new_binding
                 else:
                     logger.critical( f"invalid binding: \"{binding}\" should be a dictionary containing ( broker, exchange, topicPrefix, subtopic )" )
                     continue
  
-                if broker != userdata.o['broker']:
+                if binding['broker'] != userdata.o['broker']:
                     continue
 
-                logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
+                logger.info( f"tuple: {binding['broker']} {binding['exchange']} {binding['topicPrefix']} {binding['subtopic']}")
 
-                subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
-                                prefix + subtopic)
+                subj = '/'.join(['$share', userdata.o['queueName'], binding['exchange']] +
+                                binding['topicPrefix'] + binding['subtopic'] )
 
-            (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
+            (res, mid) = client.subscribe(subj, qos=binding['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+                    f"qos={binding['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 

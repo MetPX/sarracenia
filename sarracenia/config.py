@@ -110,6 +110,7 @@ default_options = {
     'post_baseDir': None,
     'post_baseUrl': None,
     'post_format': 'v03',
+    'qos': 1,
     'realpathPost': False,
     'recursive' : True,
     'runStateThreshold_reject': 80,
@@ -133,7 +134,7 @@ default_options = {
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'post_exchangeSplit', 'prefetch', 'qos', 'messageCountMax', 'runStateThreshold_cpuSlow', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
@@ -1361,7 +1362,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             new_binding={}
-            for i in [ 'broker', 'exchange', 'topicPrefix' ]:
+            for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
                 new_binding[i] = getattr(self,i)
 
             new_binding['subtopic'] = subtopic
