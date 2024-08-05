@@ -15,7 +15,7 @@ cfg.action = 'hoho'
 cfg.bindings = [( 'xpublic', ['v02', 'post'],
                  ['*', 'WXO-DD', 'observations', 'swob-ml', '#'])]
 cfg.queueName = 'q_anonymous.subscriber_test2'
-cfg.debug = True
+#cfg.debug = True
 cfg.download = True
 cfg.batch = 1
 cfg.messageCountMax = 5
