@@ -33,8 +33,11 @@ class Message(FlowCB):
 
         self.brokers=[]
         for binding in self.o.bindings:
-            if binding[0] not in self.brokers:
+            if len(binding) >= 4 and binding[0] not in self.brokers:
                self.brokers.append(binding[0])
+
+        if len(self.brokers) == 0:
+            self.brokers=[ self.o.broker ]
 
         self.consumers={}
         for broker in self.brokers:
