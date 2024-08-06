@@ -988,13 +988,13 @@ class Flow:
             if self.o.messageAgeMax != 0 and lag > self.o.messageAgeMax:
                 self.reject(
                     m, 504,
-                    f"message too old (high lag): {lag:g} sec. skipping: {m['new_file']}, " )
+                    f"message too old (high lag): {lag:g} sec. skipping: {m.getIDStr()}, " )
                 continue
 
             if 'mtime' in m:
                 age =  now-sarracenia.timestr2flt(m['mtime'])
                 if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
-                    self.reject( m, 410, f"file too old: {age:g} sec. skipping: {m['new_file']}, ")
+                    self.reject( m, 410, f"file too old: {age:g} sec. skipping: {m.getIDStr()}, ")
                     continue
 
                 if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:

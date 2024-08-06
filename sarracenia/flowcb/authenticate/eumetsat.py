@@ -24,7 +24,7 @@ Configurable Options:
 How to set up your download config:
 ------------------------------------
  
-    Add ``callback accept.auth_eumetsat``, in your subscribe, sarra or other download config.  
+    Add ``callback authenticate.eumetsat``, in your subscribe, sarra or other download config.  
 
     Add ``https://<consumer_key>:<consumer_secret>@api.eumetsat.int/`` to your ``credentials.conf`` file.
 
@@ -33,16 +33,17 @@ Change log:
 -----------
 
     - 2024-01: split into a separate, after_accept plugin instead of download.
+    - 2024-07-23: refactor to use BearerToken parent class. after_accept is inherited from BearerToken.
 """
 
-import sarracenia
+from sarracenia.flowcb.authenticate import BearerToken
 import datetime
 import logging
 import requests
 
 logger = logging.getLogger(__name__)
 
-class Auth_eumetsat(sarracenia.flowcb.FlowCB):
+class Eumetsat(BearerToken):
     def __init__(self, options):
         super().__init__(options, logger)
         
@@ -56,35 +57,6 @@ class Auth_eumetsat(sarracenia.flowcb.FlowCB):
         self._api_token = None 
         self._token_expiry_time = None
         # end __init__
-
-    def after_accept(self, worklist):
-        """ Adds a bearer token to Sarracenia's in memory credentials DB for the message's baseUrl. This will allow
-            the file to be downloaded with Sarracenia's default HTTPS transfer class using the bearer token.
-        """
-        for msg in worklist.incoming:
-            token = self.get_token()
-            
-            if not token:
-                logger.error("Failed to get token!")
-                continue
-
-            # If the credential already exists and the bearer_token matches, don't need to do anything
-            ok, details = self.o.credentials.get(msg['baseUrl'])
-            token_already_in_creds = False
-            try: 
-                token_already_in_creds = (ok and details.bearer_token == token)
-                if token_already_in_creds:
-                    logger.debug(f"Token for {msg['baseUrl']} already in credentials database")
-            except:
-                token_already_in_creds = False
-
-            if not token_already_in_creds:
-                logger.info(f"Token for {msg['baseUrl']} not in credentials database. Adding it!")
-                # Add the new bearer token to the internal credentials db. If the credential is already in the db, it will
-                # be replaced which is desirable.
-                cred = sarracenia.credentials.Credential(urlstr=msg['baseUrl'])
-                cred.bearer_token = token
-                self.o.credentials.add(msg['baseUrl'], details=cred)
 
     def get_token(self):
         """Given a consumer_key and consumer_secret, gets and returns an API token. 
