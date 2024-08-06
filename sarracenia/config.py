@@ -1347,8 +1347,12 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
-            self._resolve_exchange()
+        if not hasattr(self, 'broker') or not self.broker or not self.broker.url:
+            logger.critical( f"need broker setting before subtopic" )
+            return
+
+        self._resolve_exchange()
+        self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
@@ -1362,9 +1366,9 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             new_binding={}
-            for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+            for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
+                    'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
                 new_binding[i] = getattr(self,i)
-
             new_binding['subtopic'] = subtopic
 
             self.bindings.append(new_binding)
@@ -1809,9 +1813,7 @@ class Config:
         else: 
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
-
     
-            # lead instance shou
             if os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
                 self.queueName = f.read()
@@ -1829,6 +1831,9 @@ class Config:
             # first make sure directory exists.
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+
+            #disable queue name saving, need to replace with .binding files.
+            #return 
 
             if not os.path.isfile(queuefile) and (self.queueName is not None): 
                 tmpQfile=queuefile+'.tmp'
@@ -2005,7 +2010,8 @@ class Config:
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [{'broker':self.broker, 'exchange':self.exchange, 'topicPrefix':self.topicPrefix, 'subtopic':[ '#' ]}]
+            self._parse_binding('#')
+            #self.bindings = [{'broker':self.broker, 'exchange':self.exchange, 'topicPrefix':self.topicPrefix, 'subtopic':[ '#' ]}]
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2420,6 +2426,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
+            namespace._resolveQueueName(self.component,self.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2762,6 +2769,7 @@ def one_config(component, config, action, isPost=False):
 
     cfg.applyComponentDefaults( component )
 
+    cfg.action = action
     store_pwd = os.getcwd()
 
     os.chdir(get_user_config_dir())

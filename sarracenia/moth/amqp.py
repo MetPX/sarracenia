@@ -334,7 +334,8 @@ class AMQP(Moth):
                     pass
                 elif type(binding) is tuple and len(binding) == 3:
                     new_binding = { 'exchange': binding[0], 'topicPrefix': binding[1], 'subtopic': binding[2] }
-                    for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+                    for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', \
+                            'prefetch', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
                         new_binding[i] = self.o[i]
                     binding=new_binding
                 else:
@@ -365,16 +366,16 @@ class AMQP(Moth):
                 
                 if msg_count == -2: continue
 
-                if binding['queueBind'] and self.o['queueName']:
+                if binding['queueBind'] and binding['queueName']:
                     topic = '.'.join(binding['topicPrefix'] + binding['subtopic'])
                     if self.o['dry_run']:
                         logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, binding['exchange'], broker_str ) )
+                            ( binding['queueName'], topic, binding['exchange'], broker_str ) )
                     else:
                         logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( self.o['queueName'], topic, binding['exchange'], broker_str ) )
+                            ( binding['queueName'], topic, binding['exchange'], broker_str ) )
                         if binding['exchange']:
-                            self.management_channel.queue_bind(self.o['queueName'], 
+                            self.management_channel.queue_bind(binding['queueName'], 
                                binding['exchange'], topic)
 
                 # Setup Successfully Complete!
@@ -384,7 +385,7 @@ class AMQP(Moth):
 
             except Exception as err:
                 logger.error(
-                    f'connecting to: {self.o["queueName"]}, durable: {self.o["durable"]}, expire: {self.o["expire"]}, auto_delete={self.o["auto_delete"]}'
+                    f'connecting to: {binding["queueName"]}, durable: {binding["durable"]}, expire: {binding["expire"]}, auto_delete={binding["auto_delete"]}'
                 )
                 logger.error("AMQP getSetup failed to {} with {}".format(
                     binding['broker'].url.hostname, err))
