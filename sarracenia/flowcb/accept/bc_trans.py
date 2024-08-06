@@ -33,11 +33,6 @@ class Bc_trans(FlowCB):
     def __init__(self, options):
         super().__init__(options, logger)
         
-        # Allow setting a logLevel *only* for this plugin in the config file:
-        # set gather.BC_TRANS.logLevel debug
-        if hasattr(self.o, 'logLevel'):
-            logger.setLevel(self.o.logLevel.upper())
-
         # end __init__
 
 
@@ -47,7 +42,7 @@ class Bc_trans(FlowCB):
 
         for msg in worklist.incoming:
 
-            # Build the sarracenia message with the specified format
+            # Modify the filename with the specified format
             try: 
 
                 now = datetime.datetime.now()

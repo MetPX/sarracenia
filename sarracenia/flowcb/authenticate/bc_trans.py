@@ -34,7 +34,7 @@ Configurable Options:
 ``tokenEndpoint_path`` URL:
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Path where to fetch the access token. To use in combination with baseUrl
+    Path where to fetch the access token. To use in combination with token_Endpoint_baseUrl
 
 
 *Potential Room For Improvement*:
