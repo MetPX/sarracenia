@@ -1,3 +1,13 @@
+metpx-sr3 (3.00.54rc3) UNRELEASED; urgency=medium
+
+  * fix #1142 token authentication re-factor
+  * fix #1141 subscribe crash with random checksum.
+  * fix #1133 NASA token expiry
+  * fix #1089 filAgeMax works more often.
+  * improved release documentation.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Aug 2024 11:24:36 -0400
+
 metpx-sr3 (3.00.54rc2) unstable; urgency=medium
 
   * CHANGE #33 default queue name generated now includes ${USER}_${HOSTNAME}
