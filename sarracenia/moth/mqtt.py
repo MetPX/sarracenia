@@ -208,34 +208,34 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.connected=True
         userdata.subscribe_mutex.acquire()
-        for binding in userdata.o['bindings']:
+        for subscription in userdata.o['subscriptions']:
 
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                if type(binding) is dict:
+                if type(subscription) is dict:
                     pass
-                elif type(binding) is tuple and len(binding) == 3: # old API.
-                    new_binding = { prefix:binding[0], 'subtopic':binding[2] }
+                elif type(subscription) is tuple and len(subscription) == 3: # old API.
+                    new_subscription = { prefix:subscription[0], 'subtopic':subscription[2] }
                     for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
-                         new_binding[i] = userdata.o[i]
-                    binding = new_binding
+                         new_subscription[i] = userdata.o[i]
+                    subscription = new_subscription
                 else:
-                    logger.critical( f"invalid binding: \"{binding}\" should be a dictionary containing ( broker, exchange, topicPrefix, subtopic )" )
+                    logger.critical( f"invalid subscription: \"{subscription}\" should be a dictionary containing ( broker, exchange, topicPrefix, subtopic )" )
                     continue
  
-                if binding['broker'] != userdata.o['broker']:
+                if subscription['broker'] != userdata.o['broker']:
                     continue
 
-                logger.info( f"tuple: {binding['broker']} {binding['exchange']} {binding['topicPrefix']} {binding['subtopic']}")
+                logger.info( f"tuple: {subscription['broker']} {subscription['exchange']} {subscription['topicPrefix']} {subscription['subtopic']}")
 
-                subj = '/'.join(['$share', userdata.o['queueName'], binding['exchange']] +
-                                binding['topicPrefix'] + binding['subtopic'] )
+                subj = '/'.join(['$share', userdata.o['queueName'], subscription['exchange']] +
+                                subscription['topicPrefix'] + subscription['subtopic'] )
 
-            (res, mid) = client.subscribe(subj, qos=binding['qos'])
+            (res, mid) = client.subscribe(subj, qos=subscription['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to subscribe to: {subj}, mid={mid} "
-                    f"qos={binding['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+                    f"qos={subscription['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 

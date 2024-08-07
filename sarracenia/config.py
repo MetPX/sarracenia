@@ -651,7 +651,7 @@ class Config:
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
          cfg.action = 'start'
-         cfg.bindings = [ {'exchange':'xpublic', 'topicPrefix':['v02', 'post'], 'subtopic': ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] } ]
+         cfg.subscriptions = [ {'exchange':'xpublic', 'topicPrefix':['v02', 'post'], 'subtopic': ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] } ]
          cfg.queueName='q_anonymous.subscriber_test2'
          cfg.download=True
          cfg.batch=1
@@ -806,7 +806,7 @@ class Config:
         """
           instantiate an empty Configuration
         """
-        self.bindings = []
+        self.subscriptions = []
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
@@ -1340,16 +1340,16 @@ class Config:
             if hasattr(self, 'exchangeSplit') and hasattr(self, 'no') and (self.no > 0):
                 self.exchange += "%02d" % self.no
 
-    def _empty_binding(self) -> dict:
-        new_binding={}
+    def _empty_subscription(self) -> dict:
+        new_subscriptions={}
         for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
                 'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
-            new_binding[i] = getattr(self,i)
-        return new_binding
+            new_subscriptions[i] = getattr(self,i)
+        return new_subscriptions
 
 
 
-    def _parse_binding(self, subtopic_string):
+    def _parse_subscription(self, subtopic_string):
         """
          FIXME: see original parse, with substitions for url encoding.
                 also should sqwawk about error if no exchange or topicPrefix defined.
@@ -1373,10 +1373,10 @@ class Config:
             subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            new_binding=self._empty_binding()
-            new_binding['subtopic'] = subtopic
+            new_subscription=self._empty_subscription()
+            new_subscription['subtopic'] = subtopic
 
-            self.bindings.append(new_binding)
+            self.subscriptions.append(new_subscription)
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1616,8 +1616,8 @@ class Config:
             except Exception as ex:
                 logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
                 logger.debug('Exception details: ', exc_info=True)
-        elif k in ['subtopic']:
-            self._parse_binding(v)
+        elif k in [ 'subscription', 'subscribe', 'subtopic' ]:
+            self._parse_subscription(v)
         elif k in ['topicPrefix']:
             if '/' in v :
                 self.topicPrefix = v.split('/')
@@ -1837,7 +1837,7 @@ class Config:
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
 
-            #disable queue name saving, need to replace with .binding files.
+            #disable queue name saving, need to replace with .subscription files.
             #return 
 
             if not os.path.isfile(queuefile) and (self.queueName is not None): 
@@ -2014,8 +2014,8 @@ class Config:
             self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
 
-        if (self.bindings == [] and hasattr(self, 'exchange')):
-            self._parse_binding('#')
+        if (self.subscriptions == [] and hasattr(self, 'exchange')):
+            self._parse_subscription('#')
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2422,12 +2422,12 @@ class Config:
 
     class addBinding(argparse.Action):
         """
-        called by argparse to deal with queue bindings.
+        called by argparse to deal with queue subscriptions.
         """
         def __call__(self, parser, namespace, values, option_string):
 
             if values == 'None':
-                namespace.bindings = []
+                namespace.subscriptions = []
 
             namespace._resolve_exchange()
             namespace._resolveQueueName(self.component,self.config)
@@ -2450,11 +2450,11 @@ class Config:
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
 
-            new_binding = namespace._empty_binding()
-            new_binding['topicPrefix'] = topicPrefix
-            new_binding['subtopic'] = values
+            new_subscription = namespace._empty_subscription()
+            new_subscription['topicPrefix'] = topicPrefix
+            new_subscription['subtopic'] = values
 
-            namespace.bindings.append( new_binding )
+            namespace.subscriptions.append( new_subscription )
 
     def parse_args(self, isPost=False):
         """
@@ -2572,8 +2572,7 @@ class Config:
           
         """
         """
-        FIXME: in previous parser, exchange is a modifier for bindings, can have several different values for different subtopic bindings.
-           as currently coded, just a single value that over-writes previous setting, so only binding to a single exchange is possible.
+        FIXME: in previous parser, exchange is a modifier for subscriptions, can have several different values for different subtopic subscriptions.
         """
 
         parser.add_argument('--inline',
@@ -2599,8 +2598,8 @@ class Config:
                             nargs='?',
                             default=self.identity_method,
                             help='choose a different checksumming method for the files posted')
-        if hasattr(self, 'bindings'):
-            parser.set_defaults(bindings=self.bindings)
+        if hasattr(self, 'subscriptions'):
+            parser.set_defaults(subscriptions=self.subscriptions)
 
 
         parser.add_argument(

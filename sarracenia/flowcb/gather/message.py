@@ -27,14 +27,14 @@ class Message(FlowCB):
             logger.critical('missing required broker specification')
             return
 
-        if not hasattr(self.o, 'bindings') or not self.o.bindings:
-            logger.critical('missing required bindings (exchange,subtopic) for broker')
+        if not hasattr(self.o, 'subscriptions') or not self.o.subscriptions:
+            logger.critical('missing required subscriptions (exchange,subtopic) for broker')
             return
 
         self.brokers=[]
-        for binding in self.o.bindings:
-            if type(binding) is dict:
-               self.brokers.append(binding['broker'])
+        for subscriptions in self.o.subscriptions:
+            if type(subscriptions) is dict:
+               self.brokers.append(subscriptions['broker'])
 
         if len(self.brokers) == 0:
             self.brokers=[ self.o.broker ]

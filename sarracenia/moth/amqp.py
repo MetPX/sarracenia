@@ -311,7 +311,7 @@ class AMQP(Moth):
         Setup so we can get messages.
 
         if message_strategy is stubborn, will loop here forever.
-             connect, declare queue, apply bindings.
+             connect, declare queue, apply subscriptions.
         """
 
         ebo = 1
@@ -320,63 +320,64 @@ class AMQP(Moth):
         signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
         signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
 
-        if 'bindings' not in self.o or self.o['bindings'] is []:
-            logger.critical( f"no bindings given" )
+        if 'subscriptions' not in self.o or self.o['subscriptions'] is []:
+            logger.critical( f"no subscriptions given" )
             return
 
-        for binding in self.o['bindings']:
+        for subscription in self.o['subscriptions']:
             
             if self.please_stop:
                 break
 
             try:
-                if type(binding) is dict:
+                if type(subscription) is dict:
                     pass
-                elif type(binding) is tuple and len(binding) == 3:
-                    new_binding = { 'exchange': binding[0], 'topicPrefix': binding[1], 'subtopic': binding[2] }
+                elif type(subscription) is tuple and len(subscription) == 3:
+                    new_subscription = { 'exchange': subscription[0], \
+                            'topicPrefix': subscription[1], 'subtopic': subscription[2] }
                     for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', \
                             'prefetch', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
-                        new_binding[i] = self.o[i]
-                    binding=new_binding
+                        new_subscription[i] = self.o[i]
+                    subscription=new_subscription
                 else:
-                    logger.critical( f"binding \"{binding}\" should be a list of dictionaries ( broker, exchange, topicPrefix, subtopic )" )
+                    logger.critical( f"subscription \"{subscription}\" should be a list of dictionaries ( broker, exchange, topicPrefix, subtopic )" )
                     continue
 
-                if binding['broker'] != self.o['broker']:
+                if subscription['broker'] != self.o['broker']:
                     continue
 
                 # from sr_consumer.build_connection...
-                if not self.__connect(binding['broker']):
+                if not self.__connect(subscription['broker']):
                     logger.critical('could not connect')
                     continue
 
-                # only first/lead instance needs to declare a queue and bindings.
+                # only first/lead instance needs to declare a queue and subscription.
                 if 'no' in self.o and self.o['no'] >= 2:
                     self.metricsConnect()
                     continue
 
-                if binding['prefetch'] != 0:
-                    self.channel.basic_qos(0, binding['prefetch'], True)
+                if subscription['prefetch'] != 0:
+                    self.channel.basic_qos(0, subscription['prefetch'], True)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
-                broker_str = binding['broker'].geturl()
+                broker_str = subscription['broker'].geturl()
 
                 # from Queue declare
                 msg_count = self._queueDeclare()
                 
                 if msg_count == -2: continue
 
-                if binding['queueBind'] and binding['queueName']:
-                    topic = '.'.join(binding['topicPrefix'] + binding['subtopic'])
+                if subscription['queueBind'] and subscription['queueName']:
+                    topic = '.'.join(subscription['topicPrefix'] + subscription['subtopic'])
                     if self.o['dry_run']:
-                        logger.info('binding (dry run) %s with %s to %s (as: %s)' % \
-                            ( binding['queueName'], topic, binding['exchange'], broker_str ) )
+                        logger.info('subscription (dry run) binding %s with %s to %s (as: %s)' % \
+                            ( subscription['queueName'], topic, subscription['exchange'], broker_str ) )
                     else:
-                        logger.info('binding %s with %s to %s (as: %s)' % \
-                            ( binding['queueName'], topic, binding['exchange'], broker_str ) )
-                        if binding['exchange']:
-                            self.management_channel.queue_bind(binding['queueName'], 
-                               binding['exchange'], topic)
+                        logger.info('subscription binding %s with %s to %s (as: %s)' % \
+                            ( subscription['queueName'], topic, subscription['exchange'], broker_str ) )
+                        if subscription['exchange']:
+                            self.management_channel.queue_bind(subscription['queueName'], 
+                               subscription['exchange'], topic)
 
                 # Setup Successfully Complete!
                 self.metricsConnect()
@@ -385,10 +386,10 @@ class AMQP(Moth):
 
             except Exception as err:
                 logger.error(
-                    f'connecting to: {binding["queueName"]}, durable: {binding["durable"]}, expire: {binding["expire"]}, auto_delete={binding["auto_delete"]}'
+                    f'connecting to: {subscription["queueName"]}, durable: {subscription["durable"]}, expire: {subscription["expire"]}, auto_delete={subscription["auto_delete"]}'
                 )
                 logger.error("AMQP getSetup failed to {} with {}".format(
-                    binding['broker'].url.hostname, err))
+                    subscription['broker'].url.hostname, err))
                 logger.debug('Exception details: ', exc_info=True)
 
             if not self.o['message_strategy']['stubborn']: return
