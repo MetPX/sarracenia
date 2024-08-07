@@ -2096,7 +2096,10 @@ class Flow:
             if self.o.identity_method.startswith('cod,'):
                 download_algo = self.o.identity_method[4:]
             elif 'identity' in msg:
-                download_algo = msg['identity']['method']
+                if msg['identity']['method'] == 'cod':
+                    download_algo = msg['identity']['value']
+                else:
+                    download_algo = msg['identity']['method']
             else:
                 download_algo = None
 
