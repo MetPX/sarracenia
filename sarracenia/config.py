@@ -1337,9 +1337,17 @@ class Config:
             if hasattr(self, 'exchangeSuffix'):
                 self.exchange += '_%s' % self.exchangeSuffix
 
-            if hasattr(self, 'exchangeSplit') and hasattr(
-                    self, 'no') and (self.no > 0):
+            if hasattr(self, 'exchangeSplit') and hasattr(self, 'no') and (self.no > 0):
                 self.exchange += "%02d" % self.no
+
+    def _empty_binding(self) -> dict:
+        new_binding={}
+        for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
+                'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
+            new_binding[i] = getattr(self,i)
+        return new_binding
+
+
 
     def _parse_binding(self, subtopic_string):
         """
@@ -1365,10 +1373,7 @@ class Config:
             subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            new_binding={}
-            for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
-                    'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
-                new_binding[i] = getattr(self,i)
+            new_binding=self._empty_binding()
             new_binding['subtopic'] = subtopic
 
             self.bindings.append(new_binding)
@@ -2445,8 +2450,11 @@ class Config:
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
 
-            namespace.bindings.append(
-                    {'broker':namespace.broker, 'exchange':namespace.exchange, 'topicPrefix':topicPrefix, 'subtopic':values})
+            new_binding = namespace._empty_binding()
+            new_binding['topicPrefix'] = topicPrefix
+            new_binding['subtopic'] = values
+
+            namespace.bindings.append( new_binding )
 
     def parse_args(self, isPost=False):
         """
