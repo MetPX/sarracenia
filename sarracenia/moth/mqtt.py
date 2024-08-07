@@ -208,29 +208,34 @@ class MQTT(Moth):
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
         userdata.connected=True
         userdata.subscribe_mutex.acquire()
-        for binding_tuple in userdata.o['bindings']:
+        for binding in userdata.o['bindings']:
 
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                if len(binding_tuple) == 4:
-                    broker, exchange, prefix, subtopic = binding_tuple
-                elif len(binding_tuple) == 3:
-                    exchange, prefix, subtopic = binding_tuple
-                    broker = userdata.o['broker']
+                if type(binding) is dict:
+                    pass
+                elif type(binding) is tuple and len(binding) == 3: # old API.
+                    new_binding = { prefix:binding[0], 'subtopic':binding[2] }
+                    for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+                         new_binding[i] = userdata.o[i]
+                    binding = new_binding
                 else:
-                    logger.critical( f"invalid binding: \"{binding_tuple}\" should be a tuple containing ( broker, exchange, topicPrefix, subtopic )" )
+                    logger.critical( f"invalid binding: \"{binding}\" should be a dictionary containing ( broker, exchange, topicPrefix, subtopic )" )
                     continue
  
-                logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
+                if binding['broker'] != userdata.o['broker']:
+                    continue
 
-                subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
-                                prefix + subtopic)
+                logger.info( f"tuple: {binding['broker']} {binding['exchange']} {binding['topicPrefix']} {binding['subtopic']}")
 
-            (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
+                subj = '/'.join(['$share', userdata.o['queueName'], binding['exchange']] +
+                                binding['topicPrefix'] + binding['subtopic'] )
+
+            (res, mid) = client.subscribe(subj, qos=binding['qos'])
             userdata.subscribe_in_progress += 1
             logger.info( f"request to subscribe to: {subj}, mid={mid} "
-                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
+                    f"qos={binding['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 

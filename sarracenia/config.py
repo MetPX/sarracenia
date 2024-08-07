@@ -110,6 +110,7 @@ default_options = {
     'post_baseDir': None,
     'post_baseUrl': None,
     'post_format': 'v03',
+    'qos': 1,
     'realpathPost': False,
     'recursive' : True,
     'runStateThreshold_reject': 80,
@@ -133,7 +134,7 @@ default_options = {
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'post_exchangeSplit', 'prefetch', 'qos', 'messageCountMax', 'runStateThreshold_cpuSlow', 
     'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
@@ -650,7 +651,7 @@ class Config:
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
          cfg.action = 'start'
-         cfg.bindings = [ ('xpublic', ['v02', 'post'], ['*', 'WXO-DD', 'observations', 'swob-ml', '#' ]) ]
+         cfg.bindings = [ {'exchange':'xpublic', 'topicPrefix':['v02', 'post'], 'subtopic': ['*', 'WXO-DD', 'observations', 'swob-ml', '#'] } ]
          cfg.queueName='q_anonymous.subscriber_test2'
          cfg.download=True
          cfg.batch=1
@@ -1346,21 +1347,31 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
-            self._resolve_exchange()
+        if not hasattr(self, 'broker') or not self.broker or not self.broker.url:
+            logger.critical( f"need broker setting before subtopic" )
+            return
+
+        self._resolve_exchange()
+        self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
                 logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
                 return
 
-            if self.broker.url.scheme == 'amq' :
-                subtopic = subtopic_string.split('.')
-            else:
-                subtopic = subtopic_string.split('/')
+        if self.broker.url.scheme == 'amq' :
+            subtopic = subtopic_string.split('.')
+        else:
+            subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            self.bindings.append((self.broker, self.exchange, self.topicPrefix, subtopic))
+            new_binding={}
+            for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
+                    'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
+                new_binding[i] = getattr(self,i)
+            new_binding['subtopic'] = subtopic
+
+            self.bindings.append(new_binding)
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1802,9 +1813,7 @@ class Config:
         else: 
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
-
     
-            # lead instance shou
             if os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
                 self.queueName = f.read()
@@ -1822,6 +1831,9 @@ class Config:
             # first make sure directory exists.
             if not os.path.isdir(os.path.dirname(queuefile)):
                 pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
+
+            #disable queue name saving, need to replace with .binding files.
+            #return 
 
             if not os.path.isfile(queuefile) and (self.queueName is not None): 
                 tmpQfile=queuefile+'.tmp'
@@ -1998,7 +2010,7 @@ class Config:
 
 
         if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.broker, self.exchange, self.topicPrefix, [ '#' ])]
+            self._parse_binding('#')
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2413,6 +2425,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
+            namespace._resolveQueueName(self.component,self.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2433,7 +2446,7 @@ class Config:
                    topicPrefix = namespace.topicPrefix.split('/')
 
             namespace.bindings.append(
-                (namespace.broker, namespace.exchange, topicPrefix, values))
+                    {'broker':namespace.broker, 'exchange':namespace.exchange, 'topicPrefix':topicPrefix, 'subtopic':values})
 
     def parse_args(self, isPost=False):
         """
@@ -2755,6 +2768,7 @@ def one_config(component, config, action, isPost=False):
 
     cfg.applyComponentDefaults( component )
 
+    cfg.action = action
     store_pwd = os.getcwd()
 
     os.chdir(get_user_config_dir())
