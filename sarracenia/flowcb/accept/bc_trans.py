@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-Scheduled flow for new BC Trans API
+Renamer for new BC Trans API
 =====================================================================================
 
 Description
@@ -38,8 +38,6 @@ class Bc_trans(FlowCB):
 
     def after_accept(self, worklist):
 
-        new_messages = []
-
         for msg in worklist.incoming:
 
             # Modify the filename with the specified format
@@ -50,7 +48,3 @@ class Bc_trans(FlowCB):
 
             except Exception as e:
                 logger.debug("Exception details:", exc_info=True)
-
-            new_messages.append(msg)
-
-        return new_messages

@@ -40,7 +40,7 @@ Configurable Options:
 *Potential Room For Improvement*:
 ----------------------------------
 
-    - TBD
+    - Download from multiple different hour marks?
 
 How to set up your flow config:
 --------------------------------
