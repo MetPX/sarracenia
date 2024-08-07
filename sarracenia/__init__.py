@@ -425,9 +425,10 @@ class Message(dict):
                 if xattr.get('mtime') >= msg['mtime']:
                     logger.debug("mtime remembered by xattr")
                     fxainteg = xattr.get('identity')
-                    if fxainteg['method'] == o.identity_method: 
-                         msg['identity'] = fxainteg
-                         return
+                    if fxainteg != 'null':
+                        if fxainteg['method'] == o.identity_method: 
+                            msg['identity'] = fxainteg
+                            return
                     logger.debug("xattr different method than on disk")
                     calc_method = o.identity_method
                 else:
