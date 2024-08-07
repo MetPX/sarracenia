@@ -213,8 +213,16 @@ class MQTT(Moth):
             if 'topic' in userdata.o:
                 subj=userdata.o['topic']
             else:
-                exchange, prefix, subtopic = binding_tuple
-                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
+                if len(binding_tuple) == 4:
+                    broker, exchange, prefix, subtopic = binding_tuple
+                elif len(binding_tuple) == 3:
+                    exchange, prefix, subtopic = binding_tuple
+                    broker = userdata.o['broker']
+                else:
+                    logger.critical( f"invalid binding: \"{binding_tuple}\" should be a tuple containing ( broker, exchange, topicPrefix, subtopic )" )
+                    continue
+ 
+                logger.info( f"tuple: {broker} {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                                 prefix + subtopic)
@@ -590,10 +598,11 @@ class MQTT(Moth):
         message.deriveSource( self.o )
         message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
+        message['broker'] = self.o['broker']
         message['ack_id'] = mqttMessage.mid
         message['qos'] = mqttMessage.qos
         message['local_offset'] = 0
-        message['_deleteOnPost'] |= set( ['exchange', 'local_offset', 'ack_id', 'qos' ])
+        message['_deleteOnPost'] |= set( ['ack_id', 'broker', 'exchange', 'local_offset', 'qos' ])
 
         self.metrics['rxLast'] = sarracenia.nowstr()
         if message.validate():

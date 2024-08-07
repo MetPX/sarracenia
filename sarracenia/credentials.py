@@ -104,25 +104,10 @@ class Credential:
         self.azure_credentials = None
         self.implicit_ftps = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns attributes of the Credential object as a readable string.
         """
-
-        s = ''
-        if False:
-            s += self.url.geturl()
-        else:
-            s += self.url.scheme + '://'
-            if self.url.username:
-                s += self.url.username
-            #if self.url.password:
-            #   s += ':' + self.url.password
-            if self.url.hostname:
-                s += '@' + self.url.hostname
-            if self.url.port:
-                s += ':' + str(self.url.port)
-            if self.url.path:
-                s += self.url.path
+        s = self.geturl()
 
         s += " %s" % self.ssh_keyfile
         s += " %s" % self.passive
@@ -137,6 +122,24 @@ class Credential:
         s += " %s" % 'Yes' if self.azure_credentials != None else 'No'
         s += " %s" % self.implicit_ftps
 
+        return s
+
+    def geturl(self) -> str:
+        if not hasattr(self,'url'):
+            return ''
+
+        s=''
+        s += self.url.scheme + '://'
+        if self.url.username:
+            s += self.url.username
+        #if self.url.password:
+        #   s += ':' + self.url.password
+        if self.url.hostname:
+            s += '@' + self.url.hostname
+        if self.url.port:
+            s += ':' + str(self.url.port)
+        if self.url.path:
+            s += self.url.path
         return s
 
 
@@ -241,6 +244,8 @@ class CredentialDB:
         else:
             k=urlstr
         return False, self.credentials[k]
+
+
 
     def has(self, urlstr):
         """Return ``True`` if the Credential matching the urlstr is already in the CredentialDB.
