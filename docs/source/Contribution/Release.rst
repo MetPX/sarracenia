@@ -170,7 +170,7 @@ the stable release does not require any explicit testing.
      #   - merge all the rcX changelogs into a single stable one.
      #   - ensure the version at the top is correct and tagged 'unstable'
      #   - edit the signature at the bottom for reflect who you are, and current date.
-     # for sarracenia/_version.py
+     # sr3 for sarracenia/_version.py (v2 sarra/__init__.py )
      #   - fix it so it shows the correct stable version.
      git tag -a v3.xx.yy -m "v3.xx.yy"
      git push origin v3.xx.yy
@@ -316,7 +316,7 @@ This is done to *start* development on a version. It should be done on developme
 after every release.
 
 * git checkout development
-* Edit ``sarracenia/_version.py`` manually and set the version number.
+* Edit ``sarracenia/_version.py`` (``sarra/__init__.py`` for v2) manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
   * change *unstable* to *UNRELEASED* (maybe done automatically by dch.)
