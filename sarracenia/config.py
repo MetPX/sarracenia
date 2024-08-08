@@ -1340,7 +1340,10 @@ class Config:
             if hasattr(self, 'exchangeSplit') and hasattr(self, 'no') and (self.no > 0):
                 self.exchange += "%02d" % self.no
 
-    def _empty_subscription(self) -> dict:
+    def empty_subscription(self) -> dict:
+        """
+            return an empty_subscrption based on current options.
+        """
         new_subscriptions={}
         for i in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', 'message_ttl', 'prefetch', \
                 'qos', 'queueBind', 'queueDeclare', 'queueName', 'topicPrefix' ]:
@@ -1373,7 +1376,7 @@ class Config:
             subtopic = subtopic_string.split('/')
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
-            new_subscription=self._empty_subscription()
+            new_subscription=self.empty_subscription()
             new_subscription['subtopic'] = subtopic
 
             self.subscriptions.append(new_subscription)
@@ -2450,7 +2453,7 @@ class Config:
                else:
                    topicPrefix = namespace.topicPrefix.split('/')
 
-            new_subscription = namespace._empty_subscription()
+            new_subscription = namespace.empty_subscription()
             new_subscription['topicPrefix'] = topicPrefix
             new_subscription['subtopic'] = values
 
