@@ -1,4 +1,11 @@
-metpx-sr3 (3.00.54rc3) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.55rc1) unstable; urgency=medium
+
+  * fix #1151 calculate on download not working.
+  * fix #1150 bc transport api refactor.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Aug 2024 11:24:36 -0400
+
+metpx-sr3 (3.00.54rc3) unstable; urgency=medium
 
   * fix #1142 token authentication re-factor
   * fix #1141 subscribe crash with random checksum.
