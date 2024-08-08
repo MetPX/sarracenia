@@ -335,7 +335,7 @@ the stable release does not require any explicit testing.</p>
 <span class="c1">#   - merge all the rcX changelogs into a single stable one.</span>
 <span class="c1">#   - ensure the version at the top is correct and tagged &#39;unstable&#39;</span>
 <span class="c1">#   - edit the signature at the bottom for reflect who you are, and current date.</span>
-<span class="c1"># for sarracenia/_version.py</span>
+<span class="c1"># sr3 for sarracenia/_version.py (v2 sarra/__init__.py )</span>
 <span class="c1">#   - fix it so it shows the correct stable version.</span>
 <span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">v3</span><span class="o">.</span><span class="n">xx</span><span class="o">.</span><span class="n">yy</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;v3.xx.yy&quot;</span>
 <span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v3</span><span class="o">.</span><span class="n">xx</span><span class="o">.</span><span class="n">yy</span>
@@ -481,7 +481,7 @@ This has a major impact on processes…</p>
 after every release.</p>
 <ul class="simple">
 <li><p>git checkout development</p></li>
-<li><p>Edit <code class="docutils literal notranslate"><span class="pre">sarracenia/_version.py</span></code> manually and set the version number.</p></li>
+<li><p>Edit <code class="docutils literal notranslate"><span class="pre">sarracenia/_version.py</span></code> (<code class="docutils literal notranslate"><span class="pre">sarra/__init__.py</span></code> for v2) manually and set the version number.</p></li>
 <li><p>Edit CHANGES.rst to add a section for the version.</p></li>
 <li><p>run dch to start the changelog for the current version.
 * change <em>unstable</em> to <em>UNRELEASED</em> (maybe done automatically by dch.)</p></li>
