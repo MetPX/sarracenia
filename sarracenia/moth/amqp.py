@@ -242,7 +242,7 @@ class AMQP(Moth):
             next_time = self.last_qDeclare + 30
             now=time.time()
             if next_time <= now:
-                #self._queueDeclare(passive=True)
+                self._queueDeclare(passive=True)
                 self.last_qDeclare=now
 
         super().metricsReport()
@@ -253,11 +253,12 @@ class AMQP(Moth):
 
         try:
             # from sr_consumer.build_connection...
-            if not self.__connect(self.o['broker']):
-                logger.critical('could not connect')
-                if hasattr(self,'metrics'):
-                    self.metrics['brokerQueuedMessageCount'] = -2
-                return -2
+            if not self.connection or not self.connection.connected:
+                if not self.__connect(self.o['broker']):
+                    logger.critical('could not connect')
+                    if hasattr(self,'metrics'):
+                        self.metrics['brokerQueuedMessageCount'] = -2
+                    return -2
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
             broker_str = self.o['broker'].url.geturl().replace(
