@@ -404,16 +404,44 @@ normalement rejeté, comme un échec. Cette option accepte le fichier même avec
 taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
 le fichier est modifié au moment de sa récupération.
 
+Lorsque acceptSizeWrong est défini sur True, le téléchargement accepte le fichier même si sa taille
+ne correspond pas à celle du message de notification reçu. Cela est utile lorsque
+les ressources changent fréquemment et qu'il y a une file d'attente, de sorte que le fichier 
+est modifié au moment où il est récupéré.
+
+Dans le cas par défaut (acceptSizeWrong défini sur False), l'incompatibilité de taille est
+considérée comme un échec de téléchargement. Sarracenia vérifie ensuite si
+ce qui a été téléchargé correspond à ce qui se trouve actuellement sur le serveur en amont.
+
+Si la date de modification sur le serveur en amont est plus récente que dans le message::
+
++  2024-08-11 00:00:47,978 [INFO] sarracenia.flow download upstream resource is newer, so message https://hpfx.collab.science.gc.ca //20240811/WXO-DD/citypage_weather/xml/NB/s0000653_e.xml is obsolete. Discarding.
+
+traduction::
+
+   2024-08-11 00:00:47,978 [INFO] la ressource en amont est plus récente, donc le message https://hpfx.collab.science.gc.ca //20240811/WXO-DD/citypage_weather/xml/NB/s0000653_e.xml est obsolète. on abandonne le traitement du message.
+
+Si elle correspond à la taille en amont, alors aucune erreur ne s'est produite lors du téléchargement,
+c'est juste que la taille du message annonçant la nouvelle ressource ne
+correspond pas à ce qui est actuellement disponible. Il est inutile de réessayer le téléchargement.
+Dans les deux cas, le fichier téléchargé et le message correspondant sont tous deux
+rejetés.
+
+Si la vérification du serveur en amont échoue, ou si la récupération elle-même a échoué,
+alors la ressource est placée dans la file d'attente de nouvelles tentatives pour des tentatives ultérieures.
+
+
+
 attempts <count> (défaut: 3)
 -----------------------------
 
 L’option **attempts** indique combien de fois il faut tenter le téléchargement des données avant d’abandonner.
-Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’option **retry** a la valeur false,
+Le défaut de 3 tentatives est approprié dans la plupart des cas. Lorsque l’option **retry** a la valeur false,
 le fichier est immédiatement supprimé.
 
 Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
 des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de fil d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+pour une nouvelle tentative plus tard. Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
 les requêtes se feront avec la fil d’attente de "retry".
 
 baseDir <chemin> (défaut: /)
