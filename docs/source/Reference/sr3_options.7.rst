@@ -403,22 +403,39 @@ It's named  */this/20160123/pattern/RAW_MERGER_GRIB/directory* if the notificati
 acceptSizeWrong: <boolean> (default: False)
 -------------------------------------------
 
-When a file is downloaded and its size does not match the one advertised, it is
-normally rejected, as a failure. This option accepts the file even with the wrong
-size. helpful when file is changing frequently, and there is some queueing, so
-the file is changed by the time it is retrieved.
+When acceptSizeWrong is set to True, the download accepts the file even if it's size
+does not match what is in the notification message received. This is helpful when 
+resources are changing frequently, and there is some queueing, so the file is changed 
+by the time it is retrieved.
+
+In the default case (acceptSizeWrong set to False), size mismatch is
+considered a download failure. Sarracenia then checks if the 
+what was downloaded matches what is on the upstream server currently.  
+
+If the modification date on the upstream server is newer than in the message::
+
+  2024-08-11 00:00:47,978 [INFO] sarracenia.flow download upstream resource is newer, so message https://hpfx.collab.science.gc.ca //20240811/WXO-DD/citypage_weather/xml/NB/s0000653_e.xml is obsolete. Discarding.
+
+If it does match the upstream size, than no error has occurred on download, 
+it's just that the size of the message announcing the new resource does not 
+match what is currently available. There is no point retrying the download.
+In the both cases, the file downloaded and the corresponding message are both 
+discarded.
+
+If the check of the upstream server fails, or the retrieve itself has failed,
+then it puts the resource on the retry queue for later attempts.
 
 
 attempts <count> (default: 3)
 -----------------------------
 
 The **attempts** option indicates how many times to
-attempt downloading the data before giving up.  The default of 3 should be appropriate
-in most cases.  When the **retry** option is false, the file is then dropped immediately.
+attempt downloading the data before giving up. The default of 3 should be appropriate
+in most cases. When the **retry** option is false, the file is then dropped immediately.
 
 When The **retry** option is set (default), a failure to download after prescribed number
 of **attempts** (or send, in a sender) will cause the notification message to be added to a queue file
-for later retry.  When there are no notification messages ready to consume from the AMQP queue,
+for later retry. When there are no notification messages ready to consume from the AMQP queue,
 the retry queue will be queried.
 
 
