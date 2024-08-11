@@ -1889,7 +1889,7 @@ class Flow:
                     logger.warning("downloading again, attempt %d" % i)
 
                 ok = self.download(msg, self.o)
-                if ok==1:
+                if ok == 1:
                     logger.debug("downloaded ok: %s" % new_path)
                     msg.setReport(201, "Download successful" )
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
@@ -1898,7 +1898,7 @@ class Flow:
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
                     break
-                elif ok==-1:
+                elif ok == -1:
                     logger.debug("download failed permanently, discarding transfer: %s" % new_path)
                     msg.setReport(410, "message received for content that is no longer available" )
                     self.worklist.rejected.append(msg)
@@ -2211,13 +2211,13 @@ class Flow:
                                 mtime = sarracenia.timestr2flt(msg['pubTime'])
 
                             if current_stat and current_stat.st_mtime > mtime:
-                                logger.error( f'upstream source has changed, message obsolete. ' )
+                                logger.info( f'upstream resource is newer, so message {msg.getIDStr()} is obsolete. Discarding.' )
                                 retval=-1
                             elif current_stat and current_stat.st_size == len_written:
-                                logger.warning( f'downloads ok, but upstream source not as announced. Perhaps AcceptSizeWrong? ' )
+                                logger.info( f'download matches upstream source, {msg.getIDStr()} but not announcement. Discarding.' )
                                 retval=-1 
                             else:
-                                logger.error( f"unexplained size discrepancy, will retry later" )
+                                logger.error( f"unexplained size discrepancy in {msg.getIDStr()}, will retry later" )
                         elif len_written > block_length:
                             logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
                         else:

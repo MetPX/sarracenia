@@ -370,7 +370,7 @@ class Transfer():
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
         
         if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
-            logger.warning(
+            logger.debug(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))
 

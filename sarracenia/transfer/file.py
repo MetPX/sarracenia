@@ -162,7 +162,7 @@ class File(Transfer):
         return self.cwd
 
     def stat(self,path,message=None):
-        spath = path if path[0] == '/' else self.cwd + '/' + path
+        spath = path if path[0] == '/' else self.path + '/' + path
         return sarracenia.stat(spath)
 
     # ls

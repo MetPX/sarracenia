@@ -372,16 +372,15 @@ class Https(Transfer):
     def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
         st = sarracenia.filemetadata.FmdStat()
 
+        #logger.debug( f" baseUrl:{msg['baseUrl']}, path:{self.path}, cwd:{self.cwd}, path:{path} " )
 
         url = msg['baseUrl']
-        if msg['baseUrl'][-1] != '/' and self.cwd[0] != '/' :
+        if msg['baseUrl'][-1] != '/' and self.path[0] != '/' :
             url += '/' 
-        url += self.cwd
-        logger.critical( f" 1 url={url}")
+        url += self.path
         if url[-1] != '/':
             url += '/' 
         url += path
-        logger.critical( f" 2 url={url}")
 
         try:
             resp = requests.head(url)
