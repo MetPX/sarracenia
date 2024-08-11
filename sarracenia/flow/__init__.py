@@ -1889,7 +1889,7 @@ class Flow:
                     logger.warning("downloading again, attempt %d" % i)
 
                 ok = self.download(msg, self.o)
-                if ok:
+                if ok==1:
                     logger.debug("downloaded ok: %s" % new_path)
                     msg.setReport(201, "Download successful" )
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
@@ -1897,6 +1897,11 @@ class Flow:
                         del msg['content']
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    break
+                elif ok==-1:
+                    logger.debug("download failed permanently, discarding transfer: %s" % new_path)
+                    msg.setReport(410, "message received for content that is no longer available" )
+                    self.worklist.rejected.append(msg)
                     break
                 else:
                     logger.info("attempt %d failed to download %s/%s to %s" \
@@ -1915,9 +1920,13 @@ class Flow:
     # v2 sr_util.py ... generic sr_transport imported here...
 
     # generalized download...
-    def download(self, msg, options) -> bool:
+    def download(self, msg, options) -> int:
         """
            download/transfer one file based on message, return True if successful, otherwise False.
+
+           return 0 -- failed, retry later.
+           return 1 -- OK download successful.
+           return -1 -- download failed permanently, retry not useful.
         """
 
         self.o = options
@@ -2006,8 +2015,8 @@ class Flow:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
-                if not ok: return False
-            return True
+                if not ok: return 0
+            return 1
 
         if self.o.dry_run:
             curdir = new_dir
@@ -2028,7 +2037,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (new_dir, ex))
                 logger.debug('Exception details:', exc_info=True)
-                return False
+                return 0
 
         try:
             options.sendTo = msg['baseUrl']
@@ -2050,7 +2059,7 @@ class Flow:
                     ok = self.proto[self.scheme].connect()
                     if not ok:
                         self.proto[self.scheme] = None
-                        return False
+                        return 0
 
                     self.metrics['flow']['transferConnected'] = True
                     self.metrics['flow']['transferConnectStart'] = time.time() 
@@ -2062,7 +2071,7 @@ class Flow:
 
             #if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
             #   logger.error("%s, inplace part file not supported" % self.scheme)
-            #   return False
+            #   return 0
 
             cwd = None
          
@@ -2079,7 +2088,7 @@ class Flow:
                          self.proto[self.scheme].cd(cdir)
                     except Exception as ex:
                          logger.error("chdir %s: %s" % (cdir, ex))
-                         return False
+                         return 0
 
             remote_offset = 0
             exactLength=False
@@ -2160,7 +2169,7 @@ class Flow:
                             msg['local_offset'], block_length, exactLength)
                 except Exception as ex:
                     logger.error( f"could not get {remote_file}: {ex}" )
-                    return False
+                    return 0
 
             else:
                 len_written = block_length
@@ -2176,7 +2185,7 @@ class Flow:
                 logger.error("failed to download %s" % new_file)
                 if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
                     os.remove(new_inflight_path)
-                return False
+                return 0
             else:
                 if block_length == 0:
                     if self.o.acceptSizeWrong:
@@ -2189,17 +2198,34 @@ class Flow:
                             % (len_written, new_inflight_path))
                 else:
                     if self.o.acceptSizeWrong:
-                        logger.debug(
+                        logger.info(
                             'AcceptSizeWrong download size mismatch, received %d of expected %d bytes for %s'
                             % (len_written, block_length, new_inflight_path))
                     else:
-                        if len_written > block_length:
+                        retval=0
+                        if hasattr( self.proto[self.scheme],'stat'):
+                            current_stat = self.proto[self.scheme].stat( remote_file, msg )
+                            if 'mtime' in msg:
+                                mtime = sarracenia.timestr2flt(msg['mtime'])
+                            else:
+                                mtime = sarracenia.timestr2flt(msg['pubTime'])
+
+                            if current_stat and current_stat.st_mtime > mtime:
+                                logger.error( f'upstream source has changed, message obsolete. ' )
+                                retval=-1
+                            elif current_stat and current_stat.st_size == len_written:
+                                logger.warning( f'downloads ok, but upstream source not as announced. Perhaps AcceptSizeWrong? ' )
+                                retval=-1 
+                            else:
+                                logger.error( f"unexplained size discrepancy, will retry later" )
+                        elif len_written > block_length:
                             logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
                         else:
                             logger.error( f'incomplete download only {len_written} of expected {block_length} bytes for {new_inflight_path}' )
+
                         if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
                             os.remove(new_inflight_path)
-                        return False
+                        return retval 
                 # when len_written is different than block_length
                 msg['size'] = len_written
 
@@ -2245,10 +2271,10 @@ class Flow:
                     logger.debug('Exception details: ', exc_info=True)
 
             if (self.o.acceptSizeWrong or (block_length == 0)) and (len_written > 0):
-                return True
+                return 1
 
             if (len_written != block_length):
-                return False
+                return 0
 
         except Exception as ex:
             logger.debug('Exception details: ', exc_info=True)
@@ -2270,8 +2296,8 @@ class Flow:
         
             if (not self.o.dry_run) and os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)
-            return False
-        return True
+            return 0
+        return 1
 
     # generalized send...
     def send(self, msg, options):
