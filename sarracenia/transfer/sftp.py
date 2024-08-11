@@ -25,6 +25,7 @@ import logging, paramiko, os, subprocess, sys, time
 from paramiko import *
 from stat import *
 
+import sarracenia
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 from urllib.parse import unquote
@@ -527,6 +528,10 @@ class Sftp(Transfer):
         alarm_set(self.o.timeout)
         self.sftp.rmdir(path)
         alarm_cancel()
+
+    #when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.
+    def stat(self, path, msg=None) -> sarracenia.filemetadata.FmdStat:
+        return self.sftp.stat(path)
 
     # utime
     def utime(self, path, tup):

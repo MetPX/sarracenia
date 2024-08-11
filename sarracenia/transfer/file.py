@@ -161,6 +161,10 @@ class File(Transfer):
     def getcwd(self):
         return self.cwd
 
+    def stat(self,path,message=None):
+        spath = path if path[0] == '/' else self.cwd + '/' + path
+        return sarracenia.stat(spath)
+
     # ls
     def ls(self):
         logger.debug("sr_file ls")
