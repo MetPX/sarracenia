@@ -1292,7 +1292,7 @@ class Flow:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
             # removing old metrics files
-            logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
+            #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
             old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
             for o in old_metrics:
                 logger.info( f"removing old metrics file: {o} " )
