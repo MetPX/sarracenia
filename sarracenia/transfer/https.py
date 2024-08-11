@@ -21,8 +21,10 @@
 #
 #
 
+import datetime
 import logging
 import os
+import requests
 import sarracenia
 import ssl
 import subprocess
@@ -366,3 +368,51 @@ class Https(Transfer):
 
         alarm_cancel()
         return False
+
+    def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
+        st = sarracenia.filemetadata.FmdStat()
+
+
+        url = msg['baseUrl']
+        if msg['baseUrl'][-1] != '/' and self.cwd[0] != '/' :
+            url += '/' 
+        url += self.cwd
+        logger.critical( f" 1 url={url}")
+        if url[-1] != '/':
+            url += '/' 
+        url += path
+        logger.critical( f" 2 url={url}")
+
+        try:
+            resp = requests.head(url)
+            resp.raise_for_status()
+
+            # parse the HTTP header response into the stat object used by sr3
+            # {... 'Content-Length': '549872', ... , 'Last-Modified': 'Mon, 03 Jun 2024 15:42:02 GMT', ... }
+            # logger.debug(f"{resp} {resp.headers}")
+            if resp.status_code == 200:
+                have_metadata = False
+                if "Last-Modified" in resp.headers:
+                    # Mon, 03 Jun 2024 15:42:02 GMT
+                    lm = datetime.datetime.strptime(resp.headers['Last-Modified'], '%a, %d %b %Y %H:%M:%S GMT')
+                    lm = lm.timestamp()
+                    # logger.debug(f"parsed date: {lm}")
+                    st.st_atime = lm
+                    st.st_mtime = lm
+                    have_metadata = True
+                if "Content-Length" in resp.headers:
+                    size = int(resp.headers['Content-Length'])
+                    # logger.debug(f"file size: {size}")
+                    st.st_size = size
+                    have_metadata = True
+
+                if have_metadata:
+                    return st
+
+                if not have_metadata :
+                    logger.warning(f"HEAD request returned {resp.status_code} but metadata was " +
+                                   f"not available for {url}, not posting")
+                return None
+        except Exception as e:
+            logger.info(f"Failed to get metadata for {url} ({e}), posting anyways")
+            return None        

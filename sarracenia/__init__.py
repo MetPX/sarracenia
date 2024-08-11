@@ -371,6 +371,7 @@ known_report_codes = {
     206: "Partial Content: received and inserted.",
     304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
+    410: "Gone: server data different from notification message",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
