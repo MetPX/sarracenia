@@ -1452,14 +1452,13 @@ class Flow:
         #end   = self.local_offset + self.length
         if 'size' in msg:
             end = msg['size']
-            # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+            # compare sizes... if (sr_subscribe is downloading partitions into target file) and (target_file isn't fully done)
             # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
             # target_file is the same as new_file unless the file is partitioned.
             # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
             #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
             if (fsiz != msg['size']):
-                logger.debug("%s file size different, so cannot be the same" %
-                             (msg['new_path']))
+                logger.debug( f"{msg['new_path']} file size different, so cannot be the same" )
                 return True
         else:
             end = 0
@@ -1480,23 +1479,18 @@ class Flow:
                     pass
 
             if new_mtime <= old_mtime:
-                self.reject(msg, 304,
-                            "mtime not newer %s " % (msg['new_path']))
+                self.reject(msg, 304, f"mtime not newer {msg['new_path']}" )
                 return False
             else:
                 logger.debug(
-                    "{} new version is {} newer (new: {} vs old: {} )".format(
-                        msg['new_path'], new_mtime - old_mtime, new_mtime,
-                        old_mtime))
+                    f"{msg['new_path']} new version is {new_time-old_time} newer (new: {new_time} vs old: {old_time} )" )
 
         if 'identity' in msg and msg['identity']['method'] in ['random', 'cod']:
-            logger.debug("content_match %s sum 0/z never matches" %
-                         (msg['new_path']))
+            logger.debug( f"content_match {msg['new_path']} sum 0/z never matches" )
             return True
 
         if end > fsiz:
-            logger.debug(
-                "new file not big enough... considered different")
+            logger.debug( "new file not big enough... considered different")
             return True
 
         if not 'identity' in msg: 
@@ -1512,11 +1506,10 @@ class Flow:
             )
             return True
 
-        logger.debug("checksum in message: %s vs. local: %s" %
-                     (msg['identity'], msg['local_identity']))
+        logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
 
         if msg['local_identity'] == msg['identity']:
-            self.reject(msg, 304, "same checksum %s " % (msg['new_path']))
+            self.reject(msg, 304, f"same checksum {msg['new_path']}" )
             return False
         else:
             return True

@@ -784,11 +784,11 @@ class Message(dict):
         if 'baseUrl' in msg:
             s+=msg['baseUrl']+' '
         if 'relPath' in msg:
-            if s and s[-1] != '/':
+            if msg['relPath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+=msg['relPath']
         elif 'retrievePath' in msg:
-            if s and s[-1] != '/':
+            if msg['retrievePath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+= msg['retrievePath']
         else:
