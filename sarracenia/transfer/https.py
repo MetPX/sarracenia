@@ -383,7 +383,7 @@ class Https(Transfer):
         url += path
 
         try:
-            resp = requests.head(url)
+            resp = requests.head(url, headers = {'Accept-Encoding': 'identity'} )
             resp.raise_for_status()
 
             # parse the HTTP header response into the stat object used by sr3
