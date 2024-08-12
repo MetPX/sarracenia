@@ -1483,7 +1483,7 @@ class Flow:
                 return False
             else:
                 logger.debug(
-                    f"{msg['new_path']} new version is {new_time-old_time} newer (new: {new_time} vs old: {old_time} )" )
+                    f"{msg['new_path']} new version is {new_mtime-old_mtime} newer (new: {new_mtime} vs old: {old_mtime} )" )
 
         if 'identity' in msg and msg['identity']['method'] in ['random', 'cod']:
             logger.debug( f"content_match {msg['new_path']} sum 0/z never matches" )
