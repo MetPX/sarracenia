@@ -163,8 +163,10 @@ class File(Transfer):
 
     def stat(self,path,message=None):
         spath = path if path[0] == '/' else self.path + '/' + path
-        return sarracenia.stat(spath)
-
+        try:
+             return sarracenia.stat(spath)
+        except:
+             return None
     # ls
     def ls(self):
         logger.debug("sr_file ls")
