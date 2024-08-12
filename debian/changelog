@@ -1,15 +1,10 @@
-metpx-sr3 (3.00.54rc3) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.54) unstable; urgency=medium
 
   * fix #1142 token authentication re-factor
   * fix #1141 subscribe crash with random checksum.
   * fix #1133 NASA token expiry
   * fix #1089 filAgeMax works more often.
   * improved release documentation.
-
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Aug 2024 11:24:36 -0400
-
-metpx-sr3 (3.00.54rc2) unstable; urgency=medium
-
   * CHANGE #33 default queue name generated now includes ${USER}_${HOSTNAME}
   * for #33, use of *queueName* deprecated in favour of *queueShare*
   * NEW/fix #1122 support for implicit FTPS on post 990.
@@ -19,13 +14,6 @@ metpx-sr3 (3.00.54rc2) unstable; urgency=medium
   * enable tests of block transfers #1112
   * fix for #1115: stop won't start, or foreground won't
   * fix redis unit tests broken by inclusion of _name var.
-
-
- -- peter <peter@bsqt.homeip.net>  Fri, 21 Jun 2024 17:46:14 -0400
-
-metpx-sr3 (3.00.54rc1) unstable; urgency=medium
-
-  [ SSC-5CD2310S60 ]
   * NEW #1084 add metadata fetch to scheduled http. 
   * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
   * fix #1104 add message per cpu second and cpuS state.
@@ -54,7 +42,7 @@ metpx-sr3 (3.00.54rc1) unstable; urgency=medium
   * many other plugin improvements. (#1085, #1082, #1091 )
   * search function restored on web-site documentation. ( #1062, #1072)
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
+ -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 August 2024 12:29:22 -0400
 
 metpx-sr3 (3.00.53) unstable; urgency=medium
 
