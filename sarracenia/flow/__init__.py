@@ -1528,11 +1528,10 @@ class Flow:
             )
             return True
 
-        logger.debug("checksum in message: %s vs. local: %s" %
-                     (msg['identity'], msg['local_identity']))
+        logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
 
         if msg['local_identity'] == msg['identity']:
-            self.reject(msg, 304, "same checksum %s " % (msg['new_path']))
+            self.reject(msg, 304, f"same checksum {msg['new_path']}" )
             return False
         else:
             return True
