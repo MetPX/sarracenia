@@ -29,7 +29,7 @@ class Log(FlowCB):
         self.o.add_option('logEvents', 'set',
                           ['after_accept', 'on_housekeeping'])
         self.o.add_option('logMessageDump', 'flag', False)
-        logger.info(f'{self.o.component} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
+        logger.debug(f'{self.o.component} initialized with: logEvents: {self.o.logEvents},  logMessageDump: {self.o.logMessageDump}')
         if self.o.component in ['sender']:
             self.action_verb = 'sent'
         elif self.o.component in ['subscribe', 'sarra' ]:
@@ -70,16 +70,7 @@ class Log(FlowCB):
         if self.o.logMessageDump:
             return msg.dumps()
         else:
-            s = ''
-            if 'baseUrl' in msg:
-                s+= msg['baseUrl'] + ' '
-            if 'relPath' in msg:
-                s+= msg['relPath']
-            elif 'retrievePath' in msg:
-                s+= msg['retrievePath']
-            else:
-                s+= 'badMessage'
-            return s
+            return msg.getIDStr()
 
     def _messageAcceptStr(self,msg):
         if self.o.logMessageDump:

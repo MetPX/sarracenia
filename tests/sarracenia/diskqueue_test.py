@@ -1,14 +1,7 @@
-import pytest, jsonpickle
-import os
+import pytest
+from tests.conftest import *
 
-#useful for debugging tests
-import pprint
-def pretty(*things, **named_things):
-    for t in things:
-        pprint.PrettyPrinter(indent=2, width=200).pprint(t)
-    for k,v in named_things.items():
-        print(str(k) + ":")
-        pprint.PrettyPrinter(indent=2, width=200).pprint(v)
+import jsonpickle, os
 
 from sarracenia.diskqueue import DiskQueue
 from sarracenia import Message as SR3Message
@@ -216,6 +209,7 @@ def test_get__Single(tmp_path):
     fp.write(line)
     fp.flush()
     fp.close()
+    download_retry.msg_count = 1
 
     gotten = download_retry.get()
 
@@ -234,6 +228,7 @@ def test_get__Multi(tmp_path):
     fp.write(line + line)
     fp.flush()
     fp.close()
+    download_retry.msg_count = 2
 
     gotten = download_retry.get(2)
 

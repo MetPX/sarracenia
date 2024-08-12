@@ -20,7 +20,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #
 
-import ftplib, os, subprocess, sys, time
+import ftplib, os, subprocess, sys, time, ssl
 import logging
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
@@ -28,6 +28,26 @@ from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
+class IMPLICIT_FTP_TLS(ftplib.FTP_TLS):
+    """ FTP_TLS subclass that automatically wraps sockets in SSL to support implicit FTPS.
+        Copied from https://stackoverflow.com/questions/12164470/python-ftp-implicit-tls-connection-issue
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sock = None
+
+    @property
+    def sock(self):
+        """Return the socket."""
+        return self._sock
+
+    @sock.setter
+    def sock(self, value):
+        """When modifying the socket, ensure that it is ssl wrapped."""
+        if value is not None and not isinstance(value, ssl.SSLSocket):
+            value = self.context.wrap_socket(value)
+        self._sock = value
 
 class Ftp(Transfer):
     """
@@ -172,16 +192,31 @@ class Ftp(Transfer):
 
         # timeout alarm 100 secs to connect
         alarm_set(self.o.timeout)
+
         try:
             expire = -999
             if self.o.timeout: expire = self.o.timeout
-            if self.port == '' or self.port == None: self.port = 21
+            if self.port == '' or self.port == None: 
+                if self.implicit_ftps:
+                    self.port = 990
+                else:
+                    self.port = 21
 
+            # plain FTP with no encryption (usually port 21)
             if not self.tls:
                 ftp = ftplib.FTP()
                 ftp.encoding = 'utf-8'
                 ftp.connect(self.host, self.port, timeout=expire)
                 ftp.login(self.user, unquote(self.password))
+            # implicit FTPS (usually port 990)
+            elif self.tls and self.implicit_ftps:
+                ftp = IMPLICIT_FTP_TLS()
+                ftp.encoding = 'utf-8'
+                ftp.connect(host=self.host, port=self.port, timeout=expire)
+                ftp.login(user=self.user, passwd=unquote(self.password))
+                if self.prot_p:
+                    ftp.prot_p()
+            # explicit FTPS (port 21)
             else:
                 # ftplib supports FTPS with TLS
                 ftp = ftplib.FTP_TLS(self.host,
@@ -204,13 +239,8 @@ class Ftp(Transfer):
                 logger.debug('Exception details: ', exc_info=True)
 
             self.pwd = self.originalDir
-
             self.connected = True
-
             self.ftp = ftp
-
-            #alarm_cancel()
-            return True
 
         except:
             logger.error("Unable to connect to %s (user:%s)" %
@@ -218,7 +248,7 @@ class Ftp(Transfer):
             logger.debug('Exception details: ', exc_info=True)
 
         alarm_cancel()
-        return False
+        return self.connected
 
     # credentials...
     def credentials(self):
@@ -237,6 +267,7 @@ class Ftp(Transfer):
             self.binary = details.binary
             self.tls = details.tls
             self.prot_p = details.prot_p
+            self.implicit_ftps = details.implicit_ftps
 
             return True
 
@@ -278,11 +309,16 @@ class Ftp(Transfer):
 
         # download
         self.write_chunk_init(dst)
-        if self.binary:
-            self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
+
+        try:
+            if self.binary:
+                self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
                                 self.o.bufsize)
-        else:
-            self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
+            else:
+                self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
+        except Exception as Ex:
+            logger.error( f"failed to get {remote_file} to {local_file}: {Ex}" )
+
         rw_length = self.write_chunk_end()
 
         # close
@@ -331,8 +367,6 @@ class Ftp(Transfer):
     def line_callback(self, iline):
         #logger.debug("sr_ftp line_callback %s" % iline)
 
-        alarm_cancel()
-
         oline = iline
         oline = oline.strip('\n')
         oline = oline.strip()
@@ -361,8 +395,6 @@ class Ftp(Transfer):
 
         self.entries[fil] = line
 
-        alarm_set(self.o.timeout)
-
     # mkdir
     def mkdir(self, remote_dir):
         logger.debug("sr_ftp mkdir %s" % remote_dir)
@@ -390,11 +422,15 @@ class Ftp(Transfer):
 
         # upload
         self.write_chunk_init(None)
-        if self.binary:
-            self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
+        try:
+            if self.binary:
+                self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
                                 self.write_chunk)
-        else:
-            self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
+            else:
+                self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)
+        except Exception as Ex:
+            logger.error( f"failed to put {remote_file} to {local_file}: {Ex}" )
+
         rw_length = self.write_chunk_end()
 
         # close

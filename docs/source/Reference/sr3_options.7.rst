@@ -140,7 +140,8 @@ option, with the use of *${..}* notation:
 * PROGRAM     - the name of the component (subscribe, shovel, etc...)
 * CONFIG      - the name of the configuration file being run.
 * HOSTNAME    - the hostname running the client.
-* RANDID      - a random id that will be consistent within a single invocation.
+* RANDID      - a random id (0-64Ki) that will be consistent within a single instance.
+* RAND8       - a random 8 digit wide number that is generated whenever it is evaluated in a string.
 
 The %Y%m%d and %h time stamps refer to the time at which the data is processed by
 the component, it is not decoded or derived from the content of the files delivered.
@@ -227,8 +228,8 @@ OPTION TYPES
 
 sr3 options come in several types:
 
-count      
-    integer count type. 
+count, size 
+    integer count type.  same as size described below.
 
 duration   
     a floating point number indicating a quantity of seconds (0.001 is 1 milisecond)
@@ -238,7 +239,7 @@ flag
     an option that has only True or False values (aka: a boolean value)
 
 float
-    a floating point number.
+    a floating point number (3 decimal places max, numbers > 1000 are integers)
 
 list
     a list of string values, each succeeding occurrence catenates to the total.
@@ -249,9 +250,10 @@ set
 
 size
     integer size. Suffixes k, m, and g for kilo, mega, and giga (base 2) multipliers.
+    alone base 10: 1k=1000, with a 'b' suffix, base 2: 1kb=1024
 
 str
-    an string value
+    a string value
    
 
 OPTIONS
@@ -575,7 +577,7 @@ declare
 -------
 
 env NAME=Value
-  On can also reference environment variables in configuration files,
+  One can also reference environment variables in configuration files,
   using the *${ENV}* syntax.  If Sarracenia routines needs to make use
   of an environment variable, then they can be set in configuration files::
 
@@ -610,9 +612,16 @@ feeder
   preference to administrator accounts to run flows.
 
 User credentials are placed in the `credentials.conf <sr3_credentials.7.html>`_ 
-file, and *sr3 --users declare* will update
+file, and *sr3 \-\-users declare* will update
 the broker to accept what is specified in that file, as long as the admin password is
 already correct.
+
+- By default, all users are declared. However, flows can be specified on the command line to constrain
+  the declared users to only those in the given flow. For example:
+
+  - *sr3 \-\-users declare* will declare all users
+  - *sr3 \-\-users declare subscribe/dd_amis* will only declare users specified in *subscribe/dd_amis*
+
 
 debug
 -----
@@ -887,6 +896,7 @@ housekeeping <interval> (default: 300 seconds)
 The **housekeeping** option sets how often to execute periodic processing as determined by
 the list of on_housekeeping plugins. By default, it prints a log message every houskeeping interval.
 
+
 include config
 --------------
 
@@ -1044,6 +1054,15 @@ The set of points during notification message processing to emit standard log me
 other values: on_start, on_stop, post, gather, ... etc... It is comma separated, and
 if the list starts with a plus sign (+) then the selected events are appended to current value.
 A minus signe (-) can be used to remove events from the set.
+
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+The *LogFormat* option is passed directly to python logging mechanisms and can be used
+to control what is written to log files.  The format is documented here:
+
+* https://docs.python.org/3/library/logging.html#logrecord-attributes
+
 
 logLevel ( default: info )
 --------------------------
@@ -1209,18 +1228,15 @@ a time will result in 300 seconds (or 5 minutes) being the expiry interval.
 Default value in a Poll is 8 hours, should be longer than nodupe_fileAgeMax to prevent
 re-ingesting files that have aged out of the duplicate suppression cache.
 
-**Use of the cache is incompatible with the default *parts 0* strategy**, one must specify an
-alternate strategy.  One must use either a fixed blocksize, or always never partition files.
-One must avoid the dynamic algorithm that will change the partition size used as a file grows.
-
 **Note that the duplicate suppresion store is local to each instance**. When N
 instances share a queue, the first time a posting is received, it could be
 picked by one instance, and if a duplicate one is received it would likely
 be picked up by another instance. **For effective duplicate suppression with instances**,
 one must **deploy two layers of subscribers**. Use
 a **first layer of subscribers (shovels)** with duplicate suppression turned
-off and output with *post_exchangeSplit*, which route notification messages by checksum to
-a **second layer of subscibers (winnow) whose duplicate suppression caches are active.**
+off and output with *post_exchangeSplit*, which route notification with the same checksum to
+the same member of a **second layer of subscribers (winnow) whose duplicate suppression caches 
+are active.**
 
 
 outlet post|json|url (default: post)
@@ -1424,15 +1440,33 @@ optimal load sharing, the prefetch should be set as low as possible.  However, o
 haul links, it is necessary to raise this number, to hide round-trip latency, so a setting
 of 10 or more may be needed.
 
+queueBind
+---------
+
+When this flag is set, bindings (in AMQP) are requested after a queue is declared.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
+
+queueDeclare
+------------
+
+When this flag is set, queues are declared by sr3.
+On startup, by default, Sarracenia redeclares resources and bindings to ensure they
+are uptodate.  If the queue already exists, These flags can be
+set to False, so no attempt to declare the queue is made, or it´s bindings.
+These options are useful on brokers that do not permit users to declare their queues.
+
 queueName|queue|queue_name|qn 
 -----------------------------
 
 * queueName <name>
 
 By default, components create a queue name that should be unique. The
-default queue_name components create follows the following convention:
+default queueName components create follows the following convention:
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>**
+   **q_<brokerUser>.<programName>.<configName>.<queueShare>**
 
 Where:
 
@@ -1442,38 +1476,39 @@ Where:
 
 * *configName* is the configuration file used to tune component behaviour.
 
-* *random* is just a series of characters chosen to avoid clashes from multiple
-  people using the same configurations
+* *queueShare* defaults to ${USER}_${HOSTNAME}_${RAND8} but should be overridden with the 
+  *queueShare* configuration option.
 
 Users can override the default provided that it starts with **q_<brokerUser>**.
 
 When multiple instances are used, they will all use the same queue, for trivial
 multi-tasking. If multiple computers have a shared home file system, then the
-queue_name is written to:
+queueName is written to:
 
  ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
 
 Instances started on any node with access to the same shared file will use the
-same queue. Some may want use the *queue_name* option as a more explicit method
+same queue. Some may want use the *queueName* option as a more explicit method
 of sharing work across multiple nodes.
 
-queueBind
----------
 
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
+queueShare <str> ( default: ${USER}_${HOSTNAME}_${RAND8} )
+----------------------------------------------------------
 
+A suffix included to queue names to allow defining the sharing scope of a queue.
+When multiple hosts are participating in the same queue, use this setting 
+to have instances pick the same queue::
 
-queueDeclare
-------------
-FIXME: same as above.. is this normal?
+    queueShare my_share_group
 
-On startup, by default, Sarracenia redeclares resources and bindings to ensure they
-are uptodate.  If the queue already exists, These flags can be
-set to False, so no attempt to declare the queue is made, or it´s bindings.
-These options are useful on brokers that do not permit users to declare their queues.
+to get a private queue, for example, one could specify:: 
+
+    queueShare ${RAND8}
+
+will result in a random 8 digit number being appended to the queue name.
+All the instances within the configuration with access to the same state directory
+will use the queue name thus defined.
+
 
 randomize <flag>
 ----------------
@@ -1515,10 +1550,6 @@ given. This option also enforces traversing of symbolic links.
 
 This option is being used to investigate some use cases, and may disappear in future.
 
-sendTo <url>
----------------
-
-Specification of a remote resource to deliver to in a sender.
 
 rename <path>
 -------------
@@ -1587,11 +1618,112 @@ The **retry_ttl** (retry time to live) option indicates how long to keep trying 
 a file before it is aged out of a the queue.  Default is two days.  If a file has not
 been transferred after two days of attempts, it is discarded.
 
-sanity_log_dead <interval> (default: 1.5*housekeeping)
-------------------------------------------------------
 
-The **sanity_log_dead** option sets how long to consider too long before restarting
-a component.
+runStateThreshold_cpuSlow <count> (default: 0)
+----------------------------------------------
+
+The *runStateThreshold_cpuSlow* setting sets the minimum rate of transfer expected for flow
+processing messages. If the messages processed per cpu second rate drops below this threshold,
+then the flow will be identified as "cpuSlow." (shown as cpuS on the *sr3 status* display.)
+This test will only apply if a flow is actually transferring messages.
+The rate is only visible in *sr3 --full status* 
+
+This may indicate that the routing is inordinately expensive or the transfers inordinately slow.
+Examples that could contribute to this:
+
+* one hundred regular expressions must be evaluated per message received. Regex's, when cumulated, can get expensive.
+
+* a complex plugin that does heavy transformations on data in route.
+
+* repeating an operation for each message, when doing it once per batch would do.
+
+
+It defaults to inactive, but may be set to identify transient issues.
+
+runStateThreshold_hung <interval> (default: 450)
+------------------------------------------------
+
+The runStateThreshold_hung (formerly: **sanity_log_dead**) option sets how long to consider too long before restarting
+a component. when running *sr3 status*, the flow status will be shown as *hung*
+
+This may indicate a problem with a poll plugin not releasing the cpu. or so sort of network hiccup.
+A periodic run *sr3 sanity* (as a cron job) will restart hung jobs. 
+
+
+runStateThreshold_idle <interval> (default: 900)
+------------------------------------------------
+
+The runStateThreshold_idle option sets how long to consider too long before declaring no transfers are occurring.
+the *sr3 status* command will show such flows as *idle*
+
+In a flow that posts data, the last activity will be based on when it posted last.
+In a flow that transfers data, the last activity will be based on the last data transfer.
+In a flow does neither of the above, then the last activity is based on the last message
+received.
+
+This isn't a problem in itself, unless one is expecting a continuous flow. If a continuous flow
+of a certain rate is expected, set the *runStateThreshold_slow* for the flow so that *sr3 status* flags
+it as a problem.
+
+
+runStateThreshold_lag <interval> (default: 30)
+----------------------------------------------
+
+The runStateThreshold_lag option sets how much delay in message processing to consider normal.
+if the data AvgLag in the *sr3 status* command exceeds this, then the flow will be listed
+as *lagging*.
+
+When a flow is lagging, one should consider accellerating it:
+* narrow the scope of the subscription (narrower *subtopics*)
+* narrow the scope of the downloads (more *reject*'s in the accept/reject clauses)
+* increase the download resources (more *instances* 
+* split the flow into multiple independent flows.
+
+If the amount of lag being seen is reasonable to accept for the application, then
+raising the runStateThreshold_lag for that flow could also be a reasonable remedy.
+
+
+runStateThreshold_reject <count> (default: 80)
+----------------------------------------------
+
+The runStateThreshold_reject option sets how many messages to reject, as a percentage,
+from a flow and consider normal. If the data *%rej* field in the *sr3 status* command 
+exceeds this, then the flow will be listed as *reje*.
+
+To address, examine the subtopic in the configuration, and narrow them so that fewer messages 
+are transferred from the broker if possible. If that is not possible, then raise the threshold
+for the flow affected.
+
+
+runStateThreshold_retry <count> (default: 1000)
+-----------------------------------------------
+
+The runStateThreshold_retry option sets how big a queue of transfers and posts to retry 
+is considered normal. If the data *Retry* field in the *sr3 status* command 
+exceeds this, then the flow will be listed as *retr*.
+
+To address, examine the logs to determine why so many transfers are failing. Address the cause.
+If the cause cannot be addressed and this needs to be considered normal, then raise the threshold
+for this configuration to match this expectation.
+
+
+runStateThreshold_slow <byterate> (default: 0)
+----------------------------------------------
+
+The runStateThreshold_slow option sets how many messages bytes per second to expect this flow
+to transfer normally.
+
+if the data *RxData* and *TxData* fields combined in the *sr3 status* command is lower than this, 
+then the flow will be listed as *slow*.
+
+To address this, consider whether the download patterns (accept/reject) are downloading
+too much data. Downloading unused data will slow down transfer of data interest.
+
+After considering the data in the flow, consider increasing instances in the configuration 
+or splitting up the load among several configurations, to improve parallelization.
+If the speed observed is to be considered normal for that flow, then set the threshold
+appropriately.
+
 
 scheduled_interval,scheduled_hour,scheduled_minute
 --------------------------------------------------
@@ -1612,6 +1744,35 @@ flowcb.scheduled.Scheduled class will look for the other two time specifiers::
 which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
 after each of 4h, 5h and 23h.
 
+sendTo <url>
+---------------
+
+Specification of a remote resource to deliver to in a sender.
+
+set (DEVELOPER)
+---------------
+
+The *set* option is used, usually by developers, to define settings 
+for particular classes in the source code. the most prominent usage 
+would be to set the logLevel higher for a particular class of interest.
+
+Use of this option is more easily done with the source code handy.
+an example::
+
+   set sarracenia.moth.amqp.AMQP.logLevel debug
+   set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+So *sarracenia.moth.amqp.AMQP* refers to the class to which the setting
+is applied. There is a *class AMQP* in the python file 
+sarracenia/moth/amqp.py (relative to root of source.)
+
+The *logLevel* is the setting to applied but only within 
+that class. The *set* option requires an implementation in the source
+code to implement it for each class.  All *flowcb*'s have the neeeded
+support. The ``moth`` and transfer classes have a specific implementation 
+for logLevel.
+
+Other classes may be hit or miss in terms of implementing the *set* semantic.
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
@@ -1954,6 +2115,14 @@ moving vip.
 When an **sr3 instance** does not find the vip, it sleeps for 5 seconds and retries.
 If it does, it consumes and processes a message and than rechecks for the vip.
 Multiple vips form a list, where any individual address being active is enough.
+
+wololo 
+------
+
+A command line option to overwite an existing sr3 configuration when converting
+from v2.
+
+
 
 SEE ALSO
 ========

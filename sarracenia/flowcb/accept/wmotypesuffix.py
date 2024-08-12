@@ -43,6 +43,10 @@ class WmoTypeSuffix(FlowCB):
 
     def after_accept(self, worklist):
         for message in worklist.incoming:
+
+            if 'fileOp' in message and 'directory' in message['fileOp']:
+                continue
+
             type_suffix = self.__find_type(message['new_file'][0:2])
             ## FIXME confused as to how this could ever be true since find_type never returns "UNKNOWN"
             #if type_suffix == 'UNKNOWN':
@@ -53,6 +57,13 @@ class WmoTypeSuffix(FlowCB):
                 continue
 
             message['new_file'] = message['new_file'] + type_suffix
+
             if 'rename' in message:
-                message['rename'] = message['rename'] + type_suffix
+                message['rename'] += type_suffix
+
+            if 'fileOp' in message and 'rename' in message['fileOp']:
+                message['fileOp']['rename'] += type_suffix
+
             # TODO else -> worklist.rejected.append(message) ?? should this be happening at any point?
+
+

@@ -1,31 +1,27 @@
 import pytest
 #from unittest.mock import Mock
 
-import os
-import logging
-
 import sarracenia
 import sarracenia.config
 import sarracenia.transfer
 import sarracenia.transfer.azure
 
-from azure.storage.blob import ContainerClient
+from azure.storage.blob import ContainerClient, BlobServiceClient
 import azure.core.exceptions
+
+from testcontainers.azurite import AzuriteContainer
 
 import base64
 import json
 import stat
+import os
 
 #useful for debugging tests
 import pprint
 pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
-
-logger = logging.getLogger('sarracenia.config')
-logger.setLevel('DEBUG')
-
-
 TEST_ACCOUNT_NAME = 'notarealaccount'
+TEST_ACCOUNT_KEY = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
 TEST_CONTAINER_NAME = 'notarealcontainer'
 TEST_CONTAINER_FILES = {
     'RootFile.txt': {
@@ -48,17 +44,28 @@ TEST_CONTAINER_FILES = {
         'meta': json.dumps({ 'mtime': '20240404T181822', 'identity': {'method': 'cod', 'value': 'sha512'}})},
 }
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def build_client():
-    client = ContainerClient.from_container_url(f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}', credential="SomethingGoesHere")
-    
-    yield client
+    with AzuriteContainer(account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
+        connection_string = azurite_container.get_connection_string()
+        blobClient = BlobServiceClient.from_connection_string(connection_string, api_version="2019-12-12")
+        yield blobClient
+        
+def build_container(blobClient, containerName):
+    blobClient.create_container(containerName)
+    containerClient = blobClient.get_container_client(containerName)
+    for key, details in TEST_CONTAINER_FILES.items():
+        containerClient.upload_blob(name=key, data=details['value'], metadata={'sarracenia_v3': details['meta']})
+    #return a dict of the connection string k:v pairs
+    #yield azurite_container, dict((key, val) for key, val in [s.split("=", 1) for s in connection_string[:-1].split(";")])
+    return containerClient
 
 def _list_blobs(client):
     return [b for b in client.list_blob_names()]
 
 def test___init__():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     assert type(transfer) is sarracenia.transfer.azure.Azure
@@ -95,6 +102,7 @@ def test___credentials():
 
 def test_cd():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     assert transfer.path == ""
@@ -107,6 +115,7 @@ def test_cd():
 
 def test_cd_forced():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
     assert transfer.path == ""
@@ -120,6 +129,7 @@ def test_cd_forced():
 @pytest.mark.depends(on=['test_close'])
 def test_check_is_connected():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     options.sendTo = 'azure://testing_simple_account/container'
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
@@ -136,6 +146,7 @@ def test_check_is_connected():
 
 def test_chmod():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.chmod('777')
@@ -143,55 +154,68 @@ def test_chmod():
 
 def test_close():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.connected = True
-    transfer.client = ContainerClient.from_container_url(f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}')
+    transfer.client = ContainerClient.from_container_url(f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}')
 
     transfer.close()
 
     assert transfer.connected == False
     assert transfer.client == None
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
-@pytest.mark.depends(on=['test___credentials'])
-def test_connect(build_client):
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
+#@pytest.mark.depends(on=['test___credentials'])
+def test_connect(mocker):
+    
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
+    options.sendTo = "sendTo"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
-    transfer.o.credentials._parse('azure://testing_simple_account/container')
-    transfer.o.sendTo = 'azure://testing_simple_account/container'
-
+    mocker.patch('sarracenia.transfer.azure.Azure._Azure__credentials', return_value=False)
     assert transfer.connect() == False
+    assert transfer.sendTo == "sendTo"
 
-    transfer.o.sendTo = f'azure://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
-    assert transfer.connect() == True
+    mocker.patch('sarracenia.transfer.azure.Azure._Azure__credentials', return_value=True)
+    with AzuriteContainer(account_name=TEST_ACCOUNT_NAME, account_key=TEST_ACCOUNT_KEY) as azurite_container:
+        transfer.container_url = f"http://localhost:{azurite_container.get_exposed_port(azurite_container.blob_service_port)}/{TEST_ACCOUNT_NAME}/{TEST_CONTAINER_NAME}"
+        transfer.container = TEST_CONTAINER_NAME
+        transfer.o.sendTo = f'azure://localhost:{azurite_container.get_exposed_port(azurite_container.blob_service_port)}/{TEST_ACCOUNT_NAME}/{TEST_CONTAINER_NAME}'
+        
+        assert transfer.connect() == False
+
+        transfer.credentials = TEST_ACCOUNT_KEY
+        assert transfer.connect() == True
 
     # Probably need to test exception handling here, but... that sounds like a lot of work.
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_delete(build_client):
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testdelete")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testdelete"
+    transfer.container_url = transfer.client.url
 
     assert 'RootFile.txt' in _list_blobs(transfer.client)
 
     transfer.delete('RootFile.txt')
     assert 'RootFile.txt' not in _list_blobs(transfer.client)
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_get(build_client, tmp_path):
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testget")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testget"
+    transfer.container_url = transfer.client.url
     transfer.path = 'Folder2/'
 
     filename = str(tmp_path) + os.sep + "DownloadedFile.txt"
@@ -205,24 +229,34 @@ def test_get(build_client, tmp_path):
     assert os.path.isfile(filename)
     assert open(filename, 'r').read() == TEST_CONTAINER_FILES['Folder2/AlsoNestedFile.dat']['value']
 
-def test_getcwd(build_client):
+def test_getcwd():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     assert transfer.getcwd() == None
 
-    transfer.client = build_client
+    transfer.client = ContainerClient.from_container_url(f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}')
     assert transfer.getcwd() == ''
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
+def test_gethttpsUrl():
+    options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
+    transfer = sarracenia.transfer.azure.Azure('azure', options)
+    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}'
+    
+    assert transfer.gethttpsUrl("folder/nestedFolder/File.txt") ==  f'https://{TEST_ACCOUNT_NAME}.not.a.real.url.com/{TEST_CONTAINER_NAME}/folder/nestedFolder/File.txt'
+
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_ls(build_client):
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testls")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testls"
+    transfer.container_url = transfer.client.url
     entries = transfer.ls()
     
     assert len(entries) == 5
@@ -233,19 +267,21 @@ def test_ls(build_client):
 
 def test_mkdir():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.mkdir('ThisMeansNothing')
     assert True
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_put(build_client, tmp_path):
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testput")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testput"
+    transfer.container_url = transfer.client.url
 
     transfer.path = 'NewFolder/'
 
@@ -266,15 +302,17 @@ def test_put(build_client, tmp_path):
 def test_registered_as():    
     assert sarracenia.transfer.azure.Azure.registered_as() == ['azure', 'azblob']
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
 def test_rename(build_client):
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testrename")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testrename"
+    transfer.container_url = transfer.client.url
+    transfer.credentials = TEST_ACCOUNT_KEY
 
     assert 'FileToRename.txt' in _list_blobs(transfer.client)
 
@@ -283,24 +321,41 @@ def test_rename(build_client):
     assert 'FileToRename.txt' not in _list_blobs(transfer.client)
     assert 'FileNewName.txt' in _list_blobs(transfer.client)
 
-@pytest.mark.skip(reason="no good way to mock Azure SDK")
-def test_rmdir(build_client):
+#@pytest.mark.skip(reason="no good way to mock Azure SDK")
+def test_rmdir(build_client, mocker):
+    #This method, and the patch that uses it, are needed because the Python SDK seems to poorly handle batch deletions
+    # Taken from here: https://github.com/Azure/Azurite/issues/1809
+    # The fix just deletes all the blobs one at a time, but in the real workld, that's likely to perform terribly.
+    # It's possible this might affect functionality when working against a real Storage Account, but it's hard to tell.
+    
+    def delete_azure_blobs(self, *blobs, **kwargs):
+        for blob in blobs:
+            self.delete_blob(blob.name)
+
+    mocker.patch("azure.storage.blob._container_client.ContainerClient.delete_blobs",
+        side_effect=delete_azure_blobs,
+        autospec=True,
+    )
+
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
 
-    transfer.client = build_client
+    transfer.client = build_container(build_client, "testrmdir")
     transfer.account = TEST_ACCOUNT_NAME
-    transfer.container = TEST_CONTAINER_NAME
-    transfer.container_url = f'https://{TEST_ACCOUNT_NAME}.blob.core.windows.net/{TEST_CONTAINER_NAME}'
+    transfer.container = "testrmdir"
+    transfer.container_url = transfer.client.url
 
     assert 'FolderToDelete/ThisFileWillBeGone.txt' in _list_blobs(transfer.client)
     
+
     transfer.rmdir('FolderToDelete')
 
     assert 'FolderToDelete/ThisFileWillBeGone.txt' not in _list_blobs(transfer.client)
 
 def test_umask():
     options = sarracenia.config.default_config()
+    options.logLevel = "DEBUG"
     transfer = sarracenia.transfer.azure.Azure('azure', options)
     
     transfer.umask()

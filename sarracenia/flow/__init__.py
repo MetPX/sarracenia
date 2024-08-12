@@ -50,8 +50,6 @@ default_options = {
     'fileEvents': allFileEvents,
     'housekeeping': 300,
     'logReject': False,
-    'logFormat':
-    '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logLevel': 'info',
     'mirror': True,
     'permCopy': True,
@@ -210,7 +208,11 @@ class Flow:
 
         self.plugins['load'].extend(self.o.destfn_scripts)
 
+        self.block_reassembly_active = 'block_reassembly' in self.plugins['load'] or \
+                 'sarracenia.flowcb.block_reassembly' in self.plugins['load']
+
         # metrics - dictionary with names of plugins as the keys
+        self.metrics_lastWrite=0
         self.metricsFlowReset()
 
         self.had_vip = not os.path.exists( self.o.novipFilename )
@@ -219,7 +221,8 @@ class Flow:
 
         self.new_metrics = { 'flow': { 'stop_requested': False, 'last_housekeeping': 0,  
               'transferConnected': False, 'transferConnectStart': 0, 'transferConnectTime':0, 
-              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0 } }
+              'transferRxBytes': 0, 'transferTxBytes': 0, 'transferRxFiles': 0, 'transferTxFiles': 0,
+              'last_housekeeping_cpuTime': 0, 'cpuTime' : 0, } }
 
         # carry over some metrics... that don't reset.
         if hasattr(self,'metrics'):
@@ -230,6 +233,13 @@ class Flow:
                 self.new_metrics['transferTxLast'] = self.metrics['transferTxLast']
 
         self.metrics=self.new_metrics
+
+        # removing old metrics files
+        logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+        old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+        for o in old_metrics:
+            logger.info( f"removing old metrics file: {o} " )
+            os.unlink(o)
 
     def loadCallbacks(self, plugins_to_load=None):
 
@@ -244,7 +254,7 @@ class Flow:
                 logger.debug( "details:", exc_info=True )
                 return False
 
-        logger.info( f'flowCallback plugins to load: {plugins_to_load}' )
+        logger.debug( f'flowCallback plugins to load: {plugins_to_load}' )
         for c in plugins_to_load:
             try:
                 plugin = sarracenia.flowcb.load_library(c, self.o)
@@ -274,6 +284,16 @@ class Flow:
 
     def _runCallbacksWorklist(self, entry_point):
 
+        if hasattr(self, entry_point):
+            if self.o.logLevel.lower() == 'debug' :
+                eval( f"self.{entry_point}(self.worklist)")
+            else:
+                try:
+                    eval( f"self.{entry_point}(self.worklist)")
+                except Exception as ex:
+                    logger.error( f'flow {entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         if hasattr(self, 'plugins') and (entry_point in self.plugins):
             for p in self.plugins[entry_point]:
                 if self.o.logLevel.lower() == 'debug' :
@@ -286,6 +306,17 @@ class Flow:
                         logger.debug( "details:", exc_info=True )
 
     def runCallbacksTime(self, entry_point):
+
+        if hasattr(self, entry_point):
+            if self.o.logLevel.lower() == 'debug' :
+                eval( f"self.{entry_point}()")
+            else:
+                try:
+                    eval( f"self.{entry_point}()")
+                except Exception as ex:
+                    logger.error( f'flow {entry_point} crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         for p in self.plugins[entry_point]:
             if self.o.logLevel.lower() == 'debug' :
                 p()
@@ -302,6 +333,16 @@ class Flow:
         Expects the plugin to return a dictionary containing metrics, which is saved to ``self.metrics[plugin_name]``.
         """
         
+        if hasattr(self, "metricsReport"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.metricsReport()
+            else:
+                try:
+                    self.metricsReport()
+                except Exception as ex:
+                    logger.error( f'flow metricsReport() crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         if 'transferConnected' in self.metrics['flow'] and self.metrics['flow']['transferConnected']: 
             now=nowflt()
             self.metrics['flow']['transferConnectTime'] += now - self.metrics['flow']['transferConnectStart']
@@ -327,15 +368,59 @@ class Flow:
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {p}/metricsReport crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
+        ost = os.times()
+        self.metrics['flow']['cpuTime'] = ost.user+ost.system-self.metrics['flow']['last_housekeeping_cpuTime']
+
+    def _runCallbackPoll(self):
+        if hasattr(self, "Poll"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.Poll()
+            else:
+                try:
+                    self.Poll()
+                except Exception as ex:
+                    logger.error( f'flow Poll crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
+        for plugin in self.plugins['poll']:
+            if self.o.logLevel.lower() == 'debug' :
+                new_incoming = plugin()
+                if len(new_incoming) > 0:
+                    self.worklist.incoming.extend(new_incoming)
+            else:
+                try:
+                    new_incoming = plugin()
+                    if len(new_incoming) > 0:
+                        self.worklist.incoming.extend(new_incoming)
+                except Exception as ex:
+                    try:
+                        logger.error(f'flowCallback plugin {plugin.__module__}.{plugin.__qualname__} crashed: {ex}' )
+                    except:
+                        # just in case
+                        logger.error(f'flowCallback plugin {plugin} crashed: {ex}' )
+                    logger.debug("details:", exc_info=True )
 
     def _runHousekeeping(self, now) -> float:
         """ Run housekeeping callbacks
             Return the time when housekeeping should be run next
         """
         logger.info(f'on_housekeeping pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}')
+        if hasattr(self, "on_housekeeping"):
+            if self.o.logLevel.lower() == 'debug' :
+                self.on_housekeeping()
+            else:
+                try:
+                    self.on_housekeeping()
+                except Exception as ex:
+                    logger.error( f'flow on_housekeeping crashed: {ex}' )
+                    logger.debug( "details:", exc_info=True )
+
         self.runCallbacksTime('on_housekeeping')
         self.metricsFlowReset()
         self.metrics['flow']['last_housekeeping'] = now
+        ost = os.times()
+        self.metrics['flow']['last_housekeeping_cpuTime'] = ost.user+ost.system
+        self.metrics['flow']['cpuTime'] = ost.user+ost.system
 
         next_housekeeping = now + self.o.housekeeping
         self.metrics['flow']['next_housekeeping'] = next_housekeeping
@@ -376,10 +461,7 @@ class Flow:
         m.setReport(code, reason)
 
     def please_stop(self) -> None:
-        logger.info(
-            f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.'
-        )
-        self.runCallbacksTime('please_stop')
+        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
@@ -429,6 +511,19 @@ class Flow:
         """
 
 
+        if hasattr(self.o, 'metricsFilename' ):
+            mdir=os.path.dirname(self.o.metricsFilename)
+            if not os.path.isdir(mdir):
+                os.makedirs(mdir, self.o.permDirDefault, True)
+
+        pidfilename = sarracenia.config.get_pid_filename(
+                self.o.hostdir if self.o.statehost else None,
+                self.o.component, self.o.config, self.o.no)
+        pdir=os.path.dirname(pidfilename)
+        if not os.path.isdir(pdir):
+            os.makedirs(mdir, self.o.permDirDefault, True)
+
+
         if not self.loadCallbacks(self.plugins['load']):
            return
 
@@ -443,13 +538,15 @@ class Flow:
         current_sleep = self.o.sleep
         last_time = start_time
         self.metrics['flow']['last_housekeeping'] = start_time
+        ost=os.times()
+        self.metrics['flow']['last_housekeeping_cpuTime'] =  ost.user+ost.system
 
         if self.o.logLevel == 'debug':
             logger.debug("options:")
             self.o.dump()
 
-        logger.info("callbacks loaded: %s" % self.plugins['load'])
-        logger.info(
+        logger.debug("callbacks loaded: %s" % self.plugins['load'])
+        logger.debug(
             f'pid: {os.getpid()} {self.o.component}/{self.o.config} instance: {self.o.no}'
         )
 
@@ -461,11 +558,11 @@ class Flow:
 
             if self._stop_requested:
                 if stopping:
-                    logger.info('clean stop from run loop')
+                    logger.debug('clean stop from run loop')
                     self.close()
                     break
                 else:
-                    logger.info( 'starting last pass (without gather) through loop for cleanup.')
+                    logger.debug( 'starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
             self._run_vip_update()
@@ -480,7 +577,7 @@ class Flow:
             if (self.o.component == 'poll') or self.have_vip:
 
                 if ( self.o.messageRateMax > 0 ) and (current_rate > 0.8*self.o.messageRateMax ):
-                    logger.info("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
+                    logger.debug("current_rate (%.2f) vs. messageRateMax(%.2f)) " % (current_rate, self.o.messageRateMax))
 
                 if not stopping:
                     self.gather()
@@ -501,28 +598,31 @@ class Flow:
 
                 else: # normal processing, when you are active.
                     self.work()
-                    self.post()
+                    self.post(now)
 
             now = nowflt()
             run_time = now - start_time
             total_messages += last_gather_len
 
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
-                self.please_stop()
+                self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
             elapsed = now - last_time
 
             self.metrics['flow']['msgRate'] = current_rate
+            self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
-                    logger.info("Not exiting because there are still messages in the post retry queue.")
+                    logger.info( f"retryEmptyBeforeExit=True and there are still "
+                        f"{self.metrics['retry']['msgs_in_post_retry']} messages in the post retry queue.")
                     # Sleep for a while. Messages can't be retried before housekeeping has run...
-                    current_sleep = 60
+                    # how long to sleep is unclear... if there are a lot of retries, and a low batch... could take a long time.
+                    current_sleep = self.o.batch if self.o.batch < self.o.housekeeping else self.o.housekeeping // 2
                 else:
-                    self.please_stop()
+                    self.runCallbacksTime('please_stop')
 
             if spamming and (current_sleep < 5):
                 current_sleep *= 2
@@ -656,7 +756,16 @@ class Flow:
                 for dfm in self.plugins['destfn']:
                     classname =  dfm.__qualname__.split('.')[0]
                     if (scriptclass == classname) or (scriptclass.capitalize() == classname): 
-                         destFileName = dfm(msg)
+                        try:
+                            destFileName = dfm(msg)
+                        except Exception as ex:
+                            logger.error( f'DESTFNSCRIPT plugin {dfm} crashed: {ex}' )
+                            logger.debug( "details:", exc_info=True )
+
+                        if destFileName == None or type(destFileName) != str:
+                             logger.error( f"DESTFNSCRIPT {dfm} return value must be the new file name as a string. This one returned {destFileName}, ignoring")
+                             return None
+
             elif spec == 'TIME':
                 timeSuffix = ':' + time.strftime("%Y%m%d%H%M%S", time.gmtime())
                 if 'pubTime' in msg:
@@ -670,9 +779,8 @@ class Flow:
                     timeSuffix = ':' + parts[-1]
 
             else:
-                logger.error("Don't understand this DESTFN parameter: %s" %
-                             spec)
-                return filename
+                logger.error( f"invalid DESTFN parameter: {spec}" )
+                return None
         return destFileName + satnet + timeSuffix
 
 
@@ -880,9 +988,19 @@ class Flow:
             if self.o.messageAgeMax != 0 and lag > self.o.messageAgeMax:
                 self.reject(
                     m, 504,
-                    "Excessive lag: %g sec. Skipping download of: %s, " %
-                    (lag, m['new_file']))
+                    f"message too old (high lag): {lag:g} sec. skipping: {m.getIDStr()}, " )
                 continue
+
+            if 'mtime' in m:
+                age =  now-sarracenia.timestr2flt(m['mtime'])
+                if self.o.fileAgeMax > 0 and age > self.o.fileAgeMax:
+                    self.reject( m, 410, f"file too old: {age:g} sec. skipping: {m.getIDStr()}, ")
+                    continue
+
+                if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
+                    logger.warning( f"file too young: queueing for retry.")
+                    self.worklist.failed.append(msg)
+                    continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
                 url = self.o.variableExpansion(m['baseUrl'],
@@ -1030,19 +1148,14 @@ class Flow:
             return
 
         if len(self.worklist.incoming) > 0:
-            logger.info('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
+            logger.debug('ingesting %d postings into duplicate suppression cache' % len(self.worklist.incoming) )
             self.worklist.poll_catching_up = True
             return
         else:
             self.worklist.poll_catching_up = False
 
         if self.have_vip:
-            for plugin in self.plugins['poll']:
-                new_incoming = plugin()
-                if len(new_incoming) > 0:
-                    self.worklist.incoming.extend(new_incoming)
-
-
+            self._runCallbackPoll()
 
     def do(self) -> None:
 
@@ -1120,32 +1233,41 @@ class Flow:
 
 
 
-    def post(self) -> None:
+    def post(self,now) -> None:
 
-        if len(self.plugins["post"]) > 0:
+        if hasattr(self.o,'post_broker') and self.o.post_broker:
 
-            # work-around for python3.5 not being able to copy re.match issue: 
-            # https://github.com/MetPX/sarracenia/issues/857 
-            if sys.version_info.major == 3 and sys.version_info.minor <= 6:
-                for m in self.worklist.ok:
-                    if '_matches' in m:
-                        del m['_matches']
+            if len(self.plugins["post"]) > 0:
 
-            for p in self.plugins["post"]:
-                try:
-                    p(self.worklist)
-                except Exception as ex:
-                    logger.error( f'flowCallback plugin {p} crashed: {ex}' )
-                    logger.debug( "details:", exc_info=True )
+                # work-around for python3.5 not being able to copy re.match issue: 
+                # https://github.com/MetPX/sarracenia/issues/857 
+                if sys.version_info.major == 3 and sys.version_info.minor <= 6:
+                    for m in self.worklist.ok:
+                        if '_matches' in m:
+                            del m['_matches']
 
-        self._runCallbacksWorklist('after_post')
+                for p in self.plugins["post"]:
+                    try:
+                        p(self.worklist)
+                    except Exception as ex:
+                        logger.error( f'flowCallback plugin {p} crashed: {ex}' )
+                        logger.debug( "details:", exc_info=True )
+
+            self._runCallbacksWorklist('after_post')
+
         self._runCallbacksWorklist('report')
         self._runCallbackMetrics()
 
-        if hasattr(self.o, 'metricsFilename' ) and os.path.isdir(os.path.dirname(self.o.metricsFilename)):
+        if hasattr(self.o, 'metricsFilename' ) \
+                and now > self.metrics_lastWrite+self.o.metrics_writeInterval:
+
+            # assume dir always exist... should check on startup, not here.
+            # if os.path.isdir(os.path.dirname(self.o.metricsFilename)):
             metrics=json.dumps(self.metrics)
             with open(self.o.metricsFilename, 'w') as mfn:
                  mfn.write(metrics+"\n")
+            self.metrics_lastWrite=now
+
             if self.o.logMetrics:
                 if self.o.logRotateInterval >= 24*60*60:
                     tslen=8
@@ -1157,12 +1279,12 @@ class Flow:
                 with open(self.o.metricsFilename + '.' + timestamp[0:tslen], 'a') as mfn:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
-                # removing old metrics files
-                logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
-                old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
-                for o in old_metrics:
-                    logger.info( f"removing old metrics file: {o} " )
-                    os.unlink(o)
+            # removing old metrics files
+            logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
+            old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
+            for o in old_metrics:
+                logger.info( f"removing old metrics file: {o} " )
+                os.unlink(o)
 
         self.worklist.ok = []
         self.worklist.directories_ok = []
@@ -1411,7 +1533,7 @@ class Flow:
             if os.path.isfile(path): os.unlink(path)
             if os.path.islink(path): os.unlink(path)
             if os.path.isdir(path): os.rmdir(path)
-            logger.info("removed %s" % path)
+            logger.debug("removed %s" % path)
         except:
             logger.error("could not remove %s." % path)
             logger.debug('Exception details: ', exc_info=True)
@@ -1424,7 +1546,6 @@ class Flow:
             for messages with an rename file operation, it is to rename a file.
         """
         ok = True
-        logger.info( f" pwd is {os.getcwd()}  " )
         if not os.path.exists(old):
             logger.info(
                 "old file %s not found, if destination (%s) missing, then fall back to copy"
@@ -1556,12 +1677,20 @@ class Flow:
                 self.worklist.ok.append(msg)
                 continue
 
+            if not 'new_dir' in msg or not msg['new_dir']:
+                self.reject(msg, 422, f"new_dir message field missing, do not know which directory to put file in. skipping." )
+                continue
+
+            if not 'new_file' in msg or not msg['new_file']:
+                self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
+                continue
+
             new_path = msg['new_dir'] + os.path.sep + msg['new_file']
             new_file = msg['new_file']
 
             if not os.path.isdir(msg['new_dir']):
                 try:
-                    logger.info( f"missing destination directories, makedirs: {msg['new_dir']} " )
+                    logger.debug( f"missing destination directories, makedirs: {msg['new_dir']} " )
                     self.worklist.directories_ok.append(msg['new_dir'])
                     os.makedirs(msg['new_dir'], 0o775, True)
                 except Exception as ex:
@@ -1851,9 +1980,12 @@ class Flow:
             msg['_deleteOnPost'] |= set(['new_inflight_path'])
 
         if 'download' in self.plugins and len(self.plugins['download']) > 0:
+            ok = False
             for plugin in self.plugins['download']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
@@ -1944,7 +2076,7 @@ class Flow:
                     remote_offset += msg['blocks']['manifest'][blkno]['size']
 
                 block_length=msg['blocks']['manifest'][msg['blocks']['number']]['size']
-                logger.info( f"offset calculation:  start={remote_offset} count={block_length}" )
+                logger.debug( f"offset calculation:  start={remote_offset} count={block_length}" )
 
             elif 'size' in msg:
                 block_length = msg['size']
@@ -2125,14 +2257,18 @@ class Flow:
     # generalized send...
     def send(self, msg, options):
         self.o = options
-        logger.debug( f"{self.scheme}_transport sendTo: {self.o.sendTo}" )
+        sendTo=self.o.sendTo 
+        logger.debug( f"{self.scheme}_transport sendTo: {sendTo}" )
         logger.debug("%s_transport send %s %s" %
                      (self.scheme, msg['new_dir'], msg['new_file']))
 
         if len(self.plugins['send']) > 0:
+            ok = False
             for plugin in self.plugins['send']:
                 try:
                     ok = plugin(msg)
+                    if type(ok) is not bool:
+                        logger.error( f"{plugin} returned {type(ok)}. Should return boolean" )
                 except Exception as ex:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
@@ -2237,7 +2373,7 @@ class Flow:
                     try:
                         cwd = self.proto[self.scheme].getcwd()
                     except Exception as ex:
-                        logger.error( f"could not getcwd: {ex}" )
+                        logger.error( f"could not getcwd on {sendTo} : {ex}" )
                         return False
 
             if cwd != new_dir:
@@ -2247,7 +2383,7 @@ class Flow:
                     try:
                         self.proto[self.scheme].cd_forced(775, new_dir)
                     except Exception as ex:
-                        logger.error( f"could not chdir to {new_dir}: {ex}" )
+                        logger.error( f"could not chdir to {sendTo} {new_dir}: {ex}" )
                         return False
 
             #=================================
@@ -2263,13 +2399,13 @@ class Flow:
                                 try:
                                     self.proto[self.scheme].rmdir(new_file)
                                 except Exception as ex:
-                                    logger.error( f"could not rmdir {new_file}: {ex}" )
+                                    logger.error( f"could not rmdir {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                     return False
                             else:
                                 try:
                                     self.proto[self.scheme].delete(new_file)
                                 except Exception as ex:
-                                    logger.error( f"could not delete {new_file}: {ex}" )
+                                    logger.error( f"could not delete {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                     return False
 
                         msg.setReport(201, f'file or directory removed')
@@ -2286,7 +2422,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].rename(msg['fileOp']['rename'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not rename {new_file}: {ex}" )
+                                logger.error( f"could not rename {sendTo} (in {msg['new_dir']} {msg['fileOp']['rename']} to {new_file}: {ex}" )
                                 return False
 
                         msg.setReport(201, f'file renamed')
@@ -2305,7 +2441,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].mkdir(new_file)
                             except Exception as ex:
-                                logger.error( f"could not mkdir {new_file}: {ex}" )
+                                logger.error( f"could not mkdir {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                                 return False
                         msg.setReport(201, f'directory created')
                         self.metrics['flow']['transferTxFiles'] += 1
@@ -2328,7 +2464,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].link(msg['fileOp']['hlink'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not link {new_file}: {ex}" )
+                                logger.error( f"could not link {sendTo} in {msg['new_dir']}{os.sep}{msg['fileOp']['hlink']} to {new_file}: {ex}" )
                                 return False
                         return True
                     logger.error("%s, hardlinks not supported" % self.scheme)
@@ -2342,7 +2478,7 @@ class Flow:
                             try:
                                 self.proto[self.scheme].symlink(msg['fileOp']['link'], new_file)
                             except Exception as ex:
-                                logger.error( f"could not symlink {new_file}: {ex}" )
+                                logger.error( f"could not symlink {sendTo} in {msg['new_dir']} {msg['fileOp']['link']} to {new_file}: {ex}" )
                                 return False
                         msg.setReport(201, f'file linked')
                         self.metrics['flow']['transferTxFiles'] += 1
@@ -2362,6 +2498,8 @@ class Flow:
                     % local_file)
                 time.sleep(0.01)
                 return False
+            elif 'size' not in msg:
+                msg['size'] = os.path.getsize(local_file)
 
             offset = 0
             if ('blocks' in msg) and (msg['blocks']['method'] == 'inplace'):
@@ -2401,7 +2539,7 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put( msg, local_file, new_file)
                 except Exception as ex:
-                    logger.error( f"could not send inflight=None {new_file}: {ex}" )
+                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                     return False
                 
             elif (('blocks' in msg)
@@ -2411,7 +2549,7 @@ class Flow:
                         self.proto[self.scheme].put(msg, local_file, new_file, offset,
                                             new_offset, msg['size'])
                     except Exception as ex:
-                        logger.error( f"could not send inplace {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inplace {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
 
             elif inflight == '.':
@@ -2425,12 +2563,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
@@ -2445,12 +2583,12 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put(msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
             elif options.inflight[-1] == '/':
                 if not self.o.dry_run:
@@ -2470,12 +2608,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_inflight_path)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].rename(new_inflight_path, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
@@ -2490,12 +2628,12 @@ class Flow:
                             len_written = self.proto[self.scheme].put(
                                 msg, local_file, new_file)
                     except Exception as ex:
-                        logger.error( f"could not send inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not send {local_dir}{os.sep}{local_file} inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                     try:
                         self.proto[self.scheme].put(msg, local_file, new_file)
                     except Exception as ex:
-                        logger.error( f"could not rename inflight={inflight} {new_file}: {ex}" )
+                        logger.error( f"could not rename inflight={inflight} {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
                         return False
                 else:
                     len_written = msg['size']
@@ -2556,11 +2694,11 @@ class Flow:
         logger.debug("%s" % local_file)
 
         # if the file is not partitioned, the the onfly_checksum is for the whole file.
-        # cache it here, along with the mtime.
-
-        if ('blocks' in msg) and sarracenia.features['reassembly']['present']:
-            with sarracenia.blockmanifest.BlockManifest(local_file) as y:
-                y.set( msg['blocks'] )
+        # cache it here, along with the mtime, unless block_reassembly plugin is active...
+        
+        if ('blocks' in msg) and sarracenia.features['reassembly']['present'] and not self.block_reassembly_active:
+            with sarracenia.blockmanifest.BlockManifest(local_file) as bm:
+                bm.set( msg['blocks'] )
 
         x = sarracenia.filemetadata.FileMetadata(local_file)
         # FIXME ... what to do when checksums don't match?
@@ -2618,7 +2756,7 @@ class Flow:
                 except:
                     pass
 
-        if hasattr(proto, 'chmod'):
+        if hasattr(proto, 'utime'):
             if self.o.timeCopy and 'mtime' in msg and msg['mtime']:
                 mtime = sarracenia.timestr2flt(msg['mtime'])
                 atime = mtime
@@ -2642,6 +2780,14 @@ class Flow:
             return
 
         for msg in self.worklist.incoming:
+
+            if not 'new_dir' in msg or not msg['new_dir']:
+                self.reject(msg, 422, f"new_dir message field missing, do not know which directory to put file in. skipping." )
+                continue
+
+            if not 'new_file' in msg or not msg['new_file']:
+                self.reject(msg, 422, f"new_file message field missing, do not know name of file to write. skipping." )
+                continue
 
             # weed out non-file transfer operations that are configured to not be done.
             if 'fileOp' in msg:

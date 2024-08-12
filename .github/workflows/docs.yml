@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - development
+      - issue1047
     paths-ignore:
       - '.github/**'
 
@@ -22,7 +23,6 @@ jobs:
         sudo apt update -y
         sudo apt install -y python3-appdirs python3-humanfriendly python3-humanize python3-jsonpickle python3-paramiko python3-psutil python3-watchdog
         sudo apt install -y pandoc dia python3-paramiko 
-        sudo apt install -y python3-sphinx python3-nbsphinx python3-sphinx-rtd-theme
         sudo apt install -y python3-amqp
     - name: Checkout
       uses: actions/checkout@master

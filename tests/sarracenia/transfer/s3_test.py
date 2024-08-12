@@ -1,4 +1,5 @@
 import pytest
+from tests.conftest import *
 #from unittest.mock import Mock
 
 import os
@@ -18,10 +19,6 @@ from moto import mock_aws
 import base64
 import json
 import stat
-
-#useful for debugging tests
-import pprint
-pretty = pprint.PrettyPrinter(indent=2, width=200).pprint
 
 
 logger = logging.getLogger('sarracenia.config')

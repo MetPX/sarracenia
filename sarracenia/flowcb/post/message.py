@@ -63,9 +63,9 @@ class Message(FlowCB):
     def on_start(self):
         if hasattr(self,'poster') and self.poster:
             self.poster.putSetup()
-        logger.info('starting')
+        logger.debug('starting')
 
     def on_stop(self):
         if hasattr(self,'poster') and self.poster:
             self.poster.close()
-        logger.info('closing')
+        logger.debug('closing')

@@ -181,7 +181,7 @@ class Azure(Transfer):
         file_key = self.path + remote_file
         logger.debug(f"get https://{self.container_url}/{file_key} to {local_file}")
 
-        blob = self.client.get_blob_client(file_key, user_agent=self.__user_agent)
+        blob = self.client.get_blob_client(file_key)
 
         with open(local_file, 'wb') as file:
           data = blob.download_blob(user_agent=self.__user_agent)
@@ -292,11 +292,11 @@ class Azure(Transfer):
     
     def rename(self, remote_old, remote_new):
         remote_new = remote_new.lstrip('/')
-        b_new = self.client.get_blob_client(remote_new, user_agent=self.__user_agent)
+        b_new = self.client.get_blob_client(remote_new)
 
-        from_url = self.container_url + remote_old + "?" + self.credentials
+        from_url = self.container_url + "/" + remote_old + "?" + self.credentials
 
-        logger.debug(f"remote_old={remote_old}; remote_new={remote_new}")
+        logger.debug(f"remote_old={remote_old}; from_url={self.container_url}/{remote_old}; remote_new={remote_new}")
         b_new.start_copy_from_url(from_url, user_agent=self.__user_agent)
         self.client.delete_blob(remote_old.lstrip('/'), user_agent=self.__user_agent)
     

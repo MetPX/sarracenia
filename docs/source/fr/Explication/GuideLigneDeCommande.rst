@@ -136,12 +136,18 @@ Appeler la fonction correspondante pour chacune des configurations::
 
 
 Déclare les files d’attente et les échanges liés à chaque configuration.
-On peut également l’appeler avec --users, afin qu’il déclare les utilisateurs ainsi que les échanges et les files d’attente::
+On peut également l’appeler avec *\-\-users*, afin qu’il déclare les utilisateurs ainsi que les échanges et les files d’attente::
 
   $ sr3 --users declare
     2020-09-06 23:28:56,211 [INFO] sarra.rabbitmq_admin add_user permission user 'ender' role source  configure='^q_ender.*|^xs_ender.*' write='^q_ender.*|^xs_ender.*' read='^q_ender.*|^x[lrs]_ender.*|^x.*public$' 
     ...
 
+La fourniture d'un ou de plusieurs flux ne déclarera que les utilisateurs spécifiés dans le(s) flux::
+
+  $ sr3 --users declare subscribe/dd_amis
+    ...
+    declare: 2024-05-17 20:02:18,548 434920 [INFO] sarracenia.rabbitmq_admin add_user permission user 'tfeed@localhost' role feeder  configure=.* write=.* read=.* 
+    ...
 
 dump
 ~~~~
@@ -397,6 +403,11 @@ Conversion d’une configuration : les deux formats sont acceptés, ainsi que le
   $ sr3 convert shovel/no_trouble_f00.inc
     2022-06-14 15:03:29,918 1093655 [INFO] root convert converting shovel/no_trouble_f00.inc from v2 to v3
 
+Pour écraser une configuration SR3 existante, utilisez l'option *--wololo*.
+Lors de l'écrasement de plusieurs configurations SR3 est voulu, il faut également 
+utiliser *--dangerWillRobinson=n* dans le mode normale... où *n* est le nombre de configurations à convertir.
+
+
 start
 ~~~~~
 
@@ -533,10 +544,15 @@ La deuxième rangée donne des détails sur les en têtes de chacune des catégo
 Les configurations sont répertoriées sur la gauche. Pour chaque configuration, l’état.
 sera :
 
-* stopped:  aucun processus n’est en cours d’exécution.
-* running:  tout les processus sont en cours d’exécution.
-* partial:  certains processus sont en cours d’exécution.
-* disabled: configuré pour ne pas s’exécuter.
+* hung : les processus semblent bloqués et n'écrivent rien dans les journaux.
+* idle : tous les processus en cours d'exécution, mais ne transfert pas depuis trop longtemps (runStateThreshold_idle.)
+* lag : tous les processus en cours d'exécution, mais les messages en cours de traitement sont trop anciens ( runStateThreshold_lag )
+* part: certains processus sont en cours d'exécution, d'autres manquent à l'appel.
+* reje : tous les processus en cours d'exécution, mais un pourcentage trop élevé de messages rejetés (runStateThreshold_reject )
+* rtry : tous les processus en cours d'exécution, mais un grand nombre de transferts échouent, causant d'autres tentatives (runStateThreshold_retry )
+* run : tous les processus sont en cours d'exécution (et en transfert, et pas en retard, et pas lents... état normal.)
+* slow : transfert de moins que le minimum d'octets/seconde ( runStateThreshold_slow )
+* stop : aucun processus n'est en cours d'exécution.
 
 Les colonnes à droite donnent plus d’informations, détaillant le nombre de processus en cours d’exécution à partir du nombre attendu.
 Par exemple, 3/3 signifie 3 processus ou instances sont trouvés à partir des 3 attendus.
@@ -646,7 +662,7 @@ Une fois connecté à un courtier AMQP, l'utilisateur doit créer une fil d'atte
 
 Mise en fil d'attente sur broker :
 
-- **queue <nom> (par défaut : q_<brokerUser>.<programName>.<configName>.<configName>)**
+- **queueShare <chaine> (par défaut : ${USER}_${HOSTNAME}_${RAND8})**
 - **expire <durée> (par défaut : 5m == cinq minutes. À OUTREPASSER)**
 - **message_ttl <durée> (par défaut : Aucun)**
 - **prefetch <N> (par défaut : 1)**
@@ -658,36 +674,25 @@ les cas moins habituels, l'utilisateur peut avoir besoin a remplacer les valeurs
 par défaut. La fil d'attente est l'endroit où les avis sont conservés
 sur le serveur pour chaque abonné.
 
-[ queue|queue_name|qn <name>]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
 
-Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Le
-queue_name par défaut créé par les composants et suit la convention suivante :
+Un suffixe inclus dans les noms de files d'attente (queueName) pour permettre de spécifier 
+la portée de partage d'une file d'attente.
+Lorsque plusieurs hôtes participent à la même file d'attente, utilisez ce paramètre
+pour que les instances choisissent la même file d'attente::
 
-   **q_<brokerUser>.<programName>.<configName>.<random>.<random>** 
+ queueShare my_share_group
 
-Ou:
+Par contre, pour obtenir une file d'attente privée, on pourrait spécifier ::
 
-* *brokerUser* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+ queueShare ${RAND8}
 
-* *programName* est le composant qui utilise la fil d’attente (par exemple *sr_subscribe* )
+Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'attente.
+Toutes les instances de la configuration ayant accès au même répertoire d'état
+utilisera le nom de file d'attente ainsi défini.
 
-* *configName* est le fichier de configuration utilisé pour régler le comportement des composants
 
-* *random* n’est qu’une série de caractères choisis pour éviter les affrontements de plusieurs
-  personnes qui utilisent les mêmes configurations
-
-Les utilisateurs peuvent remplacer la valeur par défaut à condition qu’elle commence par **q_<brokerUser>**.
-
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour du multi-tasking simple.
-Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :
-
- ~/.cache/sarra/<programName>/<configName>/<programName>_<configName>_<brokerUser>.qname
-
-Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.
 
 AMQP QUEUE BINDINGS
 -------------------

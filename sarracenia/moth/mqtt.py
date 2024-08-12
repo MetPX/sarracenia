@@ -138,7 +138,6 @@ class MQTT(Moth):
 
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
-        logger.setLevel('WARNING')
 
         if ('settings' in self.o) and (me in self.o['settings']):
             for s in self.o['settings'][me]:
@@ -180,33 +179,34 @@ class MQTT(Moth):
       
         logger.warning("note: mqtt support is newish, not very well tested")
 
-    def __sub_on_disconnect(client, userdata, rc, properties=None):
+    def __sub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
-        logger.debug(paho.mqtt.client.connack_string(rc))
+        logger.debug(reason_code)
         if hasattr(userdata, 'pending_publishes'):
             lost = len(userdata.pending_publishes)
             if lost > 0:
-                logger.error(
-                    'message loss! cannot confirm %d messages were published: mids=%s'
-                    % (lost, userdata.pending_publishes))
+                logger.error( f"message loss! cannot confirm {lost}"
+                    f"messages were published: mids={userdata.pending_publishes}" )
             else:
-                logger.info('clean. no published messages lost.')
+                logger.info( f"clean. no published messages lost.")
 
-    def __sub_on_connect(client, userdata, flags, rc, properties=None):
-        logger.debug("client=%s rc=%s, flags=%s" %
-                    (client, paho.mqtt.client.connack_string(rc), flags))
-
-        if flags['session present'] != 1:
-            logger.debug(
-                'no existing session, no recovery of inflight messages from previous connection'
-            )
+    def __sub_on_connect(client, userdata, flags, reason_code, properties=None):
 
         userdata.connect_in_progress = False
-        if rc != paho.mqtt.client.MQTT_ERR_SUCCESS:
-            logger.error("failed to establish connection")
+
+        if reason_code != 0 :
+            logger.error( f"failed to establish connection: {reason_code}")
             return
 
+        if not flags.session_present:
+            logger.debug(
+                f"no existing session, no recovery of inflight messages from previous connection"
+            )
+        logger.info( f"connection succeeded" )
+
+        # else reason_code == 0 ... success.
         # FIXME: enhancement could subscribe accepts multiple (subj, qos) tuples so, could do this in one RTT.
+        userdata.connected=True
         userdata.subscribe_mutex.acquire()
         for binding_tuple in userdata.o['bindings']:
 
@@ -214,15 +214,15 @@ class MQTT(Moth):
                 subj=userdata.o['topic']
             else:
                 exchange, prefix, subtopic = binding_tuple
-                logger.info("tuple: %s %s %s" % (exchange, prefix, subtopic))
+                logger.info( f"tuple: {exchange} {prefix} {subtopic}")
 
                 subj = '/'.join(['$share', userdata.o['queueName'], exchange] +
                                 prefix + subtopic)
 
             (res, mid) = client.subscribe(subj, qos=userdata.o['qos'])
             userdata.subscribe_in_progress += 1
-            logger.info( "asked to subscribe to: %s, mid=%d qos=%s result: %s" % (subj, mid, \
-                userdata.o['qos'], paho.mqtt.client.error_string(res)) )
+            logger.info( f"request to subscribe to: {subj}, mid={mid} "
+                    f"qos={userdata.o['qos']} sent: {paho.mqtt.client.error_string(res)}" )
         userdata.subscribe_mutex.release()
         userdata.metricsConnect()
 
@@ -230,42 +230,61 @@ class MQTT(Moth):
     def __sub_on_subscribe(client,
                            userdata,
                            mid,
-                           granted_qos,
+                           reason_codes,
                            properties=None):
-        userdata.subscribe_mutex.acquire()
-        logger.info("client: {} subscribe completed mid={} granted_qos={}".format(
-            client._client_id, mid, list(map(lambda x: x.getName(), granted_qos))))
-        userdata.subscribe_in_progress -= 1
-        userdata.subscribe_mutex.release()
 
-    def __pub_on_disconnect(client, userdata, rc, properties=None):
+ 
+
+        for sub_result in reason_codes:
+            if sub_result == 1:
+                userdata.subscribe_mutex.acquire()
+                logger.info( f"client: {client._client_id} subscribe "
+                      f"completed mid={mid} reason_codes={reason_codes}" )
+                userdata.subscribe_in_progress -= 1
+                userdata.subscribe_mutex.release()
+            elif sub_result >= 128:
+                logger.error(  f"client: {client._client_id} subscribe "
+                         f"failed mid={mid} reason_codes={reason_codes}" )
+            else:
+                logger.warning(  f"client: {client._client_id} subscribe "
+                         f"unsure mid={mid} reason_codes={reason_codes}" )
+
+    def __pub_on_disconnect(client, userdata, mid, reason_code, properties=None):
         userdata.metricsDisconnect()
-        logger.info(paho.mqtt.client.connack_string(rc))
+        logger.info(reason_code)
 
-    def __pub_on_connect(client, userdata, flags, rc, properties=None):
+    def __pub_on_connect(client, userdata, flags, reason_code, properties=None):
         userdata.connect_in_progress = False
-        userdata.metricsConnect()
-        logger.info(paho.mqtt.client.connack_string(rc))
 
-    def __pub_on_publish(client, userdata, mid):
+        if reason_code == 0:
+            logger.info(reason_code)
+            userdata.metricsConnect()
+            userdata.connected=True
+        else:
+            logger.error( f"connect failed: {reason_code}" )
+
+
+    def __pub_on_publish(client, userdata, mid, reason_codes, properties=None):
 
         if mid in userdata.pending_publishes:
-            logger.info('publish complete. mid={}'.format(mid))
+            logger.info( f"publish complete. mid={mid}" )
             # FIXME: worried... not clear if dequeue remove is thread safe.
             userdata.pending_publishes.remove(mid)
         else:
             userdata.unexpected_publishes.append(mid)
-            logger.info( 'BUG: ack for message we do not know we published. mid={}'.  format(mid))
+            logger.info( f"BUG: ack for message we do not know we published. mid={mid}" )
 
-    def __sslClientSetup(self) -> int:
+    def __sslClientSetup(self,client=None) -> int:
         """
-          Initializse self.client SSL context, must be called after self.client is instantiated.
+          Initializse client SSL context, must be called after self.client is instantiated.
           return port number for connection.
       
         """
+        if not client and hasattr(self,'client'):
+            client=self.client
+
         if self.o['broker'].url.scheme[-1] == 's':
             port = 8883
-            logger.info('tlsRigour: %s' % self.o['tlsRigour'])
             self.o['tlsRigour'] = self.o['tlsRigour'].lower()
             if self.o['tlsRigour'] == 'lax':
                 self.tlsctx = ssl.create_default_context()
@@ -286,8 +305,9 @@ class MQTT(Moth):
                 self.tlsctx = ssl.create_default_context()
             else:
                 self.logger.warning(
-                    "option tlsRigour must be one of:  lax, normal, strict")
-            self.client.tls_set_context(self.tlsctx)
+                    f"option tlsRigour must be one of: lax, normal, strict")
+
+            client.tls_set_context(self.tlsctx)
         else:
             port = 1883
 
@@ -299,13 +319,15 @@ class MQTT(Moth):
 
         self.connect_in_progress = True
 
-        if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-           (self.o['broker'].url.scheme[-1] == 'w' ) : 
-            client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
-                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
-        else:
-            client = paho.mqtt.client.Client( userdata=self, \
-                client_id=cid, protocol=paho.mqtt.client.MQTTv5 )
+        self.transport= 'websocket' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+           (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+
+        client = paho.mqtt.client.Client( \
+                    callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
+                    client_id=cid, userdata=self, protocol=paho.mqtt.client.MQTTv5, \
+                    transport = self.transport , manual_ack = True )
+
+        # FIXME: transport = 'websockets', 'unix' 
 
         client.connected = False
         client.on_connect = MQTT.__sub_on_connect
@@ -336,14 +358,12 @@ class MQTT(Moth):
 
         something_broke = True
         self.connected=False
-        self.manual_ack = False
         while True:
 
             if self.please_stop:
                 break
 
             try:
-
                 cs = self.o['clean_session']
                 if ('queueName' in self.o) and ('no' in self.o):
                     cid = self.o['queueName'] + "_i%02d" % self.o['no']
@@ -362,17 +382,6 @@ class MQTT(Moth):
                 logger.info( f"is no around? {self.o['no']} " )
                 if ('no' in self.o) and self.o['no'] > 0: # instances 'started'
                     self.client = self.__clientSetup(cid)
-                    if hasattr(self, 'client') and hasattr(self.client, 'manual_ack_set'):  # FIXME breaking this...
-                        self.client.manual_ack_set(True)
-                        logger.debug(
-                            "Switching on manual_acks for higher reliability via explicit acknowledgements."
-                        )
-                        self.manual_ack = True
-                    else:
-                        logger.warning(
-                            "paho library automatically acknowledges receipt. may lose data every crash or restart."
-                        )
-    
                     self.client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
                            clean_start=False, properties=props )
                     self.client.enable_logger(logger)
@@ -385,7 +394,6 @@ class MQTT(Moth):
                               break
                          if ebo < 512 :
                             ebo *= 2
-                    self.connected=True
                     break
                 else: # either 'declare' or 'foreground'
                     if 'instances' in self.o:    
@@ -395,21 +403,25 @@ class MQTT(Moth):
 
                     for i in range(1,session_mxi ):
                         icid = self.o['queueName'] + "_i%02d" %  i
-                        logger.info('declare session for instances %s' %icid)
+                        logger.info( f"declare session for instances {icid}" )
                         decl_client = self.__clientSetup(icid)
                         decl_client.on_connect = MQTT.__sub_on_connect
-                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                        decl_client.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(decl_client), \
                            clean_start=False, properties=props )
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
-                            decl_client.loop(1)
+                            logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
+                            logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
+                            if self.please_stop:
+                                break
+                            if ebo < 60: ebo *= 2
+                            decl_client.loop(ebo)
                         decl_client.disconnect()
                         decl_client.loop_stop()
-                        logger.info('instance declaration for %s done' % icid)
+                        logger.info( f"instance declaration for {icid} done" )
                     break
                     
             except Exception as err:
-                logger.error("failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                logger.error( f"failed to {self.o['broker'].url.hostname} with {err}" )
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -446,13 +458,12 @@ class MQTT(Moth):
                 if self.o['message_ttl'] > 0:
                     props.MessageExpiryInterval = int(self.o['message_ttl'])
 
-                if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
-                   (self.o['broker'].url.scheme[-1] == 'w' ) : 
-                    self.client = paho.mqtt.client.Client( userdata=self, transport="websockets", \
-                        protocol=self.proto_version )
-                else:
-                    self.client = paho.mqtt.client.Client( userdata=self, \
-                        protocol=self.proto_version )
+                self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
+                   (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
+
+                self.client = paho.mqtt.client.Client( 
+                        callback_api_version = paho.mqtt.client.CallbackAPIVersion.VERSION2, \
+                        userdata=self, transport=self.transport, protocol=self.proto_version )
 
                 #self.client = paho.mqtt.client.Client(
                 #    protocol=self.proto_version, userdata=self)
@@ -470,7 +481,7 @@ class MQTT(Moth):
                 res = self.client.connect_async(self.o['broker'].url.hostname,
                                           port=self.__sslClientSetup(),
                                          properties=props)
-                logger.info('connecting to %s, res=%s' % (self.o['broker'].url.hostname, res))
+                logger.info( f"connecting to {self.o['broker'].url.hostname}, res={res}" )
 
                 self.client.loop_start()
 
@@ -483,14 +494,11 @@ class MQTT(Moth):
                      if ebo < 512:
                           ebo *= 2
                     
-
                 if not self.connect_in_progress:
-                    self.connected=True
                     break
 
             except Exception as err:
-                logger.error("failed to {} with {}".format(
-                    self.o['broker'].url.hostname, err))
+                logger.error("failed to {self.o['broker'].url.hostname} with {err}" )
                 logger.error('Exception details: ', exc_info=True)
 
             if ebo < 60: ebo *= 2
@@ -513,8 +521,7 @@ class MQTT(Moth):
         """
 
         if userdata.o['messageDebugDump']:
-            logger.info("Message received: id:%d, topic:%s payload:%s" %
-                        (msg.mid, msg.topic, msg.payload))
+            logger.info( f"Message received: id:{msg.mid}, topic:{msg.topic} payload:{msg.payload}" )
 
         m = userdata._msgDecode(msg)
         userdata.rx_msg[userdata.rx_msg_iFromBroker].append(m)
@@ -531,16 +538,16 @@ class MQTT(Moth):
             props.SessionExpiryInterval = 1
             for i in range(1,self.o['instances']+1):
                 icid= self.o['queueName'] + "_i%02d" % i
-                logger.info('cleanup session %s' % icid )
+                logger.info( f"cleanup session {icid}" )
                 myclient = self.__clientSetup( icid )
-                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(), \
+                myclient.connect( self.o['broker'].url.hostname, port=self.__sslClientSetup(myclient), \
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
                     if self.please_stop:
                        break
                 myclient.disconnect()
-                logger.info('instance deletion for %02d done' % i)
+                logger.info( f"instance deletion for {i:02d} done" )
 
         if hasattr(self, 'client'):
             self.client.disconnect()
@@ -560,11 +567,11 @@ class MQTT(Moth):
                 logger.warning('message is missing content-type header')
 
             if hasattr(mqttMessage, 'payload'): 
-                logger.info('payload: type: %s (%d bytes) %s' %
-                             (type(mqttMessage.payload), len(mqttMessage.payload), mqttMessage.payload))
+                logger.info( f"payload: type: {type(mqttMessage.payload)}"
+                        f"(len: {len(mqttMessage.payload):d} bytes) body:{mqttMessage.payload}" )
 
             if hasattr(mqttMessage.properties, 'UserProperty'): 
-                logger.info( f"User Property: {mqttMessage.properties.UserProperty} ")
+                logger.info( f"User Property: {mqttMessage.properties.UserProperty}")
 
         self.metrics['rxByteCount'] += len(mqttMessage.payload)
         try:
@@ -573,11 +580,15 @@ class MQTT(Moth):
             message = PostFormat.importAny( mqttMessage.payload.decode('utf-8'), headers, mqttMessage.properties.ContentType, self.o)
 
         except Exception as ex:
-            logger.error("ignored malformed message: %s" % mqttMessage.payload)
-            logger.error("decode error: %s" % ex)
+            logger.error( f"ignored malformed message: {mqttMessage.payload}" )
+            logger.error( f"decode error: {ex}" )
             logger.error('Exception details: ', exc_info=True)
             self.metrics['rxBadCount'] += 1
             return None
+
+        message['exchange'] = mqttMessage.topic.split('/')[0]
+        message.deriveSource( self.o )
+        message.deriveTopics( self.o, topic=mqttMessage.topic, separator='/' )
 
         message['ack_id'] = mqttMessage.mid
         message['qos'] = mqttMessage.qos
@@ -591,7 +602,7 @@ class MQTT(Moth):
         else:
            self.metrics['rxBadCount'] += 1
            self.ack(message)
-           logger.error('message acknowledged and discarded: %s' % message)
+           logger.error( f"message acknowledged and discarded: {message}" )
            return None
 
     def _rotateInputBuffers(self) -> None:
@@ -658,7 +669,7 @@ class MQTT(Moth):
 
     def ack(self, m: sarracenia.Message ) -> None:
 
-        if self.manual_ack and ('ack_id' in m):
+        if 'ack_id' in m:
             logger.info('mid=%d' % m['ack_id'])
             self.client.ack( m['ack_id'], m['qos'] )
             del m['ack_id']
@@ -706,9 +717,7 @@ class MQTT(Moth):
                                       'ascii')) % len(self.o['exchange'])
                         exchange = self.o['exchange'][idx]
                     else:
-                        logger.error(
-                            'do not know which exchange to publish to: %s' %
-                            self.o['exchange'])
+                        logger.error( f"do not know which exchange to publish to: {self.o['exchange']}" )
                         return
                 else:
                     exchange = self.o['exchange'][0]
@@ -757,10 +766,10 @@ class MQTT(Moth):
                 self.metrics['txByteCount'] += len(raw_body)
                 self.metrics['txGoodCount'] += 1
                 self.metrics['txLast'] = sarracenia.nowstr()
-                logger.info("published mid={} ack_pending={} {} to under: {} ".format(
-                    info.mid, ack_pending, body, topic))
+                logger.info( f"published mid={info.mid} ack_pending={ack_pending} "
+                     f"{body} to under: {topic} " )
                 return True  #success...
-            logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} ")
+            logger.error( f"publish failed {paho.mqtt.client.error_string(info.rc)} {info}")
 
         except Exception as ex:
             logger.error('Exception details: ', exc_info=True)
@@ -776,7 +785,7 @@ class MQTT(Moth):
 
             if hasattr(self, 'pending_publishes'):
                 ebo=0.1
-                while  (len(self.pending_publishes)+len(self.unexpected_publishes)) >0:
+                while  len(self.pending_publishes) >0:
                     logger.info( f'waiting {ebo} seconds for last {len(self.pending_publishes)} messages to publish')
                     if len(self.unexpected_publishes) < 10:
                         logger.info( f'messages acknowledged before publish?: {self.unexpected_publishes}')

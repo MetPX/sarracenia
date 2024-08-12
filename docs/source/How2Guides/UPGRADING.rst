@@ -39,6 +39,33 @@ Installation Instructions
 git
 ---
 
+3.0.54
+------
+
+*CHANGE*: *sr3 sanity* only restarts missing instances, not stopped ones.
+this is considered more in accordance with analyst expectations (POLA)
+
+*CHANGE*: new *queueShare* setting should be used wherever, in prior versions
+ *queueName* was used. Should result in fewer configuration settings
+ and the queueShare settings used should also be shorter than former queueName
+ ones.
+
+*CHANGE*: default queue names changed from randomized value to one based
+on user name and host name. 
+
+Existing configurations without explicit queueName settings will continue
+to use old queues if they are already in use. as *cleanup* commands are 
+executed, or in newly deployed configurations, the new naming will gradually
+take effect.  The new *queueShare* setting can be used to customize that.
+
+Please review all configurations that:
+* do not have explicit queueName settings AND
+* run on multiple hosts 
+
+To understand whether they need queueShare in order 
+to keep the same sharing as previously obtained by default.
+
+
 3.0.53
 ------
 

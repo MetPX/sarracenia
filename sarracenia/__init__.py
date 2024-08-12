@@ -7,8 +7,6 @@
 # Sarracenia repository: https://github.com/MetPX/sarracenia
 # Documentation: https://github.com/MetPX/sarracenia
 #
-# __init__.py : contains version number of sarracenia
-#
 ########################################################################
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -32,6 +30,7 @@ import calendar
 import datetime
 import humanize
 import importlib.util
+import io
 import logging
 import os
 import os.path
@@ -317,7 +316,7 @@ def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
     """
-    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s") 
+    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
 
 def durationToSeconds(str_value, default=None) -> float:
     """
@@ -357,18 +356,23 @@ def durationToSeconds(str_value, default=None) -> float:
 
     return duration
 
+"""
+  report codes are cribbed from HTTP, when a new situation arises, just peruse a list,
+  and pick one that fits. Should also be easier for others to use:
 
+  https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+"""
 known_report_codes = {
-    201:
-    "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
+    201: "Download successful. (variations: Downloaded, Inserted, Published, Copied, or Linked)",
+    202: "Accepted. mkdir skipped as it already exists", 
     203: "Non-Authoritative Information: transformed during download.",
-    205:
-    "Reset Content: truncated. File is shorter than originally expected (changed length during transfer) This only arises during multi-part transfers.",
     205: "Reset Content: checksum recalculated on receipt.",
-    304:
-    "Not modified (Checksum validated, unchanged, so no download resulted.)",
+    206: "Partial Content: received and inserted.",
+    304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
+    422: "Unprocessable Content: could not determine path to transfer to",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
@@ -391,7 +395,7 @@ class Message(dict):
         self['_deleteOnPost'] = set(['_format'])
 
 
-    def computeIdentity(msg, path, o, offset=0):
+    def computeIdentity(msg, path, o, offset=0, data=None) -> None:
         """
            check extended attributes for a cached identity sum calculation.
            if extended attributes are present, and 
@@ -400,6 +404,10 @@ class Message(dict):
            then use the cached value.
 
            otherwise, calculate a checksum. 
+           If the data is provided, use that as the file content, otherwise 
+           read the file form the file system.  
+
+           Once the checksum is determined,
            set the file's extended attributes for the new value.
            the method of checksum calculation is from options.identity.
            
@@ -453,22 +461,24 @@ class Message(dict):
             sumalgo.set_path(path)
 
             # compute checksum
-
             if calc_method in ['md5', 'sha512']:
 
-                fp = open(path, 'rb')
-                i = 0
+                if data:
+                    sumalgo.update(data)
+                else:
+                    fp = open(path, 'rb')
+                    i = 0
 
-                #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
-                if offset:
-                    fp.seek( offset )
+                    #logger.info( f"offset: {offset}  size: {msg['size']} max: {offset+msg['size']} " )
+                    if offset:
+                        fp.seek( offset )
 
-                while i < offset+msg['size']:
-                    buf = fp.read(o.bufsize)
-                    if not buf: break
-                    sumalgo.update(buf)
-                    i += len(buf)
-                fp.close()
+                    while i < offset+msg['size']:
+                        buf = fp.read(o.bufsize)
+                        if not buf: break
+                        sumalgo.update(buf)
+                        i += len(buf)
+                    fp.close()
 
             # setting sumstr
             checksum = sumalgo.value
@@ -486,6 +496,54 @@ class Message(dict):
 
         for h in d:
             msg[h] = d[h]
+
+    def deriveSource(msg,o):
+        """
+           set msg['source'] field as appropriate for given message and options (o)
+        """
+        source=None
+        if 'source' in o:
+            source = o['source']
+        elif 'sourceFromExchange' in o and o['sourceFromExchange'] and 'exchange' in msg:
+            itisthere = re.match( "xs_([^_]+)_.*", msg['exchange'] )
+            if itisthere:
+                source = itisthere[1]
+            else:
+                itisthere = re.match( "xs_([^_]+)", msg['exchange'] )
+                if itisthere:
+                    source = itisthere[1]
+        if 'source' in msg and 'sourceFromMessage' in o and o['sourceFromMessage']:
+            pass
+        elif source:
+            msg['source'] = source
+            msg['_deleteOnPost'] |= set(['source'])
+
+    def deriveTopics(msg,o,topic,separator='.'):
+        """
+            derive subtopic, topicPrefix, and topic fields based on message and options.
+        """
+        msg_topic = topic.split(separator)
+        # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
+        if 'topicCopy' in o and o['topicCopy']:
+            topicOverride=True
+        else:
+            topicOverride=False
+            if 'relPath' in msg:
+                path_topic = o['topicPrefix'] + os.path.dirname(msg['relPath']).split('/')
+
+                if msg_topic != path_topic:
+                    topicOverride=True
+
+            # set subtopic if possible.
+            if msg_topic[0:len(o['topicPrefix'])] == o['topicPrefix']:
+                msg['subtopic'] = msg_topic[len(o['topicPrefix']):]
+            else:
+                topicOverride=True
+
+        if topicOverride:
+            msg['topic'] = topic
+            msg['_deleteOnPost'] |= set( ['topic'] )
+
 
     def dumps(msg) -> str:
         """
@@ -716,6 +774,27 @@ class Message(dict):
 
         return sarracenia.Message.fromFileData(path, o, stat(path))
 
+    def getIDStr(msg) -> str:
+        """
+           return some descriptive tag string to identify the message being processed.
+
+        """
+        s=""
+        if 'baseUrl' in msg:
+            s+=msg['baseUrl']+' '
+        if 'relPath' in msg:
+            if s and s[-1] != '/':
+                s+='/'
+            s+=msg['relPath']
+        elif 'retrievePath' in msg:
+            if s and s[-1] != '/':
+                s+='/'
+            s+= msg['retrievePath']
+        else:
+            s+='badMessage'
+        return s
+
+
     def setReport(msg, code, text=None):
         """
           FIXME: used to be msg_set_report
@@ -738,7 +817,7 @@ class Message(dict):
                 text = 'unknown disposition'
 
         if 'report' in msg:
-            logger.warning('overriding initial report: %d: %s' %
+            logger.debug('overriding initial report: %d: %s' %
                            (msg['report']['code'], msg['report']['message']))
 
         msg['report'] = {'code': code, 'timeCompleted': nowstr(), 'message': text}
@@ -779,7 +858,7 @@ class Message(dict):
         elif 'new_file' in msg:
             new_file = msg['new_file']
         elif 'new_relPath' in msg:
-            new_file = os.path.basename(msg['rel_relPath'])
+            new_file = os.path.basename(msg['new_relPath'])
         elif 'relPath' in msg:
             new_file = os.path.basename(msg['relPath'])
         else:
@@ -866,6 +945,7 @@ class Message(dict):
 
         return res
 
+
     def getContent(msg,options=None):
         """
            Retrieve the data referred to by a message.  The data may be embedded
@@ -914,3 +994,53 @@ class Message(dict):
         with urllib.request.urlopen(retUrl) as response:
             return response.read()
 
+    def new_pathWrite(msg,options,data):
+        """
+           expects: msg['new_dir'] and msg['new_file'] to be set.
+           given the byte stream of data.
+
+           write the local file based on the given message, options and data.  
+           update the message to match same (recalculating checksum.)
+
+           in future:
+           If the data field is a file, then that is taken as an open file object
+           which can be read sequentially, and the bytes write to the path indicated
+           by other message fields.
+
+           currently, if data is a buffer, then it's contents is written to the file.
+
+           if data is None, then look for the 'content' header in the message.
+           and use the data from that.
+
+        """
+        opath=msg['new_dir'] + os.sep + msg['new_file']
+
+        if not os.path.isdir(msg['new_dir']):
+            if self.o.permDirDefault != 0:
+                os.makedirs(msg['new_dir'],mode=self.o.permDirDefault, exist_ok=True)
+            else:
+                os.makedirs(msg['new_dir'], exist_ok=True)
+
+        # ide
+        #if isinstance(data, io.IOBase ):
+        #    with open(opath, 'wb') as f:
+        #        while buf = data.read(self.o.bufsize) > 0 :
+        #            sz=f.write(buf)
+
+        if 'content' in msg:
+            if data:
+                del msg['content']
+            elif msg['content']['encoding'] == 'base64':
+                data=b64decode(msg['content']['value'])
+            else:
+                data=msg['content']['value'].encode('utf-8')
+                
+        try:
+            with open(opath, 'wb') as f:
+               sz=f.write(data)
+            if self.o.permDefault != 0:
+                os.chmod(opath,mode=self.o.permDefault)
+            msg['size'] = sz
+            msg.computeIdentity(opath,self.o,data=data)
+        except Exception as ex:
+            logger.error( f"problem with {opath}: {ex}" )

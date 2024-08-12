@@ -117,6 +117,8 @@ class FlowCB:
 
     def destfn(self,msg) -> str::
 
+         Destination File Name (DESTFNSCRIPT)  routines.
+
          Task: look at the fields in the message, and perhaps settings and
                return a new file name for the target of the send or download.
 
@@ -269,6 +271,5 @@ def load_library(factory_path, options):
                 setattr(opt, s, options.settings[factory_path][s])
     else:
         opt = options
-
     plugin = class_(opt)
     return plugin

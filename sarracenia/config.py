@@ -85,7 +85,6 @@ default_options = {
     'batch' : 100,
     'baseDir': None,
     'baseUrl_relPath': False,
-    'block_reassemble': True,
     'delete': False,
     'documentRoot': None,
     'download': False,
@@ -96,8 +95,10 @@ default_options = {
     'inline': False,
     'inlineOnly': False,
     'identity_method': 'sha512',
+    'logFormat': '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s',
     'logMetrics': False,
     'logStdout': False,
+    'metrics_writeInterval': 5,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
     'overwrite': True,
@@ -111,42 +112,48 @@ default_options = {
     'post_format': 'v03',
     'realpathPost': False,
     'recursive' : True,
+    'runStateThreshold_reject': 80,
     'report': False,
     'retryEmptyBeforeExit': False,
     'retry_refilter': False,
-    'sanity_log_dead': 9999,
+    'runStateThreshold_cpuSlow': 0,
+    'runStateThreshold_hung': 450,
+    'runStateThreshold_idle': 900,
+    'runStateThreshold_lag': 30,
+    'runStateThreshold_retry': 1000,
+    'runStateThreshold_slow': 0,
     'sourceFromExchange': False,
     'sourceFromMessage': False,
     'sundew_compat_regex_first_match_is_zero': False,
-    'sourceFromExchange': False,
-    'sourceFromMessage': False,
     'topicCopy': False,
     'v2compatRenameDoublePost': False,
-    'varTimeOffset': 0
+    'varTimeOffset': 0,
+    'wololo': False
 }
 
 count_options = [
     'batch', 'count', 'exchangeSplit', 'instances', 'logRotateCount', 'no', 
-    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'messageRateMax', 
-    'messageRateMin'
+    'post_exchangeSplit', 'prefetch', 'messageCountMax', 'runStateThreshold_cpuSlow', 
+    'runStateThreshold_reject', 'runStateThreshold_retry', 'runStateThreshold_slow', 
 ]
 
 
 # all the boolean settings.
-flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'block_reassemble', 'debug', \
+flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
     'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
-    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 'sundew_compat_regex_first_match_is_zero', \
-    'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 'statehost', 'users', 'v2compatRenameDoublePost'
+    'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
+    'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 
+    'statehost', 'users', 'v2compatRenameDoublePost', 'wololo'
                 ]
 
-float_options = [ ]
+float_options = [ 'messageRateMax', 'messageRateMin' ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', \
-    'retry_ttl', 'sanity_log_dead', 'sleep', 'timeout', 'varTimeOffset'
+    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', 'metrics_writeInterval', \
+    'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
 list_options = [ 'path', 'vip' ]
@@ -168,9 +175,9 @@ size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inline
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
-    'hostname', 'identity', 'inlineEncoding', 'logLevel', 
+    'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
-    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'sendTo', 'rename',
+    'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
     'report_exchange', 'source', 'strip', 'timezone', 'nodupe_ttl', 'nodupe_driver', 
     'nodupe_basis', 'tlsRigour', 'topic'
 ]
@@ -238,7 +245,15 @@ convert_to_v3 = {
     'on_part': { 'manual_conversion_required' : [ 'continue' ] },
     'on_line': { 'manual_conversion_required' : [ 'continue' ] },
     'on_message': {
+    	'msg_by_source': ['continue'],
+    	'msg_by_user': ['continue'],
+        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
+    	'msg_download': ['continue'],
+    	'msg_dump': ['continue'],
+        'msg_log': ['logEvents', '+after_accept'],
         'msg_print_lag': [ 'callback', 'accept.printlag.PrintLag'],
+        'msg_rawlog': ['logEvents', '+after_accept'],
+    	'msg_total': ['continue'],
         'msg_replace_new_dir': [ 'callback', 'accept.pathreplace' ],
         'msg_skip_old': [ 'callback', 'accept.skipold.SkipOld'],
         'msg_test_retry': [ 'callback', 'accept.testretry.TestRetry'],
@@ -249,8 +264,6 @@ convert_to_v3 = {
         'msg_rename_dmf': [ 'callback', 'accept.renamedmf.RenameDMF'],
         'msg_hour_tree': [ 'callback', 'accept.hourtree.HourTree'],
         'msg_renamer': [ 'callback', 'accept.renamer.Renamer'],
-        'msg_2http': [ 'callback', 'accept.tohttp.ToHttp'],
-        'msg_2local': [ 'callback', 'accept.tolocal.ToLocal'],
         'msg_http_to_https': [ 'callback', 'accept.httptohttps.HttpToHttps'],
         'msg_speedo': [ 'callback', 'accept.speedo.Speedo'],
         'msg_WMO_type_suffix': [ 'callback', 'accept.wmotypesuffix.WmoTypeSuffix'],
@@ -258,36 +271,28 @@ convert_to_v3 = {
         'msg_rename4jicc': [ 'flow_callback', 'accept.rename4jicc.Rename4Jicc'],
         'msg_delay': [ 'callback', 'accept.messagedelay.MessageDelay'],
         'msg_download_baseurl': [ 'callback', 'accept.downloadbaseurl.DownloadBaseUrl'],
-	'msg_from_cluster': ['continue'],
-	'msg_stdfiles': ['continue'],
-	'msg_fdelay': ['callback', 'filter.fdelay'],
-	'msg_stopper': ['continue'],
-	'msg_overwrite_sum': ['continue'],
-	'msg_gts2wistopic': ['continue'],
-	'msg_download': ['continue'],
-	'msg_by_source': ['continue'],
-	'msg_by_user': ['continue'],
-	'msg_dump': ['continue'],
-	'msg_total': ['continue'],
-    'on_report': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_stop': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_start': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_watch': { 'manual_conversion_required' : [ 'continue' ] },
-    'on_post': {
-        'post_log': ['logEvents', '+after_work']
+	    'msg_from_cluster': ['continue'],
+    	'msg_stdfiles': ['continue'],
+    	'msg_fdelay': ['callback', 'filter.fdelay'],
+    	'msg_stopper': ['continue'],
+    	'msg_overwrite_sum': ['continue'],
+    	'msg_gts2wistopic': ['continue'],
     },
-    'parts' : [ 'continue' ],
-	'post_total': ['continue'],
+    'on_report': { 'manual_conversion_required' : [ 'continue' ] },
+    'on_stop':   { 'manual_conversion_required' : [ 'continue' ] },
+    'on_start':  { 'manual_conversion_required' : [ 'continue' ] },
+    'on_watch':  { 'manual_conversion_required' : [ 'continue' ] },
+    'on_post': {
+        'post_log': ['logEvents', '+after_work'],
+	    'post_total': ['continue'],
         'wmo2msc': [ 'callback', 'filter.wmo2msc.Wmo2Msc'],
-        'msg_delete': [ 'callback', 'filter.deleteflowfiles.DeleteFlowFiles'],
-        'msg_log': ['logEvents', '+after_accept'],
-        'msg_rawlog': ['logEvents', '+after_accept'],
         'post_hour_tree': [ 'callback', 'accept.posthourtree.PostHourTree'],
         'post_long_flow': [ 'callback', 'accept.longflow.LongFLow'],
         'post_override': [ 'callback', 'accept.postoverride.PostOverride'],
-	'post_rate_limit': ['continue'],
+	    'post_rate_limit': ['continue'],
         'to': ['continue']
     },
+    'parts' : [ 'continue' ],
     'poll_without_vip': [ 'manual_conversion_required' ], 
     'pump' : [ 'continue' ],
     'pump_flag' : [ 'continue' ],
@@ -329,6 +334,59 @@ def isTrue(S):
         S = S[-1]
     return S.lower() in ['true', 'yes', 'on', '1']
 
+def parse_count(cstr):
+    """
+        number argument accepts k,m,g suffix with i and b to use base 2 ) and +- 
+        return value is integer.
+    """
+    if cstr[0] == '-':
+        offset=1
+    else:
+        offset=0
+    try:
+        count=humanfriendly.parse_size(cstr[offset:], binary=cstr[-1].lower() in ['i','b'] )
+        return -count if offset else count
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a count value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0
+
+def parse_float(cstr):
+    """
+        like parse_count, numeric argument accepts k,m,g suffix and +-.
+        below 1000, return a decimal number with 3 digits max.
+    """
+    if type(cstr) is not str:
+        return cstr
+
+    try:
+        fa = parse_count(cstr)
+        if abs(fa) < 1000:
+            if cstr[-1] in [ 'b', 'i' ]:
+                if cstr[-2] in [ 'k' ]:
+                    fa=float(cstr[0:-2])*1024
+                else:
+                    fa=float(cstr[0:-1])
+            elif cstr[-1] in [ 'k' ]:
+                    fa=float(cstr[0:-1])*1000
+            else:
+                fa=float(cstr)
+
+            # apply 3 sig figs.
+            if abs(fa) > 1000:
+                fa=int(fa)
+            elif abs(fa) > 100:
+                fa=round(fa,1)
+            elif abs(fa) > 10:
+                fa=round(fa,2)
+            else:
+                fa=round(fa,3)
+
+        return fa
+    except Exception as Ex:
+        logger.error( f"failed to parse:  {cstr} as a float value" )
+        logger.debug('Exception details: ', exc_info=True)
+        return 0.0
 
 def get_package_lib_dir():
     return os.path.dirname(inspect.getfile(Config))
@@ -616,7 +674,7 @@ class Config:
         'on_start', 'on_stop', 'on_watch', 'plugin'
     ]
     components = [
-        'audit', 'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
+        'cpost', 'cpump', 'flow', 'poll', 'post', 'sarra', 'sender', 'shovel',
         'subscribe', 'watch', 'winnow'
     ]
 
@@ -729,6 +787,7 @@ class Config:
         'realpath_post' : 'realpathPost',
         'remoteUrl' : 'sendTo', 
         'report_back': 'report',
+        'sanity_log_dead': 'runStateThreshold_hung',
         'sd' : 'nodupe_ttl',
         'sdb' : 'nodupe_basis', 
         'simulate': 'dry_run',
@@ -797,6 +856,10 @@ class Config:
         self.fixed_headers = {}
         self.flatten = '/'
         self.hostname = socket.getfqdn()
+
+        # oddness where final period is included in hostname...seems wrong. happens on windows a lot.
+        if self.hostname[-1] == '.':
+            self.hostname = self.hostname[0:-1]
         self.hostdir = socket.getfqdn().split('.')[0]
         self.log_flowcb_needed = False
         self.sleep = 0.1
@@ -816,6 +879,7 @@ class Config:
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
+        self.queueShare = "${USER}_${HOSTNAME}_${RAND8}"
         self.randomize = False
         self.rename = None
         self.randid = "%04x" % randint(0, 65536)
@@ -945,6 +1009,9 @@ class Config:
                 self.post_broker.url is not None and hasattr(self.post_broker.url, 'username')):
             result = result.replace('${POST_BROKER_USER}', self.post_broker.url.username)
 
+        if ( '${RAND8}' in word ):
+            result = result.replace('${RAND8}', str(randint(0, 100000000)).zfill(8))
+
         if not '$' in result:
             return result
 
@@ -980,7 +1047,7 @@ class Config:
         try:
             regex = re.compile(arguments[0])
         except:
-            logger.critical( f"{self.files}{self.lineno} invalid regular expression: {arguments[0]}, ignored." )
+            logger.critical( f"{','.join(self.files)}{self.lineno} invalid regular expression: {arguments[0]}, ignored." )
             return None
 
         if len(arguments) > 1:
@@ -1027,11 +1094,10 @@ class Config:
             if v == 'None': 
                 sv=set([])
             else:
-                if v[0] in [ '+', '-']:
+                op='r'
+                while v[0] in [ '+', '-']:
                     op=v[0]
                     v=v[1:]
-                else:
-                    op='r'
 
                 if ',' in v: 
                     sv=set(v.split(','))
@@ -1042,6 +1108,7 @@ class Config:
                     sv= old_value | sv
                 elif op == '-' :
                     sv= old_value - sv
+
         return sv
 
     def add_option(self, option, kind='list', default_value=None, all_values=None ):
@@ -1080,26 +1147,26 @@ class Config:
 
         if kind not in [ 'list', 'set' ] and type(v) == list:
             v=v[-1]
-            logger.warning( f"{self.files}{self.lineno} multiple declarations of {kind} {option}={getattr(self,option)} choosing last one: {v}" )
+            logger.warning( f"{','.join(self.files)}{self.lineno} multiple declarations of {kind} {option}={getattr(self,option)} choosing last one: {v}" )
 
 
         if kind == 'count':
             count_options.append(option)
             if type(v) is not int:
-                setattr(self, option, humanfriendly.parse_size(v))
+                setattr(self, option, parse_count(v))
         elif kind == 'duration':
             duration_options.append(option)
             if type(v) is not float:
                 setattr(self, option, durationToSeconds(v,default_value))
-        elif kind == 'flag':
+        elif kind == 'flag' or kind == bool:
             flag_options.append(option)
             if type(v) is not bool:
                 setattr(self, option, isTrue(v))
-        elif kind == 'float':
+        elif kind == 'float' or kind == float :
             float_options.append(option)
             if type(v) is not float:
-                setattr(self, option, float(v))
-        elif kind == 'list':  
+                setattr(self, option, parse_float(v))
+        elif kind == 'list' or kind == list:  
             list_options.append( option )
             if type(v) is not list:
                 #subtlety... None means: has not been set, 
@@ -1119,22 +1186,22 @@ class Config:
             if all_values:
                 set_choices[option] = all_values
 
-        elif kind == 'size':
+        elif kind == 'size' or kind == int:
             size_options.append(option)
             if type(v) is not int:
-                setattr(self, option, humanfriendly.parse_size(v))
+                setattr(self, option, parse_count(v))
 
-        elif kind == 'str':
+        elif kind == 'str' or kind == str:
             str_options.append(option)
             if v is None:
                 setattr(self, option, None)
             elif type(v) is not str:
                 setattr(self, option, str(v))
         else:
-            logger.error( f'{self.files}{self.lineno} invalid kind: %s for option: %s, ignored' % ( kind, option ) )
+            logger.error( f"{','.join(self.files)}{self.lineno} invalid kind: {kind} for option: {option} ignored" )
             return
 
-        logger.debug( f'{self.files}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}' )
+        logger.debug( f"{','.join(self.files)}{self.lineno} {option} declared as type:{type(getattr(self,option))} value:{v}" )
 
     def dump(self):
         """ print out what the configuration looks like.
@@ -1284,7 +1351,7 @@ class Config:
 
         if type(subtopic_string) is str:
             if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f'{self.files}:{self.lineno} broker needed before subtopic' )
+                logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
                 return
 
             if self.broker.url.scheme == 'amq' :
@@ -1403,6 +1470,9 @@ class Config:
         self.identity_method = 'invalid'
         #logger.error('returning 4: invalid' )
 
+
+
+
     def parse_file(self, cfg, component=None):
         """ add settings from a given config file to self 
        """
@@ -1434,237 +1504,239 @@ class Config:
         self.files.append(cfgfilepath)
 
         for l in open(cfgfilepath, "r").readlines():
-            l = l.strip()
             lineno+=1
             if self.lineno > 0:
-                saved_lineno = self.lineno
-            self.lineno = lineno
-            line = l.split()
+               saved_lineno = self.lineno
+            self.parse_line( component, cfg, cfname, lineno, l.strip() )
 
-            #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
-
-            if (len(line) < 1) or (line[0].startswith('#')):
-                continue
-
-            k = line[0]
-            if k in Config.synonyms:
-                k = Config.synonyms[k]
-            elif k == 'destination':
-                if component == 'poll':
-                    k = 'pollUrl'
-                else:
-                    k = 'sendTo'
-            elif k == 'broker' and component == 'poll' :
-                k = 'post_broker'
-
-            if (k in convert_to_v3): 
-                self.log_flowcb_needed |= '_log' in k
-                   
-                if (len(line) > 1):
-                    v = line[1].replace('.py', '', 1)
-                    if (v in convert_to_v3[k]):
-                        line = convert_to_v3[k][v]
-                        k = line[0]
-                        if 'continue' in line:
-                            logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
-                        else:
-                            logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
-                else:
-                    line = convert_to_v3[k]
-                    k=line[0]
-                    v=line[1] 
-
-            if k == 'continue':
-                continue
-            
-            #FIXME: note for Clea, line conversion to v3 complete here.
-
-            line = list(map(lambda x: self._varsub(x), line))
-
-            if len(line) == 1:
-                v = True
-            else:
-                v = line[1]
-
-            # FIXME... I think synonym check should happen here, but no time to check right now.
-
-            if k in flag_options:
-                if len(line) == 1:
-                    setattr(self, k, True)
-                else:
-                    setattr(self, k, isTrue(v))
-                if k in ['logReject'] and self.logReject:
-                    self.logEvents = self.logEvents | set(['reject'])
-                continue
-
-            if len(line) < 2:
-                logger.error( f'{self.files}:{lineno} {k} missing argument(s) ' )
-                continue
-            if k in ['accept', 'reject' ]:
-                self.masks.append(self._build_mask(k, line[1:]))
-            elif k in [ 'callback', 'cb' ]:
-                #vv = v.split('.')
-                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                if v not in self.plugins_late:
-                    self.plugins_late.append(v)
-            elif k in [ 'callback_prepend', 'cbp' ]:
-                #vv = v.split('.')
-                #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
-                if v not in self.plugins_early:
-                    self.plugins_early.insert(0,v)
-            elif k in ['declare']:
-                self._parse_declare(line[1:])
-            elif k in ['feeder', 'manager']:
-                self.feeder = urllib.parse.urlparse(line[1])
-                self.declared_users[self.feeder.username] = 'feeder'
-            elif k in ['header', 'h']:
-                (kk, vv) = line[1].split('=')
-                self.fixed_headers[kk] = vv
-            elif k in ['include', 'config']:
-                try:
-                    self.parse_file(v)
-                except Exception as ex:
-                    logger.error( f'{self.files}:{self.lineno} file {v} failed to parse:  {ex}' )
-                    logger.debug('Exception details: ', exc_info=True)
-            elif k in ['subtopic']:
-                self._parse_binding(v)
-            elif k in ['topicPrefix']:
-                if '/' in v :
-                    self.topicPrefix = v.split('/')
-                else:
-                    self.topicPrefix = v.split('.')
-            elif k in ['post_topicPrefix']:
-                #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
-                if '/' in v :
-                    self.post_topicPrefix = v.split('/')
-                else:
-                    self.post_topicPrefix = v.split('.')
-            elif k in ['import']:
-                self.imports.append(v)
-            elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
-                if v not in self.plugins_late:
-                    self.plugins_late.append(v)
-            elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
-                if v not in self.plugins_early:
-                    self.plugins_early.insert(0, v)
-            elif k in ['set', 'setting', 's']:
-                self._parse_setting(line[1], line[2:])
-            elif k in ['identity', 'integrity']:
-                self._parse_sum(v)
-            elif k in Config.port_required:
-                logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
-                logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
-                continue
-            elif k in Config.v2entry_points:
-                #if k in self.plugins:
-                #    self.plugins.remove(v)
-                self._parse_v2plugin(k, v)
-            elif k in ['no-import']:
-                self._parse_v3unplugin(v)
-            elif k in ['inflight', 'lock']:
-                if v[:-1].isnumeric():
-                    vv = durationToSeconds(v)
-                    setattr(self, k, vv)
-                    self.fileAgeMin = vv
-                else:
-                    if line[1].lower() in ['none', 'off', 'false']:
-                        setattr(self, k, None)
-                    else:
-                        setattr(self, k, v)
-            elif k in ['strip']:
-                """
-               2020/08/26 - PAS
-               strip in config file gets translated into two separate attributes: strip and pstrip.
-                 strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
-                 then instead pstrip is set, and strip is set to 0.
-
-               I don't know why it is done this way... just documenting/conforming to existing state.
-               """
-                if v.isdigit():
-                    self.strip = int(v)
-                    self.pstrip = None
-                else:
-                    if v[0] == '/':
-                        self.pstrip = v[1:]
-                    else:
-                        self.pstrip = v
-                    self.strip = 0
-            elif k in duration_options:
-                if len(line) == 1:
-                    logger.error( 
-                        '%s:%d  %s is a duration option requiring a decimal number of seconds value'
-                        % ( cfname, lineno, line[0]) )
-                    continue
-                setattr(self, k, durationToSeconds(v))
-            elif k in float_options:
-                try:
-                    setattr(self, k, float(v))
-                except (ValueError, TypeError) as e:
-                    logger.error(f'{self.files}:{self.lineno} Ignored "{i}": {e}')
-            elif k in perm_options:
-                if v.isdigit():
-                    setattr(self, k, octal_number(int(v, base=8)))
-                else:
-                    logger.error( f'{self.files}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
-            elif k in size_options:
-                setattr(self, k, humanfriendly.parse_size(v))
-            elif k in count_options:
-                setattr(self, k, humanfriendly.parse_size(v))
-            elif k in list_options:
-                if not hasattr(self, k) or not getattr(self,k):
-                    setattr(self, k, [' '.join(line[1:])])
-                else:
-                    l = getattr(self, k)
-                    l.append(' '.join(line[1:]))
-            elif k in set_options:
-                if v.lower() == 'none':
-                    setattr(self, k, set([]))
-                    continue
-                if v.lower() in [ 'all' , '+all' ]:
-                    if k in set_choices:
-                        setattr(self,k,set_choices[k])
-                    continue
-                v=v.replace('|',',')
-                vs = self._parse_set_string(v,getattr(self,k))
-                setattr(self, k, vs )
-
-                if k in set_choices :
-                    for i in getattr(self,k):
-                        if i not in set_choices[k]:
-                            logger.error( f'{self.files}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
-
-            elif k in str_options:
-                if ( k == 'directory' ) and not self.download:
-                    logger.info( f"{self.files}:{lineno} if download is false, directory has no effect" )
-
-                v = ' '.join(line[1:])
-                if v == 'None':
-                    v=None
-                setattr(self, k, v)
-            else:
-                #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
-                if k not in self.undeclared:
-                    logger.debug( f'{self.files}:{self.lineno} possibly undeclared option: {line}' )
-                v = ' '.join(line[1:])
-                if hasattr(self, k):
-                    if type(getattr(self, k)) is float:
-                        setattr(self, k, float(v))
-                    elif type(getattr(self, k)) is int:
-                        # the only integers that have units are durations.
-                        # integers without units will come out unchanged.
-                        setattr(self, k, durationToSeconds(v))
-                    elif type(getattr(self, k)) is str:
-                        setattr(self, k, [getattr(self, k), v])
-                    elif type(getattr(self, k)) is list:
-                        newv=getattr(self,k)
-                        newv.append(v)
-                        setattr(self, k, newv)
-                else:
-                    # FIXME:
-                    setattr(self, k, v)
-                    self.undeclared.append( (cfname, lineno, k) )
         self.files.pop()
         self.lineno = saved_lineno
+
+
+    def parse_line(self, component, cfg, cfname, lineno, l ):
+        self.lineno = lineno
+        line = l.split()
+
+        #print('FIXME parsing %s:%d %s' % (cfg, lineno, line ))
+
+        if (len(line) < 1) or (line[0].startswith('#')):
+            return
+
+        k = line[0]
+        if k in Config.synonyms:
+            k = Config.synonyms[k]
+        elif k == 'destination':
+            if component == 'poll':
+                k = 'pollUrl'
+            else:
+                k = 'sendTo'
+        elif k == 'broker' and component == 'poll' :
+            k = 'post_broker'
+
+        if (k in convert_to_v3): 
+            self.log_flowcb_needed |= '_log' in k
+                   
+            if (len(line) > 1):
+                v = line[1].replace('.py', '', 1)
+                if (v in convert_to_v3[k]):
+                    line = convert_to_v3[k][v]
+                    k = line[0]
+                    if 'continue' in line:
+                        logger.debug( f'{cfname}:{lineno} obsolete v2: \"{l}\" ignored' )
+                    else:
+                        logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
+            else:
+                line = convert_to_v3[k]
+                k=line[0]
+                v=line[1] 
+
+        if k == 'continue':
+            return
+            
+        line = list(map(lambda x: self._varsub(x), line))
+
+        if len(line) == 1:
+            v = True
+        else:
+            v = line[1]
+
+        # FIXME... I think synonym check should happen here, but no time to check right now.
+
+        if k in flag_options:
+            if len(line) == 1:
+                setattr(self, k, True)
+            else:
+                setattr(self, k, isTrue(v))
+            if k in ['logReject'] and self.logReject:
+                self.logEvents = self.logEvents | set(['reject'])
+            return
+
+        if len(line) < 2:
+            logger.error( f"{','.join(self.files)}:{lineno} {k} missing argument(s)" )
+            return
+        if k in ['accept', 'reject' ]:
+            self.masks.append(self._build_mask(k, line[1:]))
+        elif k in [ 'callback', 'cb' ]:
+            #vv = v.split('.')
+            #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+            if v not in self.plugins_late:
+                self.plugins_late.append(v)
+        elif k in [ 'callback_prepend', 'cbp' ]:
+            #vv = v.split('.')
+            #v = 'sarracenia.flowcb.' + v + '.' + vv[-1].capitalize()
+            if v not in self.plugins_early:
+                self.plugins_early.insert(0,v)
+        elif k in ['declare']:
+            self._parse_declare(line[1:])
+        elif k in ['feeder', 'manager']:
+            self.feeder = urllib.parse.urlparse(line[1])
+            self.declared_users[self.feeder.username] = 'feeder'
+        elif k in ['header', 'h']:
+            (kk, vv) = line[1].split('=')
+            self.fixed_headers[kk] = vv
+        elif k in ['include', 'config']:
+            try:
+                self.parse_file(v)
+            except Exception as ex:
+                logger.error( f"{','.join(self.files)}:{self.lineno} file {v} failed to parse:  {ex}" )
+                logger.debug('Exception details: ', exc_info=True)
+        elif k in ['subtopic']:
+            self._parse_binding(v)
+        elif k in ['topicPrefix']:
+            if '/' in v :
+                self.topicPrefix = v.split('/')
+            else:
+                self.topicPrefix = v.split('.')
+        elif k in ['post_topicPrefix']:
+            #if (not self.post_broker.url) or self.post_broker.url.scheme[0:3] == 'amq':
+            if '/' in v :
+                self.post_topicPrefix = v.split('/')
+            else:
+                self.post_topicPrefix = v.split('.')
+        elif k in ['import']:
+            self.imports.append(v)
+        elif k in ['flow_callback', 'flowcb', 'fcb', 'flowCallback' ]:
+            if v not in self.plugins_late:
+                self.plugins_late.append(v)
+        elif k in ['flow_callback_prepend', 'flowcb_prepend', 'fcbp', 'flowCallbackPrepend' ]:
+            if v not in self.plugins_early:
+                self.plugins_early.insert(0, v)
+        elif k in ['set', 'setting', 's']:
+            self._parse_setting(line[1], line[2:])
+        elif k in ['identity', 'integrity']:
+            self._parse_sum(v)
+        elif k in Config.port_required:
+            logger.error( f' {cfname}:{lineno} {k} {v} not supported in v3, consult porting guide. Option ignored.' )
+            logger.error( f' porting guide: https://github.com/MetPX/sarracenia/blob/v03_wip/docs/How2Guides/v2ToSr3.rst ' )
+            return
+        elif k in Config.v2entry_points:
+            #if k in self.plugins:
+            #    self.plugins.remove(v)
+            self._parse_v2plugin(k, v)
+        elif k in ['no-import']:
+            self._parse_v3unplugin(v)
+        elif k in ['inflight', 'lock']:
+            if v[:-1].isnumeric():
+                vv = durationToSeconds(v)
+                setattr(self, k, vv)
+                self.fileAgeMin = vv
+            else:
+                if line[1].lower() in ['none', 'off', 'false']:
+                    setattr(self, k, None)
+                else:
+                    setattr(self, k, v)
+        elif k in ['strip']:
+            """
+           2020/08/26 - PAS
+           strip in config file gets translated into two separate attributes: strip and pstrip.
+             strip is the numeric variety (0-n) and if the supplied option in a regex pattern, 
+             then instead pstrip is set, and strip is set to 0.
+
+           I don't know why it is done this way... just documenting/conforming to existing state.
+           """
+            if v.isdigit():
+                self.strip = int(v)
+                self.pstrip = None
+            else:
+                if v[0] == '/':
+                    self.pstrip = v[1:]
+                else:
+                    self.pstrip = v
+                self.strip = 0
+        elif k in duration_options:
+            if len(line) == 1:
+                logger.error( 
+                    '%s:%d  %s is a duration option requiring a decimal number of seconds value'
+                    % ( cfname, lineno, line[0]) )
+                return
+            setattr(self, k, durationToSeconds(v))
+        elif k in float_options:
+            try:
+                setattr(self, k, parse_float(v))
+            except (ValueError, TypeError) as e:
+                logger.error(f"{','.join(self.files)}:{self.lineno} Ignored '{i}': {e}")
+        elif k in perm_options:
+            if v.isdigit():
+                setattr(self, k, octal_number(int(v, base=8)))
+            else:
+                logger.error( f'{",".join(self.files)}:{lineno} {k} setting to {v} ignored: only numberic modes supported' )
+        elif k in size_options:
+            setattr(self, k, parse_count(v))
+        elif k in count_options:
+            setattr(self, k, parse_count(v))
+        elif k in list_options:
+            if not hasattr(self, k) or not getattr(self,k):
+                setattr(self, k, [' '.join(line[1:])])
+            else:
+                l = getattr(self, k)
+                l.append(' '.join(line[1:]))
+        elif k in set_options:
+            if v.lower() == 'none':
+                setattr(self, k, set([]))
+                return
+            if v.lower() in [ 'all' , '+all' ]:
+                if k in set_choices:
+                    setattr(self,k,set_choices[k])
+                return
+            v=v.replace('|',',')
+            vs = self._parse_set_string(v,getattr(self,k))
+            setattr(self, k, vs )
+
+            if k in set_choices :
+                for i in getattr(self,k):
+                    if i not in set_choices[k]:
+                        logger.error( f'{",".join(self.files)}:{lineno} invalid entry {i} in {k}. Must be one of: {set_choices[k]}' )
+
+        elif k in str_options:
+            if ( k == 'directory' ) and not self.download:
+                logger.info( f"{','.join(self.files)}:{lineno} if download is false, directory has no effect" )
+
+            v = ' '.join(line[1:])
+            if v == 'None':
+                v=None
+            setattr(self, k, v)
+        else:
+            #FIXME: with _options lists for all types and addition of declare, this is probably now dead code.
+            if k not in self.undeclared:
+                logger.debug( f'{",".join(self.files)}:{self.lineno} possibly undeclared option: {line}' )
+            v = ' '.join(line[1:])
+            if hasattr(self, k):
+                if type(getattr(self, k)) is float:
+                    setattr(self, k, parse_float(v))
+                elif type(getattr(self, k)) is int:
+                    # the only integers that have units are durations.
+                    # integers without units will come out unchanged.
+                    setattr(self, k, durationToSeconds(v))
+                elif type(getattr(self, k)) is str:
+                    setattr(self, k, [getattr(self, k), v])
+                elif type(getattr(self, k)) is list:
+                    newv=getattr(self,k)
+                    newv.append(v)
+                    setattr(self, k, newv)
+            else:
+                # FIXME:
+                setattr(self, k, v)
+                self.undeclared.append( (cfname, lineno, k) )
 
     def _resolveQueueName(self,component,cfg):
 
@@ -1740,12 +1812,8 @@ class Config:
             
             #if the queuefile is corrupt, then will need to guess anyways.
             if ( self.queueName is None ) or ( self.queueName == '' ):
-                queueName = 'q_' + self.broker.url.username + '_' + component + '.' + cfg
-                if hasattr(self, 'queue_suffix'):
-                    queueName += '.' + self.queue_suffix
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                queueName += '.' + str(randint(0, 100000000)).zfill(8)
-                self.queueName = queueName
+                queueShare = self._varsub(self.queueShare)
+                self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
     
             if self.action not in [ 'start', 'foreground', 'declare' ]:
@@ -1813,14 +1881,14 @@ class Config:
                 setattr(self, d, durationToSeconds(getattr(self, d)))
 
         if hasattr(self, 'kbytes_ps'):
-            bytes_ps = humanfriendly.parse_size(self.kbytes_ps)
+            bytes_ps = parse_count(self.kbytes_ps)
             if not self.kbytes_ps[-1].isalpha():
                 bytes_ps *= 1024
             setattr(self, 'byteRateMax', bytes_ps)
 
         for d in count_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
-                setattr(self, d, humanfriendly.parse_size(getattr(self, d)))
+                setattr(self, d, parse_count(getattr(self, d)))
 
         for d in size_options:
             if hasattr(self, d) and (type(getattr(self, d)) is str):
@@ -1832,7 +1900,7 @@ class Config:
 
         for f in float_options:
             if hasattr(self, f) and (type(getattr(self, f)) is str):
-                setattr(self, f, float(getattr(self, f)))
+                setattr(self, f, parse_float(getattr(self, f)))
 
         if ( (len(self.logEvents) > 0 ) or self.log_flowcb_needed) :
             if ('sarracenia.flowcb.log.Log' not in self.plugins_late) and \
@@ -1853,14 +1921,11 @@ class Config:
                 self.plugins_early.append( 'nodupe.name' )
                 delattr( self, 'nodupe_basis' )
 
-        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if config[-5:] == '.conf':
             cfg = config[:-5]
         else:
             cfg = config
 
-        if self.sanity_log_dead == 9999 :
-            self.sanity_log_dead = 1.5*self.housekeeping
         if not hasattr(self, 'post_topicPrefix'):
            self.post_topicPrefix = self.topicPrefix
 
@@ -1870,6 +1935,7 @@ class Config:
         if self.retry_ttl == 0:
            self.retry_ttl = None
 
+        # FIXME: note that v2 *user_cache_dir* is, v3 called:  cfg_run_dir
         if not hasattr(self, 'cfg_run_dir'):
             if self.statehost:
                 hostdir = self.hostdir
@@ -1918,7 +1984,7 @@ class Config:
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
-            logger.error( f"invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
+            logger.error( f"{component}/{config} invalid inlineEncoding: {self.inlineEncoding} must be one of: {','.join(valid_inlineEncodings)}" )
 
         if hasattr(self, 'no'):
             if self.statehost:
@@ -1940,7 +2006,7 @@ class Config:
                 path = os.path.realpath(path)
 
             if sys.platform == 'win32' and words0.find('\\'):
-                logger.warning("%s %s" % (words0, words1))
+                logger.warning("{component}/{config} %s %s" % (words0, words1))
                 logger.warning(
                     "use of backslash ( \\ ) is an escape character. For a path separator use forward slash ( / )."
                 )
@@ -1953,7 +2019,7 @@ class Config:
 
         if hasattr(self, 'pollUrl'):
             if not hasattr(self,'post_baseUrl') or not self.post_baseUrl :
-                logger.debug( f"defaulting post_baseUrl to match pollURl, since it isn't specified." )
+                logger.debug( f"{component}/{config} defaulting post_baseUrl to match pollURl, since it isn't specified." )
                 self.post_baseUrl = self.pollUrl
             
         # verify post_baseDir
@@ -1972,13 +2038,13 @@ class Config:
                 self.post_baseDir = u.path
             elif self.baseDir is not None:
                 self.post_baseDir = os.path.expanduser(self.baseDir)
-                logger.debug("defaulting post_baseDir to same as baseDir")
+                logger.debug("{component}/{config} defaulting post_baseDir to same as baseDir")
 
 
         if self.messageCountMax > 0:
             if self.batch > self.messageCountMax:
                 self.batch = self.messageCountMax
-                logger.info( f'overriding batch for consistency with messageCountMax: {self.batch}' )
+                logger.info( f'{component}/{config} overriding batch for consistency with messageCountMax: {self.batch}' )
 
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
@@ -1988,9 +2054,11 @@ class Config:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
 
+        if self.runStateThreshold_hung < self.housekeeping:
+            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
-            logger.critical( f"vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
+            logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
             sys.exit(1)
 
     def check_undeclared_options(self):
@@ -2005,7 +2073,7 @@ class Config:
                     setattr(self,u,isTrue(getattr(self,u)))
             elif u in float_options:
                 if type( getattr(self,u) ) is not float:
-                    setattr(self,u,float(getattr(self,u)))
+                    setattr(self,u,parse_float(getattr(self,u)))
             elif u in set_options:
                 if type( getattr(self,u) ) is not set:
                     setattr(self,u,self._parse_set_string(getattr(self,u),set()))
@@ -2014,10 +2082,10 @@ class Config:
                     setattr(self,u,str(getattr(self,u)))
             elif u in count_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
-                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+                    setattr(self,u,parse_count(getattr(self,u)))
             elif u in size_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
-                    setattr(self,u,humanfriendly.parse_size(getattr(self,u)))
+                    setattr(self,u,parse_count(getattr(self,u)))
             elif u in duration_options:
                 if type( getattr(self,u) ) not in [ int, float ]:
                     setattr(self,u,durationToSeconds(getattr(self,u)))
@@ -2370,7 +2438,7 @@ class Config:
     def parse_args(self, isPost=False):
         """
         user information:
-           accept a configguration, apply argParse library to augment the given configuration
+           accept a configuration, apply argParse library to augment the given configuration
            with command line settings.
 
            the post component has a different calling convention than others, so use that flag
@@ -2461,6 +2529,10 @@ class Config:
                             action='store_true',
                             default=self.debug,
                             help='print debugging output (very verbose)')
+        parser.add_argument('--wololo',
+                            action='store_true',
+                            default=self.wololo,
+                            help='force overwrite of converted configs')
         parser.add_argument('--dry_run', '--simulate', '--simulation', 
                             action='store_true',
                             default=self.dry_run,
@@ -2777,7 +2849,8 @@ def cfglogs(cfg_preparse, component, config, logLevel, child_inst):
                 logging.debug("Exception details:", exc_info=True)
                 time.sleep(0.1)
 
-        log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        #log_format = '%(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s'
+        log_format = cfg_preparse.logFormat
         if logging.getLogger().hasHandlers():
             for h in logging.getLogger().handlers:
                 h.close()

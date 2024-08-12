@@ -88,7 +88,7 @@ class Wmo00_accumulate(FlowCB):
 
         if self.o.batch > 100:
             logger.warning( f"batch limits how many products fit into one accumulated file.")
-            logger.warning( f"WMO says this should not exceed 100: batch: {batch} ")
+            logger.warning( f"WMO says this should not exceed 100: batch: {self.o.batch} ")
 
         # FIXME: note for later, assign first digit based on node number in cluster.
         logger.info( f" hostname: {self.o.hostname} ")
@@ -127,7 +127,7 @@ class Wmo00_accumulate(FlowCB):
 
         self.sequence += 1
         if self.sequence > 999999:
-            self.sequence == 0
+            self.sequence = 0
 
         return open(self.accumulated_file,"wb")
 

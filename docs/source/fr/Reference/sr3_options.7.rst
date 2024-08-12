@@ -139,6 +139,7 @@ en utilisant la notation *${..} * :
 * CONFIG      - le nom du fichier de configuration en cours d'exécution.
 * HOSTNAME    - le hostname qui exécute le client.
 * RANDID      - Un ID aléatoire qui va être consistant pendant la duration d'une seule invocation.
+* RAND8 - un nombre aléatoire à 8 chiffres qui est généré chaque fois qu'il est évalué dans une chaîne de caractères.
 
 
 Les horodatages %Y%m%d et %H font référence à l’heure à laquelle les données sont traitées par
@@ -226,7 +227,7 @@ TYPES D'OPTIONS
 Les options de sr3 ont plusieurs types :
 
 count
-    type de nombre entier.
+    type de nombre entier. Même format que *size* détaillé plus bas.
 
 duration
     un nombre à virgule flottante qui indique une quantité en secondes (0.001 est 1 milliseconde)
@@ -237,6 +238,7 @@ flag
 
 float
     un nombre à virgule flottante, (séparateur de décimale étant un point.)
+    max de trois chiffres après le décimal, alors plus grand que 1000 devient des nombre entiers.
 
 list
     une liste de chaîne de caractères, chaque occurrence successive se rajoute au total.
@@ -246,7 +248,8 @@ set
     un assortissement de chaîne de caractères, chaque occurrence successive s'unionise au total.
 
 size
-    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 2).
+    taille entière. Suffixes k, m et g pour les multiplicateurs kilo, méga et giga (base 10).
+    si on rajoute ´b' ... c´est base 2 :   1k=1000, 1kb=1024
 
 str
     une chaîne de caractères.
@@ -594,8 +597,15 @@ feeder
   préférence au lieu de comptes d’administrateur pour exécuter des flux.
 
 Les informations d’identification de l’utilisateur sont placées dans le `credentials.conf <sr3_credentials.7.html>`_
-et *sr3 --users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
+et *sr3 \-\-users declare* mettra à jour le courtier pour accepter ce qui est spécifié dans ce fichier, tant que le
 mot de passe de l'administrateur est déjà correct.
+
+- Par défaut, tous les utilisateurs sont déclarés. Toutefois, des flux peuvent être spécifiés sur 
+  la ligne de commande pour limiter les utilisateurs déclarés à ceux du flux donné. Par exemple,
+
+  - *sr3 \-\-users declare* déclarera tous les utilisateurs
+  - *sr3 \-\-users declare subscribe/dd_amis* ne déclarera que les utilisateurs spécifiés dans *subscribe/dd_amis*
+
 
 debug
 -----
@@ -869,6 +879,8 @@ housekeeping <intervalle> (défaut: 300 secondes)
 L’option **housekeeping** définit la fréquence d’exécution du traitement périodique tel que déterminé par
 la liste des plugins on_housekeeping. Par défaut, il imprime un message de journal à chaque intervalle de housekeeping.
 
+
+
 include config
 --------------
 
@@ -1018,6 +1030,7 @@ Les options v2 sont une chaîne de caractères séparée par des virgules.  Les 
 .. [#] seulement implémenter en C. ( voir https://github.com/MetPX/sarracenia/issues/117 )
 
 
+
 logEvents ( défaut: after_accept,after_work,on_housekeeping )
 -------------------------------------------------------------
 
@@ -1026,8 +1039,18 @@ messages de journal. Autres valeurs : on_start, on_stop, post, gather, ... etc..
 On peut débuter la valeur avec un plus (+) pour signifier un ajout au valeurs actuels.
 la valeur moins (-) signifie la soustraction des valeurs de l´ensemble actuel. 
 
+LogFormat ( default: %(asctime)s [%(levelname)s] %(name)s %(funcName)s %(message)s )
+------------------------------------------------------------------------------------
+
+L'option *LogFormat* est passée directement au mécanismes de contrôle des journalisation
+de python. Le format est documenté ici:
+
+* https://docs.python.org/fr/3/library/logging.html#logrecord-attributes
+
+
 logLevel ( défaut: info )
 -------------------------
+
 Niveau de journalisation exprimé par la journalisation de python. Les valeurs possibles sont :
 critical, error, info, warning, debug.
 
@@ -1284,7 +1307,7 @@ Les options **permDefault** spécifient un masque, c’est-à-dire que les autor
 au moins ce qui est spécifié.
 
 persistent <flag> (défaut: True)
-----------------------------------
+--------------------------------
 
 L'option **persistent** définit le *delivery_mode* pour un message AMQP. Lorsqu'il
 est choisi, les messages persistants seront publiés (``delivery_mode=2``). Lorsqu'ils
@@ -1400,42 +1423,10 @@ messages d'annonce à la fois.  Pour réduire le nombre de messages d'annonce pe
 partage de charge optimal, prefetch doit être réglée le plus bas possible.  Cependant, sur des long haul links (FIXME),
 il faut augmenter ce nombre pour masquer la latence d'aller-retour, donc un réglage de 10 ou plus est nécessaire.
 
-queueName|queue|queue_name|qn
------------------------------
-
-* queueName <nom>
-
-Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
-queue_name crée par les composants suit la convention suivante :
-
-   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<aléatoire>.<aléatoire>**
-
-Ou:
-
-* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
-
-* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
-
-* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
-
-* *aléatoire* n’est qu’une série de caractères choisis pour éviter les affrontements quand plusieurs
-  personnes utilisent les mêmes configurations
-
-Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
-
-Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
-taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
-queue_name est écrit à :
-
- ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
-
-Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
-même fil d’attente. Certains voudront peut-être utiliser l’option *queue_name* comme méthode plus explicite
-de partager le travail sur plusieurs nœuds.
-
 queueBind
 ---------
 
+Avec l´option queueBind à *True*, les liaisons (dans AMQP) sont demandées après la déclaration d'une file d'attente.
 Au démarrage, par défaut, Sarracenia redéclare les ressources et les liaisons pour s’assurer qu’elles sont à jour.
 Si la fil d’attente existe déjà, ces indicateurs peuvent être défini a False, afin qu’aucune tentative de déclaration
 ne soit effectuée pour fil d’attente ou pour ses liaisons. Ces options sont utiles sur les courtiers qui ne
@@ -1447,6 +1438,59 @@ queueDeclare <flag> (défaut: True)
 Avec l´option queueDeclare à *True*, un composant déclare un fil d´attente pour accumuler des messages d'annonce lors
 de chaque démarrage. Des fois les permissions sont restrictifs sur les courtiers, alors on ne peut pas
 faire de tels déclarations de ressources. Dans ce cas, il faut supprimer cette déclaration.
+
+queueName|queue|queue_name|qn
+-----------------------------
+
+* queueName <nom>
+
+Par défaut, les composants créent un nom de fil d’attente qui doit être unique. Par défaut, le
+queueName crée par les composants suit la convention suivante :
+
+   **q_<utilisateurDeCourtier>.<nomDuProgramme>.<nomDeConfig>.<queueShare>**
+
+Ou:
+
+* *utilisateurDeCourtier* est le nom d’utilisateur utilisé pour se connecter au courtier (souvent: *anonymous* )
+
+* *nomDuProgramme* est le composant qui utilise la fil d’attente (par exemple *subscribe* ),
+
+* *nomDeConfig* est le fichier de configuration utilisé pour régler le comportement des composants.
+
+*  *queueShare* est par défaut ${USER}_${HOSTNAME}_${RAND8} mais doit être remplacé par le
+ Option de configuration *queueShare*.
+
+Les utilisateurs peuvent remplacer le défaut à condition qu’il commence par **q_<utilisateurDeCourtier>**.
+
+Lorsque plusieurs instances sont utilisées, elles utilisent toutes la même fil d’attente, pour faire plusieurs
+taches simples à la fois. Si plusieurs ordinateurs disposent d’un système de fichiers domestique partagé, le
+queueName est écrit à :
+
+ ~/.cache/sarra/<nomDuProgramme>/<nomDeConfig>/<nomDuProgramme>_<nomDeConfig>_<utilisateurDeCourtier>.qname
+
+Les instances démarrées sur n’importe quel nœud ayant accès au même fichier partagé utiliseront la
+même fil d’attente. Certains voudront peut-être utiliser l’option *queueName* comme méthode plus explicite
+de partager le travail sur plusieurs nœuds. Il est pourtant recommandé d´utiliser queueShare a cette fin.
+
+
+
+queueShare <str> (default: ${USER}_${HOSTNAME}_${RAND8} )
+---------------------------------------------------------
+
+Un suffixe inclus dans les noms de files d'attente pour permettre de définir la portée de partage d'une file d'attente.
+Lorsque plusieurs hôtes participent à la même file d'attente, utilisez ce paramètre
+pour que les instances choisissent la même file d'attente::
+
+ queueShare my_share_group
+
+Par contre, pour obtenir une file d'attente privée, on pourrait spécifier ::
+
+ queueShare ${RAND8}
+
+Ce entraînera l'ajout d'un nombre aléatoire à 8 chiffres au nom de la file d'attente.
+Toutes les instances de la configuration ayant accès au même répertoire d'état
+utilisera le nom de file d'attente ainsi défini.
+
 
 randomize <flag>
 ----------------
@@ -1487,10 +1531,7 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
-sendTo <url>
----------------
 
-Specification du serveur auquel on veut livrer des données (dans un *sender*) 
 
 
 rename <chemin>
@@ -1556,14 +1597,119 @@ panne et doit renvoyer plus tard, tandis que l'option **retry_refilter** est uti
 de la configuration
 
 
-retry_ttl <duration> (défaut: identique à expire)
--------------------------------------------------
+retry_ttl <intervalle> (défaut: identique à expire)
+---------------------------------------------------
 
 L’option **retry_ttl** (nouvelle tentative de durée de vie) indique combien de temps il faut continuer à essayer d’envoyer
 un fichier avant qu’il ne soit  rejeté de la fil d’attente.  Le défaut est de deux jours.  Si un fichier n’a pas
 été transféré après deux jours de tentatives, il est jeté.
 
-sanity_log_dead <interva;le> (défaut: 1.5*housekeeping)
+runStateThreshold_cpuSlow <count> (par défaut : 0)
+---------------------------------------------------
+
+Le paramètre *runStateThreshold_cpuSlow* définit le taux de transfert minimum attendu pour le flux
+de messages. Si le débit des messages traités par seconde CPU tombe en dessous de ce seuil,
+alors le flux sera identifié comme « cpuSlow ». (affiché comme cpuS sur l'écran *sr3 status*.)
+Ce test ne s'appliquera que si un flux transfère réellement des messages.
+Le taux n'est visible que dans *sr3 --full status*
+
+Cela peut indiquer que l'acheminement est excessivement coûteux ou que les transferts sont excessivement lents.
+Exemples qui pourraient y contribuer :
+
+* une centaine d'expressions régulières doivent être évaluées par message reçu. les expressions régulières, une fois cumulées, peuvent coûter cher.
+
+* un plugin complexe qui effectue de lourdes transformations sur les données en cours de route.
+
+* répéter une opération pour chaque message, alors qu'il suffirait de la faire une fois par lot.
+
+Par défaut, il est inactif, mais peut être défini pour identifier des problèmes temporaires.
+
+
+runStateThreshold_hung <intervalle> (défaut: 450s)
+--------------------------------------------------
+
+L'option runStateThreshold_hung (anciennement : **sanity_log_dead**) définit la durée à considérer comme trop longue avant de redémarrer
+un flot. lors de l'exécution du *statut sr3*, l'état du flux sera affiché comme *hung*
+
+Cela peut indiquer un problème avec un plugin de sondage qui ne libère pas le processeur. ou alors une sorte de problème de réseau.
+Une exécution périodique *sr3 sanity* (en tant que tâche cron) redémarrera les tâches bloquées.
+
+
+runStateThreshold_idle <intervalle> (default: 900s)
+---------------------------------------------------
+
+L'option runStateThreshold_idle définit le lapse de temps avant de déclarer qu'aucun transfert est en cours.
+la commande *sr3 status* affichera ces flux comme *idle*
+
+Dans un flux qui publie des données, la dernière activité sera basée sur la date de sa dernière publication.
+Dans un flux qui transfère des données, la dernière activité sera basée sur le dernier transfert de données.
+Dans un flux dont aucun des cas ci-haut s'appliquent, la dernière activité est alors basée sur le dernier 
+message reçu.
+
+Ce n'est pas un problème en soi, sauf si l'on s'attend à un flux continu. Si un flux continu
+d'un certain débit est attendu, définissez le *runStateThreshold_slow* pour le flux afin que 
+les indicateurs *sr3 status* que c'est un problème (en affichant *slow* )
+
+runStateThreshold_lag <intervalle> (défaut: 30s)
+------------------------------------------------
+
+L'option runStateThreshold_lag définit le délai de traitement des messages à tolèrer normalement.
+Si les champs AvgLag dans la commande *sr3 status* dépassent cette intervalle, 
+le flux sera répertorié comme *lagging* (en retard).
+
+Lorsqu’un flux est en retard, il faut envisager de l’accélérer :
+
+* restreindre la portée de l'abonnement (*subtopic* plus restreints)
+* restreindre la portée des téléchargements (plus de *reject* dans les clauses d'acceptation/rejet)
+* augmenter les ressources de téléchargement (plus d'*instances*
+* diviser le flux en plusieurs flux indépendants.
+
+Si le décalage constaté est raisonnable à accepter pour l'application, alors
+augmenter le runStateThreshold_lag pour ce flux pourrait également être un remède raisonnable.
+
+
+runStateThreshold_reject <compte> (default: 80)
+-----------------------------------------------
+
+L'option rejetThreshold définit le nombre de messages à rejeter, en pourcentage,
+d'un flux et considère comme normal. Si le champ data *%rej* dans la commande *sr3 status*
+dépasse cela, alors le flux sera répertorié comme *reje*.
+
+Pour y répondre, examinez le sous-thème dans la configuration et raffinez-le afin que
+moins de messages soient transférés du courtier si possible. Si cela n’est pas possible, 
+augmentez le seuil pour le flux concerné pour que *sr3 status* juge ce comportement comme normale.
+
+
+runStateThreshold_retry <compte> (default: 1000)
+------------------------------------------------
+
+L'option runStateThreshold_retry définit la taille d'une file d'attente de transferts et de publications à réessayer
+est considéré comme normal. Si le champ de données *Retry* dans la commande *sr3 status* dépasse cela, 
+alors le flux sera répertorié comme *retr*.
+
+Pour y remédier, examinez les journaux pour déterminer pourquoi tant de transferts échouent. Déterminer la cause.
+Si la cause ne peut pas être traitée et que cela doit être considéré comme normal, augmentez le seuil
+pour que cette configuration corresponde à cette attente.
+
+runStateThreshold_slow <taux> (default: 0o/s)
+---------------------------------------------
+
+L'option runStateThreshold_slow définit le seuil minimum d'octets de données transféré par seconde 
+pour être déclaré normale. Si le totale des champs data *RxData* et *TxData* dans la 
+commande *sr3 status* sont inférieurs à cet seuil, le flux sera répertorié comme *slow* (lent).
+
+Pour résoudre ce problème, déterminez si les modèles de téléchargement (accepter/rejeter) sont en train 
+de télécharger trop de données. Le téléchargement de données inutilisées ralentira le transfert des données 
+intéressantes.
+
+Après avoir considéré les données dans le flux, envisagez d'augmenter les instances dans la configuration
+ou répartir la charge entre plusieurs configurations, pour améliorer la parallélisation.
+Si la vitesse observée doit être considérée comme normale pour ce flux, alors définissez le seuil
+de manière appropriée.
+
+
+
+sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 -------------------------------------------------------
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
@@ -1586,6 +1732,37 @@ spécificateurs de temps ::
 
 afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.
+
+sendTo <url>
+------------
+
+Specification du serveur auquel on veut livrer des données (dans un *sender*) 
+
+
+set (DÉVELOPPEUR)
+---------------
+
+L'option *set* est utilisée, généralement par les développeurs, pour définir les paramètres
+pour des classes particulières dans le code source. l'utilisation la plus importante
+serait de définir le logLevel plus élevé pour une classe d’intérêt particulière.
+
+L'utilisation de cette option se fait plus facilement avec le code source à portée de main.
+un exemple::
+
+   set sarracenia.moth.amqp.AMQP.logLevel debug
+   set sarracenia.moth.mqtt.MQTT.logLevel debug
+
+Ainsi, *sarracenia.moth.amqp.AMQP* fait référence à la classe à laquelle le paramètre
+est appliqué. Il y a une *class AMQP* dans le fichier python
+sarracenia/moth/amqp.py (par rapport à la racine de la source.)
+
+Le *logLevel* est le paramètre à appliquer mais uniquement dans
+cette classe. L'option *set* nécessite une implémentation dans le source
+code pour l’implémenter pour chaque classe. Tous les *flowcb* ont le nécessaire
+soutien. Les classes ``moth`` et transfert ont une implémentation spécifique pour le logLevel.
+
+D'autres classes peuvent être aléatoires en termes d'implémentation de la sémantique *set*.
+
 
 shim_defer_posting_to_exit (EXPERIMENTAL)
 -----------------------------------------
@@ -1616,8 +1793,8 @@ shim_skip_parent_open_files (EXPERIMENTAL)
 L’option shim_skip_ppid_open_files signifie qu’un processus vérifie si le processus parent a le même fichier
 ouvert et ne poste pas si c’est le cas. (défaut: Vrai)
 
-sleep <temps>
--------------
+sleep <intervalle>
+------------------
 
 Temps d’attente entre la génération d’événements. Lorsqu'on écrit fréquemment à des fichiers, c’est inutile
 de produire un poste pour chaque changement, car il peut produire un flux continu de changements où les transferts
@@ -1626,8 +1803,9 @@ les modifications apportées à un fichier pendant le temps de *sleep*, et produ
 
 Lorsque *sleep* est donné une valeur >0 pour être utilisé avec un *poll*, cela a pour effet de 
 définir *scheduled_interval*, pour des raisons de compatibilité. 
-Il est préférable que le sondage utilise explicitement les paramètres  *scheduled_interval*,
+Il est préférable que le sonde utilise explicitement les paramètres *scheduled_interval*,
 *scheduled_hour*, et/ou *scheduled_minute* plutôt que *sleep*.
+
 
 statehost <booléen> ( défaut: False )
 -------------------------------------
@@ -1914,6 +2092,12 @@ vip qui change.
 Lorsqu’une **instance sr3** ne trouve pas l’adresse IP, elle se met en veille pendant 5 secondes et tente à nouveau.
 Si c’est le cas, elle consomme et traite un message d'annonce et revérifie pour le vip.
 lorsque plus qu'un vip est spécifié, n´importe lequel des addresses IP dans la liste est suffisant.
+
+wololo
+------
+
+Une option de ligne de commande pour écraser une configuration SR3 existante lors de la conversion
+à partir de la v2.
 
 SEE ALSO
 ========
