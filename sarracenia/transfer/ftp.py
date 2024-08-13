@@ -313,7 +313,7 @@ class Ftp(Transfer):
         try:
             if self.binary:
                 self.ftp.retrbinary('RETR ' + remote_file, self.write_chunk,
-                                self.o.bufsize)
+                                self.o.bufSize)
             else:
                 self.ftp.retrlines('RETR ' + remote_file, self.write_chunk)
         except Exception as Ex:
@@ -424,7 +424,7 @@ class Ftp(Transfer):
         self.write_chunk_init(None)
         try:
             if self.binary:
-                self.ftp.storbinary("STOR " + remote_file, src, self.o.bufsize,
+                self.ftp.storbinary("STOR " + remote_file, src, self.o.bufSize,
                                 self.write_chunk)
             else:
                 self.ftp.storlines("STOR " + remote_file, src, self.write_chunk)

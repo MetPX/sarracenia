@@ -475,7 +475,7 @@ class Message(dict):
                         fp.seek( offset )
 
                     while i < offset+msg['size']:
-                        buf = fp.read(o.bufsize)
+                        buf = fp.read(o.bufSize)
                         if not buf: break
                         sumalgo.update(buf)
                         i += len(buf)
@@ -661,10 +661,10 @@ class Message(dict):
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
-        if hasattr(o, 'blocksize') and (o.blocksize > 1) and lstat and \
+        if hasattr(o, 'blockSize') and (o.blockSize > 1) and lstat and \
                 (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
-                (lstat.st_size > o.blocksize):
-           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
+                (lstat.st_size > o.blockSize):
+           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blockSize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])
@@ -783,11 +783,13 @@ class Message(dict):
         s=""
         if 'baseUrl' in msg:
             s+=msg['baseUrl']+' '
-        if 'relPath' in msg:
+        else:
+            s+="baseUrl missing "
+        if 'relPath' in msg and len(msg['relPath']) > 0:
             if msg['relPath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+=msg['relPath']
-        elif 'retrievePath' in msg:
+        elif 'retrievePath' in msg and len(msg['retrievePath']) > 0 :
             if msg['retrievePath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+= msg['retrievePath']
@@ -1025,7 +1027,7 @@ class Message(dict):
         # ide
         #if isinstance(data, io.IOBase ):
         #    with open(opath, 'wb') as f:
-        #        while buf = data.read(self.o.bufsize) > 0 :
+        #        while buf = data.read(self.o.bufSize) > 0 :
         #            sz=f.write(buf)
 
         if 'content' in msg:

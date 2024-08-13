@@ -341,7 +341,7 @@ class Sftp(Transfer):
             (remote_file, local_file, remote_offset, local_offset, length, exactLength))
 
         alarm_set(2 * self.o.timeout)
-        rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
+        rfp = self.sftp.file(remote_file, 'rb', self.o.bufSize)
         if remote_offset != 0: rfp.seek(remote_offset, 0)
         rfp.settimeout(1.0 * self.o.timeout)
         alarm_cancel()
@@ -459,7 +459,7 @@ class Sftp(Transfer):
         alarm_set(2 * self.o.timeout)
 
         if length == 0:
-            rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
+            rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
             rfp.settimeout(1.0 * self.o.timeout)
 
         # parts
@@ -467,10 +467,10 @@ class Sftp(Transfer):
             try:
                 self.sftp.stat(remote_file)
             except:
-                rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
+                rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
                 rfp.close()
 
-            rfp = self.sftp.file(remote_file, 'r+b', self.o.bufsize)
+            rfp = self.sftp.file(remote_file, 'r+b', self.o.bufSize)
             rfp.settimeout(1.0 * self.o.timeout)
             if remote_offset != 0: rfp.seek(remote_offset, 0)
 

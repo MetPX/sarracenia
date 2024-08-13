@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 #           options.permDefault
 #           options.permDirDefault
 #     opt   options.byteRateMax
-#     opt   options.bufsize
+#     opt   options.bufSize
 
 
 class File(Transfer):
@@ -197,7 +197,7 @@ def file_insert(options, msg):
     fp = open(msg['relPath'], 'rb')
     if msg.partflg == 'i': fp.seek(msg['offset'], 0)
 
-    ok = file_write_length(fp, msg, options.bufsize, msg.filesize, options)
+    ok = file_write_length(fp, msg, options.bufSize, msg.filesize, options)
 
     fp.close()
 
