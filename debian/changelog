@@ -1,22 +1,18 @@
-metpx-sr3 (3.00.55rc1) unstable; urgency=medium
+metpx-sr3 (3.00.55rc1) UNRELEASED; urgency=medium
 
+  * fix #953 sr3 status queue size updates again.
   * fix #1151 calculate on download not working.
   * fix #1150 bc transport api refactor.
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Aug 2024 11:24:36 -0400
 
-metpx-sr3 (3.00.54rc3) unstable; urgency=medium
+metpx-sr3 (3.00.54) unstable; urgency=medium
 
   * fix #1142 token authentication re-factor
   * fix #1141 subscribe crash with random checksum.
   * fix #1133 NASA token expiry
   * fix #1089 filAgeMax works more often.
   * improved release documentation.
-
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 06 Aug 2024 11:24:36 -0400
-
-metpx-sr3 (3.00.54rc2) unstable; urgency=medium
-
   * CHANGE #33 default queue name generated now includes ${USER}_${HOSTNAME}
   * for #33, use of *queueName* deprecated in favour of *queueShare*
   * NEW/fix #1122 support for implicit FTPS on post 990.
@@ -26,21 +22,14 @@ metpx-sr3 (3.00.54rc2) unstable; urgency=medium
   * enable tests of block transfers #1112
   * fix for #1115: stop won't start, or foreground won't
   * fix redis unit tests broken by inclusion of _name var.
-
-
- -- peter <peter@bsqt.homeip.net>  Fri, 21 Jun 2024 17:46:14 -0400
-
-metpx-sr3 (3.00.54rc1) unstable; urgency=medium
-
-  [ SSC-5CD2310S60 ]
-  * NEW #1084 add metadata fetch to scheduled http. 
+  * NEW #1084 add metadata fetch to scheduled http.
   * NEW #1104 (EXPERIMENTAL) restored block partitioned transfers.
   * fix #1104 add message per cpu second and cpuS state.
   * only run after_post when actually posted #1101
   * fix #1097 message rates < 1 were parsed as zero, now work correctly.
   * messages reviewed & consolidated: #1094, #1099 (log de-cluttering.)
   * fix crashes/problems with statehost #1076, #1087, #1096
-  * when plugins go bad, report better, recover better: #1085, #1091, 
+  * when plugins go bad, report better, recover better: #1085, #1091,
   * performance improvements #1083, #1086
   * fix #1079 watch posting events it should not.
   * fix #1076 bogus messages and mkdir crash on HPC ( #1087 )
@@ -48,20 +37,21 @@ metpx-sr3 (3.00.54rc1) unstable; urgency=medium
     * adds lag,rtry,slow,reje states to status display.
     * adds checks for running process to cleanup, fail if running.
     * adds cleanup to remove, don't remove if cleanup fails.
-    * adds progressive logs to transfers  (closing #966) 
+    * adds progressive logs to transfers  (closing #966)
   * several fixes for sender crashes ( #1091, #1095, #1099 )
   * add #1054 can now convert multiple configs, and overwrite (with --wololo)
   * fixed #1064 poll crash.
   * fixed #927 sanity not restarting crashed polls.
   * reduced processing overhead ( #1086 )
-  * misc bug fixes ( #1070, #1092, #1103, #1108, #1109 ) 
+  * misc bug fixes ( #1070, #1092, #1103, #1108, #1109 )
   * NEW added logFormat option.
   * bug fixes and unit tests for AM ( #1036, $1068, #1074, #1075, #1078, #1079 )
   * many unit tests added, improved coverage (though still poor.)
   * many other plugin improvements. (#1085, #1082, #1091 )
   * search function restored on web-site documentation. ( #1062, #1072)
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Fri, 17 May 2024 12:29:22 -0400
+ -- SSC-5CD2310S60 <andre.leblanc@ssc-spc.gc.ca>  Fri, 12 Aug 2024 12:29:22 -0400
+
 
 metpx-sr3 (3.00.53) unstable; urgency=medium
 
