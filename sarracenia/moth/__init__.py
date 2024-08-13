@@ -308,11 +308,12 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message: sarracenia.Message ) -> None:
+    def ack(self, message: sarracenia.Message ) -> bool:
         """
           tell broker that a given message has been received.
 
           ack uses the 'ack_id' property to send an acknowledgement back to the broker.
+          If there's no 'ack_id' in the message, you should return True.
         """
         logger.error("ack unimplemented")
 

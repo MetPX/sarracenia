@@ -25,6 +25,7 @@
 import amqp
 import copy
 import json
+import uuid
 
 import logging
 
@@ -142,12 +143,17 @@ class AMQP(Moth):
             msg.deriveSource( self.o )
             msg.deriveTopics( self.o, topic )
 
-            msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
+            # keep track of which connection and channel the msg came from
+            msg['ack_id'] = { 'delivery_tag':  raw_msg.delivery_info['delivery_tag'], 
+                              'channel_id':    raw_msg.channel.channel_id, 
+                              'connection_id': self.connection_id,
+                              'broker':        self.broker,
+                            }
             msg['local_offset'] = 0
             msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
                 if hasattr(self,'channel'):
-                    self.channel.basic_ack(msg['ack_id'])
+                    self.channel.basic_ack(msg['ack_id']['delivery_tag'])
                 logger.error('message acknowledged and discarded: %s' % msg)
                 msg = None
         else:
@@ -188,6 +194,9 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
+        self.connection_id = None
+        self.broker = None
+
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
@@ -223,6 +232,8 @@ class AMQP(Moth):
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
                                           ssl=(broker.url.scheme[-1] == 's'))
+        self.connection_id = str(uuid.uuid4()) + ("_sub" if self.is_subscriber else "_pub")
+        self.broker = host + '/' + vhost
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
             self.connection.connect()
@@ -315,7 +326,6 @@ class AMQP(Moth):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
-
         ebo = 1
         original_sigint = signal.getsignal(signal.SIGINT)
         original_sigterm = signal.getsignal(signal.SIGINT)
@@ -574,41 +584,53 @@ class AMQP(Moth):
     def ack(self, m: sarracenia.Message) -> None:
         """
            do what you need to acknowledge that processing of a message is done.
+           NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. "Deliveries must be 
+           acknowledged on the same channel they were received on. Acknowledging on a different channel 
+           will result in an "unknown delivery tag" protocol exception and close the channel."
         """
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
-            return
+            return False
 
-       
         # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
         if not 'ack_id' in m:
             #logger.warning( f"no ackid present" )
-            return
+            return True
 
+        # when the connection/channel/broker doesn't match the current, don't attempt to ack, it will fail
+        if (m['ack_id']['connection_id'] != self.connection_id
+            or m['ack_id']['channel_id'] != self.channel.channel_id
+            or m['ack_id']['broker'] != self.broker):
+            logger.warning(f"failed for {m['ack_id']}. Does not match the current connection {self.connection_id}," +
+                           f" channel {self.channel.channel_id} or broker {self.broker}")
+            return False
+        
         #logger.info( f"acknowledging {m['ack_id']}" )
         ebo = 1
         while True:
             try:
                 if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id'])
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
-                # Break loop if no exceptions encountered
-                return
-
+                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
+                    return True
+                else:
+                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                    return False
+            
             except Exception as err:
                 logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
                 logger.debug('Exception details: ', exc_info=True)
-
-                # Cleanly close partially broken connection and restablish
-                self.close()
-                self.getSetup()
-
-            if ebo < 60: ebo *= 2
-
-            logger.info(
-                "Sleeping {} seconds before re-trying ack...".format(ebo))
+                if type(err) == BrokenPipeError or type(err) == ConnectionResetError:
+                    # Cleanly close partially broken connection and restablish
+                    self.close()
+                    self.getSetup()
+                    # No point in trying to ack again if the connection is broken
+                    return False
+            
+            if ebo < 60:
+                ebo *= 2
+            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
             time.sleep(ebo)
+            # TODO maybe implement message strategy stubborn here and give up after retrying?
 
     def putNewMessage(self,
                       message: sarracenia.Message,
@@ -770,3 +792,5 @@ class AMQP(Moth):
         # FIXME toclose not useful as we don't close channels anymore
         self.metricsDisconnect()
         self.connection = None
+        self.connection_id = None
+        self.broker = None
