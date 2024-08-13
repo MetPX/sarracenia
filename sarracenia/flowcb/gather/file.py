@@ -114,7 +114,7 @@ class File(FlowCB):
         self.new_events = OrderedDict()
         self.left_events = OrderedDict()
 
-        #self.o.blocksize = 200 * 1024 * 1024
+        #self.o.blockSize = 200 * 1024 * 1024
         self.o.create_modify = ('create' in self.o.fileEvents) or (
             'modify' in self.o.fileEvents)
 
@@ -144,10 +144,10 @@ class File(FlowCB):
     def post_file(self, path, lstat, key=None, value=None):
         #logger.debug("start  %s" % path)
 
-        # check the value of blocksize
+        # check the value of blockSize
 
         fsiz = lstat.st_size
-        blksz = self.set_blocksize(self.o.blocksize, fsiz)
+        blksz = self.set_blockSize(self.o.blockSize, fsiz)
 
         # if we should send the file in parts
 
@@ -210,10 +210,10 @@ class File(FlowCB):
         msg = sarracenia.Message.fromFileInfo(path, self.o, lstat)
 
         logger.debug( f"initial msg:{msg}" )
-        # check the value of blocksize
+        # check the value of blockSize
 
         fsiz = lstat.st_size
-        chunksize = self.set_blocksize(self.o.blocksize, fsiz)
+        chunksize = self.set_blockSize(self.o.blockSize, fsiz)
 
         # count blocks and remainder
 
@@ -482,11 +482,11 @@ class File(FlowCB):
             return (True, self.post1file(src, lstat))
         return (True, [])
 
-    def set_blocksize(self, bssetting, fsiz):
+    def set_blockSize(self, bssetting, fsiz):
 
         tfactor = 50 * 1024 * 1024
 
-        if bssetting == 0:  ## default blocksize
+        if bssetting == 0:  ## default blockSize
             return tfactor
 
         elif bssetting == 1:  ## send file as one piece.

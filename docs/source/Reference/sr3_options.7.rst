@@ -475,16 +475,16 @@ lowered to 1.  For most usual situations the default is fine. For higher volume
 cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.
 
-blocksize <size> default: 0 (auto)
+blockSize <size> default: 0 (auto)
 -----------------------------------
 
 NOTE: **EXPERIMENTAL** sr3, expected to return in future version**
-This **blocksize** option controls the partitioning strategy used to post files.
+This **blockSize** option controls the partitioning strategy used to post files.
 The value should be one of::
 
    0 - autocompute an appropriate partitioning strategy (default)
    1 - always send entire files in a single part.
-   <blocksize> - used a fixed partition size (example size: 1M )
+   <blockSize> - used a fixed partition size (example size: 1M )
 
 Files can be announced as multiple parts.  Each part has a separate checksum.
 The parts and their checksums are stored in the cache. Partitions can traverse
@@ -522,10 +522,10 @@ Once connected to an AMQP broker, the user needs to bind a queue
 to exchanges and topics to determine the notification messages of interest.
 
 
-bufsize <size> (default: 1MB)
+bufSize <size> (default: 1MB)
 -----------------------------
 
-Files will be copied in *bufsize*-byte blocks. for use by transfer protocols.
+Files will be copied in *bufSize*-byte blocks. for use by transfer protocols.
 
 
 byteRateMax <size> (default: 0)
@@ -1225,6 +1225,14 @@ fileAgeMin
 If files are newer than this setting (default: 0), then ignore them, they are too
 new to post. 0 deactivates the setting.
 
+fileSizeMax (size: default 0)
+-----------------------------
+
+The default value of *fileSizeMax* is 0, meaning there is no limit. However one may
+wish to prevent downloads of very large files in some situations. Setting a maximum
+file size with the *fileSizeMax* option can be used to prevent unintentional 
+downloading of large data files.
+
 nodupe_ttl <off|on|999[smhdw]> 
 ------------------------------
 
@@ -1532,7 +1540,7 @@ randomize <flag>
 
 Active if *-r|--randomize* appears in the command line... or *randomize* is set
 to True in the configuration file used. If there are several notification messages because the 
-file is posted by block (the *blocksize* option was set), the block notification messages 
+file is posted by block (the *blockSize* option was set), the block notification messages 
 are randomized meaning that they will not be posted
 
 realpathAdjust <count> (Experimental) (default: 0)

@@ -5,8 +5,8 @@ logger = logging.getLogger(__name__)
 
 default_options = {
     'acceptUnmatched': True,
-    'blocksize': 1,
-    'bufsize': 1024 * 1024,
+    'blockSize': 1,
+    'bufSize': 1024 * 1024,
     'follow_symlinks': False,
     'force_polling': False,
     'inflight': None,

@@ -476,16 +476,16 @@ ajuster à 1.  Pour la plupart des situations, le défaut est bien. Pour un volu
 on pourrait l’augmenter pour réduire les frais généraux de transfert. Cette option est seulement utilisé pour les
 protocoles de transfert de fichiers, et non HTTP pour le moment.
 
-blocksize <size> défaut: 0 (auto)
+blockSize <size> défaut: 0 (auto)
 -----------------------------------
 
 REMARQUE: **EXPERIMENTAL pour sr3, devrait revenir dans la version future**
-Cette option **blocksize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
+Cette option **blockSize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
 La valeur doit être l’une des suivantes ::
 
    0 - calcul automatiquement une stratégie de partitionnement appropriée (défaut).
    1 - envoyez toujours des fichiers entiers en une seule partie.
-   <blocksize> - utiliser une taille de partition fixe (taille d’exemple : 1M ).
+   <blockSize> - utiliser une taille de partition fixe (taille d’exemple : 1M ).
 
 Les fichiers peuvent être annoncés en plusieurs parties.  Chaque partie à un somme de contrôle (checksum) distinct.
 Les parties et leurs somme de contrôle sont stockées dans la cache. Les partitions peuvent traverser
@@ -522,10 +522,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
-bufsize <size> (défaut: 1m)
+bufSize <size> (défaut: 1m)
 ---------------------------
 
-Les fichiers seront copiés en tranches de *bufsize* octets. Utilisé par les protocoles de transfert.
+Les fichiers seront copiés en tranches de *bufSize* octets. Utilisé par les protocoles de transfert.
 
 byteRateMax <size> (défaut: 0)
 ------------------------------
@@ -1217,6 +1217,16 @@ fileAgeMin
 Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
 neufs pour qu'ils puissent être postés.
 
+
+fileSizeMax (size: default 0)
+-----------------------------
+
+La valeur par défaut de *fileSizeMax* est 0, ce qui signifie qu'il n'y a pas de limite. Cependant, on peut
+souhaiter empêcher le téléchargement de fichiers très volumineux dans certaines situations. La définition d'une
+taille de fichier maximale avec l'option *fileSizeMax* peut être utilisée pour empêcher le
+téléchargement involontaire de fichiers de données volumineux.
+
+
 nodupe_ttl <off|on|999[smhdw]>
 ------------------------------
 
@@ -1525,7 +1535,7 @@ randomize <flag>
 
 Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* est défini
 à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
-le fichier est publié par bloc (l’option *blocksize* a été définie), les messages d'annonce de bloc
+le fichier est publié par bloc (l’option *blockSize* a été définie), les messages d'annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.
 
 realpathAdjust <compte> (Experimental) (défaut: 0)

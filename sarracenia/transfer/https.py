@@ -240,7 +240,7 @@ class Https(Transfer):
             dbuf = None
             while True:
                 alarm_set(self.o.timeout)
-                chunk = self.http.read(self.o.bufsize)
+                chunk = self.http.read(self.o.bufSize)
                 alarm_cancel()
                 if not chunk: break
                 if dbuf: dbuf += chunk

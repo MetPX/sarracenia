@@ -1782,6 +1782,12 @@ class Flow:
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
                     continue
 
+            # all non-files taken care of above... rest of routine is normal file download.
+
+            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax:
+                self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}")
+                continue
+
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
