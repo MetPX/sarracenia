@@ -117,7 +117,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Aug 13, 2024</p>
+<dd class="field-even"><p>Aug 14, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -1105,10 +1105,11 @@ filtrage accept/reject. Le flux va dormir pour limiter le taux de traitement.</p
 <p>Si <strong>messageRateMin</strong> est supérieur à zéro et que le flux détecté est inférieur à ce taux,
 un message d´annonce sera produit :</p>
 </section>
-<section id="message-ttl-duration-defaut-none">
-<h4>message_ttl &lt;duration&gt;  (défaut: None)<a class="headerlink" href="#message-ttl-duration-defaut-none" title="Link to this heading"></a></h4>
-<p>L’option <strong>message_ttl</strong> définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
-Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.</p>
+<section id="messageagemax-duration-defaut-none">
+<h4>messageAgeMax &lt;duration&gt;  (défaut: None)<a class="headerlink" href="#messageagemax-duration-defaut-none" title="Link to this heading"></a></h4>
+<p>L’option <strong>AgeMax</strong> définit un temps pour lequel un message d´annonce peut attendres du
+côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
+(0 indique un age infini sera accepté.)</p>
 </section>
 <section id="mirror-flag-defaut-off">
 <h4>mirror &lt;flag&gt; (défaut: off)<a class="headerlink" href="#mirror-flag-defaut-off" title="Link to this heading"></a></h4>
@@ -1334,6 +1335,14 @@ du flux total.</p>
 <li><p>wis … un format expérimental geoJSON en flux pour l’Organisation météorologique mondiale</p></li>
 </ul>
 <p>Lorsqu’elle est fournie, cette valeur remplace tout ce qui peut être déduit de post_topicPrefix.</p>
+</section>
+<section id="post-messageagemax-duration-defaut-0">
+<h4>post_messageAgeMax &lt;duration&gt; (défaut: 0)<a class="headerlink" href="#post-messageagemax-duration-defaut-0" title="Link to this heading"></a></h4>
+<p>L’option post_messageAgeMax (alias <strong>message_ttl</strong>) est utilisée lors de la publication d’un message,
+comme conseil au courtier. ttl est un abbréviation de <em>time to live</em> (<em>durée de vie maximale</em>) Les courtiers
+rejettent les messages qui ont dépassé leur durée de vie prévue sans les livrer. (0 signifie qu’aucune durée de vie maximale n’est donnée.)
+Lors de la publication avec AMQP, cette option définit la propriété <em>x-message-ttl</em> (mais cette dernière est en millisecondes).
+Lors de la publication avec MQTT, cette option définit la propriété <em>MessageExpiryInterval</em>.</p>
 </section>
 <section id="post-on-start">
 <h4>post_on_start<a class="headerlink" href="#post-on-start" title="Link to this heading"></a></h4>

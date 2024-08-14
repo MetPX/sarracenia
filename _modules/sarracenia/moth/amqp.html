@@ -364,8 +364,8 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]:</span>
                     <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;x-expires&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]:</span>
-                    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;messageAgeMax&#39;</span><span class="p">]:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;messageAgeMax&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;x-message-ttl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
 
                 <span class="c1">#FIXME: conver expire, message_ttl to proper units.</span>
@@ -781,7 +781,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">]:</span>
             <span class="n">ttl</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
-                <span class="n">sarracenia</span><span class="o">.</span><span class="n">durationToSeconds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;message_ttl&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                <span class="n">sarracenia</span><span class="o">.</span><span class="n">durationToSeconds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">[</span><span class="s1">&#39;messageAgeMax&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ttl</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
         

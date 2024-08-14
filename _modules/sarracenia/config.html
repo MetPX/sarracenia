@@ -252,7 +252,8 @@
 <span class="n">float_options</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;messageRateMax&#39;</span><span class="p">,</span> <span class="s1">&#39;messageRateMin&#39;</span> <span class="p">]</span>
 
 <span class="n">duration_options</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;message_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">,</span> <span class="s1">&#39;metrics_writeInterval&#39;</span><span class="p">,</span> \
+    <span class="s1">&#39;expire&#39;</span><span class="p">,</span> <span class="s1">&#39;housekeeping&#39;</span><span class="p">,</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileAgeMin&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;messageAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;post_messageAgeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;metrics_writeInterval&#39;</span><span class="p">,</span> \
     <span class="s1">&#39;runStateThreshold_idle&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_lag&#39;</span><span class="p">,</span> <span class="s1">&#39;retry_ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;runStateThreshold_hung&#39;</span><span class="p">,</span> <span class="s1">&#39;sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;varTimeOffset&#39;</span>
 <span class="p">]</span>
 
@@ -876,7 +877,8 @@
         <span class="s1">&#39;logRotate&#39;</span><span class="p">:</span> <span class="s1">&#39;logRotateCount&#39;</span><span class="p">,</span>
         <span class="s1">&#39;logRotate&#39;</span><span class="p">:</span> <span class="s1">&#39;logRotateCount&#39;</span><span class="p">,</span>
         <span class="s1">&#39;logRotate_interval&#39;</span><span class="p">:</span> <span class="s1">&#39;logRotateInterval&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;message-ttl&#39;</span><span class="p">:</span> <span class="s1">&#39;message_ttl&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;message-ttl&#39;</span><span class="p">:</span> <span class="s1">&#39;post_messageAgeMax&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;message_ttl&#39;</span><span class="p">:</span> <span class="s1">&#39;post_messageAgeMax&#39;</span><span class="p">,</span>
         <span class="s1">&#39;msg_replace_new_dir&#39;</span> <span class="p">:</span> <span class="s1">&#39;pathReplace&#39;</span><span class="p">,</span>
         <span class="s1">&#39;msg_filter_wmo2msc_replace_dir&#39;</span><span class="p">:</span> <span class="s1">&#39;filter_wmo2msc_replace_dir&#39;</span><span class="p">,</span>
         <span class="s1">&#39;msg_filter_wmo2msc_uniquify&#39;</span><span class="p">:</span> <span class="s1">&#39;filter_wmo2msc_uniquify&#39;</span><span class="p">,</span>
@@ -1001,6 +1003,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mirror</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">messageAgeMax</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">post_exchanges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_messageAgeMax</span> <span class="o">=</span> <span class="mi">0</span>
 	    <span class="c1">#self.post_topicPrefix = None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pstrip</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="kc">None</span>
