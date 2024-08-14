@@ -24,7 +24,7 @@ class Message(FlowCB):
             props.update(self.o.dictify())
 
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
-            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic' ]:
+            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic', 'messageAgeMax' ]:
                 post_one='post_'+k
                 if hasattr( self.o, post_one ): 
                     #props.update({ k: getattr(self.o,post_one) } )

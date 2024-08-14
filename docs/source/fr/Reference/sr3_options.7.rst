@@ -1116,11 +1116,12 @@ messageRateMin <float> (défaut: 0)
 Si **messageRateMin** est supérieur à zéro et que le flux détecté est inférieur à ce taux,
 un message d´annonce sera produit :
 
-message_ttl <duration>  (défaut: None)
---------------------------------------
+messageAgeMax <duration>  (défaut: None)
+----------------------------------------
 
-L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
-Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.
+L’option **AgeMax** définit un temps pour lequel un message d´annonce peut attendres du
+côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
+(0 indique un age infini sera accepté.)
 
 mirror <flag> (défaut: off)
 ---------------------------
@@ -1389,6 +1390,15 @@ Définit le format de message pour les messages publiés. les valeurs actuelleme
 * wis ... un format expérimental geoJSON en flux pour l'Organisation météorologique mondiale
 
 Lorsqu'elle est fournie, cette valeur remplace tout ce qui peut être déduit de post_topicPrefix.
+
+post_messageAgeMax <duration> (défaut: 0)
+-----------------------------------------
+
+L'option post_messageAgeMax (alias **message_ttl**) est utilisée lors de la publication d'un message,
+comme conseil au courtier. ttl est un abbréviation de *time to live* (*durée de vie maximale*) Les courtiers 
+rejettent les messages qui ont dépassé leur durée de vie prévue sans les livrer. (0 signifie qu'aucune durée de vie maximale n'est donnée.)
+Lors de la publication avec AMQP, cette option définit la propriété *x-message-ttl* (mais cette dernière est en millisecondes).
+Lors de la publication avec MQTT, cette option définit la propriété *MessageExpiryInterval*.
 
 
 post_on_start

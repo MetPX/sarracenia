@@ -270,8 +270,8 @@ class AMQP(Moth):
                 if self.o['expire']:
                     x = int(self.o['expire'] * 1000)
                     if x > 0: args['x-expires'] = x
-                if self.o['message_ttl']:
-                    x = int(self.o['message_ttl'] * 1000)
+                if self.o['messageAgeMax']:
+                    x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
 
                 #FIXME: conver expire, message_ttl to proper units.
@@ -673,7 +673,7 @@ class AMQP(Moth):
 
         if self.o['message_ttl']:
             ttl = "%d" * int(
-                sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
+                sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
         else:
             ttl = "0"
         
