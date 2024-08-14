@@ -152,7 +152,8 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
 float_options = [ 'messageRateMax', 'messageRateMin' ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', 'metrics_writeInterval', \
+    'expire', 'housekeeping', 'logRotateInterval', 'fileAgeMax', 'fileAgeMin', 
+    'messageAgeMax', 'post_messageAgeMax', 'metrics_writeInterval', \
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
@@ -755,7 +756,8 @@ class Config:
         'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
-        'message-ttl': 'message_ttl',
+        'message-ttl': 'post_messageAgeMax',
+        'message_ttl': 'post_messageAgeMax',
         'msg_replace_new_dir' : 'pathReplace',
         'msg_filter_wmo2msc_replace_dir': 'filter_wmo2msc_replace_dir',
         'msg_filter_wmo2msc_uniquify': 'filter_wmo2msc_uniquify',
@@ -879,6 +881,7 @@ class Config:
         self.mirror = False
         self.messageAgeMax = 0
         self.post_exchanges = []
+        self.post_messageAgeMax = 0
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None

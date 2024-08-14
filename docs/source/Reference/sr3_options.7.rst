@@ -1137,7 +1137,7 @@ If **messageCountMax** is greater than zero, the flow will exit after processing
 number of messages.  This is normally used only for debugging.
 
 messageRateMax <float> (default: 0)
--------------------------------------
+-----------------------------------
 
 if **messageRateMax** is greater than zero, the flow attempts to respect this delivery
 speed in terms of messages per second. Note that the throttle is on messages obtained or generated
@@ -1145,17 +1145,19 @@ per second, prior to accept/reject filtering. the flow will sleep to limit the p
 
 
 messageRateMin <float> (default: 0)
--------------------------------------
+-----------------------------------
 
 if **messageRateMin** is greater than zero, and the flow detected is lower than this rate,
 a warning message will be produced:
 
 
-message_ttl <duration>  (default: None)
----------------------------------------
+messageAgeMax <duration>  (default: 0)
+--------------------------------------
 
-The  **message_ttl**  option set the time a message can live in the queue.
-Past that time, the message is taken out of the queue by the broker.
+The messageAgeMax option sets the maximum age of a message to not 
+be rejected when consuming. Messages older than Max value are discarded
+by the subscriber. (0 means no maximum age) 
+
 
 mirror <flag> (default: off)
 ----------------------------
@@ -1428,6 +1430,16 @@ Sets the message format for posted messages. the currently included values are:
 * wis ... a experimental geoJSON format in flux for the World Meteorological Organization
 
 When provided, this value overrides whatever can be deduced from the post_topicPrefix.
+
+
+post_messageAgeMax <duration>  (default: 0)
+-------------------------------------------
+
+The post_messageAgeMax (aka **message_ttl**) option is used when publishing a message,
+as advice to the broker. Brokers discard messages which have exceeded their intended lifespan
+without delivering them. (0 means no maximum lifespan is given.)
+When posting to AMQP, this option sets the *x-message-ttl* property (but the latter is in milliseconds.)
+When posting to MQTT, this option sets the *MessageExpiryInterval* property. 
 
 
 post_on_start
