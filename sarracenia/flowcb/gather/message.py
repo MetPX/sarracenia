@@ -79,10 +79,21 @@ class Message(FlowCB):
                 continue
 
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
-            if hasattr(self.consumers[m['broker']],'ack'):
+            if 'ack_id' not in m:
+                # don't bother attempting to ack a message with no ack_id. 
+                # If you did try to ack it, the Moth class is supposed to return True anyways.
+                continue
+            elif hasattr(self.consumers[m['broker']],'ack'): 
                  self.consumers[m['broker']].ack(m)
             else:
                 logger.error( f"cannot ack" )
+
+            if 'ack_id' in m:
+                # FIXME when consuming from multiple brokers, maybe we shouldn't delete the ack_id?
+                # we might need to try acking on all brokers and only delete the ack_id once if acking fails 
+                # with all possible brokers?
+                del m['ack_id']
+                m['_deleteOnPost'].remove('ack_id')
 
     def metricsReport(self) -> dict:
 

@@ -55,12 +55,14 @@ To publish a pre-release one needs to:
   - find redhat 8 server.  build package::
    
          * git checkout development_py36
+         * git pull
          * python3 setup.py bdist_rpm*
          * run flow tests
 
-  - find redhat 9 server,  build package:: 
+  - find redhat 9 server,  build package::
 
          * git checkout development_py36
+         * git pull
          * python3 setup.py bdist_rpm*
          * run flow tests
 
@@ -77,12 +79,14 @@ To publish a pre-release one needs to:
 
      * git pull
      * git checkout development_py36
+     * git pull
      * git tag -a o3.xx.yyrcz -m "pre-release o3.xx.yy.rcz"
      * git pull 
      * git checkout pre_release_py36
      * git pull
      * git merge development_py36
      * git push
+     * git push origin o3.xx.yyrcz
 
      * git checkout development
      * git tag -a v3.xx.yy.rcZ -m "pre-release v3.xx.yy.rcz"
@@ -90,11 +94,9 @@ To publish a pre-release one needs to:
      * git pull
      * git merge development
      * git push
-
-- push the above.  
-
-     * git push origin o3.xx.yyrcz
      * git push origin v3.xx.yyrcz
+
+
 
 - pypi.org
 
@@ -102,6 +104,7 @@ To publish a pre-release one needs to:
   - use the python3.6 branch to release to pypi (because upward compatibility works, but not downward.)
 
     * git checkout pre_release_py36
+    * git pull
     * python3 setup.py bdist_wheel
 
   - upload the pre-release so that installation with pip succeeds.
@@ -131,15 +134,16 @@ To publish a pre-release one needs to:
 
   - find redhat 8 server. build package:: 
 
-        git checkout stable_py36
+        git checkout pre-release_py36
+        git pull
         python3 setup.py bdist_rpm 
 
     
   - find redhat 9 server, build package::
 
-        git checkout stable_py36
+        git checkout pre-release_py36
+        git pull
         python3 setup.py bdist_rpm 
-
 
 - on github: Draft a release.
 
@@ -163,26 +167,50 @@ the stable release does not require any explicit testing.
 
 * merge from pre-release to stable::
 
+    
+     git checkout pre-release
+     git pull
      git checkout stable
+     git pull
      git merge pre-release
+     git push
+
      # there will be conflicts here for debian/changelog and sarracenia/_version.py
      # for changelog:
      #   - merge all the rcX changelogs into a single stable one.
      #   - ensure the version at the top is correct and tagged 'unstable'
      #   - edit the signature at the bottom for reflect who you are, and current date.
-     # for sarracenia/_version.py
+     # sr3 for sarracenia/_version.py (v2 sarra/__init__.py )
      #   - fix it so it shows the correct stable version.
      git tag -a v3.xx.yy -m "v3.xx.yy"
      git push origin v3.xx.yy
 
 * merge from pre-release_py36 to stable_py36::
 
+     git checkout pre_release_py36
+     git pull
      git checkout stable_py36
+     git pull
      git merge pre_release_py36
+     git push
      # same editing required as above.
      git tag -a o3.xx.yy -m "o3.xx.yy"
      git push origin o3.xx.yy
 
+* pypi.org
+
+  - to ensure compatiblity with python3.6, update a python3.6 branch (for redhat 8 and/or ubuntu 18.)
+  - use the python3.6 branch to release to pypi (because upward compatibility works, but not downward.)
+
+    * git checkout stable_py36
+    * git pull
+    * python3 setup.py bdist_wheel
+
+  - upload the pre-release so that installation with pip succeeds.
+
+    * twine upload dist/the_wheel_produced_above.whl 
+
+  
 * go on Launchpad, 
 
    * stable branch ready.
@@ -197,6 +225,7 @@ the stable release does not require any explicit testing.
 * go on ubuntu 18.04, build bdist_wheel::
 
       git checkout stable_py36
+      git pull
       python3 setup.py bdist_wheel 
 
 note that *pip3 install wheel* is needed, because the one from
@@ -205,12 +234,18 @@ ubuntu 18 is not compatible with the current pypi.org.
 * go on redhat 8, build rpm::
 
       git checkout stable_py36
+      git pull
       python3 setup.py bdist_rpm 
+      ls dist/
+      mv rpm file to have rh8 in the name somewhere.
 
-* go on redhat 9, build rpm::
+* go on redhat 9, build rpm **NOTE: Broken!, for now use redhat 8 process** ::
 
       git checkout stable_py36
+      git pull
       rpmbuild --build-in-place -bb metpx-sr3.spec
+      ls dist/
+      mv rpm file to have rh8 in the name somewhere.
 
 
 * On github.com, create release.
@@ -219,8 +254,7 @@ ubuntu 18 is not compatible with the current pypi.org.
   * attach wheel build on ubuntu 18.
   * attach redhat 8 rpm
   * attach redhat 9 rpm 
-  * attach windows exe
-
+  * attach windows exe ... see: `Building a Windows Installer`_
 
 Details
 -------
@@ -246,11 +280,13 @@ prior to accepting a release, and barring known exceptions,
   tests: static, no_mirror, flakey_broker, restart_server, dynamic_flow::
 
        git checkout pre_release_py36
+       git pull
        python3 setup.py bdist_rpm
  
 * Redhat 9 rpms currently do not work... vm and run the flow test there to ensure that it works::
 
        git checkout pre_release_py36
+       git pull
        python3 setup.py bdist_rpm
          
 
@@ -316,7 +352,7 @@ This is done to *start* development on a version. It should be done on developme
 after every release.
 
 * git checkout development
-* Edit ``sarracenia/_version.py`` manually and set the version number.
+* Edit ``sarracenia/_version.py`` (``sarra/__init__.py`` for v2) manually and set the version number.
 * Edit CHANGES.rst to add a section for the version.
 * run dch to start the changelog for the current version. 
   * change *unstable* to *UNRELEASED* (maybe done automatically by dch.)
@@ -655,13 +691,16 @@ by pynsist to build the executable, so look at::
     https://www.python.org/downloads/windows/
 
 Then go look on python.org, for the "right" version (for 3.10, it is 3.10.11 )
-Then, from the shell, run::
+It will contain *embed* in the file names. Once you find the correct version
+From the shell, run::
 
- sudo apt install nsis
- pip3 install pynsist wheel
- ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
+   sudo apt install nsis
+   pip3 install pynsist wheel
+   ./generate-win-installer.sh 3.10.11 2>&1 > log.txt
 
-The final package will be generated into build/nsis directory.
+The final package will be generated into *build/nsis* directory. Sometimes editing of 
+the *generate-win-installer.sh* script is needed to add *--no-isolation* to the *python -m build* line.
+It's not clear when that is needed.
 
 
 github
