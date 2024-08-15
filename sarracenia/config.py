@@ -14,6 +14,7 @@ import argparse
 import copy
 import datetime
 import humanfriendly
+import json
 import inspect
 import logging
 
@@ -1757,6 +1758,65 @@ class Config:
                 setattr(self, k, v)
                 self.undeclared.append( (cfname, lineno, k) )
 
+    
+    def _loadSubscriptions(self,component,cfg):
+
+        subsfile = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            subsfile += os.sep + self.hostdir
+
+        subsfile += os.sep + component + os.sep + cfg
+        subsfile += os.sep + 'subscriptions.json'
+
+        self.subscriptions_filename = subsfile
+ 
+        try:
+            with open(self.subscriptions_filename,'r') as f:
+                rawJsonSubs = f.read()
+            self.subscriptions=json.loads(rawJsonSubs)
+            while s in self.subscriptions:
+                ok, cred  = self._validate_urlstr( s['broker'] )
+                if ok:
+                    s['broker'] = cred
+        except Exception as ex:
+            logging.error( f"loading subs {ex}" )
+            logging.debug("Exception details:", exc_info=True)
+
+
+    def _persistSubscriptions(self,component,cfg):
+
+        # only lead instance should persist subscriptions.
+        if hasattr(self,'no') and self.no > 2:
+            return
+
+        # should not change things when not expected.
+        if self.action not in [ 'declare', 'start', 'restart', 'foreground' ]:
+            return
+
+        subsfile = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            subsfile += os.sep + self.hostdir
+
+        subsfile += os.sep + component + os.sep + cfg
+        subsfile += os.sep + 'subscriptions.json'
+
+        self.subscriptions_filename = subsfile
+
+        self.sub2 = []
+        for s in self.subscriptions:
+            self.sub2.append(s) 
+            self.sub2[-1]['broker'] = str(self.sub2[-1]['broker'])
+
+        with open(self.subscriptions_filename,'w') as f:
+           f.write(json.dumps(self.sub2,sort_keys=True,indent=4))
+
+
     def _resolveQueueName(self,component,cfg):
 
         queuefile = sarracenia.user_cache_dir(
@@ -2019,6 +2079,7 @@ class Config:
 
         if hasattr(self,'broker') and self.broker and (self.subscriptions == []) and hasattr(self, 'exchange'):
             self._parse_subscription('#')
+            self._persistSubscriptions(component,cfg)
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
