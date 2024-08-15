@@ -109,18 +109,25 @@ class Credential:
         """
         s = self.geturl()
 
-        s += " %s" % self.ssh_keyfile
-        s += " %s" % self.passive
-        s += " %s" % self.binary
-        s += " %s" % self.tls
-        s += " %s" % self.prot_p
-        s += " %s" % self.bearer_token
-        s += " %s" % self.login_method
-        s += " %s" % self.s3_endpoint
-        #want to show they provided a session token, but not leak it (like passwords above)
-        s += " %s" % 'Yes' if self.s3_session_token != None else 'No'
-        s += " %s" % 'Yes' if self.azure_credentials != None else 'No'
-        s += " %s" % self.implicit_ftps
+        alist = [ 'ssh_keyfile', 'passive', 'binary', 'tls', 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
+        if hasattr(self,'url') and self.url:
+            scheme = self.url.scheme
+            if scheme.startswith('ftp'):
+                alist = [ 'passive', 'binary', 'tls', 'prot_p', 'login_method', 'implicit_ftps' ]
+            elif scheme.startswith('sftp'):
+                alist = [ 'ssh_keyfile' ]
+            elif scheme.startswith('amqp') or  scheme.startswith('mqtt'):
+                alist = [ 'login_method' ]
+            elif scheme.startswith('https'):
+                alist = [ 'prot_p', 'bearer_token', 'login_method', 's3_endpoint', 'implicit_ftps']
+                if self.s3_session_token: 
+                    s += " %s" % 's3_session_token=Yes' 
+                if self.azure_credentials: 
+                    s += " %s" % 'azure_credentials=Yes' 
+
+        for a in alist:
+            if getattr(self, a):
+                s+=f"+{a}={getattr(self,a)}"
 
         return s
 
