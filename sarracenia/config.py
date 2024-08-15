@@ -1358,17 +1358,17 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        if not hasattr(self, 'broker') or not self.broker or not self.broker.url:
-            logger.critical( f"need broker setting before subtopic" )
-            return
+        #if not hasattr(self, 'broker') or not self.broker or not self.broker.url:
+        #    logger.critical( f"need broker setting before subtopic" )
+        #    return
+
+        if type(subtopic_string) is str:
+            if not hasattr(self, 'broker') or not self.broker or not self.broker.url:
+                logger.critical( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
+                return
 
         self._resolve_exchange()
         self._resolveQueueName(self.component,self.config)
-
-        if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
-                return
 
         if self.broker.url.scheme == 'amq' :
             subtopic = subtopic_string.split('.')
@@ -2017,7 +2017,7 @@ class Config:
             self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
 
-        if (self.subscriptions == [] and hasattr(self, 'exchange')):
+        if hasattr(self,'broker') and self.broker and (self.subscriptions == []) and hasattr(self, 'exchange'):
             self._parse_subscription('#')
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
@@ -2719,10 +2719,14 @@ def default_config():
 
     cfg = Config()
     cfg.currentDir = None
+    cfg.files=[ 'global defaults' ]
     cfg.override(default_options)
+    cfg.files=[ 'moth defaults' ]
     cfg.override(sarracenia.moth.default_options)
     if features['amqp']['present']:
+        cfg.files=[ 'amqp defaults' ]
         cfg.override(sarracenia.moth.amqp.default_options)
+    cfg.files=[ 'flow defaults' ]
     cfg.override(sarracenia.flow.default_options)
 
     for g in ["admin.conf", "default.conf"]:
