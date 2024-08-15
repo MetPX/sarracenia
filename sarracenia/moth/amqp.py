@@ -605,27 +605,33 @@ class AMQP(Moth):
             #logger.warning( f"no ackid present" )
             return True
 
+        ack_id=m['ack_id']
+
+        # no matter what happens, we can never ack again in AMQP.
+        del m['ack_id']
+        m['_deleteOnPost'].remove('ack_id')
+
         # when the connection/channel/broker doesn't match the current, don't attempt to ack, it will fail
-        if (m['ack_id']['connection_id'] != self.connection_id
-            or m['ack_id']['channel_id'] != self.channel.channel_id
-            or m['ack_id']['broker'] != self.broker):
-            logger.warning(f"failed for {m['ack_id']}. Does not match the current connection {self.connection_id}," +
+        if (ack_id['connection_id'] != self.connection_id
+            or ack_id['channel_id'] != self.channel.channel_id
+            or ack_id['broker'] != self.broker):
+            logger.warning(f"failed for {ack_id}. Does not match the current connection {self.connection_id}," +
                            f" channel {self.channel.channel_id} or broker {self.broker}")
             return False
         
-        #logger.info( f"acknowledging {m['ack_id']}" )
+        #logger.info( f"acknowledging {ack_id}" )
         ebo = 1
         while True:
             try:
                 if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
+                    self.channel.basic_ack(ack_id['delivery_tag'])
                     return True
                 else:
-                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                    logger.warning(f"Can't ack {ack_id}, don't have a channel")
                     return False
             
             except Exception as err:
-                logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
+                logger.warning("failed for tag: %s: %s" % (ack_id, err))
                 logger.debug('Exception details: ', exc_info=True)
                 if type(err) == BrokenPipeError or type(err) == ConnectionResetError:
                     # Cleanly close partially broken connection and restablish

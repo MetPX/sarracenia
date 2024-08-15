@@ -88,13 +88,6 @@ class Message(FlowCB):
             else:
                 logger.error( f"cannot ack" )
 
-            if 'ack_id' in m:
-                # FIXME when consuming from multiple brokers, maybe we shouldn't delete the ack_id?
-                # we might need to try acking on all brokers and only delete the ack_id once if acking fails 
-                # with all possible brokers?
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
-
     def metricsReport(self) -> dict:
 
         if not hasattr(self,'consumers'):
