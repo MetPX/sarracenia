@@ -14,8 +14,8 @@ sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
 
-pip3 install -U pip
-pip3 install pyftpdlib paramiko net-tools
+pip3 install --break-system-packages --user -U pip
+pip3 install --break-system-packages --user pyftpdlib paramiko net-tools
 
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
 # If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
@@ -25,14 +25,14 @@ for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho
     if [ "$?" == "0" ] ; then
         echo "$PKG is already installed"
     else
-        pip3 install ${PKG}
+        pip3 install --break-system-packages --user ${PKG}
     fi
 done
 
 # in case it was installed as a dependency.
 sudo apt -y remove metpx-sr3
 
-pip3 install .
+pip3 install --break-system-packages --user .
 
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3
