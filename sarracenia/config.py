@@ -1224,6 +1224,12 @@ class Config:
                 while i < len(c['masks']):
                    d['masks'].append( self.mask_ppstr(c['masks'][i]) )
                    i+=1
+            elif k in ['broker', 'post_broker' ]:
+                d[k]=str(c[k])
+            elif k in ['subscriptions' ]:
+                d['subscriptions'] = c['subscriptions']
+                for s in d['subscriptions']:
+                    s['broker'] = str(s['broker']) 
             else:
                 d[k] = copy.deepcopy(c[k])
 
