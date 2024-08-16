@@ -5,7 +5,7 @@
 # which can easily be run in a virtualbox VM.
 
 . /etc/os-release
-if [ ${VERSION} = "24.04" ]; then
+if [ "${VERSION_ID}" == "24.04" ]; then
 	pip_install="pip3 install --break-system-packages --user "
 else
 	pip_install="pip3 install "
