@@ -17,6 +17,13 @@ class Subscription(dict):
             if hasattr(options, a) and getattr(options,a):
                 self['queue'][aa] = getattr(options,a)
 
+        #self['topic'] = { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic }
+        #self['queue']={ 'name': queueName }
+        #for a in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', \
+        #        'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+        #   if hasattr(options, a) and getattr(options,a):
+        #       self['queue'][a] = getattr(options,a)
+
 
 class Subscriptions(list):
     # list of subscription
@@ -81,3 +88,5 @@ class Subscriptions(list):
         
 
 
+=======
+>>>>>>> 218cb8ad (refactored configuration parsing classes: BREAKING CHANGE)
