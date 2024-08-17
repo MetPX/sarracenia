@@ -487,3 +487,22 @@ class CredentialDB:
             return True, details
 
         return False, None
+
+
+    def validate_urlstr(self, urlstr) -> tuple :
+        """
+           returns a tuple ( bool, expanded_url )
+           the bool is whether the expansion worked, and the expanded_url is one with
+           the added necessary authentication details from sarracenia.Credentials.
+
+        """
+        # check url and add credentials if needed from credential file
+        ok, cred_details = self.get(urlstr)
+        if cred_details is None:
+            logging.critical("bad credential %s" % urlstr)
+            # Callers expect that a Credential object will be returned
+            cred_details = credentials.Credential()
+            cred_details.url = urllib.parse.urlparse(urlstr)
+            return False, cred_details
+        return True, cred_details
+

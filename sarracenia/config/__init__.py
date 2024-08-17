@@ -49,7 +49,7 @@ import sarracenia
 from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user_cache_dir
 from sarracenia.featuredetection import features
 import sarracenia.config.credentials
-import sarracenia.config.subscription
+from  sarracenia.config.subscription import Subscription,Subscriptions
 import sarracenia.flow
 import sarracenia.flowcb
 
@@ -813,6 +813,7 @@ class Config:
           instantiate an empty Configuration
         """
         self.bindings = []
+        self.subscriptions = Subscriptions()
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
@@ -924,7 +925,7 @@ class Config:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-    def _validate_urlstr(self, urlstr) -> tuple :
+    def hohoo_validate_urlstr(self, urlstr) -> tuple :
         """
            returns a tuple ( bool, expanded_url ) 
            the bool is whether the expansion worked, and the expanded_url is one with
@@ -965,7 +966,7 @@ class Config:
     @admin.setter
     def admin(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__admin = cred_details
         else:
@@ -978,7 +979,7 @@ class Config:
     @broker.setter
     def broker(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__broker = cred_details
         else:
@@ -991,7 +992,7 @@ class Config:
     @post_broker.setter
     def post_broker(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__post_broker = cred_details
         else:
@@ -1361,14 +1362,14 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
-            self._resolve_exchange()
+        if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
+            logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
+            return
+
+        self._resolve_exchange()
+        self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
-                return
-
             if self.broker.url.scheme == 'amq' :
                 subtopic = subtopic_string.split('.')
             else:
@@ -1376,6 +1377,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
+            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1753,6 +1755,40 @@ class Config:
                 setattr(self, k, v)
                 self.undeclared.append( (cfname, lineno, k) )
 
+    def _getSubscriptionsFileName(self,component,cfg):
+
+        sfile = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            sfile += os.sep + self.hostdir
+
+        sfile += os.sep + component + os.sep + cfg
+        sfile += os.sep + "subscriptions.json"
+        return sfile
+
+    def _writeQueueFile(self):
+
+        # first make sure directory exists.
+        if not os.path.isdir(os.path.dirname(self.queue_filename)):
+            pathlib.Path(os.path.dirname(self.queue_filename)).mkdir(parents=True, exist_ok=True)
+
+        if not os.path.isfile(self.queue_filename) and (self.queueName is not None): 
+            tmpQfile=self.queue_filename+'.tmp'
+            if not os.path.isfile(tmpQfile): 
+                f = open(tmpQfile, 'w')
+                f.write(self.queueName)
+                f.close()
+                os.rename( tmpQfile, self.queue_filename )
+            else:
+                logger.info( f'Queue name {self.queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
+                return
+
+            logger.debug( f'queue name {self.queueName} persisted to {self.queue_filename}' )
+
+
+
     def _resolveQueueName(self,component,cfg):
 
         queuefile = sarracenia.user_cache_dir(
@@ -1817,7 +1853,6 @@ class Config:
         else: 
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
-
     
             # lead instance shou
             if os.path.isfile(queuefile):
@@ -1831,25 +1866,9 @@ class Config:
                 self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
     
-            if self.action not in [ 'start', 'foreground', 'declare' ]:
-                return
 
-            # first make sure directory exists.
-            if not os.path.isdir(os.path.dirname(queuefile)):
-                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
 
-            if not os.path.isfile(queuefile) and (self.queueName is not None): 
-                tmpQfile=queuefile+'.tmp'
-                if not os.path.isfile(tmpQfile): 
-                    f = open(tmpQfile, 'w')
-                    f.write(self.queueName)
-                    f.close()
-                    os.rename( tmpQfile, queuefile )
-                else:
-                    logger.info( f'Queue name {self.queueName} being persisted to {queuefile} by some other process, so ignoring it.' )
-                    return
 
-                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
 
 
 
@@ -2011,9 +2030,23 @@ class Config:
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
             self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
+        self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
 
-        if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+        if self.broker and self.broker.url and self.broker.url.username:
+
+            if (self.bindings == [] and hasattr(self, 'exchange')):
+                self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+                self.subscriptions.append(Subscription(self, self.queueName, '#'))
+
+            # read old subscriptions, compare to current.
+            old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+        
+        if self.action in [ 'start', 'foreground', 'declare' ] and \
+                (not hasattr(self,'no') or self.no < 2) and  \
+                self.broker and self.broker.url :
+
+            self.subscriptions.write(self.subscriptionsPath)
+            self._writeQueueFile()
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2428,6 +2461,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
+            namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2449,6 +2483,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
+            namespace.subscriptions.append(Subscription(namespace, namespace.queueName, values))
 
     def parse_args(self, isPost=False):
         """
