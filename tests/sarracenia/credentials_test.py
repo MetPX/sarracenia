@@ -3,4 +3,4 @@ from tests.conftest import *
 #from unittest.mock import Mock
 
 import sarracenia.config
-import sarracenia.credentials
+import sarracenia.config.credentials
