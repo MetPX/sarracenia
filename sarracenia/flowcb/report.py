@@ -41,7 +41,7 @@ class Report(FlowCB):
 
         if hasattr(self.o, 'report_broker') and self.o.report_broker:
             if type(self.o.report_broker) == str:
-                ok, cred_details = self.o._validate_urlstr(self.o.report_broker)
+                ok, cred_details = self.o.credentials.validate_urlstr(self.o.report_broker)
                 if ok:
                     self.o.report_broker = cred_details
       
