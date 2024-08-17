@@ -1378,7 +1378,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1857,9 +1857,7 @@ class Config:
                 queueShare = self._varsub(self.queueShare)
                 queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
-
         return queueName 
-
 
 
 

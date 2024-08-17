@@ -12,17 +12,11 @@ class Subscription(dict):
         self['broker'] = options.broker
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
         self['queue']={ 'name': queueName }
-        for a in [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
-            aa = a.replace('queue','').lower()
-            if hasattr(options, a) and getattr(options,a):
-                self['queue'][aa] = getattr(options,a)
 
-        #self['topic'] = { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic }
-        #self['queue']={ 'name': queueName }
-        #for a in [ 'auto_delete', 'broker', 'durable', 'exchange', 'expire', \
-        #        'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
-        #   if hasattr(options, a) and getattr(options,a):
-        #       self['queue'][a] = getattr(options,a)
+        for a in [ 'auto_delete', 'durable', 'exchange', 'expire', \
+                'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
+            if hasattr(options, a) and getattr(options,a):
+                self['queue'][a] = getattr(options,a)
 
 
 class Subscriptions(list):
