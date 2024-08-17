@@ -72,7 +72,7 @@ class Credential:
 
        # build a credential from a url string:
 
-       from sarracenia.credentials import Credential
+       from sarracenia.config.credentials import Credential
 
        broker = Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
 
@@ -144,11 +144,11 @@ class CredentialDB:
     """Parses, stores and manages Credential objects.
 
     Attributes:
-        credentials (dict): contains all sarracenia.credentials.Credential objects managed by the CredentialDB.
+        credentials (dict): contains all sarracenia.config.credentials.Credential objects managed by the CredentialDB.
 
     Usage:
        # build a credential via lookup in the normal files: 
-       import CredentialDB from sarracenia.credentials
+       import CredentialDB from sarracenia.config.credentials
 
        credentials = CredentialDB.read( "/the/path/to/the/credentials.conf" )
 
@@ -174,7 +174,7 @@ class CredentialDB:
 
         Args:
             urlstr (str): string-formatted URL to be parsed and added to DB.
-            details (sarracenia.credentials.Credential): a Credential object can be passed in, otherwise one is
+            details (sarracenia.config.credentials.Credential): a Credential object can be passed in, otherwise one is
                 created by parsing urlstr.
         """
 
@@ -200,7 +200,7 @@ class CredentialDB:
                 cache_result (bool): ``True`` if the credential was retrieved from the CredentialDB cache, ``False``
                     if it was not in the cache. Note that ``False`` does not imply the Credential or urlstr is
                     invalid.
-                credential (sarracenia.credentials.Credential): the Credential
+                credential (sarracenia.config.credentials.Credential): the Credential
                     object matching the urlstr, ``None`` if urlstr is invalid.
         """
         #logger.debug("CredentialDB get %s" % urlstr)
@@ -266,7 +266,7 @@ class CredentialDB:
             
         Args:
             url (urllib.parse.ParseResult): ParseResult object for a URL.
-            details (sarracenia.credentials.Credential): sarra Credential object containing additional details about
+            details (sarracenia.config.credentials.Credential): sarra Credential object containing additional details about
                 the URL.
 
         Returns:
@@ -429,7 +429,7 @@ class CredentialDB:
 
     def _resolve(self, urlstr, url=None):
         """Resolve credentials for AMQP vhost from ones passed as a string, and optionally a urllib.parse.ParseResult
-        object, into a sarracenia.credentials.Credential object.
+        object, into a sarracenia.config.credentials.Credential object.
 
         Args:
             urlstr (str): credentials in a URL string.
@@ -438,7 +438,7 @@ class CredentialDB:
         Returns:
             tuple: containing
                 result (bool): ``False`` if the creds were not in the CredentialDB. ``True`` if they were.
-                details (sarracenia.credentials.Credential): the updated Credential object, or ``None``.
+                details (sarracenia.config.credentials.Credential): the updated Credential object, or ``None``.
                 
 
         """
