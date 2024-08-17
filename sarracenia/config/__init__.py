@@ -48,7 +48,8 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
 import sarracenia
 from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user_cache_dir
 from sarracenia.featuredetection import features
-import sarracenia.credentials
+import sarracenia.config.credentials
+import sarracenia.config.subscription
 import sarracenia.flow
 import sarracenia.flowcb
 
@@ -392,7 +393,7 @@ def parse_float(cstr):
         return 0.0
 
 def get_package_lib_dir():
-    return os.path.dirname(inspect.getfile(Config))
+    return os.path.dirname(inspect.getfile(sarracenia))
 
 
 def get_site_config_dir():
@@ -648,7 +649,7 @@ class Config:
 
          cfg = no_file_config()
 
-         cfg.broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+         cfg.broker = sarracenia.config.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
          cfg.topicPrefix = [ 'v02', 'post']
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
@@ -817,14 +818,14 @@ class Config:
         self.__post_broker = None
 
         if Config.credentials is None:
-            Config.credentials = sarracenia.credentials.CredentialDB()
+            Config.credentials = sarracenia.config.credentials.CredentialDB()
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         self.directory = None
 
         self.env = copy.deepcopy(os.environ)
 
-        egdir = os.path.dirname(inspect.getfile(sarracenia.config.Config)) + os.sep + 'examples' 
+        egdir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples' 
 
         self.config_search_path = [ "." , get_user_config_dir(), egdir, egdir + os.sep + 'flow'  ]
 
@@ -935,7 +936,7 @@ class Config:
         if cred_details is None:
             logging.critical("bad credential %s" % urlstr)
             # Callers expect that a Credential object will be returned
-            cred_details = sarracenia.credentials.Credential()
+            cred_details = sarracenia.config.credentials.Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
             return False, cred_details
         return True, cred_details
@@ -1242,7 +1243,7 @@ class Config:
             del d[omit]
 
         for k in d:
-            if type(d[k]) is sarracenia.credentials.Credential :
+            if type(d[k]) is sarracenia.config.credentials.Credential :
                 d[k] = str(d[k])
 
         pprint.pprint( d, width=term.columns, compact=True )

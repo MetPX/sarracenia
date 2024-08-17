@@ -10,7 +10,7 @@ import re
 
 import sarracenia
 import sarracenia.config
-import sarracenia.credentials
+import sarracenia.config.credentials
 
 logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')

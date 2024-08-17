@@ -1268,8 +1268,7 @@ class sr_GlobalState:
 
         self.invoking_directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
-        self.package_lib_dir = os.path.dirname(
-            inspect.getfile(sarracenia.config.Config))
+        self.package_lib_dir = os.path.dirname(inspect.getfile(sarracenia))
         self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
@@ -1417,8 +1416,7 @@ class sr_GlobalState:
                 component = sp[-2]
                 cfg = sp[-1]
 
-            iedir = os.path.dirname(inspect.getfile(
-                sarracenia.config.Config)) + os.sep + 'examples'
+            iedir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples'
 
             destdir = self.user_config_dir + os.sep + component
 
