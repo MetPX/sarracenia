@@ -1457,7 +1457,7 @@ class Flow:
             method='unknown'
         
         # if no method given, then assume binary comparison is good.
-        if method in ['sha512', 'md5', 'unknown']: 
+        if method in sarracenia.identity.binary_methods: 
             if 'size' in msg:
                 end = msg['size']
                 # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
