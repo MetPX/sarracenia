@@ -280,7 +280,7 @@ class Moth():
 
         self.is_subscriber = is_subscriber
         self.connected=False
-        self.self._stop_requested = False
+        self._stop_requested = False
         self.metrics = { 'connected': False }
         self.metricsReset()
 
