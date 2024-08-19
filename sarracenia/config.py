@@ -2058,7 +2058,7 @@ class Config:
                     self.sleep=1
 
         if self.runStateThreshold_hung < self.housekeeping:
-            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
+            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung and kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )

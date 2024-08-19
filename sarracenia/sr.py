@@ -1601,8 +1601,8 @@ class sr_GlobalState:
                 flow=None
 
     def disable(self):
-        if len(self.filtered_configurations) == 0:
-            logging.error('%s configuration not found', self.leftovers)
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
             return
 
         for f in self.filtered_configurations:
@@ -1667,8 +1667,8 @@ class sr_GlobalState:
                 self.run_command(['tail', '-f', lfn])
 
     def enable(self):
-        if len(self.filtered_configurations) == 0:
-            logging.error('%s configuration not found', self.leftovers)
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f'{self.leftovers} configuration not found' )
             return
         # declare exchanges first.
         for f in self.filtered_configurations:
@@ -1790,6 +1790,10 @@ class sr_GlobalState:
                 print('foreground: stop other instances of this process first')
 
     def cleanup(self) -> bool:
+
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f'{self.leftovers} configuration not found' )
+            return
 
         if len(self.filtered_configurations) > 1 :
             if len(self.filtered_configurations) != self.options.dangerWillRobinson:
@@ -2065,8 +2069,8 @@ class sr_GlobalState:
 
     def remove(self):
 
-        if len(self.filtered_configurations) == 0:
-            logging.error("No configuration matched")
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
             return
 
         if len(self.filtered_configurations) > 1 :
@@ -2153,6 +2157,10 @@ class sr_GlobalState:
 
         :return:
         """
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
+            return
+
         pcount = 0
         kill_hung=[]
         for f in self.filtered_configurations:
@@ -2236,6 +2244,10 @@ class sr_GlobalState:
         :return:
         """
 
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
+            return
+
         pcount = 0
         for f in self.filtered_configurations:
 
@@ -2282,12 +2294,15 @@ class sr_GlobalState:
            return 0 on success, non-zero on failure.
         """
 
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
+            return
+
         self._clean_missing_proc_state()
 
         if len(self.procs) == 0:
             print('no procs running...already stopped')
             return
-
 
         print('sending SIGTERM ', end='', flush=True)
         pcount = 0
@@ -2535,6 +2550,10 @@ class sr_GlobalState:
     def status(self):
         """ v3 Printing prettier statuses for each component/configs found
         """
+
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
+            return
 
         flowNameWidth=self.cumulative_stats['flowNameWidth']
         latestTransferWidth=self.cumulative_stats['latestTransferWidth']
@@ -2879,6 +2898,11 @@ class sr_GlobalState:
 
         :return:
         """
+
+        if len(self.leftovers) > 0 and not self._action_all_configs:
+            logging.error( f"{self.leftovers} configuration not found" )
+            return
+
         bad = 0
 
 
