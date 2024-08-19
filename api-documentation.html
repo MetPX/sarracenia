@@ -1029,9 +1029,10 @@ expect calls to get* routines.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="Reference/code.html#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/sarracenia/moth.html#Moth.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="Reference/code.html#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/sarracenia/moth.html#Moth.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>tell broker that a given message has been received.</p>
-<p>ack uses the ‘ack_id’ property to send an acknowledgement back to the broker.</p>
+<p>ack uses the ‘ack_id’ property to send an acknowledgement back to the broker.
+If there’s no ‘ack_id’ in the message, you should return True.</p>
 </dd></dl>
 
 <dl class="py method">

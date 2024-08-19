@@ -406,11 +406,12 @@
 
 <div class="viewcode-block" id="Moth.ack">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.ack">[docs]</a>
-    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">          tell broker that a given message has been received.</span>
 
 <span class="sd">          ack uses the &#39;ack_id&#39; property to send an acknowledgement back to the broker.</span>
+<span class="sd">          If there&#39;s no &#39;ack_id&#39; in the message, you should return True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ack unimplemented&quot;</span><span class="p">)</span></div>
 

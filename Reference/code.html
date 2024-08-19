@@ -2220,9 +2220,10 @@ expect calls to get* routines.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.moth.Moth.ack">
-<span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth.html#Moth.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.Moth.ack" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth.html#Moth.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.Moth.ack" title="Link to this definition"></a></dt>
 <dd><p>tell broker that a given message has been received.</p>
-<p>ack uses the ‘ack_id’ property to send an acknowledgement back to the broker.</p>
+<p>ack uses the ‘ack_id’ property to send an acknowledgement back to the broker.
+If there’s no ‘ack_id’ in the message, you should return True.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2317,7 +2318,10 @@ returns True if connected, false otherwise.
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.moth.amqp.AMQP.ack">
 <span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#sarracenia.Message" title="sarracenia.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth/amqp.html#AMQP.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.amqp.AMQP.ack" title="Link to this definition"></a></dt>
-<dd><p>do what you need to acknowledge that processing of a message is done.</p>
+<dd><p>do what you need to acknowledge that processing of a message is done.
+NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. “Deliveries must be
+acknowledged on the same channel they were received on. Acknowledging on a different channel
+will result in an “unknown delivery tag” protocol exception and close the channel.”</p>
 </dd></dl>
 
 <dl class="py method">
