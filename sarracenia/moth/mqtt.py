@@ -674,6 +674,7 @@ class MQTT(Moth):
             self.client.ack( m['ack_id'], m['qos'] )
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
+        return True
 
     def putNewMessage(self,
                       message: sarracenia.Message,
