@@ -667,13 +667,13 @@ class MQTT(Moth):
         else:
             return None
 
-    def ack(self, m: sarracenia.Message ) -> bool:
+    def ack(self, m: sarracenia.Message ) -> None:
 
         if 'ack_id' in m:
             logger.info('mid=%d' % m['ack_id'])
             self.client.ack( m['ack_id'], m['qos'] )
-        # return True if successful. when there's no ack_id, acking doesn't fail,
-        # there's just nothing to ack so still return True
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
         return True
 
     def putNewMessage(self,

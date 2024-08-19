@@ -48,20 +48,7 @@ class Message(FlowCB):
 
         for m in mlist:
             # messages being re-downloaded should not be re-acked, but they won't have an ack_id (see issue #466)
-            if 'ack_id' not in m:
-                # don't bother attempting to ack a message with no ack_id. 
-                # If you did try to ack it, the Moth class is supposed to return True anyways.
-                continue
-            elif self.consumer.ack(m):
-                # ack was successful, don't need the ack_id anymore
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
-            else:
-                # FIXME when consuming from multiple brokers, maybe we shouldn't delete the ack_id?
-                # we might need to try acking on all brokers and only delete the ack_id once if acking fails 
-                # with all possible brokers?
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
+            self.consumer.ack(m)
 
     def metricsReport(self) -> dict:
         if hasattr(self,'consumer') and hasattr(self.consumer,'metricsReport'):

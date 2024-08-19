@@ -603,6 +603,8 @@ class AMQP(Moth):
             or m['ack_id']['broker'] != self.broker):
             logger.warning(f"failed for {m['ack_id']}. Does not match the current connection {self.connection_id}," +
                            f" channel {self.channel.channel_id} or broker {self.broker}")
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
             return False
         
         #logger.info( f"acknowledging {m['ack_id']}" )
@@ -611,19 +613,24 @@ class AMQP(Moth):
             try:
                 if hasattr(self, 'channel'): 
                     self.channel.basic_ack(m['ack_id']['delivery_tag'])
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
                     return True
                 else:
                     logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
                     return False
             
             except Exception as err:
                 logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
                 logger.debug('Exception details: ', exc_info=True)
                 if type(err) == BrokenPipeError or type(err) == ConnectionResetError:
-                    # Cleanly close partially broken connection and restablish
+                    # Cleanly close partially broken connection
                     self.close()
-                    self.getSetup()
                     # No point in trying to ack again if the connection is broken
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
                     return False
             
             if ebo < 60:
