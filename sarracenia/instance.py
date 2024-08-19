@@ -105,6 +105,11 @@ class instance:
             logger.error('action must be one of: foreground or start')
             return
 
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
+
         if cfg_preparse.debug:
             logLevel = logging.DEBUG
         elif hasattr(cfg_preparse, 'logLevel'):
@@ -114,21 +119,34 @@ class instance:
 
         logger.setLevel(logLevel)
 
-        if not hasattr(cfg_preparse,
-                       'no') and not (cfg_preparse.action == 'foreground'):
-            logger.critical('need an instance number to run.')
-            return
-
-        if (len(cfg_preparse.configurations) > 1 ) and \
-           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
-            logger.critical("can only run one configuration in an instance")
-            return
-
         if (not os.sep in cfg_preparse.configurations[0]):
             component = 'flow'
             config = cfg_preparse.configurations[0]
         else:
             component, config = cfg_preparse.configurations[0].split(os.sep)
+
+        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
+
+        if not hasattr(cfg_preparse,
+                       'no') and not (cfg_preparse.action == 'foreground'):
+            logger.critical('need an instance number to run.')
+            return
+        elif cfg_preparse.no > 1:
+            # worker instances need give lead instance time to write subscriptions/queueNames/bindings
+            # FIXME: might be better to loop here until lead instance .pid file exists?
+            leadpidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, 1)
+            while not os.path.isdir(os.path.dirname(leadpidfilename)):
+                logger.debug("waiting for lead instance to create state directory")
+                time.sleep(cfg_preparse.no)
+            while not os.path.isfile(leadpidfilename):
+                logger.debug("waiting for lead instance to create it's pid file {leadpidfilename}")
+                time.sleep(cfg_preparse.no)
+
+
+        if (len(cfg_preparse.configurations) > 1 ) and \
+           ( cfg_preparse.configurations[0].split(os.sep)[0] != 'post' ):
+            logger.critical("can only run one configuration in an instance")
+            return
 
         cfg_preparse = sarracenia.config.one_config(component, config, cfg_preparse.action)
 
@@ -142,10 +160,6 @@ class instance:
 
         # init logs here. need to know instance number and configuration and component before here.
         if cfg_preparse.action in ['start','run'] :
-            if cfg_preparse.statehost:
-                hostdir = cfg_preparse.hostdir
-            else:
-                hostdir = None
 
             metricsfilename = sarracenia.config.get_metrics_filename( hostdir, component, config, cfg_preparse.no)
 
@@ -214,8 +228,6 @@ class instance:
             hostdir = cfg_preparse.hostdir
         else:
             hostdir = None
-
-        pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
 
         if not os.path.isdir(os.path.dirname(pidfilename)):
             pathlib.Path(os.path.dirname(pidfilename)).mkdir(parents=True, exist_ok=True)
