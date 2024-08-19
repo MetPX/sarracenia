@@ -280,7 +280,7 @@ class Moth():
 
         self.is_subscriber = is_subscriber
         self.connected=False
-        self.please_stop = False
+        self.self._stop_requested = False
         self.metrics = { 'connected': False }
         self.metricsReset()
 
@@ -349,6 +349,13 @@ class Moth():
         """
         logger.error("NewMessages unimplemented")
         return []
+    
+    def please_stop(self) -> None:
+        """ register a request to cleanly stop. Any long running processes should check for _stop_requested and 
+            stop if it becomes True.
+        """
+        logger.info("asked to stop")
+        self._stop_requested = True
 
     def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json', exchange: str = None) -> bool:
         """

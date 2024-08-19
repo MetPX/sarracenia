@@ -166,3 +166,9 @@ class Report(FlowCB):
             self.poster.close()
         logger.info('closing')
 
+    def please_stop(self) -> None:
+        """ pass stop request along to publisher Moth instance(s)
+        """
+        super().please_stop()
+        if hasattr(self, 'poster') and self.poster:
+            self.poster.please_stop()
