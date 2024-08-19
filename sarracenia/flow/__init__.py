@@ -461,7 +461,7 @@ class Flow:
         m.setReport(code, reason)
 
     def please_stop(self) -> None:
-        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
+        logger.info(f'stop requested')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
 
@@ -562,8 +562,10 @@ class Flow:
                     self.close()
                     break
                 else:
-                    logger.debug( 'starting last pass (without gather) through loop for cleanup.')
+                    logger.debug('starting last pass (without gather) through loop for cleanup.')
                     stopping = True
+                    logger.info(f'telling {len(self.plugins["please_stop"])} callbacks to please_stop.')
+                    self.runCallbacksTime('please_stop')
 
             self._run_vip_update()
 

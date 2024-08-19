@@ -75,4 +75,5 @@ class Message(FlowCB):
         """
         super().please_stop()
         if hasattr(self, 'poster') and self.poster:
+            logger.debug("asking Moth publisher to please_stop")
             self.poster.please_stop()

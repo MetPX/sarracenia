@@ -80,4 +80,5 @@ class Message(FlowCB):
         """
         super().please_stop()
         if hasattr(self,'consumer') and self.consumer:
+            logger.debug("asking Moth consumer to please_stop")
             self.consumer.please_stop()
