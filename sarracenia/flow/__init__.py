@@ -1451,8 +1451,8 @@ class Flow:
         #   part of partitioning deferral.
         #end   = self.local_offset + self.length
         # if using a true binary checksum, the size check is enough.
-        if 'identify' in msg and 'method' in msg['identity']:
-            method=msg['identity']
+        if 'identidy' in msg and 'method' in msg['identity']:
+            method=msg['identity']['method']
         else:
             method='unknown'
         
