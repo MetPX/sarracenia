@@ -34,6 +34,7 @@ import re
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
+from sarracenia.interruptible_sleep import interruptible_sleep
 import os
 
 import time
@@ -391,7 +392,7 @@ class AMQP(Moth):
             if ebo < 60: ebo *= 2
 
             logger.info("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
+            interruptible_sleep(ebo, obj=self)
 
     def putSetup(self) -> None:
 
@@ -456,7 +457,7 @@ class AMQP(Moth):
 
             self.close()
             logger.info("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
+            interruptible_sleep(ebo, obj=self)
 
     def putCleanUp(self) -> None:
 
@@ -612,7 +613,7 @@ class AMQP(Moth):
             if ebo < 60:
                 ebo *= 2
             logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
-            time.sleep(ebo)
+            interruptible_sleep(ebo, obj=self)
             # TODO maybe implement message strategy stubborn here and give up after retrying?
 
     def putNewMessage(self,
