@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.54p1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.54p1) unstable; urgency=medium
 
   * fix for crash in fileAgeMin
 
