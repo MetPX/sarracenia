@@ -613,7 +613,9 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
+            # trigger shutdown when messageCountMax is reached
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
+                logger.info(f'{total_messages} messages processed > messageCountMax {self.o.messageCountMax}')
                 self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
@@ -622,6 +624,7 @@ class Flow:
             self.metrics['flow']['msgRate'] = current_rate
             self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
+            # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
