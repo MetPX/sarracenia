@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.54p1) UNRELEASED; urgency=medium
+
+  * fix for crash in fileAgeMin
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Wed, 21 Aug 2024 11:49:45 -0400
+
 metpx-sr3 (3.00.54) unstable; urgency=medium
 
   * fix #1142 token authentication re-factor
