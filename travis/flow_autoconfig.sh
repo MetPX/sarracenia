@@ -18,7 +18,7 @@ sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
 sudo apt update
 sudo apt -y upgrade
-sudo apt -y install python3-setuptools python3-magic python-setuptools
+sudo apt -y install python3-setuptools python3-magic python-setuptools python3-requests
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
