@@ -24,7 +24,6 @@
 import datetime
 import logging
 import os
-import requests
 import sarracenia
 import ssl
 import subprocess
@@ -262,7 +261,7 @@ class Https(Transfer):
         return dbuf
 
     # open
-    def __open__(self, path, remote_offset=0, length=0):
+    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None):
         logger.debug( f"{path}")
 
         self.http = None
@@ -285,6 +284,10 @@ class Https(Transfer):
             if self.bearer_token:
                 logger.debug('bearer_token: %s' % self.bearer_token)
                 headers['Authorization'] = 'Bearer ' + self.bearer_token
+            if add_headers:
+                # add everything from add_headers dict into headers dict. if anything in add_headers already
+                # exists in headers, the values from add_headers will replace the values in headers.
+                headers.update(add_headers)
 
             if self.user != None:
                 password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
@@ -316,7 +319,7 @@ class Https(Transfer):
                 urllib.request.install_opener(opener)
 
             # Now all calls to get the request use our opener.
-            self.req = urllib.request.Request(self.urlstr, headers=headers)
+            self.req = urllib.request.Request(self.urlstr, headers=headers, method=method)
 
             # set range in byte if needed
             if remote_offset != 0:
@@ -368,10 +371,9 @@ class Https(Transfer):
 
         alarm_cancel()
         return False
-
+    
     def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
         st = sarracenia.filemetadata.FmdStat()
-
         #logger.debug( f" baseUrl:{msg['baseUrl']}, path:{self.path}, cwd:{self.cwd}, path:{path} " )
 
         url = msg['baseUrl']
@@ -382,36 +384,41 @@ class Https(Transfer):
             url += '/' 
         url += path
 
+        ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
+        if not ok:
+            return None
+        status_code =  self.http.getcode()
+        if status_code != 200:
+            return None
+
+        # POSSIBLE PROBLEM: if the server redirects the URL we requested, then the method will be ignored and we'll
+        # end up doing a GET, which is a waste of bandwidth and slower.
+        # Discussion here: https://stackoverflow.com/a/29327717
+        # https://github.com/python/cpython/blob/6e6855950a1891713369a6cdc84670c38d9388f0/Lib/urllib/request.py#L678-L681
+        # Need to confirm if this is (still) true, then probably need to subclass HTTPRedirectHandler to do a HEAD request
+        # any time we get redirected. Requests automatically handled this for us :-(
+
+        have_metadata = False
         try:
-            resp = requests.head(url, headers = {'Accept-Encoding': 'identity'} )
-            resp.raise_for_status()
+            # Content-Length: 9659
+            st.st_size = int(self.http.getheader('Content-Length'))
+            have_metadata = True
+        except:
+            pass
 
-            # parse the HTTP header response into the stat object used by sr3
-            # {... 'Content-Length': '549872', ... , 'Last-Modified': 'Mon, 03 Jun 2024 15:42:02 GMT', ... }
-            # logger.debug(f"{resp} {resp.headers}")
-            if resp.status_code == 200:
-                have_metadata = False
-                if "Last-Modified" in resp.headers:
-                    # Mon, 03 Jun 2024 15:42:02 GMT
-                    lm = datetime.datetime.strptime(resp.headers['Last-Modified'], '%a, %d %b %Y %H:%M:%S GMT')
-                    lm = lm.timestamp()
-                    # logger.debug(f"parsed date: {lm}")
-                    st.st_atime = lm
-                    st.st_mtime = lm
-                    have_metadata = True
-                if "Content-Length" in resp.headers:
-                    size = int(resp.headers['Content-Length'])
-                    # logger.debug(f"file size: {size}")
-                    st.st_size = size
-                    have_metadata = True
+        try: 
+            # Last-Modified: Thu, 22 Aug 2024 20:37:53 GMT
+            lm = self.http.getheader('Last-Modified')
+            lm = datetime.datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT').timestamp()
+            st.st_atime = lm
+            st.st_mtime = lm
+            have_metadata = True
+        except:
+            pass
 
-                if have_metadata:
-                    return st
+        if have_metadata:
+            return st
+        else:
+            logger.warning(f"failed, HEAD request returned {status_code} but metadata was not available for {url}")
 
-                if not have_metadata :
-                    logger.warning(f"HEAD request returned {resp.status_code} but metadata was " +
-                                   f"not available for {url}, not posting")
-                return None
-        except Exception as e:
-            logger.info(f"Failed to get metadata for {url} ({e}), posting anyways")
-            return None        
+        return None
