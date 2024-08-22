@@ -1105,7 +1105,7 @@ class Flow:
                                            self.o.flatten)
                     filtered_worklist.append(m)
                 else:
-                    self.reject(m, 304, "unmatched pattern %s" % url)
+                    self.reject(m, 404, "unmatched pattern %s" % url)
 
         self.worklist.incoming = filtered_worklist
 
