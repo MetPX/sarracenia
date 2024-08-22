@@ -13,6 +13,12 @@ class Subscription(dict):
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
         self['queue']={ 'name': queueName }
 
+
+        self['queue']={ 'name': queueName, 'declared': False, 'auto_delete': options.auto_delete,\
+                'durable': options.durable, 'expire': options.expire  }
+        for a in [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
+            aa = a.replace('queue','').lower()
+
         for a in [ 'auto_delete', 'durable', 'exchange', 'expire', \
                 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
             if hasattr(options, a) and getattr(options,a):
@@ -71,9 +77,20 @@ class Subscriptions(list):
             self.append(new_subscription)
 
             
-    def differences(self, other):
+    def deltAnalyze(self, other):
         """
-           return None if there are no differentces.
+           given one list of subscriptions, and another set of subscriptions.
+
+           * for each subscription add s['bindings_to_remove'] ... 
+           * got each subscription add s['queue']['cleanup_needed'] = "reason"  
+
+           the reason could be: 
+               * current expiry mismatch 
+               * durable mismatch
+               * auto-delete mismatch
+               * exclusive mismatch
+           
+           if eveyrthing is cool, then mismatch=None.
         """
         if self == other:
             return None
