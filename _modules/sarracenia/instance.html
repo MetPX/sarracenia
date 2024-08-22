@@ -161,7 +161,7 @@
                     <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
                         <span class="n">code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span><span class="o">.</span><span class="n">please_stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running_instance</span><span class="o">.</span><span class="n">stop_request</span><span class="p">()</span>
 
 <div class="viewcode-block" id="instance.start">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.instance.instance.start">[docs]</a>

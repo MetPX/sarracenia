@@ -565,12 +565,24 @@
         <span class="n">m</span><span class="o">.</span><span class="n">setReport</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Flow.stop_request">
+<a class="viewcode-back" href="../../Reference/code.html#sarracenia.flow.Flow.stop_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop_request</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; called by the signal handler to tell self and FlowCB classes to stop. Without this,</span>
+<span class="sd">            calling runCallbacksTime(&#39;please_stop&#39;) from inside self.please_stop causes an infinite loop.</span>
+<span class="sd">            Note: if this is called from outside of a signal handler, the interruptible_sleep function</span>
+<span class="sd">                  won&#39;t work.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;telling </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s2">&quot;please_stop&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> callbacks to please_stop.&#39;</span><span class="p">)</span>
+        <span class="c1"># this will call the please_stop method below, and other classes&#39; please_stop methods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runCallbacksTime</span><span class="p">(</span><span class="s1">&#39;please_stop&#39;</span><span class="p">)</span></div>
+
+
     <span class="k">def</span> <span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;ok, telling </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="s2">&quot;please_stop&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> callbacks about it.&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;asked to stop&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;flow&quot;</span><span class="p">][</span><span class="s1">&#39;stop_requested&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-
-
+    
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">runCallbacksTime</span><span class="p">(</span><span class="s1">&#39;on_stop&#39;</span><span class="p">)</span>
@@ -669,7 +681,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s1">&#39;starting last pass (without gather) through loop for cleanup.&#39;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;starting last pass (without gather) through loop for cleanup.&#39;</span><span class="p">)</span>
                     <span class="n">stopping</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_vip_update</span><span class="p">()</span>
@@ -711,7 +723,9 @@
             <span class="n">run_time</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">start_time</span>
             <span class="n">total_messages</span> <span class="o">+=</span> <span class="n">last_gather_len</span>
 
+            <span class="c1"># trigger shutdown when messageCountMax is reached</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">messageCountMax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">total_messages</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">messageCountMax</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">total_messages</span><span class="si">}</span><span class="s1"> messages processed &gt; messageCountMax </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">messageCountMax</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">runCallbacksTime</span><span class="p">(</span><span class="s1">&#39;please_stop&#39;</span><span class="p">)</span>
 
             <span class="n">current_rate</span> <span class="o">=</span> <span class="n">total_messages</span> <span class="o">/</span> <span class="n">run_time</span>
@@ -720,6 +734,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;msgRate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_rate</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;msgRateCpu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_messages</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;cpuTime&#39;</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;last_housekeeping_cpuTime&#39;</span><span class="p">]</span> <span class="p">)</span>
 
+            <span class="c1"># trigger shutdown once gather is finished, where sleep &lt; 0 (e.g. a post)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">last_gather_len</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">sleep</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">retryEmptyBeforeExit</span> <span class="ow">and</span> <span class="s2">&quot;retry&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
                     <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;retry&#39;</span><span class="p">][</span><span class="s1">&#39;msgs_in_post_retry&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>

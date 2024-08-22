@@ -375,7 +375,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">is_subscriber</span> <span class="o">=</span> <span class="n">is_subscriber</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">please_stop</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;connected&#39;</span><span class="p">:</span> <span class="kc">False</span> <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metricsReset</span><span class="p">()</span>
 
@@ -453,6 +453,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;NewMessages unimplemented&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[]</span></div>
+
+    
+<div class="viewcode-block" id="Moth.please_stop">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.moth.Moth.please_stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">please_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; register a request to cleanly stop. Any long running processes should check for _stop_requested and </span>
+<span class="sd">            stop if it becomes True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;asked to stop&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_requested</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="Moth.putNewMessage">

@@ -1702,6 +1702,17 @@ check if stop_requested once in a while, but never return otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.flow.Flow.stop_request">
+<span class="sig-name descname"><span class="pre">stop_request</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.stop_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.stop_request" title="Link to this definition"></a></dt>
+<dd><p>called by the signal handler to tell self and FlowCB classes to stop. Without this,
+calling runCallbacksTime(‘please_stop’) from inside self.please_stop causes an infinite loop.
+Note: if this is called from outside of a signal handler, the interruptible_sleep function</p>
+<blockquote>
+<div><p>won’t work.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.sundew_getDestInfos">
 <span class="sig-name descname"><span class="pre">sundew_getDestInfos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">currentFileOption</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.sundew_getDestInfos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.sundew_getDestInfos" title="Link to this definition"></a></dt>
 <dd><p>modified from sundew client</p>
@@ -2269,6 +2280,13 @@ self.metrics[‘RxBadCount’] should be incremented by 1 if an invalid message 
 <dd><p>If there are new messages available from the broker, return them, otherwise return None.</p>
 <p>On Success, this routine returns immediately (non-blocking) with either None, or a list of messages.</p>
 <p>On failure, this routine blocks, and loops reconnecting to broker, until interaction with broker is successful.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.moth.Moth.please_stop">
+<span class="sig-name descname"><span class="pre">please_stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/sarracenia/moth.html#Moth.please_stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.moth.Moth.please_stop" title="Link to this definition"></a></dt>
+<dd><p>register a request to cleanly stop. Any long running processes should check for _stop_requested and
+stop if it becomes True.</p>
 </dd></dl>
 
 <dl class="py method">
