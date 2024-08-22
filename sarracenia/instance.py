@@ -135,11 +135,12 @@ class instance:
             # worker instances need give lead instance time to write subscriptions/queueNames/bindings
             # FIXME: might be better to loop here until lead instance .pid file exists?
             leadpidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, 1)
+            time.sleep(cfg_preparse.no)
             while not os.path.isdir(os.path.dirname(leadpidfilename)):
                 logger.debug("waiting for lead instance to create state directory")
                 time.sleep(cfg_preparse.no)
             while not os.path.isfile(leadpidfilename):
-                logger.debug("waiting for lead instance to create it's pid file {leadpidfilename}")
+                logger.debug("waiting for lead instance to create pid file: {leadpidfilename}")
                 time.sleep(cfg_preparse.no)
 
 

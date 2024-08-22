@@ -817,6 +817,7 @@ class Config:
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
+        self.__queue_file_read = False
 
         if Config.credentials is None:
             Config.credentials = sarracenia.config.credentials.CredentialDB()
@@ -1367,7 +1368,7 @@ class Config:
             return
 
         self._resolve_exchange()
-        self._resolveQueueName(self.component,self.config)
+        self.queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
             if self.broker.url.scheme == 'amq' :
@@ -1377,7 +1378,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
-            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
+            self.subscriptions.add(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1824,48 +1825,40 @@ class Config:
 
         """
 
+        queueName=self.queueName
         if hasattr(self,'no') and self.no > 1:
-            # worker instances need give lead instance time to write the queuefile
-            time.sleep(randint(4,14))
 
-            queue_file_read=False
             config_read_try=0
-            while not queue_file_read:
-                if os.path.isfile(queuefile):
-                    f = open(queuefile, 'r')
-                    self.queueName = f.read()
-                    f.close()
-                else:
-                    self.queueName = ''
+            if os.path.isfile(queuefile):
+                f = open(queuefile, 'r')
+                queueName = f.read()
+                f.close()
+            else:
+                queueName = ''
 
-                config_read_try += 1
-                logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
-                if len(self.queueName) < 1:
-                      nap=randint(1,4)
-                      logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
-                      time.sleep(nap)
-                      if config_read_try > 5:
-                          logger.critical( f'failed to read queue name from {queuefile}')
-                          sys.exit(2)
-                else:
-                      queue_file_read=True
-
+            logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
+            if len(queueName) < 1:
+                  logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
+                  logger.critical( f'failed to read queue name from {queuefile}')
+                  sys.exit(2)
         else: 
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
     
             # lead instance shou
-            if os.path.isfile(queuefile):
+            if not self.__queue_file_read and os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
-                self.queueName = f.read()
+                queueName = f.read()
                 f.close()
+                self.__queue_file_read=True
             
             #if the queuefile is corrupt, then will need to guess anyways.
-            if ( self.queueName is None ) or ( self.queueName == '' ):
+            if ( queueName is None ) or ( queueName == '' ):
                 queueShare = self._varsub(self.queueShare)
-                self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
+                queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
-    
+
+        return queueName 
 
 
 
@@ -2014,7 +2007,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
-            self._resolveQueueName(component,cfg)
+            self.queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
@@ -2461,7 +2454,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
-            namespace._resolveQueueName(namespace.component,namespace.config)
+            qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2483,7 +2476,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
-            namespace.subscriptions.append(Subscription(namespace, namespace.queueName, values))
+            namespace.subscriptions.append(Subscription(namespace, qn, values))
 
     def parse_args(self, isPost=False):
         """
