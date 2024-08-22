@@ -371,8 +371,11 @@ known_report_codes = {
     206: "Partial Content: received and inserted.",
     304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
+    404: "Not Found: no pattern match",
+    406: "Not Acceptable: file older than fileAgeMax",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
+    425: "Too Early: file younger than fileAgeMin",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
