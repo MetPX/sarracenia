@@ -1,5 +1,6 @@
-metpx-sr3 (3.00.54post1) unstable; urgency=medium
+metpx-sr3 (3.00.54post2) unstable; urgency=medium
 
+  * 3.00.54post1 package generation on launchpad failed, re-uploading as post2
   * fix for crash in fileAgeMin
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Wed, 21 Aug 2024 11:49:45 -0400
