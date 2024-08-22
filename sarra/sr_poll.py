@@ -179,7 +179,7 @@ class sr_poll(sr_post):
                 date = line_split[5] + " " + line_split[6]
                 file_date = parse(date)
                 current_date = datetime.datetime.now()
-                file_within_date_limit = abs((file_date - current_date).seconds) < self.file_time_limit
+                file_within_date_limit = abs((current_date - file_date).total_seconds()) < self.file_time_limit
             except:
                 self.logger.error("Assuming ok, incorrect date format for line:  %s" % ls[f])
                 if not dateparser_available:
