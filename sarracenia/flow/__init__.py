@@ -999,7 +999,7 @@ class Flow:
 
                 if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
                     logger.warning( f"file too young: queueing for retry.")
-                    self.worklist.failed.append(msg)
+                    self.worklist.failed.append(m)
                     continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
