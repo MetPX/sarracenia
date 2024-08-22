@@ -130,7 +130,8 @@ class sr_poll(sr_post):
 
         if self.post_base_url == None:
             self.post_base_url = self.details.url.geturl()
-            if self.post_base_url[-1] != '/': self.post_base_url += '/'
+            # we are not sure why this is here, and it causes problems with sr3 compat and sftp path interp 
+            #if self.post_base_url[-1] != '/': self.post_base_url += '/'
             if self.post_base_url.startswith('file:'): self.post_base_url = 'file:'
             if self.details.url.password:
                 self.post_base_url = self.post_base_url.replace(':' + self.details.url.password, '')
