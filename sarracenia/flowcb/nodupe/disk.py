@@ -177,8 +177,8 @@ class Disk(NoDupe):
                 new_incoming.append(m)
             else:
                 m['_deleteOnPost'] |= set(['reject'])
-                m['reject'] = "not modifified 1 (nodupe check)"
-                m.setReport(304, 'Not modified 1 (cache check)')
+                m['reject'] = "not modified 1 (nodupe check)"
+                m.setReport(304, 'Not modified 1 (nodupe check)')
                 worklist.rejected.append(m)
 
         if self.fp:
