@@ -11,19 +11,12 @@ class Subscription(dict):
 
         self['broker'] = options.broker
         self['bindings'] = [ { 'exchange': options.exchange, 'prefix': options.topicPrefix, 'sub': subtopic } ]
-        self['queue']={ 'name': queueName }
 
-
-        self['queue']={ 'name': queueName, 'declared': False, 'auto_delete': options.auto_delete,\
-                'durable': options.durable, 'expire': options.expire  }
+        self['queue']={ 'name': queueName, 'cleanup_needed': None }
         for a in [ 'auto_delete', 'durable', 'expire', 'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare' ]:
             aa = a.replace('queue','').lower()
-
-        for a in [ 'auto_delete', 'durable', 'exchange', 'expire', \
-                'message_ttl', 'prefetch', 'qos', 'queueBind', 'queueDeclare', 'topicPrefix' ]:
             if hasattr(options, a) and getattr(options,a):
-                self['queue'][a] = getattr(options,a)
-
+                self['queue'][aa] = getattr(options,a)
 
 class Subscriptions(list):
     # list of subscription
@@ -81,16 +74,17 @@ class Subscriptions(list):
         """
            given one list of subscriptions, and another set of subscriptions.
 
-           * for each subscription add s['bindings_to_remove'] ... 
-           * got each subscription add s['queue']['cleanup_needed'] = "reason"  
+           return the list of subscriptions that are in other, but not in self.
+           or perhaps:
+
+           * for each subscription add s['bindings_to_remove'] ...
+           * got each subscription add s['queue']['cleanup_needed'] = "reason"
 
            the reason could be: 
                * current expiry mismatch 
                * durable mismatch
                * auto-delete mismatch
                * exclusive mismatch
-           
-           if eveyrthing is cool, then mismatch=None.
         """
         if self == other:
             return None
