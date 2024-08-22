@@ -460,12 +460,21 @@ class Flow:
         self.worklist.rejected.append(m)
         m.setReport(code, reason)
 
+    def stop_request(self) -> None:
+        """ called by the signal handler to tell self and FlowCB classes to stop. Without this,
+            calling runCallbacksTime('please_stop') from inside self.please_stop causes an infinite loop.
+            Note: if this is called from outside of a signal handler, the interruptible_sleep function
+                  won't work.
+        """
+        logger.info(f'telling {len(self.plugins["please_stop"])} callbacks to please_stop.')
+        # this will call the please_stop method below, and other classes' please_stop methods
+        self.runCallbacksTime('please_stop')
+
     def please_stop(self) -> None:
-        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
+        logger.info(f'asked to stop')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
-
-
+    
     def close(self) -> None:
 
         self.runCallbacksTime('on_stop')
@@ -562,7 +571,7 @@ class Flow:
                     self.close()
                     break
                 else:
-                    logger.debug( 'starting last pass (without gather) through loop for cleanup.')
+                    logger.debug('starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
             self._run_vip_update()
@@ -604,7 +613,9 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
+            # trigger shutdown when messageCountMax is reached
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
+                logger.info(f'{total_messages} messages processed > messageCountMax {self.o.messageCountMax}')
                 self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
@@ -613,6 +624,7 @@ class Flow:
             self.metrics['flow']['msgRate'] = current_rate
             self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
+            # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
