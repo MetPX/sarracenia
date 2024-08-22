@@ -163,13 +163,13 @@ class Disk(NoDupe):
                 if mtime < min_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}"
-                    m.setReport(304,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
+                    m.setReport(406,  f"{m['mtime']} too old (nodupe check), oldest allowed {timeflt2str(min_mtime)}" )
                     worklist.rejected.append(m)
                     continue
                 elif mtime > max_mtime:
                     m['_deleteOnPost'] |= set(['reject'])
                     m['reject'] = f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}"
-                    m.setReport(304,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
+                    m.setReport(425,  f"{m['mtime']} too new (nodupe check), newest allowed {timeflt2str(max_mtime)}" )
                     worklist.rejected.append(m)
                     continue
 
