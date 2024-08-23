@@ -178,6 +178,12 @@
 <span class="kn">import</span> <span class="nn">sarracenia.identity.random</span>
 <span class="kn">import</span> <span class="nn">sarracenia.identity.sha512</span>
 
+<span class="c1"># the &#39;unknown&#39; method is created to accomodate cases where a identity field </span>
+<span class="c1"># missing, or the corresponding class is not known to this instance.</span>
+
+<span class="c1"># methods where size checks makes sense. updated when new methods added.</span>
+<span class="n">binary_methods</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;sha512&#39;</span><span class="p">,</span> <span class="s1">&#39;md5&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown&#39;</span> <span class="p">]</span>
+
 <span class="n">known_methods</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">Identity</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
     <span class="n">known_methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sc</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>

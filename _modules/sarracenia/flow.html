@@ -1584,58 +1584,62 @@
         <span class="c1"># FIXME... local_offset... offset within the local file... partitioned... who knows?</span>
         <span class="c1">#   part of partitioning deferral.</span>
         <span class="c1">#end   = self.local_offset + self.length</span>
-        <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
-            <span class="c1"># compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn&#39;t fully done)</span>
-            <span class="c1"># This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order</span>
-            <span class="c1"># target_file is the same as new_file unless the file is partitioned.</span>
-            <span class="c1"># FIXME If the file is partitioned, then it is the new_file with a partition suffix.</span>
-            <span class="c1">#if (&#39;self.target_file == msg[&#39;new_file&#39;] ) and ( fsiz != msg[&#39;size&#39;] ):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">fsiz</span> <span class="o">!=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> file size different, so cannot be the same&quot;</span> <span class="o">%</span>
-                             <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
-                <span class="k">return</span> <span class="kc">True</span>
+        <span class="c1"># if using a true binary checksum, the size check is enough.</span>
+        <span class="k">if</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="s1">&#39;method&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]:</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;unknown&#39;</span>
+        
+        <span class="c1"># if no method given, then assume binary comparison is good.</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">identity</span><span class="o">.</span><span class="n">binary_methods</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="s1">&#39;size&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
+                <span class="c1"># compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn&#39;t fully done)</span>
+                <span class="c1"># This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order</span>
+                <span class="c1"># target_file is the same as new_file unless the file is partitioned.</span>
+                <span class="c1"># FIXME If the file is partitioned, then it is the new_file with a partition suffix.</span>
+                <span class="c1">#if (&#39;self.target_file == msg[&#39;new_file&#39;] ) and ( fsiz != msg[&#39;size&#39;] ):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">fsiz</span> <span class="o">!=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> file size different, so cannot be the same&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
+                    <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="c1"># compare dates...</span>
-
-        <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
-            <span class="n">new_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
-            <span class="n">old_mtime</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeCopy</span><span class="p">:</span>
-                <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
-            <span class="k">elif</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">supports_extended_attributes</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">x</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">])</span>
-                    <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">))</span>
-                <span class="k">except</span><span class="p">:</span>
-                    <span class="k">pass</span>
-
-            <span class="k">if</span> <span class="n">new_mtime</span> <span class="o">&lt;=</span> <span class="n">old_mtime</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span>
-                            <span class="s2">&quot;mtime not newer </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
-                <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> new version is </span><span class="si">{}</span><span class="s2"> newer (new: </span><span class="si">{}</span><span class="s2"> vs old: </span><span class="si">{}</span><span class="s2"> )&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># compare dates...</span>
+
+            <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="n">new_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
+                <span class="n">old_mtime</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeCopy</span><span class="p">:</span>
+                    <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_mtime</span>
+                <span class="k">elif</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">supports_extended_attributes</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">x</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FileMetadata</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">])</span>
+                        <span class="n">old_mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtime&#39;</span><span class="p">))</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">pass</span>
+    
+                <span class="k">if</span> <span class="n">new_mtime</span> <span class="o">&lt;=</span> <span class="n">old_mtime</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span>
+                            <span class="s2">&quot;mtime not newer </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> new version is </span><span class="si">{}</span><span class="s2"> newer (new: </span><span class="si">{}</span><span class="s2"> vs old: </span><span class="si">{}</span><span class="s2"> )&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">],</span> <span class="n">new_mtime</span> <span class="o">-</span> <span class="n">old_mtime</span><span class="p">,</span> <span class="n">new_mtime</span><span class="p">,</span>
                         <span class="n">old_mtime</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;cod&#39;</span><span class="p">]:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;content_match </span><span class="si">%s</span><span class="s2"> sum 0/z never matches&quot;</span> <span class="o">%</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;cod&#39;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;content_match </span><span class="si">%s</span><span class="s2"> sum random/zero/cod never matches&quot;</span> <span class="o">%</span>
                          <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
-            <span class="k">return</span> <span class="kc">True</span>
-
-        <span class="k">if</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">fsiz</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;new file not big enough... considered different&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span> 
             <span class="c1"># FIXME... should there be a setting to assume them the same? use cases may vary.</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;no checksum available, assuming different&quot;</span> <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;size different and no checksum available, assuming different&quot;</span> <span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">try</span><span class="p">:</span>
