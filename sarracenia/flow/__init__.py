@@ -1462,58 +1462,62 @@ class Flow:
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
         #   part of partitioning deferral.
         #end   = self.local_offset + self.length
-        if 'size' in msg:
-            end = msg['size']
-            # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
-            # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
-            # target_file is the same as new_file unless the file is partitioned.
-            # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
-            #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
-            if (fsiz != msg['size']):
-                logger.debug("%s file size different, so cannot be the same" %
-                             (msg['new_path']))
-                return True
+        # if using a true binary checksum, the size check is enough.
+        if 'identity' in msg and 'method' in msg['identity']:
+            method=msg['identity']['method']
         else:
-            end = 0
+            method='unknown'
+        
+        # if no method given, then assume binary comparison is good.
+        if method in sarracenia.identity.binary_methods: 
+            if 'size' in msg:
+                end = msg['size']
+                # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+                # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+                # target_file is the same as new_file unless the file is partitioned.
+                # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
+                #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
+                if (fsiz != msg['size']):
+                    logger.debug("%s file size different, so cannot be the same" %
+                             (msg['new_path']))
+                    return True
 
-        # compare dates...
-
-        if 'mtime' in msg:
-            new_mtime = sarracenia.timestr2flt(msg['mtime'])
-            old_mtime = 0.0
-
-            if self.o.timeCopy:
-                old_mtime = lstat.st_mtime
-            elif sarracenia.filemetadata.supports_extended_attributes:
-                try:
-                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                except:
-                    pass
-
-            if new_mtime <= old_mtime:
-                self.reject(msg, 304,
-                            "mtime not newer %s " % (msg['new_path']))
-                return False
             else:
-                logger.debug(
-                    "{} new version is {} newer (new: {} vs old: {} )".format(
+                end = 0
+
+            # compare dates...
+
+            if 'mtime' in msg:
+                new_mtime = sarracenia.timestr2flt(msg['mtime'])
+                old_mtime = 0.0
+
+                if self.o.timeCopy:
+                    old_mtime = lstat.st_mtime
+                elif sarracenia.filemetadata.supports_extended_attributes:
+                    try:
+                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                    except:
+                        pass
+    
+                if new_mtime <= old_mtime:
+                    self.reject(msg, 304,
+                            "mtime not newer %s " % (msg['new_path']))
+                    return False
+                else:
+                    logger.debug(
+                        "{} new version is {} newer (new: {} vs old: {} )".format(
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if 'identity' in msg and msg['identity']['method'] in ['random', 'cod']:
-            logger.debug("content_match %s sum 0/z never matches" %
+        elif method in ['random', 'cod']:
+            logger.debug("content_match %s sum random/zero/cod never matches" %
                          (msg['new_path']))
-            return True
-
-        if end > fsiz:
-            logger.debug(
-                "new file not big enough... considered different")
             return True
 
         if not 'identity' in msg: 
             # FIXME... should there be a setting to assume them the same? use cases may vary.
-            logger.debug( "no checksum available, assuming different" )
+            logger.debug( "size different and no checksum available, assuming different" )
             return True
 
         try:
