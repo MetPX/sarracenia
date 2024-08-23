@@ -164,7 +164,7 @@ list_options = [ 'path', 'vip' ]
 set_options = [ 'logEvents', 'fileEvents' ]
 
 set_choices = { 
-    'logEvents' : set(sarracenia.flowcb.entry_points + [ 'reject' ]),
+    'logEvents' : set(sarracenia.flowcb.entry_points + [ 'reject', 'nodupe' ]),
     'fileEvents' : set( [ 'create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] )
  }
 # FIXME: doesn't work... wonder why?
@@ -1573,6 +1573,9 @@ class Config:
                 setattr(self, k, isTrue(v))
             if k in ['logReject'] and self.logReject:
                 self.logEvents = self.logEvents | set(['reject'])
+
+            if k in ['logDuplicates'] and self.logDuplicates:
+                self.logEvents = self.logEvents | set(['nodupe'])
             return
 
         if len(line) < 2:
