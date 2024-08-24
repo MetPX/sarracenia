@@ -105,11 +105,6 @@ class instance:
             logger.error('action must be one of: foreground or start')
             return
 
-        if cfg_preparse.statehost:
-            hostdir = cfg_preparse.hostdir
-        else:
-            hostdir = None
-
         if cfg_preparse.debug:
             logLevel = logging.DEBUG
         elif hasattr(cfg_preparse, 'logLevel'):
@@ -124,6 +119,13 @@ class instance:
             config = cfg_preparse.configurations[0]
         else:
             component, config = cfg_preparse.configurations[0].split(os.sep)
+
+        cfg_preparse = sarracenia.config.one_config(component, config, cfg_preparse.action)
+
+        if cfg_preparse.statehost:
+            hostdir = cfg_preparse.hostdir
+        else:
+            hostdir = None
 
         pidfilename = sarracenia.config.get_pid_filename( hostdir, component, config, cfg_preparse.no)
 
@@ -149,7 +151,6 @@ class instance:
             logger.critical("can only run one configuration in an instance")
             return
 
-        cfg_preparse = sarracenia.config.one_config(component, config, cfg_preparse.action)
 
         if cfg_preparse.logRotateInterval < (24*60*60):
             logRotateInterval=int(cfg_preparse.logRotateInterval)
@@ -180,7 +181,6 @@ class instance:
             if not cfg_preparse.logStdout:
 
                 logfilename = sarracenia.config.get_log_filename( hostdir, component, config, cfg_preparse.no)
-
                 dir_not_there = not os.path.exists(os.path.dirname(logfilename))
                 while dir_not_there:
                     try:
