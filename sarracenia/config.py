@@ -101,6 +101,7 @@ default_options = {
     'metrics_writeInterval': 5,
     'nodupe_driver': 'disk',
     'nodupe_ttl': 0,
+    'nofsetstat': True,
     'overwrite': True,
     'path': [],
     'permDefault' : octal_number(0),
@@ -142,7 +143,7 @@ count_options = [
 flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl_relPath', 'debug', \
     'delete', 'discard', 'download', 'dry_run', 'durable', 'exchangeDeclare', 'exchangeSplit', 'logReject', 'realpathFilter', \
     'follow_symlinks', 'force_polling', 'inline', 'inlineOnly', 'inplace', 'logMetrics', 'logStdout', 'logReject', 'restore', \
-    'messageDebugDump', 'mirror', 'timeCopy', 'notify_only', 'overwrite', 'post_on_start', \
+    'messageDebugDump', 'mirror', 'timeCopy', 'nofsetstat', 'notify_only', 'overwrite', 'post_on_start', \
     'permCopy', 'persistent', 'queueBind', 'queueDeclare', 'randomize', 'recursive', 'realpathPost', \
     'reconnect', 'report', 'reset', 'retry_refilter', 'retryEmptyBeforeExit', 'save', 
     'sundew_compat_regex_first_match_is_zero', 'sourceFromExchange', 'sourceFromMessage', 'topicCopy', 

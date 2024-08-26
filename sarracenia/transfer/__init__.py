@@ -141,6 +141,7 @@ class Transfer():
 
      uses options (on Sarracenia.config data structure passed to constructor/factory.)
      * credentials - used to authentication information.
+     * nofsetstat - used for SFTP to deal with limited server side permissions.
      * sendTo  - server to connect to.
      * batch   - how many files to transfer before a connection is torn down and re-established.
      * permDefault - what permissions to set on files transferred.

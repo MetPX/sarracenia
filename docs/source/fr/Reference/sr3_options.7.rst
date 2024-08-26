@@ -1221,6 +1221,19 @@ utiliser *post_exchangeSplit* pour la sortie. Cela achemine les publications en 
 une **deuxième couche d’abonnés (winnow) dont les caches de suppression des doublons sont actives.**
 
 
+nofsetstat on|off (défaut: faux)
+--------------------------------
+
+Certains serveurs limitent le permissions aux répertoires::
+
+   [ERROR] sarracenia.flow send could not send /source/filename to inflight=None sftp://user@example.com/ /destination/filename: FSETSTAT unsupported
+
+Les autorisations restreintes sur le serveur signifient des fonctionnalités limitées. Impossible de corriger les 
+heures de modification ou de tronquer les fichiers (lorsque le nouveau fichier est plus court que la version 
+précédente), impossible de définir les bits de mode/autorisation. On allume cette option pour supprimer
+des avertissements pour vous informer de tels difficultés.
+
+
 outlet post|json|url (défaut: post)
 -----------------------------------
 

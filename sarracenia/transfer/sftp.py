@@ -56,7 +56,6 @@ class Sftp(Transfer):
         self.connected = False
         self.sftp = None
         self.ssh = None
-        self.fsetstat = True
         self.seek = True
 
         self.batch = 0
@@ -158,7 +157,7 @@ class Sftp(Transfer):
     def chmod(self, perm, path):
         logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
         alarm_set(self.o.timeout)
-        if self.fsetstat: 
+        if not self.o.nofsetstat: 
             try:
                 self.sftp.chmod(path, perm)
             except Exception as ex:
@@ -253,7 +252,6 @@ class Sftp(Transfer):
             self.host = url.hostname
             self.port = url.port
             self.user = url.username
-            self.fsetstat = not details.nofsetstat
             self.password = url.password
             self.ssh_keyfile = details.ssh_keyfile
 
@@ -492,7 +490,7 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         self.fpos = remote_offset + rw_length
-        if self.fsetstat and length != 0: 
+        if not self.o.nofsetstat and length != 0: 
             try:
                 rfp.truncate(self.fpos)
             except Exception as ex:
@@ -548,7 +546,7 @@ class Sftp(Transfer):
         logger.debug("sr_sftp utime %s %s " % (path, tup))
         alarm_set(self.o.timeout)
 
-        if self.fsetstat: 
+        if not self.o.nofsetstat: 
             try:
                 self.sftp.utime(path, tup)
             except Exception as ex:

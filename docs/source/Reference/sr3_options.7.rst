@@ -1240,6 +1240,18 @@ off and output with *post_exchangeSplit*, which route notification with the same
 the same member of a **second layer of subscribers (winnow) whose duplicate suppression caches 
 are active.**
 
+nofsetstat <off|on> (default: off)
+----------------------------------
+
+Error messages such as this::
+
+    [ERROR] sarracenia.flow send could not send /source/filename to inflight=None sftp://user@example.com/ /destination/filename: FSETSTAT unsupported
+
+Some SFTP servers will restrict permissions in ways which limit functionality. Cannot set modification times, or 
+truncate files (when new file is shorter than earlier version.), cannot set mode/permission bits.
+To avoid warnings or errors being generated about FSETSTAT, one can accept the limited functionality
+by setting **nofsetstat on**
+
 
 outlet post|json|url (default: post)
 ------------------------------------
