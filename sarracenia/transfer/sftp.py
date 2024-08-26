@@ -86,7 +86,7 @@ class Sftp(Transfer):
         logger.debug("then cd to %s" % path)
         self.sftp.chdir(path)
         self.pwd = path
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # cd forced
     def cd_forced(self, perm, path):
@@ -98,11 +98,11 @@ class Sftp(Transfer):
         self.sftp.chdir(self.originalDir)
         try:
             self.sftp.chdir(path)
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             return
         except:
             pass
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
         # need to create subdir
 
@@ -115,7 +115,7 @@ class Sftp(Transfer):
             try:
                 alarm_set(self.o.timeout)
                 self.sftp.chdir(d)
-                alarm_cancel()
+                alarm_cancel(self.o.timeout)
                 continue
             except:
                 pass
@@ -124,7 +124,7 @@ class Sftp(Transfer):
             alarm_set(self.o.timeout)
             self.sftp.mkdir(d, self.o.permDirDefault)
             self.sftp.chdir(d)
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
 
     def check_is_connected(self):
         logger.debug("sr_sftp check_is_connected")
@@ -151,7 +151,7 @@ class Sftp(Transfer):
             self.close()
             retval=False
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         return retval
 
     # chmod
@@ -164,7 +164,7 @@ class Sftp(Transfer):
             except Exception as ex:
                 logger.warning( f"chmod {path} failed: {ex}")
                 logging.debug("Exception details:", exc_info=True)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # close
     def close(self):
@@ -184,7 +184,7 @@ class Sftp(Transfer):
             old_ssh.close()
         except:
             pass
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # connect...
     def connect(self):
@@ -231,7 +231,7 @@ class Sftp(Transfer):
             self.connected = True
             self.sftp = sftp
 
-            #alarm_cancel()
+            #alarm_cancel(self.o.timeout)
             return True
 
         except:
@@ -239,7 +239,7 @@ class Sftp(Transfer):
                          (self.host, self.user))
             logger.debug('Exception details: ', exc_info=True)
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         return False
 
     # credentials...
@@ -306,7 +306,7 @@ class Sftp(Transfer):
         try:
             s = self.sftp.lstat(path)
         except:
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             return
 
         # proceed with file/link removal
@@ -319,13 +319,13 @@ class Sftp(Transfer):
             logger.debug("sr_sftp rmdir %s" % path)
             self.sftp.rmdir(path)
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     def readlink(self, link):
         logger.debug("%s" % (link))
         alarm_set(self.o.timeout)
         value = self.sftp.readlink(link)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         return value
 
     # symlink
@@ -333,7 +333,7 @@ class Sftp(Transfer):
         logger.debug("(in %s), create this file %s as a link to: %s" % (self.getcwd(), path, link) )
         alarm_set(self.o.timeout)
         self.sftp.symlink(link, path)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # get
 
@@ -352,7 +352,7 @@ class Sftp(Transfer):
         rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
         if remote_offset != 0: rfp.seek(remote_offset, 0)
         rfp.settimeout(1.0 * self.o.timeout)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
         # read from rfp and write to local_file
 
@@ -364,7 +364,7 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         rfp.close()
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
         return rw_length
 
@@ -391,7 +391,7 @@ class Sftp(Transfer):
     def getcwd(self):
         alarm_set(self.o.timeout)
         cwd = self.sftp.getcwd() if self.sftp else None
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         return cwd
 
     # ls
@@ -401,7 +401,7 @@ class Sftp(Transfer):
         # timeout is at least 30 secs, say we wait for max 5 mins
         alarm_set(self.o.timeout)
         dir_attr = self.sftp.listdir_attr()
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         for index in range(len(dir_attr)):
             attr = dir_attr[index]
             line = attr.__str__()
@@ -439,16 +439,16 @@ class Sftp(Transfer):
             if S_ISDIR(s.st_mode):
                 return
             logger.error( f"cannot mkdir {path}, file exists" )
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             return
         except FileNotFoundError:
             pass
         except:
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             return
 
         self.sftp.mkdir(remote_dir, self.o.permDirDefault)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # put
     def put(self,
@@ -482,7 +482,7 @@ class Sftp(Transfer):
             rfp.settimeout(1.0 * self.o.timeout)
             if remote_offset != 0: rfp.seek(remote_offset, 0)
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
         # read from local_file and write to rfp
 
@@ -500,7 +500,7 @@ class Sftp(Transfer):
                 logging.debug("Exception details:", exc_info=True)
 
         rfp.close()
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
         return rw_length
 
@@ -534,14 +534,14 @@ class Sftp(Transfer):
             pass
         alarm_set(self.o.timeout)
         self.sftp.rename(remote_old, remote_new)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # rmdir
     def rmdir(self, path):
         logger.debug("sr_sftp rmdir %s " % path)
         alarm_set(self.o.timeout)
         self.sftp.rmdir(path)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
 
     # utime
     def utime(self, path, tup):
@@ -555,4 +555,4 @@ class Sftp(Transfer):
                 logger.warning( f"utime {path} failed: {ex}")
                 logging.debug("Exception details:", exc_info=True)
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)

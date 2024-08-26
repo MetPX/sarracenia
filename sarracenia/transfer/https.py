@@ -239,7 +239,7 @@ class Https(Transfer):
             while True:
                 alarm_set(self.o.timeout)
                 chunk = self.http.read(self.o.bufsize)
-                alarm_cancel()
+                alarm_cancel(self.o.timeout)
                 if not chunk: break
                 if dbuf: dbuf += chunk
                 else: dbuf = chunk
@@ -339,7 +339,7 @@ class Https(Transfer):
 
             self.connected = True
 
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
 
             return True
 
@@ -348,21 +348,21 @@ class Https(Transfer):
             logger.error(
                 'Server couldn\'t fulfill the request. Error code: %s, %s' %
                 (e.code, e.reason))
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             self.connected = False
             raise
         except urllib.error.URLError as e:
             logger.error('Download failed 5 %s ' % self.urlstr)
             logger.error('Failed to reach server. Reason: %s' % e.reason)
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             self.connected = False
             raise
         except:
             logger.warning("unable to open %s" % self.urlstr)
             logger.debug('Exception details: ', exc_info=True)
             self.connected = False
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             raise
 
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         return False

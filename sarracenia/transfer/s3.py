@@ -30,7 +30,6 @@ import stat
 import json
 
 from sarracenia.transfer import Transfer
-from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
 import boto3, botocore
 from boto3.s3.transfer import TransferConfig

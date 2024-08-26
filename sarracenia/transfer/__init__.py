@@ -52,7 +52,11 @@ class TimeoutException(Exception):
 
 
 # alarm_cancel
-def alarm_cancel():
+def alarm_cancel(time):
+
+    if time <= 0:
+        return
+
     if sys.platform != 'win32':
         signal.alarm(0)
 
@@ -67,6 +71,10 @@ def alarm_set(time):
     """
        FIXME: replace with set itimer for > 1 second resolution... currently rouding to nearest second. 
     """
+
+    # shortcut to disable alarms if timeout set to zero.
+    if time <= 0:
+        return
 
     if sys.platform != 'win32':
         signal.signal(signal.SIGALRM, alarm_raise)
@@ -289,14 +297,14 @@ class Transfer():
 
         if length == 0:
             while True:
-                if self.o.timeout: alarm_set(self.o.timeout)
+                alarm_set(self.o.timeout)
                 chunk = src.read(self.o.bufsize)
                 if chunk:
                     new_chunk = self.on_data(chunk)
                     rw_length += len(new_chunk)
                     dst.write(new_chunk)
                     self.logProgress(rw_length)
-                alarm_cancel()
+                alarm_cancel(self.o.timeout)
                 if not chunk: break
                 if self.sumalgo: self.sumalgo.update(chunk)
                 self.throttle(chunk)
@@ -311,14 +319,14 @@ class Transfer():
 
         i = 0
         while i < nc:
-            if self.o.timeout: alarm_set(self.o.timeout)
+            alarm_set(self.o.timeout)
             chunk = src.read(self.o.bufsize)
             if chunk:
                 new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
                 self.logProgress(rw_length)
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             if not chunk: break
             if self.sumalgo: self.sumalgo.update(chunk)
             self.throttle(chunk)
@@ -327,14 +335,14 @@ class Transfer():
         # remaining
 
         if r > 0:
-            if self.o.timeout: alarm_set(self.o.timeout)
+            alarm_set(self.o.timeout)
             chunk = src.read(r)
             if chunk:
                 new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
                 dst.write(new_chunk)
                 self.logProgress(rw_length)
-            alarm_cancel()
+            alarm_cancel(self.o.timeout)
             if self.sumalgo: self.sumalgo.update(chunk)
             self.throttle(chunk)
 
@@ -455,15 +463,15 @@ class Transfer():
     def write_chunk(self, chunk):
         if self.chunk_iow: self.chunk_iow.write(chunk)
         self.rw_length += len(chunk)
-        alarm_cancel()
+        alarm_cancel(self.o.timeout)
         self.logProgress(self.rw_length)
         if self.sumalgo: self.sumalgo.update(chunk)
         self.throttle(chunk)
-        if self.o.timeout: alarm_set(self.o.timeout)
+        alarm_set(self.o.timeout)
 
     # write_chunk_end
     def write_chunk_end(self):
-        alarm_cancel()
+        alarm_cancel(self.o.timeout) 
         self.chunk_iow = None
         return self.rw_length
 
@@ -474,7 +482,7 @@ class Transfer():
         self.tbegin = nowflt()
         self.lastLog = self.tbegin
         self.rw_length = 0
-        if self.o.timeout: alarm_set(self.o.timeout)
+        alarm_set(self.o.timeout)
 
     def gethttpsUrl(self, path):
         return None
