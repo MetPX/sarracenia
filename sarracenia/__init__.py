@@ -500,6 +500,7 @@ class Message(dict):
     def deriveSource(msg,o):
         """
            set msg['source'] field as appropriate for given message and options (o)
+           This is used on message receipt to set up fields prior to processing.
         """
         source=None
         if 'source' in o:
@@ -518,11 +519,12 @@ class Message(dict):
             msg['source'] = source
             msg['_deleteOnPost'] |= set(['source'])
 
-    def deriveTopics(msg,o,topic,separator='.'):
+    def deriveTopics(msg,o,inbound_topic,separator='.'):
         """
-            derive subtopic, topicPrefix, and topic fields based on message and options.
+            derive subtopic, topicPrefix, and inbound_topic fields based on message and options.
+            This is used on message receipt to set up fields prior to processing.
         """
-        msg_topic = topic.split(separator)
+        msg_topic = inbound_topic.split(separator)
         # topic validation... deal with DMS topic scheme. https://github.com/MetPX/sarracenia/issues/1017
         if 'topicCopy' in o and o['topicCopy']:
             topicOverride=True
@@ -541,7 +543,7 @@ class Message(dict):
                 topicOverride=True
 
         if topicOverride:
-            msg['topic'] = topic
+            msg['topic'] = inbound_topic
             msg['_deleteOnPost'] |= set( ['topic'] )
 
 
