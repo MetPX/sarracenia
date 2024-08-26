@@ -169,10 +169,14 @@ class Sftp(Transfer):
     def chmod(self, perm, path):
         logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
         alarm_set(self.o.timeout)
-        try:
-            self.sftp.chmod(path, perm)
-        finally:
-            alarm_cancel()
+        if not self.o.nofsetstat: 
+            try:
+                self.sftp.chmod(path, perm)
+            except Exception as ex:
+                logger.warning( f"chmod {path} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
+            finally:
+                alarm_cancel()
 
     # close
     def close(self):
@@ -510,12 +514,17 @@ class Sftp(Transfer):
         # no sparse file... truncate where we are at
 
         alarm_set(self.o.timeout)
+        self.fpos = remote_offset + rw_length
+        if not self.o.nofsetstat and length != 0: 
+            try:
+                rfp.truncate(self.fpos)
+            except Exception as ex:
+                logger.warning( f"truncate {remote_file} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
         try:
-            self.fpos = remote_offset + rw_length
-            if length != 0: rfp.truncate(self.fpos)
             rfp.close()
         finally:
-           alarm_cancel()
+            alarm_cancel()
 
         return rw_length
 
@@ -573,7 +582,12 @@ class Sftp(Transfer):
     def utime(self, path, tup):
         logger.debug("sr_sftp utime %s %s " % (path, tup))
         alarm_set(self.o.timeout)
-        try:
-            self.sftp.utime(path, tup)
-        finally:
-            alarm_cancel()
+
+        if not self.o.nofsetstat: 
+            try:
+                self.sftp.utime(path, tup)
+            except Exception as ex:
+                logger.warning( f"utime {path} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
+            finally:
+                alarm_cancel()
