@@ -93,12 +93,12 @@ class V03(PostFormat):
         return msg
 
     @staticmethod
-    def exportMine(body,options) -> (str, dict, str):
+    def exportMine(body,options,topicOverride=None) -> (str, dict, str):
         """
            given a v03 (internal) message, produce an encoded version.
        """
         raw_body = json.dumps(body)
 
-        headers = { 'topic': PostFormat.topicDerive(body,options) }
+        headers = { 'topic': PostFormat.topicDerive(body,options,topicOverride) }
 
         return raw_body, headers, V03.content_type()
