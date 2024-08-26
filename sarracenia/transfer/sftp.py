@@ -56,6 +56,7 @@ class Sftp(Transfer):
         self.connected = False
         self.sftp = None
         self.ssh = None
+        self.fsetstat = True
         self.seek = True
 
         self.batch = 0
@@ -141,21 +142,28 @@ class Sftp(Transfer):
             return False
 
         # really connected, getcwd would not work, send_ignore would not work... so chdir used
+        alarm_set(self.o.timeout)
+
+        retval=True
         try:
-            alarm_set(self.o.timeout)
             self.sftp.chdir(self.originalDir)
-            alarm_cancel()
         except:
             self.close()
-            return False
+            retval=False
 
-        return True
+        alarm_cancel()
+        return retval
 
     # chmod
     def chmod(self, perm, path):
         logger.debug("sr_sftp chmod %s %s" % ("{0:o}".format(perm), path))
         alarm_set(self.o.timeout)
-        self.sftp.chmod(path, perm)
+        if self.fsetstat: 
+            try:
+                self.sftp.chmod(path, perm)
+            except Exception as ex:
+                logger.warning( f"chmod {path} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
         alarm_cancel()
 
     # close
@@ -245,6 +253,7 @@ class Sftp(Transfer):
             self.host = url.hostname
             self.port = url.port
             self.user = url.username
+            self.fsetstat = not details.nofsetstat
             self.password = url.password
             self.ssh_keyfile = details.ssh_keyfile
 
@@ -483,7 +492,13 @@ class Sftp(Transfer):
 
         alarm_set(self.o.timeout)
         self.fpos = remote_offset + rw_length
-        if length != 0: rfp.truncate(self.fpos)
+        if self.fsetstat and length != 0: 
+            try:
+                rfp.truncate(self.fpos)
+            except Exception as ex:
+                logger.warning( f"truncate {remote_file} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
+
         rfp.close()
         alarm_cancel()
 
@@ -532,5 +547,12 @@ class Sftp(Transfer):
     def utime(self, path, tup):
         logger.debug("sr_sftp utime %s %s " % (path, tup))
         alarm_set(self.o.timeout)
-        self.sftp.utime(path, tup)
+
+        if self.fsetstat: 
+            try:
+                self.sftp.utime(path, tup)
+            except Exception as ex:
+                logger.warning( f"utime {path} failed: {ex}")
+                logging.debug("Exception details:", exc_info=True)
+
         alarm_cancel()

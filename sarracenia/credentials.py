@@ -95,6 +95,7 @@ class Credential:
         self.ssh_keyfile = None
         self.passive = True
         self.binary = True
+        self.nofsetstat = False
         self.tls = False
         self.prot_p = False
         self.bearer_token = None
@@ -370,6 +371,8 @@ class CredentialDB:
                     details.binary = True
                 elif keyword == 'ascii':
                     details.binary = False
+                elif keyword == 'nofsetstat':
+                    details.nofsetstat = True
                 elif keyword == 'ssl':
                     details.tls = False
                 elif keyword == 'tls':
