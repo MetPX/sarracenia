@@ -43,7 +43,7 @@ import traceback
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str
+from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str, durationToString
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -2638,9 +2638,9 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%5d %3d%% %3d%% %5d %7.2fs %7.2fs %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
+                    lfmt = f"%5d %3d%% %3d%% %5d %8s %8s %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
                     line += lfmt % ( m['retry'], m['connectPercent'], m['byteConnectPercent'], \
-                            m['messagesQueued'], m['lagMax'], m['lagMean'], m['latestTransfer'], m['rejectPercent'],\
+                            m['messagesQueued'], durationToString(m['lagMax']), durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['byteRate']).replace("Bytes","B"), \
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
                             naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
