@@ -322,9 +322,8 @@ def durationToString(d) -> str:
     first_part= humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
 
     second_part=""
-    print( f"{d=} {first_part=}" )
     if first_part[-1] == 'm':
-        rem=d-int(first_part[0:-1])*60 
+        rem=int(d-int(first_part[0:-1])*60)
         if rem > 0:
             second_part=f"{rem:d}s"
     if first_part[-1] == 'h':

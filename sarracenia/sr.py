@@ -988,26 +988,9 @@ class sr_GlobalState:
     
                         m['latestTransfer'] = "n/a"
                         if "transferLast" in m and m['transferLast'] > 0:
-                            v=now - m['transferLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
+                            m['latestTransfer'] = durationToString(now - m['transferLast'])
                         elif "messageLast" in m:
-                            v=now - m['messageLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
-
+                            m['messageLast'] = durationToString(now - m['messageLast'])
                         
                         if len(m['latestTransfer']) > self.cumulative_stats['latestTransferWidth']:
                             self.cumulative_stats['latestTransferWidth'] = len(m['latestTransfer'])
