@@ -97,19 +97,19 @@ class PostFormat:
             topic_separator='.'
 
         if topicOverride:
-            if topicOverride is list:
-                topic = topicOverride
-            else:
-                topic = topicOverride.split(topic_separator)
-        elif 'topic' in options and options['topic'] and (type(options['topic']) is not list):
-            topic = options['topic'].split(topic_separator)
+            topic = topicOverride
+        elif 'topic' in options and options['topic']:
+            topic = options['topic']
+        elif 'relPath' in msg: 
+            topic = topic_prefix + msg['relPath'].split('/')[0:-1]
+        elif 'subtopic' in msg:
+            topic = topic_prefix + msg['subtopic']  
         else:
-            if 'relPath' in msg: 
-                topic = topic_prefix + msg['relPath'].split('/')[0:-1]
-            elif 'subtopic' in msg:
-                topic = topic_prefix + msg['subtopic']  
-            else:
-                topic = topic_prefix
+            topic = topic_prefix
+         
+        if type(topic) is not list:
+            topic = topic.split(topic_separator)
+
         return topic
 
    
