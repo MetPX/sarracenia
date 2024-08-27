@@ -1058,7 +1058,7 @@ class sr_GlobalState:
     
                             self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                         if m["rxGoodCount"] > 0:
-                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/(m['rxGoodCount']+m['rxBadCount']))*100
                             if m['rejectPercent'] > 100:
                                 m['rejectPercent']=100
                         else:
