@@ -2035,11 +2035,12 @@ a topicPrefix, followed by subtopics derived from the *relPath* field of the mes
 Some networks may choose to use different topic conventions, external to sarracenia.
 
 
-timeout <interval> (default: 0)
+timeout <interval> (default: 300)
 -------------------------------
 
 The **timeout** option, sets the number of seconds to wait before aborting a
 connection or download transfer (applied per buffer during transfer).
+Setting to zero disables timeouts.
 
 
 timezone <string> (default: UTC)

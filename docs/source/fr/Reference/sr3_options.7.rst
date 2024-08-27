@@ -2007,11 +2007,12 @@ source et la destination sont comparés.
 
 Lorsqu’il est défini dans un composant de publication, les en-têtes *atime* et *mtime* des messages d'annonce sont éliminés.
 
-timeout <intervalle> (défaut: 0)
+timeout <intervalle> (défaut: 300)
 --------------------------------
 
 L’option **timeout** définit le nombre de secondes à attendre avant d’interrompre un
 transfert de connexion ou de téléchargement (appliqué pendant le transfert).
+On peut désactiver les **timeout** avec 0 comme intervalle.
 
 timezone <chaine> (défaut: UTC)
 --------------------------------
