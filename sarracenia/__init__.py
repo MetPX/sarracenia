@@ -319,7 +319,23 @@ def durationToString(d) -> str:
     if (d < 60):
         return f"{d:7.2f}s"
 
-    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
+    first_part= humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
+
+    second_part=""
+    print( f"{d=} {first_part=}" )
+    if first_part[-1] == 'm':
+        rem=d-int(first_part[0:-1])*60 
+        if rem > 0:
+            second_part=f"{rem:d}s"
+    if first_part[-1] == 'h':
+        rem=int(( d-int(first_part[0:-1])*60*60 ) / 60 )
+        if rem > 0:
+            second_part=f"{rem:d}m"
+    if first_part[-1] == 'd':
+        rem=int (( d-int(first_part[0:-1])*60*60*24 ) / (60*60) )
+        if rem > 0:
+            second_part=f"{rem:d}h"
+    return first_part+second_part 
 
 def durationToSeconds(str_value, default=None) -> float:
     """
