@@ -96,7 +96,7 @@ class PostFormat:
             topic_prefix = options['topicPrefix']
             topic_separator='.'
 
-        if topicOverride in msg:
+        if topicOverride:
             if topicOverride is list:
                 topic = topicOverride
             else:
