@@ -677,7 +677,7 @@ class AMQP(Moth):
             else:
                 exchange = self.o['exchange']
 
-        if self.o['message_ttl']:
+        if self.o['messageAgeMax']:
             ttl = "%d" * int(
                 sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
         else:
