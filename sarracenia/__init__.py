@@ -359,17 +359,45 @@ def durationToSeconds(str_value, default=None) -> float:
     if default and str_value.lower() in [ 'on', 'true' ]:
         return float(default)
 
-    if str_value[-1] in 'sS': factor *= 1
-    elif str_value[-1] in 'mM': factor *= 60
-    elif str_value[-1] in 'hH': factor *= 60 * 60
-    elif str_value[-1] in 'dD': factor *= 60 * 60 * 24
-    elif str_value[-1] in 'wW': factor *= 60 * 60 * 24 * 7
+    first_unit=None
+    second_unit=str_value[-1].lower()
+    if second_unit in 's': 
+        factor *= 1
+        first_unit='m'
+    elif second_unit in 'm': 
+        factor *= 60
+        first_unit='h'
+    elif second_unit in 'h': 
+        factor *= 60 * 60
+        first_unit='d'
+    elif second_unit in 'd': 
+        factor *= 60 * 60 * 24
+        first_unit='w'
+    elif second_unit in 'w': 
+        factor *= 60 * 60 * 24 * 7
+
     if str_value[-1].isalpha(): str_value = str_value[:-1]
 
+    if first_unit and first_unit in str_value: # two unit duration.
+        (big, little) = str_value.split(first_unit)
+        if big.isnumeric():
+            big = int(big)
+            if first_unit == 'm':
+                 big = big*60
+            elif first_unit == 'h':
+                 big = big*60*60
+            elif first_unit == 'd':
+                 big = big*60*60*24
+            elif first_unit == 'w':
+                 big = big*60*60*24*7
+            str_value = little
+    else: 
+        big=0
+
     try:
-        duration = float(str_value) * factor
+        duration = big + float(str_value) * factor
     except:
-        logger.error("conversion failed for: %s" % str_value)
+        logger.error( f"conversion failed for: +{str_value}+" )
         duration = 0.0
 
     return duration
