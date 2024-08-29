@@ -188,8 +188,6 @@ class sr_ftp(sr_proto):
 
                 if not self.tls :
                    ftp = ftplib.FTP()
-                   # in 2021, better to assume utf-8 rather than iso8859-1
-                   ftp.encoding='utf-8'
                    ftp.connect(self.host,self.port,timeout=expire)
                    ftp.login(self.user, unquote(self.password) )
                 else :
