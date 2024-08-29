@@ -637,7 +637,7 @@ class Config:
 
        it can be instantiated with one of:
 
-       * one_config(component, config, action, isPost=False) -- read the options  for
+       * one_config(component, config, action, isPost=False, hostdir=None) -- read the options  for
          a given component an configuration,  (all in one call.)
 
        On the other hand, a configu can be built up from the following constructors:
@@ -1809,6 +1809,16 @@ class Config:
 
         self.queue_filename = queuefile
 
+        if not hasattr(self, 'old_subscriptions'):
+            self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
+            self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+
+        if hasattr(self, 'old_subscriptions') and self.old_subscriptions:
+            for s in self.old_subscriptions:
+                if self.broker == s['broker']:
+                    logger.info( f" {s['queue']['name']=} ")
+                    return s['queue']['name']
+
         #while (not hasattr(self, 'queueName')) or (self.queueName is None):
         """
 
@@ -1845,7 +1855,7 @@ class Config:
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
     
-            # lead instance shou
+            # lead instance should
             if not self.__queue_file_read and os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
                 queueName = f.read()
@@ -2030,7 +2040,7 @@ class Config:
                 self.subscriptions.append(Subscription(self, self.queueName, '#'))
 
             # read old subscriptions, compare to current.
-            old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+            #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
         
         if self.action in [ 'start', 'foreground', 'declare' ] and \
                 (not hasattr(self,'no') or self.no < 2) and  \
@@ -2768,7 +2778,7 @@ def no_file_config():
     return cfg
 
 
-def one_config(component, config, action, isPost=False):
+def one_config(component, config, action, isPost=False, hostDir=None):
     """
       single call return a fully parsed single configuration for a single component to run.
 
@@ -2794,6 +2804,9 @@ def one_config(component, config, action, isPost=False):
 
     cfg = copy.deepcopy(default_cfg)
 
+    if hostDir:
+        cfg.hostdir = hostDir
+
     cfg.applyComponentDefaults( component )
 
     store_pwd = os.getcwd()
@@ -2805,6 +2818,10 @@ def one_config(component, config, action, isPost=False):
         fname = os.path.expanduser(config + '.conf')
     else:
         fname = os.path.expanduser(config)
+
+    #FIXME parse old subscriptions here.
+    cfg.subscriptionsPath=cfg._getSubscriptionsFileName(cfg.component,cfg.config)
+    cfg.old_subscriptions=cfg.subscriptions.read(cfg, cfg.subscriptionsPath)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)

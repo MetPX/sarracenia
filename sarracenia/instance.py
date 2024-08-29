@@ -236,7 +236,7 @@ class instance:
         with open(pidfilename, 'w') as pfn:
             pfn.write('%d' % os.getpid())
 
-        cfg = sarracenia.config.one_config(component, config, cfg_preparse.action)
+        cfg = sarracenia.config.one_config(component, config, cfg_preparse.action, isPost=False, hostDir=hostdir)
 
         cfg.novipFilename = pidfilename.replace(".pid", ".noVip")
 
