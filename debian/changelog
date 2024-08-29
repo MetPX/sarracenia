@@ -1,6 +1,6 @@
-metpx-sarracenia (2.24.08post1) UNRELEASED; urgency=medium
+metpx-sarracenia (2.24.08post2) unstable; urgency=medium
 
-  * 
+  * revert utf-8 ftp charset. #1198 
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 22 Aug 2024 12:25:11 -0400
 
