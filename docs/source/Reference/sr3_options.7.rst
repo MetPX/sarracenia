@@ -881,6 +881,14 @@ NOTE::
   **KNOWN LIMITATION**: When *force_polling* is set, the *sleep* setting should be
   at least 5 seconds. It is not currently clear why.
 
+ftpFilenameEncoding <str> (default: utf-8)
+------------------------------------------
+
+When connecting to a FTP file server, the charset used to encode file names (as returned by the ls command, for example)
+can be different. This option provides ability to override the default. **latin-1** is sometimes needed to
+connect to older servers. (option fed to python ftplib, see documentation on that library for more information.)
+
+
 header <name>=<value>
 ---------------------
 
