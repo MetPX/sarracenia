@@ -62,8 +62,8 @@ empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 'transferLast': 0,
-        'connectPercent': 0, 'byteConnectPercent': 0
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
+        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
         }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
@@ -989,8 +989,8 @@ class sr_GlobalState:
                         m['latestTransfer'] = "n/a"
                         if "transferLast" in m and m['transferLast'] > 0:
                             m['latestTransfer'] = durationToString(now - m['transferLast'])
-                        elif "messageLast" in m:
-                            m['messageLast'] = durationToString(now - m['messageLast'])
+                        elif "messageLast" in m and m['messageLast'] > 0:
+                            m['latestTransfer'] = durationToString(now - m['messageLast'])
                         
                         if len(m['latestTransfer']) > self.cumulative_stats['latestTransferWidth']:
                             self.cumulative_stats['latestTransferWidth'] = len(m['latestTransfer'])
