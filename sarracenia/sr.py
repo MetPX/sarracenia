@@ -2394,7 +2394,7 @@ class sr_GlobalState:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         p=self.states[c][cfg]['instance_pids'][i]
-                        print( f"signal_pid( {p}, SIGKILL )")
+                        print( f"signal_pid( {p} \"{' '.join(self.procs[p]['cmdline'])}\", SIGKILL )")
                         signal_pid(p, signal.SIGKILL)
                         pids_signalled |= set([p])
                         print('.', end='')
