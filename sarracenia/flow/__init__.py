@@ -2215,11 +2215,11 @@ class Flow:
                             else:
                                 mtime = sarracenia.timestr2flt(msg['pubTime'])
 
-                            if current_stat and current_stat.st_mtime > mtime:
+                            if current_stat and current_stat.st_mtime and current_stat.st_mtime > mtime:
                                 logger.info( f'upstream resource is newer, so message {msg.getIDStr()} is obsolete. Discarding.' )
                                 retval=-1
-                            elif current_stat and current_stat.st_size == len_written:
-                                logger.info( f'download matches upstream source, {msg.getIDStr()} but not announcement. Discarding.' )
+                            elif current_stat and current_stat.st_size and current_stat.st_size == len_written:
+                                logger.info( f'matches upstream source, {msg.getIDStr()} but not announcement. Discarding.' )
                                 retval=-1 
                             else:
                                 logger.error( f"unexplained size discrepancy in {msg.getIDStr()}, will retry later" )
