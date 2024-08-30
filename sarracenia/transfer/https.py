@@ -34,9 +34,23 @@ from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
 import urllib.error, urllib.parse, urllib.request
 from urllib.parse import unquote
+from urllib.request import HTTPRedirectHandler 
 
 logger = logging.getLogger(__name__)
 
+class HTTPRedirectHandlerSameMethod(HTTPRedirectHandler):
+    """ Instead of returning a new Request without a method (defaults to GET), use the 
+        same method in the new Request.
+        https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections note [2]
+    """
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        orig_method = req.get_method()
+        new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
+        new_req.method = orig_method
+        logger.debug(f"redirect from {req.get_method()} {req.get_full_url()} "
+                     + f"to {new_req.get_method()} {new_req.get_full_url()}")
+        return new_req
 
 class Https(Transfer):
     """
@@ -209,6 +223,7 @@ class Https(Transfer):
         self.http = None
         self.details = None
         self.seek = True
+        self.opener = None
 
         self.urlstr = ''
         self.path = ''
@@ -260,14 +275,33 @@ class Https(Transfer):
 
         return dbuf
 
+    def __url_redir_str(self):
+        """ Returl self.urlstr, unless the request was redirected to a different URL.
+            If so, it will return 'self.urlstr redirected to new_url'
+        """
+        redir_msg = self.urlstr
+        try:
+            actual_url = self.http.geturl()
+            if actual_url != self.urlstr:
+                redir_msg = redir_msg + f" redirected to {actual_url}"
+        except:
+            pass
+        return redir_msg
+
     # open
-    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None):
-        logger.debug( f"{path}")
+    def __open__(self, path, remote_offset=0, length=0, method:str=None, add_headers:dict=None, handlers:list=[]) -> bool:
+        """ Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be
+            read from like a file.
+
+            Returns True when successfully opened, False if there was a problem.
+        """
+        logger.debug( f"{path} " + (method if method else ''))
 
         self.http = None
         self.connected = False
         self.req = None
         self.urlstr = path
+        self.opener = None 
 
         # have noticed that some site does not allow // in path
         if path.startswith('http://') and '//' in path[7:]:
@@ -279,16 +313,25 @@ class Https(Transfer):
         alarm_set(self.o.timeout)
 
         try:
-            # when credentials are needed.
             headers = {'user-agent': 'Sarracenia ' + sarracenia.__version__}
+            
+            # Bearer token credential is passed as a header
             if self.bearer_token:
                 logger.debug('bearer_token: %s' % self.bearer_token)
                 headers['Authorization'] = 'Bearer ' + self.bearer_token
+
+            # set range in byte if needed
+            if remote_offset != 0:
+                str_range = 'bytes=%d-%d' % (remote_offset, remote_offset + length - 1)
+                headers['Range'] = str_range
+            
+            # add everything from add_headers dict into headers dict. if anything in add_headers already
+            # exists in headers, the values from add_headers will replace the values in headers.
+            # This is done last to allow add_headers values to override Range/Authorization.
             if add_headers:
-                # add everything from add_headers dict into headers dict. if anything in add_headers already
-                # exists in headers, the values from add_headers will replace the values in headers.
                 headers.update(add_headers)
 
+            # username and password credentials
             if self.user != None:
                 password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
                 # takeaway credentials info from urlstr
@@ -299,57 +342,44 @@ class Https(Transfer):
                     self.urlstr = self.urlstr.replace(cred, '')
 
                 # continue with authentication
-                password_mgr.add_password(None, self.urlstr, self.user,
-                                          unquote(self.password))
-                auth_handler = urllib.request.HTTPBasicAuthHandler(
-                    password_mgr)
+                password_mgr.add_password(None, self.urlstr, self.user, unquote(self.password))
+                auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+                handlers.append(auth_handler)
 
-                #hctx = ssl.create_default_context()
-                #hctx.check_hostname = False
-                #hctx.verify_mode = ssl.CERT_NONE
-                ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
+            ssl_handler = urllib.request.HTTPSHandler(0, self.tlsctx)
+            handlers.append(ssl_handler)
 
-                # create "opener" (OpenerDirector instance)
-                opener = urllib.request.build_opener(auth_handler, ssl_handler)
+            # create "opener" (OpenerDirector instance)
+            self.opener = urllib.request.build_opener(*handlers)
 
-                # use the opener to fetch a URL
-                opener.open(self.urlstr)
-
-                # Install the opener.
-                urllib.request.install_opener(opener)
-
-            # Now all calls to get the request use our opener.
+            # Install the opener. Now all calls to get the request use our opener.
+            # NOTE not necessary since we call opener.open directly. Install only needed if we want to use urlopen.
+            # urllib.request.install_opener(opener)
+ 
+            # Build the request that will get opened. If None is passed to method it defaults to GET.
             self.req = urllib.request.Request(self.urlstr, headers=headers, method=method)
-
-            # set range in byte if needed
-            if remote_offset != 0:
-                str_range = 'bytes=%d-%d' % (remote_offset,
-                                             remote_offset + length - 1)
-                self.req.headers['Range'] = str_range
-
-            # https without user : create/use an ssl context
-            ctx = None
-            if self.user == None and self.urlstr.startswith('https'):
-                ctx = self.tlsctx
-                #ctx.check_hostname = False
-                #ctx.verify_mode = ssl.CERT_NONE
 
             # open... we are connected
             if self.timeout == None:
-                self.http = urllib.request.urlopen(self.req, context=ctx)
+                # when timeout is not passed, urllib defaults to socket._GLOBAL_DEFAULT_TIMEOUT
+                self.http = self.opener.open(self.req)
             else:
-                self.http = urllib.request.urlopen(self.req,
-                                                   timeout=self.timeout,
-                                                   context=ctx)
+                self.http = self.opener.open(self.req, timeout=self.timeout)
+
+            # knowing if we got redirected is useful for debugging
+            try:
+                actual_url = self.http.geturl()
+                if actual_url != self.urlstr:
+                    logger.debug(f"{self.urlstr} redirected to {actual_url}")
+            except:
+                pass
 
             self.connected = True
-
             alarm_cancel()
-
-            return True
+            return self.connected
 
         except urllib.error.HTTPError as e:
-            logger.error('Download failed 4 %s ' % self.urlstr)
+            logger.error(f'failed 4 {self.__url_redir_str()}')
             logger.error(
                 'Server couldn\'t fulfill the request. Error code: %s, %s' %
                 (e.code, e.reason))
@@ -357,13 +387,13 @@ class Https(Transfer):
             self.connected = False
             raise
         except urllib.error.URLError as e:
-            logger.error('Download failed 5 %s ' % self.urlstr)
+            logger.error(f'failed 5 {self.__url_redir_str()}')
             logger.error('Failed to reach server. Reason: %s' % e.reason)
             alarm_cancel()
             self.connected = False
             raise
         except:
-            logger.warning("unable to open %s" % self.urlstr)
+            logger.error(f'unable to open {self.__url_redir_str()}')
             logger.debug('Exception details: ', exc_info=True)
             self.connected = False
             alarm_cancel()
@@ -374,7 +404,7 @@ class Https(Transfer):
     
     def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
         st = sarracenia.filemetadata.FmdStat()
-        #logger.debug( f" baseUrl:{msg['baseUrl']}, path:{self.path}, cwd:{self.cwd}, path:{path} " )
+        # logger.debug( f" baseUrl:{msg['baseUrl']}, path:{self.path}, cwd:{self.cwd}, path:{path} " )
 
         url = msg['baseUrl']
         if msg['baseUrl'][-1] != '/' and self.path[0] != '/' :
@@ -384,20 +414,17 @@ class Https(Transfer):
             url += '/' 
         url += path
 
-        ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'})
+        # Default HTTPRedirectHandler may change a HEAD request to a GET when following the redirect.
+        handlers = [ HTTPRedirectHandlerSameMethod() ]
+        ok = self.__open__(url, method='HEAD', add_headers={'Accept-Encoding': 'identity'}, handlers=handlers)
         if not ok:
+            logger.debug(f"failed")
             return None
-        status_code =  self.http.getcode()
+        status_code = self.http.getcode()
         if status_code != 200:
+            logger.debug(f"status code {status_code}")
             return None
-
-        # POSSIBLE PROBLEM: if the server redirects the URL we requested, then the method will be ignored and we'll
-        # end up doing a GET, which is a waste of bandwidth and slower.
-        # Discussion here: https://stackoverflow.com/a/29327717
-        # https://github.com/python/cpython/blob/6e6855950a1891713369a6cdc84670c38d9388f0/Lib/urllib/request.py#L678-L681
-        # Need to confirm if this is (still) true, then probably need to subclass HTTPRedirectHandler to do a HEAD request
-        # any time we get redirected. Requests automatically handled this for us :-(
-
+        
         have_metadata = False
         try:
             # Content-Length: 9659
@@ -405,14 +432,14 @@ class Https(Transfer):
             have_metadata = True
         except:
             pass
-
         try: 
             # Last-Modified: Thu, 22 Aug 2024 20:37:53 GMT
             lm = self.http.getheader('Last-Modified')
             lm = datetime.datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S GMT').timestamp()
-            st.st_atime = lm
-            st.st_mtime = lm
-            have_metadata = True
+            if lm:
+                st.st_atime = lm
+                st.st_mtime = lm
+                have_metadata = True
         except:
             pass
 
@@ -420,5 +447,10 @@ class Https(Transfer):
             return st
         else:
             logger.warning(f"failed, HEAD request returned {status_code} but metadata was not available for {url}")
+            try:
+                result = str(self.http.info()).replace('\n', ' , ').strip()
+            except Exception as e:
+                result = e
+            logger.debug(f"HEAD request for {self.__url_redir_str()} result: {result}")
 
         return None
