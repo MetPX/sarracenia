@@ -171,7 +171,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
-size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
+size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
@@ -703,6 +703,8 @@ class Config:
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
         'bind_queue': 'queueBind',
+        'blocksize': 'blockSize', 
+        'bufsize': 'bufSize',
         'cache': 'nodupe_ttl',
         'c': 'include',
         'cb': 'nodupe_basis',
@@ -832,7 +834,7 @@ class Config:
             for i in parent:
                 setattr(self, i, parent[i])
 
-        self.bufsize = 1024 * 1024
+        self.bufSize = 1024 * 1024
         self.byteRateMax = 0
 
         self.fileAgeMax = 0 # disabled.
@@ -854,6 +856,7 @@ class Config:
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
+        self.fileSizeMax = 0
         self.filename = None
         self.fixed_headers = {}
         self.flatten = '/'
@@ -2501,7 +2504,7 @@ class Config:
                             nargs='?',
                             help='how many transfers per each connection')
         parser.add_argument(
-            '--blocksize',
+            '--blockSize',
             type=int,
             nargs='?',
             help=

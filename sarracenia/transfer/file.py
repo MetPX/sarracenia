@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 #           options.permDefault
 #           options.permDirDefault
 #     opt   options.byteRateMax
-#     opt   options.bufsize
+#     opt   options.bufSize
 
 
 class File(Transfer):
@@ -161,6 +161,12 @@ class File(Transfer):
     def getcwd(self):
         return self.cwd
 
+    def stat(self,path,message=None):
+        spath = path if path[0] == '/' else self.path + '/' + path
+        try:
+             return sarracenia.stat(spath)
+        except:
+             return None
     # ls
     def ls(self):
         logger.debug("sr_file ls")
@@ -191,7 +197,7 @@ def file_insert(options, msg):
     fp = open(msg['relPath'], 'rb')
     if msg.partflg == 'i': fp.seek(msg['offset'], 0)
 
-    ok = file_write_length(fp, msg, options.bufsize, msg.filesize, options)
+    ok = file_write_length(fp, msg, options.bufSize, msg.filesize, options)
 
     fp.close()
 

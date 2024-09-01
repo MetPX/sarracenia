@@ -25,6 +25,7 @@ import logging, paramiko, os, subprocess, sys, time
 from paramiko import *
 from stat import *
 
+import sarracenia
 from sarracenia.transfer import Transfer
 from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 from urllib.parse import unquote
@@ -340,7 +341,7 @@ class Sftp(Transfer):
             (remote_file, local_file, remote_offset, local_offset, length, exactLength))
 
         alarm_set(2 * self.o.timeout)
-        rfp = self.sftp.file(remote_file, 'rb', self.o.bufsize)
+        rfp = self.sftp.file(remote_file, 'rb', self.o.bufSize)
         if remote_offset != 0: rfp.seek(remote_offset, 0)
         rfp.settimeout(1.0 * self.o.timeout)
         alarm_cancel()
@@ -458,7 +459,7 @@ class Sftp(Transfer):
         alarm_set(2 * self.o.timeout)
 
         if length == 0:
-            rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
+            rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
             rfp.settimeout(1.0 * self.o.timeout)
 
         # parts
@@ -466,10 +467,10 @@ class Sftp(Transfer):
             try:
                 self.sftp.stat(remote_file)
             except:
-                rfp = self.sftp.file(remote_file, 'wb', self.o.bufsize)
+                rfp = self.sftp.file(remote_file, 'wb', self.o.bufSize)
                 rfp.close()
 
-            rfp = self.sftp.file(remote_file, 'r+b', self.o.bufsize)
+            rfp = self.sftp.file(remote_file, 'r+b', self.o.bufSize)
             rfp.settimeout(1.0 * self.o.timeout)
             if remote_offset != 0: rfp.seek(remote_offset, 0)
 
@@ -527,6 +528,13 @@ class Sftp(Transfer):
         alarm_set(self.o.timeout)
         self.sftp.rmdir(path)
         alarm_cancel()
+
+    #when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.
+    def stat(self, path, msg=None) -> sarracenia.filemetadata.FmdStat:
+        try:
+            return self.sftp.stat(path)
+        except:
+            return None
 
     # utime
     def utime(self, path, tup):
