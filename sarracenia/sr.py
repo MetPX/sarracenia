@@ -2346,16 +2346,17 @@ class sr_GlobalState:
         attempts_max = 5
         now = time.time()
 
+        running_pids = len(pids_signalled)
         while attempts < attempts_max:
             for pid in self.procs:
                 if (not self.procs[pid]['claimed']) and (
-                    (now - self.procs[pid]['create_time']) > 50):
+                    (now - self.procs[pid]['create_time']) > 50 and pid not in pids_signalled):
                     print( f"pid: {pid} \"{' '.join(self.procs[pid]['cmdline'])}\" does not match any configured instance, sending it TERM" )
                     signal_pid(pid, signal.SIGTERM)
                     pids_signalled |= set([pid])
 
             ttw = 1 << attempts
-            print( f"Waiting {ttw} sec. to check if {len(pids_signalled)} processes stopped (try: {attempts})" )
+            print( f"Waiting {ttw} sec. to check if {running_pids} processes stopped (try: {attempts})" )
             time.sleep(ttw)
             # update to reflect killed processes.
             self._read_procs()
@@ -2393,7 +2394,7 @@ class sr_GlobalState:
                 for i in self.states[c][cfg]['instance_pids']:
                     if self.states[c][cfg]['instance_pids'][i] in self.procs:
                         p=self.states[c][cfg]['instance_pids'][i]
-                        print( f"signal_pid( {p}, SIGKILL )")
+                        print( f"signal_pid( {p} \"{' '.join(self.procs[p]['cmdline'])}\", SIGKILL )")
                         signal_pid(p, signal.SIGKILL)
                         pids_signalled |= set([p])
                         print('.', end='')
