@@ -328,7 +328,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">new_metrics</span>
 
         <span class="c1"># removing old metrics files</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;looking for old metrics for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">metricsFilename</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+        <span class="c1">#logger.debug( f&quot;looking for old metrics for {self.o.metricsFilename}&quot; )</span>
         <span class="n">old_metrics</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">metricsFilename</span><span class="o">+</span><span class="s1">&#39;.*&#39;</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logRotateCount</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">old_metrics</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;removing old metrics file: </span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
@@ -1409,7 +1409,7 @@
                     <span class="n">mfn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="se">\&quot;</span><span class="s1"> : </span><span class="si">{</span><span class="n">metrics</span><span class="si">}</span><span class="s1">,</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
             <span class="c1"># removing old metrics files</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;looking for old metrics for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">metricsFilename</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
+            <span class="c1">#logger.debug( f&quot;looking for old metrics for {self.o.metricsFilename}&quot; )</span>
             <span class="n">old_metrics</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">metricsFilename</span><span class="o">+</span><span class="s1">&#39;.*&#39;</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">logRotateCount</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">old_metrics</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;removing old metrics file: </span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="p">)</span>
@@ -1650,11 +1650,10 @@
             <span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;checksum in message: </span><span class="si">%s</span><span class="s2"> vs. local: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                     <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">],</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_identity&#39;</span><span class="p">]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;checksum in message: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> vs. local: </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_identity&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_identity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span> <span class="s2">&quot;same checksum </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">304</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;same checksum </span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;new_path&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span></div>
@@ -1942,6 +1941,12 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;link </span><span class="si">%s</span><span class="s2"> failed&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;fileOp&#39;</span><span class="p">])</span>
                     <span class="k">continue</span>
 
+            <span class="c1"># all non-files taken care of above... rest of routine is normal file download.</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileSizeMax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileSizeMax</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="mi">413</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Payload Too Large </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">getIDStr</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
             <span class="c1"># establish new_inflight_path which is the file to download into initially.</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inflight</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
                 <span class="p">(</span><span class="s1">&#39;blocks&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;blocks&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;inplace&#39;</span><span class="p">)):</span>
@@ -2026,7 +2031,7 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;downloading again, attempt </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
 
                 <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ok</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;downloaded ok: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">new_path</span><span class="p">)</span>
                     <span class="n">msg</span><span class="o">.</span><span class="n">setReport</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="s2">&quot;Download successful&quot;</span> <span class="p">)</span>
                     <span class="c1"># if content is present, but downloaded anyways, then it is no good, and should not be forwarded.</span>
@@ -2034,6 +2039,11 @@
                         <span class="k">del</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;transferRxLast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">][</span><span class="s1">&#39;timeCompleted&#39;</span><span class="p">]</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">ok</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;download failed permanently, discarding transfer: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">new_path</span><span class="p">)</span>
+                    <span class="n">msg</span><span class="o">.</span><span class="n">setReport</span><span class="p">(</span><span class="mi">410</span><span class="p">,</span> <span class="s2">&quot;message received for content that is no longer available&quot;</span> <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">worklist</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;attempt </span><span class="si">%d</span><span class="s2"> failed to download </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span> \
@@ -2055,9 +2065,13 @@
     <span class="c1"># generalized download...</span>
 <div class="viewcode-block" id="Flow.download">
 <a class="viewcode-back" href="../../Reference/code.html#sarracenia.flow.Flow.download">[docs]</a>
-    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           download/transfer one file based on message, return True if successful, otherwise False.</span>
+
+<span class="sd">           return 0 -- failed, retry later.</span>
+<span class="sd">           return 1 -- OK download successful.</span>
+<span class="sd">           return -1 -- download failed permanently, retry not useful.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">options</span>
@@ -2146,8 +2160,8 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;flowCallback plugin </span><span class="si">{</span><span class="n">plugin</span><span class="si">}</span><span class="s1"> crashed: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s2">&quot;details:&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
 
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
-            <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span> <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">dry_run</span><span class="p">:</span>
             <span class="n">curdir</span> <span class="o">=</span> <span class="n">new_dir</span>
@@ -2168,7 +2182,7 @@
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;making </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_dir</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details:&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="mi">0</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">options</span><span class="o">.</span><span class="n">sendTo</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
@@ -2190,7 +2204,7 @@
                     <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-                        <span class="k">return</span> <span class="kc">False</span>
+                        <span class="k">return</span> <span class="mi">0</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;transferConnected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">][</span><span class="s1">&#39;transferConnectStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> 
@@ -2202,7 +2216,7 @@
 
             <span class="c1">#if not hasattr(proto,&#39;seek&#39;) and (&#39;blocks&#39; in msg) and ( msg[&#39;blocks&#39;][&#39;method&#39;] == &#39;inplace&#39; ):</span>
             <span class="c1">#   logger.error(&quot;%s, inplace part file not supported&quot; % self.scheme)</span>
-            <span class="c1">#   return False</span>
+            <span class="c1">#   return 0</span>
 
             <span class="n">cwd</span> <span class="o">=</span> <span class="kc">None</span>
          
@@ -2219,7 +2233,7 @@
                          <span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">]</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">cdir</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                          <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;chdir </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cdir</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
-                         <span class="k">return</span> <span class="kc">False</span>
+                         <span class="k">return</span> <span class="mi">0</span>
 
             <span class="n">remote_offset</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">exactLength</span><span class="o">=</span><span class="kc">False</span>
@@ -2300,7 +2314,7 @@
                             <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;local_offset&#39;</span><span class="p">],</span> <span class="n">block_length</span><span class="p">,</span> <span class="n">exactLength</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;could not get </span><span class="si">{</span><span class="n">remote_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
-                    <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">return</span> <span class="mi">0</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">len_written</span> <span class="o">=</span> <span class="n">block_length</span>
@@ -2316,7 +2330,7 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;failed to download </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">new_file</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inflight</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">block_length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">acceptSizeWrong</span><span class="p">:</span>
@@ -2329,17 +2343,34 @@
                             <span class="o">%</span> <span class="p">(</span><span class="n">len_written</span><span class="p">,</span> <span class="n">new_inflight_path</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">acceptSizeWrong</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                             <span class="s1">&#39;AcceptSizeWrong download size mismatch, received </span><span class="si">%d</span><span class="s1"> of expected </span><span class="si">%d</span><span class="s1"> bytes for </span><span class="si">%s</span><span class="s1">&#39;</span>
                             <span class="o">%</span> <span class="p">(</span><span class="n">len_written</span><span class="p">,</span> <span class="n">block_length</span><span class="p">,</span> <span class="n">new_inflight_path</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">len_written</span> <span class="o">&gt;</span> <span class="n">block_length</span><span class="p">:</span>
+                        <span class="n">retval</span><span class="o">=</span><span class="mi">0</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">],</span><span class="s1">&#39;stat&#39;</span><span class="p">):</span>
+                            <span class="n">current_stat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proto</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="p">]</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span> <span class="n">remote_file</span><span class="p">,</span> <span class="n">msg</span> <span class="p">)</span>
+                            <span class="k">if</span> <span class="s1">&#39;mtime&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">:</span>
+                                <span class="n">mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;mtime&#39;</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">mtime</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">timestr2flt</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;pubTime&#39;</span><span class="p">])</span>
+
+                            <span class="k">if</span> <span class="n">current_stat</span> <span class="ow">and</span> <span class="n">current_stat</span><span class="o">.</span><span class="n">st_mtime</span> <span class="ow">and</span> <span class="n">current_stat</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">&gt;</span> <span class="n">mtime</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;upstream resource is newer, so message </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">getIDStr</span><span class="p">()</span><span class="si">}</span><span class="s1"> is obsolete. Discarding.&#39;</span> <span class="p">)</span>
+                                <span class="n">retval</span><span class="o">=-</span><span class="mi">1</span>
+                            <span class="k">elif</span> <span class="n">current_stat</span> <span class="ow">and</span> <span class="n">current_stat</span><span class="o">.</span><span class="n">st_size</span> <span class="ow">and</span> <span class="n">current_stat</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="n">len_written</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;matches upstream source, </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">getIDStr</span><span class="p">()</span><span class="si">}</span><span class="s1"> but not announcement. Discarding.&#39;</span> <span class="p">)</span>
+                                <span class="n">retval</span><span class="o">=-</span><span class="mi">1</span> 
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;unexplained size discrepancy in </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">getIDStr</span><span class="p">()</span><span class="si">}</span><span class="s2">, will retry later&quot;</span> <span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">len_written</span> <span class="o">&gt;</span> <span class="n">block_length</span><span class="p">:</span>
                             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;download more </span><span class="si">{</span><span class="n">len_written</span><span class="si">}</span><span class="s1"> than expected </span><span class="si">{</span><span class="n">block_length</span><span class="si">}</span><span class="s1"> bytes for </span><span class="si">{</span><span class="n">new_inflight_path</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;incomplete download only </span><span class="si">{</span><span class="n">len_written</span><span class="si">}</span><span class="s1"> of expected </span><span class="si">{</span><span class="n">block_length</span><span class="si">}</span><span class="s1"> bytes for </span><span class="si">{</span><span class="n">new_inflight_path</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+
                         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">inflight</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">):</span>
                             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">)</span>
-                        <span class="k">return</span> <span class="kc">False</span>
+                        <span class="k">return</span> <span class="n">retval</span> 
                 <span class="c1"># when len_written is different than block_length</span>
                 <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">len_written</span>
 
@@ -2385,10 +2416,10 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">acceptSizeWrong</span> <span class="ow">or</span> <span class="p">(</span><span class="n">block_length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">len_written</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">return</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">len_written</span> <span class="o">!=</span> <span class="n">block_length</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="mi">0</span>
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2410,8 +2441,8 @@
         
             <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">dry_run</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">new_inflight_path</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">1</span></div>
 
 
     <span class="c1"># generalized send...</span>

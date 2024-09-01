@@ -114,6 +114,7 @@
 <span class="kn">from</span> <span class="nn">paramiko</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="o">*</span>
 
+<span class="kn">import</span> <span class="nn">sarracenia</span>
 <span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">Transfer</span>
 <span class="kn">from</span> <span class="nn">sarracenia.transfer</span> <span class="kn">import</span> <span class="n">alarm_cancel</span><span class="p">,</span> <span class="n">alarm_set</span><span class="p">,</span> <span class="n">alarm_raise</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
@@ -434,7 +435,7 @@
             <span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_offset</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">exactLength</span><span class="p">))</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+        <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
@@ -552,7 +553,7 @@
         <span class="n">alarm_set</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
             <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="c1"># parts</span>
@@ -560,10 +561,10 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">remote_file</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
-                <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
                 <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;r+b&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;r+b&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
             <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
@@ -621,6 +622,13 @@
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
+
+    <span class="c1">#when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.</span>
+    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># utime</span>
     <span class="k">def</span> <span class="nf">utime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>

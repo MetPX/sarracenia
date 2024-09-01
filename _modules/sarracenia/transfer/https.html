@@ -110,6 +110,7 @@
 <span class="c1">#</span>
 <span class="c1">#</span>
 
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sarracenia</span>
@@ -122,8 +123,28 @@
 
 <span class="kn">import</span> <span class="nn">urllib.error</span><span class="o">,</span> <span class="nn">urllib.parse</span><span class="o">,</span> <span class="nn">urllib.request</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">HTTPRedirectHandler</span> 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HTTPRedirectHandlerSameMethod">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod">[docs]</a>
+<span class="k">class</span> <span class="nc">HTTPRedirectHandlerSameMethod</span><span class="p">(</span><span class="n">HTTPRedirectHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Instead of returning a new Request without a method (defaults to GET), use the </span>
+<span class="sd">        same method in the new Request.</span>
+<span class="sd">        https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request</span>
+<span class="sd">        https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections note [2]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HTTPRedirectHandlerSameMethod.redirect_request">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod.redirect_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">redirect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">):</span>
+        <span class="n">orig_method</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_method</span><span class="p">()</span>
+        <span class="n">new_req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">redirect_request</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">)</span>
+        <span class="n">new_req</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">orig_method</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;redirect from </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">get_method</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">get_full_url</span><span class="p">()</span><span class="si">}</span><span class="s2"> &quot;</span>
+                     <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">new_req</span><span class="o">.</span><span class="n">get_method</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">new_req</span><span class="o">.</span><span class="n">get_full_url</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_req</span></div>
+</div>
 
 
 <div class="viewcode-block" id="Https">
@@ -302,6 +323,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seek</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opener</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -332,7 +354,7 @@
             <span class="n">dbuf</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-                <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
                 <span class="n">alarm_cancel</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span> <span class="k">break</span>
                 <span class="k">if</span> <span class="n">dbuf</span><span class="p">:</span> <span class="n">dbuf</span> <span class="o">+=</span> <span class="n">chunk</span>
@@ -353,14 +375,35 @@
 
         <span class="k">return</span> <span class="n">dbuf</span>
 
+    <span class="k">def</span> <span class="nf">__url_redir_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returl self.urlstr, unless the request was redirected to a different URL.</span>
+<span class="sd">            If so, it will return &#39;self.urlstr redirected to new_url&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">redir_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">actual_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">actual_url</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">:</span>
+                <span class="n">redir_msg</span> <span class="o">=</span> <span class="n">redir_msg</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; redirected to </span><span class="si">{</span><span class="n">actual_url</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">redir_msg</span>
+
     <span class="c1"># open</span>
-    <span class="k">def</span> <span class="nf">__open__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="Https.__open__">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.https.Https.__open__">[docs]</a>
+    <span class="k">def</span> <span class="nf">__open__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">remote_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_headers</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">handlers</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be</span>
+<span class="sd">            read from like a file.</span>
+
+<span class="sd">            Returns True when successfully opened, False if there was a problem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="p">(</span><span class="n">method</span> <span class="k">if</span> <span class="n">method</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">req</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opener</span> <span class="o">=</span> <span class="kc">None</span> 
 
         <span class="c1"># have noticed that some site does not allow // in path</span>
         <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http://&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;//&#39;</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[</span><span class="mi">7</span><span class="p">:]:</span>
@@ -372,12 +415,25 @@
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># when credentials are needed.</span>
             <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Sarracenia &#39;</span> <span class="o">+</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">__version__</span><span class="p">}</span>
+            
+            <span class="c1"># Bearer token credential is passed as a header</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearer_token</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;bearer_token: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearer_token</span><span class="p">)</span>
                 <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Authorization&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Bearer &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bearer_token</span>
 
+            <span class="c1"># set range in byte if needed</span>
+            <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">str_range</span> <span class="o">=</span> <span class="s1">&#39;bytes=</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_range</span>
+            
+            <span class="c1"># add everything from add_headers dict into headers dict. if anything in add_headers already</span>
+            <span class="c1"># exists in headers, the values from add_headers will replace the values in headers.</span>
+            <span class="c1"># This is done last to allow add_headers values to override Range/Authorization.</span>
+            <span class="k">if</span> <span class="n">add_headers</span><span class="p">:</span>
+                <span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">add_headers</span><span class="p">)</span>
+
+            <span class="c1"># username and password credentials</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">password_mgr</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPPasswordMgrWithDefaultRealm</span><span class="p">()</span>
                 <span class="c1"># takeaway credentials info from urlstr</span>
@@ -388,57 +444,44 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">cred</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
                 <span class="c1"># continue with authentication</span>
-                <span class="n">password_mgr</span><span class="o">.</span><span class="n">add_password</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
-                                          <span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
-                <span class="n">auth_handler</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPBasicAuthHandler</span><span class="p">(</span>
-                    <span class="n">password_mgr</span><span class="p">)</span>
+                <span class="n">password_mgr</span><span class="o">.</span><span class="n">add_password</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
+                <span class="n">auth_handler</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPBasicAuthHandler</span><span class="p">(</span><span class="n">password_mgr</span><span class="p">)</span>
+                <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">auth_handler</span><span class="p">)</span>
 
-                <span class="c1">#hctx = ssl.create_default_context()</span>
-                <span class="c1">#hctx.check_hostname = False</span>
-                <span class="c1">#hctx.verify_mode = ssl.CERT_NONE</span>
-                <span class="n">ssl_handler</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPSHandler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tlsctx</span><span class="p">)</span>
+            <span class="n">ssl_handler</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPSHandler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tlsctx</span><span class="p">)</span>
+            <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ssl_handler</span><span class="p">)</span>
 
-                <span class="c1"># create &quot;opener&quot; (OpenerDirector instance)</span>
-                <span class="n">opener</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">build_opener</span><span class="p">(</span><span class="n">auth_handler</span><span class="p">,</span> <span class="n">ssl_handler</span><span class="p">)</span>
+            <span class="c1"># create &quot;opener&quot; (OpenerDirector instance)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opener</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">build_opener</span><span class="p">(</span><span class="o">*</span><span class="n">handlers</span><span class="p">)</span>
 
-                <span class="c1"># use the opener to fetch a URL</span>
-                <span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">)</span>
-
-                <span class="c1"># Install the opener.</span>
-                <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">install_opener</span><span class="p">(</span><span class="n">opener</span><span class="p">)</span>
-
-            <span class="c1"># Now all calls to get the request use our opener.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
-
-            <span class="c1"># set range in byte if needed</span>
-            <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">str_range</span> <span class="o">=</span> <span class="s1">&#39;bytes=</span><span class="si">%d</span><span class="s1">-</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span>
-                                             <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">req</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_range</span>
-
-            <span class="c1"># https without user : create/use an ssl context</span>
-            <span class="n">ctx</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">):</span>
-                <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tlsctx</span>
-                <span class="c1">#ctx.check_hostname = False</span>
-                <span class="c1">#ctx.verify_mode = ssl.CERT_NONE</span>
+            <span class="c1"># Install the opener. Now all calls to get the request use our opener.</span>
+            <span class="c1"># NOTE not necessary since we call opener.open directly. Install only needed if we want to use urlopen.</span>
+            <span class="c1"># urllib.request.install_opener(opener)</span>
+ 
+            <span class="c1"># Build the request that will get opened. If None is passed to method it defaults to GET.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
 
             <span class="c1"># open... we are connected</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+                <span class="c1"># when timeout is not passed, urllib defaults to socket._GLOBAL_DEFAULT_TIMEOUT</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req</span><span class="p">,</span>
-                                                   <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
-                                                   <span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+
+            <span class="c1"># knowing if we got redirected is useful for debugging</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">actual_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">actual_url</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="si">}</span><span class="s2"> redirected to </span><span class="si">{</span><span class="n">actual_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
-
             <span class="n">alarm_cancel</span><span class="p">()</span>
-
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span>
 
         <span class="k">except</span> <span class="n">urllib</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Download failed 4 </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed 4 </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__url_redir_str</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s1">&#39;Server couldn</span><span class="se">\&#39;</span><span class="s1">t fulfill the request. Error code: </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
                 <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">))</span>
@@ -446,13 +489,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">raise</span>
         <span class="k">except</span> <span class="n">urllib</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">URLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Download failed 5 </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed 5 </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__url_redir_str</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failed to reach server. Reason: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">raise</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unable to open </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">urlstr</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;unable to open </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__url_redir_str</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
@@ -460,6 +503,60 @@
 
         <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">()</span>
+        <span class="c1"># logger.debug( f&quot; baseUrl:{msg[&#39;baseUrl&#39;]}, path:{self.path}, cwd:{self.cwd}, path:{path} &quot; )</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;baseUrl&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span> <span class="p">:</span>
+            <span class="n">url</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span> 
+        <span class="n">url</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+        <span class="k">if</span> <span class="n">url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span> 
+        <span class="n">url</span> <span class="o">+=</span> <span class="n">path</span>
+
+        <span class="c1"># Default HTTPRedirectHandler may change a HEAD request to a GET when following the redirect.</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="p">[</span> <span class="n">HTTPRedirectHandlerSameMethod</span><span class="p">()</span> <span class="p">]</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__open__</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;HEAD&#39;</span><span class="p">,</span> <span class="n">add_headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">:</span> <span class="s1">&#39;identity&#39;</span><span class="p">},</span> <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">getcode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;status code </span><span class="si">{</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">have_metadata</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Content-Length: 9659</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">st_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">))</span>
+            <span class="n">have_metadata</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="c1"># Last-Modified: Thu, 22 Aug 2024 20:37:53 GMT</span>
+            <span class="n">lm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s1">&#39;Last-Modified&#39;</span><span class="p">)</span>
+            <span class="n">lm</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">lm</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%a</span><span class="s1">, </span><span class="si">%d</span><span class="s1"> %b %Y %H:%M:%S GMT&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">lm</span><span class="p">:</span>
+                <span class="n">st</span><span class="o">.</span><span class="n">st_atime</span> <span class="o">=</span> <span class="n">lm</span>
+                <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span> <span class="o">=</span> <span class="n">lm</span>
+                <span class="n">have_metadata</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">have_metadata</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">st</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed, HEAD request returned </span><span class="si">{</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> but metadata was not available for </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">info</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39; , &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HEAD request for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__url_redir_str</span><span class="p">()</span><span class="si">}</span><span class="s2"> result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 </pre></div>
 

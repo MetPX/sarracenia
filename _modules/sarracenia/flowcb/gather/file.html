@@ -213,7 +213,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">new_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">left_events</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
 
-        <span class="c1">#self.o.blocksize = 200 * 1024 * 1024</span>
+        <span class="c1">#self.o.blockSize = 200 * 1024 * 1024</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">create_modify</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;create&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
             <span class="s1">&#39;modify&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">fileEvents</span><span class="p">)</span></div>
 
@@ -244,10 +244,10 @@
     <span class="k">def</span> <span class="nf">post_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">lstat</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1">#logger.debug(&quot;start  %s&quot; % path)</span>
 
-        <span class="c1"># check the value of blocksize</span>
+        <span class="c1"># check the value of blockSize</span>
 
         <span class="n">fsiz</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span>
-        <span class="n">blksz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
+        <span class="n">blksz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blockSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blockSize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
 
         <span class="c1"># if we should send the file in parts</span>
 
@@ -310,10 +310,10 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">Message</span><span class="o">.</span><span class="n">fromFileInfo</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="p">,</span> <span class="n">lstat</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;initial msg:</span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">)</span>
-        <span class="c1"># check the value of blocksize</span>
+        <span class="c1"># check the value of blockSize</span>
 
         <span class="n">fsiz</span> <span class="o">=</span> <span class="n">lstat</span><span class="o">.</span><span class="n">st_size</span>
-        <span class="n">chunksize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
+        <span class="n">chunksize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_blockSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">blockSize</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">)</span>
 
         <span class="c1"># count blocks and remainder</span>
 
@@ -588,11 +588,11 @@
         <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[])</span></div>
 
 
-    <span class="k">def</span> <span class="nf">set_blocksize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bssetting</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_blockSize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bssetting</span><span class="p">,</span> <span class="n">fsiz</span><span class="p">):</span>
 
         <span class="n">tfactor</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
 
-        <span class="k">if</span> <span class="n">bssetting</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1">## default blocksize</span>
+        <span class="k">if</span> <span class="n">bssetting</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1">## default blockSize</span>
             <span class="k">return</span> <span class="n">tfactor</span>
 
         <span class="k">elif</span> <span class="n">bssetting</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1">## send file as one piece.</span>

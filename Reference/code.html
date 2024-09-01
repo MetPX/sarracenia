@@ -211,6 +211,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.transfer.https">sarracenia.transfer.https</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod"><code class="docutils literal notranslate"><span class="pre">HTTPRedirectHandlerSameMethod</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.transfer.https.Https"><code class="docutils literal notranslate"><span class="pre">Https</span></code></a></li>
 </ul>
 </li>
@@ -1629,8 +1630,11 @@ permanent failures (or files not to be downloaded) in worklist.rejected</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flow.Flow.download">
-<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.download"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.download" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/sarracenia/flow.html#Flow.download"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flow.Flow.download" title="Link to this definition"></a></dt>
 <dd><p>download/transfer one file based on message, return True if successful, otherwise False.</p>
+<p>return 0 – failed, retry later.
+return 1 – OK download successful.
+return -1 – download failed permanently, retry not useful.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2566,7 +2570,7 @@ the handle_* entry points.</p>
 * permDirDefault - what permission to set on directories created.
 * timeout  - how long to wait for operations to complete.
 * byteRateMax - maximum transfer rate (throttle to avoid exceeding)
-* bufsize - size of buffers for file transfers.</p>
+* bufSize - size of buffers for file transfers.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.transfer.Transfer.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer.html#Transfer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.Transfer.__init__" title="Link to this definition"></a></dt>
@@ -2630,6 +2634,28 @@ should not change the “local” working directory when downloading.</p>
 <section id="module-sarracenia.transfer.https">
 <span id="sarracenia-transfer-https"></span><h2><a class="toc-backref" href="#id32" role="doc-backlink">sarracenia.transfer.https</a><a class="headerlink" href="#module-sarracenia.transfer.https" title="Link to this heading"></a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="sarracenia.transfer.https.HTTPRedirectHandlerSameMethod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.transfer.https.</span></span><span class="sig-name descname"><span class="pre">HTTPRedirectHandlerSameMethod</span></span><a class="reference internal" href="../_modules/sarracenia/transfer/https.html#HTTPRedirectHandlerSameMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPRedirectHandler</span></code></p>
+<p>Instead of returning a new Request without a method (defaults to GET), use the
+same method in the new Request.
+<a class="reference external" href="https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request">https://docs.python.org/3/library/urllib.request.html#urllib.request.HTTPRedirectHandler.redirect_request</a>
+<a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections">https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections</a> note [2]</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.transfer.https.HTTPRedirectHandlerSameMethod.redirect_request">
+<span class="sig-name descname"><span class="pre">redirect_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newurl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/https.html#HTTPRedirectHandlerSameMethod.redirect_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.https.HTTPRedirectHandlerSameMethod.redirect_request" title="Link to this definition"></a></dt>
+<dd><p>Return a Request or None in response to a redirect.</p>
+<p>This is called by the http_error_30x methods when a
+redirection response is received.  If a redirection should
+take place, return a new Request to allow http_error_30x to
+perform the redirect.  Otherwise, raise HTTPError if no-one
+else should try to handle this url.  Return None if you can’t
+but another Handler might.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.transfer.https.Https">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.transfer.https.</span></span><span class="sig-name descname"><span class="pre">Https</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/https.html#Https"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.https.Https" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#sarracenia.transfer.Transfer" title="sarracenia.transfer.Transfer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transfer</span></code></a></p>
@@ -2646,6 +2672,21 @@ sarracenia transfer protocol subclass supports/uses additional custom options:</
 <dt class="sig sig-object py" id="sarracenia.transfer.https.Https.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/transfer/https.html#Https.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.https.Https.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.transfer.https.Https.__open__">
+<span class="sig-name descname"><span class="pre">__open__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handlers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/sarracenia/transfer/https.html#Https.__open__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.transfer.https.Https.__open__" title="Link to this definition"></a></dt>
+<dd><p>Open a URL. When the open is successful, self.http is set to a urllib.response instance that can be
+read from like a file.</p>
+<p>Returns True when successfully opened, False if there was a problem.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.transfer.https.Https.__url_redir_str">
+<span class="sig-name descname"><span class="pre">__url_redir_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sarracenia.transfer.https.Https.__url_redir_str" title="Link to this definition"></a></dt>
+<dd><p>Returl self.urlstr, unless the request was redirected to a different URL.
+If so, it will return ‘self.urlstr redirected to new_url’</p>
+</dd></dl>
 
 </dd></dl>
 

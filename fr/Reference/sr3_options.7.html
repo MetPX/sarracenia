@@ -117,7 +117,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Aug 26, 2024</p>
+<dd class="field-even"><p>Sep 01, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -476,15 +476,37 @@ accept .*(2016....).*(RAW.*GRIB).*
 normalement rejeté, comme un échec. Cette option accepte le fichier même avec la mauvaise
 taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
 le fichier est modifié au moment de sa récupération.</p>
+<p>Lorsque acceptSizeWrong est défini sur True, le téléchargement accepte le fichier même si sa taille
+ne correspond pas à celle du message de notification reçu. Cela est utile lorsque
+les ressources changent fréquemment et qu’il y a une file d’attente, de sorte que le fichier
+est modifié au moment où il est récupéré.</p>
+<p>Dans le cas par défaut (acceptSizeWrong défini sur False), l’incompatibilité de taille est
+considérée comme un échec de téléchargement. Sarracenia vérifie ensuite si
+ce qui a été téléchargé correspond à ce qui se trouve actuellement sur le serveur en amont.</p>
+<p>Si la date de modification sur le serveur en amont est plus récente que dans le message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+</span>  <span class="mi">2024</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">47</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">download</span> <span class="n">upstream</span> <span class="n">resource</span> <span class="ow">is</span> <span class="n">newer</span><span class="p">,</span> <span class="n">so</span> <span class="n">message</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">//</span><span class="mi">20240811</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">citypage_weather</span><span class="o">/</span><span class="n">xml</span><span class="o">/</span><span class="n">NB</span><span class="o">/</span><span class="n">s0000653_e</span><span class="o">.</span><span class="n">xml</span> <span class="ow">is</span> <span class="n">obsolete</span><span class="o">.</span> <span class="n">Discarding</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>traduction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2024</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">47</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">la</span> <span class="n">ressource</span> <span class="n">en</span> <span class="n">amont</span> <span class="n">est</span> <span class="n">plus</span> <span class="n">récente</span><span class="p">,</span> <span class="n">donc</span> <span class="n">le</span> <span class="n">message</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">//</span><span class="mi">20240811</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">citypage_weather</span><span class="o">/</span><span class="n">xml</span><span class="o">/</span><span class="n">NB</span><span class="o">/</span><span class="n">s0000653_e</span><span class="o">.</span><span class="n">xml</span> <span class="n">est</span> <span class="n">obsolète</span><span class="o">.</span> <span class="n">on</span> <span class="n">abandonne</span> <span class="n">le</span> <span class="n">traitement</span> <span class="n">du</span> <span class="n">message</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Si elle correspond à la taille en amont, alors aucune erreur ne s’est produite lors du téléchargement,
+c’est juste que la taille du message annonçant la nouvelle ressource ne
+correspond pas à ce qui est actuellement disponible. Il est inutile de réessayer le téléchargement.
+Dans les deux cas, le fichier téléchargé et le message correspondant sont tous deux
+rejetés.</p>
+<p>Si la vérification du serveur en amont échoue, ou si la récupération elle-même a échoué,
+alors la ressource est placée dans la file d’attente de nouvelles tentatives pour des tentatives ultérieures.</p>
 </section>
 <section id="attempts-count-defaut-3">
 <h4>attempts &lt;count&gt; (défaut: 3)<a class="headerlink" href="#attempts-count-defaut-3" title="Link to this heading"></a></h4>
 <p>L’option <strong>attempts</strong> indique combien de fois il faut tenter le téléchargement des données avant d’abandonner.
-Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’option <strong>retry</strong> a la valeur false,
+Le défaut de 3 tentatives est approprié dans la plupart des cas. Lorsque l’option <strong>retry</strong> a la valeur false,
 le fichier est immédiatement supprimé.</p>
 <p>Lorsque l’option <strong>attempts</strong> est utilisé, un échec de téléchargement après le numéro prescrit
 des <strong>attempts</strong> (ou d’envoi, pour un sender) va entrainer l’ajout du message d’annonce à un fichier de fil d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message d’annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+pour une nouvelle tentative plus tard. Lorsque aucun message d’annonce n’est prêt à être consommé dans la fil d’attente AMQP,
 les requêtes se feront avec la fil d’attente de “retry”.</p>
 </section>
 <section id="basedir-chemin-defaut">
@@ -515,13 +537,13 @@ on pourrait l’augmenter pour réduire les frais généraux de transfert. Cette
 protocoles de transfert de fichiers, et non HTTP pour le moment.</p>
 </section>
 <section id="blocksize-size-defaut-0-auto">
-<h4>blocksize &lt;size&gt; défaut: 0 (auto)<a class="headerlink" href="#blocksize-size-defaut-0-auto" title="Link to this heading"></a></h4>
+<h4>blockSize &lt;size&gt; défaut: 0 (auto)<a class="headerlink" href="#blocksize-size-defaut-0-auto" title="Link to this heading"></a></h4>
 <p>REMARQUE: <strong>EXPERIMENTAL pour sr3, devrait revenir dans la version future</strong>
-Cette option <strong>blocksize</strong> contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
+Cette option <strong>blockSize</strong> contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
 La valeur doit être l’une des suivantes</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0 - calcul automatiquement une stratégie de partitionnement appropriée (défaut).
 1 - envoyez toujours des fichiers entiers en une seule partie.
-&lt;blocksize&gt; - utiliser une taille de partition fixe (taille d’exemple : 1M ).
+&lt;blockSize&gt; - utiliser une taille de partition fixe (taille d’exemple : 1M ).
 </pre></div>
 </div>
 <p>Les fichiers peuvent être annoncés en plusieurs parties.  Chaque partie à un somme de contrôle (checksum) distinct.
@@ -553,8 +575,8 @@ L’option broker indique à chaque composant quel courtier contacter.</p>
 aux échanges et aux thèmes pour déterminer le messages d’annonce en question.</p>
 </section>
 <section id="bufsize-size-defaut-1m">
-<h4>bufsize &lt;size&gt; (défaut: 1m)<a class="headerlink" href="#bufsize-size-defaut-1m" title="Link to this heading"></a></h4>
-<p>Les fichiers seront copiés en tranches de <em>bufsize</em> octets. Utilisé par les protocoles de transfert.</p>
+<h4>bufSize &lt;size&gt; (défaut: 1m)<a class="headerlink" href="#bufsize-size-defaut-1m" title="Link to this heading"></a></h4>
+<p>Les fichiers seront copiés en tranches de <em>bufSize</em> octets. Utilisé par les protocoles de transfert.</p>
 </section>
 <section id="byteratemax-size-defaut-0">
 <h4>byteRateMax &lt;size&gt; (défaut: 0)<a class="headerlink" href="#byteratemax-size-defaut-0" title="Link to this heading"></a></h4>
@@ -1173,6 +1195,13 @@ ancien pour qu’il puisse être posté.</p>
 <p>Si les fichiers sont plus neuf que ce paramètre (défaut: 0 … désactivé), ignorez-les, ils sont trop
 neufs pour qu’ils puissent être postés.</p>
 </section>
+<section id="filesizemax-size-default-0">
+<h4>fileSizeMax (size: default 0)<a class="headerlink" href="#filesizemax-size-default-0" title="Link to this heading"></a></h4>
+<p>La valeur par défaut de <em>fileSizeMax</em> est 0, ce qui signifie qu’il n’y a pas de limite. Cependant, on peut
+souhaiter empêcher le téléchargement de fichiers très volumineux dans certaines situations. La définition d’une
+taille de fichier maximale avec l’option <em>fileSizeMax</em> peut être utilisée pour empêcher le
+téléchargement involontaire de fichiers de données volumineux.</p>
+</section>
 <section id="nodupe-ttl-off-on-999-smhdw">
 <h4>nodupe_ttl &lt;off|on|999[smhdw]&gt;<a class="headerlink" href="#nodupe-ttl-off-on-999-smhdw" title="Link to this heading"></a></h4>
 <p>Lorsque <strong>nodupe_ttl</strong> est défini à une intervalle de temps
@@ -1436,7 +1465,7 @@ utilisera le nom de file d’attente ainsi défini.</p>
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
 <p>Actif si <em>-r|–randomize</em> apparaît dans la ligne de commande… ou <em>randomize</em> est défini
 à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
-le fichier est publié par bloc (l’option <em>blocksize</em> a été définie), les messages d’annonce de bloc
+le fichier est publié par bloc (l’option <em>blockSize</em> a été définie), les messages d’annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.</p>
 </section>
 <section id="realpathadjust-compte-experimental-defaut-0">

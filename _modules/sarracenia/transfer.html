@@ -235,7 +235,7 @@
 <span class="sd">     * permDirDefault - what permission to set on directories created.</span>
 <span class="sd">     * timeout  - how long to wait for operations to complete.</span>
 <span class="sd">     * byteRateMax - maximum transfer rate (throttle to avoid exceeding)</span>
-<span class="sd">     * bufsize - size of buffers for file transfers.</span>
+<span class="sd">     * bufSize - size of buffers for file transfers.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@staticmethod</span>
@@ -395,7 +395,7 @@
         <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-                <span class="n">chunk</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
                     <span class="n">new_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_data</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
                     <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
@@ -409,15 +409,15 @@
 
         <span class="c1"># exact length to be transfered</span>
 
-        <span class="n">nc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">length</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">length</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span>
 
-        <span class="c1"># read/write bufsize &quot;nc&quot; times</span>
+        <span class="c1"># read/write bufSize &quot;nc&quot; times</span>
 
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nc</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="n">chunk</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufsize</span><span class="p">)</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
                 <span class="n">new_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_data</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
                 <span class="n">rw_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_chunk</span><span class="p">)</span>
@@ -475,7 +475,7 @@
         <span class="c1"># 2022/12/02 - pas should see a lot of these messages in HPC case from now on...</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">acceptSizeWrong</span> <span class="ow">and</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rw_length</span> <span class="o">!=</span> <span class="n">length</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="s2">&quot;util/writelocal mismatched file length writing </span><span class="si">%s</span><span class="s2">. Message said to expect </span><span class="si">%d</span><span class="s2"> bytes.  Got </span><span class="si">%d</span><span class="s2"> bytes.&quot;</span>
                 <span class="o">%</span> <span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">rw_length</span><span class="p">))</span>
 

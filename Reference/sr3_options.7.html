@@ -118,7 +118,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Aug 26, 2024</p>
+<dd class="field-even"><p>Sep 01, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -474,19 +474,33 @@ accept .*(2016....).*(RAW.*GRIB).*
 </section>
 <section id="acceptsizewrong-boolean-default-false">
 <h4>acceptSizeWrong: &lt;boolean&gt; (default: False)<a class="headerlink" href="#acceptsizewrong-boolean-default-false" title="Link to this heading"></a></h4>
-<p>When a file is downloaded and its size does not match the one advertised, it is
-normally rejected, as a failure. This option accepts the file even with the wrong
-size. helpful when file is changing frequently, and there is some queueing, so
-the file is changed by the time it is retrieved.</p>
+<p>When acceptSizeWrong is set to True, the download accepts the file even if it’s size
+does not match what is in the notification message received. This is helpful when
+resources are changing frequently, and there is some queueing, so the file is changed
+by the time it is retrieved.</p>
+<p>In the default case (acceptSizeWrong set to False), size mismatch is
+considered a download failure. Sarracenia then checks if the
+what was downloaded matches what is on the upstream server currently.</p>
+<p>If the modification date on the upstream server is newer than in the message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2024</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">11</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">47</span><span class="p">,</span><span class="mi">978</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">flow</span> <span class="n">download</span> <span class="n">upstream</span> <span class="n">resource</span> <span class="ow">is</span> <span class="n">newer</span><span class="p">,</span> <span class="n">so</span> <span class="n">message</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hpfx</span><span class="o">.</span><span class="n">collab</span><span class="o">.</span><span class="n">science</span><span class="o">.</span><span class="n">gc</span><span class="o">.</span><span class="n">ca</span> <span class="o">//</span><span class="mi">20240811</span><span class="o">/</span><span class="n">WXO</span><span class="o">-</span><span class="n">DD</span><span class="o">/</span><span class="n">citypage_weather</span><span class="o">/</span><span class="n">xml</span><span class="o">/</span><span class="n">NB</span><span class="o">/</span><span class="n">s0000653_e</span><span class="o">.</span><span class="n">xml</span> <span class="ow">is</span> <span class="n">obsolete</span><span class="o">.</span> <span class="n">Discarding</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>If it does match the upstream size, than no error has occurred on download,
+it’s just that the size of the message announcing the new resource does not
+match what is currently available. There is no point retrying the download.
+In the both cases, the file downloaded and the corresponding message are both
+discarded.</p>
+<p>If the check of the upstream server fails, or the retrieve itself has failed,
+then it puts the resource on the retry queue for later attempts.</p>
 </section>
 <section id="attempts-count-default-3">
 <h4>attempts &lt;count&gt; (default: 3)<a class="headerlink" href="#attempts-count-default-3" title="Link to this heading"></a></h4>
 <p>The <strong>attempts</strong> option indicates how many times to
-attempt downloading the data before giving up.  The default of 3 should be appropriate
-in most cases.  When the <strong>retry</strong> option is false, the file is then dropped immediately.</p>
+attempt downloading the data before giving up. The default of 3 should be appropriate
+in most cases. When the <strong>retry</strong> option is false, the file is then dropped immediately.</p>
 <p>When The <strong>retry</strong> option is set (default), a failure to download after prescribed number
 of <strong>attempts</strong> (or send, in a sender) will cause the notification message to be added to a queue file
-for later retry.  When there are no notification messages ready to consume from the AMQP queue,
+for later retry. When there are no notification messages ready to consume from the AMQP queue,
 the retry queue will be queried.</p>
 </section>
 <section id="basedir-path-default">
@@ -520,13 +534,13 @@ cases, one could raise it to reduce transfer overhead. It is only used for file
 transfer protocols, not HTTP ones at the moment.</p>
 </section>
 <section id="blocksize-size-default-0-auto">
-<h4>blocksize &lt;size&gt; default: 0 (auto)<a class="headerlink" href="#blocksize-size-default-0-auto" title="Link to this heading"></a></h4>
+<h4>blockSize &lt;size&gt; default: 0 (auto)<a class="headerlink" href="#blocksize-size-default-0-auto" title="Link to this heading"></a></h4>
 <p>NOTE: <strong>EXPERIMENTAL</strong> sr3, expected to return in future version**
-This <strong>blocksize</strong> option controls the partitioning strategy used to post files.
+This <strong>blockSize</strong> option controls the partitioning strategy used to post files.
 The value should be one of:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="o">-</span> <span class="n">autocompute</span> <span class="n">an</span> <span class="n">appropriate</span> <span class="n">partitioning</span> <span class="n">strategy</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span>
 <span class="mi">1</span> <span class="o">-</span> <span class="n">always</span> <span class="n">send</span> <span class="n">entire</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">single</span> <span class="n">part</span><span class="o">.</span>
-<span class="o">&lt;</span><span class="n">blocksize</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">used</span> <span class="n">a</span> <span class="n">fixed</span> <span class="n">partition</span> <span class="n">size</span> <span class="p">(</span><span class="n">example</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1</span><span class="n">M</span> <span class="p">)</span>
+<span class="o">&lt;</span><span class="n">blockSize</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">used</span> <span class="n">a</span> <span class="n">fixed</span> <span class="n">partition</span> <span class="n">size</span> <span class="p">(</span><span class="n">example</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1</span><span class="n">M</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>Files can be announced as multiple parts.  Each part has a separate checksum.
@@ -557,8 +571,8 @@ The broker option tell each component which broker to contact.</p>
 to exchanges and topics to determine the notification messages of interest.</p>
 </section>
 <section id="bufsize-size-default-1mb">
-<h4>bufsize &lt;size&gt; (default: 1MB)<a class="headerlink" href="#bufsize-size-default-1mb" title="Link to this heading"></a></h4>
-<p>Files will be copied in <em>bufsize</em>-byte blocks. for use by transfer protocols.</p>
+<h4>bufSize &lt;size&gt; (default: 1MB)<a class="headerlink" href="#bufsize-size-default-1mb" title="Link to this heading"></a></h4>
+<p>Files will be copied in <em>bufSize</em>-byte blocks. for use by transfer protocols.</p>
 </section>
 <section id="byteratemax-size-default-0">
 <h4>byteRateMax &lt;size&gt; (default: 0)<a class="headerlink" href="#byteratemax-size-default-0" title="Link to this heading"></a></h4>
@@ -1169,6 +1183,13 @@ then ignore them, they are too old to post. 0 deactivates the setting.</p>
 <p>If files are newer than this setting (default: 0), then ignore them, they are too
 new to post. 0 deactivates the setting.</p>
 </section>
+<section id="filesizemax-size-default-0">
+<h4>fileSizeMax (size: default 0)<a class="headerlink" href="#filesizemax-size-default-0" title="Link to this heading"></a></h4>
+<p>The default value of <em>fileSizeMax</em> is 0, meaning there is no limit. However one may
+wish to prevent downloads of very large files in some situations. Setting a maximum
+file size with the <em>fileSizeMax</em> option can be used to prevent unintentional
+downloading of large data files.</p>
+</section>
 <section id="nodupe-ttl-off-on-999-smhdw">
 <h4>nodupe_ttl &lt;off|on|999[smhdw]&gt;<a class="headerlink" href="#nodupe-ttl-off-on-999-smhdw" title="Link to this heading"></a></h4>
 <p>When <strong>nodupe_ttl</strong> (also <strong>suppress_duplicates*, and **cache</strong> ) is set to a non-zero time
@@ -1432,7 +1453,7 @@ will use the queue name thus defined.</p>
 <h4>randomize &lt;flag&gt;<a class="headerlink" href="#randomize-flag" title="Link to this heading"></a></h4>
 <p>Active if <em>-r|–randomize</em> appears in the command line… or <em>randomize</em> is set
 to True in the configuration file used. If there are several notification messages because the
-file is posted by block (the <em>blocksize</em> option was set), the block notification messages
+file is posted by block (the <em>blockSize</em> option was set), the block notification messages
 are randomized meaning that they will not be posted</p>
 </section>
 <section id="realpathadjust-count-experimental-default-0">
