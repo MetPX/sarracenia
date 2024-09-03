@@ -116,6 +116,7 @@ class Ftp(Transfer):
                 alarm_cancel()
                 continue
             except:
+                alarm_cancel()
                 pass
 
             # create
