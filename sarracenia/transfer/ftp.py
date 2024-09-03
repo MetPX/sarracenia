@@ -93,8 +93,8 @@ class Ftp(Transfer):
         # try to go directly to path
 
         alarm_set(self.o.timeout)
-        self.ftp.cwd(self.originalDir)
         try:
+            self.ftp.cwd(self.originalDir)
             self.ftp.cwd(path)
             alarm_cancel()
             return
