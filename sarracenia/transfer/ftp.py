@@ -82,10 +82,14 @@ class Ftp(Transfer):
         logger.debug("sr_ftp cd %s" % path)
 
         alarm_set(self.o.timeout)
-        self.ftp.cwd(self.originalDir)
-        self.ftp.cwd(path)
-        self.pwd = path
-        alarm_cancel()
+        try:
+            self.ftp.cwd(self.originalDir)
+            self.ftp.cwd(path)
+            self.pwd = path
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
 
     def cd_forced(self, perm, path):
         logger.debug("sr_ftp cd_forced %d %s" % (perm, path))
@@ -121,18 +125,30 @@ class Ftp(Transfer):
 
             # create
             alarm_set(self.o.timeout)
-            self.ftp.mkd(d)
-            alarm_cancel()
+            try:
+                self.ftp.mkd(d)
+                alarm_cancel()
+            except:
+                alarm_cancel()
+                raise
 
             # chmod
             alarm_set(self.o.timeout)
-            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
-            alarm_cancel()
+            try:
+                self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
+                alarm_cancel()
+            except:
+                alarm_cancel()
+                raise
 
             # cd
             alarm_set(self.o.timeout)
-            self.ftp.cwd(d)
-            alarm_cancel()
+            try:
+                self.ftp.cwd(d)
+                alarm_cancel()
+            except:
+                alarm_cancel()
+                raise
 
     # check_is_connected
 
@@ -164,8 +180,12 @@ class Ftp(Transfer):
     def chmod(self, perm, path):
         logger.debug("sr_ftp chmod %s %s" % (str(perm), path))
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
-        alarm_cancel()
+        try:
+            self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + path)
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
 
     # close
     def close(self):
@@ -174,9 +194,9 @@ class Ftp(Transfer):
         old_ftp = self.ftp
 
         self.init()
+        alarm_set(self.o.timeout)
 
         try:
-            alarm_set(self.o.timeout)
             old_ftp.quit()
         except:
             pass
@@ -350,8 +370,13 @@ class Ftp(Transfer):
     # getcwd
     def getcwd(self):
         alarm_set(self.o.timeout)
-        pwd = self.ftp.pwd()
-        alarm_cancel()
+        try:
+            pwd = self.ftp.pwd()
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
+
         return pwd
 
     # ls
@@ -359,8 +384,13 @@ class Ftp(Transfer):
         logger.debug("sr_ftp ls")
         self.entries = {}
         alarm_set(self.o.timeout)
-        self.ftp.retrlines('LIST', self.line_callback)
-        alarm_cancel()
+        try:
+            self.ftp.retrlines('LIST', self.line_callback)
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
+
         logger.debug("sr_ftp ls = (size: %d) %s ..." % (len(self.entries), str(self.entries)[0:255]))
         return self.entries
 
@@ -400,13 +430,22 @@ class Ftp(Transfer):
     def mkdir(self, remote_dir):
         logger.debug("sr_ftp mkdir %s" % remote_dir)
         alarm_set(self.o.timeout)
-        self.ftp.mkd(remote_dir)
-        alarm_cancel()
+        try:
+            self.ftp.mkd(remote_dir)
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
+
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE CHMOD ' +
+        try:
+            self.ftp.voidcmd('SITE CHMOD ' +
                          "{0:o}".format(self.o.permDirDefault) + ' ' +
                          remote_dir)
-        alarm_cancel()
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
 
     # put
     def put(self,
@@ -464,19 +503,31 @@ class Ftp(Transfer):
     def rename(self, remote_old, remote_new):
         logger.debug("sr_ftp rename %s %s" % (remote_old, remote_new))
         alarm_set(self.o.timeout)
-        self.ftp.rename(remote_old, remote_new)
-        alarm_cancel()
+        try:
+            self.ftp.rename(remote_old, remote_new)
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
 
     # rmdir
     def rmdir(self, path):
         logger.debug("sr_ftp rmdir %s" % path)
         alarm_set(self.o.timeout)
-        self.ftp.rmd(path)
-        alarm_cancel()
+        try:
+            self.ftp.rmd(path)
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
 
     # umask
     def umask(self):
         logger.debug("sr_ftp umask")
         alarm_set(self.o.timeout)
-        self.ftp.voidcmd('SITE UMASK 777')
-        alarm_cancel()
+        try:
+            self.ftp.voidcmd('SITE UMASK 777')
+            alarm_cancel()
+        except:
+            alarm_cancel()
+            raise
