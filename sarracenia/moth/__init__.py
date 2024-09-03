@@ -29,7 +29,7 @@ default_options = {
         'stubborn': True,
         'failure_duration': '5m'
     },
-    'message_ttl': 0,
+    'messageAgeMax': 0,
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }

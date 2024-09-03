@@ -43,7 +43,7 @@ import traceback
 
 from sarracenia.flowcb.v2wrapper import sum_algo_v2tov3
 
-from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str
+from sarracenia import user_config_dir, user_cache_dir, naturalSize, nowstr, timestr2flt, timeflt2str, durationToString
 from sarracenia.config import *
 import sarracenia.moth
 import sarracenia.rabbitmq_admin
@@ -62,8 +62,8 @@ empty_metrics={ "byteRate":0, "cpuTime":0, "rejectCount":0, "last_housekeeping":
         "transferRxLast": 0, "transferTxLast": 0, "rxLast":0, "txLast":0, 
         "transferRxBytes":0, "transferRxFiles":0, "transferTxBytes": 0, "transferTxFiles": 0, 
         "msgs_in_post_retry": 0, "msgs_in_download_retry":0, "brokerQueuedMessageCount": 0, 
-        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 'transferLast': 0,
-        'connectPercent': 0, 'byteConnectPercent': 0
+        'time_base': 0, 'byteTotal': 0, 'byteRate': 0, 'msgRate': 0, 'msgRateCpu': 0, 'retry': 0, 
+        'messageLast': 0, 'transferLast': 0, 'connectPercent': 0, 'byteConnectPercent': 0
         }
 
 sr3_tools_entry_points = [ "sr3_action_convert", "sr3_action_remove", "sr3_commit", "sr3_pull", "sr3_push", "sr3_remove", "sr3_scp", "sr3_ssh", "sr3_utils", "sr3d", "sr3l", "sr3r" ]
@@ -988,26 +988,9 @@ class sr_GlobalState:
     
                         m['latestTransfer'] = "n/a"
                         if "transferLast" in m and m['transferLast'] > 0:
-                            v=now - m['transferLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
-                        elif "messageLast" in m:
-                            v=now - m['messageLast']
-                            if v > 10000:
-                                m['latestTransfer'] = f">9999"
-                            elif v > 100:
-                                m['latestTransfer'] = f"{round(v):4d}s"
-                            elif v >  10:
-                                m['latestTransfer'] = f"{v:4.1f}s"
-                            else:
-                                m['latestTransfer'] = f"{v:4.2f}s"
-
+                            m['latestTransfer'] = durationToString(now - m['transferLast'])
+                        elif "messageLast" in m and m['messageLast'] > 0:
+                            m['latestTransfer'] = durationToString(now - m['messageLast'])
                         
                         if len(m['latestTransfer']) > self.cumulative_stats['latestTransferWidth']:
                             self.cumulative_stats['latestTransferWidth'] = len(m['latestTransfer'])
@@ -1058,7 +1041,7 @@ class sr_GlobalState:
     
                             self.cumulative_stats['txMessageRate'] +=  (m["txGoodCount"]+m["txBadCount"])/time_base
                         if m["rxGoodCount"] > 0:
-                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/m['rxGoodCount'])*100
+                            m['rejectPercent'] = ((m['rejectCount']+m['rxBadCount'])/(m['rxGoodCount']+m['rxBadCount']))*100
                             if m['rejectPercent'] > 100:
                                 m['rejectPercent']=100
                         else:
@@ -2639,9 +2622,9 @@ class sr_GlobalState:
 
                 if 'metrics' in self.states[c][cfg]:
                     m=self.states[c][cfg]['metrics']
-                    lfmt = f"%5d %3d%% %3d%% %5d %7.2fs %7.2fs %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
+                    lfmt = f"%5d %3d%% %3d%% %5d %8s %8s %{latestTransferWidth}s %4.1f%% %8s/s %8s/s %8s/s %8s/s "
                     line += lfmt % ( m['retry'], m['connectPercent'], m['byteConnectPercent'], \
-                            m['messagesQueued'], m['lagMax'], m['lagMean'], m['latestTransfer'], m['rejectPercent'],\
+                            m['messagesQueued'], durationToString(m['lagMax']), durationToString(m['lagMean']), m['latestTransfer'], m['rejectPercent'],\
                             naturalSize(m['byteRate']).replace("Bytes","B"), \
                             naturalSize(m['msgRate']).replace("B","m").replace("mytes","m"), \
                             naturalSize(m['transferRxByteRate']).replace("Bytes","B"), \
