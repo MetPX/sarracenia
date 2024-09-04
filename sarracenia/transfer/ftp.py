@@ -98,9 +98,10 @@ class Ftp(Transfer):
         try:
             self.ftp.cwd(self.originalDir)
             self.ftp.cwd(path)
-            alarm_cancel()
             return
         except:
+            pass
+        finally:
             alarm_cancel()
 
         # need to create subdir
@@ -114,9 +115,10 @@ class Ftp(Transfer):
             try:
                 alarm_set(self.o.timeout)
                 self.ftp.cwd(d)
-                alarm_cancel()
                 continue
             except:
+                pass
+            finally:
                 alarm_cancel()
 
             # create

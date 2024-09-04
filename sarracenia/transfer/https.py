@@ -254,8 +254,10 @@ class Https(Transfer):
             dbuf = None
             while True:
                 alarm_set(self.o.timeout)
-                chunk = self.http.read(self.o.bufSize)
-                alarm_cancel()
+                try:
+                    chunk = self.http.read(self.o.bufSize)
+                finally:
+                    alarm_cancel()
                 if not chunk: break
                 if dbuf: dbuf += chunk
                 else: dbuf = chunk
@@ -375,7 +377,6 @@ class Https(Transfer):
                 pass
 
             self.connected = True
-            alarm_cancel()
             return self.connected
 
         except urllib.error.HTTPError as e:
@@ -383,23 +384,21 @@ class Https(Transfer):
             logger.error(
                 'Server couldn\'t fulfill the request. Error code: %s, %s' %
                 (e.code, e.reason))
-            alarm_cancel()
             self.connected = False
             raise
         except urllib.error.URLError as e:
             logger.error(f'failed 5 {self.__url_redir_str()}')
             logger.error('Failed to reach server. Reason: %s' % e.reason)
-            alarm_cancel()
             self.connected = False
             raise
         except:
             logger.error(f'unable to open {self.__url_redir_str()}')
             logger.debug('Exception details: ', exc_info=True)
             self.connected = False
-            alarm_cancel()
             raise
+        finally:
+            alarm_cancel()
 
-        alarm_cancel()
         return False
     
     def stat(self,path,msg) -> sarracenia.filemetadata.FmdStat:
