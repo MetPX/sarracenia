@@ -1762,7 +1762,7 @@ If the speed observed is to be considered normal for that flow, then set the thr
 appropriately.
 
 
-scheduled_interval,scheduled_hour,scheduled_minute
+scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
 --------------------------------------------------
 
 When working with scheduled flows, such as polls, one can configure a duration
@@ -1772,7 +1772,7 @@ given activity::
   scheduled_interval 30
 
 run the flow or poll every 30 seconds.  If no duration is set, then the 
-flowcb.scheduled.Scheduled class will look for the other two time specifiers::
+flowcb.scheduled.Scheduled class will then look for the hour/minute time specifiers::
 
   scheduled_hour 1,4,5,23
   scheduled_minute 14,17,29
@@ -1780,6 +1780,14 @@ flowcb.scheduled.Scheduled class will look for the other two time specifiers::
 
 which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
 after each of 4h, 5h and 23h.
+
+If no scheduled_time nor scheduled_hour is given, then flowcb.scheduled.Scheduled class will
+then look for the remaining time specifier::
+
+  scheduled_time 15:30,16:30,18:59
+
+this will poll the data at 15:30, 16:30 and 18:59 every day. This option allows you to fine tune more
+your time field then previous options.
 
 sendTo <url>
 ---------------
