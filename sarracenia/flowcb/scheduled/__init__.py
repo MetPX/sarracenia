@@ -53,14 +53,26 @@ class Scheduled(FlowCB):
           set self.appointments to a list of when something needs to be run during the current day.
         """
         self.appointments=[]
-        for h in self.hours:
-           for m in self.minutes:
-               if ( h > when.hour ) or ((h == when.hour) and ( m >= when.minute )):
-                   appointment = datetime.time(h, m, tzinfo=datetime.timezone.utc )
-                   next_time = datetime.datetime.combine(when,appointment)
-                   self.appointments.append(next_time)
-               else:
-                   pass # that time is passed for today.
+        if self.o.scheduled_minute and self.o.scheduled_hour:
+            for h in self.hours:
+               for m in self.minutes:
+                   if ( h > when.hour ) or ((h == when.hour) and ( m >= when.minute )):
+                       appointment = datetime.time(h, m, tzinfo=datetime.timezone.utc )
+                       next_time = datetime.datetime.combine(when,appointment)
+                       self.appointments.append(next_time)
+                   else:
+                       pass # that time is passed for today.
+        elif self.o.scheduled_time:
+            for time in self.sched_times:
+                hour = int(time.split(':')[0])
+                minute = int(time.split(':')[1])
+                if ( hour > when.hour ) or ((hour == when.hour) and ( minute >= when.minute )):
+                    appointment = datetime.time(hour, minute, tzinfo=datetime.timezone.utc )
+                    next_time = datetime.datetime.combine(when,appointment)
+                    self.appointments.append(next_time)
+                else:
+                    pass # that time is passed for today.
+
 
         logger.info( f"for {when}: {json.dumps(list(map( lambda x: str(x), self.appointments))) } ")
 
@@ -70,9 +82,13 @@ class Scheduled(FlowCB):
         self.o.add_option( 'scheduled_interval', 'duration', 0 )
         self.o.add_option( 'scheduled_hour', 'list', [] )
         self.o.add_option( 'scheduled_minute', 'list', [] )
+        self.o.add_option( 'scheduled_time', 'list', [] )
         
         self.housekeeping_needed=False
         self.interrupted=None
+
+        self.sched_times = sum([ x.split(',') for x in self.o.scheduled_time],[])
+        self.sched_times.sort()
 
         sched_hours = sum([ x.split(',') for x in self.o.scheduled_hour],[])
         self.hours = list(map( lambda x: int(x), sched_hours ))
@@ -82,6 +98,7 @@ class Scheduled(FlowCB):
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
         self.minutes = list(map( lambda x: int(x), sched_min))
         self.minutes.sort()
+
 
         self.default_wait=300
 
@@ -180,7 +197,7 @@ class Scheduled(FlowCB):
             self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
-        if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
+        if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ) or self.o.scheduled_time:
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
             next_appointment=None
             missed_appointments=[]
