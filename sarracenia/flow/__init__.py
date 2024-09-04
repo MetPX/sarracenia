@@ -2172,6 +2172,13 @@ class Flow:
                         len_written = self.proto[self.scheme].get(
                             msg, remote_file, new_inflight_path, remote_offset,
                             msg['local_offset'], block_length, exactLength)
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 404:
+                         self.reject(msg, 404, f"url does not exist upstream, discarding message." )
+                         return -1
+                    logger.error( f"http error, could not get {remote_file}: {ex}" )
+                    return 0
+
                 except Exception as ex:
                     logger.error( f"could not get {remote_file}: {ex}" )
                     return 0
