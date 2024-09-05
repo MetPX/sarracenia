@@ -53,7 +53,7 @@ class Scheduled(FlowCB):
           set self.appointments to a list of when something needs to be run during the current day.
         """
         self.appointments=[]
-        if self.o.scheduled_minute and self.o.scheduled_hour:
+        if self.o.scheduled_minute or self.o.scheduled_hour:
             for h in self.hours:
                for m in self.minutes:
                    if ( h > when.hour ) or ((h == when.hour) and ( m >= when.minute )):
@@ -62,16 +62,19 @@ class Scheduled(FlowCB):
                        self.appointments.append(next_time)
                    else:
                        pass # that time is passed for today.
-        elif self.o.scheduled_time:
+        if self.o.scheduled_time:
             for time in self.sched_times:
-                hour = int(time.split(':')[0])
-                minute = int(time.split(':')[1])
+                hour,minute=time.split(':')
+                hour = int(hour)
+                minute = int(minute)
                 if ( hour > when.hour ) or ((hour == when.hour) and ( minute >= when.minute )):
                     appointment = datetime.time(hour, minute, tzinfo=datetime.timezone.utc )
                     next_time = datetime.datetime.combine(when,appointment)
                     self.appointments.append(next_time)
                 else:
                     pass # that time is passed for today.
+        
+        self.appointments.sort()
 
 
         logger.info( f"for {when}: {json.dumps(list(map( lambda x: str(x), self.appointments))) } ")
@@ -88,16 +91,16 @@ class Scheduled(FlowCB):
         self.interrupted=None
 
         self.sched_times = sum([ x.split(',') for x in self.o.scheduled_time],[])
-        self.sched_times.sort()
+        #self.sched_times.sort()
 
         sched_hours = sum([ x.split(',') for x in self.o.scheduled_hour],[])
         self.hours = list(map( lambda x: int(x), sched_hours ))
-        self.hours.sort()
+        #self.hours.sort()
         logger.debug( f"hours {self.hours}" )
 
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
         self.minutes = list(map( lambda x: int(x), sched_min))
-        self.minutes.sort()
+        #self.minutes.sort()
 
 
         self.default_wait=300
