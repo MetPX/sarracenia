@@ -103,7 +103,7 @@ class Scheduled(FlowCB):
         #self.minutes.sort()
 
 
-        self.default_wait=300
+        self.default_wait=datetime.timedelta(seconds=300)
 
         logger.debug( f'minutes: {self.minutes}')
 
