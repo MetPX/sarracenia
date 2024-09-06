@@ -1,6 +1,8 @@
 metpx-sarracenia (2.24.08post2) unstable; urgency=medium
 
   * revert utf-8 ftp charset. #1198 
+  * Fix #1180 file_time_limit evaluation bug
+  * fix #1176 inappropriate addition of / to end of post_base_url
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 22 Aug 2024 12:25:11 -0400
 
@@ -8,7 +10,7 @@ metpx-sarracenia (2.24.08) unstable; urgency=medium
 
   * Fix for #1144 - sr_audit don't crash when the config doesn't exist for a missing instance
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 08 Aug 2024 13:09:09 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 12 Aug 2024 13:09:09 -0400
 
 metpx-sarracenia (2.24.04) unstable; urgency=medium
 
