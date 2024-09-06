@@ -112,7 +112,7 @@ class Scheduled(FlowCB):
         self.first_interval=True
 
         if self.o.scheduled_interval <= 0 and not self.appointments:
-            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait} seconds" )
+            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait.seconds} seconds" )
 
     def gather(self,messageCountMax):
 
