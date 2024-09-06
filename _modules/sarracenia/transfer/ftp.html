@@ -182,10 +182,12 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp cd </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pwd</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pwd</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp cd_forced </span><span class="si">%d</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
@@ -193,14 +195,14 @@
         <span class="c1"># try to go directly to path</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">return</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="c1"># need to create subdir</span>
 
@@ -213,25 +215,32 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-                <span class="n">alarm_cancel</span><span class="p">()</span>
                 <span class="k">continue</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
             <span class="c1"># create</span>
             <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">mkd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">mkd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
             <span class="c1"># chmod</span>
             <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
             <span class="c1"># cd</span>
             <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># check_is_connected</span>
 
@@ -263,8 +272,10 @@
     <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># close</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -273,9 +284,9 @@
         <span class="n">old_ftp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+        <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
             <span class="n">old_ftp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -449,8 +460,11 @@
     <span class="c1"># getcwd</span>
     <span class="k">def</span> <span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">pwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">pwd</span><span class="p">()</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">pwd</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="n">pwd</span>
 
     <span class="c1"># ls</span>
@@ -458,8 +472,11 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp ls&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;LIST&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_callback</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">retrlines</span><span class="p">(</span><span class="s1">&#39;LIST&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_callback</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp ls = (size: </span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">255</span><span class="p">]))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span>
 
@@ -499,13 +516,18 @@
     <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">mkd</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">mkd</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
+
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE CHMOD &#39;</span> <span class="o">+</span>
                          <span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
                          <span class="n">remote_dir</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># put</span>
     <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -563,22 +585,28 @@
     <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp rename </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># rmdir</span>
     <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp rmdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rmd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rmd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># umask</span>
     <span class="k">def</span> <span class="nf">umask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp umask&quot;</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE UMASK 777&#39;</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s1">&#39;SITE UMASK 777&#39;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span></div>
 
 </pre></div>
 

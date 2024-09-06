@@ -175,12 +175,14 @@
     <span class="c1"># cd</span>
     <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;first cd to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;then cd to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pwd</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;first cd to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;then cd to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pwd</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># cd forced</span>
     <span class="k">def</span> <span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
@@ -189,14 +191,14 @@
         <span class="c1"># try to go directly to path</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
-            <span class="k">return</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="c1"># need to create subdir</span>
 
@@ -209,16 +211,19 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-                <span class="n">alarm_cancel</span><span class="p">()</span>
                 <span class="k">continue</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
             <span class="c1"># create and go to subdir</span>
             <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp check_is_connected&quot;</span><span class="p">)</span>
@@ -239,10 +244,11 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="kc">True</span>
 
@@ -250,8 +256,10 @@
     <span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp chmod </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:o}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">perm</span><span class="p">),</span> <span class="n">path</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># close</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -287,7 +295,6 @@
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-
             <span class="n">sublogger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;paramiko&#39;</span><span class="p">)</span>
             <span class="n">sublogger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ssh</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
@@ -317,8 +324,6 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span> <span class="o">=</span> <span class="n">sftp</span>
-
-            <span class="c1">#alarm_cancel()</span>
             <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">except</span><span class="p">:</span>
@@ -326,7 +331,8 @@
                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">))</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Exception details: &#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># credentials...</span>
@@ -395,31 +401,36 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">return</span>
 
-        <span class="c1"># proceed with file/link removal</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">S_ISDIR</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp remove </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># proceed with file/link removal</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">S_ISDIR</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp remove </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-        <span class="c1"># proceed with directory removal</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rmdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="c1"># proceed with directory removal</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rmdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">readlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">link</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">readlink</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">value</span>
 
     <span class="c1"># symlink</span>
     <span class="k">def</span> <span class="nf">symlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(in </span><span class="si">%s</span><span class="s2">), create this file </span><span class="si">%s</span><span class="s2"> as a link to: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">path</span><span class="p">,</span> <span class="n">link</span><span class="p">)</span> <span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># get</span>
 
@@ -435,10 +446,12 @@
             <span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="n">local_file</span><span class="p">,</span> <span class="n">remote_offset</span><span class="p">,</span> <span class="n">local_offset</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">exactLength</span><span class="p">))</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="c1"># read from rfp and write to local_file</span>
 
@@ -449,8 +462,10 @@
         <span class="c1"># close</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
@@ -476,8 +491,10 @@
     <span class="c1"># getcwd</span>
     <span class="k">def</span> <span class="nf">getcwd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">cwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">cwd</span>
 
     <span class="c1"># ls</span>
@@ -486,8 +503,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># timeout is at least 30 secs, say we wait for max 5 mins</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="n">dir_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">listdir_attr</span><span class="p">()</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dir_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">listdir_attr</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
+
         <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dir_attr</span><span class="p">)):</span>
             <span class="n">attr</span> <span class="o">=</span> <span class="n">dir_attr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
@@ -519,19 +539,18 @@
     <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;mkdir </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">remote_dir</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        
         <span class="k">try</span><span class="p">:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">S_ISDIR</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;cannot mkdir </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">, file exists&quot;</span> <span class="p">)</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">return</span>
         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">alarm_cancel</span><span class="p">()</span>
             <span class="k">return</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">remote_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
         <span class="n">alarm_cancel</span><span class="p">()</span>
@@ -552,23 +571,25 @@
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
-            <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+           <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+               <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
+               <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
 
-        <span class="c1"># parts</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">remote_file</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
-                <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+           <span class="c1"># parts</span>
+           <span class="k">else</span><span class="p">:</span>
+               <span class="k">try</span><span class="p">:</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">remote_file</span><span class="p">)</span>
+               <span class="k">except</span><span class="p">:</span>
+                   <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
+                   <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-            <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;r+b&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
-            <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+               <span class="n">rfp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">file</span><span class="p">(</span><span class="n">remote_file</span><span class="p">,</span> <span class="s1">&#39;r+b&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">bufSize</span><span class="p">)</span>
+               <span class="n">rfp</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+               <span class="k">if</span> <span class="n">remote_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">remote_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="c1"># read from local_file and write to rfp</span>
 
@@ -577,10 +598,12 @@
         <span class="c1"># no sparse file... truncate where we are at</span>
 
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
-        <span class="k">if</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
-        <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fpos</span> <span class="o">=</span> <span class="n">remote_offset</span> <span class="o">+</span> <span class="n">rw_length</span>
+            <span class="k">if</span> <span class="n">length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">rfp</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpos</span><span class="p">)</span>
+            <span class="n">rfp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+           <span class="n">alarm_cancel</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">rw_length</span>
 
@@ -613,15 +636,19 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">remote_old</span><span class="p">,</span> <span class="n">remote_new</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># rmdir</span>
     <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp rmdir </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1">#when sftp is active, paramiko is present... STFPAttributes is then the same as FmdStat.</span>
     <span class="k">def</span> <span class="nf">stat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">filemetadata</span><span class="o">.</span><span class="n">FmdStat</span><span class="p">:</span>
@@ -634,8 +661,10 @@
     <span class="k">def</span> <span class="nf">utime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp utime </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">))</span>
         <span class="n">alarm_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">)</span>
-        <span class="n">alarm_cancel</span><span class="p">()</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">utime</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tup</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">alarm_cancel</span><span class="p">()</span></div>
 
 </pre></div>
 
