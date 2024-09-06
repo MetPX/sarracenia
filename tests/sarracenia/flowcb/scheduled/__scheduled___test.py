@@ -22,7 +22,7 @@ def build_options():
      o.finalize()
      return o
 
-def test_broker_finalize():
+def test_schedules():
 
      options= build_options()
      options.scheduled_time=[ "12:40", "7:37" ]
@@ -96,8 +96,6 @@ def test_broker_finalize():
      me.update_appointments(midnight)
      assert( len(me.appointments) == 2 ) 
 
-     logger.error( f"HOHO" )
-
      options= build_options()
      options.scheduled_hour= [ "2", "4" ]
      options.scheduled_minute= [ "2" ]
@@ -106,6 +104,30 @@ def test_broker_finalize():
      me.update_appointments(midnight)
 
      assert( len(me.appointments) == 4 ) 
+
+     """
+       expect appointments at 2:00, and 4:00
+     """
+     options= build_options()
+     options.scheduled_hour= [ "2", "4" ]
+     options.scheduled_minute= [ ]
+     options.scheduled_time=[ ]
+     me=sarracenia.flowcb.scheduled.Scheduled(options)
+     me.update_appointments(midnight)
+
+     assert( len(me.appointments) == 2 ) 
+
+     """
+       expect appointments at :02, and :04 every hour.
+     """
+     options= build_options()
+     options.scheduled_minute= [ "2", "4" ]
+     options.scheduled_hour= [ ]
+     options.scheduled_time=[ ]
+     me=sarracenia.flowcb.scheduled.Scheduled(options)
+     me.update_appointments(midnight)
+
+     assert( len(me.appointments) == 48 ) 
 
      #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
      #logger.error( f" HOHO {len(me.appointments)=}" )
