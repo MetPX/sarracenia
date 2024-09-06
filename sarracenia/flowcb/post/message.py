@@ -36,12 +36,19 @@ class Message(FlowCB):
 
         still_ok = []
         all_good=True
+        count = 0
         for m in worklist.ok:
-            if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m):
+            if all_good and hasattr(self.poster,'putNewMessage') and self.poster.putNewMessage(m, commit=False):
                 still_ok.append(m)
+                count += 1
+                if count == self.o.batch:
+                    self.poster.txCommit()
+                    count = 0
             else:
                 all_good=False
                 worklist.failed.append(m)
+        if count != 0:
+            self.poster.txCommit()
         worklist.ok = still_ok
 
     def metricsReport(self) -> dict:

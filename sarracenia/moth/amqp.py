@@ -619,7 +619,7 @@ class AMQP(Moth):
     def putNewMessage(self,
                       message: sarracenia.Message,
                       content_type: str = 'application/json',
-                      exchange: str = None ) -> bool:
+                      exchange: str = None, commit=True ) -> bool:
         """
         put a new message out, to the configured exchange by default.
         """
@@ -744,7 +744,10 @@ class AMQP(Moth):
             logger.debug( f"trying to publish body: {body} headers: {headers} to {exchange} under: {topic} " )
             self.channel.basic_publish(AMQP_Message, exchange, topic, timeout=pub_timeout)
             # Issue #732: tx_commit can get stuck forever
-            self.channel.tx_commit()
+            if commit:
+                logger.debug("before commit")
+                self.channel.tx_commit()
+                logger.debug("after commit")
             logger.debug("published body: {} headers: {} to {} under: {} ".format(
                           body, headers, exchange, topic))
             self.metrics['txGoodCount'] += 1
@@ -763,6 +766,12 @@ class AMQP(Moth):
 
             self.close()
             return False # instead of looping
+    
+    def txCommit(self):
+        logger.debug("before commit")
+        self.channel.tx_commit()
+        logger.debug("after commit")
+   
 
     def close(self) -> None:
         try:
