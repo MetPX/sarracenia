@@ -72,6 +72,18 @@ def test_schedules():
 
      """
      options = build_options()
+     options.scheduled_hour= []
+     options.scheduled_minute= []
+     options.scheduled_time= []
+     me=sarracenia.flowcb.scheduled.Scheduled(options)
+     me.update_appointments(midnight)
+
+     logger.error( f"{me.appointments=}" )
+     assert( len(me.appointments) == 0 ) 
+
+
+     options = build_options()
+     options = build_options()
      options.scheduled_hour= [ '1' ]
      options.scheduled_minute= [ '1' ]
      me=sarracenia.flowcb.scheduled.Scheduled(options)
