@@ -53,14 +53,29 @@ class Scheduled(FlowCB):
           set self.appointments to a list of when something needs to be run during the current day.
         """
         self.appointments=[]
-        for h in self.hours:
-           for m in self.minutes:
-               if ( h > when.hour ) or ((h == when.hour) and ( m >= when.minute )):
-                   appointment = datetime.time(h, m, tzinfo=datetime.timezone.utc )
-                   next_time = datetime.datetime.combine(when,appointment)
-                   self.appointments.append(next_time)
-               else:
-                   pass # that time is passed for today.
+        if self.o.scheduled_minute or self.o.scheduled_hour:
+            for h in self.hours:
+               for m in self.minutes:
+                   if ( h > when.hour ) or ((h == when.hour) and ( m >= when.minute )):
+                       appointment = datetime.time(h, m, tzinfo=datetime.timezone.utc )
+                       next_time = datetime.datetime.combine(when,appointment)
+                       self.appointments.append(next_time)
+                   else:
+                       pass # that time is passed for today.
+        if self.o.scheduled_time:
+            for time in self.sched_times:
+                hour,minute=time.split(':')
+                hour = int(hour)
+                minute = int(minute)
+                if ( hour > when.hour ) or ((hour == when.hour) and ( minute >= when.minute )):
+                    appointment = datetime.time(hour, minute, tzinfo=datetime.timezone.utc )
+                    next_time = datetime.datetime.combine(when,appointment)
+                    self.appointments.append(next_time)
+                else:
+                    pass # that time is passed for today.
+        
+        self.appointments.sort()
+
 
         logger.info( f"for {when}: {json.dumps(list(map( lambda x: str(x), self.appointments))) } ")
 
@@ -70,20 +85,27 @@ class Scheduled(FlowCB):
         self.o.add_option( 'scheduled_interval', 'duration', 0 )
         self.o.add_option( 'scheduled_hour', 'list', [] )
         self.o.add_option( 'scheduled_minute', 'list', [] )
+        self.o.add_option( 'scheduled_time', 'list', [] )
         
         self.housekeeping_needed=False
         self.interrupted=None
 
+        self.sched_times = sum([ x.split(',') for x in self.o.scheduled_time],[])
+        #self.sched_times.sort()
+
         sched_hours = sum([ x.split(',') for x in self.o.scheduled_hour],[])
+        if sched_hours == [] : sched_hours = list(range(0,24))
         self.hours = list(map( lambda x: int(x), sched_hours ))
-        self.hours.sort()
+        #self.hours.sort()
         logger.debug( f"hours {self.hours}" )
 
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
+        if sched_min == [] : sched_min = [0]
         self.minutes = list(map( lambda x: int(x), sched_min))
-        self.minutes.sort()
+        #self.minutes.sort()
 
-        self.default_wait=300
+
+        self.default_wait=datetime.timedelta(seconds=300)
 
         logger.debug( f'minutes: {self.minutes}')
 
@@ -92,7 +114,7 @@ class Scheduled(FlowCB):
         self.first_interval=True
 
         if self.o.scheduled_interval <= 0 and not self.appointments:
-            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait} seconds" )
+            logger.info( f"no scheduled_interval or appointments (combination of scheduled_hour and scheduled_minute) set defaulting to every {self.default_wait.seconds} seconds" )
 
     def gather(self,messageCountMax):
 
@@ -180,7 +202,7 @@ class Scheduled(FlowCB):
             self.wait_seconds(datetime.timedelta(seconds=self.o.scheduled_interval))
             return
 
-        if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ):
+        if ( len(self.o.scheduled_hour) > 0 ) or ( len(self.o.scheduled_minute) > 0 ) or self.o.scheduled_time:
             now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
             next_appointment=None
             missed_appointments=[]

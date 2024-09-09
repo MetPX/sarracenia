@@ -2055,7 +2055,7 @@ class Config:
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
         else:
-            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute')):
+            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute') or hasattr(self,'scheduled_time')):
                 if self.sleep > 1:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
