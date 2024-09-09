@@ -94,11 +94,13 @@ class Scheduled(FlowCB):
         #self.sched_times.sort()
 
         sched_hours = sum([ x.split(',') for x in self.o.scheduled_hour],[])
+        if sched_hours == [] : sched_hours = list(range(0,24))
         self.hours = list(map( lambda x: int(x), sched_hours ))
         #self.hours.sort()
         logger.debug( f"hours {self.hours}" )
 
         sched_min = sum([ x.split(',') for x in self.o.scheduled_minute ],[])
+        if sched_min == [] : sched_min = [0]
         self.minutes = list(map( lambda x: int(x), sched_min))
         #self.minutes.sort()
 
