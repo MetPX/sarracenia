@@ -193,7 +193,7 @@ class S3CloudSender(FlowCB):
         local_file = os.path.join(self.o.baseDir, msg['relPath'].lstrip('/'))
         if not os.path.isfile(local_file):
             logger.error(f"File does not exist: {local_file} (baseDir: {self.o.baseDir}, relPath: {msg['relPath']})")
-            return (False, False)
+            return False
 
         logger.debug(f"Going to upload local file: {local_file} to S3 bucket: {s3_bucket_name}, path: {remote_path}")
 
@@ -203,7 +203,7 @@ class S3CloudSender(FlowCB):
             # The exception gives a nice explanation already
             logger.error(f"{e}")
             logger.debug("Exception details:", exc_info=True)
-            return (False, False)
+            return False
         
         logger.info(f"Sent {local_file} into S3 bucket: {s3_bucket_name}, path: {remote_path}")
 
@@ -236,7 +236,7 @@ class S3CloudSender(FlowCB):
 
         logger.debug(f"Modified msg: {msg}")
 
-        return (True, True)
+        return True
 
     def __repr__(self):
         return '<S3CloudSender>'

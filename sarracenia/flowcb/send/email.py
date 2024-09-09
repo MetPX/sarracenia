@@ -89,4 +89,4 @@ class Email(FlowCB):
 
                     logger.info('sent file %s to %s' % (ipath, recipient))
 
-        return (True, False)
+        return True
