@@ -118,7 +118,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sep 06, 2024</p>
+<dd class="field-even"><p>Sep 09, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -1613,8 +1613,8 @@ or splitting up the load among several configurations, to improve parallelizatio
 If the speed observed is to be considered normal for that flow, then set the threshold
 appropriately.</p>
 </section>
-<section id="scheduled-interval-scheduled-hour-scheduled-minute">
-<h4>scheduled_interval,scheduled_hour,scheduled_minute<a class="headerlink" href="#scheduled-interval-scheduled-hour-scheduled-minute" title="Link to this heading"></a></h4>
+<section id="scheduled-interval-scheduled-hour-scheduled-minute-scheduled-time">
+<h4>scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time<a class="headerlink" href="#scheduled-interval-scheduled-hour-scheduled-minute-scheduled-time" title="Link to this heading"></a></h4>
 <p>When working with scheduled flows, such as polls, one can configure a duration
 (no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a
 given activity:</p>
@@ -1622,13 +1622,20 @@ given activity:</p>
 </pre></div>
 </div>
 <p>run the flow or poll every 30 seconds.  If no duration is set, then the
-flowcb.scheduled.Scheduled class will look for the other two time specifiers:</p>
+flowcb.scheduled.Scheduled class will then look for the hour/minute time specifiers:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_hour</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">23</span>
 <span class="n">scheduled_minute</span> <span class="mi">14</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">29</span>
 </pre></div>
 </div>
 <p>which will have the poll run each day at: 01:14, 01:17, 01:29, then the same minutes
 after each of 4h, 5h and 23h.</p>
+<p>If no scheduled_time nor scheduled_hour is given, then flowcb.scheduled.Scheduled class will
+then look for the remaining time specifier:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_time</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">16</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">18</span><span class="p">:</span><span class="mi">59</span>
+</pre></div>
+</div>
+<p>this will poll the data at 15:30, 16:30 and 18:59 every day. This option allows you to fine tune more
+your time field then previous options.</p>
 </section>
 <section id="sendto-url">
 <h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>

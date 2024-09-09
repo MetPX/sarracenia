@@ -117,7 +117,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sep 06, 2024</p>
+<dd class="field-even"><p>Sep 09, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -1646,13 +1646,20 @@ sondage devrait être lancer:</p>
 </div>
 <p>Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune <em>scheduled_interval</em> n’est
 définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres
-spécificateurs de temps</p>
+spécificateurs de temps, en format heure/minute</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_hour</span> <span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">23</span>
 <span class="n">scheduled_minute</span> <span class="mi">14</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">29</span>
 </pre></div>
 </div>
-<p>afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+<p>ceci va démarrer un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.</p>
+<p>Si scheduled_time ni scheduled_hour n’est pas donné, alors la classe flowcb.scheduled.Scheduled va chercher pour
+la dernière option du spécificateur de temps:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_time</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">16</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">18</span><span class="p">:</span><span class="mi">59</span>
+</pre></div>
+</div>
+<p>ceci va déclencher le sondage des données à 15:30, 16:30 et 18:59 à chaque jour. Cette option te permet d’encore plus
+délimiter des intervals de temps que les options précédentes.</p>
 </section>
 <section id="sendto-url">
 <h4>sendTo &lt;url&gt;<a class="headerlink" href="#sendto-url" title="Link to this heading"></a></h4>

@@ -1773,13 +1773,21 @@ sondage devrait être lancer::
 
 Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune *scheduled_interval* n'est 
 définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres 
-spécificateurs de temps ::
+spécificateurs de temps, en format heure/minute ::
 
   scheduled_hour 1,4,5,23
   scheduled_minute 14,17,29
 
-afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+ceci va démarrer un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.
+
+Si scheduled_time ni scheduled_hour n'est pas donné, alors la classe flowcb.scheduled.Scheduled va chercher pour
+la dernière option du spécificateur de temps::
+  
+  scheduled_time 15:30,16:30,18:59
+
+ceci va déclencher le sondage des données à 15:30, 16:30 et 18:59 à chaque jour. Cette option te permet d'encore plus
+délimiter des intervals de temps que les options précédentes.
 
 sendTo <url>
 ------------

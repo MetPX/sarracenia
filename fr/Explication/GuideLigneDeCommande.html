@@ -1045,7 +1045,7 @@ par fichier. La taille du fichier est prise dans le répertoire « ls »… mais
 de contrôle ne peut pas être déterminée, alors la stratégie de calcul de est ¨cod¨ qui signifie
 que ca devrait être calculé lors du transfert.</p>
 <p>Pour définir la fréquence de sondage, on se sert de <em>scheduled_</em>, tel que:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_interal</span> <span class="mi">30</span><span class="n">m</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_interval</span> <span class="mi">30</span><span class="n">m</span>
 </pre></div>
 </div>
 <p>pour sonder à toute les trente minutes, ou bien:</p>
@@ -1053,7 +1053,11 @@ que ca devrait être calculé lors du transfert.</p>
 <span class="n">scheduled_minute</span> <span class="mi">27</span>
 </pre></div>
 </div>
-<p>pour sonder trois fois par jour à 1h27, 13h27 et 19h27.</p>
+<p>pour sonder trois fois par jour à 1h27, 13h27 et 19h27, ou bien:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scheduled_time</span> <span class="mi">15</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">20</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">23</span><span class="p">:</span><span class="mi">15</span>
+</pre></div>
+</div>
+<p>pour sonder à seulement 15:30, 20:30 et 23:15</p>
 <p>Par défaut, sr_poll envoie son message de publication au courtier avec l’échange par défaut
 (le préfixe <em>xs_</em> suivi du nom d’utilisateur du courtier). Le <em>post_broker</em> est obligatoire.
 Il peut être incomplet s’il est bien défini dans le fichier credentials.conf.</p>
