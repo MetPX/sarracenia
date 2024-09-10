@@ -194,6 +194,8 @@ class Scheduled(FlowCB):
 
     def wait_until_next( self ):
 
+        one_min = datetime.timedelta(minutes=1)
+
         if self.o.scheduled_interval > 0:
             if self.first_interval:
                 self.first_interval=False
@@ -207,7 +209,9 @@ class Scheduled(FlowCB):
             next_appointment=None
             missed_appointments=[]
             for t in self.appointments: 
-                if now < t: 
+                # Need a little bit before or after apointment, to allow some wiggle room for sleep overhead.
+                # See issue #1214 for more details
+                if t - one_min <= now <= t + one_min: 
                     next_appointment=t
                     break
                 else:
