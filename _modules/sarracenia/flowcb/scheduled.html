@@ -294,6 +294,8 @@
 
     <span class="k">def</span> <span class="nf">wait_until_next</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
 
+        <span class="n">one_min</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">scheduled_interval</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_interval</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">first_interval</span><span class="o">=</span><span class="kc">False</span>
@@ -307,7 +309,9 @@
             <span class="n">next_appointment</span><span class="o">=</span><span class="kc">None</span>
             <span class="n">missed_appointments</span><span class="o">=</span><span class="p">[]</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">appointments</span><span class="p">:</span> 
-                <span class="k">if</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">:</span> 
+                <span class="c1"># Need a little bit before or after apointment, to allow some wiggle room for sleep overhead.</span>
+                <span class="c1"># See issue #1214 for more details</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">+</span> <span class="n">one_min</span><span class="p">:</span> 
                     <span class="n">next_appointment</span><span class="o">=</span><span class="n">t</span>
                     <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
