@@ -74,3 +74,11 @@ class Message(FlowCB):
         if hasattr(self,'consumer') and hasattr(self.consumer, 'close'):
             self.consumer.close()
         logger.info('closing')
+
+    def please_stop(self) -> None:
+        """ pass stop request along to consumer Moth instance(s)
+        """
+        super().please_stop()
+        if hasattr(self,'consumer') and self.consumer:
+            logger.debug("asking Moth consumer to please_stop")
+            self.consumer.please_stop()

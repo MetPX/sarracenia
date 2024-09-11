@@ -4,35 +4,43 @@
 # Intended use case is a fresh sys (tested on ubuntu18.04desktop)
 # which can easily be run in a virtualbox VM.
 
+
+# later OS versions have later versions of pip that require convincing to actually install.
+. /etc/os-release
+if [ "${VERSION_ID}" \> "22.04" ]; then
+        pip_install="pip3 install --break-system-packages --user "
+else
+        pip_install="pip3 install "
+fi
+
 # Install and configure dependencies
 sudo apt-key adv --keyserver "hkps.pool.sks-keyservers.net" --recv-keys "0x6B73A36E6026DFCA"
 sudo add-apt-repository -y ppa:ssc-hpc-chp-spc/metpx
 sudo apt update
 sudo apt -y upgrade
-sudo apt -y install python3-setuptools python3-magic python-setuptools
+sudo apt -y install python3-setuptools python3-magic python-setuptools python3-paramiko python3-requests
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install metpx-libsr3c metpx-libsr3c-dev metpx-sr3c
 sudo apt -y install erlang-nox erlang-diameter erlang-eldap findutils git librabbitmq4 net-tools openssh-client openssh-server python3-pip rabbitmq-server xattr wget 
 
-pip3 install -U pip
-pip3 install pyftpdlib paramiko net-tools
+${pip_install} -U pip
 
 # The dependencies that are installed using apt are only available to system default Python versions (e.g. Python 3.8 on Ubuntu 20.04)
 # If we are testing on a non-default Python version, we need to ensure these dependencies are still installed, so we use pip.
 # See issue #407, #445.
-for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho-mqtt psutil rangehttpserver watchdog xattr ; do
+for PKG in amqp appdirs dateparser flufl.lock humanize jsonpickle netifaces paho-mqtt psutil rangehttpserver watchdog xattr paramiko pyftpdlib net-tools; do
     PKG_INSTALLED="`pip3 list | grep ${PKG}`"
     if [ "$?" == "0" ] ; then
         echo "$PKG is already installed"
     else
-        pip3 install ${PKG}
+        ${pip_install} ${PKG}
     fi
 done
 
 # in case it was installed as a dependency.
 sudo apt -y remove metpx-sr3
 
-pip3 install .
+${pip_install} .
 
 # Setup basic configs
 mkdir -p ~/.config/sarra ~/.config/sr3

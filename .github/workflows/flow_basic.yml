@@ -26,7 +26,7 @@ jobs:
       # Don't cancel the entire matrix when one job fails
       fail-fast: false
       matrix:
-       osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
+       osver: [ "ubuntu-20.04", "ubuntu-22.04", "ubuntu-24.04" ]
 
     runs-on: ${{ matrix.osver }}
   

@@ -33,7 +33,6 @@ import paho.mqtt.client
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
-import signal
 import os
 import ssl
 import threading
@@ -342,25 +341,17 @@ class MQTT(Moth):
                                unquote(self.o['broker'].url.password))
         return client
 
-    def _mqtt_setup_signal_handler(self, signum, stack):
-        logger.info("ok, asked to stop")
-        self.please_stop=True
-
     def getSetup(self):
         """
            Establish a connection to consume messages with.  
         """
         ebo = 1
-        original_sigint = signal.getsignal(signal.SIGINT)
-        original_sigterm = signal.getsignal(signal.SIGINT)
-        signal.signal(signal.SIGINT, self._mqtt_setup_signal_handler)
-        signal.signal(signal.SIGTERM, self._mqtt_setup_signal_handler)
 
         something_broke = True
         self.connected=False
         while True:
 
-            if self.please_stop:
+            if self._stop_requested:
                 break
 
             try:
@@ -390,7 +381,7 @@ class MQTT(Moth):
                     while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                          logger.info( f"waiting for subscription to be set up. (ebo={ebo})")
                          time.sleep(0.1*ebo)
-                         if self.please_stop:
+                         if self._stop_requested:
                               break
                          if ebo < 512 :
                             ebo *= 2
@@ -411,7 +402,7 @@ class MQTT(Moth):
                         while (self.connect_in_progress) or (self.subscribe_in_progress > 0):
                             logger.info( f"waiting ({ebo} seconds) for broker to confirm subscription is set up.")
                             logger.info( f"for {icid} connect_in_progress={self.connect_in_progress} subscribe_in_progress={self.subscribe_in_progress}" )
-                            if self.please_stop:
+                            if self._stop_requested:
                                 break
                             if ebo < 60: ebo *= 2
                             decl_client.loop(ebo)
@@ -427,27 +418,16 @@ class MQTT(Moth):
             if ebo < 60: ebo *= 2
             time.sleep(ebo)
 
-        signal.signal(signal.SIGINT, original_sigint)
-        signal.signal(signal.SIGTERM, original_sigterm)
-        if self.please_stop:
-            os.kill(os.getpid(), signal.SIGINT)
-
-
-
     def putSetup(self):
         """
            establish a connection to allow publishing. 
         """
         ebo = 1
-        original_sigint = signal.getsignal(signal.SIGINT)
-        original_sigterm = signal.getsignal(signal.SIGINT)
-        signal.signal(signal.SIGINT, self._mqtt_setup_signal_handler)
-        signal.signal(signal.SIGTERM, self._mqtt_setup_signal_handler)
 
         self.connected=False
         while True:
             
-            if self.please_stop:
+            if self._stop_requested:
                 break
 
             try:
@@ -455,8 +435,8 @@ class MQTT(Moth):
                 self.unexpected_publishes = collections.deque()
 
                 props = Properties(PacketTypes.CONNECT)
-                if self.o['message_ttl'] > 0:
-                    props.MessageExpiryInterval = int(self.o['message_ttl'])
+                if self.o['messageAgeMax'] > 0:
+                    props.MessageExpiryInterval = int(self.o['messageAgeMax'])
 
                 self.transport = 'websockets' if (self.o['broker'].url.scheme[-2:] == 'ws' ) or  \
                    (self.o['broker'].url.scheme[-1] == 'w' ) else 'tcp'
@@ -489,7 +469,7 @@ class MQTT(Moth):
                 while self.connect_in_progress:
                      logger.info( f"waiting for connection to {self.o['broker']} ebo={ebo}")
                      time.sleep(0.1*ebo)
-                     if self.please_stop:
+                     if self._stop_requested:
                           break
                      if ebo < 512:
                           ebo *= 2
@@ -503,12 +483,6 @@ class MQTT(Moth):
 
             if ebo < 60: ebo *= 2
             time.sleep(ebo)
-
-        signal.signal(signal.SIGINT, original_sigint)
-        signal.signal(signal.SIGTERM, original_sigterm)
-        if self.please_stop:
-            os.kill(os.getpid(), signal.SIGINT)
-
 
     def __sub_on_message(client, userdata, msg):
         """
@@ -544,7 +518,7 @@ class MQTT(Moth):
                    clean_start=False, properties=props )
                 while self.connect_in_progress:
                     myclient.loop(0.1)
-                    if self.please_stop:
+                    if self._stop_requested:
                        break
                 myclient.disconnect()
                 logger.info( f"instance deletion for {i:02d} done" )
@@ -674,6 +648,7 @@ class MQTT(Moth):
             self.client.ack( m['ack_id'], m['qos'] )
             del m['ack_id']
             m['_deleteOnPost'].remove('ack_id')
+        return True
 
     def putNewMessage(self,
                       message: sarracenia.Message,

@@ -30,7 +30,6 @@ import stat
 import json
 
 from sarracenia.transfer import Transfer
-from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
 from azure.storage.blob import ContainerClient
 import azure.core.exceptions
@@ -113,7 +112,7 @@ class Azure(Transfer):
         self.path = self.path.lstrip('/')
 
 
-    def cd_forced(self, perm, path):
+    def cd_forced(self, path):
         logger.debug(f"forcing into  {path}")
         self.cd(path)
 

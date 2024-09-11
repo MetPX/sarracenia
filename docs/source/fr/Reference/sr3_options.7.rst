@@ -404,16 +404,44 @@ normalement rejeté, comme un échec. Cette option accepte le fichier même avec
 taille. Cela est utile lorsque le fichier change fréquemment, et qu’il passe en fil d’attente, donc
 le fichier est modifié au moment de sa récupération.
 
+Lorsque acceptSizeWrong est défini sur True, le téléchargement accepte le fichier même si sa taille
+ne correspond pas à celle du message de notification reçu. Cela est utile lorsque
+les ressources changent fréquemment et qu'il y a une file d'attente, de sorte que le fichier 
+est modifié au moment où il est récupéré.
+
+Dans le cas par défaut (acceptSizeWrong défini sur False), l'incompatibilité de taille est
+considérée comme un échec de téléchargement. Sarracenia vérifie ensuite si
+ce qui a été téléchargé correspond à ce qui se trouve actuellement sur le serveur en amont.
+
+Si la date de modification sur le serveur en amont est plus récente que dans le message::
+
++  2024-08-11 00:00:47,978 [INFO] sarracenia.flow download upstream resource is newer, so message https://hpfx.collab.science.gc.ca //20240811/WXO-DD/citypage_weather/xml/NB/s0000653_e.xml is obsolete. Discarding.
+
+traduction::
+
+   2024-08-11 00:00:47,978 [INFO] la ressource en amont est plus récente, donc le message https://hpfx.collab.science.gc.ca //20240811/WXO-DD/citypage_weather/xml/NB/s0000653_e.xml est obsolète. on abandonne le traitement du message.
+
+Si elle correspond à la taille en amont, alors aucune erreur ne s'est produite lors du téléchargement,
+c'est juste que la taille du message annonçant la nouvelle ressource ne
+correspond pas à ce qui est actuellement disponible. Il est inutile de réessayer le téléchargement.
+Dans les deux cas, le fichier téléchargé et le message correspondant sont tous deux
+rejetés.
+
+Si la vérification du serveur en amont échoue, ou si la récupération elle-même a échoué,
+alors la ressource est placée dans la file d'attente de nouvelles tentatives pour des tentatives ultérieures.
+
+
+
 attempts <count> (défaut: 3)
 -----------------------------
 
 L’option **attempts** indique combien de fois il faut tenter le téléchargement des données avant d’abandonner.
-Le défaut de 3 tentatives est approprié dans la plupart des cas.  Lorsque l’option **retry** a la valeur false,
+Le défaut de 3 tentatives est approprié dans la plupart des cas. Lorsque l’option **retry** a la valeur false,
 le fichier est immédiatement supprimé.
 
 Lorsque l’option **attempts** est utilisé, un échec de téléchargement après le numéro prescrit
 des **attempts** (ou d’envoi, pour un sender) va entrainer l’ajout du message d'annonce à un fichier de fil d’attente
-pour une nouvelle tentative plus tard.  Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
+pour une nouvelle tentative plus tard. Lorsque aucun message d'annonce n’est prêt à être consommé dans la fil d’attente AMQP,
 les requêtes se feront avec la fil d’attente de "retry".
 
 baseDir <chemin> (défaut: /)
@@ -448,16 +476,16 @@ ajuster à 1.  Pour la plupart des situations, le défaut est bien. Pour un volu
 on pourrait l’augmenter pour réduire les frais généraux de transfert. Cette option est seulement utilisé pour les
 protocoles de transfert de fichiers, et non HTTP pour le moment.
 
-blocksize <size> défaut: 0 (auto)
+blockSize <size> défaut: 0 (auto)
 -----------------------------------
 
 REMARQUE: **EXPERIMENTAL pour sr3, devrait revenir dans la version future**
-Cette option **blocksize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
+Cette option **blockSize** contrôle la stratégie de partitionnement utilisée pour publier des fichiers.
 La valeur doit être l’une des suivantes ::
 
    0 - calcul automatiquement une stratégie de partitionnement appropriée (défaut).
    1 - envoyez toujours des fichiers entiers en une seule partie.
-   <blocksize> - utiliser une taille de partition fixe (taille d’exemple : 1M ).
+   <blockSize> - utiliser une taille de partition fixe (taille d’exemple : 1M ).
 
 Les fichiers peuvent être annoncés en plusieurs parties.  Chaque partie à un somme de contrôle (checksum) distinct.
 Les parties et leurs somme de contrôle sont stockées dans la cache. Les partitions peuvent traverser
@@ -494,10 +522,10 @@ L’option broker indique à chaque composant quel courtier contacter.
 Une fois connecté à un courtier AMQP, l’utilisateur doit lier une fil d’attente
 aux échanges et aux thèmes pour déterminer le messages d'annonce en question.
 
-bufsize <size> (défaut: 1m)
+bufSize <size> (défaut: 1m)
 ---------------------------
 
-Les fichiers seront copiés en tranches de *bufsize* octets. Utilisé par les protocoles de transfert.
+Les fichiers seront copiés en tranches de *bufSize* octets. Utilisé par les protocoles de transfert.
 
 byteRateMax <size> (défaut: 0)
 ------------------------------
@@ -865,6 +893,14 @@ REMARQUE::
   **LIMITATION CONNUE** : Lorsque *force_polling* est défini, le paramètre *sleep* doit être
   au moins 5 secondes. À l’heure actuelle, on ne sait pas pourquoi.
 
+ftpFilenameEncoding <str> (par défaut : utf-8)
+----------------------------------------------
+
+Lors de la connexion à un serveur de fichiers FTP, le jeu de caractères utilisé pour encoder les noms de fichiers (tel que renvoyé par la commande ls, par exemple)
+peut être différent. Cette option permet de remplacer la valeur par défaut. **latin-1** est parfois nécessaire
+pour se connecter à des serveurs plus anciens. (option transmise à python ftplib, voir la documentation de cette module pour plus d'informations.)
+
+
 header <nom>=<valeur>
 ---------------------
 
@@ -1116,11 +1152,12 @@ messageRateMin <float> (défaut: 0)
 Si **messageRateMin** est supérieur à zéro et que le flux détecté est inférieur à ce taux,
 un message d´annonce sera produit :
 
-message_ttl <duration>  (défaut: None)
---------------------------------------
+messageAgeMax <duration>  (défaut: None)
+----------------------------------------
 
-L’option **message_ttl** définit un temps pour lequel un message d´annonce peut vivre dans la fil d’attente.
-Après ce temps, le message d´annonce est retiré de la fil d’attente par le courtier.
+L’option **AgeMax** définit un temps pour lequel un message d´annonce peut attendres du
+côté consommateur. Après ce temps, le message d´annonce est rejeté par le flot.
+(0 indique un age infini sera accepté.)
 
 mirror <flag> (défaut: off)
 ---------------------------
@@ -1188,6 +1225,16 @@ fileAgeMin
 
 Si les fichiers sont plus neuf que ce paramètre (défaut: 0 ... désactivé), ignorez-les, ils sont trop
 neufs pour qu'ils puissent être postés.
+
+
+fileSizeMax (size: default 0)
+-----------------------------
+
+La valeur par défaut de *fileSizeMax* est 0, ce qui signifie qu'il n'y a pas de limite. Cependant, on peut
+souhaiter empêcher le téléchargement de fichiers très volumineux dans certaines situations. La définition d'une
+taille de fichier maximale avec l'option *fileSizeMax* peut être utilisée pour empêcher le
+téléchargement involontaire de fichiers de données volumineux.
+
 
 nodupe_ttl <off|on|999[smhdw]>
 ------------------------------
@@ -1390,6 +1437,15 @@ Définit le format de message pour les messages publiés. les valeurs actuelleme
 
 Lorsqu'elle est fournie, cette valeur remplace tout ce qui peut être déduit de post_topicPrefix.
 
+post_messageAgeMax <duration> (défaut: 0)
+-----------------------------------------
+
+L'option post_messageAgeMax (alias **message_ttl**) est utilisée lors de la publication d'un message,
+comme conseil au courtier. ttl est un abbréviation de *time to live* (*durée de vie maximale*) Les courtiers 
+rejettent les messages qui ont dépassé leur durée de vie prévue sans les livrer. (0 signifie qu'aucune durée de vie maximale n'est donnée.)
+Lors de la publication avec AMQP, cette option définit la propriété *x-message-ttl* (mais cette dernière est en millisecondes).
+Lors de la publication avec MQTT, cette option définit la propriété *MessageExpiryInterval*.
+
 
 post_on_start
 -------------
@@ -1497,7 +1553,7 @@ randomize <flag>
 
 Actif si *-r|--randomize* apparaît dans la ligne de commande... ou *randomize* est défini
 à True dans le fichier de configuration utilisé. S’il y a plusieurs postes parce que
-le fichier est publié par bloc (l’option *blocksize* a été définie), les messages d'annonce de bloc
+le fichier est publié par bloc (l’option *blockSize* a été définie), les messages d'annonce de bloc
 sont randomisés, ce qui signifie qu’ils ne seront pas affichés.
 
 realpathAdjust <compte> (Experimental) (défaut: 0)
@@ -1725,13 +1781,21 @@ sondage devrait être lancer::
 
 Ceci partirai le flux ou sondage toutes les 30 secondes. Si aucune *scheduled_interval* n'est 
 définie, alors La classe flowcb.scheduled.Scheduled recherchera les deux autres 
-spécificateurs de temps ::
+spécificateurs de temps, en format heure/minute ::
 
   scheduled_hour 1,4,5,23
   scheduled_minute 14,17,29
 
-afin de specifier de partir un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
+ceci va démarrer un sondage chaque jour à: 01h14, 01h17, 01h29, puis les mêmes minutes
 après chacune des 4h, 5h et 23h.
+
+Si scheduled_time ni scheduled_hour n'est pas donné, alors la classe flowcb.scheduled.Scheduled va chercher pour
+la dernière option du spécificateur de temps::
+  
+  scheduled_time 15:30,16:30,18:59
+
+ceci va déclencher le sondage des données à 15:30, 16:30 et 18:59 à chaque jour. Cette option te permet d'encore plus
+délimiter des intervals de temps que les options précédentes.
 
 sendTo <url>
 ------------

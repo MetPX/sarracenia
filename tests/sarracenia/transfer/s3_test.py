@@ -123,7 +123,7 @@ def test_cd_forced():
     assert transfer.path == ""
     assert transfer.cwd == ""
 
-    transfer.cd_forced('777', "/this/Is/A/Path/")
+    transfer.cd_forced("/this/Is/A/Path/")
 
     assert transfer.path == "this/Is/A/Path/"
     assert transfer.cwd == "/this/Is/A/Path"

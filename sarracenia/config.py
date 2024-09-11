@@ -152,7 +152,8 @@ flag_options = [ 'acceptSizeWrong', 'acceptUnmatched', 'amqp_consumer', 'baseUrl
 float_options = [ 'messageRateMax', 'messageRateMin' ]
 
 duration_options = [
-    'expire', 'housekeeping', 'logRotateInterval', 'message_ttl', 'fileAgeMax', 'fileAgeMin', 'metrics_writeInterval', \
+    'expire', 'housekeeping', 'logRotateInterval', 'fileAgeMax', 'fileAgeMin', 
+    'messageAgeMax', 'post_messageAgeMax', 'metrics_writeInterval', \
     'runStateThreshold_idle', 'runStateThreshold_lag', 'retry_ttl', 'runStateThreshold_hung', 'sleep', 'timeout', 'varTimeOffset'
 ]
 
@@ -170,7 +171,7 @@ set_choices = {
  
 perm_options = [ 'permDefault', 'permDirDefault','permLog']
 
-size_options = ['accelThreshold', 'blocksize', 'bufsize', 'byteRateMax', 'inlineByteMax']
+size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
@@ -702,6 +703,8 @@ class Config:
         'base_dir': 'baseDir',
         'baseurl': 'baseUrl',
         'bind_queue': 'queueBind',
+        'blocksize': 'blockSize', 
+        'bufsize': 'bufSize',
         'cache': 'nodupe_ttl',
         'c': 'include',
         'cb': 'nodupe_basis',
@@ -753,7 +756,8 @@ class Config:
         'logRotate': 'logRotateCount',
         'logRotate': 'logRotateCount',
         'logRotate_interval': 'logRotateInterval',
-        'message-ttl': 'message_ttl',
+        'message-ttl': 'post_messageAgeMax',
+        'message_ttl': 'post_messageAgeMax',
         'msg_replace_new_dir' : 'pathReplace',
         'msg_filter_wmo2msc_replace_dir': 'filter_wmo2msc_replace_dir',
         'msg_filter_wmo2msc_uniquify': 'filter_wmo2msc_uniquify',
@@ -830,7 +834,7 @@ class Config:
             for i in parent:
                 setattr(self, i, parent[i])
 
-        self.bufsize = 1024 * 1024
+        self.bufSize = 1024 * 1024
         self.byteRateMax = 0
 
         self.fileAgeMax = 0 # disabled.
@@ -852,6 +856,7 @@ class Config:
         self.plugins_late = []
         self.plugins_early = []
         self.exchange = None
+        self.fileSizeMax = 0
         self.filename = None
         self.fixed_headers = {}
         self.flatten = '/'
@@ -876,6 +881,7 @@ class Config:
         self.mirror = False
         self.messageAgeMax = 0
         self.post_exchanges = []
+        self.post_messageAgeMax = 0
 	    #self.post_topicPrefix = None
         self.pstrip = False
         self.queueName = None
@@ -2049,13 +2055,13 @@ class Config:
         if (component not in ['poll' ]):
             self.path = list(map( os.path.expanduser, self.path ))
         else:
-            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute')):
+            if not (hasattr(self,'scheduled_interval') or hasattr(self,'scheduled_hour') or hasattr(self,'scheduled_minute') or hasattr(self,'scheduled_time')):
                 if self.sleep > 1:
                     self.scheduled_interval = self.sleep
                     self.sleep=1
 
         if self.runStateThreshold_hung < self.housekeeping:
-            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung kill it too quickly.")
+            logger.warning( f"{component}/{config} runStateThreshold_hung {self.runStateThreshold_hung} set lower than housekeeping {self.housekeeping}. sr3 sanity might think this flow is hung and kill it too quickly.")
 
         if self.vip and not features['vip']['present']:
             logger.critical( f"{component}/{config} vip feature requested, but missing library: {' '.join(features['vip']['modules_needed'])} " )
@@ -2498,7 +2504,7 @@ class Config:
                             nargs='?',
                             help='how many transfers per each connection')
         parser.add_argument(
-            '--blocksize',
+            '--blockSize',
             type=int,
             nargs='?',
             help=
