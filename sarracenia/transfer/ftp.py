@@ -90,7 +90,7 @@ class Ftp(Transfer):
             alarm_cancel()
 
     def cd_forced(self, path):
-        logger.debug("sr_ftp cd_forced %d %s" % (self.o.permDirDefault, path))
+        logger.debug("sr_ftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 

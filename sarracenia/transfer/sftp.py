@@ -92,7 +92,7 @@ class Sftp(Transfer):
 
     # cd forced
     def cd_forced(self, path):
-        logger.debug("sr_sftp cd_forced %d %s" % (self.o.permDirDefault, path))
+        logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 
