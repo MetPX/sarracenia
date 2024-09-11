@@ -139,7 +139,7 @@ class Transfer():
      * permDirDefault - what permission to set on directories created.
      * timeout  - how long to wait for operations to complete.
      * byteRateMax - maximum transfer rate (throttle to avoid exceeding)
-     * bufsize - size of buffers for file transfers.
+     * bufSize - size of buffers for file transfers.
 
     """
     @staticmethod
@@ -290,7 +290,7 @@ class Transfer():
         if length == 0:
             while True:
                 if self.o.timeout: alarm_set(self.o.timeout)
-                chunk = src.read(self.o.bufsize)
+                chunk = src.read(self.o.bufSize)
                 if chunk:
                     new_chunk = self.on_data(chunk)
                     rw_length += len(new_chunk)
@@ -304,15 +304,15 @@ class Transfer():
 
         # exact length to be transfered
 
-        nc = int(length / self.o.bufsize)
-        r = length % self.o.bufsize
+        nc = int(length / self.o.bufSize)
+        r = length % self.o.bufSize
 
-        # read/write bufsize "nc" times
+        # read/write bufSize "nc" times
 
         i = 0
         while i < nc:
             if self.o.timeout: alarm_set(self.o.timeout)
-            chunk = src.read(self.o.bufsize)
+            chunk = src.read(self.o.bufSize)
             if chunk:
                 new_chunk = self.on_data(chunk)
                 rw_length += len(new_chunk)
@@ -370,7 +370,7 @@ class Transfer():
         # 2022/12/02 - pas should see a lot of these messages in HPC case from now on...
         
         if not self.o.acceptSizeWrong and length != 0 and rw_length != length:
-            logger.warning(
+            logger.debug(
                 "util/writelocal mismatched file length writing %s. Message said to expect %d bytes.  Got %d bytes."
                 % (local_file, length, rw_length))
 

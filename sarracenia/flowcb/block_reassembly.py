@@ -56,7 +56,7 @@ class Block_reassembly(FlowCB):
        given the reassemble setting is on, and have received a block file,
        then:
 
-       * partition file is whose name ends in §block_<blokno>,<blocksize>_§
+       * partition file is whose name ends in §block_<blokno>,<blockSize>_§
        * determing the inflight_file name for the entire file.
        * lock the inflight_file.
        * place the block in the working file.
@@ -206,14 +206,14 @@ class Block_reassembly(FlowCB):
             rf.seek(offset)     
 
             # copy data from block partition file into final destination.
-            sz=self.o.bufsize if self.o.bufsize > byteCount else byteCount
+            sz=self.o.bufSize if self.o.bufSize > byteCount else byteCount
             bytesTransferred=0
             while bytesTransferred < byteCount: 
                 b = pf.read(sz)
                 rf.write(b)
                 bytesTransferred += len(b)
                 bytesLeft = byteCount - bytesTransferred
-                sz=self.o.bufsize if self.o.bufsize > bytesLeft else bytesLeft
+                sz=self.o.bufSize if self.o.bufSize > bytesLeft else bytesLeft
 
             rf.close()
             pf.close()

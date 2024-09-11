@@ -94,10 +94,16 @@ class Log(FlowCB):
             s+= f"a file with baseUrl: {msg['baseUrl']} "
         if 'relPath' in msg:
             s+= f"relPath: {msg['relPath']} "
+            if 'sundew_extension' in msg:
+                s+=f"sundew_extension: {msg['sundew_extension']} "
         if 'retrievePath' in msg:
             s+= f"retrievePath: {msg['retrievePath']} "
         if 'rename' in msg:
             s+= f"rename: {msg['rename']} "
+        if 'identity' in msg and 'value' in msg['identity']:
+            s+=f"id: {msg['identity']['value'][0:7]} "
+        if 'size' in msg:
+            s+=f"size: {msg['size']} "
         return s
         
     def _messagePostStr(self,msg):
@@ -132,6 +138,11 @@ class Log(FlowCB):
             s+= f"retrievePath: {msg['retrievePath']} "
         if 'rename' in msg:
             s+= f"rename: {msg['rename']} "
+        if 'size' in msg:
+            s+=f"size: {msg['size']} "
+        if 'identity' in msg and 'value' in msg['identity']:
+            s+=f"id: {msg['identity']['value'][0:7]} "
+
         return s
 
     def after_accept(self, worklist):
@@ -156,7 +167,7 @@ class Log(FlowCB):
             if lag > self.lagMax:
                 self.lagMax = lag
             if set(['after_accept']) & self.o.logEvents:
-                logger.info( f"accepted: (lag: {lag:.2f} ) {self._messageStr(msg)}" )
+                logger.info( f"accepted: (lag: {lag:.2f} ) {self._messageAcceptStr(msg)}" )
 
     def after_post(self, worklist):
         if set(['after_post']) & self.o.logEvents:

@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
        which_test: [ static_flow, no_mirror, flakey_broker, dynamic_flow, restart_server ]
-       osver: [ "ubuntu-20.04", "ubuntu-22.04" ]
+       osver: [ "ubuntu-20.04", "ubuntu-22.04", "ubuntu-24.04" ]
 
     runs-on: ${{ matrix.osver }}
   

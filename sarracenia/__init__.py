@@ -76,7 +76,7 @@ if features['humanize']['present']:
     import humanize
 
     def naturalSize( num ):
-        return humanize.naturalsize(num,binary=True)
+        return humanize.naturalsize(num,binary=True).replace(" ","")
 
     def naturalTime( dur ):
         return humanize.naturaltime(dur)
@@ -316,7 +316,25 @@ def durationToString(d) -> str:
     """
       given a numbner of seconds, return a short, human readable string.
     """
-    return humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
+    if (d < 60):
+        return f"{d:7.2f}s"
+
+    first_part= humanize.naturaldelta(d).replace("minutes","m").replace("seconds","s").replace("hours","h").replace("days","d").replace("an hour","1h").replace("a day","1d").replace("a minute","1m").replace(" ","")
+
+    second_part=""
+    if first_part[-1] == 'm':
+        rem=int(d-int(first_part[0:-1])*60)
+        if rem > 0:
+            second_part=f"{rem:d}s"
+    if first_part[-1] == 'h':
+        rem=int(( d-int(first_part[0:-1])*60*60 ) / 60 )
+        if rem > 0:
+            second_part=f"{rem:d}m"
+    if first_part[-1] == 'd':
+        rem=int (( d-int(first_part[0:-1])*60*60*24 ) / (60*60) )
+        if rem > 0:
+            second_part=f"{rem:d}h"
+    return first_part+second_part 
 
 def durationToSeconds(str_value, default=None) -> float:
     """
@@ -341,17 +359,45 @@ def durationToSeconds(str_value, default=None) -> float:
     if default and str_value.lower() in [ 'on', 'true' ]:
         return float(default)
 
-    if str_value[-1] in 'sS': factor *= 1
-    elif str_value[-1] in 'mM': factor *= 60
-    elif str_value[-1] in 'hH': factor *= 60 * 60
-    elif str_value[-1] in 'dD': factor *= 60 * 60 * 24
-    elif str_value[-1] in 'wW': factor *= 60 * 60 * 24 * 7
+    first_unit=None
+    second_unit=str_value[-1].lower()
+    if second_unit in 's': 
+        factor *= 1
+        first_unit='m'
+    elif second_unit in 'm': 
+        factor *= 60
+        first_unit='h'
+    elif second_unit in 'h': 
+        factor *= 60 * 60
+        first_unit='d'
+    elif second_unit in 'd': 
+        factor *= 60 * 60 * 24
+        first_unit='w'
+    elif second_unit in 'w': 
+        factor *= 60 * 60 * 24 * 7
+
     if str_value[-1].isalpha(): str_value = str_value[:-1]
 
+    if first_unit and first_unit in str_value: # two unit duration.
+        (big, little) = str_value.split(first_unit)
+        if big.isnumeric():
+            big = int(big)
+            if first_unit == 'm':
+                 big = big*60
+            elif first_unit == 'h':
+                 big = big*60*60
+            elif first_unit == 'd':
+                 big = big*60*60*24
+            elif first_unit == 'w':
+                 big = big*60*60*24*7
+            str_value = little
+    else: 
+        big=0
+
     try:
-        duration = float(str_value) * factor
+        duration = big + float(str_value) * factor
     except:
-        logger.error("conversion failed for: %s" % str_value)
+        logger.error( f"conversion failed for: +{str_value}+" )
         duration = 0.0
 
     return duration
@@ -371,6 +417,7 @@ known_report_codes = {
     206: "Partial Content: received and inserted.",
     304: "Not modified (Checksum validated, unchanged, so no download resulted.)",
     307: "Insertion deferred (writing to temporary part file for the moment.)",
+    410: "Gone: server data different from notification message",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
     499: "Failure: Not Copied. SFTP/FTP/HTTP download problem",
@@ -474,7 +521,7 @@ class Message(dict):
                         fp.seek( offset )
 
                     while i < offset+msg['size']:
-                        buf = fp.read(o.bufsize)
+                        buf = fp.read(o.bufSize)
                         if not buf: break
                         sumalgo.update(buf)
                         i += len(buf)
@@ -660,10 +707,10 @@ class Message(dict):
         elif hasattr(o, 'exchange'):
             msg['exchange'] = o.exchange
 
-        if hasattr(o, 'blocksize') and (o.blocksize > 1) and lstat and \
+        if hasattr(o, 'blockSize') and (o.blockSize > 1) and lstat and \
                 (os_stat.S_IFMT(lstat.st_mode) == os_stat.S_IFREG) and \
-                (lstat.st_size > o.blocksize):
-           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blocksize, 'manifest': {}  }
+                (lstat.st_size > o.blockSize):
+           msg['blocks'] = { 'method': 'inplace', 'number':-1, 'size': o.blockSize, 'manifest': {}  }
 
         msg['local_offset'] = 0
         msg['_deleteOnPost'] = set(['exchange', 'local_offset', 'subtopic', '_format'])
@@ -782,12 +829,14 @@ class Message(dict):
         s=""
         if 'baseUrl' in msg:
             s+=msg['baseUrl']+' '
-        if 'relPath' in msg:
-            if s and s[-1] != '/':
+        else:
+            s+="baseUrl missing "
+        if 'relPath' in msg and len(msg['relPath']) > 0:
+            if msg['relPath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+=msg['relPath']
-        elif 'retrievePath' in msg:
-            if s and s[-1] != '/':
+        elif 'retrievePath' in msg and len(msg['retrievePath']) > 0 :
+            if msg['retrievePath'][0] != '/' and s and s[-1] != '/':
                 s+='/'
             s+= msg['retrievePath']
         else:
@@ -1024,7 +1073,7 @@ class Message(dict):
         # ide
         #if isinstance(data, io.IOBase ):
         #    with open(opath, 'wb') as f:
-        #        while buf = data.read(self.o.bufsize) > 0 :
+        #        while buf = data.read(self.o.bufSize) > 0 :
         #            sz=f.write(buf)
 
         if 'content' in msg:

@@ -235,7 +235,7 @@ class Flow:
         self.metrics=self.new_metrics
 
         # removing old metrics files
-        logger.info( f"looking for old metrics for {self.o.metricsFilename}" )
+        #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
         old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
         for o in old_metrics:
             logger.info( f"removing old metrics file: {o} " )
@@ -460,12 +460,21 @@ class Flow:
         self.worklist.rejected.append(m)
         m.setReport(code, reason)
 
+    def stop_request(self) -> None:
+        """ called by the signal handler to tell self and FlowCB classes to stop. Without this,
+            calling runCallbacksTime('please_stop') from inside self.please_stop causes an infinite loop.
+            Note: if this is called from outside of a signal handler, the interruptible_sleep function
+                  won't work.
+        """
+        logger.info(f'telling {len(self.plugins["please_stop"])} callbacks to please_stop.')
+        # this will call the please_stop method below, and other classes' please_stop methods
+        self.runCallbacksTime('please_stop')
+
     def please_stop(self) -> None:
-        logger.info( f'ok, telling {len(self.plugins["please_stop"])} callbacks about it.')
+        logger.info(f'asked to stop')
         self._stop_requested = True
         self.metrics["flow"]['stop_requested'] = True
-
-
+    
     def close(self) -> None:
 
         self.runCallbacksTime('on_stop')
@@ -562,7 +571,7 @@ class Flow:
                     self.close()
                     break
                 else:
-                    logger.debug( 'starting last pass (without gather) through loop for cleanup.')
+                    logger.debug('starting last pass (without gather) through loop for cleanup.')
                     stopping = True
 
             self._run_vip_update()
@@ -604,7 +613,9 @@ class Flow:
             run_time = now - start_time
             total_messages += last_gather_len
 
+            # trigger shutdown when messageCountMax is reached
             if (self.o.messageCountMax > 0) and (total_messages > self.o.messageCountMax):
+                logger.info(f'{total_messages} messages processed > messageCountMax {self.o.messageCountMax}')
                 self.runCallbacksTime('please_stop')
 
             current_rate = total_messages / run_time
@@ -613,6 +624,7 @@ class Flow:
             self.metrics['flow']['msgRate'] = current_rate
             self.metrics['flow']['msgRateCpu'] = total_messages / (self.metrics['flow']['cpuTime']+self.metrics['flow']['last_housekeeping_cpuTime'] )
 
+            # trigger shutdown once gather is finished, where sleep < 0 (e.g. a post)
             if (last_gather_len == 0) and (self.o.sleep < 0):
                 if (self.o.retryEmptyBeforeExit and "retry" in self.metrics
                     and self.metrics['retry']['msgs_in_post_retry'] > 0):
@@ -999,7 +1011,7 @@ class Flow:
 
                 if self.o.fileAgeMin > 0 and age < self.o.fileAgeMin:
                     logger.warning( f"file too young: queueing for retry.")
-                    self.worklist.failed.append(msg)
+                    self.worklist.failed.append(m)
                     continue
 
             if 'fileOp' in m and 'rename' in m['fileOp']:
@@ -1280,7 +1292,7 @@ class Flow:
                     mfn.write( f'\"{timestamp}\" : {metrics},\n')
 
             # removing old metrics files
-            logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
+            #logger.debug( f"looking for old metrics for {self.o.metricsFilename}" )
             old_metrics=sorted(glob.glob(self.o.metricsFilename+'.*'))[0:-self.o.logRotateCount]
             for o in old_metrics:
                 logger.info( f"removing old metrics file: {o} " )
@@ -1450,58 +1462,62 @@ class Flow:
         # FIXME... local_offset... offset within the local file... partitioned... who knows?
         #   part of partitioning deferral.
         #end   = self.local_offset + self.length
-        if 'size' in msg:
-            end = msg['size']
-            # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
-            # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
-            # target_file is the same as new_file unless the file is partitioned.
-            # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
-            #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
-            if (fsiz != msg['size']):
-                logger.debug("%s file size different, so cannot be the same" %
-                             (msg['new_path']))
-                return True
+        # if using a true binary checksum, the size check is enough.
+        if 'identity' in msg and 'method' in msg['identity']:
+            method=msg['identity']['method']
         else:
-            end = 0
+            method='unknown'
+        
+        # if no method given, then assume binary comparison is good.
+        if method in sarracenia.identity.binary_methods: 
+            if 'size' in msg:
+                end = msg['size']
+                # compare sizes... if (sr_subscribe is downloading partitions into taget file) and (target_file isn't fully done)
+                # This check prevents random halting of subscriber (inplace on) if the messages come in non-sequential order
+                # target_file is the same as new_file unless the file is partitioned.
+                # FIXME If the file is partitioned, then it is the new_file with a partition suffix.
+                #if ('self.target_file == msg['new_file'] ) and ( fsiz != msg['size'] ):
+                if (fsiz != msg['size']):
+                    logger.debug("%s file size different, so cannot be the same" %
+                             (msg['new_path']))
+                    return True
 
-        # compare dates...
-
-        if 'mtime' in msg:
-            new_mtime = sarracenia.timestr2flt(msg['mtime'])
-            old_mtime = 0.0
-
-            if self.o.timeCopy:
-                old_mtime = lstat.st_mtime
-            elif sarracenia.filemetadata.supports_extended_attributes:
-                try:
-                    x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
-                    old_mtime = sarracenia.timestr2flt(x.get('mtime'))
-                except:
-                    pass
-
-            if new_mtime <= old_mtime:
-                self.reject(msg, 304,
-                            "mtime not newer %s " % (msg['new_path']))
-                return False
             else:
-                logger.debug(
-                    "{} new version is {} newer (new: {} vs old: {} )".format(
+                end = 0
+
+            # compare dates...
+
+            if 'mtime' in msg:
+                new_mtime = sarracenia.timestr2flt(msg['mtime'])
+                old_mtime = 0.0
+
+                if self.o.timeCopy:
+                    old_mtime = lstat.st_mtime
+                elif sarracenia.filemetadata.supports_extended_attributes:
+                    try:
+                        x = sarracenia.filemetadata.FileMetadata(msg['new_path'])
+                        old_mtime = sarracenia.timestr2flt(x.get('mtime'))
+                    except:
+                        pass
+    
+                if new_mtime <= old_mtime:
+                    self.reject(msg, 304,
+                            "mtime not newer %s " % (msg['new_path']))
+                    return False
+                else:
+                    logger.debug(
+                        "{} new version is {} newer (new: {} vs old: {} )".format(
                         msg['new_path'], new_mtime - old_mtime, new_mtime,
                         old_mtime))
 
-        if 'identity' in msg and msg['identity']['method'] in ['random', 'cod']:
-            logger.debug("content_match %s sum 0/z never matches" %
+        elif method in ['random', 'cod']:
+            logger.debug("content_match %s sum random/zero/cod never matches" %
                          (msg['new_path']))
-            return True
-
-        if end > fsiz:
-            logger.debug(
-                "new file not big enough... considered different")
             return True
 
         if not 'identity' in msg: 
             # FIXME... should there be a setting to assume them the same? use cases may vary.
-            logger.debug( "no checksum available, assuming different" )
+            logger.debug( "size different and no checksum available, assuming different" )
             return True
 
         try:
@@ -1512,11 +1528,10 @@ class Flow:
             )
             return True
 
-        logger.debug("checksum in message: %s vs. local: %s" %
-                     (msg['identity'], msg['local_identity']))
+        logger.debug( f"checksum in message: {msg['identity']} vs. local: {msg['local_identity']}" )
 
         if msg['local_identity'] == msg['identity']:
-            self.reject(msg, 304, "same checksum %s " % (msg['new_path']))
+            self.reject(msg, 304, f"same checksum {msg['new_path']}" )
             return False
         else:
             return True
@@ -1789,6 +1804,12 @@ class Flow:
                         self.reject(msg, 500, "link %s failed" % msg['fileOp'])
                     continue
 
+            # all non-files taken care of above... rest of routine is normal file download.
+
+            if self.o.fileSizeMax > 0 and msg['size'] > self.o.fileSizeMax:
+                self.reject(msg, 413, f"Payload Too Large {msg.getIDStr()}")
+                continue
+
             # establish new_inflight_path which is the file to download into initially.
             if self.o.inflight == None or (
                 ('blocks' in msg) and (msg['blocks']['method'] == 'inplace')):
@@ -1873,7 +1894,7 @@ class Flow:
                     logger.warning("downloading again, attempt %d" % i)
 
                 ok = self.download(msg, self.o)
-                if ok:
+                if ok == 1:
                     logger.debug("downloaded ok: %s" % new_path)
                     msg.setReport(201, "Download successful" )
                     # if content is present, but downloaded anyways, then it is no good, and should not be forwarded.
@@ -1881,6 +1902,11 @@ class Flow:
                         del msg['content']
                     self.worklist.ok.append(msg)
                     self.metrics['flow']['transferRxLast'] = msg['report']['timeCompleted']
+                    break
+                elif ok == -1:
+                    logger.debug("download failed permanently, discarding transfer: %s" % new_path)
+                    msg.setReport(410, "message received for content that is no longer available" )
+                    self.worklist.rejected.append(msg)
                     break
                 else:
                     logger.info("attempt %d failed to download %s/%s to %s" \
@@ -1899,9 +1925,13 @@ class Flow:
     # v2 sr_util.py ... generic sr_transport imported here...
 
     # generalized download...
-    def download(self, msg, options) -> bool:
+    def download(self, msg, options) -> int:
         """
            download/transfer one file based on message, return True if successful, otherwise False.
+
+           return 0 -- failed, retry later.
+           return 1 -- OK download successful.
+           return -1 -- download failed permanently, retry not useful.
         """
 
         self.o = options
@@ -1990,8 +2020,8 @@ class Flow:
                     logger.error( f'flowCallback plugin {plugin} crashed: {ex}' )
                     logger.debug( "details:", exc_info=True )
 
-                if not ok: return False
-            return True
+                if not ok: return 0
+            return 1
 
         if self.o.dry_run:
             curdir = new_dir
@@ -2012,7 +2042,7 @@ class Flow:
             except Exception as ex:
                 logger.warning("making %s: %s" % (new_dir, ex))
                 logger.debug('Exception details:', exc_info=True)
-                return False
+                return 0
 
         try:
             options.sendTo = msg['baseUrl']
@@ -2034,7 +2064,7 @@ class Flow:
                     ok = self.proto[self.scheme].connect()
                     if not ok:
                         self.proto[self.scheme] = None
-                        return False
+                        return 0
 
                     self.metrics['flow']['transferConnected'] = True
                     self.metrics['flow']['transferConnectStart'] = time.time() 
@@ -2046,7 +2076,7 @@ class Flow:
 
             #if not hasattr(proto,'seek') and ('blocks' in msg) and ( msg['blocks']['method'] == 'inplace' ):
             #   logger.error("%s, inplace part file not supported" % self.scheme)
-            #   return False
+            #   return 0
 
             cwd = None
          
@@ -2063,7 +2093,7 @@ class Flow:
                          self.proto[self.scheme].cd(cdir)
                     except Exception as ex:
                          logger.error("chdir %s: %s" % (cdir, ex))
-                         return False
+                         return 0
 
             remote_offset = 0
             exactLength=False
@@ -2144,7 +2174,7 @@ class Flow:
                             msg['local_offset'], block_length, exactLength)
                 except Exception as ex:
                     logger.error( f"could not get {remote_file}: {ex}" )
-                    return False
+                    return 0
 
             else:
                 len_written = block_length
@@ -2160,7 +2190,7 @@ class Flow:
                 logger.error("failed to download %s" % new_file)
                 if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
                     os.remove(new_inflight_path)
-                return False
+                return 0
             else:
                 if block_length == 0:
                     if self.o.acceptSizeWrong:
@@ -2173,17 +2203,34 @@ class Flow:
                             % (len_written, new_inflight_path))
                 else:
                     if self.o.acceptSizeWrong:
-                        logger.debug(
+                        logger.info(
                             'AcceptSizeWrong download size mismatch, received %d of expected %d bytes for %s'
                             % (len_written, block_length, new_inflight_path))
                     else:
-                        if len_written > block_length:
+                        retval=0
+                        if hasattr( self.proto[self.scheme],'stat'):
+                            current_stat = self.proto[self.scheme].stat( remote_file, msg )
+                            if 'mtime' in msg:
+                                mtime = sarracenia.timestr2flt(msg['mtime'])
+                            else:
+                                mtime = sarracenia.timestr2flt(msg['pubTime'])
+
+                            if current_stat and current_stat.st_mtime and current_stat.st_mtime > mtime:
+                                logger.info( f'upstream resource is newer, so message {msg.getIDStr()} is obsolete. Discarding.' )
+                                retval=-1
+                            elif current_stat and current_stat.st_size and current_stat.st_size == len_written:
+                                logger.info( f'matches upstream source, {msg.getIDStr()} but not announcement. Discarding.' )
+                                retval=-1 
+                            else:
+                                logger.error( f"unexplained size discrepancy in {msg.getIDStr()}, will retry later" )
+                        elif len_written > block_length:
                             logger.error( f'download more {len_written} than expected {block_length} bytes for {new_inflight_path}' )
                         else:
                             logger.error( f'incomplete download only {len_written} of expected {block_length} bytes for {new_inflight_path}' )
+
                         if (self.o.inflight != None) and os.path.isfile(new_inflight_path):
                             os.remove(new_inflight_path)
-                        return False
+                        return retval 
                 # when len_written is different than block_length
                 msg['size'] = len_written
 
@@ -2229,10 +2276,10 @@ class Flow:
                     logger.debug('Exception details: ', exc_info=True)
 
             if (self.o.acceptSizeWrong or (block_length == 0)) and (len_written > 0):
-                return True
+                return 1
 
             if (len_written != block_length):
-                return False
+                return 0
 
         except Exception as ex:
             logger.debug('Exception details: ', exc_info=True)
@@ -2254,8 +2301,8 @@ class Flow:
         
             if (not self.o.dry_run) and os.path.isfile(new_inflight_path):
                 os.remove(new_inflight_path)
-            return False
-        return True
+            return 0
+        return 1
 
     # generalized send...
     def send(self, msg, options):
@@ -2384,7 +2431,7 @@ class Flow:
                              (self.scheme, new_dir))
                 if not self.o.dry_run:
                     try:
-                        self.proto[self.scheme].cd_forced(775, new_dir)
+                        self.proto[self.scheme].cd_forced(new_dir)
                     except Exception as ex:
                         logger.error( f"could not chdir to {sendTo} {new_dir}: {ex}" )
                         return False
@@ -2597,8 +2644,8 @@ class Flow:
                 if not self.o.dry_run:
                     try:
                         self.proto[self.scheme].cd_forced(
-                            775, new_dir + '/' + options.inflight)
-                        self.proto[self.scheme].cd_forced(775, new_dir)
+                            new_dir + '/' + options.inflight)
+                        self.proto[self.scheme].cd_forced(new_dir)
                     except:
                         pass
                 new_inflight_path = options.inflight + new_file
