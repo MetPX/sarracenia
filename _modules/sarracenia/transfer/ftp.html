@@ -167,6 +167,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;accelFtpgetCommand&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span>
                           <span class="s1">&#39;/usr/bin/ncftpget </span><span class="si">%s</span><span class="s1"> </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s1">&#39;ftpFilenameEncoding&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span> <span class="p">)</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_ftp __init__&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -322,7 +324,7 @@
             <span class="c1"># implicit FTPS (usually port 990)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">implicit_ftps</span><span class="p">:</span>
                 <span class="n">ftp</span> <span class="o">=</span> <span class="n">IMPLICIT_FTP_TLS</span><span class="p">()</span>
-                <span class="n">ftp</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="s1">&#39;utf-8&#39;</span>
+                <span class="n">ftp</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">ftpFilenameEncoding</span>
                 <span class="n">ftp</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">expire</span><span class="p">)</span>
                 <span class="n">ftp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">))</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prot_p</span><span class="p">:</span>
@@ -334,7 +336,7 @@
                                      <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
                                      <span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">),</span>
                                      <span class="n">timeout</span><span class="o">=</span><span class="n">expire</span><span class="p">)</span>
-                <span class="n">ftp</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="s1">&#39;utf-8&#39;</span>
+                <span class="n">ftp</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">ftpFilenameEncoding</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prot_p</span><span class="p">:</span> <span class="n">ftp</span><span class="o">.</span><span class="n">prot_p</span><span class="p">()</span>
                 <span class="c1"># needed only if prot_p then set back to prot_c</span>
                 <span class="c1">#else          : ftp.prot_c()</span>

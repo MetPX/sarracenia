@@ -118,7 +118,7 @@
 <dd class="field-odd"><p>7</p>
 </dd>
 <dt class="field-even">Date<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sep 10, 2024</p>
+<dd class="field-even"><p>Sep 11, 2024</p>
 </dd>
 <dt class="field-odd">Version<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3.00.55rc1</p>
@@ -899,6 +899,12 @@ normally better one.</p>
 <span class="n">at</span> <span class="n">least</span> <span class="mi">5</span> <span class="n">seconds</span><span class="o">.</span> <span class="n">It</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">currently</span> <span class="n">clear</span> <span class="n">why</span><span class="o">.</span>
 </pre></div>
 </div>
+</section>
+<section id="ftpfilenameencoding-str-default-utf-8">
+<h4>ftpFilenameEncoding &lt;str&gt; (default: utf-8)<a class="headerlink" href="#ftpfilenameencoding-str-default-utf-8" title="Link to this heading"></a></h4>
+<p>When connecting to a FTP file server, the charset used to encode file names (as returned by the ls command, for example)
+can be different. This option provides ability to override the default. <strong>latin-1</strong> is sometimes needed to
+connect to older servers. (option fed to python ftplib, see documentation on that library for more information.)</p>
 </section>
 <section id="header-name-value">
 <h4>header &lt;name&gt;=&lt;value&gt;<a class="headerlink" href="#header-name-value" title="Link to this heading"></a></h4>
