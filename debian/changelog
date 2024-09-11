@@ -1,4 +1,4 @@
-metpx-sr3 (3.00.55rc1) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.55rc1) unstable; urgency=medium
 
   * fix #953 sr3 status queue size updates again.
   * fix #1157 transfer/stat() call improves behaviour with overly dynamic data.
@@ -19,7 +19,7 @@ metpx-sr3 (3.00.55rc1) UNRELEASED; urgency=medium
   * fix #1218 permissions of directories created by senders. 
 
 
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Aug 2024 11:24:36 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 11 Sep 2024 11:24:36 -0400
 
 metpx-sr3 (3.00.54) unstable; urgency=medium
 
