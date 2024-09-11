@@ -91,8 +91,8 @@ class Sftp(Transfer):
             alarm_cancel()
 
     # cd forced
-    def cd_forced(self, perm, path):
-        logger.debug("sr_sftp cd_forced %d %s" % (perm, path))
+    def cd_forced(self, path):
+        logger.debug("sr_sftp cd_forced %d %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 

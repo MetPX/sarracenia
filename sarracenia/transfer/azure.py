@@ -112,7 +112,7 @@ class Azure(Transfer):
         self.path = self.path.lstrip('/')
 
 
-    def cd_forced(self, perm, path):
+    def cd_forced(self, path):
         logger.debug(f"forcing into  {path}")
         self.cd(path)
 

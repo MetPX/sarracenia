@@ -123,7 +123,7 @@ class S3(Transfer):
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
-    def cd_forced(self, perm, path):
+    def cd_forced(self, path):
         logger.debug("sr_s3 cd %s" % path)
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
