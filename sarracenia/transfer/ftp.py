@@ -68,6 +68,8 @@ class Ftp(Transfer):
         self.o.add_option('accelFtpgetCommand', 'str',
                           '/usr/bin/ncftpget %s %d')
 
+        self.o.add_option('ftpFilenameEncoding', 'str', 'utf-8' )
+
         logger.debug("sr_ftp __init__")
         self.connected = False
         self.ftp = None
@@ -222,7 +224,7 @@ class Ftp(Transfer):
             # implicit FTPS (usually port 990)
             elif self.tls and self.implicit_ftps:
                 ftp = IMPLICIT_FTP_TLS()
-                ftp.encoding = 'utf-8'
+                ftp.encoding = self.o.ftpFilenameEncoding
                 ftp.connect(host=self.host, port=self.port, timeout=expire)
                 ftp.login(user=self.user, passwd=unquote(self.password))
                 if self.prot_p:
@@ -234,7 +236,7 @@ class Ftp(Transfer):
                                      self.user,
                                      unquote(self.password),
                                      timeout=expire)
-                ftp.encoding = 'utf-8'
+                ftp.encoding = self.o.ftpFilenameEncoding
                 if self.prot_p: ftp.prot_p()
                 # needed only if prot_p then set back to prot_c
                 #else          : ftp.prot_c()
