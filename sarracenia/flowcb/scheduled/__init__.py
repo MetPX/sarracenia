@@ -211,7 +211,7 @@ class Scheduled(FlowCB):
             for t in self.appointments: 
                 # Need a little bit before or after apointment, to allow some wiggle room for sleep overhead.
                 # See issue #1214 for more details
-                if t - one_min <= now <= t + one_min: 
+                if t < now < t + one_min: 
                     next_appointment=t
                     break
                 else:
