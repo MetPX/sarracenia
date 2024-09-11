@@ -127,9 +127,9 @@ class Sftp(Transfer):
             alarm_set(self.o.timeout)
             try:
                 self.sftp.mkdir(d, self.o.permDirDefault)
-                # Apply permDirDefault value. mkdir is limited by SFTP server umask value
-                self.sftp.chmod(d, self.o.permDirDefault)
                 self.sftp.chdir(d)
+                # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+                self.sftp.chmod('.', self.o.permDirDefault)
             finally:
                 alarm_cancel()
 
@@ -459,6 +459,8 @@ class Sftp(Transfer):
             return
         else:
             self.sftp.mkdir(remote_dir, self.o.permDirDefault)
+            # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+            self.sftp.chmod(remote_dir, self.o.permDirDefault)
         finally:
             alarm_cancel()
 
