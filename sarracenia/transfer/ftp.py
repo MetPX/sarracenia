@@ -91,8 +91,8 @@ class Ftp(Transfer):
         finally:
             alarm_cancel()
 
-    def cd_forced(self, perm, path):
-        logger.debug("sr_ftp cd_forced %d %s" % (perm, path))
+    def cd_forced(self, path):
+        logger.debug("sr_ftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 
@@ -133,7 +133,7 @@ class Ftp(Transfer):
             # chmod
             alarm_set(self.o.timeout)
             try:
-                self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(perm) + ' ' + d)
+                self.ftp.voidcmd('SITE CHMOD ' + "{0:o}".format(self.o.permDirDefault) + ' ' + d)
             finally:
                 alarm_cancel()
 

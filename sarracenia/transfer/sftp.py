@@ -91,8 +91,8 @@ class Sftp(Transfer):
             alarm_cancel()
 
     # cd forced
-    def cd_forced(self, perm, path):
-        logger.debug("sr_sftp cd_forced %d %s" % (perm, path))
+    def cd_forced(self, path):
+        logger.debug("sr_sftp cd_forced %o %s" % (self.o.permDirDefault, path))
 
         # try to go directly to path
 
@@ -128,6 +128,8 @@ class Sftp(Transfer):
             try:
                 self.sftp.mkdir(d, self.o.permDirDefault)
                 self.sftp.chdir(d)
+                # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+                self.sftp.chmod('.', self.o.permDirDefault)
             finally:
                 alarm_cancel()
 
@@ -455,11 +457,12 @@ class Sftp(Transfer):
             pass
         except:
             return
+        else:
+            self.sftp.mkdir(remote_dir, self.o.permDirDefault)
+            # Apply permDirDefault value. mkdir is limited by SFTP server umask value
+            self.sftp.chmod(remote_dir, self.o.permDirDefault)
         finally:
             alarm_cancel()
-
-        self.sftp.mkdir(remote_dir, self.o.permDirDefault)
-        alarm_cancel()
 
     # put
     def put(self,

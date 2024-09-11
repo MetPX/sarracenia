@@ -2431,7 +2431,7 @@ class Flow:
                              (self.scheme, new_dir))
                 if not self.o.dry_run:
                     try:
-                        self.proto[self.scheme].cd_forced(775, new_dir)
+                        self.proto[self.scheme].cd_forced(new_dir)
                     except Exception as ex:
                         logger.error( f"could not chdir to {sendTo} {new_dir}: {ex}" )
                         return False
@@ -2644,8 +2644,8 @@ class Flow:
                 if not self.o.dry_run:
                     try:
                         self.proto[self.scheme].cd_forced(
-                            775, new_dir + '/' + options.inflight)
-                        self.proto[self.scheme].cd_forced(775, new_dir)
+                            new_dir + '/' + options.inflight)
+                        self.proto[self.scheme].cd_forced(new_dir)
                     except:
                         pass
                 new_inflight_path = options.inflight + new_file
