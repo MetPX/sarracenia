@@ -16,6 +16,7 @@ metpx-sr3 (3.00.55rc1) UNRELEASED; urgency=medium
   * fix #1192 bug in rejectPercent. improved lag display.
   * fix #1204 display processes still running during each wait of stop.
   * fix #1217 one minute of wiggle room when scheduled flows come due.
+  * fix #1218 permissions of directories created by senders. 
 
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 08 Aug 2024 11:24:36 -0400
