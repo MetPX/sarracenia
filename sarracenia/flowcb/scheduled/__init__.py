@@ -168,8 +168,8 @@ class Scheduled(FlowCB):
 
         # No scheduled interval and no scheduled hour/minutes/time
         else:
-            self.next_gather_time = last_gather + datetime.timedelta(seconds=self.default_wait)
-            logger.debug(f"next gather should be in {self.default_wait}s, scheduled for {self.next_gather_time} (default_wait")
+            self.next_gather_time = last_gather + self.default_wait
+            logger.debug(f"next gather should be in {self.default_wait.seconds}s, scheduled for {self.next_gather_time} (default_wait")
 
     def ready_to_gather(self):
         current_time = datetime.datetime.now(datetime.timezone.utc )
