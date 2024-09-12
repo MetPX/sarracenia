@@ -602,6 +602,7 @@ class Flow:
                 # this for duplicate cache synchronization.
                 if self.worklist.poll_catching_up:
                     self.ack(self.worklist.incoming)
+                    self.ack(self.worklist.rejected)
                     self.worklist.incoming = []
 
                 else: # normal processing, when you are active.
