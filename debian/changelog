@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
+
+  * moving away from previous release.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 12 Sep 2024 15:16:55 -0400
+
 metpx-sr3 (3.00.55rc1) unstable; urgency=medium
 
   * fix #953 sr3 status queue size updates again.
