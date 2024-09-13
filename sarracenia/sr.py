@@ -2858,10 +2858,18 @@ class sr_GlobalState:
                         continue
 
                     if len(line) > 1:
+                        found_a_date=False
                         for p in convert_patterns_to_v3:
                             while p in line[1]:
                                line[1] = line[1].replace(p,convert_patterns_to_v3[p])
-
+                               found_a_date=True
+                        # hacky way to do it, but covers all cases present in v2 cluster.
+                        if found_a_date: 
+                            for o in [ '-1D', '-2D', '-3D', '-1H' ]:
+                                if line[1].endswith(o+'}'):
+                                    line[1] = line[1].replace(o,'')
+                                    line[1] = line[1].replace('${','${%o' + o.lower() )
+                        
                     if not pos_args_present and re.search( r'\${[0-9]}', ' '.join(line[1:]) ):
                          pos_args_present=True
                          v3_cfg.write('sundew_compat_regex_first_match_is_zero True\n')
