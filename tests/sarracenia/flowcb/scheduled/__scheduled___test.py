@@ -36,8 +36,8 @@ def test_schedules():
      me.update_appointments(midnight)
      assert( len(me.appointments) == 2 ) 
 
-     logger.error( f" {me.appointments=} {len(me.appointments)=}" )
-     logger.error( f" HOHO {len(me.appointments)=}" )
+     logger.info( f"set two appointments at specific times: {me.appointments=} {len(me.appointments)=}" )
+     logger.info( f" {len(me.appointments)=}" )
  
 
      options = build_options()
@@ -47,6 +47,7 @@ def test_schedules():
      me=sarracenia.flowcb.scheduled.Scheduled(options)
      me.update_appointments(midnight)
 
+     logger.info( f"set 72 appointments" )
      assert( len(me.appointments) == 72 ) 
 
      #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
@@ -78,10 +79,20 @@ def test_schedules():
      me=sarracenia.flowcb.scheduled.Scheduled(options)
      me.update_appointments(midnight)
 
-     logger.error( f"{me.appointments=}" )
+     sample_time= datetime.time(hour=12, minute=5, tzinfo=datetime.timezone.utc )
+     now=datetime.datetime.now(datetime.timezone.utc )
+     sample_time= datetime.datetime.combine(now,sample_time)
+
+     logger.info( f"default schedule (should be 300 second interval) {me.appointments=}" )
      assert( len(me.appointments) == 0 ) 
 
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() <= 300 )
 
+
+     logger.info( f"1 appointment at 01:01 each day..." )
      options = build_options()
      options = build_options()
      options.scheduled_hour= [ '1' ]
@@ -90,6 +101,16 @@ def test_schedules():
      me.update_appointments(midnight)
      assert( len(me.appointments) == 1 ) 
 
+     logger.info( f"pretending the time is 00:05 today" )
+     sample_time= datetime.time(hour=0, minute=5, tzinfo=datetime.timezone.utc )
+     now=datetime.datetime.now(datetime.timezone.utc )
+     sample_time= datetime.datetime.combine(now,sample_time)
+
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 3360 )
+
      options = build_options()
      options.scheduled_interval= [ 3600 ]
      options.scheduled_hour= [ ]
@@ -97,6 +118,12 @@ def test_schedules():
      me=sarracenia.flowcb.scheduled.Scheduled(options)
      me.update_appointments(midnight)
      assert( len(me.appointments) == 0 ) 
+
+     logger.info( f"pretending the time is 00:05 today" )
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 3600 )
 
      #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
      #logger.error( f" HOHO {len(me.appointments)=}" )
@@ -108,6 +135,14 @@ def test_schedules():
      me.update_appointments(midnight)
      assert( len(me.appointments) == 2 ) 
 
+     logger.info( f"pretending the time is 00:05 today" )
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 3600 )
+
+
+     logger.info( f"Setting 4 appointments: 2:02, 4:02, 12:40, 7:37 ...")
      options= build_options()
      options.scheduled_hour= [ "2", "4" ]
      options.scheduled_minute= [ "2" ]
@@ -117,9 +152,16 @@ def test_schedules():
 
      assert( len(me.appointments) == 4 ) 
 
+     logger.info( f"pretending the time is 00:05 today" )
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 7020 )
+
      """
        expect appointments at 2:00, and 4:00
      """
+     logger.info( f"setting two appointments at 2:00, and 4:00 today" )
      options= build_options()
      options.scheduled_hour= [ "2", "4" ]
      options.scheduled_minute= [ ]
@@ -129,9 +171,16 @@ def test_schedules():
 
      assert( len(me.appointments) == 2 ) 
 
+     logger.info( f"pretending the time is 00:05 today" )
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 6900 )
+
      """
        expect appointments at :02, and :04 every hour.
      """
+     logger.info( f"setting appointments at :02, and :04 every hour" )
      options= build_options()
      options.scheduled_minute= [ "2", "4" ]
      options.scheduled_hour= [ ]
@@ -140,6 +189,12 @@ def test_schedules():
      me.update_appointments(midnight)
 
      assert( len(me.appointments) == 48 ) 
+
+     logger.info( f"pretending the time is 00:05 today" )
+     me.calc_next_gather_time( sample_time )
+     how_long = me.next_gather_time - sample_time
+     logger.info( f" {how_long.total_seconds()=} until next poll. " )
+     assert( how_long.total_seconds() == 3420 )
 
      #logger.error( f" {me.appointments=} {len(me.appointments)=}" )
      #logger.error( f" HOHO {len(me.appointments)=}" )
