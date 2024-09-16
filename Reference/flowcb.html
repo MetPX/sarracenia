@@ -1849,7 +1849,7 @@ Used by <a class="reference external" href="https://github.com/MetPX/sr_insects"
 <span id="sarracenia-flowcb-scheduled"></span><h2><a class="toc-backref" href="#id46" role="doc-backlink">sarracenia.flowcb.scheduled</a><a class="headerlink" href="#module-sarracenia.flowcb.scheduled" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sarracenia.flowcb.scheduled.Scheduled">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.scheduled.</span></span><span class="sig-name descname"><span class="pre">Scheduled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger=&lt;Logger</span> <span class="pre">sarracenia.flowcb.scheduled</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.flowcb.scheduled.</span></span><span class="sig-name descname"><span class="pre">Scheduled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_logger=&lt;Logger</span> <span class="pre">sarracenia.flowcb.scheduled</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#sarracenia.flowcb.FlowCB" title="sarracenia.flowcb.FlowCB"><code class="xref py py-class docutils literal notranslate"><span class="pre">FlowCB</span></code></a></p>
 <p>Scheduled flow callback plugin arranges to post url’s
 at scheduled times.</p>
@@ -1877,7 +1877,7 @@ will only run when it should.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.flowcb.scheduled.Scheduled.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger=&lt;Logger</span> <span class="pre">sarracenia.flowcb.scheduled</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_logger=&lt;Logger</span> <span class="pre">sarracenia.flowcb.scheduled</span> <span class="pre">(WARNING)&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1885,13 +1885,6 @@ will only run when it should.</p>
 <span class="sig-name descname"><span class="pre">update_appointments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">when</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled.update_appointments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled.update_appointments" title="Link to this definition"></a></dt>
 <dd><p># make a flat list from values where comma separated on a single or multiple lines.</p>
 <p>set self.appointments to a list of when something needs to be run during the current day.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.flowcb.scheduled.Scheduled.wait_seconds">
-<span class="sig-name descname"><span class="pre">wait_seconds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sleepfor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/flowcb/scheduled.html#Scheduled.wait_seconds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.flowcb.scheduled.Scheduled.wait_seconds" title="Link to this definition"></a></dt>
-<dd><p>sleep for the given number of seconds, like time.sleep() but broken into
-shorter naps to be able to honour stop_requested, or when housekeeping is needed.</p>
 </dd></dl>
 
 </dd></dl>
