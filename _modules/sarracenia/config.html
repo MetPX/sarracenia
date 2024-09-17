@@ -411,6 +411,8 @@
 <span class="c1"># answer: there might be an offset (-1h, -5m, etc...) and covering those cases is hard with simple substitution.</span>
 
 <span class="n">convert_patterns_to_v3</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s1">&#39;${YYYYMMDD-1D&#39;</span> <span class="p">:</span> <span class="s1">&#39;${</span><span class="si">%o</span><span class="s1">-1d%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;${YYYYMMDD-2D&#39;</span> <span class="p">:</span> <span class="s1">&#39;${</span><span class="si">%o</span><span class="s1">-2d%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
    <span class="s1">&#39;${YYYYMMDD&#39;</span> <span class="p">:</span> <span class="s1">&#39;${%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
    <span class="s1">&#39;${YYYY&#39;</span><span class="p">:</span> <span class="s1">&#39;${%Y&#39;</span><span class="p">,</span>
    <span class="s1">&#39;${JJJ&#39;</span><span class="p">:</span> <span class="s1">&#39;${%j&#39;</span><span class="p">,</span>
