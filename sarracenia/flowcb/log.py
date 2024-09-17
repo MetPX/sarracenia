@@ -165,7 +165,7 @@ class Log(FlowCB):
                 if 'report' in msg and msg['report']['code'] in [ 304 ]:
                     logger.info(
                         "%s rejected: %d %s " %
-                        (msg['relPath'], msg['report']['code'], msg['report']['message']))
+                        (msg.getIDStr(), msg['report']['code'], msg['report']['message']))
 
         for msg in worklist.incoming:
 
@@ -194,6 +194,13 @@ class Log(FlowCB):
                         (msg['report']['code'], msg['report']['message']))
                 else:
                     logger.info("rejected: %s " % self._messageStr(msg))
+
+        elif 'nodupe' in self.o.logEvents:
+            for msg in worklist.rejected:
+                if 'report' in msg and msg['report']['code'] in [ 304 ]:
+                    logger.info(
+                        "%s rejected: %d %s " %
+                        (msg.getIDStr(), msg['report']['code'], msg['report']['message']))
 
         for msg in worklist.ok:
             if 'size' in msg:
