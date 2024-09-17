@@ -490,7 +490,7 @@ class sr_GlobalState:
                                     continue
 
                                 if pathname[-4:] == '.pid':
-                                    i = int(pathname[-6:-4])
+                                    i = int(pathname[0:-4].split('_')[-1])
                                     if t.isdigit():
                                         #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
@@ -585,7 +585,7 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
-                                i = int(filename[-6:-4])
+                                i = int(filename[0:-4].split('_')[-1])
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
