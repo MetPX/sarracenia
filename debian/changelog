@@ -1,6 +1,7 @@
-metpx-sr3 (3.00.55rc2) UNRELEASED; urgency=medium
+metpx-sr3 (3.00.55rc2) stable; urgency=medium
 
-  * moving away from previous release.
+  * fix #1219 correct date conversion.
+  * fix #1214 scheduling refactor addresses a regression found in rc1
 
  -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 12 Sep 2024 15:16:55 -0400
 
