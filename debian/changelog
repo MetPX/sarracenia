@@ -1,3 +1,9 @@
+metpx-sr3 (3.00.55rc3) UNRELEASED; urgency=medium
+
+  * away from last release.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 17 Sep 2024 15:54:06 -0400
+
 metpx-sr3 (3.00.55rc2) stable; urgency=medium
 
   * fix #1219 correct date conversion.
