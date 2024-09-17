@@ -311,6 +311,8 @@ convert_to_v3 = {
 # answer: there might be an offset (-1h, -5m, etc...) and covering those cases is hard with simple substitution.
 
 convert_patterns_to_v3 = {
+   '${YYYYMMDD-1D' : '${%o-1d%Y%m%d',
+   '${YYYYMMDD-2D' : '${%o-2d%Y%m%d',
    '${YYYYMMDD' : '${%Y%m%d',
    '${YYYY': '${%Y',
    '${JJJ': '${%j',
