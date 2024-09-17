@@ -135,8 +135,10 @@ class Wiski(Scheduled):
         
         messages=[]
 
-        self.wait_until_next()
+        if not self.ready_to_gather():
+            return (False, [])
 
+        start_time = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
         while (1):
             if self.stop_requested or self.housekeeping_needed:
                 return (False, messages)
@@ -156,6 +158,9 @@ class Wiski(Scheduled):
                 break
             else:
                 logger.info( f"request failed. Status code: {response.status_code}: {response.text}" )
+            
+            now = datetime.datetime.fromtimestamp(time.time(),datetime.timezone.utc)
+            self.housekeeping_needed = ((now-start_time).total_seconds() >= self.o.housekeeping)
         
         k = KIWIS(self.main_url, headers=headers )
 
