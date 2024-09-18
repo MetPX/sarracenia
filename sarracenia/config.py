@@ -175,7 +175,7 @@ size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSi
 
 str_options = [
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
-    'exchange_suffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
+    'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
     'pollUrl', 'post_baseUrl', 'post_baseDir', 'post_broker', 'post_exchange',
     'post_exchangeSuffix', 'post_format', 'post_topic', 'queueName', 'queueShare', 'sendTo', 'rename',
@@ -222,8 +222,8 @@ convert_to_v3 = {
         'accel_scp': ['continue'],
         'accel_cp': ['continue'],
         'msg_total_save': ['continue'],
+        'file_total_save' : [ 'continue' ],
         'post_total_save': ['continue'],
-        'post_total_interval': ['continue']
     },
     'destfn_script': { 'manual_conversion_required' : [ 'continue' ] },
     'do_get': { 'manual_conversion_required' : [ 'continue' ] },
@@ -235,6 +235,10 @@ convert_to_v3 = {
        'file_email' : [ 'callback', 'send.email' ],
     },
     'do_task': { 'manual_conversion_required' : [ 'continue' ] },
+    'file_total_interval' : [ 'continue' ],
+    'post_total_interval': ['continue'],
+    'post_log_format': ['continue'],
+    'msg_total_interval' : [ 'continue' ],
     'no_download': [ 'download', 'False' ],
     'notify_only': [ 'download', 'False' ],
     'do_data': { 'manual_conversion_required' : [ 'continue' ] },
@@ -696,6 +700,7 @@ class Config:
         'accel_cp_threshold': 'accelThreshold',
         'accel_scp_threshold': 'accelThreshold',
         'accel_wget_threshold': 'accelThreshold',
+        'accel_threshold': 'accelThreshold',
         'accept_unmatch': 'acceptUnmatched',
         'accept_unmatched': 'acceptUnmatched',
         'at': 'attempts', 

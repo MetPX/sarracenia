@@ -2197,9 +2197,10 @@ class sr_GlobalState:
         else:
             print('no stray processes found')
 
-        for l in sarracenia.features.keys():
-            if not sarracenia.features[l]['present']:
-                print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
+        #It is enough to have it *features* not needed in sanity.
+        #for l in sarracenia.features.keys():
+        #    if not sarracenia.features[l]['present']:
+        #        print( f"notice: python module {l} is missing: {sarracenia.features[l]['lament']}" )
 
         # run on_sanity plugins.
         for f in self.filtered_configurations:
