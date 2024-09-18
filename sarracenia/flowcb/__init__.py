@@ -180,11 +180,11 @@ class FlowCB:
          to indicate failure to process a message, append to worklist.failed.
          worklist.failed processing should occur in here as it will be zeroed out after this step.
 
-    def send(self,msg) -> bool::
+    def send(self,msg) -> int::
 
          Task: looking at msg['new_dir'], msg['new_file'], and the self.o options perform a transfer
                of a single file.
-               return True on a successful transfer, False otherwise.
+               return >0 on a successful transfer, 0 if failed but temporarily, <0 if failure is permanent.
 
                if self.o.dry_run is set, simulate the output of a send without
                performing it.
