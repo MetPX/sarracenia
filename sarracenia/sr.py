@@ -2830,12 +2830,16 @@ class sr_GlobalState:
                     elif (k == 'sleep' ) and (component == 'poll'):
                         k = 'scheduled_interval'
                     if k in convert_to_v3:
+                        if convert_to_v3[k] == [ 'continue' ]:
+                            logger.info( f"obsolete v2 keyword: {k}" )
+                            continue
+
                         if len(line) > 1:
                             v = line[1].replace('.py', '', 1)
                             if v in convert_to_v3[k]:
                                 line = convert_to_v3[k][v]
                                 if 'continue' in line:
-                                    logger.info("obsolete v2: " + v)
+                                    logger.info("obsolete v2: " + k)
                                     continue
                             else:
                                 logger.warning( f"unknown {k} {v}, manual conversion required.")

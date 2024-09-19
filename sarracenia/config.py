@@ -174,6 +174,7 @@ perm_options = [ 'permDefault', 'permDirDefault','permLog']
 size_options = ['accelThreshold', 'blockSize', 'bufSize', 'byteRateMax', 'fileSizeMax', 'inlineByteMax']
 
 str_options = [
+    'accelCpCommand', 'accelWgetCommand', 'accelScpCommand',
     'action', 'admin', 'baseDir', 'broker', 'cluster', 'directory', 'exchange',
     'exchangeSuffix', 'feeder', 'filename', 'flatten', 'flowMain', 'header', 
     'hostname', 'identity', 'inlineEncoding', 'logFormat', 'logLevel', 
@@ -236,7 +237,8 @@ convert_to_v3 = {
     },
     'do_task': { 'manual_conversion_required' : [ 'continue' ] },
     'file_total_interval' : [ 'continue' ],
-    'post_total_interval': ['continue'],
+    'post_total_interval': [ 'continue' ],
+    'ls_file_index': [ 'continue' ],
     'post_log_format': ['continue'],
     'msg_total_interval' : [ 'continue' ],
     'no_download': [ 'download', 'False' ],
@@ -697,6 +699,9 @@ class Config:
     # Correct name on the right, old name on the left.
     synonyms = {
         'a': 'action',
+        'accel_cp_command': 'accelCpCommand',
+        'accel_scp_command': 'accelScpCommand',
+        'accel_wget_command': 'accelWgetCommand',
         'accel_cp_threshold': 'accelThreshold',
         'accel_scp_threshold': 'accelThreshold',
         'accel_wget_threshold': 'accelThreshold',
@@ -732,6 +737,7 @@ class Config:
         'destination_timezone': 'timezone', 
         'document_root': 'documentRoot',
         'download-and-discard': 'discard',
+        'download_cp_command': 'accelCpCommand',
         'e' : 'fileEvents',
         'events' : 'fileEvents',
         'ex': 'exchange',
@@ -1549,6 +1555,7 @@ class Config:
         if (k in convert_to_v3): 
             self.log_flowcb_needed |= '_log' in k
                    
+
             if (len(line) > 1):
                 v = line[1].replace('.py', '', 1)
                 if (v in convert_to_v3[k]):
@@ -1559,7 +1566,15 @@ class Config:
                     else:
                         logger.debug( f'{cfname}:{lineno} obsolete v2:\"{l}\" converted to sr3:\"{" ".join(line)}\"' )
             else:
+                if convert_to_v3[k] == 'continue':
+                    if k in self.undeclared:
+                        self.undeclared.remove(k)
+
                 line = convert_to_v3[k]
+                if 'continue' in line:
+                    if k in self.unknown:
+                        self.unknown.remove(k)
+                    return
                 k=line[0]
                 v=line[1] 
 
