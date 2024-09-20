@@ -2138,6 +2138,9 @@ class Config:
         does substitutions for patterns in directories.
 
         """
+        if destDir=='/':
+            return destDir
+
         BN = basename.split(":")
         EN = BN[0].split("_")
 
