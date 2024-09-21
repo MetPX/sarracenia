@@ -876,7 +876,7 @@ class Flow:
 
         if path_strip_count > 0:
 
-            logger.warning( f"path_strip_count:{path_strip_count}   ")
+            logger.debug( f"path_strip_count:{path_strip_count}   ")
             strip=path_strip_count 
             if strip < len(token):
                 token = token[strip:]
@@ -2341,6 +2341,7 @@ class Flow:
         local_file = os.path.basename(local_path).replace('\\', '/')
         new_dir = msg['new_dir'].replace('\\', '/')
         new_file = msg['new_file'].replace('\\', '/')
+
         new_inflight_path = None
 
         try:
@@ -2589,7 +2590,7 @@ class Flow:
                         else:
                             len_written = self.proto[self.scheme].put( msg, local_file, new_file)
                 except Exception as ex:
-                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']}/{new_file}: {ex}" )
+                    logger.error( f"could not send {local_dir}{os.sep}{local_file} to inflight=None {sendTo} {msg['new_dir']} ... {new_file}: {ex}" )
                     return False
                 
             elif (('blocks' in msg)
