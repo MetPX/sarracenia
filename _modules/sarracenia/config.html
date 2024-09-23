@@ -274,8 +274,9 @@
 <span class="n">size_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span> <span class="s1">&#39;blockSize&#39;</span><span class="p">,</span> <span class="s1">&#39;bufSize&#39;</span><span class="p">,</span> <span class="s1">&#39;byteRateMax&#39;</span><span class="p">,</span> <span class="s1">&#39;fileSizeMax&#39;</span><span class="p">,</span> <span class="s1">&#39;inlineByteMax&#39;</span><span class="p">]</span>
 
 <span class="n">str_options</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;accelCpCommand&#39;</span><span class="p">,</span> <span class="s1">&#39;accelWgetCommand&#39;</span><span class="p">,</span> <span class="s1">&#39;accelScpCommand&#39;</span><span class="p">,</span>
     <span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;baseDir&#39;</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">,</span> <span class="s1">&#39;directory&#39;</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;exchange_suffix&#39;</span><span class="p">,</span> <span class="s1">&#39;feeder&#39;</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;flatten&#39;</span><span class="p">,</span> <span class="s1">&#39;flowMain&#39;</span><span class="p">,</span> <span class="s1">&#39;header&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;exchangeSuffix&#39;</span><span class="p">,</span> <span class="s1">&#39;feeder&#39;</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;flatten&#39;</span><span class="p">,</span> <span class="s1">&#39;flowMain&#39;</span><span class="p">,</span> <span class="s1">&#39;header&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;hostname&#39;</span><span class="p">,</span> <span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;inlineEncoding&#39;</span><span class="p">,</span> <span class="s1">&#39;logFormat&#39;</span><span class="p">,</span> <span class="s1">&#39;logLevel&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;pollUrl&#39;</span><span class="p">,</span> <span class="s1">&#39;post_baseUrl&#39;</span><span class="p">,</span> <span class="s1">&#39;post_baseDir&#39;</span><span class="p">,</span> <span class="s1">&#39;post_broker&#39;</span><span class="p">,</span> <span class="s1">&#39;post_exchange&#39;</span><span class="p">,</span>
     <span class="s1">&#39;post_exchangeSuffix&#39;</span><span class="p">,</span> <span class="s1">&#39;post_format&#39;</span><span class="p">,</span> <span class="s1">&#39;post_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;queueName&#39;</span><span class="p">,</span> <span class="s1">&#39;queueShare&#39;</span><span class="p">,</span> <span class="s1">&#39;sendTo&#39;</span><span class="p">,</span> <span class="s1">&#39;rename&#39;</span><span class="p">,</span>
@@ -322,8 +323,8 @@
         <span class="s1">&#39;accel_scp&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
         <span class="s1">&#39;accel_cp&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
         <span class="s1">&#39;msg_total_save&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;file_total_save&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
         <span class="s1">&#39;post_total_save&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
-        <span class="s1">&#39;post_total_interval&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">]</span>
     <span class="p">},</span>
     <span class="s1">&#39;destfn_script&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;manual_conversion_required&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">]</span> <span class="p">},</span>
     <span class="s1">&#39;do_get&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;manual_conversion_required&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">]</span> <span class="p">},</span>
@@ -335,6 +336,11 @@
        <span class="s1">&#39;file_email&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;callback&#39;</span><span class="p">,</span> <span class="s1">&#39;send.email&#39;</span> <span class="p">],</span>
     <span class="p">},</span>
     <span class="s1">&#39;do_task&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;manual_conversion_required&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">]</span> <span class="p">},</span>
+    <span class="s1">&#39;file_total_interval&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
+    <span class="s1">&#39;post_total_interval&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
+    <span class="s1">&#39;ls_file_index&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
+    <span class="s1">&#39;post_log_format&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;continue&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;msg_total_interval&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">],</span>
     <span class="s1">&#39;no_download&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span> <span class="s1">&#39;False&#39;</span> <span class="p">],</span>
     <span class="s1">&#39;notify_only&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span> <span class="s1">&#39;False&#39;</span> <span class="p">],</span>
     <span class="s1">&#39;do_data&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;manual_conversion_required&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;continue&#39;</span> <span class="p">]</span> <span class="p">},</span>
@@ -816,9 +822,13 @@
     <span class="c1"># Correct name on the right, old name on the left.</span>
     <span class="n">synonyms</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;action&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;accel_cp_command&#39;</span><span class="p">:</span> <span class="s1">&#39;accelCpCommand&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;accel_scp_command&#39;</span><span class="p">:</span> <span class="s1">&#39;accelScpCommand&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;accel_wget_command&#39;</span><span class="p">:</span> <span class="s1">&#39;accelWgetCommand&#39;</span><span class="p">,</span>
         <span class="s1">&#39;accel_cp_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span>
         <span class="s1">&#39;accel_scp_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span>
         <span class="s1">&#39;accel_wget_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;accel_threshold&#39;</span><span class="p">:</span> <span class="s1">&#39;accelThreshold&#39;</span><span class="p">,</span>
         <span class="s1">&#39;accept_unmatch&#39;</span><span class="p">:</span> <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">,</span>
         <span class="s1">&#39;accept_unmatched&#39;</span><span class="p">:</span> <span class="s1">&#39;acceptUnmatched&#39;</span><span class="p">,</span>
         <span class="s1">&#39;at&#39;</span><span class="p">:</span> <span class="s1">&#39;attempts&#39;</span><span class="p">,</span> 
@@ -850,6 +860,7 @@
         <span class="s1">&#39;destination_timezone&#39;</span><span class="p">:</span> <span class="s1">&#39;timezone&#39;</span><span class="p">,</span> 
         <span class="s1">&#39;document_root&#39;</span><span class="p">:</span> <span class="s1">&#39;documentRoot&#39;</span><span class="p">,</span>
         <span class="s1">&#39;download-and-discard&#39;</span><span class="p">:</span> <span class="s1">&#39;discard&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;download_cp_command&#39;</span><span class="p">:</span> <span class="s1">&#39;accelCpCommand&#39;</span><span class="p">,</span>
         <span class="s1">&#39;e&#39;</span> <span class="p">:</span> <span class="s1">&#39;fileEvents&#39;</span><span class="p">,</span>
         <span class="s1">&#39;events&#39;</span> <span class="p">:</span> <span class="s1">&#39;fileEvents&#39;</span><span class="p">,</span>
         <span class="s1">&#39;ex&#39;</span><span class="p">:</span> <span class="s1">&#39;exchange&#39;</span><span class="p">,</span>
@@ -1721,6 +1732,7 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">convert_to_v3</span><span class="p">):</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">log_flowcb_needed</span> <span class="o">|=</span> <span class="s1">&#39;_log&#39;</span> <span class="ow">in</span> <span class="n">k</span>
                    
+
             <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="ow">in</span> <span class="n">convert_to_v3</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
@@ -1731,7 +1743,15 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">cfname</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">lineno</span><span class="si">}</span><span class="s1"> obsolete v2:</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">l</span><span class="si">}</span><span class="se">\&quot;</span><span class="s1"> converted to sr3:</span><span class="se">\&quot;</span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">convert_to_v3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;continue&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">undeclared</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">undeclared</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
                 <span class="n">line</span> <span class="o">=</span> <span class="n">convert_to_v3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;continue&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unknown</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">unknown</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="k">return</span>
                 <span class="n">k</span><span class="o">=</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">v</span><span class="o">=</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> 
 
