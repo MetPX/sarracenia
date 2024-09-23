@@ -159,7 +159,7 @@ class Am(FlowCB):
                         os.set_inheritable(conn.fileno(), True)
                         time.sleep(1)
 
-                    except TimeoutError:
+                    except (TimeoutError,socket.timeout):
                         n = n * 2 
                         if n > 64: n = 64
                         logger.info(f"No new connections. Waiting {n} seconds.")
@@ -168,6 +168,7 @@ class Am(FlowCB):
 
                     except Exception as e:
                         logger.error(f"Stopping accept. Exiting. Error message: {e}")
+                        logger.critical("Exception details", exc_info=True)
                         sys.exit(0)   
 
                     # Instance forks

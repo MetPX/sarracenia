@@ -29,7 +29,7 @@ default_options = {
         'stubborn': True,
         'failure_duration': '5m'
     },
-    'message_ttl': 0,
+    'messageAgeMax': 0,
     'topicPrefix': ['v03'],
     'tlsRigour': 'normal'
 }
@@ -280,7 +280,7 @@ class Moth():
 
         self.is_subscriber = is_subscriber
         self.connected=False
-        self.please_stop = False
+        self._stop_requested = False
         self.metrics = { 'connected': False }
         self.metricsReset()
 
@@ -308,11 +308,12 @@ class Moth():
         logging.basicConfig(format=self.o['logFormat'],
                             level=getattr(logging, self.o['logLevel'].upper()))
 
-    def ack(self, message: sarracenia.Message ) -> None:
+    def ack(self, message: sarracenia.Message ) -> bool:
         """
           tell broker that a given message has been received.
 
           ack uses the 'ack_id' property to send an acknowledgement back to the broker.
+          If there's no 'ack_id' in the message, you should return True.
         """
         logger.error("ack unimplemented")
 
@@ -348,6 +349,13 @@ class Moth():
         """
         logger.error("NewMessages unimplemented")
         return []
+    
+    def please_stop(self) -> None:
+        """ register a request to cleanly stop. Any long running processes should check for _stop_requested and 
+            stop if it becomes True.
+        """
+        logger.info("asked to stop")
+        self._stop_requested = True
 
     def putNewMessage(self, message:sarracenia.Message, content_type: str ='application/json', exchange: str = None) -> bool:
         """

@@ -24,7 +24,7 @@ class Message(FlowCB):
             props.update(self.o.dictify())
 
             # adjust settings post_xxx to be xxx, as Moth does not use post_ ones.
-            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic' ]:
+            for k in [ 'broker', 'exchange', 'topicPrefix', 'exchangeSplit', 'topic', 'messageAgeMax' ]:
                 post_one='post_'+k
                 if hasattr( self.o, post_one ): 
                     #props.update({ k: getattr(self.o,post_one) } )
@@ -69,3 +69,11 @@ class Message(FlowCB):
         if hasattr(self,'poster') and self.poster:
             self.poster.close()
         logger.debug('closing')
+    
+    def please_stop(self) -> None:
+        """ pass stop request along to publisher Moth instance(s)
+        """
+        super().please_stop()
+        if hasattr(self, 'poster') and self.poster:
+            logger.debug("asking Moth publisher to please_stop")
+            self.poster.please_stop()

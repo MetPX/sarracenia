@@ -30,7 +30,6 @@ import stat
 import json
 
 from sarracenia.transfer import Transfer
-from sarracenia.transfer import alarm_cancel, alarm_set, alarm_raise
 
 import boto3, botocore
 from boto3.s3.transfer import TransferConfig
@@ -124,7 +123,7 @@ class S3(Transfer):
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"
 
-    def cd_forced(self, perm, path):
+    def cd_forced(self, path):
         logger.debug("sr_s3 cd %s" % path)
         self.cwd = os.path.dirname(path)
         self.path = path.strip('/') + "/"

@@ -1,37 +1,26 @@
 import logging
-import requests
-import base64
-
-import datetime
-import os
 import sys
-import time
-
-from datetime import date
 
 import sarracenia
 from sarracenia.flowcb.scheduled import Scheduled
 
 logger = logging.getLogger(__name__)
 
-
-
-
 class Poll(Scheduled):
     """
       
     """
+    def __init__(self,options,logger=logger):
+        super().__init__(options,logger)
 
     def gather(self,messageCountMax): # placeholder
         """
-
            This gather aborts further gathers if the next interval has not yet arrived.
-
         """
-        logger.info( f"waiting for next poll")
-        self.wait_until_next()
-
-        return  not (self.stop_requested or self.housekeeping_needed), [] 
+        ready = self.ready_to_gather()
+        if ready:
+            logger.info("poll routine will run")
+        return (ready, [])
 
 
 if __name__ == '__main__':
