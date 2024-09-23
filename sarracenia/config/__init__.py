@@ -1816,7 +1816,7 @@ class Config:
         if hasattr(self, 'old_subscriptions') and self.old_subscriptions:
             for s in self.old_subscriptions:
                 if self.broker == s['broker']:
-                    logger.info( f" {s['queue']['name']=} ")
+                    #logger.info( f" {s['queue']['name']=} ")
                     return s['queue']['name']
 
         #while (not hasattr(self, 'queueName')) or (self.queueName is None):
