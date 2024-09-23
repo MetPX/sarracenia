@@ -1,3 +1,12 @@
+metpx-sr3 (3.00.56rc1) UNRELEASED; urgency=medium
+
+  * working on #1183, sr3 manages instances > 100 correctly.
+  * PR #1228 Unquote secret_access_key in s3CloudSender plugin
+  * PR #1230 ... reduced spurious "unknown options" messages from config.
+  * fix #1199 - directory /  not interpreted properly.
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Mon, 23 Sep 2024 10:42:37 -0400
+
 metpx-sr3 (3.00.55) unstable; urgency=medium
 
   * fix #1219 correct date conversion.
