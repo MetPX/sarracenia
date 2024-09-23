@@ -85,8 +85,3 @@ class Subscriptions(list):
             return None
 
         different_subscriptons=[]
-        
-
-
-=======
->>>>>>> 218cb8ad (refactored configuration parsing classes: BREAKING CHANGE)
