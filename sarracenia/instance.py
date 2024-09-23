@@ -62,7 +62,7 @@ class instance:
                     if line:
                         code.append("  %s" % (line.strip()))
             logging.debug('\n'.join(code))
-        self.running_instance.please_stop()
+        self.running_instance.stop_request()
 
     def start(self):
         """

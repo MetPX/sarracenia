@@ -1,3 +1,27 @@
+metpx-sr3 (3.00.55) unstable; urgency=medium
+
+  * fix #1219 correct date conversion.
+  * fix #1214 scheduling refactor addresses a regression found in rc1
+  * fix #953 sr3 status queue size updates again.
+  * fix #1157 transfer/stat() call improves behaviour with overly dynamic data.
+  * fix #1209 Added *schedule_time* to scheduled flows (and polls)
+  * fix #1159 provide obvious error message when no configurations matched.
+  * fix #1166 better download decision criteria (arbitrary identity vs. file size)
+  * fix #1151 calculate on download not working.
+  * fix #1173 sr3 stop improvements.
+  * fix #1208 badly expiring timers (crashing mostly senders.)
+  * fix #1150 bc transport api refactor.
+  * fix #1147 documenting messageAgeMax, post_messageAgeMax
+  * fix #1155 ack refactor (PR #1174)
+  * fix #1172 clash in names (unit tests.)
+  * fix #1195 more but still concise logging.
+  * fix #1192 bug in rejectPercent. improved lag display.
+  * fix #1204 display processes still running during each wait of stop.
+  * fix #1217 one minute of wiggle room when scheduled flows come due.
+  * fix #1218 permissions of directories created by senders. 
+
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 23 Sep 2024 09:47:36 -0400
+
 metpx-sr3 (3.00.54post2) unstable; urgency=medium
 
   * 3.00.54post1 package generation on launchpad failed, re-uploading as post2
@@ -28,7 +52,7 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
   * fix #1097 message rates < 1 were parsed as zero, now work correctly.
   * messages reviewed & consolidated: #1094, #1099 (log de-cluttering.)
   * fix crashes/problems with statehost #1076, #1087, #1096
-  * when plugins go bad, report better, recover better: #1085, #1091, 
+  * when plugins go bad, report better, recover better: #1085, #1091,
   * performance improvements #1083, #1086
   * fix #1079 watch posting events it should not.
   * fix #1076 bogus messages and mkdir crash on HPC ( #1087 )
@@ -36,13 +60,13 @@ metpx-sr3 (3.00.54) unstable; urgency=medium
     * adds lag,rtry,slow,reje states to status display.
     * adds checks for running process to cleanup, fail if running.
     * adds cleanup to remove, don't remove if cleanup fails.
-    * adds progressive logs to transfers  (closing #966) 
+    * adds progressive logs to transfers  (closing #966)
   * several fixes for sender crashes ( #1091, #1095, #1099 )
   * add #1054 can now convert multiple configs, and overwrite (with --wololo)
   * fixed #1064 poll crash.
   * fixed #927 sanity not restarting crashed polls.
   * reduced processing overhead ( #1086 )
-  * misc bug fixes ( #1070, #1092, #1103, #1108, #1109 ) 
+  * misc bug fixes ( #1070, #1092, #1103, #1108, #1109 )
   * NEW added logFormat option.
   * bug fixes and unit tests for AM ( #1036, $1068, #1074, #1075, #1078, #1079 )
   * many unit tests added, improved coverage (though still poor.)

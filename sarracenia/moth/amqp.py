@@ -25,6 +25,7 @@
 import amqp
 import copy
 import json
+import uuid
 
 import logging
 
@@ -33,7 +34,7 @@ import re
 import sarracenia
 from sarracenia.postformat import PostFormat
 from sarracenia.moth import Moth
-import signal
+from sarracenia.interruptible_sleep import interruptible_sleep
 import os
 
 import time
@@ -142,12 +143,17 @@ class AMQP(Moth):
             msg.deriveSource( self.o )
             msg.deriveTopics( self.o, topic )
 
-            msg['ack_id'] = raw_msg.delivery_info['delivery_tag']
+            # keep track of which connection and channel the msg came from
+            msg['ack_id'] = { 'delivery_tag':  raw_msg.delivery_info['delivery_tag'], 
+                              'channel_id':    raw_msg.channel.channel_id, 
+                              'connection_id': self.connection_id,
+                              'broker':        self.broker,
+                            }
             msg['local_offset'] = 0
             msg['_deleteOnPost'] |= set( ['ack_id', 'exchange', 'local_offset', 'subtopic'])
             if not msg.validate():
                 if hasattr(self,'channel'):
-                    self.channel.basic_ack(msg['ack_id'])
+                    self.channel.basic_ack(msg['ack_id']['delivery_tag'])
                 logger.error('message acknowledged and discarded: %s' % msg)
                 msg = None
         else:
@@ -176,7 +182,7 @@ class AMQP(Moth):
         self.o.update(props)
 
         self.first_setup = True
-        self.please_stop = False
+        self._stop_requested = False
 
         me = "%s.%s" % (__class__.__module__, __class__.__name__)
 
@@ -188,6 +194,9 @@ class AMQP(Moth):
                 logger.setLevel(self.o['logLevel'].upper())
 
         self.connection = None
+        self.connection_id = None
+        self.broker = None
+
     def __connect(self, broker) -> bool:
         """
           connect to broker. 
@@ -223,6 +232,8 @@ class AMQP(Moth):
                                           login_method=broker.login_method,
                                           virtual_host=vhost,
                                           ssl=(broker.url.scheme[-1] == 's'))
+        self.connection_id = str(uuid.uuid4()) + ("_sub" if self.is_subscriber else "_pub")
+        self.broker = host + '/' + vhost
         if hasattr(self.connection, 'connect'):
             # check for amqp 1.3.3 and 1.4.9 because connect doesn't exist in those older versions
             self.connection.connect()
@@ -231,10 +242,6 @@ class AMQP(Moth):
         self.channel = self.connection.channel(2)
         return True
 
-    def _amqp_setup_signal_handler(self, signum, stack):
-        logger.info("ok, asked to stop")
-        self.please_stop=True
-
     def metricsReport(self):
 
         if 'no' in self.o and self.o['no'] < 2 and self.is_subscriber and self.connection and self.connection.connected:
@@ -242,7 +249,7 @@ class AMQP(Moth):
             next_time = self.last_qDeclare + 30
             now=time.time()
             if next_time <= now:
-                #self._queueDeclare(passive=True)
+                self._queueDeclare(passive=True)
                 self.last_qDeclare=now
 
         super().metricsReport()
@@ -253,11 +260,12 @@ class AMQP(Moth):
 
         try:
             # from sr_consumer.build_connection...
-            if not self.__connect(self.o['broker']):
-                logger.critical('could not connect')
-                if hasattr(self,'metrics'):
-                    self.metrics['brokerQueuedMessageCount'] = -2
-                return -2
+            if not self.connection or not self.connection.connected:
+                if not self.__connect(self.o['broker']):
+                    logger.critical('could not connect')
+                    if hasattr(self,'metrics'):
+                        self.metrics['brokerQueuedMessageCount'] = -2
+                    return -2
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
             broker_str = self.o['broker'].url.geturl().replace(
@@ -269,8 +277,8 @@ class AMQP(Moth):
                 if self.o['expire']:
                     x = int(self.o['expire'] * 1000)
                     if x > 0: args['x-expires'] = x
-                if self.o['message_ttl']:
-                    x = int(self.o['message_ttl'] * 1000)
+                if self.o['messageAgeMax']:
+                    x = int(self.o['messageAgeMax'] * 1000)
                     if x > 0: args['x-message-ttl'] = x
 
                 #FIXME: conver expire, message_ttl to proper units.
@@ -314,16 +322,11 @@ class AMQP(Moth):
         if message_strategy is stubborn, will loop here forever.
              connect, declare queue, apply bindings.
         """
-
         ebo = 1
-        original_sigint = signal.getsignal(signal.SIGINT)
-        original_sigterm = signal.getsignal(signal.SIGINT)
-        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
-        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
 
         while True:
             
-            if self.please_stop:
+            if self._stop_requested:
                 break
 
             if 'broker' not in self.o or self.o['broker'] is None:
@@ -389,27 +392,18 @@ class AMQP(Moth):
             if ebo < 60: ebo *= 2
 
             logger.info("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
-
-        signal.signal(signal.SIGINT, original_sigint)
-        signal.signal(signal.SIGTERM, original_sigterm)
-        if self.please_stop:
-            os.kill(os.getpid(), signal.SIGINT)
+            interruptible_sleep(ebo, obj=self)
 
     def putSetup(self) -> None:
 
         ebo = 1
-        original_sigint = signal.getsignal(signal.SIGINT)
-        original_sigterm = signal.getsignal(signal.SIGINT)
-        signal.signal(signal.SIGINT, self._amqp_setup_signal_handler)
-        signal.signal(signal.SIGTERM, self._amqp_setup_signal_handler)
 
         while True:
 
             # It does not really matter how it fails, the recovery approach is always the same:
             # tear the whole thing down, and start over.
             try:
-                if self.please_stop:
+                if self._stop_requested:
                     break
 
                 if self.o['broker'] is None:
@@ -463,13 +457,7 @@ class AMQP(Moth):
 
             self.close()
             logger.info("Sleeping {} seconds ...".format(ebo))
-            time.sleep(ebo)
-
-        signal.signal(signal.SIGINT, original_sigint)
-        signal.signal(signal.SIGTERM, original_sigterm)
-        if self.please_stop:
-            os.kill(os.getpid(), signal.SIGINT)
-
+            interruptible_sleep(ebo, obj=self)
 
     def putCleanUp(self) -> None:
 
@@ -573,41 +561,60 @@ class AMQP(Moth):
     def ack(self, m: sarracenia.Message) -> None:
         """
            do what you need to acknowledge that processing of a message is done.
+           NOTE: AMQP delivery tags (we call them ack_id) are scoped per channel. "Deliveries must be 
+           acknowledged on the same channel they were received on. Acknowledging on a different channel 
+           will result in an "unknown delivery tag" protocol exception and close the channel."
         """
         if not self.is_subscriber:  #build_consumer
             logger.error("getting from a publisher")
-            return
+            return False
 
-       
         # silent success. retry messages will not have an ack_id, and so will not require acknowledgement.
         if not 'ack_id' in m:
             #logger.warning( f"no ackid present" )
-            return
+            return True
 
+        # when the connection/channel/broker doesn't match the current, don't attempt to ack, it will fail
+        if (m['ack_id']['connection_id'] != self.connection_id
+            or m['ack_id']['channel_id'] != self.channel.channel_id
+            or m['ack_id']['broker'] != self.broker):
+            logger.warning(f"failed for {m['ack_id']}. Does not match the current connection {self.connection_id}," +
+                           f" channel {self.channel.channel_id} or broker {self.broker}")
+            del m['ack_id']
+            m['_deleteOnPost'].remove('ack_id')
+            return False
+        
         #logger.info( f"acknowledging {m['ack_id']}" )
         ebo = 1
         while True:
             try:
                 if hasattr(self, 'channel'): 
-                    self.channel.basic_ack(m['ack_id'])
-                del m['ack_id']
-                m['_deleteOnPost'].remove('ack_id')
-                # Break loop if no exceptions encountered
-                return
-
+                    self.channel.basic_ack(m['ack_id']['delivery_tag'])
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
+                    return True
+                else:
+                    logger.warning(f"Can't ack {m['ack_id']}, don't have a channel")
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
+                    return False
+            
             except Exception as err:
                 logger.warning("failed for tag: %s: %s" % (m['ack_id'], err))
                 logger.debug('Exception details: ', exc_info=True)
-
-                # Cleanly close partially broken connection and restablish
-                self.close()
-                self.getSetup()
-
-            if ebo < 60: ebo *= 2
-
-            logger.info(
-                "Sleeping {} seconds before re-trying ack...".format(ebo))
-            time.sleep(ebo)
+                if type(err) == BrokenPipeError or type(err) == ConnectionResetError:
+                    # Cleanly close partially broken connection
+                    self.close()
+                    # No point in trying to ack again if the connection is broken
+                    del m['ack_id']
+                    m['_deleteOnPost'].remove('ack_id')
+                    return False
+            
+            if ebo < 60:
+                ebo *= 2
+            logger.info("Sleeping {} seconds before re-trying ack...".format(ebo))
+            interruptible_sleep(ebo, obj=self)
+            # TODO maybe implement message strategy stubborn here and give up after retrying?
 
     def putNewMessage(self,
                       message: sarracenia.Message,
@@ -670,9 +677,9 @@ class AMQP(Moth):
             else:
                 exchange = self.o['exchange']
 
-        if self.o['message_ttl']:
+        if self.o['messageAgeMax']:
             ttl = "%d" * int(
-                sarracenia.durationToSeconds(self.o['message_ttl']) * 1000)
+                sarracenia.durationToSeconds(self.o['messageAgeMax']) * 1000)
         else:
             ttl = "0"
         
@@ -769,3 +776,5 @@ class AMQP(Moth):
         # FIXME toclose not useful as we don't close channels anymore
         self.metricsDisconnect()
         self.connection = None
+        self.connection_id = None
+        self.broker = None

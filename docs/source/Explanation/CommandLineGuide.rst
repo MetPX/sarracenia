@@ -954,8 +954,13 @@ to poll the remote resources every thirty minutes. Alternatively::
    scheduled_hour 1,13,19
    scheduled_minute 27
 
-specifies that poll be run at 1:27, 13:27, and 19:27 each day.
- 
+specifies that poll be run at 1:27, 13:27, and 19:27 each day. Alternatively::
+
+   scheduled_time 15:30,20:30,23:15
+
+will poll the remote resources at exactly 15:30, 16:30 and 23:15.
+
+
 By default, sr_poll sends its post notification message to the broker with default exchange
 (the prefix *xs_* followed by the broker username). The *post_broker* is mandatory.
 It can be given incomplete if it is well defined in the credentials.conf file.
