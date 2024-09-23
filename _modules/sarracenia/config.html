@@ -2323,6 +2323,9 @@
 <span class="sd">        does substitutions for patterns in directories.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">destDir</span><span class="o">==</span><span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">destDir</span>
+
         <span class="n">BN</span> <span class="o">=</span> <span class="n">basename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
         <span class="n">EN</span> <span class="o">=</span> <span class="n">BN</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
 
