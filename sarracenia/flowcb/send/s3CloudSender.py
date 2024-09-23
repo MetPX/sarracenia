@@ -104,6 +104,7 @@ from sarracenia.credentials import Credential
 from sarracenia.flowcb import FlowCB
 import boto3
 from botocore.exceptions import ClientError
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +168,9 @@ class S3CloudSender(FlowCB):
         self.s3_url = "https://"+netloc[1] if not (type(netloc[1]) == str and netloc[1] == "None") else None
         self.access_key_id = usr_pwd[0] if not (type(usr_pwd[0]) == str and usr_pwd[0] == "None") else None
         self.secret_access_key = usr_pwd[1] if not (type(usr_pwd[1]) == str and usr_pwd[1] == "None") else None
+        if self.secret_access_key:
+            # sometimes the key will have a slash in it, in that case, the slash should be changed to %2F in credentials.conf
+            self.secret_access_key = unquote(self.secret_access_key)
 
         logger.info(f"Successfully loaded credentials for sendTo URL {self.o.sendTo}")
 
