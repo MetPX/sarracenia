@@ -1,18 +1,7 @@
-metpx-sr3 (3.00.55rc3) UNRELEASED; urgency=medium
-
-  * away from last release.
-
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 17 Sep 2024 15:54:06 -0400
-
-metpx-sr3 (3.00.55rc2) stable; urgency=medium
+metpx-sr3 (3.00.55) unstable; urgency=medium
 
   * fix #1219 correct date conversion.
   * fix #1214 scheduling refactor addresses a regression found in rc1
-
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Thu, 12 Sep 2024 15:16:55 -0400
-
-metpx-sr3 (3.00.55rc1) unstable; urgency=medium
-
   * fix #953 sr3 status queue size updates again.
   * fix #1157 transfer/stat() call improves behaviour with overly dynamic data.
   * fix #1209 Added *schedule_time* to scheduled flows (and polls)
@@ -31,8 +20,7 @@ metpx-sr3 (3.00.55rc1) unstable; urgency=medium
   * fix #1217 one minute of wiggle room when scheduled flows come due.
   * fix #1218 permissions of directories created by senders. 
 
-
- -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 11 Sep 2024 11:24:36 -0400
+ -- SSC-5CD2310S60 <peter@bsqt.homeip.net>  Tue, 23 Sep 2024 09:47:36 -0400
 
 metpx-sr3 (3.00.54) unstable; urgency=medium
 
