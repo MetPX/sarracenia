@@ -349,7 +349,8 @@ class AMQP(Moth):
                 #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
                 if self.o['prefetch'] != 0:
-                    self.channel.basic_qos(0, self.o['prefetch'], True)
+                    # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
+                    self.channel.basic_qos(0, self.o['prefetch'], False)
 
                 #FIXME: test self.first_setup and props['reset']... delete queue...
                 broker_str = self.o['broker'].url.geturl().replace(
