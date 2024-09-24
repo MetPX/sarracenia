@@ -1070,7 +1070,7 @@ class Flow:
                                          (m['fileOp']['rename']))
                         else:
                             self.reject(
-                                m, 304, "mask=%s strip=%s url=%s" %
+                                m, 404, "mask=%s strip=%s url=%s" %
                                 (str(mask), strip, urlToMatch))
                         break
 
@@ -1479,7 +1479,6 @@ class Flow:
                     logger.debug("%s file size different, so cannot be the same" %
                              (msg['new_path']))
                     return True
-
             else:
                 end = 0
 
@@ -1499,7 +1498,7 @@ class Flow:
                         pass
     
                 if new_mtime <= old_mtime:
-                    self.reject(msg, 304,
+                    self.reject(msg, 406,
                             "mtime not newer %s " % (msg['new_path']))
                     return False
                 else:
