@@ -147,6 +147,39 @@ Security Considerations
 This section is meant to provide insight to those who need to perform a security review
 of the application prior to implementation.
 
+
+Architecture
+~~~~~~~~~~~~
+
+Sarracenia can be a component in many solutions, and can be deployed as a cloud component.
+However, in it's rawest, simplest form, Sarracenia is not used like cloud services, where 
+one service is accessible from anywhere. It is more of a component or toolkit that is 
+expected to work with traditional network security zoning. Rather than have one service 
+for all, and requiring traffic/firewall exceptions and external security scanning to 
+intercept traffic, one deploys pump at each network zone demarcation. 
+
+Data is delivered to the pump at the demarcation point, and then another pump
+forwards data to the next zone. As part of demarcation processing, one can download a 
+file, run it through processing, such as malware scanning, and then only announce 
+it's availability to the following pump if it's ok.
+
+Each pump has independent authentication, and pump administrators 
+and users can define what traffic is made available to users on the other side of 
+the demarcation point. Pumps are chained together by copying from one to the next 
+to the next, where each one can have different access, purpose, and ownership.
+
+No formal federation or whole network identity is needed to pass data around 
+the network. Instead, each pump establishes authentication for the neigbouring pump. 
+If countries operated data pumps, one could imagine a situation like the following:
+The Russians and Americans want to transfer data but do not want to be exposed to each
+others' servers directly. The Russians could share with Kazakstan, The Kazakhs exchange
+with Korea, and Korea exchanges with Canada. The Americans only need to have
+a good relationship with the Canadians or Koreans. Each link in the chain 
+exposing themselves directly only to peers they have an explicit and 
+agreed relationship with. Each link in the chain can perform their own
+scanning and processing before accepting the data.
+
+
 Client
 ~~~~~~
 
