@@ -38,6 +38,20 @@ Instructions d’installation
 git
 ---
 
+3.0.56
+------
+
+*CHANGEMENT* : refactorisation du code *sarracenia.credentials...* les classes sont désormais
+*sarracenia.config.credentials* tout code utilisant des informations d'identification doit être
+mis à jour.
+
+*CHANGEMENT* : paramètres de file d'attente stockés dans le fichier d'état subscriptions.json,
+au lieu d'un fichier .qname, avec plus d'informations. La transition
+est peut-être complexe. Cette version lira et écrira les deux fichiers,
+afin de préserver la possibilité de rétrogradation. La version ultérieure abandonnera
+la prise en charge des fichiers qname.
+
+
 3.0.54
 ------
 

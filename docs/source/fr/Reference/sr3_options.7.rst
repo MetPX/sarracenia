@@ -1770,8 +1770,8 @@ sanity_log_dead <intervalle> (défaut: 1.5*housekeeping)
 
 L’option **sanity_log_dead** définit la durée à prendre en compte avant de redémarrer un composant.
 
-scheduled_interval,scheduled_hour,scheduled_minute
---------------------------------------------------
+scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
+-----------------------------------------------------------------
 
 Lorsque vous travaillez avec des flux cédulés, tels que des sondages, vous pouvez configurer une durée
 (unité: seconde par défaut, suffixes : m-minute, h-heure) à laquelle exécuter un
