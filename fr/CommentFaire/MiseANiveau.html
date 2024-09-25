@@ -77,20 +77,21 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">GUIDE DE MISE A NIVEAU</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#instructions-dinstallation">Instructions d’installation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#git">git</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id1">3.0.54</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id2">3.0.53</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id3">3.0.52</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id4">3.0.51</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id5">3.0.47</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id6">3.0.45</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id7">3.0.41</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id8">3.0.40</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id9">3.0.26</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id10">3.0.25</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id11">3.0.22</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id12">3.0.17</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id13">3.0.15</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id14">3.0.14</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">3.0.56</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">3.0.54</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">3.0.53</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">3.0.52</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">3.0.51</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">3.0.47</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">3.0.45</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">3.0.41</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">3.0.40</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">3.0.26</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">3.0.25</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">3.0.22</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">3.0.17</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">3.0.15</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">3.0.14</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#v2-to-sr3">V2 to Sr3</a></li>
 </ul>
 </li>
@@ -160,7 +161,18 @@ qui peut générer des messages.</p>
 <h2>git<a class="headerlink" href="#git" title="Link to this heading"></a></h2>
 </section>
 <section id="id1">
-<h2>3.0.54<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<h2>3.0.56<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><em>CHANGEMENT</em> : refactorisation du code <em>sarracenia.credentials…</em> les classes sont désormais
+<em>sarracenia.config.credentials</em> tout code utilisant des informations d’identification doit être
+mis à jour.</p>
+<p><em>CHANGEMENT</em> : paramètres de file d’attente stockés dans le fichier d’état subscriptions.json,
+au lieu d’un fichier .qname, avec plus d’informations. La transition
+est peut-être complexe. Cette version lira et écrira les deux fichiers,
+afin de préserver la possibilité de rétrogradation. La version ultérieure abandonnera
+la prise en charge des fichiers qname.</p>
+</section>
+<section id="id2">
+<h2>3.0.54<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em> : <em>sr3 sanity</em> redémarre uniquement les instances manquantes, pas celles arrêtées.
 cela est considéré comme plus conforme aux attentes des analystes.</p>
 <dl>
@@ -182,15 +194,15 @@ progressivement. Le nouveau paramètre <em>queueShare</em> peut être utilisé p
 <p>pour comprendre s’ils ont besoin de queueShare pour
 pour conserver le même partage que précédemment obtenu par défaut.</p>
 </section>
-<section id="id2">
-<h2>3.0.53<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h2>3.0.53<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em> : l’option <em>directory</em> dans le sondage ne sera plus convertie en <em>path</em> silencieusement.
 Utilisez <em>path</em> explicitement à la place. Il est toujours converti lors de la mise à niveau depuis la v2 avec
 <em>sr3 convert</em>, mais dans les configurations v3, <em>directory</em> agit désormais comme dans tous les autres
 composants comme spécificateur de chemin de destination de téléchargement.</p>
 </section>
-<section id="id3">
-<h2>3.0.52<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id4">
+<h2>3.0.52<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em> : argument messageCountMax supplémentaire au point d’entrée flowcb.gather().
 lors de la mise en œuvre de rappels de flow pour les flux cédulés ou de remplacements d’poll, le
 le point d’entrée de <em>gather</em> prend désormais un argument supplémentaire indiquant le maximum
@@ -202,16 +214,16 @@ sur le rassemblement</p>
 </div>
 <p>Avec la valeur par défaut, les plugins sont compatible avec les version précédentes.</p>
 </section>
-<section id="id4">
-<h2>3.0.51<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id5">
+<h2>3.0.51<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em> : nouveau paramètre obligatoire <em>action</em> pour la routine sarracenia.config.one_config()
 indiquant comment la configuration sera utilisée. Lorsqu’il est utilisé pour des opérations en lecture
 seule (statut, show, dump) la configuration doit éviter de remplir des valeurs qui ne
 devraient être définit lorsqu’il est utilisé. Les exemples ont été mis à jour en conséquence.</p>
 <p><em>CHANGEMENT</em> : paramètre <em>action</em> désormais obligatoire pour sarracenia.config.finalize().</p>
 </section>
-<section id="id5">
-<h2>3.0.47<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id6">
+<h2>3.0.47<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em>: les options de substitution temporelles, qui reflète
 les options des routines <em>strftime</em> de python ont un élément rajouté:
 un décalage (anglais: Offset?) pour decaler le moment d´un étampe temporelle
@@ -230,16 +242,16 @@ mais l´augmente avec Sarra v2, et minimise l´étonnement de ceux qui ne
 connaissent pas Sundew (réduction de comportement inattendu)</p>
 <p><em>CHANGEMENT</em>:</p>
 </section>
-<section id="id6">
-<h2>3.0.45<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<section id="id7">
+<h2>3.0.45<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGEMENT</em>: l´unité dans l´option <em>logRotateInterval</em> est rendu</dt><dd><p>secondes, comme toute autre intervalle dans la configuration.
 Dans les versions antérieurs, c´était une quantité de jours.</p>
 </dd>
 </dl>
 </section>
-<section id="id7">
-<h2>3.0.41<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id8">
+<h2>3.0.41<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENT</em>: champs de message v03 renommé: “integrity” est devenu “identity”</p>
 <blockquote>
 <div><ul class="simple">
@@ -251,8 +263,8 @@ Dans les versions antérieurs, c´était une quantité de jours.</p>
 </ul>
 </div></blockquote>
 </section>
-<section id="id8">
-<h2>3.0.40<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id9">
+<h2>3.0.40<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGEMENT</em>: l´option <em>post_format v02</em> est nécessaire pour que sr3 émet des</dt><dd><p>messages en format v02.  Avant cette version, l´option <em>post_topicPrefix v02.post</em>
 était suffisant.  Avec la version actuel, les deux options doivent être spécifiés.</p>
@@ -283,8 +295,8 @@ composantes.</p>
 </div></blockquote>
 </div></blockquote>
 </section>
-<section id="id9">
-<h2>3.0.26<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<section id="id10">
+<h2>3.0.26<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
 <dl>
 <dt><em>CHANGEMENT</em><span class="classifier">les options d’événement (logEvents et fileEvents) remplacent désormais la valeur précédente.</span></dt><dd><p>Avant ils etaient être uni (ou’d) avec la valeur précédente. Peut maintenant préfacer
 les éléments set avec + pour obtenir le comportement précédent.
@@ -295,23 +307,23 @@ les éléments set avec + pour obtenir le comportement précédent.
 </dd>
 </dl>
 </section>
-<section id="id10">
-<h2>3.0.25<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id11">
+<h2>3.0.25<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGEMENT</em><span class="classifier">la valeur par défaut pour acceptUnmatched est maintenant True pour tous les composants.</span></dt><dd><p>avant cette version, la valeur par défaut était False dans le composant <em>subscribe</em>
 mais Vrai pour tous les autres.</p>
 </dd>
 </dl>
 </section>
-<section id="id11">
-<h2>3.0.22<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<section id="id12">
+<h2>3.0.22<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
 <p><em>CHANGEMENTMENT</em>: option <em>destination</em> dans une configuration de poll est remplacé par <em>pollUrl</em></p>
 <p><em>CHANGEMENTMENT</em>: option <em>destination</em> dans une configuration de sender est remplacé par <em>sendTo</em></p>
 <p><em>ACTION</em>: remplacer les <em>destination</em> dans les configurations affectés (traité automatiquement
 dans le cas de conversion à partir de v2.)</p>
 </section>
-<section id="id12">
-<h2>3.0.17<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<section id="id13">
+<h2>3.0.17<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>CHANGEMENT</em>: La chaine de charactères “Vendor” est changé de “science.gc.ca” à “MetPX”.</dt><dd><p>Ce changement modifie le placement des fichiers sur la platteforme <em>Windows</em>.</p>
 </dd>
@@ -324,8 +336,8 @@ Le champs <em>Identity</em> est maintenant dédié au sommes de contrôle pour l
 </dd>
 </dl>
 </section>
-<section id="id13">
-<h2>3.0.15<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<section id="id14">
+<h2>3.0.15<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><em>NOTICE</em>: rétablir les paquets Debian et Windows en supprimant les exigences matérielles pour les modules python</dt><dd><p>qui sont difficiles à satisfaire. À partir de la version 3.0.15, les dépendances sont modulaires.</p>
 </dd>
@@ -360,8 +372,8 @@ d’activités.</p>
 </dd>
 </dl>
 </section>
-<section id="id14">
-<h2>3.0.14<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<section id="id15">
+<h2>3.0.14<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
 <p>bêta initiale.</p>
 <dl class="simple">
 <dt><em>NOTICE</em><span class="classifier">seuls les paquets pip fonctionnent actuellement. Pas de paquets Debian sur launchpad.net</span></dt><dd><p>ni aucun package Windows.</p>

@@ -1771,7 +1771,7 @@ appropriately.
 
 
 scheduled_interval,scheduled_hour,scheduled_minute,scheduled_time
---------------------------------------------------
+-----------------------------------------------------------------
 
 When working with scheduled flows, such as polls, one can configure a duration
 (no units defaults to seconds, suffixes: m-minute, h-hour) at which to run a 
@@ -1798,7 +1798,7 @@ this will poll the data at 15:30, 16:30 and 18:59 every day. This option allows 
 your time field then previous options.
 
 sendTo <url>
----------------
+------------
 
 Specification of a remote resource to deliver to in a sender.
 
