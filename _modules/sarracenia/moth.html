@@ -178,16 +178,16 @@
 <span class="sd">        * queueName   (for amqp, used as client-id for mqtt)</span>
 
 <span class="sd">        this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret</span>
-<span class="sd">        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials</span>
+<span class="sd">        duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials</span>
 <span class="sd">  </span>
 <span class="sd">        usage::</span>
 
 <span class="sd">           import sarracenia.moth</span>
-<span class="sd">           import sarracenia.credentials</span>
+<span class="sd">           import sarracenia.config.credentials</span>
 
 
 <span class="sd">           props = sarracenia.moth.default_options</span>
-<span class="sd">           props[&#39;broker&#39;] = sarracenia.credentials.Credential(&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;)</span>
+<span class="sd">           props[&#39;broker&#39;] = sarracenia.config.credentials.Credential(&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;)</span>
 <span class="sd">           props[&#39;expire&#39;] = 300</span>
 <span class="sd">           props[&#39;batch&#39;] = 1</span>
 <span class="sd">           is_subscriber=True</span>

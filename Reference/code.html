@@ -92,11 +92,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.config.str_options"><code class="docutils literal notranslate"><span class="pre">str_options</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.credentials">sarracenia.credentials</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.credentials.Credential"><code class="docutils literal notranslate"><span class="pre">Credential</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#sarracenia.credentials.CredentialDB"><code class="docutils literal notranslate"><span class="pre">CredentialDB</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#sarracenia-credentials">sarracenia.credentials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sarracenia.diskqueue">sarracenia.diskqueue</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sarracenia.diskqueue.DiskQueue"><code class="docutils literal notranslate"><span class="pre">DiskQueue</span></code></a></li>
 </ul>
@@ -274,7 +270,7 @@ What is missing:</p>
 <ul>
 <li><p><a class="reference internal" href="#module-sarracenia" id="id3">sarracenia</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.config" id="id4">sarracenia.config</a></p></li>
-<li><p><a class="reference internal" href="#module-sarracenia.credentials" id="id5">sarracenia.credentials</a></p></li>
+<li><p><a class="reference internal" href="#sarracenia-credentials" id="id5">sarracenia.credentials</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.diskqueue" id="id6">sarracenia.diskqueue</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.filemetadata" id="id7">sarracenia.filemetadata</a></p></li>
 <li><p><a class="reference internal" href="#module-sarracenia.flow" id="id8">sarracenia.flow</a></p></li>
@@ -610,7 +606,7 @@ always UTC timezone.</p>
 <p>The option parser to produce a single configuration.</p>
 <p>it can be instantiated with one of:</p>
 <ul class="simple">
-<li><p>one_config(component, config, action, isPost=False) – read the options  for
+<li><p>one_config(component, config, action, isPost=False, hostdir=None) – read the options  for
 a given component an configuration,  (all in one call.)</p></li>
 </ul>
 <p>On the other hand, a configu can be built up from the following constructors:</p>
@@ -621,7 +617,7 @@ a given component an configuration,  (all in one call.)</p></li>
 <p>Then just add settings manually:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">no_file_config</span><span class="p">()</span>
 
-<span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;subscribe&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s1">&#39;flow_demo&#39;</span>
@@ -716,14 +712,6 @@ sets self.exchange.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.config.Config._validate_urlstr">
-<span class="sig-name descname"><span class="pre">_validate_urlstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/sarracenia/config.html#Config._validate_urlstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.Config._validate_urlstr" title="Link to this definition"></a></dt>
-<dd><p>returns a tuple ( bool, expanded_url )
-the bool is whether the expansion worked, and the expanded_url is one with
-the added necessary authentication details from sarracenia.Credentials.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="sarracenia.config.Config._varsub">
 <span class="sig-name descname"><span class="pre">_varsub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#Config._varsub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.Config._varsub" title="Link to this definition"></a></dt>
 <dd><p>substitute variable values from options</p>
@@ -800,6 +788,14 @@ the added necessary authentication details from sarracenia.Credentials.</p>
 <dd><p>Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
 Should be called prior to using a configuration.</p>
 <p>There are default options that apply only if they are not overridden…</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sarracenia.config.Config.hohoo_validate_urlstr">
+<span class="sig-name descname"><span class="pre">hohoo_validate_urlstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="../_modules/sarracenia/config.html#Config.hohoo_validate_urlstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.Config.hohoo_validate_urlstr" title="Link to this definition"></a></dt>
+<dd><p>returns a tuple ( bool, expanded_url )
+the bool is whether the expansion worked, and the expanded_url is one with
+the added necessary authentication details from sarracenia.Credentials.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -957,7 +953,7 @@ with python API calls.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sarracenia.config.one_config">
-<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.one_config" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.config.one_config" title="Link to this definition"></a></dt>
 <dd><p>single call return a fully parsed single configuration for a single component to run.</p>
 <p>read in admin.conf and default.conf</p>
 <p>apply component default overrides ( maps to: component/check ?)
@@ -993,333 +989,8 @@ that has changed in v3 too much.</p>
 </dd></dl>
 
 </section>
-<section id="module-sarracenia.credentials">
-<span id="sarracenia-credentials"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">sarracenia.credentials</a><a class="headerlink" href="#module-sarracenia.credentials" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.credentials.</span></span><span class="sig-name descname"><span class="pre">Credential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#Credential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.Credential" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>An object that holds information about a credential, read from a
-credential file, which has one credential per line, format:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="n">option1</span><span class="o">=</span><span class="n">value1</span><span class="p">,</span> <span class="n">option2</span><span class="o">=</span><span class="n">value2</span>
-</pre></div>
-</div>
-<dl class="simple">
-<dt>Examples::</dt><dd><p>sftp://alice&#64;herhost/ ssh_keyfile=/home/myself/mykeys/.ssh.id_dsa
-ftp://georges:Gpass&#64;hishost/  passive = True, binary = True</p>
-</dd>
-</dl>
-<p><a class="reference external" href="https://metpx.github.io/sarracenia/Reference/sr3_credentials.7.html">Format Documentation.</a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.url">
-<span class="sig-name descname"><span class="pre">url</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.url" title="Link to this definition"></a></dt>
-<dd><p>object with URL, password, etc.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>urllib.parse.ParseResult</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.ssh_keyfile">
-<span class="sig-name descname"><span class="pre">ssh_keyfile</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.ssh_keyfile" title="Link to this definition"></a></dt>
-<dd><p>path to SSH key file for SFTP</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.passive">
-<span class="sig-name descname"><span class="pre">passive</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.passive" title="Link to this definition"></a></dt>
-<dd><p>use passive FTP mode, defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.binary">
-<span class="sig-name descname"><span class="pre">binary</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.binary" title="Link to this definition"></a></dt>
-<dd><p>use binary FTP mode, defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.tls">
-<span class="sig-name descname"><span class="pre">tls</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.tls" title="Link to this definition"></a></dt>
-<dd><p>use FTPS with TLS, defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.prot_p">
-<span class="sig-name descname"><span class="pre">prot_p</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.prot_p" title="Link to this definition"></a></dt>
-<dd><p>use a secure data connection for TLS</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.bearer_token">
-<span class="sig-name descname"><span class="pre">bearer_token</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.bearer_token" title="Link to this definition"></a></dt>
-<dd><p>bearer token for HTTP authentication</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.login_method">
-<span class="sig-name descname"><span class="pre">login_method</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.login_method" title="Link to this definition"></a></dt>
-<dd><p>force a specific login method for AMQP (PLAIN,
-AMQPLAIN, EXTERNAL or GSSAPI)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.implicit_ftps">
-<span class="sig-name descname"><span class="pre">implicit_ftps</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.implicit_ftps" title="Link to this definition"></a></dt>
-<dd><p>use implicit FTPS, defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code> (i.e. explicit FTPS)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<p>Usage:</p>
-<blockquote>
-<div><p># build a credential from a url string:</p>
-<p>from sarracenia.credentials import Credential</p>
-<p>broker = Credential(‘amqps://anonymous:anonymous&#64;hpfx.collab.science.gc.ca’)</p>
-</div></blockquote>
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#Credential.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.Credential.__init__" title="Link to this definition"></a></dt>
-<dd><p>Create a Credential object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>urlstr</strong> (<em>str</em>) – a URL in string form to be parsed.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.__str__">
-<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#Credential.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.Credential.__str__" title="Link to this definition"></a></dt>
-<dd><p>Returns attributes of the Credential object as a readable string.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.Credential.__weakref__">
-<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#sarracenia.credentials.Credential.__weakref__" title="Link to this definition"></a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sarracenia.credentials.</span></span><span class="sig-name descname"><span class="pre">CredentialDB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Unused_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Parses, stores and manages Credential objects.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.credentials">
-<span class="sig-name descname"><span class="pre">credentials</span></span><a class="headerlink" href="#sarracenia.credentials.CredentialDB.credentials" title="Link to this definition"></a></dt>
-<dd><p>contains all sarracenia.credentials.Credential objects managed by the CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl>
-<dt>Usage:</dt><dd><p># build a credential via lookup in the normal files:
-import CredentialDB from sarracenia.credentials</p>
-<p>credentials = CredentialDB.read( “/the/path/to/the/credentials.conf” )</p>
-<p># if there are corresponding passwords or modulation of login information look it up.</p>
-<p>broker = credentials.get( “amqps://hpfx.collab.science.gc.ca” )
-remote = credentials.get( “sftp://hoho&#64;theserver” )</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Unused_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.__init__" title="Link to this definition"></a></dt>
-<dd><p>Create a CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>Unused_logger</strong> – logger argument no longer used… left there for API compat with old calls.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.__weakref__">
-<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#sarracenia.credentials.CredentialDB.__weakref__" title="Link to this definition"></a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB._parse">
-<span class="sig-name descname"><span class="pre">_parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB._parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB._parse" title="Link to this definition"></a></dt>
-<dd><p>Parse a line of a credentials file, add it to the CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>line</strong> (<em>str</em>) – line to be parsed.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB._resolve">
-<span class="sig-name descname"><span class="pre">_resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB._resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB._resolve" title="Link to this definition"></a></dt>
-<dd><p>Resolve credentials for AMQP vhost from ones passed as a string, and optionally a urllib.parse.ParseResult
-object, into a sarracenia.credentials.Credential object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>urlstr</strong> (<em>str</em>) – credentials in a URL string.</p></li>
-<li><p><strong>url</strong> (<em>urllib.parse.ParseResult</em>) – ParseResult object with creds.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>containing</dt><dd><p>result (bool): <code class="docutils literal notranslate"><span class="pre">False</span></code> if the creds were not in the CredentialDB. <code class="docutils literal notranslate"><span class="pre">True</span></code> if they were.
-details (sarracenia.credentials.Credential): the updated Credential object, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.add">
-<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">details</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.add" title="Link to this definition"></a></dt>
-<dd><p>Add a new credential to the DB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>urlstr</strong> (<em>str</em>) – string-formatted URL to be parsed and added to DB.</p></li>
-<li><p><strong>details</strong> (<a class="reference internal" href="#sarracenia.credentials.Credential" title="sarracenia.credentials.Credential"><em>sarracenia.credentials.Credential</em></a>) – a Credential object can be passed in, otherwise one is
-created by parsing urlstr.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.get" title="Link to this definition"></a></dt>
-<dd><p>Retrieve a Credential from the DB by urlstr. If the Credential is valid, but not already cached, it will be
-added to the CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>urlstr</strong> (<em>str</em>) – credentials as URL string to be parsed.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>containing</dt><dd><dl class="simple">
-<dt>cache_result (bool): <code class="docutils literal notranslate"><span class="pre">True</span></code> if the credential was retrieved from the CredentialDB cache, <code class="docutils literal notranslate"><span class="pre">False</span></code></dt><dd><p>if it was not in the cache. Note that <code class="docutils literal notranslate"><span class="pre">False</span></code> does not imply the Credential or urlstr is
-invalid.</p>
-</dd>
-<dt>credential (sarracenia.credentials.Credential): the Credential</dt><dd><p>object matching the urlstr, <code class="docutils literal notranslate"><span class="pre">None</span></code> if urlstr is invalid.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.has">
-<span class="sig-name descname"><span class="pre">has</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.has"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.has" title="Link to this definition"></a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the Credential matching the urlstr is already in the CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>urlstr</strong> (<em>str</em>) – credentials in a URL string.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.isTrue">
-<span class="sig-name descname"><span class="pre">isTrue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.isTrue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.isTrue" title="Link to this definition"></a></dt>
-<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if s is <code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">yes</span></code>, <code class="docutils literal notranslate"><span class="pre">on</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>S</strong> (<em>str</em>) – string to check if true.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.isValid">
-<span class="sig-name descname"><span class="pre">isValid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">details</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.isValid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.isValid" title="Link to this definition"></a></dt>
-<dd><p>Validates a URL and Credential object. Checks for empty passwords, schemes, etc.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>url</strong> (<em>urllib.parse.ParseResult</em>) – ParseResult object for a URL.</p></li>
-<li><p><strong>details</strong> (<a class="reference internal" href="#sarracenia.credentials.Credential" title="sarracenia.credentials.Credential"><em>sarracenia.credentials.Credential</em></a>) – sarra Credential object containing additional details about
-the URL.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if a URL is valid, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="sarracenia.credentials.CredentialDB.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sarracenia/credentials.html#CredentialDB.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sarracenia.credentials.CredentialDB.read" title="Link to this definition"></a></dt>
-<dd><p>Read in a file containing credentials (e.g. credentials.conf). All credentials are parsed and added to the
-CredentialDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path of file to be read.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="sarracenia-credentials">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">sarracenia.credentials</a><a class="headerlink" href="#sarracenia-credentials" title="Link to this heading"></a></h2>
 </section>
 <section id="module-sarracenia.diskqueue">
 <span id="sarracenia-diskqueue"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">sarracenia.diskqueue</a><a class="headerlink" href="#module-sarracenia.diskqueue" title="Link to this heading"></a></h2>
@@ -2124,14 +1795,14 @@ API to allow pass-through of protocol specific properties, but apply templates f
 <li><p>queueName   (for amqp, used as client-id for mqtt)</p></li>
 </ul>
 <p>this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
-duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials</p>
+duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials</p>
 <p>usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
 
 
 <span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
-<span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">300</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;batch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">is_subscriber</span><span class="o">=</span><span class="kc">True</span>

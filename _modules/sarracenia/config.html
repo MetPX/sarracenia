@@ -136,7 +136,8 @@
 <span class="kn">import</span> <span class="nn">sarracenia</span>
 <span class="kn">from</span> <span class="nn">sarracenia</span> <span class="kn">import</span> <span class="n">durationToSeconds</span><span class="p">,</span> <span class="n">site_config_dir</span><span class="p">,</span> <span class="n">user_config_dir</span><span class="p">,</span> <span class="n">user_cache_dir</span>
 <span class="kn">from</span> <span class="nn">sarracenia.featuredetection</span> <span class="kn">import</span> <span class="n">features</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
+<span class="kn">from</span>  <span class="nn">sarracenia.config.subscription</span> <span class="kn">import</span> <span class="n">Subscription</span><span class="p">,</span><span class="n">Subscriptions</span>
 <span class="kn">import</span> <span class="nn">sarracenia.flow</span>
 <span class="kn">import</span> <span class="nn">sarracenia.flowcb</span>
 
@@ -504,7 +505,7 @@
 
 
 <span class="k">def</span> <span class="nf">get_package_lib_dir</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">Config</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">sarracenia</span><span class="p">))</span>
 
 
 <span class="k">def</span> <span class="nf">get_site_config_dir</span><span class="p">():</span>
@@ -765,7 +766,7 @@
 
 <span class="sd">       it can be instantiated with one of:</span>
 
-<span class="sd">       * one_config(component, config, action, isPost=False) -- read the options  for</span>
+<span class="sd">       * one_config(component, config, action, isPost=False, hostdir=None) -- read the options  for</span>
 <span class="sd">         a given component an configuration,  (all in one call.)</span>
 
 <span class="sd">       On the other hand, a configu can be built up from the following constructors:</span>
@@ -777,7 +778,7 @@
 
 <span class="sd">         cfg = no_file_config()</span>
 
-<span class="sd">         cfg.broker = sarracenia.credentials.Credential(&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;)</span>
+<span class="sd">         cfg.broker = sarracenia.config.credentials.Credential(&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;)</span>
 <span class="sd">         cfg.topicPrefix = [ &#39;v02&#39;, &#39;post&#39;]</span>
 <span class="sd">         cfg.component = &#39;subscribe&#39;</span>
 <span class="sd">         cfg.config = &#39;flow_demo&#39;</span>
@@ -948,19 +949,21 @@
 <span class="sd">          instantiate an empty Configuration</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptions</span> <span class="o">=</span> <span class="n">Subscriptions</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__admin</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__broker</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__post_broker</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__queue_file_read</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="n">Config</span><span class="o">.</span><span class="n">credentials</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">Config</span><span class="o">.</span><span class="n">credentials</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">CredentialDB</span><span class="p">()</span>
+            <span class="n">Config</span><span class="o">.</span><span class="n">credentials</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">CredentialDB</span><span class="p">()</span>
             <span class="n">Config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">get_user_config_dir</span><span class="p">()</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span>
                                     <span class="s2">&quot;credentials.conf&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
 
-        <span class="n">egdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">))</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;examples&#39;</span> 
+        <span class="n">egdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">sarracenia</span><span class="p">))</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;examples&#39;</span> 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">config_search_path</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;.&quot;</span> <span class="p">,</span> <span class="n">get_user_config_dir</span><span class="p">(),</span> <span class="n">egdir</span><span class="p">,</span> <span class="n">egdir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;flow&#39;</span>  <span class="p">]</span>
 
@@ -1063,9 +1066,9 @@
         <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="Config._validate_urlstr">
-<a class="viewcode-back" href="../../Reference/code.html#sarracenia.config.Config._validate_urlstr">[docs]</a>
-    <span class="k">def</span> <span class="nf">_validate_urlstr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urlstr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="p">:</span>
+<div class="viewcode-block" id="Config.hohoo_validate_urlstr">
+<a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.Config.hohoo_validate_urlstr">[docs]</a>
+    <span class="k">def</span> <span class="nf">hohoo_validate_urlstr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urlstr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">           returns a tuple ( bool, expanded_url ) </span>
 <span class="sd">           the bool is whether the expansion worked, and the expanded_url is one with</span>
@@ -1077,7 +1080,7 @@
         <span class="k">if</span> <span class="n">cred_details</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;bad credential </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">urlstr</span><span class="p">)</span>
             <span class="c1"># Callers expect that a Credential object will be returned</span>
-            <span class="n">cred_details</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">()</span>
+            <span class="n">cred_details</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">()</span>
             <span class="n">cred_details</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">urlstr</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">cred_details</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cred_details</span></div>
@@ -1110,7 +1113,7 @@
     <span class="nd">@admin</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">admin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__admin</span> <span class="o">=</span> <span class="n">cred_details</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1123,7 +1126,7 @@
     <span class="nd">@broker</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">broker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__broker</span> <span class="o">=</span> <span class="n">cred_details</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1136,7 +1139,7 @@
     <span class="nd">@post_broker</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">post_broker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">ok</span><span class="p">,</span> <span class="n">cred_details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">validate_urlstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__post_broker</span> <span class="o">=</span> <span class="n">cred_details</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1392,6 +1395,12 @@
                 <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;masks&#39;</span><span class="p">]):</span>
                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;masks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_ppstr</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;masks&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="p">)</span>
                    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">,</span> <span class="s1">&#39;post_broker&#39;</span> <span class="p">]:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span> <span class="p">]:</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;subscriptions&#39;</span><span class="p">]:</span>
+                    <span class="n">s</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">])</span> 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
@@ -1399,7 +1408,7 @@
             <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="n">omit</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">is</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">is</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span> <span class="p">:</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
         <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">term</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
@@ -1532,21 +1541,22 @@
 <span class="sd">                also should sqwawk about error if no exchange or topicPrefix defined.</span>
 <span class="sd">                also None to reset to empty, not done.</span>
 <span class="sd">       &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_exchange</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="si">}</span><span class="s2"> broker needed before subtopic&quot;</span> <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_exchange</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolveQueueName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">subtopic_string</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="si">}</span><span class="s2"> broker needed before subtopic&quot;</span> <span class="p">)</span>
-                <span class="k">return</span>
-
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;amq&#39;</span> <span class="p">:</span>
                 <span class="n">subtopic</span> <span class="o">=</span> <span class="n">subtopic_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">subtopic</span> <span class="o">=</span> <span class="n">subtopic_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
             
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;topicPrefix&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">,</span> <span class="n">subtopic</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">,</span> <span class="n">subtopic</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Subscription</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">,</span> <span class="n">subtopic</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Config._parse_v2plugin">
@@ -1943,6 +1953,40 @@
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">undeclared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">cfname</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_getSubscriptionsFileName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">):</span>
+
+        <span class="n">sfile</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span>
+            <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appname&#39;</span><span class="p">],</span>
+            <span class="n">Config</span><span class="o">.</span><span class="n">appdir_stuff</span><span class="p">[</span><span class="s1">&#39;appauthor&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statehost</span><span class="p">:</span>
+            <span class="n">sfile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hostdir</span>
+
+        <span class="n">sfile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">component</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">cfg</span>
+        <span class="n">sfile</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s2">&quot;subscriptions.json&quot;</span>
+        <span class="k">return</span> <span class="n">sfile</span>
+
+    <span class="k">def</span> <span class="nf">_writeQueueFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># first make sure directory exists.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="p">)):</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> 
+            <span class="n">tmpQfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="o">+</span><span class="s1">&#39;.tmp&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">):</span> 
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span> <span class="n">tmpQfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span> <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> being persisted to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="si">}</span><span class="s1"> by some other process, so ignoring it.&#39;</span> <span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> persisted to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+
+
+
     <span class="k">def</span> <span class="nf">_resolveQueueName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">):</span>
 
         <span class="n">queuefile</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span>
@@ -1962,6 +2006,16 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">queue_filename</span> <span class="o">=</span> <span class="n">queuefile</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;old_subscriptions&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_getSubscriptionsFileName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">old_subscriptions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;old_subscriptions&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_subscriptions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_subscriptions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]:</span>
+                    <span class="c1">#logger.info( f&quot; {s[&#39;queue&#39;][&#39;name&#39;]=} &quot;)</span>
+                    <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;queue&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
         <span class="c1">#while (not hasattr(self, &#39;queueName&#39;)) or (self.queueName is None):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
@@ -1978,68 +2032,41 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="n">queueName</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># worker instances need give lead instance time to write the queuefile</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">14</span><span class="p">))</span>
 
-            <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">False</span>
             <span class="n">config_read_try</span><span class="o">=</span><span class="mi">0</span>
-            <span class="k">while</span> <span class="ow">not</span> <span class="n">queue_file_read</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
-                    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                <span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">queueName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
-                <span class="n">config_read_try</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;instance read try </span><span class="si">{</span><span class="n">config_read_try</span><span class="si">}</span><span class="s1"> queueName </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> from queue state file </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                      <span class="n">nap</span><span class="o">=</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
-                      <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name corrupt take a short </span><span class="si">{</span><span class="n">nap</span><span class="si">}</span><span class="s1"> second nap, then try again&#39;</span> <span class="p">)</span>
-                      <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">nap</span><span class="p">)</span>
-                      <span class="k">if</span> <span class="n">config_read_try</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-                          <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;failed to read queue name from </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                          <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                      <span class="n">queue_file_read</span><span class="o">=</span><span class="kc">True</span>
-
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;instance read queueName </span><span class="si">{</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> from queue state file </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">queueName</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                  <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name corrupt take a short </span><span class="si">{</span><span class="n">nap</span><span class="si">}</span><span class="s1"> second nap, then try again&#39;</span> <span class="p">)</span>
+                  <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;failed to read queue name from </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                  <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span> 
             <span class="c1"># only lead instance (0-foreground, 1-start, or none in the case of &#39;declare&#39;)</span>
             <span class="c1"># should write the state file.</span>
-
     
-            <span class="c1"># lead instance shou</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
+            <span class="c1"># lead instance should</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__queue_file_read</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">):</span>
                 <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">queuefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">queueName</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__queue_file_read</span><span class="o">=</span><span class="kc">True</span>
             
             <span class="c1">#if the queuefile is corrupt, then will need to guess anyways.</span>
-            <span class="k">if</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span> <span class="n">queueName</span> <span class="ow">is</span> <span class="kc">None</span> <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span> <span class="n">queueName</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="p">):</span>
                 <span class="n">queueShare</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_varsub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueShare</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;q_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2">.&quot;</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">,</span><span class="n">queueShare</span><span class="p">])</span>
+                <span class="n">queueName</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;q_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2">.&quot;</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">,</span><span class="n">queueShare</span><span class="p">])</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;default guessed queueName  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> &#39;</span> <span class="p">)</span>
-    
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;foreground&#39;</span><span class="p">,</span> <span class="s1">&#39;declare&#39;</span> <span class="p">]:</span>
-                <span class="k">return</span>
+        <span class="k">return</span> <span class="n">queueName</span> 
 
-            <span class="c1"># first make sure directory exists.</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">)):</span>
-                <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">queuefile</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">queuefile</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span> 
-                <span class="n">tmpQfile</span><span class="o">=</span><span class="n">queuefile</span><span class="o">+</span><span class="s1">&#39;.tmp&#39;</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">):</span> 
-                    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmpQfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">)</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span> <span class="n">tmpQfile</span><span class="p">,</span> <span class="n">queuefile</span> <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> being persisted to </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1"> by some other process, so ignoring it.&#39;</span> <span class="p">)</span>
-                    <span class="k">return</span>
-
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;queue name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="si">}</span><span class="s1"> persisted to </span><span class="si">{</span><span class="n">queuefile</span><span class="si">}</span><span class="s1">&#39;</span> <span class="p">)</span>
 
 
 
@@ -2187,7 +2214,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_exchange</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_resolveQueueName</span><span class="p">(</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolveQueueName</span><span class="p">(</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="p">)</span>
 
         <span class="n">valid_inlineEncodings</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;guess&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;binary&#39;</span> <span class="p">]</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;inlineEncoding&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">inlineEncoding</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_inlineEncodings</span><span class="p">:</span>
@@ -2203,9 +2230,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">retry_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid_filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.pid&#39;</span><span class="p">,</span> <span class="s1">&#39;.retry&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">novipFilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid_filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.pid&#39;</span><span class="p">,</span> <span class="s1">&#39;.noVip&#39;</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_getSubscriptionsFileName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;#&#39;</span> <span class="p">])]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topicPrefix</span><span class="p">,</span> <span class="p">[</span> <span class="s1">&#39;#&#39;</span> <span class="p">])]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Subscription</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">queueName</span><span class="p">,</span> <span class="s1">&#39;#&#39;</span><span class="p">))</span>
+
+            <span class="c1"># read old subscriptions, compare to current.</span>
+            <span class="c1">#old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="ow">in</span> <span class="p">[</span> <span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;foreground&#39;</span><span class="p">,</span> <span class="s1">&#39;declare&#39;</span> <span class="p">]</span> <span class="ow">and</span> \
+                <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">no</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span>  \
+                <span class="bp">self</span><span class="o">.</span><span class="n">broker</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">url</span> <span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_writeQueueFile</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;documentRoot&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">documentRoot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">documentRoot</span><span class="p">))</span>
@@ -2637,6 +2678,7 @@
                 <span class="n">namespace</span><span class="o">.</span><span class="n">bindings</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="n">namespace</span><span class="o">.</span><span class="n">_resolve_exchange</span><span class="p">()</span>
+            <span class="n">qn</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">_resolveQueueName</span><span class="p">(</span><span class="n">namespace</span><span class="o">.</span><span class="n">component</span><span class="p">,</span><span class="n">namespace</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s1">&#39;broker&#39;</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;broker needed before subtopic&#39;</span><span class="p">)</span>
@@ -2657,7 +2699,8 @@
                    <span class="n">topicPrefix</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">topicPrefix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
 
             <span class="n">namespace</span><span class="o">.</span><span class="n">bindings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">namespace</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="n">topicPrefix</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span></div>
+                <span class="p">(</span><span class="n">namespace</span><span class="o">.</span><span class="n">exchange</span><span class="p">,</span> <span class="n">topicPrefix</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+            <span class="n">namespace</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Subscription</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">qn</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span></div>
 </div>
 
 
@@ -2962,7 +3005,7 @@
 
 <div class="viewcode-block" id="one_config">
 <a class="viewcode-back" href="../../api-documentation.html#sarracenia.config.one_config">[docs]</a>
-<span class="k">def</span> <span class="nf">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">isPost</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">one_config</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">isPost</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hostDir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      single call return a fully parsed single configuration for a single component to run.</span>
 
@@ -2988,6 +3031,9 @@
 
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_cfg</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">hostDir</span><span class="p">:</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">hostdir</span> <span class="o">=</span> <span class="n">hostDir</span>
+
     <span class="n">cfg</span><span class="o">.</span><span class="n">applyComponentDefaults</span><span class="p">(</span> <span class="n">component</span> <span class="p">)</span>
 
     <span class="n">store_pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
@@ -2999,6 +3045,10 @@
         <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">config</span> <span class="o">+</span> <span class="s1">&#39;.conf&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="c1">#FIXME parse old subscriptions here.</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">_getSubscriptionsFileName</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">component</span><span class="p">,</span><span class="n">cfg</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">old_subscriptions</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">subscriptions</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">subscriptionsPath</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
          <span class="n">cfg</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="n">component</span><span class="p">)</span>

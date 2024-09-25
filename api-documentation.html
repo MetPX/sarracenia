@@ -105,7 +105,7 @@
 <dd><p>The option parser to produce a single configuration.</p>
 <p>it can be instantiated with one of:</p>
 <ul class="simple">
-<li><p>one_config(component, config, action, isPost=False) – read the options  for
+<li><p>one_config(component, config, action, isPost=False, hostdir=None) – read the options  for
 a given component an configuration,  (all in one call.)</p></li>
 </ul>
 <p>On the other hand, a configu can be built up from the following constructors:</p>
@@ -116,7 +116,7 @@ a given component an configuration,  (all in one call.)</p></li>
 <p>Then just add settings manually:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">no_file_config</span><span class="p">()</span>
 
-<span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">broker</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">topicPrefix</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;v02&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">component</span> <span class="o">=</span> <span class="s1">&#39;subscribe&#39;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="s1">&#39;flow_demo&#39;</span>
@@ -197,6 +197,14 @@ a given component an configuration,  (all in one call.)</p></li>
 <dd><p>Before final use, take the existing settings, and infer any missing needed defaults from what is provided.
 Should be called prior to using a configuration.</p>
 <p>There are default options that apply only if they are not overridden…</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">hohoo_validate_urlstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urlstr</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/sarracenia/config.html#Config.hohoo_validate_urlstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>returns a tuple ( bool, expanded_url )
+the bool is whether the expansion worked, and the expanded_url is one with
+the added necessary authentication details from sarracenia.Credentials.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -336,7 +344,7 @@ with python API calls.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sarracenia.config.</span></span><span class="sig-name descname"><span class="pre">one_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isPost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostDir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sarracenia/config.html#one_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>single call return a fully parsed single configuration for a single component to run.</p>
 <p>read in admin.conf and default.conf</p>
 <p>apply component default overrides ( maps to: component/check ?)
@@ -918,14 +926,14 @@ API to allow pass-through of protocol specific properties, but apply templates f
 <li><p>queueName   (for amqp, used as client-id for mqtt)</p></li>
 </ul>
 <p>this library knows nothing about Sarracenia, the only code used from sarracenia is to interpret
-duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.credentials</p>
+duration properties, from the root sarracenia/__init__.py, the broker argument from sarracenia.config.credentials</p>
 <p>usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sarracenia.moth</span>
-<span class="kn">import</span> <span class="nn">sarracenia.credentials</span>
+<span class="kn">import</span> <span class="nn">sarracenia.config.credentials</span>
 
 
 <span class="n">props</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">moth</span><span class="o">.</span><span class="n">default_options</span>
-<span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
+<span class="n">props</span><span class="p">[</span><span class="s1">&#39;broker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sarracenia</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credential</span><span class="p">(</span><span class="s1">&#39;amqps://anonymous:anonymous@hpfx.collab.science.gc.ca&#39;</span><span class="p">)</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;expire&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">300</span>
 <span class="n">props</span><span class="p">[</span><span class="s1">&#39;batch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">is_subscriber</span><span class="o">=</span><span class="kc">True</span>
