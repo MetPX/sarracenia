@@ -1,3 +1,4 @@
+import copy
 import pytest
 from tests.conftest import *
 #from unittest.mock import Mock
@@ -10,7 +11,7 @@ import re
 
 import sarracenia
 import sarracenia.config
-import sarracenia.credentials
+import sarracenia.config.credentials
 
 logger = logging.getLogger('sarracenia.config')
 logger.setLevel('DEBUG')
@@ -27,7 +28,7 @@ def try_pattern( options, message, pattern, goodre ):
 
 def test_variableExpansion():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      options.baseDir = '/data/whereIcameFrom'
      options.documentRoot = options.baseDir
      options.post_baseDir = '/data/whereIamGoingTo'
@@ -89,7 +90,7 @@ def test_variableExpansion():
 
 def test_read_line_declare():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      options.baseDir = '/data/whereIcameFrom'
      options.documentRoot = options.baseDir
      options.post_baseDir = '/data/whereIamGoingTo'
@@ -106,7 +107,7 @@ def test_read_line_declare():
 
 def test_read_line_flags():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
 
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "download off" )
      assert( options.download == False )
@@ -130,7 +131,7 @@ def test_read_line_flags():
 
 def test_read_line_counts():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
 
      # crasher input:
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "batch -1" )
@@ -156,7 +157,7 @@ def test_read_line_counts():
 
 def test_read_line_floats():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
 
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "messageRateMax 1.5mb" )
      assert( options.messageRateMax == 1572864 )
@@ -173,7 +174,7 @@ def test_read_line_floats():
 
 def test_read_line_sets():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      logger.info( f" {options.fileEvents=} " )
 
      assert( options.fileEvents == set( ['create', 'delete', 'link', 'mkdir', 'modify', 'rmdir' ] ) )
@@ -198,7 +199,7 @@ def test_read_line_sets():
 
 def test_read_line_perms():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      logger.info( f" {options.permDefault=:o} " )
 
 
@@ -213,7 +214,7 @@ def test_read_line_perms():
 
 def test_read_line_duration():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      logger.info( f" {options.sleep=} " )
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "sleep 30" )
      logger.info( f" {options.sleep=} " )
@@ -234,7 +235,7 @@ def test_read_line_duration():
 
 def test_read_line_add_option():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
 
      options.add_option( 'list_one', kind='list', default_value=['1','2'], all_values=['1','2','3','4'] )
      logger.info( f" {options.list_one=} " )
@@ -298,7 +299,7 @@ def test_read_line_add_option():
 
 def test_source_from_exchange():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
 
      # crasher input:
      options.parse_line( "subscribe", "ex1", "subscribe/ex1", 1, "declare source tsource" )
@@ -312,10 +313,46 @@ def test_source_from_exchange():
      source = options.get_source_from_exchange(options.exchange)
      assert( source == 'tsource' )
 
+def test_subscription():
+
+     o = copy.deepcopy(sarracenia.config.default_config())
+
+     o.component = 'subscribe'
+     o.config = 'ex1'
+     o.action = 'start'
+     o.no = 1
+     before_add=len(o.credentials.credentials)
+     o.credentials.add( 'amqp://lapinferoce:etpoilu@localhost' )
+     o.credentials.add( 'amqp://capelli:tropcuit@localhost' )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 1, "broker amqp://lapinferoce@localhost" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 2, "exchange hoho1" )
+
+     assert( o.exchange == "hoho1" )
+
+     o.parse_line( o.component, o.config, "subscribe/ex1", 3, "subtopic hoho.#" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 3, "subtopic lala.hoho.#" )
+     
+     assert( hasattr(o,'subscriptions')  )
+     assert( len(o.subscriptions)==1 )
+     #assert( len(o.subscriptions[0]['bindings'] == 2 )
+
+     o.parse_line( o.component, o.config, "subscribe/ex1", 2, "exchange xpublic" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 3, "subtopic #" )
+
+     assert( len(o.subscriptions)==1 )
+
+     o.parse_line( o.component, o.config, "subscribe/ex1", 1, "broker amqp://capelli@localhost" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 2, "queue myfavouriteQ" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 2, "topicPrefix v02.post" )
+     o.parse_line( o.component, o.config, "subscribe/ex1", 3, "subtopic #" )
+            
+     assert( len(o.subscriptions)==2 )
+
+     logger.info( f" {o.subscriptions=} " )
 
 def test_broker_finalize():
 
-     options = sarracenia.config.default_config()
+     options = copy.deepcopy(sarracenia.config.default_config())
      options.component = 'subscribe'
      options.config = 'ex1'
      options.action = 'start'

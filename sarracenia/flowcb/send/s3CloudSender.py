@@ -100,7 +100,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 import logging
 import os
-from sarracenia.credentials import Credential
+from sarracenia.config.credentials import Credential
 from sarracenia.flowcb import FlowCB
 import boto3
 from botocore.exceptions import ClientError

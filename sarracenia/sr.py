@@ -844,7 +844,7 @@ class sr_GlobalState:
                     xl = self.__resolved_exchanges(c, cfg, o)
                     q = self.__guess_queueName(c, cfg, o)
 
-                    self.configs[c][cfg]['options'].resolved_qname = q
+                    self.configs[c][cfg]['options'].queueName_resolved = q
 
                     for exch in xl:
                         if exch in self.brokers[host]['exchanges']:
@@ -1272,8 +1272,7 @@ class sr_GlobalState:
 
         self.invoking_directory = os.getcwd()
         self.bin_dir = os.path.dirname(os.path.realpath(__file__))
-        self.package_lib_dir = os.path.dirname(
-            inspect.getfile(sarracenia.config.Config))
+        self.package_lib_dir = os.path.dirname(inspect.getfile(sarracenia))
         self.appauthor = 'MetPX'
         self.options = opt
         self.appname = os.getenv('SR_DEV_APPNAME')
@@ -1421,8 +1420,7 @@ class sr_GlobalState:
                 component = sp[-2]
                 cfg = sp[-1]
 
-            iedir = os.path.dirname(inspect.getfile(
-                sarracenia.config.Config)) + os.sep + 'examples'
+            iedir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples'
 
             destdir = self.user_config_dir + os.sep + component
 
@@ -1559,9 +1557,9 @@ class sr_GlobalState:
             logging.info('looking at %s/%s ' % (c, cfg))
             o = self.configs[c][cfg]['options']
             od = o.dictify()
-            if hasattr(o, 'resolved_qname'):
+            if hasattr(o, 'queueName_resolved'):
                 od['broker'] = o.broker
-                od['queueName'] = o.resolved_qname
+                od['queueName'] = o.queueName_resolved
                 od['dry_run'] = self.options.dry_run
                 qdc = sarracenia.moth.Moth.subFactory(od)
                 qdc.getSetup()
@@ -1806,8 +1804,8 @@ class sr_GlobalState:
 
             o = self.configs[c][cfg]['options']
 
-            if hasattr(o, 'resolved_qname'):
-                #print('deleting: %s is: %s @ %s' % (f, o.resolved_qname, o.broker.url.hostname ))
+            if hasattr(o, 'queueName_resolved'):
+                #print('deleting: %s is: %s @ %s' % (f, o.queueName_resolved, o.broker.url.hostname ))
                 qdc = sarracenia.moth.Moth.subFactory(
                     {
                         'broker': o.broker,
@@ -1816,13 +1814,13 @@ class sr_GlobalState:
                         'queueDeclare': False,
                         'queueBind': False,
                         'broker': o.broker,
-                        'queueName': o.resolved_qname,
+                        'queueName': o.queueName_resolved,
                         'message_strategy': { 'stubborn':True }
                     })
                 qdc.getSetup()
                 qdc.getCleanUp()
                 qdc.close()
-                queues_to_delete.append((o.broker, o.resolved_qname))
+                queues_to_delete.append((o.broker, o.queueName_resolved))
 
         for h in self.brokers:
             if self.please_stop:

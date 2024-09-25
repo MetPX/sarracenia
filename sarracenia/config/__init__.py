@@ -48,7 +48,8 @@ if sys.version_info[0] >= 3 and sys.version_info[1] < 8:
 import sarracenia
 from sarracenia import durationToSeconds, site_config_dir, user_config_dir, user_cache_dir
 from sarracenia.featuredetection import features
-import sarracenia.credentials
+import sarracenia.config.credentials
+from  sarracenia.config.subscription import Subscription,Subscriptions
 import sarracenia.flow
 import sarracenia.flowcb
 
@@ -398,7 +399,7 @@ def parse_float(cstr):
         return 0.0
 
 def get_package_lib_dir():
-    return os.path.dirname(inspect.getfile(Config))
+    return os.path.dirname(inspect.getfile(sarracenia))
 
 
 def get_site_config_dir():
@@ -642,7 +643,7 @@ class Config:
 
        it can be instantiated with one of:
 
-       * one_config(component, config, action, isPost=False) -- read the options  for
+       * one_config(component, config, action, isPost=False, hostdir=None) -- read the options  for
          a given component an configuration,  (all in one call.)
 
        On the other hand, a configu can be built up from the following constructors:
@@ -654,7 +655,7 @@ class Config:
 
          cfg = no_file_config()
 
-         cfg.broker = sarracenia.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
+         cfg.broker = sarracenia.config.credentials.Credential('amqps://anonymous:anonymous@hpfx.collab.science.gc.ca')
          cfg.topicPrefix = [ 'v02', 'post']
          cfg.component = 'subscribe'
          cfg.config = 'flow_demo'
@@ -823,19 +824,21 @@ class Config:
           instantiate an empty Configuration
         """
         self.bindings = []
+        self.subscriptions = Subscriptions()
         self.__admin = None
         self.__broker = None
         self.__post_broker = None
+        self.__queue_file_read = False
 
         if Config.credentials is None:
-            Config.credentials = sarracenia.credentials.CredentialDB()
+            Config.credentials = sarracenia.config.credentials.CredentialDB()
             Config.credentials.read(get_user_config_dir() + os.sep +
                                     "credentials.conf")
         self.directory = None
 
         self.env = copy.deepcopy(os.environ)
 
-        egdir = os.path.dirname(inspect.getfile(sarracenia.config.Config)) + os.sep + 'examples' 
+        egdir = os.path.dirname(inspect.getfile(sarracenia)) + os.sep + 'examples' 
 
         self.config_search_path = [ "." , get_user_config_dir(), egdir, egdir + os.sep + 'flow'  ]
 
@@ -934,7 +937,7 @@ class Config:
                 setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-    def _validate_urlstr(self, urlstr) -> tuple :
+    def hohoo_validate_urlstr(self, urlstr) -> tuple :
         """
            returns a tuple ( bool, expanded_url ) 
            the bool is whether the expansion worked, and the expanded_url is one with
@@ -946,7 +949,7 @@ class Config:
         if cred_details is None:
             logging.critical("bad credential %s" % urlstr)
             # Callers expect that a Credential object will be returned
-            cred_details = sarracenia.credentials.Credential()
+            cred_details = sarracenia.config.credentials.Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
             return False, cred_details
         return True, cred_details
@@ -975,7 +978,7 @@ class Config:
     @admin.setter
     def admin(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__admin = cred_details
         else:
@@ -988,7 +991,7 @@ class Config:
     @broker.setter
     def broker(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__broker = cred_details
         else:
@@ -1001,7 +1004,7 @@ class Config:
     @post_broker.setter
     def post_broker(self, v):
         if type(v) is str:
-            ok, cred_details = self._validate_urlstr(v)
+            ok, cred_details = self.credentials.validate_urlstr(v)
             if ok:
                 self.__post_broker = cred_details
         else:
@@ -1240,6 +1243,12 @@ class Config:
                 while i < len(c['masks']):
                    d['masks'].append( self.mask_ppstr(c['masks'][i]) )
                    i+=1
+            elif k in ['broker', 'post_broker' ]:
+                d[k]=str(c[k])
+            elif k in ['subscriptions' ]:
+                d['subscriptions'] = c['subscriptions']
+                for s in d['subscriptions']:
+                    s['broker'] = str(s['broker']) 
             else:
                 d[k] = copy.deepcopy(c[k])
 
@@ -1247,7 +1256,7 @@ class Config:
             del d[omit]
 
         for k in d:
-            if type(d[k]) is sarracenia.credentials.Credential :
+            if type(d[k]) is sarracenia.config.credentials.Credential :
                 d[k] = str(d[k])
 
         pprint.pprint( d, width=term.columns, compact=True )
@@ -1365,14 +1374,14 @@ class Config:
                 also should sqwawk about error if no exchange or topicPrefix defined.
                 also None to reset to empty, not done.
        """
-        if hasattr(self, 'broker') and self.broker is not None and self.broker.url is not None:
-            self._resolve_exchange()
+        if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
+            logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
+            return
+
+        self._resolve_exchange()
+        self.queueName = self._resolveQueueName(self.component,self.config)
 
         if type(subtopic_string) is str:
-            if not hasattr(self, 'broker') or self.broker is None or self.broker.url is None:
-                logger.error( f"{','.join(self.files)}:{self.lineno} broker needed before subtopic" )
-                return
-
             if self.broker.url.scheme == 'amq' :
                 subtopic = subtopic_string.split('.')
             else:
@@ -1380,6 +1389,7 @@ class Config:
             
         if hasattr(self, 'exchange') and hasattr(self, 'topicPrefix'):
             self.bindings.append((self.exchange, self.topicPrefix, subtopic))
+            self.subscriptions.append(Subscription(self, self.queueName, subtopic))
 
     def _parse_v2plugin(self, entryPoint, value):
         """
@@ -1766,6 +1776,40 @@ class Config:
                 setattr(self, k, v)
                 self.undeclared.append( (cfname, lineno, k) )
 
+    def _getSubscriptionsFileName(self,component,cfg):
+
+        sfile = sarracenia.user_cache_dir(
+            Config.appdir_stuff['appname'],
+            Config.appdir_stuff['appauthor'])
+
+        if self.statehost:
+            sfile += os.sep + self.hostdir
+
+        sfile += os.sep + component + os.sep + cfg
+        sfile += os.sep + "subscriptions.json"
+        return sfile
+
+    def _writeQueueFile(self):
+
+        # first make sure directory exists.
+        if not os.path.isdir(os.path.dirname(self.queue_filename)):
+            pathlib.Path(os.path.dirname(self.queue_filename)).mkdir(parents=True, exist_ok=True)
+
+        if not os.path.isfile(self.queue_filename) and (self.queueName is not None): 
+            tmpQfile=self.queue_filename+'.tmp'
+            if not os.path.isfile(tmpQfile): 
+                f = open(tmpQfile, 'w')
+                f.write(self.queueName)
+                f.close()
+                os.rename( tmpQfile, self.queue_filename )
+            else:
+                logger.info( f'Queue name {self.queueName} being persisted to {self.queue_filename} by some other process, so ignoring it.' )
+                return
+
+            logger.debug( f'queue name {self.queueName} persisted to {self.queue_filename}' )
+
+
+
     def _resolveQueueName(self,component,cfg):
 
         queuefile = sarracenia.user_cache_dir(
@@ -1785,6 +1829,16 @@ class Config:
 
         self.queue_filename = queuefile
 
+        if not hasattr(self, 'old_subscriptions'):
+            self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
+            self.old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+
+        if hasattr(self, 'old_subscriptions') and self.old_subscriptions:
+            for s in self.old_subscriptions:
+                if self.broker == s['broker']:
+                    #logger.info( f" {s['queue']['name']=} ")
+                    return s['queue']['name']
+
         #while (not hasattr(self, 'queueName')) or (self.queueName is None):
         """
 
@@ -1801,68 +1855,41 @@ class Config:
 
         """
 
+        queueName=self.queueName
         if hasattr(self,'no') and self.no > 1:
-            # worker instances need give lead instance time to write the queuefile
-            time.sleep(randint(4,14))
 
-            queue_file_read=False
             config_read_try=0
-            while not queue_file_read:
-                if os.path.isfile(queuefile):
-                    f = open(queuefile, 'r')
-                    self.queueName = f.read()
-                    f.close()
-                else:
-                    self.queueName = ''
+            if os.path.isfile(queuefile):
+                f = open(queuefile, 'r')
+                queueName = f.read()
+                f.close()
+            else:
+                queueName = ''
 
-                config_read_try += 1
-                logger.debug( f'instance read try {config_read_try} queueName {self.queueName} from queue state file {queuefile}' )
-                if len(self.queueName) < 1:
-                      nap=randint(1,4)
-                      logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
-                      time.sleep(nap)
-                      if config_read_try > 5:
-                          logger.critical( f'failed to read queue name from {queuefile}')
-                          sys.exit(2)
-                else:
-                      queue_file_read=True
-
+            logger.debug( f'instance read queueName {queueName} from queue state file {queuefile}' )
+            if len(queueName) < 1:
+                  logger.debug( f'queue name corrupt take a short {nap} second nap, then try again' )
+                  logger.critical( f'failed to read queue name from {queuefile}')
+                  sys.exit(2)
         else: 
             # only lead instance (0-foreground, 1-start, or none in the case of 'declare')
             # should write the state file.
-
     
-            # lead instance shou
-            if os.path.isfile(queuefile):
+            # lead instance should
+            if not self.__queue_file_read and os.path.isfile(queuefile):
                 f = open(queuefile, 'r')
-                self.queueName = f.read()
+                queueName = f.read()
                 f.close()
+                self.__queue_file_read=True
             
             #if the queuefile is corrupt, then will need to guess anyways.
-            if ( self.queueName is None ) or ( self.queueName == '' ):
+            if ( queueName is None ) or ( queueName == '' ):
                 queueShare = self._varsub(self.queueShare)
-                self.queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
+                queueName = f"q_{self.broker.url.username}." + '.'.join([component,cfg,queueShare])
                 logger.debug( f'default guessed queueName  {self.queueName} ' )
-    
-            if self.action not in [ 'start', 'foreground', 'declare' ]:
-                return
+        return queueName 
 
-            # first make sure directory exists.
-            if not os.path.isdir(os.path.dirname(queuefile)):
-                pathlib.Path(os.path.dirname(queuefile)).mkdir(parents=True, exist_ok=True)
 
-            if not os.path.isfile(queuefile) and (self.queueName is not None): 
-                tmpQfile=queuefile+'.tmp'
-                if not os.path.isfile(tmpQfile): 
-                    f = open(tmpQfile, 'w')
-                    f.write(self.queueName)
-                    f.close()
-                    os.rename( tmpQfile, queuefile )
-                else:
-                    logger.info( f'Queue name {self.queueName} being persisted to {queuefile} by some other process, so ignoring it.' )
-                    return
-
-                logger.debug( f'queue name {self.queueName} persisted to {queuefile}' )
 
 
 
@@ -2008,7 +2035,7 @@ class Config:
 
         if self.broker and self.broker.url and self.broker.url.username:
             self._resolve_exchange()
-            self._resolveQueueName(component,cfg)
+            self.queueName = self._resolveQueueName(component,cfg)
 
         valid_inlineEncodings = [ 'guess', 'text', 'binary' ]
         if hasattr(self, 'inlineEncoding') and self.inlineEncoding not in valid_inlineEncodings:
@@ -2024,9 +2051,23 @@ class Config:
             self.retry_path = self.pid_filename.replace('.pid', '.retry')
             self.novipFilename = self.pid_filename.replace('.pid', '.noVip')
 
+        self.subscriptionsPath=self._getSubscriptionsFileName(self.component,self.config)
 
-        if (self.bindings == [] and hasattr(self, 'exchange')):
-            self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+        if self.broker and self.broker.url and self.broker.url.username:
+
+            if (self.bindings == [] and hasattr(self, 'exchange')):
+                self.bindings = [(self.exchange, self.topicPrefix, [ '#' ])]
+                self.subscriptions.append(Subscription(self, self.queueName, '#'))
+
+            # read old subscriptions, compare to current.
+            #old_subscriptions=self.subscriptions.read(self, self.subscriptionsPath)
+        
+        if self.action in [ 'start', 'foreground', 'declare' ] and \
+                (not hasattr(self,'no') or self.no < 2) and  \
+                self.broker and self.broker.url :
+
+            self.subscriptions.write(self.subscriptionsPath)
+            self._writeQueueFile()
 
         if hasattr(self, 'documentRoot') and (self.documentRoot is not None):
             path = os.path.expanduser(os.path.abspath(self.documentRoot))
@@ -2444,6 +2485,7 @@ class Config:
                 namespace.bindings = []
 
             namespace._resolve_exchange()
+            qn = namespace._resolveQueueName(namespace.component,namespace.config)
 
             if not hasattr(namespace, 'broker'):
                 raise Exception('broker needed before subtopic')
@@ -2465,6 +2507,7 @@ class Config:
 
             namespace.bindings.append(
                 (namespace.exchange, topicPrefix, values))
+            namespace.subscriptions.append(Subscription(namespace, qn, values))
 
     def parse_args(self, isPost=False):
         """
@@ -2758,7 +2801,7 @@ def no_file_config():
     return cfg
 
 
-def one_config(component, config, action, isPost=False):
+def one_config(component, config, action, isPost=False, hostDir=None):
     """
       single call return a fully parsed single configuration for a single component to run.
 
@@ -2784,6 +2827,9 @@ def one_config(component, config, action, isPost=False):
 
     cfg = copy.deepcopy(default_cfg)
 
+    if hostDir:
+        cfg.hostdir = hostDir
+
     cfg.applyComponentDefaults( component )
 
     store_pwd = os.getcwd()
@@ -2795,6 +2841,10 @@ def one_config(component, config, action, isPost=False):
         fname = os.path.expanduser(config + '.conf')
     else:
         fname = os.path.expanduser(config)
+
+    #FIXME parse old subscriptions here.
+    cfg.subscriptionsPath=cfg._getSubscriptionsFileName(cfg.component,cfg.config)
+    cfg.old_subscriptions=cfg.subscriptions.read(cfg, cfg.subscriptionsPath)
 
     if os.path.exists(fname):
          cfg.parse_file(fname,component)
