@@ -490,7 +490,9 @@ class sr_GlobalState:
                                     continue
 
                                 if pathname[-4:] == '.pid':
-                                    i = int(pathname[0:-4].split('_')[-1])
+                                    i = self._instance_num_from_pidfile(pathname, c, cfg)
+                                    if i < 0:
+                                        continue
                                     if t.isdigit():
                                         #print( "pid assignment: {c}/{cfg} instance: {i}, pid: {t}" )
                                         self.states[c][cfg]['instance_pids'][i] = int(t)
@@ -585,7 +587,9 @@ class sr_GlobalState:
                         for filename in os.listdir():
                             # look at pid files, find ones where process is missing.
                             if filename[-4:] == '.pid':
-                                i = int(filename[0:-4].split('_')[-1])
+                                i = self._instance_num_from_pidfile(filename, c, cfg)
+                                if i < 0:
+                                    continue
                                 if i != 0:
                                     p = pathlib.Path(filename)
                                     if sys.version_info[0] > 3 or sys.version_info[
@@ -3022,6 +3026,19 @@ class sr_GlobalState:
         """
         return (component in ['post', 'cpost'] and self.configs[component][config]['options'].sleep > 0.1 and
                 hasattr(self.configs[component][config]['options'], 'path'))
+
+    def _instance_num_from_pidfile(self, pathname, component, cfg):
+        if os.sep in pathname:
+            pathname = pathname.split(os.sep)[-1]
+        if '_' in pathname:
+            i = int(pathname[0:-4].split('_')[-1])
+        # sr3c components just use iXX.pid
+        elif component[0] == 'c':
+            i = int(pathname[0:-4].replace('i', ''))
+        else:
+            logger.error(f"Failed to determine instance # for {component}/{cfg} {pathname}")
+            i = -1
+        return i
 
 
 def main():
