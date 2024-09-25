@@ -261,7 +261,7 @@ class Am(FlowCB):
 
         # We don't want to wait on a hanging connection. We use the timeout error to exit out of the reception if there is nothing.
         # This in turn makes the whole flow the same as any other sarracenia flow.
-        except TimeoutError:
+        except (TimeoutError,socket.timeout):
             return
 
         except Exception as e:
