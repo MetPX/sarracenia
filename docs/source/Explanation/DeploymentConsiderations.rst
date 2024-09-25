@@ -179,6 +179,14 @@ exposing themselves directly only to peers they have an explicit and
 agreed relationship with. Each link in the chain can perform their own
 scanning and processing before accepting the data.
 
+.. image:: Concepts/sr3_flow_example.svg
+    :scale: 100%
+    :align: center
+
+In this example, you can see that there are the ddsr pumps deployed on internal
+operations zones, and they push or pull from pumps in other zones, such as another
+operations zone, or a public access zone. Pumps are expected to 
+mediate traffic travelling between network zones.
 
 Client
 ~~~~~~
