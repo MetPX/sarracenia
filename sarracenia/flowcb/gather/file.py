@@ -607,7 +607,7 @@ class File(FlowCB):
             try:
                 ow = self.observer.schedule(self.watch_handler,
                                             d,
-                                            recursive=True)
+                                            recursive=self.o.recursive)
                 self.obs_watched.append(ow)
                 self.inl[dir_dev_id] = (ow, d)
                 logger.info(
