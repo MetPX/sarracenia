@@ -1587,8 +1587,12 @@ donné. Cette option impose également la traversée de liens symboliques.
 
 Cette option est utilisée pour étudier certains cas d'utilisation et pourrait disparaître à l'avenir.
 
+<flag> recursive (par défaut : activé)
+--------------------------------------
 
-
+Lors de l'analyse d'un chemin (pour un *poll*, une *post*, un *cpost* ou un *watch*), si vous 
+rencontrez un répertoire, incluez-vous également son contenu ? Pour analyser uniquement le répertoire spécifié
+et aucun sous-répertoire, spécifiez *recursive off*
 
 rename <chemin>
 ---------------
