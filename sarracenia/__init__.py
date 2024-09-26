@@ -427,6 +427,7 @@ known_report_codes = {
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
     503: "Unable to process: Service unavailable",
+    504: "Gateway Timeout: message too old"
     # 503: "Unsupported transport protocol specified in posting."
 }
 
