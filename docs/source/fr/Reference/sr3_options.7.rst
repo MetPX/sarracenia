@@ -2063,10 +2063,10 @@ exemples: Canada/Pacific, Pacific/Nauru, Europe/Paris
 Seulement actif dans le contexte de sondage de serveur FTP.
 
 
-tlsRigour (défaut: medium)
+tlsRigour (défaut: normal)
 --------------------------
 
-*tlsRigour* peut être réglé a : *lax, medium ou strict*, et donne un indice à l'application par rapport à la
+*tlsRigour* peut être réglé a : *lax, normal ou strict*, et donne un indice à l'application par rapport à la
 configuration des connexions TLS. TLS, ou Transport Layer Security (autrefois appelée Secure Socket Layer (SSL))
 est l’encapsulation de sockets TCP normales en cryptage standard. Il existe de nombreux aspects de
 négociations TLS, vérification du nom d’hôte, vérification des certificats, validation, choix de
