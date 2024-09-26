@@ -373,6 +373,7 @@ known_report_codes = {
     307: "Insertion deferred (writing to temporary part file for the moment.)",
     404: "Not Found: no pattern match",
     406: "Not Acceptable: file older than fileAgeMax",
+    410: "Gone: file too old",
     417: "Expectation Failed: invalid notification message (corrupt headers)",
     422: "Unprocessable Content: could not determine path to transfer to",
     425: "Too Early: file younger than fileAgeMin",
@@ -380,6 +381,7 @@ known_report_codes = {
     #FIXME : should  not have 503 error code 3 times in a row
     # 503: "Service unavailable. delete (File removal not currently supported.)",
     503: "Unable to process: Service unavailable",
+    504: "Gateway Timeout: message too old"
     # 503: "Unsupported transport protocol specified in posting."
 }
 
