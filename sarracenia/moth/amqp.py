@@ -326,13 +326,13 @@ class AMQP(Moth):
         if self._stop_requested:
             return
 
-        if 'broker' not in self.o or self.o['broker'] is None:
-            logger.critical( f"no broker given" )
-            return
-
         start = time.time()
         if start < self.next_connect_time:
             logger.critical( f"too soon to connect again will try in: {self.next_connect_time-start} seconds" )
+            return
+
+        if 'broker' not in self.o or self.o['broker'] is None:
+            logger.critical( f"no broker given" )
             return
 
         # It does not really matter how it fails, the recovery approach is always the same:
@@ -348,10 +348,13 @@ class AMQP(Moth):
                 # using global False because RabbitMQ Quorum Queues don't support Global QoS, issue #1233
                 self.channel.basic_qos(0, self.o['prefetch'], False)
 
+            #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
+
             # only first/lead instance needs to declare a queue and bindings.
             if 'no' in self.o and self.o['no'] >= 2:
-                    self.metricsConnect()
-                    return
+                self.metricsConnect()
+                return
+
             #logger.info('getSetup connected to {}'.format(self.o['broker'].url.hostname) )
 
             #FIXME: test self.first_setup and props['reset']... delete queue...
