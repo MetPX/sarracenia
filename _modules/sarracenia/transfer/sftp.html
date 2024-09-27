@@ -186,7 +186,11 @@
             <span class="n">alarm_cancel</span><span class="p">()</span>
 
     <span class="c1"># cd forced</span>
+<div class="viewcode-block" id="Sftp.cd_forced">
+<a class="viewcode-back" href="../../../Reference/code.html#sarracenia.transfer.sftp.Sftp.cd_forced">[docs]</a>
     <span class="k">def</span> <span class="nf">cd_forced</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; try to cd to a directory. If the cd fails, create the directory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp cd_forced </span><span class="si">%o</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
 
         <span class="c1"># try to go directly to path</span>
@@ -196,6 +200,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">originalDir</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">alarm_cancel</span><span class="p">()</span>
+            <span class="c1"># cd was successful, no need to create the dir, just return</span>
+            <span class="k">return</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">finally</span><span class="p">:</span>
@@ -226,7 +232,8 @@
                 <span class="c1"># Apply permDirDefault value. mkdir is limited by SFTP server umask value</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sftp</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span><span class="o">.</span><span class="n">permDirDefault</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
-                <span class="n">alarm_cancel</span><span class="p">()</span>
+                <span class="n">alarm_cancel</span><span class="p">()</span></div>
+
 
     <span class="k">def</span> <span class="nf">check_is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sr_sftp check_is_connected&quot;</span><span class="p">)</span>
