@@ -501,7 +501,7 @@ class CredentialDB:
         if cred_details is None:
             logging.critical("bad credential %s" % urlstr)
             # Callers expect that a Credential object will be returned
-            cred_details = credentials.Credential()
+            cred_details = Credential()
             cred_details.url = urllib.parse.urlparse(urlstr)
             return False, cred_details
         return True, cred_details
